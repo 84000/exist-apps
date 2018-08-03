@@ -111,14 +111,14 @@
                             <div class="input-group">
                                 <select name="translation-id" id="translation-id" class="form-control">
                                     <option value="all">All translations</option>
-                                    <xsl:for-each select="//m:translations/m:file">
+                                    <xsl:for-each select="m:translations/m:file">
                                         <xsl:sort select="@id"/>
                                         <option>
                                             <xsl:attribute name="value" select="@id"/>
-                                            <xsl:if test="@id eq /m:response/@translation-id">
+                                            <xsl:if test="@id eq /m:response/m:request/@translation-id">
                                                 <xsl:attribute name="selected" select="'selected'"/>
                                             </xsl:if>
-                                            <xsl:value-of select="concat(@id, ' / ', common:limit-str(data(.), 35))"/>
+                                            <xsl:value-of select="concat(@id, ' / ', common:limit-str(data(.), 100))"/>
                                         </option>
                                     </xsl:for-each>
                                 </select>
@@ -143,7 +143,7 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <xsl:for-each select="//m:results/m:translation">
+                                <xsl:for-each select="m:results/m:translation">
                                     <xsl:sort select="count(m:tests/m:test/m:result[text() eq '1'])"/>
                                     <xsl:variable name="table-row" select="position()"/>
                                     <xsl:variable name="text-id" select="@id"/>
@@ -169,7 +169,7 @@
                                             <xsl:variable name="test-id" select="position()"/>
                                             <xsl:variable name="cell-id" select="concat('col-', $test-id,'row-', $table-row)"/>
                                             <xsl:variable name="test-title" select="concat($test-id, '. ', m:title/text())"/>
-                                            <xsl:variable name="test-result" select="xs:boolean(m:result/text())"/>
+                                            <xsl:variable name="test-result" select="xs:boolean(@pass)"/>
                                             <xsl:variable name="test-details" select="m:details"/>
                                             <td class="test">
                                                 <xsl:copy-of select="m:test-result($test-result, $cell-id, $text-id, $text-title, $test-title, $test-details)"/>
