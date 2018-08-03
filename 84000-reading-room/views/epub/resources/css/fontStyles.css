@@ -1,0 +1,25 @@
+/* Import fonts */
+@font-face {
+  font-family: "DDC Uchen";
+  src: url(../fonts/DDC_Uchen.ttf);
+}
+@font-face {
+  font-family: "IndUni-P";
+  src: url(../fonts/IndUni-P-Regular.otf);
+}
+@font-face {
+  font-family: "IndUni-P";
+  src: url(../fonts/IndUni-P-Bold.otf);
+  font-weight: bold;
+}
+@font-face {
+  font-family: "IndUni-P";
+  src: url(../fonts/IndUni-P-Italic.otf);
+  font-style: italic;
+}
+@font-face {
+  font-family: "IndUni-P";
+  src: url(../fonts/IndUni-P-BoldItalic.otf);
+  font-weight: bold;
+  font-style: italic;
+}

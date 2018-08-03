@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" version="2.0" exclude-result-prefixes="#all">
+    
+    <xsl:include href="../../84000-reading-room/views/html/reading-room-page.xsl"/>
+    <xsl:include href="tabs.xsl"/>
+    
+    <xsl:template match="/m:response">
+        
+        <xsl:variable name="environment" select="doc(/m:response/@environment-path)/m:environment"/>
+        <xsl:variable name="reading-room-path" select="$environment/m:url[@id eq 'reading-room']/text()"/>
+        
+        <xsl:variable name="content">
+            
+            <div class="container">
+                <div class="panel panel-default">
+                    <div class="panel-heading panel-heading-bold hidden-print center-vertical">
+                        
+                        <span class="title">
+                            84000 Utilities
+                        </span>
+                        
+                        <span class="text-right">
+                            <a target="_self">
+                                <xsl:attribute name="href" select="$reading-room-path"/>
+                                Reading Room
+                            </a>
+                        </span>
+                        
+                    </div>
+                    
+                    <div class="panel-body">
+                        
+                        <xsl:call-template name="tabs">
+                            <xsl:with-param name="active-tab" select="@model-type"/>
+                        </xsl:call-template>
+                        
+                        <div class="tab-content">
+                            
+                            <p class="text-muted text-center small">
+                                These link to examples of various layout elements in the Reading Room.
+                                <br/>These should be checked on desktop, mobile and print if the styles are changed.
+                            </p>
+                            <ul>
+                                <li>
+                                    <a target="test-layout">
+                                        <xsl:attribute name="href" select="concat($reading-room-path ,'/translation/UT22084-057-009.html#UT22084-057-009-12')"/>
+                                        Simple list
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="" target="test-layout">
+                                        <xsl:attribute name="href" select="concat($reading-room-path ,'/translation/UT22084-051-004.html#UT22084-051-004-45')"/>
+                                        Long indented list
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="" target="test-layout">
+                                        <xsl:attribute name="href" select="concat($reading-room-path ,'/translation/UT22084-054-003.html#UT22084-054-003-19')"/>
+                                        Verses
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="" target="test-layout">
+                                        <xsl:attribute name="href" select="concat($reading-room-path ,'/translation/UT22084-080-015.html#UT22084-080-015-153')"/>
+                                        Mantra
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="" target="test-layout">
+                                        <xsl:attribute name="href" select="concat($reading-room-path ,'/translation/UT22084-031-002.html#UT22084-031-002-45')"/>
+                                        Nested paragraphs
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="" target="test-layout">
+                                        <xsl:attribute name="href" select="concat($reading-room-path ,'/translation/UT22084-046-001.html#UT22084-046-001-4')"/>
+                                        Blockquote with paragraphs
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="" target="test-layout">
+                                        <xsl:attribute name="href" select="concat($reading-room-path ,'/translation/UT22084-047-002.html#UT22084-047-002-3')"/>
+                                        Blockquote with verse
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="" target="test-layout">
+                                        <xsl:attribute name="href" select="concat($reading-room-path ,'/translation/UT22084-055-001.html#UT22084-055-001-44')"/>
+                                        Structured introduction
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="" target="test-layout">
+                                        <xsl:attribute name="href" select="concat($reading-room-path ,'/translation/UT22084-079-011.html#prologue')"/>
+                                        Prologue
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="" target="test-layout">
+                                        <xsl:attribute name="href" select="concat($reading-room-path ,'/translation/UT22084-056-002.html#chapter-1')"/>
+                                        Chapters without titles
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="" target="test-layout">
+                                        <xsl:attribute name="href" select="concat($reading-room-path ,'/translation/UT22084-046-001.html#colophon')"/>
+                                        Colophon chapters
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="" target="test-layout">
+                                        <xsl:attribute name="href" select="concat($reading-room-path ,'/translation/UT22084-080-015.html#appendix')"/>
+                                        Appendix chapters
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="" target="test-layout">
+                                        <xsl:attribute name="href" select="concat($reading-room-path ,'/translation/UT22084-081-006.html#abbreviations')"/>
+                                        Abbreviations with footer
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="" target="test-layout">
+                                        <xsl:attribute name="href" select="concat($reading-room-path ,'/translation/UT22084-031-002.html#bibliography')"/>
+                                        Structured bibliography
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="" target="test-layout">
+                                        <xsl:attribute name="href" select="concat($reading-room-path ,'/translation/UT22084-061-013.html#UT22084-061-013-50')"/>
+                                        Hanging indent
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="" target="test-layout">
+                                        <xsl:attribute name="href" select="concat($reading-room-path ,'/translation/UT22084-081-006.html')"/>
+                                        Tantra warning
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="" target="test-layout">
+                                        <xsl:attribute name="href" select="concat($reading-room-path ,'/translation/UT22084-031-002.html#UT22084-031-002-4437')"/>
+                                        Internal pointer
+                                    </a>
+                                </li>
+                            </ul>
+                            
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+        </xsl:variable>
+        
+        <xsl:call-template name="reading-room-page">
+            <xsl:with-param name="page-url" select="''"/>
+            <xsl:with-param name="page-class" select="'utilities'"/>
+            <xsl:with-param name="page-title" select="'Layout Ckecks :: 84000 Utilities'"/>
+            <xsl:with-param name="page-description" select="'Links to layout elements taht should be checked'"/>
+            <xsl:with-param name="content" select="$content"/>
+        </xsl:call-template>
+    </xsl:template>
+    
+</xsl:stylesheet>

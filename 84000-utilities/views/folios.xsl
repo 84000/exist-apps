@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" version="2.0" exclude-result-prefixes="#all">
+    
+    <xsl:include href="../../84000-reading-room/views/html/reading-room-page.xsl"/>
+    <xsl:include href="tabs.xsl"/>
+    
+    <xsl:template match="/m:response">
+        
+        <xsl:variable name="environment" select="doc(/m:response/@environment-path)/m:environment"/>
+        <xsl:variable name="reading-room-path" select="$environment/m:url[@id eq 'reading-room']/text()"/>
+        <xsl:variable name="utilities-path" select="$environment/m:url[@id eq 'utilities']/text()"/>
+        
+        <xsl:variable name="content">
+            <div class="container">
+                <div class="panel panel-default">
+                    <div class="panel-heading panel-heading-bold hidden-print center-vertical">
+                        
+                        <span class="title">
+                            84000 Utilities
+                        </span>
+                        
+                        <span class="text-right">
+                            <a target="_self">
+                                <xsl:attribute name="href" select="$reading-room-path"/>
+                                Reading Room
+                            </a>
+                        </span>
+                        
+                    </div>
+                    
+                    <div class="panel-body">
+                        
+                        <xsl:call-template name="tabs">
+                            <xsl:with-param name="active-tab" select="@model-type"/>
+                        </xsl:call-template>
+                        
+                        <div class="tab-content">
+                            
+                            <p class="text-muted text-center small">
+                                This data can be retrieved in xml format at:  
+                                <a target="folios-xml">
+                                    <xsl:attribute name="href" select="concat($utilities-path, '/folios.xml')"/>
+                                    <xsl:value-of select="concat($utilities-path, '/folios.xml')"/>
+                                </a>
+                            </p>
+                            
+                            <table class="table table-responsive">
+                                <thead>
+                                    <tr>
+                                        <th>Toh</th>
+                                        <th>Folios</th>
+                                        <th>Title</th>
+                                        <th>Start</th>
+                                        <th>End</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <xsl:for-each select="m:translations/m:translation">
+                                        <xsl:sort select="number(m:toh/@number)"/>
+                                        <xsl:sort select="m:toh/m:base"/>
+                                        <tr>
+                                            <td rowspan="2">
+                                                <xsl:value-of select="m:toh/m:base"/>
+                                            </td>
+                                            <td class="nowrap">
+                                                <a class="collapsed small-plain" role="button" data-toggle="collapse" aria-expanded="false">
+                                                    <xsl:attribute name="href" select="concat('#translation-folios-', position())"/>
+                                                    <xsl:attribute name="aria-controls" select="concat('translation-folios-', position())"/>
+                                                    <i class="fa fa-chevron-down"/>
+                                                    <xsl:value-of select="concat(' ', count(m:folios/m:folio), ' folios')"/>
+                                                </a>
+                                            </td>
+                                            <td>
+                                                <xsl:value-of select="m:titles/m:title[@xml:lang eq 'en']"/>
+                                            </td>
+                                            <td>
+                                                <xsl:value-of select="concat('Vol. ', m:location/m:start/@volume, ', page ', m:location/m:start/@page)"/>
+                                            </td>
+                                            <td>
+                                                <xsl:value-of select="concat('Vol. ', m:location/m:end/@volume, ', page ', m:location/m:end/@page)"/>
+                                            </td>
+                                        </tr>
+                                        <tr class="sub">
+                                            <td colspan="3">
+                                                <div class="collapse">
+                                                    <xsl:attribute name="id" select="concat('translation-folios-', position())"/>
+                                                    <ul class="list-unstyled">
+                                                        <xsl:for-each select="m:folios/m:folio">
+                                                        <li>
+                                                            <xsl:value-of select="concat('Folio ', @page, '.', @side)"/> - 
+                                                            <a target="_blank">
+                                                                <xsl:attribute name="href" select="m:url[@response eq 'xml']"/>
+                                                                <xsl:value-of select="m:url[@response eq 'xml']"/>
+                                                            </a>
+                                                        </li>
+                                                        </xsl:for-each>
+                                                    </ul>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </xsl:for-each>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+        </xsl:variable>
+        
+        <xsl:call-template name="reading-room-page">
+            <xsl:with-param name="page-url" select="''"/>
+            <xsl:with-param name="page-class" select="'utilities'"/>
+            <xsl:with-param name="page-title" select="'Folios :: 84000 Utilities'"/>
+            <xsl:with-param name="page-description" select="'Utilities for Individual Folios'"/>
+            <xsl:with-param name="content" select="$content"/>
+        </xsl:call-template>
+        
+    </xsl:template>
+</xsl:stylesheet>

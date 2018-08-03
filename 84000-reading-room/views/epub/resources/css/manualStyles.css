@@ -1,0 +1,375 @@
+/* base styles */
+body,
+div,
+dl,
+dt,
+dd,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p,
+pre,
+code,
+blockquote{
+    margin: 0;
+    padding: 0;
+    border-width: 0;
+}
+body{
+    color: #000000;
+    font-family: "IndUni-P";
+}
+h1,
+h2,
+h3,
+h4,
+h5,
+h6{
+    display: block;
+    width: 100%;
+    text-align: inherit;
+    font-weight: bold;
+}
+section,
+aside{
+    display: block;
+    page-break-before: always;
+    max-width: 100%;
+}
+p{
+    line-height: 1.5;
+    page-break-after: auto;
+    page-break-before: auto;
+    text-align: left;
+}
+a{
+    color: #003f5f;
+}
+
+/* headings */
+h1{
+    font-size: 1.4em;
+}
+h2{
+    font-size: 1.3em;
+}
+h3{
+    font-size: 1.2em;
+}
+h4{
+    font-size: 1.1em;
+}
+h5{
+    font-size: 1em;
+}
+h5.space-before,
+h5.section-label{
+    margin-top: 40pt;
+}
+
+/* blockquote */
+blockquote{
+    padding: 0;
+    margin-bottom: 0;
+    border-left: 1px solid #ccc;
+}
+blockquote p{
+    padding-left: 12pt;
+}
+blockquote .line-group .line{
+    padding-left: 22pt;
+}
+
+/* helpers */
+.bold,
+.text-bold{
+    font-weight: bold;
+}
+.center{
+    text-align: center;
+}
+.center p{
+    text-align: center;
+}
+.italic{
+    font-style: italic;
+}
+.title{
+    font-style: italic;
+}
+.name{
+    font-style: italic;
+    font-weight: bold;
+}
+.uppercase{
+    text-transform: uppercase;
+}
+.small{
+    font-size: .75em;
+}
+.speaker{
+    font-style: italic;
+}
+.trailer{
+    font-style: italic;
+}
+.trailer .ref,
+.trailer .footnote-link{
+    font-style: normal;
+}
+
+/* other scripts */
+.text-bo{
+    font-family: "DDC Uchen";
+    line-height: 2em;
+}
+.text-sa{
+    font-style: italic;
+}
+.text-wy{
+    font-style: italic;
+}
+.text-zh{
+    font-style: normal !important;
+}
+
+/* section header */
+.header{
+    padding-top: 20%;
+    padding-bottom: 20pt;
+    page-break-after: avoid;
+}
+.header h1,
+.header h2,
+.header h3,
+.header h4{
+    margin-top: 0;
+    margin-bottom: 20pt;
+}
+
+/* text section */
+.text h2{
+    font-weight: normal;
+    page-break-after: avoid;
+}
+.text h4{
+    margin-top: 22pt;
+    page-break-after: avoid;
+}
+.text br{
+    display: none;
+}
+.text p{
+    text-align: justify;
+    text-indent: 22pt;
+}
+.text p.mantra{
+    text-indent: 0;
+    padding: 0 22pt;
+}
+.text p br{
+    display: block;
+}
+
+/* Spaced paragraphs */
+.text h2 + p,
+.text h3 + p,
+.text h4 + p,
+.text br + *,
+.text .rw-heading + .rw,
+.text .space,
+.text .space-after + *,
+.text .list .space,
+.text .list .space-after + *{
+    margin-top: 14pt;
+}
+/* Remove line indent */
+.text .rw.first-child > p,
+.text h2 + .rw p,
+.text h3 + .rw p,
+.text h4 + .rw p,
+.text br + .rw p,
+.text .rw-heading + .rw p,
+.text .space-after + .rw > p,
+.text p.trailer,
+.footnote-number{
+    text-indent: 0;
+}
+
+/* Gutter for Milestones */
+.rw{
+    display: block;
+    padding-left: 35pt;
+}
+.rw .rw{
+    margin-left: -35pt;
+}
+.gtr{
+    display: block;
+    float: left;
+    margin-left: -35pt;
+    width: 30pt;
+    font-size: .75em;
+    line-height: 1.5;
+    padding-top: .25em;
+    vertical-align: baseline;
+    overflow-wrap: break-word;
+    page-break-after: avoid;
+}
+
+/* additional avoid page breaks */
+.nested-section > .first-child,
+.footnote-number{
+    page-break-after: avoid;
+}
+
+/* list incl. indented lists */
+.list p,
+.list .section-label{
+    margin-top: 0;
+}
+.list .list-item p,
+.list .list-item .section-label{
+    padding-left: 12pt;
+}
+.list .list-item .list-item p,
+.list .list-item .list-item .section-label{
+    padding-left: 24pt;
+}
+.list .list-item .list-item .list-item p,
+.list .list-item .list-item .list-item .section-label{
+    padding-left: 36pt;
+}
+.list .list-item .list-item .list-item .list-item p,
+.list .list-item .list-item .list-item .list-item .section-label{
+    padding-left: 48pt;
+}
+
+/* Footnotes */
+.footnote{
+    margin-bottom: 12pt;
+}
+
+/* footnote links */
+.footnote-link{
+    font-size: .75em;
+    line-height: .75em;
+    vertical-align: super;
+    padding-left: 2pt;
+}
+
+/* Images */
+img.illustration{
+    display: block;
+    page-break-before: always;
+    max-width: 100%;
+    max-height: 100%;
+    margin: 0 auto;
+}
+img.divider{
+    display: block;
+    margin: 30pt auto 30pt auto;
+    page-break-after: always;
+}
+img.logo-84000{
+    width: 25%;
+}
+
+/* line-groups */
+.line-group .line{
+    padding-left: 22pt;
+    text-indent: -22pt;
+    line-height: 1.5;
+}
+
+/* title pages */
+.half-title,
+.full-title,
+.colophon{
+    padding-top: 20%;
+}
+.full-title h1,
+.full-title h2,
+.half-title h1,
+.half-title h2,
+.full-title p{
+    margin-bottom: 15pt;
+}
+.half-title .logo{
+    display: inline-block;
+    margin: 0 auto;
+    margin-top: 20%;
+}
+.half-title h2,
+.full-title h2,
+.full-title h3,
+.full-title p{
+    font-size: 13pt;
+    font-weight: normal;
+}
+.full-title .translator{
+    padding: 10pt 15pt;
+    background-color: #eee;
+    margin-bottom: 0;
+}
+
+/* imprint */
+.imprint{
+    padding-top: 20%;
+}
+.imprint h5{
+    margin-bottom: 11pt;
+}
+.imprint .logo{
+    display: block;
+    margin: 0 auto;
+    margin-top: 5%;
+    margin-bottom: 22px;
+}
+
+/* contents */
+.contents a{
+    text-decoration: none;
+}
+.contents > ol{
+    list-style-type: disc;
+}
+.contents > ol ol{
+    list-style-type: circle;
+}
+.contents li{
+    margin-top: 5pt;
+}
+
+/* Abbreviations */
+#abbreviations table{
+    margin-top: 8pt;
+    margin-bottom: 8pt;
+}
+#abbreviations table th{
+    padding-right: 8pt;
+    vertical-align: top;
+    font-weight: normal;
+    text-align: left;
+}
+
+/* Bibliography */
+#bibliography p{
+    padding-left: 2em;
+    text-indent: -2em;
+    margin-top: 14pt;
+}
+
+/* Glossary */
+.glossary-item{
+    margin-bottom: 20pt;
+}
+.glossary-item .term{
+    margin-top: 0pt;
+}
+.glossary-item .alternative{
+    display: none;
+}
