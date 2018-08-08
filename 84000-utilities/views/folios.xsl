@@ -48,8 +48,8 @@
                                 <thead>
                                     <tr>
                                         <th>Toh</th>
-                                        <th>Folios</th>
                                         <th>Title</th>
+                                        <th>Folios</th>
                                         <th>Start</th>
                                         <th>End</th>
                                     </tr>
@@ -59,19 +59,18 @@
                                         <xsl:sort select="number(m:toh/@number)"/>
                                         <xsl:sort select="m:toh/m:base"/>
                                         <tr>
-                                            <td rowspan="2">
+                                            <td>
                                                 <xsl:value-of select="m:toh/m:base"/>
-                                            </td>
-                                            <td class="nowrap">
-                                                <a class="collapsed small-plain" role="button" data-toggle="collapse" aria-expanded="false">
-                                                    <xsl:attribute name="href" select="concat('#translation-folios-', position())"/>
-                                                    <xsl:attribute name="aria-controls" select="concat('translation-folios-', position())"/>
-                                                    <i class="fa fa-chevron-down"/>
-                                                    <xsl:value-of select="concat(' ', count(m:folios/m:folio), ' folios')"/>
-                                                </a>
                                             </td>
                                             <td>
                                                 <xsl:value-of select="m:titles/m:title[@xml:lang eq 'en']"/>
+                                            </td>
+                                            <td class="nowrap">
+                                                <a class="collapsed underline" role="button" data-toggle="collapse" aria-expanded="false">
+                                                    <xsl:attribute name="href" select="concat('#translation-folios-', position())"/>
+                                                    <xsl:attribute name="aria-controls" select="concat('translation-folios-', position())"/>
+                                                    <xsl:value-of select="count(m:folios/m:folio)"/>
+                                                </a>
                                             </td>
                                             <td>
                                                 <xsl:value-of select="concat('Vol. ', m:location/m:start/@volume, ', page ', m:location/m:start/@page)"/>
@@ -81,20 +80,36 @@
                                             </td>
                                         </tr>
                                         <tr class="sub">
-                                            <td colspan="3">
+                                            <td colspan="5">
                                                 <div class="collapse">
                                                     <xsl:attribute name="id" select="concat('translation-folios-', position())"/>
-                                                    <ul class="list-unstyled">
-                                                        <xsl:for-each select="m:folios/m:folio">
-                                                        <li>
-                                                            <xsl:value-of select="concat('Folio ', @page, '.', @side)"/> - 
-                                                            <a target="_blank">
-                                                                <xsl:attribute name="href" select="m:url[@response eq 'xml']"/>
-                                                                <xsl:value-of select="m:url[@response eq 'xml']"/>
-                                                            </a>
-                                                        </li>
-                                                        </xsl:for-each>
-                                                    </ul>
+                                                    <table class="table table-responsive">
+                                                        <thead>
+                                                            <tr>
+                                                                <th>#</th>
+                                                                <th>Folio</th>
+                                                                <th>XML</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            <xsl:for-each select="m:folios/m:folio">
+                                                                <tr>
+                                                                    <td class="text-muted">
+                                                                        <xsl:value-of select="position()"/>.
+                                                                    </td>
+                                                                    <td>
+                                                                        <xsl:value-of select="concat(@page, '.', @side)"/> 
+                                                                    </td>
+                                                                    <td>
+                                                                        <a target="_blank">
+                                                                            <xsl:attribute name="href" select="m:url[@response eq 'xml']"/>
+                                                                            <xsl:value-of select="m:url[@response eq 'xml']"/>
+                                                                        </a>
+                                                                    </td>
+                                                                </tr>
+                                                            </xsl:for-each>
+                                                        </tbody>
+                                                    </table>
                                                 </div>
                                             </td>
                                         </tr>

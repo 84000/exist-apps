@@ -52,15 +52,22 @@ declare function section:about($tei as node()) as node() {
     
 };
 
-declare function section:descendants($tei as node(), $nest as xs:integer) as node() {
+declare function section:descendants($tei as node(), $nest as xs:integer, $include-text-stats as xs:boolean) as node() {
     let $id := upper-case(tei-content:id($tei))
     return
-        <child xmlns="http://read.84000.co/ns/1.0" id="{ $id }" nesting="{ $nest }">
+        <child xmlns="http://read.84000.co/ns/1.0" id="{ $id }" nesting="{ $nest }" uri="{ base-uri($tei) }">
             <title xml:lang="en">{ tei-content:title($tei) }</title>
             {
+                if($include-text-stats) then
+                    section:text-stats($tei)
+                else
+                    ()
+            }
+            {
                 for $child-section in $section:sections//tei:TEI[tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl/tei:idno/@parent-id eq $id]
+                order by xs:integer($child-section/tei:teiHeader/tei:fileDesc/tei:sourceDesc/@sort-index) ascending
                 return
-                    section:descendants($child-section, $nest + 1)
+                    section:descendants($child-section, $nest + 1, $include-text-stats)
             }
         </child>
 };
@@ -69,8 +76,8 @@ declare function section:text-stats($tei as node()) as node() {
     
     let $id := upper-case(tei-content:id($tei))
     let $children-fileDesc := $section:translations//tei:fileDesc[tei:sourceDesc/tei:bibl/tei:idno/@parent-id eq $id]
-    let $descendants :=  section:descendants($tei, 1)
-    let $descendants-ids := $descendants//@id
+    let $descendants :=  section:descendants($tei, 1, false())
+    let $descendants-ids := $descendants//m:child/@id
     let $descendants-fileDesc := $section:translations//tei:fileDesc[tei:sourceDesc/tei:bibl/tei:idno/@parent-id = $descendants-ids](::)
     
     return 
@@ -109,29 +116,28 @@ declare function section:text-stats($tei as node()) as node() {
         
 };
 
-declare function section:texts($section-id as xs:string, $published-only as xs:string) as node() {
+declare function section:texts($section-id as xs:string, $published-only as xs:boolean) as node() {
     
     let $translations := 
-        if($published-only eq '1') then
+        if($published-only) then
             $section:translations//tei:TEI[tei:teiHeader/tei:fileDesc[tei:publicationStmt/@status = $common:published-statuses][tei:sourceDesc/tei:bibl[tei:idno/@parent-id eq upper-case($section-id)]]]
         else
             $section:translations//tei:TEI[tei:teiHeader/tei:fileDesc[tei:sourceDesc/tei:bibl[tei:idno/@parent-id eq upper-case($section-id)]]]
     
     return
-        <texts xmlns="http://read.84000.co/ns/1.0" published-only="{ $published-only }">
+        <texts xmlns="http://read.84000.co/ns/1.0" published-only="{ if($published-only) then '1' else '0' }">
         {
             for $tei in $translations
-                let $resource-id := $tei//tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl[tei:idno/@parent-id eq upper-case($section-id)]/@key
-                        
-            return
-                <text resource-id="{ $resource-id }" status="{ tei-content:translation-status($tei) }">
-                    { tei-content:source($tei, $resource-id) }
-                    { translation:toh($tei, $resource-id) }
-                    { translation:titles($tei) }
-                    { translation:title-variants($tei) }
-                    { translation:downloads($tei, $resource-id) }
-                    { translation:summary($tei) }
-                </text>
+                for $resource-id in $tei//tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl[tei:idno/@parent-id eq upper-case($section-id)]/@key
+                return
+                    <text resource-id="{ $resource-id }" status="{ tei-content:translation-status($tei) }" uri="{ base-uri($tei) }">
+                        { tei-content:source($tei, $resource-id) }
+                        { translation:toh($tei, $resource-id) }
+                        { translation:titles($tei) }
+                        { translation:title-variants($tei) }
+                        { translation:downloads($tei, $resource-id) }
+                        { translation:summary($tei) }
+                    </text>
             
         }
         </texts>
@@ -160,7 +166,7 @@ declare function section:all-translated-texts() as node() {
         
 };
 
-declare function section:sections($id as xs:string, $published-only as xs:string) as node() {
+declare function section:sections($id as xs:string, $published-only as xs:boolean) as node() {
     
     <sections xmlns="http://read.84000.co/ns/1.0">
     {
@@ -172,7 +178,7 @@ declare function section:sections($id as xs:string, $published-only as xs:string
     
 };
 
-declare function section:section($tei as node(), $published-only as xs:string) as node(){
+declare function section:section($tei as node(), $published-only as xs:boolean) as node(){
 
     let $id := tei-content:id($tei)
     let $type := $tei//tei:teiHeader/tei:fileDesc/@type

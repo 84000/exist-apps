@@ -432,4 +432,28 @@
         </div>
     </xsl:template>
     
+    <!-- Translation status -->
+    <xsl:template name="translation-status">
+        <xsl:param name="status"/>
+        <div class="translation-status">
+            <xsl:choose>
+                <xsl:when test="$status eq '1'">
+                    <div class="label label-success visible-xs-inline">
+                        Translated
+                    </div>
+                </xsl:when>
+                <xsl:when test="$status gt ''">
+                    <div class="label label-warning">
+                        In progress
+                    </div>
+                </xsl:when>
+                <xsl:otherwise>
+                    <div class="label label-default">
+                        Not Started
+                    </div>
+                </xsl:otherwise>
+            </xsl:choose>
+        </div>
+    </xsl:template>
+    
 </xsl:stylesheet>

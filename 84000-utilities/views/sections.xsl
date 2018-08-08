@@ -39,47 +39,121 @@
                                 <thead>
                                     <tr>
                                         <th>Section</th>
-                                        <th>Path</th>
-                                        <th>ID</th>
-                                        <th>TEI</th>
-                                        <th>XML</th>
-                                        <th>HTML</th>
+                                        <th>Texts</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     <xsl:for-each select="//m:child">
                                         <tr>
                                             <td>
-                                                <span class="center-vertical">
-                                                    <span class="nowrap">
-                                                        <xsl:for-each select="1 to @nesting"> — </xsl:for-each>
-                                                    </span>
-                                                    <span>
-                                                        <xsl:value-of select="m:title/text()"/>
-                                                    </span>
-                                                </span>
+                                                <xsl:call-template name="indent">
+                                                    <xsl:with-param name="counter" select="1"/>
+                                                    <xsl:with-param name="finish" select="xs:integer(@nesting)"/>
+                                                    <xsl:with-param name="content">
+                                                        <xsl:value-of select="m:title"/>
+                                                        <ul class="list-inline">
+                                                            <li>
+                                                                <a>
+                                                                    <xsl:attribute name="href" select="concat($reading-room-path ,'/section/', @id, '.tei')"/>
+                                                                    <xsl:attribute name="target" select="concat(@id, '.tei')"/>
+                                                                    <span class="label label-warning">
+                                                                        <xsl:value-of select="concat(@id, '.tei / live')"/>
+                                                                    </span>
+                                                                </a>
+                                                            </li>
+                                                            <li>
+                                                                <a>
+                                                                    <xsl:attribute name="href" select="concat($reading-room-path ,'/section/', @id, '.xml')"/>
+                                                                    <xsl:attribute name="target" select="concat(@id, '.xml')"/>
+                                                                    <span class="label label-warning">
+                                                                        <xsl:value-of select="concat(@id, '.xml / live')"/>
+                                                                    </span>
+                                                                </a>
+                                                            </li>
+                                                            <li>
+                                                                <a>
+                                                                    <xsl:attribute name="href" select="concat($reading-room-path ,'/section/', @id, '.html')"/>
+                                                                    <xsl:attribute name="target" select="concat(@id, '.html')"/>
+                                                                    <span class="label label-warning">
+                                                                        <xsl:value-of select="concat(@id, '.html / live')"/>
+                                                                    </span>
+                                                                </a>
+                                                            </li>
+                                                        </ul>
+                                                        <div class="small">
+                                                            File: 
+                                                            <a class="break">
+                                                                <xsl:attribute name="href" select="concat($reading-room-path ,'/section/', @id, '.tei')"/>
+                                                                <xsl:attribute name="target" select="concat(@id, '.tei')"/>
+                                                                <xsl:value-of select="@uri"/>
+                                                            </a>
+                                                        </div>
+                                                    </xsl:with-param>
+                                                </xsl:call-template>
                                             </td>
-                                            <td>section/</td>
+                                            
                                             <td>
-                                                <xsl:value-of select="@id"/>
+                                                <div class="row">
+                                                    <div class="col-sm-4">
+                                                        <span class="small text-muted nowrap">In this section: </span>
+                                                        <br/>
+                                                        <xsl:choose>
+                                                            <xsl:when test="xs:integer(m:text-stats/m:stat[@type eq 'count-text-children']/text()) gt 0">
+                                                                <xsl:value-of select="fn:format-number(xs:integer(m:text-stats/m:stat[@type eq 'count-text-children']),'#,##0')"/>
+                                                                <a class="small underline" target="_self">
+                                                                    <xsl:attribute name="href" select="concat('section-texts.html?section-id=', fn:encode-for-uri(@id))"/>
+                                                                    <xsl:attribute name="data-ajax-target" select="concat('#section-texts-', position())"/>
+                                                                    <xsl:attribute name="aria-controls" select="concat('section-texts-', position())"/>
+                                                                    show
+                                                                </a>
+                                                            </xsl:when>
+                                                            <xsl:otherwise>-</xsl:otherwise>
+                                                        </xsl:choose>
+                                                    </div>
+                                                    <div class="col-sm-4">
+                                                        <span class="small text-muted nowrap">Published: </span>
+                                                        <br/>
+                                                        <xsl:choose>
+                                                            <xsl:when test="xs:integer(m:text-stats/m:stat[@type eq 'count-text-children']/text()) gt 0">
+                                                                <xsl:value-of select="fn:format-number(xs:integer(m:text-stats/m:stat[@type eq 'count-published-children']),'#,##0')"/>
+                                                            </xsl:when>
+                                                            <xsl:otherwise>-</xsl:otherwise>
+                                                        </xsl:choose>
+                                                    </div>
+                                                    <div class="col-sm-4">
+                                                        <span class="small text-muted nowrap">In-progress: </span>
+                                                        <br/>
+                                                        <xsl:choose>
+                                                            <xsl:when test="xs:integer(m:text-stats/m:stat[@type eq 'count-text-children']/text()) gt 0">
+                                                                <xsl:value-of select="fn:format-number(xs:integer(m:text-stats/m:stat[@type eq 'count-in-progress-children']),'#,##0')"/>
+                                                            </xsl:when>
+                                                            <xsl:otherwise>-</xsl:otherwise>
+                                                        </xsl:choose>
+                                                    </div>
+                                                    <div class="col-sm-4">
+                                                        <span class="small text-muted nowrap">Under this section: </span>
+                                                        <br/>
+                                                        <xsl:value-of select="fn:format-number(xs:integer(m:text-stats/m:stat[@type eq 'count-text-descendants']),'#,##0')"/>
+                                                    </div>
+                                                    <div class="col-sm-4">
+                                                        <span class="small text-muted nowrap">Published: </span>
+                                                        <br/>
+                                                        <xsl:value-of select="fn:format-number(xs:integer(m:text-stats/m:stat[@type eq 'count-published-descendants']),'#,##0')"/>
+                                                    </div>
+                                                    <div class="col-sm-4">
+                                                        <span class="small text-muted nowrap">In-progress: </span>
+                                                        <br/>
+                                                        <xsl:value-of select="fn:format-number(xs:integer(m:text-stats/m:stat[@type eq 'count-in-progress-descendants']),'#,##0')"/>
+                                                    </div>
+                                                </div>
                                             </td>
-                                            <td>
-                                                <a target="_blank">
-                                                    <xsl:attribute name="href" select="concat($reading-room-path, '/section/', @id, '.tei')"/>
-                                                    .tei
-                                                </a>
-                                            </td>
-                                            <td>
-                                                <a target="_blank">
-                                                    <xsl:attribute name="href" select="concat($reading-room-path, '/section/', @id, '.xml')"/>
-                                                    .xml
-                                                </a>
-                                            </td>
-                                            <td>
-                                                <a target="_blank">
-                                                    <xsl:attribute name="href" select="concat($reading-room-path, '/section/', @id, '.html')"/>
-                                                    .html
-                                                </a>
+                                        </tr>
+                                        <tr class="sub">
+                                            <td colspan="2">
+                                                <div class="collapse">
+                                                    <xsl:attribute name="id" select="concat('section-texts-', position())"/>
+                                                    Texts
+                                                </div>
                                             </td>
                                         </tr>
                                     </xsl:for-each>
@@ -101,5 +175,25 @@
             <xsl:with-param name="content" select="$content"/>
         </xsl:call-template>
         
+    </xsl:template>
+    
+    <xsl:template name="indent">
+        <xsl:param name="counter"/>
+        <xsl:param name="finish"/>
+        <xsl:param name="content"/>
+        <span class="indent">
+            <xsl:choose>
+                <xsl:when test="$counter eq $finish">
+                    <xsl:copy-of select="$content"/>
+                </xsl:when>
+                <xsl:otherwise>
+                    <xsl:call-template name="indent">
+                        <xsl:with-param name="counter" select="$counter + 1"/>
+                        <xsl:with-param name="finish" select="$finish"/>
+                        <xsl:with-param name="content" select="$content"/>
+                    </xsl:call-template>
+                </xsl:otherwise>
+            </xsl:choose>
+        </span>
     </xsl:template>
 </xsl:stylesheet>

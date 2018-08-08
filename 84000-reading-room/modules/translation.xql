@@ -471,7 +471,8 @@ declare function translation:folios($translation as node(), $resource-id as xs:s
                 <folio 
                     toh="{ $toh/m:base }" 
                     page="{ $page }" 
-                    side="{ $side }">
+                    side="{ $side }"
+                    id="{ $folio-ref }">
                     <url response="xml">
                     {
                         concat($common:environment/m:url[@id eq 'reading-room']/text(),'/translation/', $toh/@key, '.xml?folio=', $page, '.', $side)

@@ -67,7 +67,7 @@
                                                 <xsl:value-of select="@first"/>
                                             </td>
                                             <td class="nowrap">
-                                                <xsl:value-of select="@count"/>
+                                                <xsl:value-of select="format-number(@count, '#,###')"/>
                                             </td>
                                         </tr>
                                     </xsl:for-each>

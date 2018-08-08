@@ -3,7 +3,8 @@
     <!-- 
         Converts OxGarage TEI output to 84000 TEI
         .........................................
-        
+        THIS ONE IS NOT USED!!!!!
+        Now use the one in 84000-import-data/xsl
     -->
 
     <xsl:output method="xml" encoding="UTF-8"/>
@@ -18,7 +19,7 @@
                         <title type="mainTitle" xml:lang="bo">
                             <xsl:value-of select="normalize-space(data(//tei:text/tei:body/tei:p[1]))"/>
                         </title>
-                        <title type="mainTitle" xml:lang="eng">
+                        <title type="mainTitle" xml:lang="en">
                             <xsl:value-of select="normalize-space(data(//tei:text/tei:body/tei:p[2]))"/>
                         </title>
                         <title type="mainTitle" xml:lang="Sa-Ltn">
@@ -30,7 +31,7 @@
                         <title type="longTitle" xml:lang="Bo-Ltn">
                             <xsl:value-of select="normalize-space(data(//tei:text/tei:body/tei:p[5]))"/>
                         </title>
-                        <title type="longTitle" xml:lang="eng">
+                        <title type="longTitle" xml:lang="en">
                             <xsl:value-of select="normalize-space(data(//tei:text/tei:body/tei:p[6]))"/>
                         </title>
                         <title type="longTitle" xml:lang="Sa-Ltn">
@@ -101,8 +102,8 @@
                     </div>
                     <div type="introduction">
                         <head type="introduction">Introduction</head>
-                        
-                        <!--Need this script incase the translator has paragraphs of introduction before the first subsection.-->
+
+                        <!--Need this part of the script incase the translator has paragraphs of introduction before the first subsection.-->
                         <xsl:for-each select="//tei:text/tei:body/tei:div/tei:p[preceding-sibling::tei:head[1][contains(., 'Introduction')]]">
                             <xsl:if test="normalize-space(.)">
                                 <milestone unit="chunk"/>
@@ -111,7 +112,7 @@
                                 </p>
                             </xsl:if>
                         </xsl:for-each>
-                        
+
                         <xsl:for-each select="//tei:text/tei:body/tei:div/tei:div[preceding-sibling::tei:head[1][contains(., 'Introduction')]]">
                             <div type="section">
                                 <xsl:for-each select="tei:p | tei:head">
@@ -131,80 +132,126 @@
                         </xsl:for-each>
                     </div>
                 </front>
-                <body>           
+                <body>
                     <div type="translation">
-                        <head type="translation">
-                            The Translation
-                        </head>
+                        <head type="translation"> The Translation </head>
                         <head type="titleHon">
                             <xsl:value-of select="normalize-space(data(//tei:text/tei:body/tei:div/tei:p[1][preceding-sibling::tei:head[1][contains(., 'The Translation')]]))"/>
                         </head>
                         <head type="titleMain">
                             <xsl:value-of select="normalize-space(data(//tei:text/tei:body/tei:div/tei:p[2][preceding-sibling::tei:head[1][contains(., 'The Translation')]]))"/>
                         </head>
-                        
-                    <!--Need this incase there is initial text before the first chapter begins, usually homage sometimes with endnote. 
+
+                        <!--Need this incase there is initial text before the first chapter begins, usually homage sometimes with endnote. 
                     This will duplicate the titles, but that is easy to fix and preferable to losing important data. Is there a way to
-                    have the "for each" command skip the first two "body/div/p[1]" and "body/div/p[2]" and begin on ...p[3]?-->    
-                    <xsl:for-each select="//tei:text/tei:body/tei:div/tei:p[preceding-sibling::tei:head[1][contains(., 'The Translation')]]">
-                        <xsl:if test="normalize-space(.)">
-                            <milestone unit="chunk"/>
-                            <p>
-                                <xsl:apply-templates select="."/>
-                            </p>
-                        </xsl:if>
-                    </xsl:for-each>
-                    
-                    <xsl:for-each select="//tei:text/tei:body/tei:div/tei:div[preceding-sibling::tei:head[1][contains(., 'The Translation')]]">
-                        <div>
-                            <xsl:for-each select="tei:p | tei:head">
-                                <!--<xsl:if test="self::tei:head and contains(., 'Main Section')">
-                                    <xsl:attribute name="type" select="'translation'"/>
-                                    <head type="translation">The Translation</head>
-                                    <head type="titleHon"/>
-                                    <head type="titleMain"/>
-                                </xsl:if>-->
-                                <xsl:if test="self::tei:head and contains(., 'Colophon')">
-                                    <xsl:attribute name="type" select="'colophon'"/>
-                                </xsl:if>
-                                <xsl:if test="self::tei:p and normalize-space(.)">
-                                    <milestone unit="chunk"/>
-                                    <p>
-                                        <xsl:apply-templates select="."/>
-                                    </p>
-                                </xsl:if>
-                                <xsl:if test="self::tei:head and normalize-space(.)">
-                                    <head>
-                                        <xsl:apply-templates select="."/>
-                                    </head>
-                                </xsl:if>
-                            </xsl:for-each>
-                        </div>
-                    </xsl:for-each>
-                    <div type="abbreviations">
-                        <head type="abbreviations">Abbreviations</head>
-                        <xsl:for-each select="//tei:text/tei:body/tei:div/tei:p[parent::*/tei:head[contains(text(), 'Abbreviations')]]">
+                    have the "for each" command skip the first two "body/div/p[1]" and "body/div/p[2]" and begin on ...p[3]?-->
+                        <xsl:for-each select="//tei:text/tei:body/tei:div/tei:p[preceding-sibling::tei:head[1][contains(., 'The Translation')]]">
                             <xsl:if test="normalize-space(.)">
+                                <milestone unit="chunk"/>
                                 <p>
                                     <xsl:apply-templates select="."/>
                                 </p>
                             </xsl:if>
                         </xsl:for-each>
+
+                        <xsl:for-each select="//tei:text/tei:body/tei:div/tei:div[preceding-sibling::tei:head[1][contains(., 'The Translation')]]">
+                            <div>
+                                <xsl:for-each select="tei:p | tei:head">
+                                    <!--<xsl:if test="self::tei:head and contains(., 'Main Section')">
+                                    <xsl:attribute name="type" select="'translation'"/>
+                                    <head type="translation">The Translation</head>
+                                    <head type="titleHon"/>
+                                    <head type="titleMain"/>
+                                </xsl:if>-->
+                                    <xsl:if test="self::tei:head and contains(., 'Colophon')">
+                                        <xsl:attribute name="type" select="'colophon'"/>
+                                    </xsl:if>
+                                    <xsl:if test="self::tei:p and normalize-space(.)">
+                                        <milestone unit="chunk"/>
+                                        <p>
+                                            <xsl:apply-templates select="."/>
+                                        </p>
+                                    </xsl:if>
+                                    <xsl:if test="self::tei:head and normalize-space(.)">
+                                        <head>
+                                            <xsl:apply-templates select="."/>
+                                        </head>
+                                    </xsl:if>
+                                </xsl:for-each>
+                            </div>
+                        </xsl:for-each>
+                    </div>
+                </body>
+                <back>
+                    <div type="abbreviations">
+                        <head type="abbreviations">Abbreviations</head>
+                        <list type="abbreviations">
+                            <fix/> 
+                           <xsl:comment> In this section, markup editors need to move the expanded form of the
+                            abbreviation out of the "abbr" element and put it into the "expan" element. Delete
+                           this comment and the "fix" tag when you are done.</xsl:comment>
+                            <xsl:for-each select="//tei:text/tei:body/tei:div/tei:p[parent::*/tei:head[contains(text(), 'Abbreviations')]]">
+                                <xsl:if test="normalize-space(.)">
+                                    <item>
+                                        <abbr>
+                                        <xsl:apply-templates select="."/>
+                                    </abbr>
+                                    <expan/>
+                                    </item>
+                                </xsl:if>
+                            </xsl:for-each>
+                        </list>
                     </div>
                     <div type="listBibl">
                         <head type="listBibl">Bibliography</head>
-                        <xsl:for-each select="//tei:text/tei:body/tei:div/tei:div[preceding-sibling::tei:head[1][contains(., 'Bibliography')]]/tei:p">
+                        
+                        <!--Need this part of the script incase the translator has paragraphs of before the first subsection.-->
+                        <xsl:for-each select="//tei:text/tei:body/tei:div/tei:p[preceding-sibling::tei:head[1][contains(., 'Bibliography')]]">
                             <xsl:if test="normalize-space(.)">
-                                <bibl>
+                                <milestone unit="chunk"/>
+                                <p>
                                     <xsl:apply-templates select="."/>
-                                </bibl>
+                                </p>
                             </xsl:if>
                         </xsl:for-each>
+                        
+                        <xsl:for-each select="//tei:text/tei:body/tei:div/tei:div[preceding-sibling::tei:head[1][contains(., 'Bibliography')]]">
+                            <div type="section">
+                                <xsl:for-each select="tei:p | tei:head">
+                                    <xsl:if test="self::tei:p and normalize-space(.)">
+                                        <bibl>
+                                            <xsl:apply-templates select="."/>
+                                        </bibl>
+                                    </xsl:if>
+                                    <xsl:if test="self::tei:head and normalize-space(.)">
+                                        <head>
+                                            <xsl:apply-templates select="."/>
+                                        </head>
+                                    </xsl:if>
+                                </xsl:for-each>
+                            </div>
+                        </xsl:for-each>
                     </div>
-                    </div>
-                </body>
+                </back>
             </text>
         </TEI>
+    </xsl:template>
+
+    <xsl:template match="tei:p[@rend eq 'Verse']">
+        <milestone xmlns="http://www.tei-c.org/ns/1.0" unit="chunk"/>
+        <lg xmlns="http://www.tei-c.org/ns/1.0">
+            <xsl:call-template name="groupedLines"/>
+        </lg>
+    </xsl:template>
+    
+    <xsl:key name="lineGroupId" match="tei:p[@rend eq 'Verse']/node()" use="if(following-sibling::tei:lb[1]) then generate-id(following-sibling::tei:lb[1]) else 0"/>
+    
+    <xsl:template name="groupedLines">
+        <xsl:for-each select="text()[1]|tei:lb">
+            <l xmlns="http://www.tei-c.org/ns/1.0">
+                <xsl:apply-templates select="key('lineGroupId', if(following-sibling::tei:lb[1]) then generate-id(following-sibling::tei:lb[1]) else 0)[not(self::tei:lb)]"/>
+            </l>
+        </xsl:for-each>
     </xsl:template>
 
     <xsl:template match="tei:hi[@rend = 'Title-English']">

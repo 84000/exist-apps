@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<meta xmlns="http://exist-db.org/xquery/repo">
+    <description>84000 Translation Memory</description>
+    <author>84000 Translating the words of the Buddha</author>
+    <website>http://84000.co</website>
+    <status>alpha</status>
+    <license>GNU-LGPL</license>
+    <copyright>true</copyright>
+    <type>application</type>
+    <target>84000-translation-memory</target>
+    <prepare>pre-install.xql</prepare>
+    <finish/>
+    <permissions user="admin" group="translation-memory" mode="rwxr-x---"/>
+</meta>

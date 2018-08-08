@@ -14,7 +14,7 @@ import module namespace functx="http://www.functx.com";
 
 declare function translations:kangyur-tei() as node()* {
     let $root := tei-content:tei('O1JC11494', 'section') (: Kangyur :)
-    let $descendants := section:descendants($root, 1)
+    let $descendants := section:descendants($root, 1, false())
     let $descendants-ids := $descendants//@id
     return
         collection($common:translations-path)//tei:TEI[tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl/tei:idno/@parent-id = $descendants-ids]
@@ -36,9 +36,9 @@ declare function translations:file($translation as node()) as node() {
 declare function translations:files() as node() {
     <translations xmlns="http://read.84000.co/ns/1.0">
     {
-     for $translation in collection($common:translations-path)//tei:TEI[tei:teiHeader/tei:fileDesc/tei:publicationStmt/@status = $common:published-statuses]
-     return
-        translations:file($translation)
+        for $translation in collection($common:translations-path)//tei:TEI[tei:teiHeader/tei:fileDesc/tei:publicationStmt/@status = $common:published-statuses]
+        return
+            translations:file($translation)
     }
     </translations>
 };

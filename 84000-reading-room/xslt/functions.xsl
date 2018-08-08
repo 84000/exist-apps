@@ -102,7 +102,7 @@
                 </xsl:for-each>
                 <li class="disabled">
                     <span>
-                        <xsl:value-of select="concat('of ', $count-records, ' results')"/>
+                        <xsl:value-of select="concat('of ', format-number($count-records, '#,###'), ' results')"/>
                     </span>
                 </li>
             </ul>

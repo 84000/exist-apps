@@ -117,4 +117,4 @@ declare variable $config:word-converter as xs:anyURI := xs:anyURI("http://oxgara
  : vanilla TEI into 84000-compliant TEI. Users can install their own stylesheet
  : in the database and point to it here.
  :)
-declare variable $config:oxGto84000-stylesheet as xs:string := string-join(($config:app-root, 'resources', 'xsl', 'oxGto84000.xsl'), '/');
+declare variable $config:oxGto84000-stylesheet as xs:string := string-join(($config:data-root, 'xsl', 'oxGto84000.xsl'), '/');

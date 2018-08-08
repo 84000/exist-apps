@@ -152,7 +152,7 @@
                                                     <a>
                                                         <xsl:attribute name="href" select="concat($reading-room-path ,'/translation/', @id, '.tei')"/>
                                                         <xsl:attribute name="target" select="concat(@id, '.tei')"/>
-                                                        <xsl:value-of select="@fileName"/>
+                                                        <xsl:value-of select="@uri"/>
                                                     </a>
                                                 </span>
                                             </td>

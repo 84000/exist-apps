@@ -367,25 +367,9 @@
                                                     <div class="col-sm-4 col-md-3 position-static">
                                                         
                                                         <xsl:if test="$section-id ne 'all-translated'">
-                                                            <div class="translation-status">
-                                                                <xsl:choose>
-                                                                    <xsl:when test="@status eq '1'">
-                                                                        <div class="label label-success visible-xs-inline">
-                                                                            Translated
-                                                                        </div>
-                                                                    </xsl:when>
-                                                                    <xsl:when test="@status gt ''">
-                                                                        <div class="label label-warning">
-                                                                            In progress
-                                                                        </div>
-                                                                    </xsl:when>
-                                                                    <xsl:otherwise>
-                                                                        <div class="label label-default">
-                                                                            Not Started
-                                                                        </div>
-                                                                    </xsl:otherwise>
-                                                                </xsl:choose>
-                                                            </div>
+                                                            <xsl:call-template name="translation-status">
+                                                                <xsl:with-param name="status" select="@status"/>
+                                                            </xsl:call-template>
                                                         </xsl:if>
                                                         
                                                         <xsl:if test="@status eq '1'">

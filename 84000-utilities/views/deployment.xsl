@@ -37,7 +37,7 @@
                         <div class="tab-content">
                             
                             <p class="text-muted text-center small">
-                                This function commits a new version of the Reading Room app to the 
+                                This function commits updates of the 84000 eXist apps to the 
                                 <a target="_blank">
                                     <xsl:attribute name="href" select="//m:view-repo-url/text()"/>
                                     GitHub repository</a>.
