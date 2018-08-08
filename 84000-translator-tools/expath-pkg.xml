@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<package xmlns="http://expath.org/ns/pkg" name="http://translator-tools.84000.co" abbrev="84000-translator-tools" version="1.0.0" spec="1.0">
+    <title>84000 Translator Tools</title>
+    <dependency package="http://read.84000.co/reading-room"/>
+    <dependency package="http://read.84000.co/data"/>
+</package>

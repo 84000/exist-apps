@@ -72,7 +72,7 @@ declare function deployment:push-app($action as xs:string, $commit-msg as xs:str
     let $sync :=
         if($action eq 'sync' and $sync-path) then
             (
-                for $collection in ('84000-import','84000-reading-room','84000-utilities','84000-translation-memory'(:,'84000-operations','84000-translator-tools':))
+                for $collection in ('84000-import','84000-reading-room','84000-utilities','84000-translation-memory','84000-translator-tools'(:,'84000-operations':))
                 return
                    file:sync(
                        concat('/db/apps/', $collection), 

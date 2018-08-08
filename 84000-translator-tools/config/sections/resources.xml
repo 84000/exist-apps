@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<article>
+    
+    <h1>Resources for Translators</h1>
+    
+    <div class="row">
+        
+        <div class="col-sm-12">
+            
+            <div class="panel-group" role="tablist" aria-multiselectable="true" id="resources-accordion">
+                
+                <div class="panel panel-default no-shadow">
+                    <div class="panel-heading" role="tab" id="panelHeadingLinks">
+                        <h3 class="panel-title">
+                            <a role="button" data-toggle="collapse" href="#panelLinks" aria-expanded="true" aria-controls="panelLinks" data-parent="#resources-accordion">
+                                Links
+                            </a>
+                        </h3>
+                    </div>
+                    <div id="panelLinks" class="panel-collapse collapse" role="tabpanel" aria-labelledby="panelHeadingLinks">
+                        <div class="panel-body">
+                            
+                            <ul>
+                                <li>
+                                    <a href="https://github.com/Esukhia/derge-kangyur" target="ekangyur">eKangyur</a>: A digital Kangyur prepared by Esukhia. To access text files, first select the folder named "derge-kangyur-tags." File numbers correspond to volumes of the Degé Parpü (sde dge par phud) edition of the Kangyur. After selecting a volume click the "View Raw" link. A detailed explanation of the eKangyur version can be found on the home page or by opening the README.md link.
+                                </li>
+                                <li>
+                                    <a href="http://www.digitaltibetan.org/index.php/Digital_Tibetan" target="digitaltibetan">Digital Tibetan</a>: A fantastic support wiki for working with Tibetan digitally, with links to resources and tools along with up-to-date news on the latest developments.</li>
+                                <li>
+                                    <a href="http://resources.84000-translate.org/" target="resources">Restricted Resources for 84000 Translators</a>
+                                </li>
+                                <li>
+                                    <a href="http://84000.co/resources/other-resources/" target="other-resources">Other Web Resources</a>
+                                </li>
+                                <li>
+                                    <a href="https://www.tbrc.org/#!specials/resources" target="tbrc-resources">Resources for Translators at TBRC</a>
+                                </li>
+                                <li>
+                                    <a href="http://www.buddism.ru/ocr/" target="buddism-ocr">Tibetan OCR</a>: Convert PDF, TIFF, or JPG images into editable and searchable text. Also supports Sanskrit.
+                                </li>
+                            </ul>
+                            
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="panel panel-default no-shadow">
+                    <div class="panel-heading" role="tab" id="panelHeadingGuidelines">
+                        <h3 class="panel-title">
+                            <a role="button" data-toggle="collapse" href="#panelGuidelines" aria-expanded="true" aria-controls="panelGuidelines" data-parent="#resources-accordion">
+                                UPDATED 84000 Translator Guidelines
+                            </a>
+                        </h3>
+                    </div>
+                    <div id="panelGuidelines" class="panel-collapse collapse" role="tabpanel" aria-labelledby="panelHeadingGuidelines">
+                        
+                        <div class="panel-body"/>
+                        
+                        <div class="embed-responsive embed-responsive-16by9">
+                            <iframe src="https://docs.google.com/document/d/e/2PACX-1vQnlm183p8DJoDcOXBZq4Ccdvl5UdPNWdZ4MWq_cJhj33tQ3GOK327uRgIbmBGQbB2FgBf6fBHz9kgF/pub?embedded=true"/>
+                        </div>
+                        
+                    </div>
+                </div>
+                
+                <div class="panel panel-default no-shadow">
+                    <div class="panel-heading" role="tab" id="panelHeadingCritical">
+                        <h3 class="panel-title">
+                            <a role="button" data-toggle="collapse" href="#panelCritical" aria-expanded="true" aria-controls="panelCritical" data-parent="#resources-accordion">
+                                UPDATED 84000 Text Critical Guidelines for Translators
+                            </a>
+                        </h3>
+                    </div>
+                    <div id="panelCritical" class="panel-collapse collapse" role="tabpanel" aria-labelledby="panelHeadingCritical">
+                        
+                        <div class="panel-body">
+                        </div>
+                        
+                        <div class="embed-responsive embed-responsive-16by9">
+                            <iframe src="https://docs.google.com/document/d/e/2PACX-1vQW_vJeZ1aQiyJLJDCvwf1njEz6QmmY3s91RrsuOJUpauXXNY6_JJguNm-0vla7bcaN97n_MdUwaxpJ/pub?embedded=true"/>
+                        </div>
+                        
+                    </div>
+                </div>
+                <div class="panel panel-default no-shadow">
+                    <div class="panel-heading" role="tab" id="panelHeadingChecklist">
+                        <h3 class="panel-title">
+                            <a role="button" data-toggle="collapse" href="#panelChecklist" aria-expanded="true" aria-controls="panelChecklist" data-parent="#resources-accordion">
+                                UPDATED 84000 Guidelines Checklist
+                            </a>
+                        </h3>
+                    </div>
+                    <div id="panelChecklist" class="panel-collapse collapse" role="tabpanel" aria-labelledby="panelHeadingChecklist">
+                        
+                        <div class="panel-body">
+                         </div>
+                        
+                        <div class="embed-responsive embed-responsive-16by9">
+                            <iframe src="https://docs.google.com/document/d/e/2PACX-1vTz52dcxemZ4GvcuFD-Uz6TLcAAkjNZIVhPHQvDpGf7FRW_Ze4id98Ii-Qt-Ubv_F58BVZar1sfJY26/pub?embedded=true"/>
+                        </div>
+                        
+                    </div>
+                </div>
+                
+                <div class="panel panel-default no-shadow">
+                    <div class="panel-heading" role="tab" id="panelHeadingStylesheet">
+                        <h3 class="panel-title">
+                            <a role="button" data-toggle="collapse" href="#panelStylesheet" aria-expanded="true" aria-controls="panelStylesheet" data-parent="#resources-accordion">
+                                Copy Editors' Stylesheet
+                            </a>
+                        </h3>
+                    </div>
+                    <div id="panelStylesheet" class="panel-collapse collapse" role="tabpanel" aria-labelledby="panelHeadingStylesheet">
+                        <div class="panel-body">
+                            
+                            <p>Here is the collaborative stylesheet actively being updated by 84000 copy editors. You may find it helpful in composing a translation, for example in deciding how to spell or hyphenate a term, or in the case of a grammar question.</p>
+                            <p>Scroll down fully to navigate the spreadsheets.</p>
+                            
+                        </div>
+                        
+                        <div class="embed-responsive embed-responsive-16by9">
+                            <iframe src="https://docs.google.com/spreadsheets/d/e/2PACX-1vSQUE00SVOerzEbGxfMZe2FtUCgz4uxIH1j5wzus6S2pbQ3xNSC13q5qFYc763JwS_fyXQuK9JPdnu4/pubhtml?widget=true&amp;headers=false"/>
+                        </div>
+                        
+                    </div>
+                </div>
+                
+            </div>
+        </div>
+    </div>
+</article>

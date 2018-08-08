@@ -11,6 +11,7 @@ declare namespace xhtml="http://www.w3.org/1999/xhtml";
 declare namespace m="http://read.84000.co/ns/1.0";
 
 import module namespace common="http://read.84000.co/common" at "common.xql";
+import module namespace tei-content="http://read.84000.co/tei-content" at "tei-content.xql";
 import module namespace translation="http://read.84000.co/translation" at "translation.xql";
 import module namespace source="http://read.84000.co/source" at "source.xql";
 import module namespace kwic="http://exist-db.org/xquery/kwic";
@@ -60,7 +61,7 @@ declare function search:search($request) {
  
                     let $document-uri := base-uri($text)
                     let $translation := doc($document-uri)
-                    let $translation-id := translation:id($translation)
+                    let $translation-id := tei-content:id($translation)
                     let $expanded := util:expand($text, "expand-xincludes=no")
                     let $node-name := node-name($expanded)
                     (: let $uid := $expanded/@xml:id/string() :)
@@ -72,14 +73,8 @@ declare function search:search($request) {
                         <item>
                             <source 
                                 translation-id="{ $translation-id }" 
-                                url="{
-                                    if($uid) then
-                                        concat($common:environment/m:reading-room-path ,'/translation/', $translation-id, '.html', '#', $uid)
-                                    else
-                                        concat('/translation/', $translation-id, '.html')
-                                }"
-                                type="{ $node-name }"
-                                >
+                                url="{ concat($common:environment/m:url[@id eq 'reading-room']/text() ,'/translation/', $translation-id, '.html', if($uid) then concat('#', $uid) else '') }"
+                                type="{ $node-name }">
                             { 
                                 $translation//tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:title[@type='mainTitle'][lower-case(@xml:lang)='en'][1]/text() 
                             }
@@ -157,7 +152,7 @@ declare function search:translation-search($request as xs:string, $volume-number
                         
                     let $title := 
                         if($translation) then
-                            translation:title($translation)
+                            tei-content:title($translation)
                         else
                             ''
                     let $en := 

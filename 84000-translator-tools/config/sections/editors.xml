@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<article>
+    <h1>84000 Editor Community</h1>
+<p>A place where 84000 editors can collaborate and access resources.</p> 
+    <div class="row">
+        
+        <div class="col-sm-12">
+            
+            <div class="panel-group" role="tablist" aria-multiselectable="true" id="resources-accordion">
+                
+                <div class="panel panel-default no-shadow">
+                    <div class="panel-heading" role="tab" id="panelHeadingTermsandPhrases">
+                        <h3 class="panel-title">
+                            <a role="button" data-toggle="collapse" href="#panelTermsandPhrases" aria-expanded="true" aria-controls="panelTermsandPhrases" data-parent="#resources-accordion">
+                                Terms and Phrases
+                            </a>
+                        </h3>
+                    </div>
+                    <div id="panelTermsandPhrases" class="panel-collapse collapse" role="tabpanel" aria-labelledby="panelHeadingTermsandPhrases">
+                        
+                        <div class="panel-body"/>
+                        <p>Link to spreadsheet <a href="https://docs.google.com/spreadsheets/d/1vwEaTf4YVmGI77vr6mcVLwmZep2uBB0POahTf91Pe2Y/edit#gid=0" target="termsandphrases">here</a>.</p>
+                        <div class="embed-responsive embed-responsive-16by9">
+                            <iframe src="https://docs.google.com/spreadsheets/d/e/2PACX-1vTGFJGbEPI8rELjbGBCyEedxmMgPrpiKdO7KP_PIMRk5riJzoM6gcPCZ2yO3UETvLQG8AW--nJOL50M/pubhtml?widget=true&amp;headers=false"/>
+                        </div>
+                        
+                    </div>
+                </div>
+                
+                <div class="panel panel-default no-shadow">
+                    <div class="panel-heading" role="tab" id="panelHeadingCanonicalGlosses">
+                        <h3 class="panel-title">
+                            <a role="button" data-toggle="collapse" href="#panelCanonicalGlosses" aria-expanded="true" aria-controls="panelCanonicalGlosses" data-parent="#resources-accordion">
+                                Canonical Glosses
+                            </a>
+                        </h3>
+                    </div>
+                    <div id="panelCanonicalGlosses" class="panel-collapse collapse" role="tabpanel" aria-labelledby="panelCanonicalGlosses">
+                        
+                        <div class="panel-body"/>
+                        <p>Link to spreadsheet <a href="https://docs.google.com/spreadsheets/d/1MzzVbYQ_iM_MPUvlZJGECwZkYWu4KG7AM4SBoD-JERY/edit#gid=0" target="glosses">here</a>.</p>
+                        <div class="embed-responsive embed-responsive-16by9">
+                            <iframe src="https://docs.google.com/spreadsheets/d/e/2PACX-1vTU_gyuSDK5x3STTT7QQSvtOcSZRKrGAd9TnKNu31UQU85cvcrfYKC8EwUODpBwPcKmbRlzxtx_FCC8/pubhtml?widget=true&amp;headers=false"/>
+                        </div>
+                        
+                    </div>
+                </div>
+                
+                <div class="panel panel-default no-shadow">
+                    <div class="panel-heading" role="tab" id="panelHeadingModules">
+                        <h3 class="panel-title">
+                            <a role="button" data-toggle="collapse" href="#panelModules" aria-expanded="true" aria-controls="panelModules" data-parent="#resources-accordion">
+                                Modules
+                            </a>
+                        </h3>
+                    </div>
+                    <div id="panelModules" class="panel-collapse collapse" role="tabpanel" aria-labelledby="panelHeadingModules">
+                        
+                        <div class="panel-body">
+                        </div>
+                        <p>Link to spreadsheet <a href="https://docs.google.com/spreadsheets/d/1ZJ0XQI5qcG5wnAgk1rp6Z0F0B0AKl5x-790y40E31xA/edit#gid=0" target="modules">here</a>.</p>
+                        <div class="embed-responsive embed-responsive-16by9">
+                            <iframe src="https://docs.google.com/spreadsheets/d/e/2PACX-1vTwyRzlqn1cMzhIbjLLCnHBn2cug5SDdIiT4gxdd98kpPW6FK2ElrQAyh4LM_-FS8qhnHh1m_7WxFkO/pubhtml?widget=true&amp;headers=false"/>
+                        </div>
+                        
+                    </div>
+                </div>
+                <div class="panel panel-default no-shadow">
+                    <div class="panel-heading" role="tab" id="panelHeadingKnowledge">
+                        <h3 class="panel-title">
+                            <a role="button" data-toggle="collapse" href="#panelKnowledge" aria-expanded="true" aria-controls="panelKnowledge" data-parent="#resources-accordion">
+                                Topics for Knowledge Base Pages
+                            </a>
+                        </h3>
+                    </div>
+                    <div id="panelKnowledge" class="panel-collapse collapse" role="tabpanel" aria-labelledby="panelHeadingKnowledge">
+                        
+                        <div class="panel-body">
+                        </div>
+                        <p>Link to spreadsheet <a href="https://docs.google.com/spreadsheets/d/1VUIsmbeYSb8h9XwpaMRQZAilGYBRikDNGLloj4lhHaI/edit#gid=0" target="knowledge">here</a>.</p>
+                        <div class="embed-responsive embed-responsive-16by9">
+                            <iframe src="https://docs.google.com/spreadsheets/d/e/2PACX-1vTJ_u5eSajk8Kp6dUqn4GkHj0KOma8aOUvyiXYzaw9ZhZeUJPg5-ZxV_ioDsAmCaJIeaHz9NuQ_WVR3/pubhtml?widget=true&amp;headers=false"/>
+                        </div>
+                        
+                    </div>
+                </div>
+                
+                <div class="panel panel-default no-shadow">
+                    <div class="panel-heading" role="tab" id="panelHeadingTropes">
+                        <h3 class="panel-title">
+                            <a role="button" data-toggle="collapse" href="#panelTropes" aria-expanded="true" aria-controls="panelTropes" data-parent="#resources-accordion">
+                                Themes and Tropes
+                            </a>
+                        </h3>
+                    </div>
+                    <div id="panelTropes" class="panel-collapse collapse" role="tabpanel" aria-labelledby="panelHeadingTropes">
+                        <div class="panel-body">
+                            
+                            <p>Link to spreadsheet <a href="https://docs.google.com/spreadsheets/d/1E2mXm2F5Jy8vcd0xyOUV8EdBuJM7t735DB_TA6jEOAc/edit#gid=0" target="tropes">here</a>.</p>
+                            
+                        </div>
+                        
+                        <div class="embed-responsive embed-responsive-16by9">
+                            <iframe src="https://docs.google.com/spreadsheets/d/e/2PACX-1vQqhpK5n6D1xDqOLtCqodU-x7-URalE8IHfZl-nXch1PZvAtOt9hCSQFSQTWsgYRnLvk556T4k5GR27/pubhtml?widget=true&amp;headers=false"/>
+                        </div>
+                        
+                    </div>
+                </div>
+                <div class="panel panel-default no-shadow">
+                    <div class="panel-heading" role="tab" id="panelHeadingIssues">
+                        <h3 class="panel-title">
+                            <a role="button" data-toggle="collapse" href="#panelIssues" aria-expanded="true" aria-controls="panelIssues" data-parent="#resources-accordion">
+                                Methodological Issues
+                            </a>
+                        </h3>
+                    </div>
+                    <div id="panelIssues" class="panel-collapse collapse" role="tabpanel" aria-labelledby="panelHeadingIssues">
+                        <div class="panel-body">
+                            
+                            <p>Link to Google doc <a href="https://docs.google.com/document/d/1Mglc_kFHddpg5pqqfmBxCw7NwrWdl0vSMwSUXDNA0UA/edit" target="issues">here</a>.</p>
+                            
+                        </div>
+                        
+                        <div class="embed-responsive embed-responsive-16by9">
+                            <iframe src="https://docs.google.com/document/d/e/2PACX-1vTiIx-QEhupVKuNDqDiuytCDRgN896OBVFPqeaZ6Eol6rEXnR0u8nWdVyrMzj3WHW47TqRby0o3Gyf3/pub?embedded=true"/>
+                        </div>
+                        
+                    </div>
+                </div>
+                <div class="panel panel-default no-shadow">
+                    <div class="panel-heading" role="tab" id="panelHeadingExcerpts">
+                        <h3 class="panel-title">
+                            <a role="button" data-toggle="collapse" href="#panelExcerpts" aria-expanded="true" aria-controls="panelExcerpts" data-parent="#resources-accordion">
+                                Quotable or Notable Excerpts
+                            </a>
+                        </h3>
+                    </div>
+                    <div id="panelExcerpts" class="panel-collapse collapse" role="tabpanel" aria-labelledby="panelHeadingExcerpts">
+                        <div class="panel-body">
+                            
+                            <p>Link to spreadsheet <a href="https://docs.google.com/spreadsheets/d/1lgD82tG-DRVYXXW2CvBCeBU7nrpU543lsxTtCWoU4LU/edit#gid=0" target="excerpts">here</a>.</p>
+                            
+                        </div>
+                        
+                        <div class="embed-responsive embed-responsive-16by9">
+                            <iframe src="https://docs.google.com/spreadsheets/d/e/2PACX-1vTtYP_hvIZGAicGRssJS4B6U1pFLOnQ6RorYtzIk-9YgIEm6k3xv0nW44VPXsyk9-wAVj6p1-4DzTu6/pubhtml?widget=true&amp;headers=false"/>
+                        </div>
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</article>
