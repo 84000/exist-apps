@@ -12,7 +12,6 @@ import module namespace tei-content="http://read.84000.co/tei-content" at "tei-c
 import module namespace translation="http://read.84000.co/translation" at "translation.xql";
 
 declare variable $section:sections := collection($common:sections-path);
-declare variable $section:translations := collection($common:translations-path);
 
 declare function section:titles($tei) as node() {
     <titles xmlns="http://read.84000.co/ns/1.0">
@@ -75,10 +74,10 @@ declare function section:descendants($tei as node(), $nest as xs:integer, $inclu
 declare function section:text-stats($tei as node()) as node() {
     
     let $id := upper-case(tei-content:id($tei))
-    let $children-fileDesc := $section:translations//tei:fileDesc[tei:sourceDesc/tei:bibl/tei:idno/@parent-id eq $id]
+    let $children-fileDesc := collection($common:translations-path)//tei:fileDesc[tei:sourceDesc/tei:bibl/tei:idno/@parent-id eq $id]
     let $descendants :=  section:descendants($tei, 1, false())
     let $descendants-ids := $descendants//m:child/@id
-    let $descendants-fileDesc := $section:translations//tei:fileDesc[tei:sourceDesc/tei:bibl/tei:idno/@parent-id = $descendants-ids](::)
+    let $descendants-fileDesc := collection($common:translations-path)//tei:fileDesc[tei:sourceDesc/tei:bibl/tei:idno/@parent-id = ($id, $descendants-ids)](::)
     
     return 
         <text-stats xmlns="http://read.84000.co/ns/1.0">
@@ -89,56 +88,84 @@ declare function section:text-stats($tei as node()) as node() {
             </stat>
             <stat type="count-published-children">
             { 
-                count($children-fileDesc[tei:publicationStmt/@status = $common:published-statuses]/tei:sourceDesc/tei:bibl[tei:idno/@parent-id eq $id])
+                count($children-fileDesc[tei:publicationStmt/@status = $tei-content:published-statuses]/tei:sourceDesc/tei:bibl[tei:idno/@parent-id eq $id])
             }
             </stat>
             <stat type="count-in-progress-children">
             { 
-                count($children-fileDesc[tei:publicationStmt/@status = $common:in-progress-statuses]/tei:sourceDesc/tei:bibl[tei:idno/@parent-id eq $id])
+                count($children-fileDesc[tei:publicationStmt/@status = $tei-content:in-progress-statuses]/tei:sourceDesc/tei:bibl[tei:idno/@parent-id eq $id])
             }
             </stat>
             <stat type="count-text-descendants">
             { 
-                count($descendants-fileDesc/tei:sourceDesc/tei:bibl[tei:idno/@parent-id = $descendants-ids]) 
+                count($descendants-fileDesc/tei:sourceDesc/tei:bibl[tei:idno/@parent-id = ($id, $descendants-ids)]) 
             }
             </stat>
             <stat type="count-published-descendants">
             { 
-                count($descendants-fileDesc[tei:publicationStmt/@status = $common:published-statuses]/tei:sourceDesc/tei:bibl[tei:idno/@parent-id = $descendants-ids])
+                count($descendants-fileDesc[tei:publicationStmt/@status = $tei-content:published-statuses]/tei:sourceDesc/tei:bibl[tei:idno/@parent-id = ($id, $descendants-ids)])
             }
             </stat>
             <stat type="count-in-progress-descendants">
             { 
-                count($descendants-fileDesc[tei:publicationStmt/@status = $common:in-progress-statuses]/tei:sourceDesc/tei:bibl[tei:idno/@parent-id = $descendants-ids])
+                count($descendants-fileDesc[tei:publicationStmt/@status = $tei-content:in-progress-statuses]/tei:sourceDesc/tei:bibl[tei:idno/@parent-id = ($id, $descendants-ids)])
             }
             </stat>
         </text-stats>
         
 };
 
-declare function section:texts($section-id as xs:string, $published-only as xs:boolean) as node() {
+declare function section:texts($section-id as xs:string, $published-only as xs:boolean, $include-descendants as xs:boolean) as node() {
     
-    let $translations := 
-        if($published-only) then
-            $section:translations//tei:TEI[tei:teiHeader/tei:fileDesc[tei:publicationStmt/@status = $common:published-statuses][tei:sourceDesc/tei:bibl[tei:idno/@parent-id eq upper-case($section-id)]]]
+    (:
+        $include-descendants
+        -------------------------------
+        false() (default) returns only direct children
+        true() includes all descendants
+    :)
+    
+    let $section-ids := 
+        if($include-descendants) then
+            let $tei := tei-content:tei($section-id, 'section')
+            let $descendants :=  section:descendants($tei, 1, false())
+            let $descendants-ids := ($section-id, $descendants//m:child/@id)
+            return 
+                $descendants-ids
         else
-            $section:translations//tei:TEI[tei:teiHeader/tei:fileDesc[tei:sourceDesc/tei:bibl[tei:idno/@parent-id eq upper-case($section-id)]]]
+            ($section-id)
+    
+    let $section-texts := collection($common:translations-path)//tei:TEI[tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl/tei:idno/@parent-id = $section-ids]
+    
+    let $published-texts := 
+        if($published-only) then
+            $section-texts[tei:teiHeader/tei:fileDesc/tei:publicationStmt/@status = $tei-content:published-statuses]
+        else
+            $section-texts
+    
+    let $texts := 
+        for $tei in $published-texts
+            for $resource-id in $tei//tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl[tei:idno/@parent-id = $section-ids]/@key
+            return
+                <text xmlns="http://read.84000.co/ns/1.0" resource-id="{ $resource-id }" status="{ tei-content:translation-status($tei) }" uri="{ base-uri($tei) }">
+                    { tei-content:source($tei, $resource-id) }
+                    { translation:toh($tei, $resource-id) }
+                    { translation:titles($tei) }
+                    { translation:title-variants($tei) }
+                    { translation:downloads($tei, $resource-id) }
+                    { translation:summary($tei) }
+                </text>
     
     return
-        <texts xmlns="http://read.84000.co/ns/1.0" published-only="{ if($published-only) then '1' else '0' }">
+        <texts xmlns="http://read.84000.co/ns/1.0" section-id="{ $section-id }" published-only="{ if($published-only) then '1' else '0' }">
         {
-            for $tei in $translations
-                for $resource-id in $tei//tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl[tei:idno/@parent-id eq upper-case($section-id)]/@key
-                return
-                    <text resource-id="{ $resource-id }" status="{ tei-content:translation-status($tei) }" uri="{ base-uri($tei) }">
-                        { tei-content:source($tei, $resource-id) }
-                        { translation:toh($tei, $resource-id) }
-                        { translation:titles($tei) }
-                        { translation:title-variants($tei) }
-                        { translation:downloads($tei, $resource-id) }
-                        { translation:summary($tei) }
-                    </text>
-            
+            for $text in $texts
+            order by 
+                xs:integer($text/m:toh/@number), 
+                $text/m:toh/@letter, 
+                if(functx:is-a-number($text/m:toh/@chapter-number)) then xs:integer($text/m:toh/@chapter-number) else 0, 
+                $text/m:toh/@chapter-letter
+            return
+                $text
         }
         </texts>
         
@@ -148,7 +175,7 @@ declare function section:all-translated-texts() as node() {
     
     <texts xmlns="http://read.84000.co/ns/1.0">
     {
-        for $tei in $section:translations//tei:TEI[tei:teiHeader/tei:fileDesc[tei:publicationStmt/@status = $common:published-statuses]]
+        for $tei in collection($common:translations-path)//tei:TEI[tei:teiHeader/tei:fileDesc/tei:publicationStmt/@status = $tei-content:published-statuses]
             for $resource-id in $tei//tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl/@key
         return
             <text resource-id="{ $resource-id }" status="{ tei-content:translation-status($tei) }">
@@ -194,7 +221,7 @@ declare function section:section($tei as node(), $published-only as xs:boolean) 
             { section:text-stats($tei) }
             {
                 if($type eq 'grouping') then
-                    section:texts($id, $published-only)
+                    section:texts($id, $published-only, false())
                 else
                     ()
             }

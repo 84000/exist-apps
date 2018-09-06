@@ -90,11 +90,15 @@
                                             <xsl:with-param name="text" select="."/>
                                         </xsl:call-template>
                                         
-                                        <xsl:if test="m:acknowledgment/tei:p[@type eq 'sponsor']/text()">
+                                        <xsl:call-template name="text-list-subtitles">
+                                            <xsl:with-param name="text" select="."/>
+                                        </xsl:call-template>
+                                        
+                                        <xsl:if test="m:sponsors/tei:div[@type eq 'acknowledgment']/tei:p">
                                             <hr/>
                                             <div>
-                                                <xsl:apply-templates select="m:acknowledgment/tei:p[@type eq 'sponsor']"/>
-                                                <xsl:if test="m:acknowledgment/@sponsored eq 'part'">
+                                                <xsl:apply-templates select="m:sponsors/tei:div[@type eq 'acknowledgment']/tei:p"/>
+                                                <xsl:if test="m:sponsors/tei:div[@type eq 'acknowledgment']/@sponsored eq 'part'">
                                                     <p class="text-muted">
                                                         <em>There are further sponsorship opportunities for this translation.</em>
                                                     </p>
@@ -103,15 +107,12 @@
                                             
                                         </xsl:if>
                                         
-                                        <xsl:call-template name="text-list-subtitles">
-                                            <xsl:with-param name="text" select="."/>
-                                        </xsl:call-template>
-                                        
-                                        <xsl:if test="m:translation/m:authors/m:author">
+                                        <!-- 
+                                        <xsl:if test="@status-group = ('published') and m:translation/m:authors/m:author">
                                             <hr/>
                                             Translated by: 
                                             <xsl:value-of select="string-join(m:translation/m:authors/m:author/text(), ', ')"/>.
-                                        </xsl:if>
+                                        </xsl:if> -->
                                         
                                         <xsl:if test="m:summary/tei:p">
                                             <hr/>

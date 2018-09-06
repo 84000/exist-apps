@@ -22,7 +22,7 @@
                             <xsl:when test="m:translation/@status = '1'">
                                 <xsl:attribute name="class" select="'panel-heading panel-heading-bold hidden-print'"/>
                                 <ul id="outline" class="breadcrumb">
-                                    <xsl:for-each select="m:translation//m:parent">
+                                    <xsl:for-each select="m:translation/m:parent | m:translation/m:parent//m:parent">
                                         <xsl:sort select="@nesting" order="descending"/>
                                         <li>
                                             <a>
@@ -184,7 +184,7 @@
                                 </aside>
                                 
                                 <aside id="print-version" class="visible-print-block text-center page">
-                                    <xsl:copy-of select="m:app-text[@key eq 'translation.print-version']/*"/>
+                                    <xsl:copy-of select="m:app-text[@key eq 'translation.print-version']/xhtml:*" copy-namespaces="no"/>
                                 </aside>
 
                                 <hr class="hidden-print"/>

@@ -99,7 +99,7 @@
         </xsl:variable>
         
         <xsl:call-template name="website-page">
-            <xsl:with-param name="page-url" select="concat('http://read.84000.co/', @page-id, '.html')"/>
+            <xsl:with-param name="page-url" select="concat('http://read.84000.co/', /m:response/m:header/@page-id, '.html')"/>
             <xsl:with-param name="page-class" select="'about'"/>
             <xsl:with-param name="page-title" select="/m:response/m:header/m:title/text()"/>
             <xsl:with-param name="page-description" select="''"/>

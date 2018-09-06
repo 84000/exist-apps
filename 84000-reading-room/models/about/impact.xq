@@ -10,7 +10,7 @@ declare option exist:serialize "method=xml indent=no";
 let $lang := request:get-parameter('lang', 'en')
 
 let $header := 
-    <header xmlns="http://read.84000.co/ns/1.0">
+    <header xmlns="http://read.84000.co/ns/1.0" page-id="about/impact">
         <img>{ concat($common:environment/m:url[@id eq 'front-end']/text(), common:app-text('about.impact.header-img-src')) }</img>
         <title>{ common:app-text('about.impact.title') }</title>
         <quote>
@@ -20,15 +20,12 @@ let $header :=
     </header>
 
 return
-    <response 
-        xmlns="http://read.84000.co/ns/1.0" 
-        model-type="about/impact"
-        page-id="about/impact"
-        timestamp="{ current-dateTime() }"
-        app-id="{ $common:app-id }"
-        app-version="{ $common:app-version }"
-        user-name="{ common:user-name() }" >
-        { $header }
-        { translations:summary() }
-        { doc(concat($common:data-path, '/operations/user-stats.xml')) }
-    </response>
+    common:response(
+        "about/impact", 
+        $common:app-id,
+        (
+            $header,
+            translations:summary(),
+            doc(concat($common:data-path, '/operations/user-stats.xml'))
+        )
+    )

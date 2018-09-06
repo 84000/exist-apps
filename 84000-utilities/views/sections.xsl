@@ -8,6 +8,7 @@
         
         <xsl:variable name="environment" select="doc(/m:response/@environment-path)/m:environment"/>
         <xsl:variable name="reading-room-path" select="$environment/m:url[@id eq 'reading-room']/text()"/>
+        <xsl:variable name="utilities-path" select="$environment/m:url[@id eq 'utilities']/text()"/>
         
         <xsl:variable name="content">
             <div class="container">
@@ -35,6 +36,22 @@
                         
                         <div class="tab-content">
                             
+                            <p class="text-muted text-center small">
+                                This data in xml format: 
+                                <a target="sections-xml">
+                                    <xsl:attribute name="href" select="concat($utilities-path, '/sections.xml')"/>
+                                    All sections
+                                </a> | 
+                                <a target="kangyur-texts-xml">
+                                    <xsl:attribute name="href" select="concat($utilities-path, '/section-texts.xml?section-id=O1JC11494&amp;include-descendants=true')"/>
+                                    Kangyur texts
+                                </a> | 
+                                <a target="tengyur-texts-xml">
+                                    <xsl:attribute name="href" select="concat($utilities-path, '/section-texts.xml?section-id=O1JC7630&amp;include-descendants=true')"/>
+                                    Tengyur texts
+                                </a>
+                            </p>
+                            
                             <table class="table table-responsive">
                                 <thead>
                                     <tr>
@@ -57,7 +74,7 @@
                                                                     <xsl:attribute name="href" select="concat($reading-room-path ,'/section/', @id, '.tei')"/>
                                                                     <xsl:attribute name="target" select="concat(@id, '.tei')"/>
                                                                     <span class="label label-warning">
-                                                                        <xsl:value-of select="concat(@id, '.tei / live')"/>
+                                                                        <xsl:value-of select="concat(@id, '.tei')"/>
                                                                     </span>
                                                                 </a>
                                                             </li>
@@ -66,7 +83,7 @@
                                                                     <xsl:attribute name="href" select="concat($reading-room-path ,'/section/', @id, '.xml')"/>
                                                                     <xsl:attribute name="target" select="concat(@id, '.xml')"/>
                                                                     <span class="label label-warning">
-                                                                        <xsl:value-of select="concat(@id, '.xml / live')"/>
+                                                                        <xsl:value-of select="concat(@id, '.xml')"/>
                                                                     </span>
                                                                 </a>
                                                             </li>
@@ -75,18 +92,16 @@
                                                                     <xsl:attribute name="href" select="concat($reading-room-path ,'/section/', @id, '.html')"/>
                                                                     <xsl:attribute name="target" select="concat(@id, '.html')"/>
                                                                     <span class="label label-warning">
-                                                                        <xsl:value-of select="concat(@id, '.html / live')"/>
+                                                                        <xsl:value-of select="concat(@id, '.html')"/>
                                                                     </span>
                                                                 </a>
                                                             </li>
                                                         </ul>
                                                         <div class="small">
                                                             File: 
-                                                            <a class="break">
-                                                                <xsl:attribute name="href" select="concat($reading-room-path ,'/section/', @id, '.tei')"/>
-                                                                <xsl:attribute name="target" select="concat(@id, '.tei')"/>
+                                                            <span class="break">
                                                                 <xsl:value-of select="@uri"/>
-                                                            </a>
+                                                            </span>
                                                         </div>
                                                     </xsl:with-param>
                                                 </xsl:call-template>
@@ -99,12 +114,11 @@
                                                         <br/>
                                                         <xsl:choose>
                                                             <xsl:when test="xs:integer(m:text-stats/m:stat[@type eq 'count-text-children']/text()) gt 0">
-                                                                <xsl:value-of select="fn:format-number(xs:integer(m:text-stats/m:stat[@type eq 'count-text-children']),'#,##0')"/>
-                                                                <a class="small underline" target="_self">
+                                                                <a class="underline" target="_self">
                                                                     <xsl:attribute name="href" select="concat('section-texts.html?section-id=', fn:encode-for-uri(@id))"/>
                                                                     <xsl:attribute name="data-ajax-target" select="concat('#section-texts-', position())"/>
                                                                     <xsl:attribute name="aria-controls" select="concat('section-texts-', position())"/>
-                                                                    show
+                                                                    <xsl:value-of select="fn:format-number(xs:integer(m:text-stats/m:stat[@type eq 'count-text-children']),'#,##0')"/>
                                                                 </a>
                                                             </xsl:when>
                                                             <xsl:otherwise>-</xsl:otherwise>
@@ -162,6 +176,15 @@
                             
                         </div>
                     </div>
+                </div>
+            </div>
+            
+            <!-- Link to top of page -->
+            <div class="hidden-print">
+                <div id="link-to-top-container" class="fixed-btn-container">
+                    <a href="#top" id="link-to-top" class="btn-round scroll-to-anchor" title="Return to the top of the page">
+                        <i class="fa fa-arrow-up" aria-hidden="true"/>
+                    </a>
                 </div>
             </div>
             

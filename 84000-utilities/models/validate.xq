@@ -3,6 +3,7 @@ xquery version "3.0" encoding "UTF-8";
 import module namespace local="http://utilities.84000.co/local" at "../modules/local.xql";
 import module namespace common="http://read.84000.co/common" at "../../84000-reading-room/modules/common.xql";
 import module namespace tei-content="http://read.84000.co/tei-content" at "../../84000-reading-room/modules/tei-content.xql";
+import module namespace translations="http://read.84000.co/translations" at "../../84000-reading-room/modules/translations.xql";
 import module namespace validation="http://exist-db.org/xquery/validation" at "java:org.exist.xquery.functions.validation.ValidationModule";
 
 declare namespace tei="http://www.tei-c.org/ns/1.0";
@@ -11,36 +12,43 @@ declare namespace m = "http://read.84000.co/ns/1.0";
 declare option exist:serialize "method=xml indent=no";
 
 let $type := request:get-parameter('type', 'translations')
+let $section-id := request:get-parameter('section', 'O1JC11494')
+
+let $schema-path := 
+    if($type eq 'translations') then
+        concat($common:tei-path, '/schema/current/translation.rng')
+    else if($type eq 'placeholders') then
+        concat($common:tei-path, '/schema/current/translation.rng')
+    else
+        concat($common:tei-path, '/schema/current/section.rng')
 
 let $schema := 
-    if($type eq 'translations') then
-        doc(concat($common:data-path, '/schema/1.0/translation.rng'))
-    else if($type eq 'placeholders') then
-        doc(concat($common:data-path, '/schema/1.0/placeholder.rng'))
-    else if($type eq 'sections') then
-        doc(concat($common:data-path, '/schema/1.0/section.rng'))
+    if($schema-path gt '') then
+        doc($schema-path)
     else
         ()
 
 let $files := 
-    if($type eq 'translations') then
-        collection($common:translations-path)//tei:TEI[tei:teiHeader/tei:fileDesc/tei:publicationStmt/@status = $common:published-statuses]
-    else if($type eq 'placeholders') then
-        collection($common:translations-path)//tei:TEI[tei:teiHeader/tei:fileDesc/tei:publicationStmt/not(@status = $common:published-statuses)]
-    else if($type eq 'sections') then
-        collection($common:sections-path)//tei:TEI
+    if($type eq 'placeholders') then
+        let $section-files := translations:section-tei($section-id)
+        return
+            $section-files[not(tei:teiHeader/tei:fileDesc/tei:publicationStmt/@status = $tei-content:published-statuses)]
+    else if($type eq 'translations') then
+        let $section-files := translations:section-tei('LOBBY')
+        return
+            $section-files[tei:teiHeader/tei:fileDesc/tei:publicationStmt/@status = $tei-content:published-statuses]
     else
-        ()
+        collection($common:sections-path)//tei:TEI
 
 let $reading-room-url := $common:environment/m:url[@id eq 'reading-room']/text()
 let $results := 
-    <results xmlns="http://read.84000.co/ns/1.0">
+    <results xmlns="http://read.84000.co/ns/1.0" type="{ $type }" schema="{ $schema-path }" section="{ $section-id }">
     {
         for $tei in $files
             let $id := tei-content:id($tei)
             let $title := tei-content:title($tei)
             let $validation-report := validation:jing-report($tei, $schema)
-            let $file-name := util:unescape-uri(replace(base-uri($tei), ".+/(.+)$", "$1"), 'UTF-8')
+            let $file-name := util:unescape-uri(base-uri($tei), 'UTF-8')
         return
             <tei-validation id="{ $id }" file-name="{ $file-name }">
                 {

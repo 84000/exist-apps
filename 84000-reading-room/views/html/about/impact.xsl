@@ -16,7 +16,7 @@
                 </div>
                 <div class="col-sm-6">
                    
-                    <div class="stat">
+                    <div class="stat green">
                         <div class="heading">This website</div>
                         <div class="data">
                             <span>
@@ -28,7 +28,7 @@
                         </div>
                     </div>
                     
-                    <div class="stat">
+                    <div class="stat blue">
                         <div class="heading">The Reading Room</div>
                         <div class="data">
                             <span>
@@ -40,7 +40,7 @@
                         </div>
                     </div>
                     
-                    <div class="stat">
+                    <div class="stat orange">
                         <div class="heading">Downloads from the Reading Room</div>
                         <div class="data">
                             <span>
@@ -49,7 +49,7 @@
                         </div>
                     </div>
                     
-                    <div class="stat">
+                    <div class="stat red">
                         <div class="heading">Our reach</div>
                         <div class="data">
                             <span>
@@ -70,7 +70,6 @@
                         <xsl:value-of select="text()"/>
                     </div>
                 </xsl:for-each>
-                
             </div>
         </xsl:variable>
         

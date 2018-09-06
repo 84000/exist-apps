@@ -9,14 +9,31 @@ declare namespace tei="http://www.tei-c.org/ns/1.0";
 import module namespace functx="http://www.functx.com";
 import module namespace common="http://read.84000.co/common" at "common.xql";
 
+declare variable $tei-content:text-statuses := doc(concat($common:data-path, '/config/text-statuses.xml'))/m:text-statuses;
+declare variable $tei-content:published-statuses := $tei-content:text-statuses/m:status[@group = ('published')]/@status-id;
+declare variable $tei-content:in-progress-statuses := $tei-content:text-statuses/m:status[@group = ('translated', 'in-translation')]/@status-id;
+
 declare function tei-content:id($tei as node()) as xs:string {
     (: Returns the idno in a given tei doc :)
-    $tei//tei:publicationStmt/tei:idno/@xml:id/string()
+    $tei//tei:publicationStmt/tei:idno/@xml:id
 };
 
-declare function tei-content:title($tei as node()) as xs:string* {
+declare function tei-content:title($tei as node()) as xs:string {
     (: Returns a standardised title in a given tei doc :)
-    normalize-space($tei//tei:fileDesc//tei:title[@type='mainTitle'][@xml:lang eq 'en'][1]/text())
+    
+    let $title := normalize-space($tei//tei:fileDesc//tei:title[@type='mainTitle'][@xml:lang eq 'en'][1]/text())
+    
+    let $title := 
+        if(not($title gt ''))then
+            normalize-space($tei//tei:fileDesc//tei:title[@xml:lang eq 'en'][1]/text())
+        else
+            $title
+            
+    return
+        if(not($title gt ''))then
+            concat(normalize-space($tei//tei:fileDesc//tei:title[@xml:lang eq 'Sa-Ltn'][1]/text()), ' (awaiting English title)')
+        else
+            $title
 };
 
 declare function tei-content:tei($resource-id as xs:string, $resource-type as xs:string) as node()* {
@@ -104,7 +121,33 @@ declare function tei-content:translation-status($tei as node()) as xs:string {
 
 declare function tei-content:translation-status-group($tei as node()) {
     (: Returns the status group of the text :)
-    xs:string($common:text-statuses/m:status[@status-id eq tei-content:translation-status($tei)]/@group)
+    xs:string($tei-content:text-statuses/m:status[@status-id eq tei-content:translation-status($tei)]/@group)
+};
+
+declare function tei-content:text-statuses-selected($selected-ids as xs:string*) as node() {
+    <text-statuses xmlns="http://read.84000.co/ns/1.0" not-started="{ if(functx:is-value-in-sequence('0', $selected-ids)) then 'selected' else '' }">
+    {
+        element status 
+        { 
+            attribute value { '0' },
+            if ('0' = $selected-ids) then attribute selected { 'selected' } else '',
+            text { '0 / Not started' }
+            
+        }
+    }
+    {
+        for $status in $tei-content:text-statuses/m:status
+        return 
+            element status
+            { 
+                $status/@*,
+                attribute value { $status/@status-id },
+                if ($status/@status-id = $selected-ids) then attribute selected { 'selected' } else '',
+                text { concat($status/@status-id, ' / ', $status/@group, ' / ', $status/text()) }
+                
+            }
+    }
+    </text-statuses>
 };
 
 declare function tei-content:source-bibl($tei as node(), $resource-id as xs:string) as node()* {

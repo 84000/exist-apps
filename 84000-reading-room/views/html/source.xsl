@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" version="2.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" version="2.0" exclude-result-prefixes="#all">
     
     <xsl:include href="reading-room-page.xsl"/>
     
@@ -37,7 +37,7 @@
                                         <xsl:value-of select="normalize-space(m:app-text[@key eq 'source.ekangyur-description-title'])"/>
                                     </h4>
                                     <div class="content">
-                                        <xsl:copy-of select="m:app-text[@key eq 'source.ekangyur-description-content']/*"/>
+                                        <xsl:copy-of select="m:app-text[@key eq 'source.ekangyur-description-content']/xhtml:*" copy-namespaces="no"/>
                                     </div>
                                 </div>
                             </div>

@@ -6,11 +6,13 @@ import module namespace section="http://read.84000.co/section" at "../../84000-r
 
 declare option exist:serialize "method=xml indent=no";
 
-let $section-id := request:get-parameter('section-id', 'all')
+let $section-id := request:get-parameter('section-id', 'lobby')
+let $published-only := request:get-parameter('published-only', false())
+let $include-descendants := request:get-parameter('include-descendants', false())
 
 return
     common:response(
         'utilities/section-texts',
         'utilities',
-        section:texts($section-id, false())
+        section:texts($section-id, $published-only, $include-descendants)
     )

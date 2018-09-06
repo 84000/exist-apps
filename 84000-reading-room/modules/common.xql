@@ -19,19 +19,13 @@ declare variable $common:app-path := concat('/db/apps/', $common:app-id);
 declare variable $common:log-path := '/db/system/logs';
 declare variable $common:data-collection := '/84000-data';
 declare variable $common:data-path := concat('/db/apps', $common:data-collection);
-declare variable $common:translations-folder := 'texts';
-declare variable $common:translations-path := concat($common:data-path, '/', $common:translations-folder);
-declare variable $common:sections-folder := 'sections';
-declare variable $common:sections-path := concat($common:data-path, '/', $common:sections-folder);
+declare variable $common:tei-path := concat($common:data-path, '/tei');
+declare variable $common:translations-path := concat($common:tei-path, '/translations');
+declare variable $common:sections-path := concat($common:tei-path, '/sections');
 declare variable $common:outlines-path := concat($common:data-path, '/outlines');
 declare variable $common:ekangyur-path := '/db/apps/eKangyur/data/UT4CZ5369';
 declare variable $common:environment-path := '/db/system/config/db/system/environment.xml';
 declare variable $common:environment := doc($common:environment-path)/m:environment;
-declare variable $common:app-version := doc(concat($common:root-path, '/expath-pkg.xml'))/pkg:package/@version;
-
-declare variable $common:text-statuses := doc(concat($common:data-path, '/operations/config.xml'))/m:operations-config/m:text-statuses;
-declare variable $common:published-statuses := $common:text-statuses/m:status[@group = ('published')]/@status-id;
-declare variable $common:in-progress-statuses := $common:text-statuses/m:status[@group = ('translated', 'in-translation')]/@status-id;
 
 declare function common:app-id() as xs:string {
 
@@ -61,28 +55,13 @@ declare function common:response($model-type as xs:string, $app-id as xs:string,
         model-type="{ $model-type }"
         timestamp="{ current-dateTime() }"
         app-id="{ $app-id }" 
-        app-version="{ $common:app-version }"
+        app-version="{ doc(concat($common:root-path, '/expath-pkg.xml'))/pkg:package/@version }"
         environment-path="{ $common:environment-path }"
         user-name="{ common:user-name() }" >
         {
             $data
         }
     </response>
-};
-
-declare function common:text-statuses-selected($selected-ids as xs:string*) as node() {
-    <text-statuses xmlns="http://read.84000.co/ns/1.0" not-started="{ if(functx:is-value-in-sequence('0', $selected-ids)) then 'selected' else '' }">
-    {
-        for $status in $common:text-statuses/m:status
-        return 
-            element { 'status' } 
-            { 
-                $status/@*,
-                if ($status/@status-id = $selected-ids) then attribute { 'selected' } { 'selected' } else '',
-                $status/text()
-            }
-    }
-    </text-statuses>
 };
 
 declare function common:xml-lang($node) as xs:string {
@@ -219,6 +198,19 @@ declare function common:search-result($nodes as node()*) as node()*
         )
 };
 
+declare function common:mark-string($nodes as node()*, $mark-str as xs:string) as node()*
+{
+    for $node in $nodes
+    return
+        transform:transform(
+            $node, 
+            doc(concat($common:app-path, "/xslt/mark-string.xsl")), 
+            <parameters>
+                <param name="mark-str" value="{ $mark-str }"/>
+            </parameters>
+        )
+};
+
 declare function common:limit-str($str as xs:string*, $limit as xs:integer) as xs:string* 
 {
     if(string-length($str) > $limit) then
@@ -281,7 +273,7 @@ declare function common:app-texts($search as xs:string, $replacements as node())
         common:replace(
             <app-text xmlns="http://read.84000.co/ns/1.0" key="{$result/@key}">
             {
-                if ($result/. instance of text()) then
+                if (count($result/node()) eq 1 and $result/node()[1] instance of text()) then
                     normalize-space($result/text())
                 else
                     $result/node()
@@ -304,4 +296,39 @@ declare function common:replace($node as node(), $replacements as node()) {
         case text() return
             functx:replace-multi($node, $replacements/m:value/@key, $replacements/m:value/text())
         default return $node
+};
+
+declare function common:update($request-parameter as xs:string, $existing-value, $new-value, $insert-into as node()?, $insert-following as node()?) as node()? {
+
+    if(functx:node-kind($existing-value) eq 'text' and compare($existing-value, $new-value) eq 0) then 
+        () (: Data unchanged, do nothing :)
+    
+    else if(functx:node-kind($existing-value) eq 'attribute' and compare($existing-value, $new-value) eq 0) then
+        () (: Data unchanged, do nothing :)
+    
+    else if(functx:node-kind($existing-value) eq 'element' and deep-equal($existing-value, $new-value)) then
+        () (: Data unchanged, do nothing :)
+    
+    else if(not($existing-value) and not($new-value)) then
+        () (: No data, do nothing :)
+        
+    else
+        <updated xmlns="http://read.84000.co/ns/1.0" node="{ $request-parameter }">
+        {
+            if(not($existing-value) and $new-value) then        (: Insert :)
+            
+                if($insert-following) then                      (: Insert following :)
+                    update insert $new-value following $insert-following
+                    
+                else                                            (: Insert wherever:)
+                    update insert $new-value into $insert-into
+            
+            else if($existing-value and not($new-value)) then   (: Delete:)
+                update delete $existing-value
+            
+            else                                                (: Update :)
+                update replace $existing-value 
+                    with $new-value
+
+        }</updated>
 };

@@ -34,7 +34,7 @@
             </section>
             
             <section class="imprint center">
-                <xsl:copy-of select="m:app-text[@key eq 'translation.print-version']/*"/>
+                <xsl:copy-of select="m:app-text[@key eq 'translation.print-version']/xhtml:*" copy-namespaces="no"/>
             </section>
             
             <xsl:if test="m:translation/m:translation/m:tantric-restriction/tei:p">

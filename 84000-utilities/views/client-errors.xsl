@@ -53,7 +53,7 @@
                                 <tbody>
                                     <xsl:for-each select="m:errors/m:error">
                                         <tr>
-                                            <td>
+                                            <td class="text-muted">
                                                 <xsl:value-of select="/m:response/m:errors/@first-record + (position() - 1)"/>.
                                             </td>
                                             <td class="wrap">
@@ -74,7 +74,7 @@
                             </table>
                             
                             <!-- Pagination -->
-                            <xsl:copy-of select="common:pagination(m:errors/@first-record, m:errors/@max-records, m:errors/@count-records)"/>
+                            <xsl:copy-of select="common:pagination(m:errors/@first-record, m:errors/@max-records, m:errors/@count-records, '')"/>
                             
                         </div>
                     </div>

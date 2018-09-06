@@ -83,19 +83,24 @@
         <xsl:param name="first-record" as="xs:integer"/>
         <xsl:param name="max-records" as="xs:integer"/>
         <xsl:param name="count-records" as="xs:integer"/>
+        <xsl:param name="append-to-url" as="xs:string"/>
+        
+        <xsl:variable name="count-pages" select="xs:integer(($count-records div $max-records) + 1)"/>
+        <xsl:variable name="max-pages" select="if ($count-pages le 15) then $count-pages else 15"/>
+        
         <nav aria-label="Page navigation" class="text-right">
             <ul class="pagination">
                 <li class="disabled">
                     <span>Page: </span>
                 </li>
-                <xsl:for-each select="1 to xs:integer(($count-records div $max-records) + 1)">
+                <xsl:for-each select="1 to $max-pages">
                     <xsl:variable name="page-first-record" select="(((. - 1) * $max-records) + 1)"/>
                     <li>
                         <xsl:if test="$first-record eq $page-first-record">
                             <xsl:attribute name="class" select="'active'"/>
                         </xsl:if>
                         <a>
-                            <xsl:attribute name="href" select="concat('?first-record=', $page-first-record)"/>
+                            <xsl:attribute name="href" select="concat('?first-record=', $page-first-record, $append-to-url)"/>
                             <xsl:value-of select="position()"/>
                         </a>
                     </li>
@@ -107,6 +112,62 @@
                 </li>
             </ul>
         </nav>
+    </xsl:function>
+    
+    <xsl:function name="common:marker">
+        
+        <xsl:param name="start-letter" as="xs:string"/>
+        <xsl:param name="previous-start-letter" as="xs:string"/>
+        
+        <xsl:if test="not($previous-start-letter eq $start-letter)">
+            <a class="marker">
+                <xsl:attribute name="name" select="$start-letter"/>
+                <xsl:attribute name="id" select="concat('marker-', $start-letter)"/>
+                <xsl:value-of select="$start-letter"/>
+            </a>
+        </xsl:if>
+    </xsl:function>
+    
+    <xsl:function name="common:marker-nav">
+        
+        <xsl:param name="items-with-start-letters" as="item()*"/>
+        
+        <div data-spy="affix">
+            <div class="btn-group-vertical btn-group-xs" role="group" aria-label="navigation">
+                <xsl:for-each select="$items-with-start-letters">
+                    <xsl:sort select="@start-letter"/>
+                    <xsl:variable name="start-letter" select="@start-letter"/>
+                    <xsl:if test="not(preceding-sibling::*[@start-letter = $start-letter])">
+                        
+                        <a class="btn btn-default scroll-to-anchor">
+                            <xsl:attribute name="href" select="concat('#marker-', $start-letter)"/>
+                            <xsl:value-of select="$start-letter"/>
+                        </a>
+                        
+                    </xsl:if>
+                </xsl:for-each>
+            </div>
+        </div>
+    </xsl:function>
+    
+    <xsl:function name="common:position-to-color" as="xs:string">
+        
+        <xsl:param name="position" as="xs:integer"/>
+        <xsl:param name="format" as="xs:string"/>
+        
+        <xsl:variable name="colour-map" select="document('colour-map.xml')"/>
+        <xsl:variable name="max-position" select="count($colour-map/m:colours/m:colour)"/>
+        <xsl:variable name="position-bounded" select="if($position gt $max-position) then $max-position else $position"/>
+        
+        <xsl:choose>
+            <xsl:when test="$format eq 'hex'">
+                <xsl:value-of select="$colour-map/m:colours/m:colour[$position-bounded]/@hex"/>
+            </xsl:when>
+            <xsl:otherwise>
+                <xsl:value-of select="$colour-map/m:colours/m:colour[$position-bounded]/@id"/>
+            </xsl:otherwise>
+        </xsl:choose>
+        
     </xsl:function>
     
 </xsl:stylesheet>

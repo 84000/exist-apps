@@ -235,6 +235,18 @@ else if(not(common:auth-environment()) or sm:is-authenticated()) then
                 </parameters>
             )
     
+    (: Search :)
+    else if ($resource-id eq "search") then
+        if ($resource-suffix eq 'html') then
+            local:dispatch-html("/models/search.xq", "/views/html/search.xsl", 
+                <parameters xmlns="http://exist.sourceforge.net/NS/exist"/>
+            )
+        else
+            (: return the xml :)
+            local:dispatch("/models/search.xq", "", 
+                <parameters xmlns="http://exist.sourceforge.net/NS/exist"/>
+            )
+    
     (: About :)
     else if ($collection-path eq "about") then
         if ($resource-suffix eq 'html') then
@@ -273,7 +285,10 @@ else if(not(common:auth-environment()) or sm:is-authenticated()) then
             </dispatch>
         else
             <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-                <forward url="{ concat($common:data-collection, $exist:resource) }"/>
+                <forward url="{ $exist:path }">
+                    <set-header name="Content-Type" value="text/xml"/>
+                    <set-header name="Content-Disposition" value="attachment"/>
+                </forward>
             </dispatch>
             
 else

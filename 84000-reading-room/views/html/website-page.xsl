@@ -18,6 +18,8 @@
         <xsl:variable name="environment-path" select="if(/m:response/@environment-path)then /m:response/@environment-path else '/db/system/config/db/system/environment.xml'"/>
         <xsl:variable name="environment" select="doc($environment-path)/m:environment"/>
         <xsl:variable name="front-end-path" select="$environment/m:url[@id eq 'front-end']/text()"/>
+        <xsl:variable name="reading-room-path" select="$environment/m:url[@id eq 'reading-room']/text()"/>
+        <xsl:variable name="communications-site-path" select="$environment/m:url[@id eq 'communications-site']/text()"/>
         <xsl:variable name="app-version" select="doc('../../expath-pkg.xml')/pkg:package/@version"/>
         <xsl:variable name="ga-tracking-id" select="$environment/m:google-analytics/@tracking-id"/>
         
@@ -113,10 +115,25 @@
                                 
                                 <div id="search-controls" class="input-group">
                                     <input type="text" name="s" class="form-control" placeholder="Search..."/>
+                                    <input type="submit" value="Submit" class="hidden"/>
                                     <span class="input-group-btn">
-                                        <button class="btn btn-primary" type="submit">
-                                            <i class="fa fa-search"/>
+                                        <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                            <i class="fa fa-search"/> <span class="caret"/>
                                         </button>
+                                        <ul class="dropdown-menu">
+                                            <li>
+                                                <a class="on-click-submit">
+                                                    <xsl:attribute name="href" select="concat($reading-room-path, '/search.html')"/>
+                                                    Search the Reading Room
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <a class="on-click-submit">
+                                                    <xsl:attribute name="href" select="concat($communications-site-path, '/')"/>
+                                                    Search the Blog
+                                                </a>
+                                            </li>
+                                        </ul>
                                     </span>
                                 </div>
                                 

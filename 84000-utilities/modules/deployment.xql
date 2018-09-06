@@ -15,7 +15,7 @@ declare function deployment:snapshot($action as xs:string, $sync-resource as xs:
     let $sync :=
         if($action eq 'sync' and $sync-path) then
             (
-                for $collection in ($common:translations-folder, $common:sections-folder, 'schema', 'translation-memory', 'config')
+                for $collection in ('tei', 'translation-memory', 'config')
                 return
                     file:sync(
                         concat($common:data-path, '/', $collection), 
@@ -33,7 +33,7 @@ declare function deployment:snapshot($action as xs:string, $sync-resource as xs:
         else if($sync-resource eq 'translation-memory') then
             "translation-memory/."
         else
-            concat(concat($common:translations-folder, '/'), substring-after($sync-resource, concat($common:translations-path, '/')))
+            substring-after($sync-resource, concat($common:data-path, '/'))
             
     let $commit-msg := 
         if(not($commit-msg))then
@@ -72,7 +72,7 @@ declare function deployment:push-app($action as xs:string, $commit-msg as xs:str
     let $sync :=
         if($action eq 'sync' and $sync-path) then
             (
-                for $collection in ('84000-import','84000-reading-room','84000-utilities','84000-translation-memory','84000-translator-tools'(:,'84000-operations':))
+                for $collection in ('84000-import','84000-reading-room','84000-utilities','84000-translation-memory','84000-translator-tools','84000-operations')
                 return
                    file:sync(
                        concat('/db/apps/', $collection), 

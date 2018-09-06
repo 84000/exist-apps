@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:util="http://exist-db.org/xquery/util" xmlns:common="http://read.84000.co/common" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" version="2.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:util="http://exist-db.org/xquery/util" xmlns:common="http://read.84000.co/common" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" version="2.0" exclude-result-prefixes="#all">
     
     <xsl:import href="../../xslt/tei-to-xhtml.xsl"/>
     <xsl:include href="website-page.xsl"/>
@@ -243,6 +243,8 @@
                                                 <xsl:sort select="m:toh/@chapter-letter"/>
                                                 <div class="row list-item">
                                                     
+                                                    <xsl:attribute name="id" select="@resource-id"/>
+                                                    
                                                     <div class="col-sm-1">
                                                         
                                                         <span class="visible-xs-inline">Toh </span>
@@ -367,9 +369,11 @@
                                                     <div class="col-sm-4 col-md-3 position-static">
                                                         
                                                         <xsl:if test="$section-id ne 'all-translated'">
-                                                            <xsl:call-template name="translation-status">
-                                                                <xsl:with-param name="status" select="@status"/>
-                                                            </xsl:call-template>
+                                                            <div class="translation-status">
+                                                                <xsl:call-template name="translation-status">
+                                                                    <xsl:with-param name="status" select="@status"/>
+                                                                </xsl:call-template>
+                                                            </div>
                                                         </xsl:if>
                                                         
                                                         <xsl:if test="@status eq '1'">
@@ -743,7 +747,7 @@
                             </h4>
                         </div>
                         <div class="modal-body">
-                            <xsl:copy-of select="m:app-text[@key eq 'section.ebook-help-body']/*"/>
+                            <xsl:copy-of select="m:app-text[@key eq 'section.ebook-help-body']/xhtml:*" copy-namespaces="no"/>
                         </div>
                     </div>
                 </div>

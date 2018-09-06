@@ -7,13 +7,14 @@ declare namespace tei="http://www.tei-c.org/ns/1.0";
 declare namespace m = "http://read.84000.co/ns/1.0";
 
 import module namespace common="http://read.84000.co/common" at "common.xql";
-import module namespace section="http://read.84000.co/section" at "section.xql";
 import module namespace tei-content="http://read.84000.co/tei-content" at "../modules/tei-content.xql";
+import module namespace section="http://read.84000.co/section" at "section.xql";
 import module namespace translation="http://read.84000.co/translation" at "translation.xql";
+import module namespace sponsors="http://read.84000.co/sponsors" at "sponsors.xql";
 import module namespace functx="http://www.functx.com";
 
-declare function translations:kangyur-tei() as node()* {
-    let $root := tei-content:tei('O1JC11494', 'section') (: Kangyur :)
+declare function translations:section-tei($section-id as xs:string) as node()* {
+    let $root := tei-content:tei($section-id, 'section')
     let $descendants := section:descendants($root, 1, false())
     let $descendants-ids := $descendants//@id
     return
@@ -36,7 +37,7 @@ declare function translations:file($translation as node()) as node() {
 declare function translations:files() as node() {
     <translations xmlns="http://read.84000.co/ns/1.0">
     {
-        for $translation in collection($common:translations-path)//tei:TEI[tei:teiHeader/tei:fileDesc/tei:publicationStmt/@status = $common:published-statuses]
+        for $translation in collection($common:translations-path)//tei:TEI[tei:teiHeader/tei:fileDesc/tei:publicationStmt/@status = $tei-content:published-statuses]
         return
             translations:file($translation)
     }
@@ -45,14 +46,14 @@ declare function translations:files() as node() {
 
 declare function translations:summary() as node() {
     
-    let $tei := translations:kangyur-tei()
+    let $tei := translations:section-tei('O1JC11494')
     
-    let $translated-statuses := $common:text-statuses/m:status[@group = ('translated')]/@status-id
-    let $in-translation-statuses := $common:text-statuses/m:status[@group = ('in-translation')]/@status-id
-    let $all-statuses := $common:text-statuses/m:status/@status-id
+    let $translated-statuses := $tei-content:text-statuses/m:status[@group = ('translated')]/@status-id
+    let $in-translation-statuses := $tei-content:text-statuses/m:status[@group = ('in-translation')]/@status-id
+    let $all-statuses := $tei-content:text-statuses/m:status/@status-id
     
     let $fileDescs := $tei/tei:teiHeader/tei:fileDesc
-    let $published-fileDesc := $fileDescs[tei:publicationStmt/@status = $common:published-statuses]
+    let $published-fileDesc := $fileDescs[tei:publicationStmt/@status = $tei-content:published-statuses]
     let $translated-fileDesc := $fileDescs[tei:publicationStmt/@status = $translated-statuses]
     let $in-translation-fileDesc := $fileDescs[tei:publicationStmt/@status = $in-translation-statuses]
     let $commissioned-fileDesc := $fileDescs[tei:publicationStmt/@status = $all-statuses]
@@ -127,7 +128,7 @@ declare function translations:sponsored() as node() {
                 { translation:titles($tei) }
                 { translation:title-variants($tei) }
                 { translation:summary($tei) }
-                { translation:acknowledgment($tei) }
+                { translation:sponsors($tei, true()) }
                 { translation:translation($tei) }
             </text>
     }
@@ -137,6 +138,7 @@ declare function translations:sponsored() as node() {
 
 declare function translations:filtered-text($tei as node(), $toh-key as xs:string?) as node(){
     <text xmlns="http://read.84000.co/ns/1.0" 
+        id="{ tei-content:id($tei) }" 
         status="{ tei-content:translation-status($tei) }"
         status-group="{ tei-content:translation-status-group($tei) }">
         { translation:toh($tei, $toh-key) }
@@ -147,9 +149,9 @@ declare function translations:filtered-text($tei as node(), $toh-key as xs:strin
     </text>
 };
 
-declare function translations:filtered-texts($status as xs:string*, $sort as xs:string, $range as xs:string, $sponsored as xs:string, $search-toh as xs:string, $deduplicate as xs:boolean) as node() {
+declare function translations:filtered-texts($section as xs:string, $status as xs:string*, $sort as xs:string, $range as xs:string, $sponsored as xs:string, $search-toh as xs:string, $deduplicate as xs:boolean) as node() {
     
-    let $tei := translations:kangyur-tei()
+    let $tei := translations:section-tei($section)
     
     let $status-tei := 
         if(count($status) eq 0 or (count($status) eq 1 and $status[1] eq '')) then
@@ -176,7 +178,7 @@ declare function translations:filtered-texts($status as xs:string*, $sort as xs:
         
     let $page-size-tei :=
         if($selected-range) then
-            $status-tei[tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl/tei:location/@count-pages[. >= xs:integer($selected-range/@min)][. <= xs:integer($selected-range/@max)]]
+            $status-tei[tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl[tei:location/@count-pages gt '0']/tei:location/@count-pages[. >= xs:integer($selected-range/@min)][. <= xs:integer($selected-range/@max)]]
         else
             $status-tei
     
@@ -216,6 +218,8 @@ declare function translations:filtered-texts($status as xs:string*, $sort as xs:
         <texts xmlns="http://read.84000.co/ns/1.0"
             count="{ $texts-count }" 
             count-pages="{ $texts-pages-count }"  
+            section="{ $section }" 
+            status="{ $status }" 
             sort="{ $sort }" 
             range="{ $range }" 
             sponsored="{ $sponsored }"
@@ -253,7 +257,7 @@ declare function translations:filtered-texts($status as xs:string*, $sort as xs:
 
 declare function translations:translations($include-stats as xs:boolean, $include-downloads as xs:boolean, $include-folios as xs:boolean) as node() {
 
-    let $translations := collection($common:translations-path)//tei:TEI[tei:teiHeader/tei:fileDesc/tei:publicationStmt/@status = $common:published-statuses]
+    let $translations := collection($common:translations-path)//tei:TEI[tei:teiHeader/tei:fileDesc/tei:publicationStmt/@status = $tei-content:published-statuses]
     
     return
         <translations xmlns="http://read.84000.co/ns/1.0">

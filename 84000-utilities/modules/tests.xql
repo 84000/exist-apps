@@ -18,10 +18,10 @@ declare function tests:translations($translation-id as xs:string) as item(){
     (:let $translation-id := 'UT22084-062-012':)
     
     let $outlines := collection($common:outlines-path)
-    let $schema := doc(concat($common:data-path, '/schema/1.0/translation.rng'))
+    let $schema := doc(concat($common:tei-path, '/schema/1.0/translation.rng'))
     let $selected-translations := 
         if ($translation-id eq 'all') then 
-            collection($common:translations-path)//tei:TEI[tei:teiHeader/tei:fileDesc/tei:publicationStmt/@status = $common:published-statuses]
+            collection($common:translations-path)//tei:TEI[tei:teiHeader/tei:fileDesc/tei:publicationStmt/@status = $tei-content:published-statuses]
         else
             tei-content:tei(lower-case($translation-id), 'translation')
     

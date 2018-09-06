@@ -7,14 +7,18 @@
             <xsl:apply-templates select="node()"/>
         </p>
         <xsl:if test="tei:note | tei:l/tei:note">
-            <div class="indent">
+            <div>
                 <xsl:for-each select="tei:note | tei:l/tei:note">
-                    <p class="footnote">
-                        <a class="footnote-number">
-                            <xsl:value-of select="@index"/>
-                        </a>
-                        <xsl:apply-templates select="node()"/>
-                    </p>
+                    <div class="row">
+                        <div class="col-sm-2">
+                            <a class="footnote-number">
+                                <xsl:value-of select="@index"/>
+                            </a>
+                        </div>
+                        <div class="col-sm-10">
+                            <xsl:apply-templates select="node()"/>
+                        </div>
+                    </div>
                 </xsl:for-each>
             </div>
         </xsl:if>
@@ -41,9 +45,17 @@
     </xsl:template>
     
     <xsl:template match="tei:title">
-        <em>
-            <xsl:apply-templates select="node()"/>
-        </em>
+        <xsl:choose>
+            <xsl:when test="preceding-sibling::*">
+                <em>
+                    <xsl:apply-templates select="node()"/>
+                </em>
+            </xsl:when>
+            <xsl:otherwise>
+                <xsl:apply-templates select="node()"/>
+            </xsl:otherwise>
+        </xsl:choose>
+        
     </xsl:template>
     
     <xsl:template match="tei:foreign">

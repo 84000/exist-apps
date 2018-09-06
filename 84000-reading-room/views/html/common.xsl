@@ -25,7 +25,7 @@
             <link rel="stylesheet" type="text/css">
                 <xsl:choose>
                     <xsl:when test="$page-type = ('communications')">
-                        <xsl:attribute name="href" select="concat($front-end-path, '/css/84000-wordpress.css', '?v=', $app-version)"/>
+                        <xsl:attribute name="href" select="concat($front-end-path, '/css/84000-comms.css', '?v=', $app-version)"/>
                     </xsl:when>
                     <xsl:otherwise>
                         <xsl:attribute name="href" select="concat($front-end-path, '/css/84000-reading-room.css', '?v=', $app-version)"/>

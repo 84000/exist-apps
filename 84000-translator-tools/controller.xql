@@ -49,11 +49,18 @@ else if (ends-with($exist:resource, ".html")) then
     </dispatch>
 
 (: Cumulative glossary download :)
-else if (lower-case($exist:resource) eq 'cumulative-glossary.zip') then
-    <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-        <forward url="{concat($exist:controller, '/models/cumulative-glossary.xq')}"/>
-    </dispatch>
-    
+else if (lower-case($resource-id) eq 'cumulative-glossary') then
+    if (lower-case($resource-suffix) eq 'zip') then
+        <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+            <forward url="{concat($exist:controller, '/models/cumulative-glossary.xq')}">
+                <add-parameter name="resource-suffix" value="zip"/>
+            </forward>
+        </dispatch>
+    else
+        (: return xml :)
+        <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+            <forward url="{concat($exist:controller, '/models/cumulative-glossary.xq')}"/>
+        </dispatch>
 else
     (: everything else is passed through :)
     <dispatch xmlns="http://exist.sourceforge.net/NS/exist">

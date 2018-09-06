@@ -13,8 +13,8 @@ import module namespace section="http://read.84000.co/section" at "../modules/se
 
 declare option exist:serialize "method=xml indent=no";
 
-let $resource-id := lower-case(request:get-parameter('resource-id', 'lobby'))
-let $published-only := request:get-parameter('published-only', '0')
+let $resource-id := upper-case(request:get-parameter('resource-id', 'lobby'))
+let $published-only := request:get-parameter('published-only', false())
 let $tei := tei-content:tei($resource-id, 'section')
 
 return
@@ -33,13 +33,16 @@ return
                 { section:about($tei) }
                 { section:text-stats($tei) }
                 { 
-                    if($resource-id eq 'all-translated') then
+                    if(lower-case($resource-id) eq 'all-translated') then
                         section:all-translated-texts()
                     else
-                        section:texts($resource-id, $published-only) 
+                        section:texts($resource-id, $published-only, false())
                 }
                 { section:sections($resource-id, $published-only) }
             </section>,
-            common:app-texts('section', <replace xmlns="http://read.84000.co/ns/1.0"/>)
+            common:app-texts(
+                'section',
+                <replace xmlns="http://read.84000.co/ns/1.0"/>
+            )
         )
     )

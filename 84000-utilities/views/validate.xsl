@@ -19,6 +19,13 @@
                     
                     <div class="panel-body">
                         
+                        <h4>
+                            Schema: <xsl:value-of select="m:results/@schema"/>
+                            <xsl:if test="m:results/@type eq 'placeholders'">
+                                / Section: <xsl:value-of select="m:results/@section"/>
+                            </xsl:if>
+                        </h4>
+                        
                         <table class="table table-responsive table-icons">
                             <tbody>
                                 <xsl:for-each select="//m:results/m:tei-validation">
@@ -86,6 +93,15 @@
                     </button>
                 </div>
                 
+            </div>
+            
+            <!-- Link to top of page -->
+            <div class="hidden-print">
+                <div id="link-to-top-container" class="fixed-btn-container">
+                    <a href="#top" id="link-to-top" class="btn-round scroll-to-anchor" title="Return to the top of the page">
+                        <i class="fa fa-arrow-up" aria-hidden="true"/>
+                    </a>
+                </div>
             </div>
             
         </xsl:variable>

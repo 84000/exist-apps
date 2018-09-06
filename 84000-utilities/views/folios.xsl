@@ -37,7 +37,7 @@
                         <div class="tab-content">
                             
                             <p class="text-muted text-center small">
-                                This data can be retrieved in xml format at:  
+                                This data can be shared in xml format at:  
                                 <a target="folios-xml">
                                     <xsl:attribute name="href" select="concat($utilities-path, '/folios.xml')"/>
                                     <xsl:value-of select="concat($utilities-path, '/folios.xml')"/>
@@ -115,9 +115,26 @@
                                         </tr>
                                     </xsl:for-each>
                                 </tbody>
+                                <tfoot>
+                                    <tr>
+                                        <th colspan="2" class="text-right">Total</th>
+                                        <td colspan="3">
+                                            <xsl:value-of select="format-number(count(m:translations/m:translation/m:folios/m:folio), '#,###')"/>
+                                        </td>
+                                    </tr>
+                                </tfoot>
                             </table>
                         </div>
                     </div>
+                </div>
+            </div>
+            
+            <!-- Link to top of page -->
+            <div class="hidden-print">
+                <div id="link-to-top-container" class="fixed-btn-container">
+                    <a href="#top" id="link-to-top" class="btn-round scroll-to-anchor" title="Return to the top of the page">
+                        <i class="fa fa-arrow-up" aria-hidden="true"/>
+                    </a>
                 </div>
             </div>
             

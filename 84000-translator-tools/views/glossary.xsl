@@ -1,17 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" version="2.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" version="2.0" exclude-result-prefixes="#all">
+    
+    <xsl:include href="../../84000-reading-room/xslt/functions.xsl"/>
     
     <xsl:template name="glossary">
         
         <div id="cumulative-glossary">
             <div class="row">
-                <div class="col-sm-8">
+                <div class="col-sm-4">
                     <ul class="nav nav-pills">
                         <li role="presentation">
                             <xsl:if test="m:glossary/@type eq 'term'">
                                 <xsl:attribute name="class" select="'active'"/>
                             </xsl:if>
-                            <a href="?tab=glossary&amp;type=term">
+                            <a>
+                                <xsl:attribute name="href" select="concat('?tab=glossary&amp;type=term&amp;lang=', m:glossary/@lang)"/>
                                 Terms
                             </a>
                         </li>
@@ -19,7 +22,8 @@
                             <xsl:if test="m:glossary/@type eq 'person'">
                                 <xsl:attribute name="class" select="'active'"/>
                             </xsl:if>
-                            <a href="?tab=glossary&amp;type=person">
+                            <a>
+                                <xsl:attribute name="href" select="concat('?tab=glossary&amp;type=person&amp;lang=', m:glossary/@lang)"/>
                                 Persons
                             </a>
                         </li>
@@ -27,7 +31,8 @@
                             <xsl:if test="m:glossary/@type eq 'place'">
                                 <xsl:attribute name="class" select="'active'"/>
                             </xsl:if>
-                            <a href="?tab=glossary&amp;type=place">
+                            <a>
+                                <xsl:attribute name="href" select="concat('?tab=glossary&amp;type=place&amp;lang=', m:glossary/@lang)"/>
                                 Places
                             </a>
                         </li>
@@ -35,8 +40,40 @@
                             <xsl:if test="m:glossary/@type eq 'text'">
                                 <xsl:attribute name="class" select="'active'"/>
                             </xsl:if>
-                            <a href="?tab=glossary&amp;type=text">
+                            <a>
+                                <xsl:attribute name="href" select="concat('?tab=glossary&amp;type=text&amp;lang=', m:glossary/@lang)"/>
                                 Texts
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+                <div class="col-sm-4">
+                    <ul class="nav nav-pills">
+                        <li role="presentation">
+                            <xsl:if test="lower-case(m:glossary/@lang) eq 'en'">
+                                <xsl:attribute name="class" select="'active'"/>
+                            </xsl:if>
+                            <a>
+                                <xsl:attribute name="href" select="concat('?tab=glossary&amp;type=', m:glossary/@type,'&amp;lang=en')"/>
+                                English
+                            </a>
+                        </li>
+                        <li role="presentation">
+                            <xsl:if test="lower-case(m:glossary/@lang) eq 'sa-ltn'">
+                                <xsl:attribute name="class" select="'active'"/>
+                            </xsl:if>
+                            <a>
+                                <xsl:attribute name="href" select="concat('?tab=glossary&amp;type=', m:glossary/@type,'&amp;lang=Sa-Ltn')"/>
+                                Sanskrit
+                            </a>
+                        </li>
+                        <li role="presentation">
+                            <xsl:if test="lower-case(m:glossary/@lang) eq 'bo-ltn'">
+                                <xsl:attribute name="class" select="'active'"/>
+                            </xsl:if>
+                            <a>
+                                <xsl:attribute name="href" select="concat('?tab=glossary&amp;type=', m:glossary/@type,'&amp;lang=Bo-Ltn')"/>
+                                Wylie
                             </a>
                         </li>
                     </ul>
@@ -52,26 +89,16 @@
             </div>
             <div class="row">
                 
-                <div class="col-items">
+                <div class="col-items div-list">
                     
                     <xsl:for-each select="m:glossary/m:term">
-                        <div class="glossary-term">
+                        <div class="item">
                             
-                            <xsl:variable name="start-letter" select="@start-letter"/>
-                            
-                            <xsl:if test="not(preceding-sibling::*[@start-letter = $start-letter])">
-                                <a class="milestone">
-                                    <xsl:attribute name="name" select="$start-letter"/>
-                                    <xsl:attribute name="id" select="concat('group-', $start-letter)"/>
-                                    <xsl:value-of select="$start-letter"/>
-                                </a>
-                            </xsl:if>
+                            <xsl:copy-of select="common:marker(@start-letter, if(preceding-sibling::m:term[1]/@start-letter) then preceding-sibling::m:term[1]/@start-letter else '')"/>
                             
                             <div class="row">
-                                <div class="col-sm-6">
-                                    <p>
-                                        <xsl:value-of select="normalize-space(m:main-term/text())"/>
-                                    </p>
+                                <div class="col-sm-6 name">
+                                    <xsl:value-of select="normalize-space(m:main-term/text())"/>
                                 </div>
                                 <div class="col-sm-6 text-right">
                                     <a target="_self">
@@ -99,21 +126,7 @@
                 </div>
                 
                 <div id="letters-nav" class="col-nav">
-                    <div data-spy="affix">
-                        <div class="btn-group-vertical btn-group-xs" role="group" aria-label="navigation">
-                            <xsl:for-each select="m:glossary/m:term">
-                                <xsl:variable name="start-letter" select="@start-letter"/>
-                                <xsl:if test="not(preceding-sibling::*[@start-letter = $start-letter])">
-                                    
-                                    <a class="btn btn-default scroll-to-anchor">
-                                        <xsl:attribute name="href" select="concat('#group-', $start-letter)"/>
-                                        <xsl:value-of select="$start-letter"/>
-                                    </a>
-                                    
-                                </xsl:if>
-                            </xsl:for-each>
-                        </div>
-                    </div>
+                    <xsl:copy-of select="common:marker-nav(m:glossary/m:term)"/>
                 </div>
                 
             </div>

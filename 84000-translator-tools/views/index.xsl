@@ -43,7 +43,7 @@
                                     </xsl:if>
                                     <a>
                                         <xsl:attribute name="href" select="concat('?tab=', @id)"/>
-                                        <xsl:value-of select="text()"/>
+                                        <xsl:value-of select="m:label"/>
                                     </a>
                                 </li>
                             </xsl:for-each>

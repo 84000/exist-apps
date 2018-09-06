@@ -51,7 +51,10 @@
                                             <a href="/validate.html?type=sections" target="validate-sections">Sections</a>
                                         </li>
                                         <li>
-                                            <a href="/validate.html?type=placeholders" target="validate-placeholders">Placeholder Texts</a>
+                                            <a href="/validate.html?type=placeholders&amp;section=O1JC11494" target="validate-kangyur-placeholders">Kangyur placeholders</a>
+                                        </li>
+                                        <li>
+                                            <a href="/validate.html?type=placeholders&amp;section=O1JC7630" target="validate-tengyur-placeholders">Tengyur placeholders</a>
                                         </li>
                                     </ul>
                                 </li>

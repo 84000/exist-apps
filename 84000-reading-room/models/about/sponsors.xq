@@ -18,7 +18,7 @@ let $tabs :=
     </tabs>
 
 let $header := 
-    <header xmlns="http://read.84000.co/ns/1.0">
+    <header xmlns="http://read.84000.co/ns/1.0" page-id="about/sponsors">
         <img>{ concat($common:environment/m:url[@id eq 'front-end']/text(), common:app-text('about.sponsors.header-img-src')) }</img>
         <title>{ common:app-text('about.sponsors.title') }</title>
         <quote>
@@ -28,28 +28,27 @@ let $header :=
     </header>
 
 let $sponsors := doc(concat($common:data-path, '/operations/sponsors.xml'))
+let $sponsorship := 
+    <sponsorship xmlns="http://read.84000.co/ns/1.0">
+        {
+            $sponsors/m:sponsors/m:sponsor[@type eq 'founding']
+        }
+        {
+            $sponsors/m:sponsors/m:sponsor[@type eq 'matching-funds']
+        }
+        {
+            translations:sponsored()
+        }
+    </sponsorship>
 
 return
-    <response 
-        xmlns="http://read.84000.co/ns/1.0" 
-        model-type="about/sponsors"
-        page-id="about/sponsors"
-        timestamp="{ current-dateTime() }"
-        app-id="{ $common:app-id }"
-        app-version="{ $common:app-version }"
-        user-name="{ common:user-name() }" >
-        { $header }
-        { $tabs }
-        { translations:summary() }
-        <sponsorship>
-            {
-                $sponsors/m:sponsors/m:sponsor[@type eq 'founding']
-            }
-            {
-                $sponsors/m:sponsors/m:sponsor[@type eq 'matching-funds']
-            }
-            {
-                translations:sponsored()
-            }
-        </sponsorship>
-    </response>
+    common:response(
+        "about/sponsors", 
+        $common:app-id,
+        (
+            $header,
+            $tabs,
+            translations:summary(),
+            $sponsorship
+        )
+    )
