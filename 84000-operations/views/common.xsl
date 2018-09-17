@@ -15,11 +15,11 @@
                 </a>
             </li>
             <li role="presentation">
-                <xsl:if test="$active-tab eq 'operations/progress'">
+                <xsl:if test="$active-tab eq 'operations/search'">
                     <xsl:attribute name="class" select="'active'"/>
                 </xsl:if>
-                <a href="progress.html?status=1">
-                    Progress
+                <a href="search.html?status=none">
+                    Search
                 </a>
             </li>
             <li role="presentation">

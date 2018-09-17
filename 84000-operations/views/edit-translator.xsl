@@ -89,10 +89,11 @@
                                             
                                             <div class="row">
                                                 <div class="col-sm-6">
+                                                    <!-- 
                                                     <a class="btn btn-danger">
                                                         <xsl:attribute name="href" select="concat('/translators.html?delete=', m:translator/@xml:id)"/>
                                                         Delete
-                                                    </a>
+                                                    </a> -->
                                                 </div>
                                                 <div class="col-sm-6">
                                                     <button type="submit" class="btn btn-primary pull-right">

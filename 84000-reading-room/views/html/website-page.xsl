@@ -124,13 +124,15 @@
                                             <li>
                                                 <a class="on-click-submit">
                                                     <xsl:attribute name="href" select="concat($reading-room-path, '/search.html')"/>
+                                                    <i class="fa fa-caret-right"/>
                                                     Search the Reading Room
                                                 </a>
                                             </li>
                                             <li>
                                                 <a class="on-click-submit">
                                                     <xsl:attribute name="href" select="concat($communications-site-path, '/')"/>
-                                                    Search the Blog
+                                                    <i class="fa fa-caret-right"/>
+                                                    Search the Website
                                                 </a>
                                             </li>
                                         </ul>

@@ -11,11 +11,12 @@ declare namespace tei="http://www.tei-c.org/ns/1.0";
 
 declare variable $sponsors:sponsors := doc(concat($common:data-path, '/operations/sponsors.xml'));
 declare variable $sponsors:texts := collection($common:translations-path);
+declare variable $sponsors:prefixes := '(Dr\.|Prof\.)';
 
 declare function sponsors:sponsors($include-acknowledgements as xs:boolean){
     let $sponsors-ordered := 
         for $sponsor in $sponsors:sponsors/m:sponsors/m:sponsor
-        order by normalize-space(replace($sponsor/m:name, '(Dr\.|Prof\.)', ''))
+        order by normalize-space(replace(concat($sponsor/m:name, ' ', $sponsor/m:internal-name), $sponsors:prefixes, ''))
         return $sponsor
     
     return
@@ -33,7 +34,7 @@ declare function sponsors:sponsor($id as xs:string, $include-acknowledgements as
     return
         element { node-name($sponsor) } {
             $sponsor/@*,
-            attribute start-letter { upper-case(substring(normalize-space(replace($sponsor/m:name, '(Dr\.|Prof\.)', '')), 1, 1)) },
+            attribute start-letter { upper-case(substring(normalize-space(replace($sponsor/m:name, $sponsors:prefixes, '')), 1, 1)) },
             $sponsor/node(),
             if($include-acknowledgements) then
                 sponsors:acknowledgements(concat('sponsors.xml#', $sponsor/@xml:id))
@@ -71,12 +72,15 @@ declare function sponsors:acknowledgements($uri as xs:string){
             let $title := tei-content:title($tei)
             let $translation-id := tei-content:id($tei)
             let $translation-status := $tei//tei:teiHeader/tei:fileDesc/tei:publicationStmt/@status
+            let $sponsorship-status := $tei//tei:teiHeader/tei:fileDesc/tei:titleStmt/@sponsored
+            
             for $toh-key in $tei//tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl/@key
                 let $toh := translation:toh($tei, $toh-key)
             return
                 element m:acknowledgement {
                     attribute translation-id { $translation-id },
                     attribute translation-status {$translation-status},
+                    attribute sponsorship-status {$sponsorship-status},
                     element m:title { text { $title } },
                     $toh,
                     element tei:div {
@@ -123,21 +127,36 @@ declare function sponsors:update($sponsor as node()?) as xs:string {
         else
             concat('sponsor-', xs:string(sponsors:next-id()))
     
+    let $sponsor-type := request:get-parameter('sponsor-type', '')
+    let $name := request:get-parameter('name', '')
+    let $internal-name := request:get-parameter('internal-name', '')
+    let $country := request:get-parameter('country', '')
+    
     let $new-value := 
         <sponsor xmlns="http://read.84000.co/ns/1.0" 
-            type="{ request:get-parameter('sponsor-type', '') }"
+            type="{ $sponsor-type }"
             xml:id="{ $sponsor-id }">
-            <name>{ request:get-parameter('name', '') }</name>
-            <country>{ request:get-parameter('country', '') }</country>
+            <name>{ $name }</name>
+            {
+                if($internal-name) then
+                    <internal-name>{ $internal-name }</internal-name>
+                else
+                    ()
+            }
+            {
+                if($country) then
+                    <country>{ $country}</country>
+                else
+                    ()
+            }
         </sponsor>
     
     let $parent := $sponsors:sponsors/m:sponsors
     
+    let $update := common:update('sponsor', $sponsor, $new-value, $parent, ())
+    
     return
-        if(common:update('sponsor', $sponsor, $new-value, $parent, ())) then
-            $sponsor-id
-        else
-            ''
+        $new-value//@xml:id
         
 };
 

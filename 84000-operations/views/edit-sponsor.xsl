@@ -70,6 +70,7 @@
                                                 </xsl:choose>
                                             </legend>
                                             <xsl:copy-of select="m:text-input('Name','name', m:sponsor/m:name, 9, 'required')"/>
+                                            <xsl:copy-of select="m:text-input('Internal name','internal-name', m:sponsor/m:internal-name, 9, '')"/>
                                             <xsl:copy-of select="m:text-input('Country','country', m:sponsor/m:country, 9, '')"/>
                                             <div class="form-group">
                                                 <label class="control-label col-sm-3" for="sponsor-type">

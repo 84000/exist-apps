@@ -60,22 +60,22 @@
                                             </xsl:choose>
                                              / 
                                             <xsl:choose>
-                                                <xsl:when test="m:source[@node-type eq 'title']">
+                                                <xsl:when test="m:text[@node-type eq 'title']">
                                                     Title
                                                 </xsl:when>
-                                                <xsl:when test="m:source[@node-type eq 'author']">
+                                                <xsl:when test="m:text[@node-type eq 'author']">
                                                     Author
                                                 </xsl:when>
-                                                <xsl:when test="m:source[@node-type eq 'edition']">
+                                                <xsl:when test="m:text[@node-type eq 'edition']">
                                                     Edition
                                                 </xsl:when>
-                                                <xsl:when test="m:source[@node-type eq 'expan']">
+                                                <xsl:when test="m:text[@node-type eq 'expan']">
                                                     Abbreviation
                                                 </xsl:when>
-                                                <xsl:when test="m:source[@node-type eq 'bibl']">
+                                                <xsl:when test="m:text[@node-type eq 'bibl']">
                                                     Bibliography
                                                 </xsl:when>
-                                                <xsl:when test="m:source[@node-type eq 'gloss']">
+                                                <xsl:when test="m:text[@node-type eq 'gloss']">
                                                     Glossary
                                                 </xsl:when>
                                                 <xsl:otherwise>

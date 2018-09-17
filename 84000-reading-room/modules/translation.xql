@@ -42,7 +42,7 @@ declare function translation:title-variants($translation as node()) as node()* {
 };
 
 declare function translation:translation($translation as node()) as node()* {
-    <translation xmlns="http://read.84000.co/ns/1.0">
+    <translation xmlns="http://read.84000.co/ns/1.0" sponsored="{ $translation//tei:titleStmt/@sponsored }">
         <authors>
             {
                 for $author in $translation//tei:titleStmt/tei:author
@@ -160,19 +160,20 @@ declare function translation:filename($translation as node(), $resource-id as xs
     let $diacritics  := 'āḍḥīḷḹṃṇñṅṛṝṣśṭūṁ'
     let $normalized := 'adhillmnnnrrsstum'
     
-    let $toh-key := translation:toh-key($translation, $resource-id)
-    let $title := tei-content:title($translation)
-    
-    return
+    let $toh-key := lower-case(translation:toh-key($translation, $resource-id))
+    let $title := 
         replace(
-            replace(
-                translate(
-                    lower-case(
-                        string-join(($toh-key, '84000', $title), ' ')   (: toh / 84000 / title :)
-                    )                                                   (: lower case :)
-                 , $diacritics, $normalized)                            (: remove diacritics :)
-            , '[^a-zA-Z0-9\s]', '')                                     (: remove non-alphanumeric :)
-        , '\s', '-')                                                    (: convert spaces to - :)
+            translate(
+                lower-case(
+                    tei-content:title($translation)     (: get title :)
+                )                                       (: convert to lower case :)
+            , $diacritics, $normalized)                 (: remove diacritics :)
+        ,'[^a-zA-Z0-9\s]', ' ')                         (: remove non-alphanumeric, except spaces :)
+    
+    let $file-title := concat($toh-key, '_', '84000', ' ', $title)
+    let $filename := replace($file-title, '\s', '-')    (: convert spaces to hyphen :)
+    return
+        $filename
 };
 
 declare function translation:downloads($translation as node(), $resource-id as xs:string) as node()* {
@@ -181,7 +182,7 @@ declare function translation:downloads($translation as node(), $resource-id as x
         <downloads xmlns="http://read.84000.co/ns/1.0">
             {
                 if(util:binary-doc-available(concat($common:data-path, '/pdf/', $resource-id ,'.pdf'))) then
-                    <download type="pdf" url="{ concat('/data/pdf/', $resource-id ,'.pdf') }" filename="{ concat($filename, '.pdf') }" fa-icon-class="fa-file-pdf-o">
+                    <download type="pdf" url="{ concat('/data/', $filename ,'.pdf') }" fa-icon-class="fa-file-pdf-o">
                         Download PDF
                     </download>
                 else
@@ -189,7 +190,7 @@ declare function translation:downloads($translation as node(), $resource-id as x
             }
             {
                 if(util:binary-doc-available(concat($common:data-path, '/epub/', $resource-id ,'.epub'))) then
-                    <download type="epub" url="{ concat('/data/epub/', $resource-id ,'.epub') }" filename="{ concat($filename, '.epub') }" fa-icon-class="fa-book">
+                    <download type="epub" url="{ concat('/data/', $filename ,'.epub') }" fa-icon-class="fa-book">
                         Download EPUB
                     </download>
                 else
@@ -197,7 +198,7 @@ declare function translation:downloads($translation as node(), $resource-id as x
             }
             {
                 if(util:binary-doc-available(concat($common:data-path, '/azw3/', $resource-id ,'.azw3'))) then
-                    <download type="azw3" url="{ concat('/data/azw3/', $resource-id ,'.azw3') }" filename="{ concat($filename, '.azw3') }" fa-icon-class="fa-amazon">
+                    <download type="azw3" url="{ concat('/data/', $filename ,'.azw3') }" fa-icon-class="fa-amazon">
                         Download AZW3 (Kindle)
                     </download>
                 else
@@ -217,7 +218,7 @@ declare function translation:summary($translation as node()) as node()* {
 declare function translation:acknowledgment($translation as node()) as node()* {
     let $acknowledgment := $translation//tei:front//tei:div[@type='acknowledgment']
     return
-        <acknowledgment xmlns="http://read.84000.co/ns/1.0" prefix="ac" sponsored="{ $acknowledgment/@sponsored }">
+        <acknowledgment xmlns="http://read.84000.co/ns/1.0" prefix="ac">
         { 
             $acknowledgment/*[self::tei:p | self::tei:milestone | self::tei:lg ]/.
         }
@@ -384,7 +385,7 @@ declare function translation:bibliography-section($section as node()) as node()*
         {
             for $item in $section/tei:bibl
             return
-                <item>{ $item/node() }</item>
+                <item id="{ $item/@xml:id }">{ $item/node() }</item>
         }
         {
             for $sub-section in $section/tei:div[@type='section']
@@ -568,11 +569,14 @@ declare function translation:sponsors($translation as node(), $include-acknowled
         for $translation-sponsor in $translation//tei:titleStmt/tei:sponsor
         return 
             $sponsors:sponsors/m:sponsors/m:sponsor[@xml:id eq substring-after($translation-sponsor/@sameAs, 'sponsors.xml#')]
+    
+    let $acknowledgment := $translation//tei:front/tei:div[@type eq "acknowledgment"]
+    
     return
         <sponsors xmlns="http://read.84000.co/ns/1.0" >
         {(
             $sponsors,
-            if($include-acknowledgements) then
+            if($include-acknowledgements and $acknowledgment/tei:p) then
                 let $query-options := 
                     <options>
                         <default-operator>and</default-operator>
@@ -594,15 +598,17 @@ declare function translation:sponsors($translation as node(), $include-acknowled
                                 <phrase occur="should">{ lower-case($sponsor-name) }</phrase>
                         }
                         </query>
-                    let $query-result := $translation//tei:front/tei:div[@type eq "acknowledgment"]/tei:p[ft:query(., $query, $query-options)]
+                    
+                    let $query-result := $acknowledgment/tei:p[ft:query(., $query, $query-options)]
                     let $expanded := 
                         if($query-result) then
                             util:expand($query-result, "expand-xincludes=no")
                         else
-                            $translation//tei:front/tei:div[@type eq "acknowledgment"]/tei:p
+                            $acknowledgment/tei:p
+                    
                     return
                         element tei:div {
-                            $translation//tei:front/tei:div[@type eq "acknowledgment"]/@*,
+                            attribute type { "acknowledgment" },
                             $expanded
                         }
             else
@@ -684,17 +690,6 @@ declare function translation:update($translation as node(), $request-parameters 
                         <end volume="{ request:get-parameter(concat('end-volume-', $toh-key), '0') }" page="{ request:get-parameter(concat('end-page-', $toh-key), '0') }"/>
                     </location>
             
-            (: Sponsorship status: The 'acknowledgment' may or may not exist :)
-            else if($request-parameter eq 'sponsorship-status') then
-                if($translation//tei:text/tei:front/tei:div[@type eq "acknowledgment"]) then
-                    functx:add-or-update-attributes(
-                        $translation//tei:text/tei:front/tei:div[@type eq "acknowledgment"], 
-                        xs:QName('sponsored'), 
-                        request:get-parameter('sponsorship-status', '')
-                    )
-                else
-                    <div xmlns="http://www.tei-c.org/ns/1.0" type='acknowledgment' sponsored="{ request:get-parameter('sponsorship-status', '') }"/>
-            
             (: Translator summary node may or may not exist :)
             else if($request-parameter eq 'translator-team-id') then
                 if($translation//tei:fileDesc/tei:titleStmt/tei:author[@role eq 'translatorMain'][1]) then
@@ -730,8 +725,8 @@ declare function translation:update($translation as node(), $request-parameters 
                     else
                         ()
             
-            (: Translation status: set to '' if zero :)
-            else if($request-parameter eq 'translation-status') then
+            (: Set to '' if zero :)
+            else if($request-parameter = ('translation-status')) then
                 if(request:get-parameter('translation-status', '') eq '0') then
                     ''
                 else
@@ -750,7 +745,7 @@ declare function translation:update($translation as node(), $request-parameters 
             else if($request-parameter eq 'translation-status') then
                 $translation//tei:fileDesc/tei:publicationStmt
             else if($request-parameter eq 'sponsorship-status') then
-                $translation//tei:text/tei:front
+                $translation//tei:fileDesc/tei:titleStmt
             else if(starts-with($request-parameter, 'sponsor-id-')) then
                 $translation//tei:fileDesc/tei:titleStmt
             else if($request-parameter eq 'translator-team-id') then
@@ -769,7 +764,7 @@ declare function translation:update($translation as node(), $request-parameters 
             else if($request-parameter eq 'translation-status') then
                 $parent/@status
             else if($request-parameter eq 'sponsorship-status') then
-                $parent/tei:div[@type eq "acknowledgment"]
+                $parent/@sponsored
             else if(starts-with($request-parameter, 'sponsor-id-')) then
                 $parent/tei:sponsor[xs:integer(substring-after($request-parameter, 'sponsor-id-'))]
             else if($request-parameter eq 'translator-team-id') then

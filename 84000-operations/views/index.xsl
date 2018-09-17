@@ -38,7 +38,7 @@
                                             <xsl:variable name="total-pages" select="m:outline-summary/m:texts/m:pages/@count"/>
                                             <tr class="total">
                                                 <td>
-                                                    <a href="progress.html">
+                                                    <a href="search.html">
                                                         Total
                                                     </a>
                                                 </td>
@@ -64,8 +64,8 @@
                                             <xsl:variable name="published-pages" select="m:outline-summary/m:texts/m:pages/@published"/>
                                             <tr class="published">
                                                 <td>
-                                                    <a href="progress.html">
-                                                        <xsl:attribute name="href" select="concat('progress.html?status=', string-join(m:text-statuses/m:status[@group eq 'published']/@status-id, ','))"/>
+                                                    <a>
+                                                        <xsl:attribute name="href" select="concat('search.html?status=', string-join(m:text-statuses/m:status[@group eq 'published']/@status-id, ','))"/>
                                                         Published 
                                                         <small>(<xsl:value-of select="string-join(m:text-statuses/m:status[@group eq 'published']/@status-id, ', ')"/>)</small>
                                                     </a>
@@ -94,8 +94,8 @@
                                             <xsl:variable name="translated-pages" select="m:outline-summary/m:texts/m:pages/@translated"/>
                                             <tr class="translated">
                                                 <td>
-                                                    <a href="progress.html">
-                                                        <xsl:attribute name="href" select="concat('progress.html?status=', string-join(m:text-statuses/m:status[@group eq 'translated']/@status-id, ','))"/>
+                                                    <a>
+                                                        <xsl:attribute name="href" select="concat('search.html?status=', string-join(m:text-statuses/m:status[@group eq 'translated']/@status-id, ','))"/>
                                                         Translated 
                                                         <small>(<xsl:value-of select="string-join(m:text-statuses/m:status[@group eq 'translated']/@status-id, ', ')"/>)</small>
                                                     </a>
@@ -123,8 +123,8 @@
                                             <xsl:variable name="in-translation-pages" select="m:outline-summary/m:texts/m:pages/@in-translation"/>
                                             <tr class="in-translation">
                                                 <td>
-                                                    <a href="progress.html">
-                                                        <xsl:attribute name="href" select="concat('progress.html?status=', string-join(m:text-statuses/m:status[@group eq 'in-translation']/@status-id, ','))"/>
+                                                    <a>
+                                                        <xsl:attribute name="href" select="concat('search.html?status=', string-join(m:text-statuses/m:status[@group eq 'in-translation']/@status-id, ','))"/>
                                                         In Translation 
                                                         <small>(<xsl:value-of select="string-join(m:text-statuses/m:status[@group eq 'in-translation']/@status-id, ', ')"/>)</small>
                                                     </a>
@@ -152,7 +152,7 @@
                                             <xsl:variable name="not-started-pages" select="m:outline-summary/m:texts/m:pages/@not-started"/>
                                             <tr class="not-started">
                                                 <td>
-                                                    <a href="progress.html?status=0">
+                                                    <a href="search.html?status=0">
                                                         Not Started
                                                     </a>
                                                 </td>
@@ -179,7 +179,7 @@
                                             <xsl:variable name="sponsored-pages" select="m:outline-summary/m:texts/m:pages/@sponsored"/>
                                             <tr class="sponsored">
                                                 <td>
-                                                    <a href="progress.html?sponsored=sponsored">
+                                                    <a href="search.html?sponsored=sponsored">
                                                         Sponsored
                                                     </a>
                                                 </td>

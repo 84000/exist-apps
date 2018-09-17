@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" version="2.0" exclude-result-prefixes="#all">
     
-    <xsl:import href="../../xslt/tei-to-xhtml.xsl"/>
+    <xsl:import href="../../xslt/search-result.xsl"/>
     <xsl:include href="website-page.xsl"/>
     
     <xsl:template match="/m:response">
@@ -64,7 +64,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div id="search-form-container" class="row">
+                        <div id="search-container" class="row">
                             
                             <div class="col-md-10 col-md-offset-1 col-lg-8 col-lg-offset-2">
                                 
@@ -86,7 +86,9 @@
                                     <xsl:when test="m:search/m:results/m:item">
                                         <xsl:variable name="first-record" select="m:search/m:results/@first-record"/>
                                         <xsl:for-each select="m:search/m:results/m:item">
+                                            <xsl:variable name="source" select="m:source"/>
                                             <div class="search-result">
+                                                
                                                 <div class="row">
                                                     
                                                     <div class="col-sm-1 text-muted">
@@ -94,23 +96,15 @@
                                                     </div>
                                                     
                                                     <div class="col-sm-11 col-md-9">
-                                                        <a class="title">
-                                                            <xsl:attribute name="href" select="m:source/@url"/>
-                                                            <xsl:choose>
-                                                                <xsl:when test="compare(data(m:source/m:title), data(m:text)) eq 0">
-                                                                    <xsl:copy-of select="m:text/node()"/>
-                                                                </xsl:when>
-                                                                <xsl:otherwise>
-                                                                    <xsl:value-of select="m:source/m:title/text()"/>
-                                                                </xsl:otherwise>
-                                                            </xsl:choose>
+                                                        <a>
+                                                            <xsl:attribute name="href" select="m:match-url($source)"/>
+                                                            <xsl:value-of select="$source/m:title/text()"/>
                                                         </a>
                                                     </div>
                                                     
-                                                    <div class="col-sm-11 col-sm-offset-1 col-md-2 col-md-offset-0 text-md-right">
-                                                        
+                                                    <div class="col-sm-11 col-sm-offset-1 col-md-2 col-md-offset-0">
                                                         <xsl:choose>
-                                                            <xsl:when test="m:source[@tei-type eq 'section']">
+                                                            <xsl:when test="$source[@tei-type eq 'section']">
                                                                 <span class="label label-success">
                                                                     Section
                                                                 </span>
@@ -124,29 +118,50 @@
                                                     </div>
                                                     
                                                 </div>
-                                                
-                                                <div class="row">
-                                                    <div class="col-sm-11 col-sm-offset-1 small text-muted">
-                                                        in
-                                                        <ul class="breadcrumb">
-                                                            <xsl:for-each select="m:source/m:parent | m:source/m:parent//m:parent">
-                                                                <xsl:sort select="@nesting" order="descending"/>
-                                                                <li class="">
-                                                                    <xsl:value-of select="m:title[@xml:lang='en']/text()"/>
-                                                                </li>
-                                                            </xsl:for-each>
-                                                        </ul>
+                                                    
+                                                <xsl:for-each select="$source/m:bibl">
+                                                    <div class="row">
+                                                        <div class="col-sm-11 col-sm-offset-1 small text-muted">
+                                                            in
+                                                            <ul class="breadcrumb">
+                                                                <xsl:for-each select="m:parent | m:parent//m:parent">
+                                                                    <xsl:sort select="@nesting" order="descending"/>
+                                                                    <li>
+                                                                        <xsl:value-of select="m:title[@xml:lang='en']/text()"/>
+                                                                    </li>
+                                                                </xsl:for-each>
+                                                                <xsl:if test="m:toh/m:full">
+                                                                    <li>
+                                                                        <a>
+                                                                            <xsl:attribute name="href" select="m:match-url($source)"/>
+                                                                            <xsl:value-of select="m:toh/m:full"/>
+                                                                        </a>
+                                                                    </li>
+                                                                </xsl:if>
+                                                            </ul>
+                                                        </div>
                                                     </div>
-                                                </div>
+                                                </xsl:for-each>
                                                 
-                                                <div class="row">
-                                                    <div class="col-sm-11 col-sm-offset-1">
-                                                        <xsl:if test="compare(data(m:source/m:title), data(m:text)) ne 0">
-                                                            <xsl:copy-of select="m:text/node()"/>
+                                                <section>
+                                                    <xsl:attribute name="id" select="concat('result-matches-', position())"/>
+                                                    <div>
+                                                        <xsl:if test="count(m:match) gt 1">
+                                                            <xsl:attribute name="class" select="'render-in-viewport'"/>
                                                         </xsl:if>
+                                                        <xsl:for-each select="m:match">
+                                                            <!-- Don't bother if it's the title, we already show this -->
+                                                            <xsl:if test="not(@node-type eq 'title' and @type eq 'mainTitle' and @xml:lang eq 'en')">
+                                                                <div class="row">
+                                                                    <div class="col-sm-offset-1 col-sm-11">
+                                                                        <xsl:apply-templates select="."/>
+                                                                    </div>
+                                                                </div>
+                                                            </xsl:if>
+                                                        </xsl:for-each>
                                                     </div>
-                                                </div>
-                                                
+                                                </section>
+                                                    
                                             </div>
                                         </xsl:for-each>
                                         

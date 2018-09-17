@@ -240,7 +240,7 @@ declare function local:log-event($type as xs:string, $event as xs:string, $objec
     (
         (: create the log file if it does not exist :)
         if (not(doc-available($log-uri))) then
-            xmldb:store($log-collection, $log, <log/>)
+            xmldb:store($log-collection, $log, <log xmlns="http://read.84000.co/ns/1.0"/>)
         else ()
     ,
         (: log the trigger details to the log file :)

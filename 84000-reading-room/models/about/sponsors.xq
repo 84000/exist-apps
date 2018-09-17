@@ -7,14 +7,14 @@ declare namespace m="http://read.84000.co/ns/1.0";
 
 declare option exist:serialize "method=xml indent=no";
 
-let $tab := request:get-parameter('tab', 'founding')
+let $tab := request:get-parameter('tab', 'matching-funds')
 let $lang := request:get-parameter('lang', 'en')
 
 let $tabs := 
     <tabs xmlns="http://read.84000.co/ns/1.0">
-        <tab active="{ if($tab eq 'founding')then 1 else 0 }" id="founding">Founding Sponsors</tab>
-        <tab active="{ if($tab eq 'sutra')then 1 else 0 }" id="sutra">Sūtra Sponsors</tab>
         <tab active="{ if($tab eq 'matching-funds')then 1 else 0 }" id="matching-funds">Matching Funds Sponsors</tab>
+        <tab active="{ if($tab eq 'sutra')then 1 else 0 }" id="sutra">Sūtra Sponsors</tab>
+        <tab active="{ if($tab eq 'founding')then 1 else 0 }" id="founding">Founding Sponsors</tab>
     </tabs>
 
 let $header := 

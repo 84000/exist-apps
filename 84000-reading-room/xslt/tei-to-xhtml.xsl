@@ -353,7 +353,22 @@
     <!-- Temporary id -->
     <xsl:template name="tid">
         <xsl:if test="@tid">
-            <xsl:attribute name="id" select="concat('node', '-', @tid)"/>
+            <xsl:choose>
+                <xsl:when test="/m:response/m:translation">
+                    <xsl:attribute name="id" select="concat('node-', @tid)"/>
+                </xsl:when>
+                <xsl:when test="/m:response/m:section">
+                    <xsl:choose>
+                        <xsl:when test="ancestor::m:text">
+                            <xsl:attribute name="id" select="concat(ancestor::m:text/@resource-id, '-node-', @tid)"/>
+                        </xsl:when>
+                        <xsl:otherwise>
+                            <xsl:attribute name="id" select="concat('node-', @tid)"/>
+                        </xsl:otherwise>
+                    </xsl:choose>
+                    
+                </xsl:when>
+            </xsl:choose>
         </xsl:if>
     </xsl:template>
     
@@ -425,6 +440,7 @@
             </xsl:if>
             <xsl:for-each select="m:item">
                 <p>
+                    <xsl:attribute name="id" select="@id"/>
                     <xsl:apply-templates select="node()"/>
                 </p>
             </xsl:for-each>
@@ -432,26 +448,5 @@
         </div>
     </xsl:template>
     
-    <!-- Translation status -->
-    <xsl:template name="translation-status">
-        <xsl:param name="status"/>
-        <xsl:choose>
-            <xsl:when test="$status eq '1'">
-                <span class="label label-success published">
-                    Translated
-                </span>
-            </xsl:when>
-            <xsl:when test="$status gt ''">
-                <span class="label label-warning in-progress">
-                    In progress
-                </span>
-            </xsl:when>
-            <xsl:otherwise>
-                <span class="label label-default">
-                    Not Started
-                </span>
-            </xsl:otherwise>
-        </xsl:choose>
-    </xsl:template>
     
 </xsl:stylesheet>

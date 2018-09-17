@@ -61,7 +61,7 @@
                                                 <div class="col-sm-6">
                                                     <a>
                                                         <xsl:attribute name="href" select="concat('/edit-translator-institution.html?id=', @xml:id)"/>
-                                                        <xsl:value-of select="m:name"/>
+                                                        <xsl:value-of select="m:sort-name"/>
                                                     </a>
                                                 </div>
                                                 

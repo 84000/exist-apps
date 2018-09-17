@@ -19,8 +19,6 @@ import module namespace functx="http://www.functx.com";
 
 declare function search:search($request as xs:string, $first-record as xs:double, $max-records as xs:double) {
     
-    (: For now only search translations :)
-    (:let $translations := collection($common:translations-path)//tei:TEI[tei:teiHeader/tei:fileDesc/tei:publicationStmt/@status = $tei-content:published-statuses]:)
     let $teis := collection($common:tei-path)//tei:TEI[tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:idno/@xml:id]
     
     let $options :=
@@ -39,12 +37,11 @@ declare function search:search($request as xs:string, $first-record as xs:double
             </bool>
         </query>
     
-    let $results := 
+    let $results :=
         for $result in 
             $teis//tei:teiHeader/tei:fileDesc//tei:title[ft:query(., $query, $options)]
-                | $teis//tei:teiHeader/tei:fileDesc//tei:author[ft:query(., $query, $options)]
-                | $teis//tei:teiHeader/tei:fileDesc//tei:edition[ft:query(., $query, $options)]
-                | $teis//tei:teiHeader/tei:fileDesc//tei:sourceDesc[ft:query(., $query, $options)]
+                | $teis//tei:teiHeader/tei:fileDesc/tei:sourceDesc//tei:ref[ft:query(., $query, $options)]
+                | $teis//tei:teiHeader/tei:fileDesc/tei:sourceDesc//tei:biblScope[ft:query(., $query, $options)]
                 | $teis//tei:text//tei:p[ft:query(., $query, $options)]
                 | $teis//tei:text//tei:lg[ft:query(., $query, $options)]
                 | $teis//tei:text//tei:ab[ft:query(., $query, $options)]
@@ -53,9 +50,21 @@ declare function search:search($request as xs:string, $first-record as xs:double
                 | $teis//tei:body//tei:list/tei:head[ft:query(., $query, $options)]
                 | $teis//tei:back//tei:bibl[ft:query(., $query, $options)]
                 | $teis//tei:back//tei:gloss[ft:query(., $query, $options)]
-            order by ft:score($result) descending
+                
+            let $document-uri := base-uri($result)
+            group by $document-uri
+            let $scores := 
+                for $single in $result
+                return
+                    ft:score($single)
+            order by sum($scores) descending
+            
          return 
-            $result
+            <result-group xmlns="http://read.84000.co/ns/1.0" document-uri="{ $document-uri }">
+            {
+               util:expand($result, "expand-xincludes=no")
+            }
+            </result-group>
     
     return
         <search xmlns="http://read.84000.co/ns/1.0" >
@@ -67,65 +76,56 @@ declare function search:search($request as xs:string, $first-record as xs:double
             {
                 if ($request) then
  
-                    for $result in subsequence($results, $first-record, $max-records)
-                    
-                        let $document-uri := base-uri($result)
-                        let $tei := doc($document-uri)
-                        let $id := tei-content:id($tei)
+                    for $result-group in subsequence($results, $first-record, $max-records)
+                        
+                        let $tei := doc($result-group/@document-uri)
                         let $tei-type := 
                             if($tei//tei:teiHeader/tei:fileDesc/@type eq 'section') then
                                 'section'
                             else
                                 'translation'
-                        let $status := $tei//tei:teiHeader/tei:fileDesc/tei:publicationStmt/@status
-                        let $source-bibl := tei-content:source-bibl($tei, '')
-                        let $key :=  if($source-bibl/@key) then $source-bibl/@key else ''
-                        let $parent-id := $source-bibl/tei:idno[@parent-id]/@parent-id
-                        let $ancestors := tei-content:ancestors($tei, $key, 1)
-                        
-                        let $expanded := util:expand($result, "expand-xincludes=no")
-                        let $node-name := node-name($expanded)
-                        
-                        let $hash := 
-                            if($expanded/@xml:id/string()) then 
-                                $expanded/@xml:id/string() 
-                            else if($expanded/@tid/string()) then
-                                concat('node', '-', $expanded/@tid/string())
-                            else
-                                ''
-                        
-                        let $url := 
-                            if($tei-type eq 'translation' and functx:is-a-number($status) and xs:integer($status) = $tei-content:published-statuses) then
-                                concat($common:environment/m:url[@id eq 'reading-room']/text() ,'/translation/', $key, '.html', if($hash) then concat('#', $hash) else '')
-                            else if($tei-type eq 'section') then
-                                concat($common:environment/m:url[@id eq 'reading-room']/text() ,'/section/', $id, '.html')
-                            else
-                                concat($common:environment/m:url[@id eq 'reading-room']/text() ,'/section/', $parent-id, '.html', concat('#', $key))
-                         
-                         let $translation-status := $tei//tei:teiHeader/tei:fileDesc/tei:publicationStmt/@status
-                         
+                        let $first-bibl := tei-content:source-bibl($tei, '')
+                        let $first-bibl-key :=  if($first-bibl/@key) then $first-bibl/@key else ''
+
                     return
                         <item>
                             <source 
-                                resource-id="{ $id }" 
-                                url="{ $url }"
-                                tei-type="{ $tei-type }"
-                                node-type="{ $node-name }"
-                                translation-status="{ $translation-status }">
+                                tei-type="{ $tei-type }" 
+                                resource-id="{ tei-content:id($tei) }" 
+                                translation-status="{ $tei//tei:teiHeader/tei:fileDesc/tei:publicationStmt/@status }">
                                 <title>{ tei-content:title($tei) }</title>
-                                { $ancestors }
+                                { 
+                                    if($tei-type eq 'translation') then
+                                        for $bibl in $tei//tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl
+                                        return
+                                            <bibl>
+                                                { translation:toh($tei, $bibl/@key) }
+                                                { tei-content:ancestors($tei, $bibl/@key, 1) }
+                                            </bibl>
+                                            
+                                    else
+                                        <bibl>
+                                            { tei-content:ancestors($tei, '', 1) }
+                                        </bibl>
+                                }
                             </source>
-                            <text>
                             {
-                                common:search-result($expanded)
+                                for $node in $result-group/*
+                                return
+                                    <match>
+                                    {
+                                        attribute node-type { node-name($node) },
+                                        $node/@*,
+                                        $node/node()
+                                    }
+                                    </match>
                             }
-                            </text>
                         </item>
                else
                     ()
             }
             </results>
-        </search>
+        </search>(::)
 };
 
 declare function search:translation-search($request as xs:string, $volume-number as xs:integer, $page-number as xs:integer, $results-mode as xs:string) as node() {

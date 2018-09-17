@@ -14,7 +14,7 @@ let $new-id :=
     if($post-id) then
         sponsors:update($sponsors:sponsors/m:sponsors/m:sponsor[@xml:id eq $post-id])
     else
-        ()
+        ''
 
 let $sponsor := 
     if($new-id gt '') then

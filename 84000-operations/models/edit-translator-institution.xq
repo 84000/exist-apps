@@ -14,7 +14,7 @@ let $new-id :=
     if($post-id) then
         translators:update-institution($translators:translators/m:translators/m:institution[@xml:id eq $post-id])
     else
-        ()
+        ''
 
 let $institution := 
     if($new-id gt '') then

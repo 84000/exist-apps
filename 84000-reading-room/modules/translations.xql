@@ -57,7 +57,7 @@ declare function translations:summary() as node() {
     let $translated-fileDesc := $fileDescs[tei:publicationStmt/@status = $translated-statuses]
     let $in-translation-fileDesc := $fileDescs[tei:publicationStmt/@status = $in-translation-statuses]
     let $commissioned-fileDesc := $fileDescs[tei:publicationStmt/@status = $all-statuses]
-    let $sponsored-fileDesc := $tei[tei:text/tei:front/tei:div[@type eq 'acknowledgment']/@sponsored = ('full', 'part')]/tei:teiHeader/tei:fileDesc
+    let $sponsored-fileDesc := $fileDescs[tei:titleStmt/@sponsored = ('full', 'part')]
     
     let $all-text-count := count($fileDescs)
     let $commissioned-text-count := count($commissioned-fileDesc)
@@ -119,7 +119,7 @@ declare function translations:sponsored() as node() {
     
     <sponsored-texts xmlns="http://read.84000.co/ns/1.0">
     {
-        for $tei in collection($common:translations-path)//tei:TEI[tei:text/tei:front/tei:div[@type eq 'acknowledgment']/@sponsored = ('full', 'part')]
+        for $tei in collection($common:translations-path)//tei:TEI[tei:teiHeader/tei:fileDesc/tei:titleStmt/@sponsored = ('full', 'part')]
         return
             <text 
                 status="{ tei-content:translation-status($tei) }" 
@@ -136,7 +136,7 @@ declare function translations:sponsored() as node() {
         
 };
 
-declare function translations:filtered-text($tei as node(), $toh-key as xs:string?) as node(){
+declare function translations:filtered-text($tei as node(), $toh-key as xs:string?, $include-sponsors as xs:boolean) as node(){
     <text xmlns="http://read.84000.co/ns/1.0" 
         id="{ tei-content:id($tei) }" 
         status="{ tei-content:translation-status($tei) }"
@@ -145,7 +145,12 @@ declare function translations:filtered-text($tei as node(), $toh-key as xs:strin
         { translation:titles($tei) }
         { tei-content:source-bibl($tei, $toh-key) }
         { translation:translation($tei) }
-        { translation:acknowledgment($tei) }
+        { 
+            if($include-sponsors) then
+                translation:sponsors($tei, true())
+            else
+                ()
+         }
     </text>
 };
 
@@ -192,11 +197,13 @@ declare function translations:filtered-texts($section as xs:string, $status as x
         else
             ()
     
+    let $include-sponsors := ($sponsored = ('sponsored', 'fully-sponsored', 'part-sponsored'))
+    
     let $sponsor-types-tei := 
         if(count($sponsor-types) gt 0) then
-            $page-size-tei[tei:text/tei:front/tei:div[@type eq 'acknowledgment'][@sponsored = $sponsor-types]]
+            $page-size-tei[tei:teiHeader/tei:fileDesc/tei:titleStmt/@sponsored = $sponsor-types]
         else if($sponsored eq 'not-sponsored')then
-            $page-size-tei[tei:text/tei:front[not(tei:div[@type eq 'acknowledgment']) or tei:div[@type eq 'acknowledgment'][not(@sponsored) or @sponsored eq '']]]
+            $page-size-tei[tei:teiHeader/tei:fileDesc/tei:titleStmt[not(@sponsored) or @sponsored eq '']]
         else
             $page-size-tei
     
@@ -204,12 +211,12 @@ declare function translations:filtered-texts($section as xs:string, $status as x
         if($deduplicate and $search-toh eq '') then
             for $tei in $sponsor-types-tei
             return
-                translations:filtered-text($tei, '')
+                translations:filtered-text($tei, '', $include-sponsors)
          else
             for $bibl in $sponsor-types-tei/tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl[contains(@key, $search-toh)]
                 let $tei := $bibl/ancestor::tei:TEI
             return
-                translations:filtered-text($tei, $bibl/@key)
+                translations:filtered-text($tei, $bibl/@key, $include-sponsors)
     
     let $texts-count := count($texts)
     let $texts-pages-count := sum($texts/tei:bibl/tei:location[functx:is-a-number(@count-pages)]/@count-pages)

@@ -170,4 +170,26 @@
         
     </xsl:function>
     
+    <!-- Translation status -->
+    <xsl:template name="translation-status">
+        <xsl:param name="status"/>
+        <xsl:choose>
+            <xsl:when test="$status eq '1'">
+                <span class="label label-success published">
+                    Translated
+                </span>
+            </xsl:when>
+            <xsl:when test="$status gt ''">
+                <span class="label label-warning in-progress">
+                    In progress
+                </span>
+            </xsl:when>
+            <xsl:otherwise>
+                <span class="label label-default">
+                    Not Started
+                </span>
+            </xsl:otherwise>
+        </xsl:choose>
+    </xsl:template>
+    
 </xsl:stylesheet>

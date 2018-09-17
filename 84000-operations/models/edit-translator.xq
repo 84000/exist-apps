@@ -14,7 +14,7 @@ let $new-id :=
     if($post-id) then
         translators:update($translators:translators/m:translators/m:translator[@xml:id eq $post-id])
     else
-        ()
+        ''
 
 let $translator := 
     if($new-id gt '') then

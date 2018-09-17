@@ -3,6 +3,7 @@ xquery version "3.0";
 declare namespace m = "http://read.84000.co/ns/1.0";
 
 import module namespace common="http://read.84000.co/common" at "modules/common.xql";
+import module namespace download="http://read.84000.co/download" at "modules/download.xql";
 
 declare variable $exist:path external;
 declare variable $exist:resource external;
@@ -264,21 +265,21 @@ else if(not(common:auth-environment()) or sm:is-authenticated()) then
         if($resource-suffix eq 'pdf') then
             (:<response>{ concat($common:data-path, '/pdf/',  $exist:resource) }</response>:)
             <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-                <forward url="{ concat($common:data-collection, '/pdf/',  $exist:resource) }">
+                <forward url="{ download:file-path($exist:resource) }">
                     <set-header name="Content-Type" value="application/pdf"/>
                     <set-header name="Content-Disposition" value="attachment"/>
                 </forward>
             </dispatch>
         else if ($resource-suffix eq 'epub') then
              <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-                <forward url="{ concat($common:data-collection, '/epub/',  $exist:resource) }">
+                <forward url="{ download:file-path($exist:resource) }">
                     <set-header name="Content-Type" value="application/epub+zip"/>
                     <set-header name="Content-Disposition" value="attachment"/>
                 </forward>
             </dispatch>
         else if ($resource-suffix eq 'azw3') then
              <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-                <forward url="{ concat($common:data-collection, '/azw3/',  $exist:resource) }">
+                <forward url="{ download:file-path($exist:resource) }">
                     <set-header name="Content-Type" value="application/x-mobi8-ebook"/>
                     <set-header name="Content-Disposition" value="attachment"/>
                 </forward>

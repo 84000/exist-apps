@@ -23,7 +23,7 @@ declare function log:log-request($request as xs:string, $app as xs:string, $type
         if(doc-available($logfile-full)) then 
             $logfile-full
         else
-            xmldb:store($logfile-collection, $logfile-name, <log/>)
+            xmldb:store($logfile-collection, $logfile-name, <log xmlns="http://read.84000.co/ns/1.0"/>)
     let $parameters :=  local:parameters()
     return
         update insert
@@ -80,6 +80,7 @@ declare function log:requests($first-record as xs:double, $max-records as xs:dou
                     $request
                 }
             </grouped-request>
+    
     return
         <requests 
             xmlns="http://read.84000.co/ns/1.0"

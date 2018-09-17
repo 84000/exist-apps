@@ -50,8 +50,7 @@ let $request :=
     <hc:request 
         method="post" 
         href="{$config:word-converter}" 
-        override-media-type="application/xml"
-    >
+        override-media-type="application/xml">
         <hc:multipart media-type="multipart/form-data" boundary="existdb">
           <hc:header name="Accept" value="application/xml"/>
           <hc:header name="Cache-Control" value="no-cache" />

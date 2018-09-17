@@ -98,9 +98,11 @@
                                             <hr/>
                                             <div>
                                                 <xsl:apply-templates select="m:sponsors/tei:div[@type eq 'acknowledgment']/tei:p"/>
-                                                <xsl:if test="m:sponsors/tei:div[@type eq 'acknowledgment']/@sponsored eq 'part'">
+                                                <xsl:if test="m:translation/@sponsored eq 'part'">
                                                     <p class="text-muted">
-                                                        <em>There are further sponsorship opportunities for this translation.</em>
+                                                        <a href="http://84000.co/sutra" class="italic">
+                                                            There are further sponsorship opportunities for this translation.
+                                                        </a>
                                                     </p>
                                                 </xsl:if>
                                             </div>

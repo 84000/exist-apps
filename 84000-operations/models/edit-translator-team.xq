@@ -14,7 +14,7 @@ let $new-id :=
     if($post-id) then
         translators:update-team($translators:translators/m:translators/m:team[@xml:id eq $post-id])
     else
-        ()
+        ''
 
 let $team := 
     if($new-id gt '') then
@@ -27,6 +27,7 @@ let $team :=
         ()
 
 return
+
     common:response(
         'operations/edit-translator-team', 
         'operations',
@@ -40,4 +41,4 @@ return
             </updates>,
             $team
         )
-    )
+    )(::)

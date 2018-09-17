@@ -11,9 +11,9 @@ declare namespace tei="http://www.tei-c.org/ns/1.0";
 
 declare variable $translators:translators := doc(concat($common:data-path, '/operations/translators.xml'));
 declare variable $translators:texts := collection($common:translations-path);
-declare variable $translators:translator-prefixes := '(Dr\.|Prof\.)';
-declare variable $translators:team-prefixes := '(Dr\.|The\.)';
-declare variable $translators:institution-prefixes := '(The\s)';
+declare variable $translators:translator-prefixes := '(Dr\.|Prof\.|Ven\.)';
+declare variable $translators:team-prefixes := '(Dr\.|The|Prof\.)';
+declare variable $translators:institution-prefixes := '(The|University\sof)';
 
 declare function translators:translators($include-acknowledgements as xs:boolean) as node() {
     
@@ -41,6 +41,7 @@ declare function translators:translator($id as xs:string, $include-acknowledgeme
             $translator/@*,
             attribute start-letter { upper-case(substring(normalize-space(replace($translator/m:name, $translators:translator-prefixes, '')), 1, 1)) },
             $translator/*,
+            element sort-name { replace($translator/m:name, concat($translators:translator-prefixes, '\s(.*)'), '$2, $1') },
             if($include-acknowledgements) then
                 translators:acknowledgements(concat('translators.xml#', $translator/@xml:id))
             else
@@ -74,6 +75,7 @@ declare function translators:team($id as xs:string, $include-acknowledgements as
             $team/@*,
             attribute start-letter { upper-case(substring(normalize-space(replace($team/text(), $translators:team-prefixes, '')), 1, 1)) },
             element name { $team/text() },
+            element sort-name { replace($team/text(), concat($translators:team-prefixes, '\s(.*)'), '$2, $1') },
             if($include-acknowledgements) then
                 for $tei in $translators:texts//tei:TEI[tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:author[@sameAs eq concat('translators.xml#', $team/@xml:id)]]
                     let $acknowledgement := $tei/tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:author[@sameAs eq concat('translators.xml#', $team/@xml:id)]
@@ -186,7 +188,8 @@ declare function translators:institutions(){
                 element { node-name($institution) } {
                     $institution/@*,
                     attribute start-letter { upper-case(substring(normalize-space(replace($institution/text(), $translators:institution-prefixes, '')), 1, 1)) },
-                    element name { $institution/text() }
+                    element name { $institution/text() },
+                    element sort-name { replace($institution/text(), concat($translators:institution-prefixes, '\s(.*)'), '$2, $1') }
                  }
         }
         </translator-institutions>
@@ -264,11 +267,10 @@ declare function translators:update($translator as node()?) as xs:string {
     
     let $parent := $translators:translators/m:translators
     
+    let $update := common:update('translator', $translator, $new-value, $parent, ())
+    
     return
-        if(common:update('translator', $translator, $new-value, $parent, ())) then
-            $translator-id
-        else
-            ''
+        $new-value//@xml:id
         
 };
 
@@ -295,11 +297,10 @@ declare function translators:update-team($team as node()?) as xs:string {
     
     let $parent := $translators:translators/m:translators
     
+    let $update := common:update('team', $team, $new-value, $parent, $parent/m:team[last()])
+    
     return
-        if(common:update('team', $team, $new-value, $parent, $parent/m:team[last()])) then
-            $team-id
-        else
-            ''
+        $new-value//@xml:id
 };
 
 declare function translators:next-institution-id() as xs:integer {
@@ -325,9 +326,8 @@ declare function translators:update-institution($institution as node()?) as xs:s
     
     let $parent := $translators:translators/m:translators
     
+    let $update := common:update('institution', $institution, $new-value, $parent, $parent/m:institution[last()])
+    
     return
-        if(common:update('institution', $institution, $new-value, $parent, $parent/m:institution[last()])) then
-            $institution-id
-        else
-            ''
+        $new-value//@xml:id
 };

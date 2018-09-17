@@ -92,28 +92,18 @@
                                             <xsl:copy-of select="m:select-input('Sponsorship Status', 'sponsorship-status', 9, 1, m:sponsorhip-statuses/m:status)"/>
                                             
                                             <xsl:for-each select="m:translation/m:translation/m:sponsors/m:sponsor">
-                                                <xsl:variable name="sponsor-id" select="substring-after(@sameAs, 'sponsors.xml#')"/>
                                                 <div class="form-group">
                                                     <div class="col-sm-5">
-                                                        <select class="form-control">
-                                                            <xsl:attribute name="name" select="concat('sponsor-id-', position())"/>
-                                                            <option value=""/>
-                                                            <xsl:for-each select="/m:response/m:sponsors/m:sponsor">
-                                                                <option>
-                                                                    <xsl:attribute name="value" select="concat('sponsors.xml#', @xml:id)"/>
-                                                                    <xsl:if test="@xml:id eq $sponsor-id">
-                                                                        <xsl:attribute name="selected" select="'selected'"/>
-                                                                    </xsl:if>
-                                                                    <xsl:value-of select="m:name"/>
-                                                                </option>
-                                                            </xsl:for-each>
-                                                        </select>
+                                                        <xsl:call-template name="select-sponsor">
+                                                            <xsl:with-param name="sponsor-id" select="substring-after(@sameAs, 'sponsors.xml#')"/>
+                                                            <xsl:with-param name="control-name" select="concat('sponsor-id-', position())"/>
+                                                        </xsl:call-template>
                                                     </div>
                                                     <label class="control-label col-sm-2">
                                                         expressed as:
                                                     </label>
                                                     <div class="col-sm-5">
-                                                        <input class="form-control" placeholder="Same">
+                                                        <input class="form-control" placeholder="same">
                                                             <xsl:attribute name="name" select="concat('sponsor-expression-', position())"/>
                                                             <xsl:attribute name="value" select="text()"/>
                                                         </input>
@@ -124,27 +114,22 @@
                                             <!-- Add new -->
                                             <div class="form-group">
                                                 <div class="col-sm-5">
-                                                    <select class="form-control" name="sponsor-id-0">
-                                                        <option value=""/>
-                                                        <xsl:for-each select="/m:response/m:sponsors/m:sponsor">
-                                                            <option>
-                                                                <xsl:attribute name="value" select="concat('sponsors.xml#', @xml:id)"/>
-                                                                <xsl:value-of select="m:name"/>
-                                                            </option>
-                                                        </xsl:for-each>
-                                                    </select>
+                                                    <xsl:call-template name="select-sponsor">
+                                                        <xsl:with-param name="sponsor-id" select="''"/>
+                                                        <xsl:with-param name="control-name" select="'sponsor-id-0'"/>
+                                                    </xsl:call-template>
                                                 </div>
                                                 <label class="control-label col-sm-2">
                                                     expressed as:
                                                 </label>
                                                 <div class="col-sm-5">
-                                                    <input class="form-control" name="sponsor-expression-0" value="" placeholder="Same"/>
+                                                    <input class="form-control" name="sponsor-expression-0" value="" placeholder="same"/>
                                                 </div>
                                             </div>
                                             
                                         </div>
                                         <div class="col-sm-4">
-                                            <xsl:if test="m:translation/m:sponsors/tei:div[@type eq 'acknowledgment']/@sponsored gt ''">
+                                            <xsl:if test="m:translation/m:translation/@sponsored gt ''">
                                                 <div class="text-bold">Acknowledgment</div>
                                                 <xsl:if test="m:translation/m:sponsors/tei:div[@type eq 'acknowledgment']/tei:p">
                                                     <xsl:apply-templates select="m:translation/m:sponsors/tei:div[@type eq 'acknowledgment']/tei:p"/>
@@ -182,7 +167,7 @@
                                                                 <xsl:if test="@xml:id eq $translator-team-id">
                                                                     <xsl:attribute name="selected" select="'selected'"/>
                                                                 </xsl:if>
-                                                                <xsl:value-of select="m:name"/>
+                                                                <xsl:value-of select="m:sort-name"/>
                                                             </option>
                                                         </xsl:for-each>
                                                     </select>
@@ -194,25 +179,16 @@
                                                 <xsl:variable name="translator-id" select="substring-after(@sameAs, 'translators.xml#')"/>
                                                 <div class="form-group">
                                                     <div class="col-sm-5">
-                                                        <select class="form-control">
-                                                            <xsl:attribute name="name" select="concat('translator-id-', position())"/>
-                                                            <option value=""/>
-                                                            <xsl:for-each select="/m:response/m:translators/m:translator">
-                                                                <option>
-                                                                    <xsl:attribute name="value" select="concat('translators.xml#', @xml:id)"/>
-                                                                    <xsl:if test="@xml:id eq $translator-id">
-                                                                        <xsl:attribute name="selected" select="'selected'"/>
-                                                                    </xsl:if>
-                                                                    <xsl:value-of select="m:name"/>
-                                                                </option>
-                                                            </xsl:for-each>
-                                                        </select>
+                                                        <xsl:call-template name="select-translator">
+                                                            <xsl:with-param name="translator-id" select="$translator-id"/>
+                                                            <xsl:with-param name="control-name" select="concat('translator-id-', position())"/>
+                                                        </xsl:call-template>
                                                     </div>
                                                     <label class="control-label col-sm-2">
                                                         expressed as:
                                                     </label>
                                                     <div class="col-sm-5">
-                                                        <input class="form-control" placeholder="Same">
+                                                        <input class="form-control" placeholder="same">
                                                             <xsl:attribute name="name" select="concat('translator-expression-', position())"/>
                                                             <xsl:attribute name="value" select="text()"/>
                                                         </input>
@@ -223,21 +199,16 @@
                                             <!-- Add new -->
                                             <div class="form-group">
                                                 <div class="col-sm-5">
-                                                    <select class="form-control" name="translator-id-0">
-                                                        <option value=""/>
-                                                        <xsl:for-each select="/m:response/m:translators/m:translator">
-                                                            <option>
-                                                                <xsl:attribute name="value" select="concat('translators.xml#', @xml:id)"/>
-                                                                <xsl:value-of select="m:name"/>
-                                                            </option>
-                                                        </xsl:for-each>
-                                                    </select>
+                                                    <xsl:call-template name="select-translator">
+                                                        <xsl:with-param name="translator-id" select="''"/>
+                                                        <xsl:with-param name="control-name" select="'translator-id-0'"/>
+                                                    </xsl:call-template>
                                                 </div>
                                                 <label class="control-label col-sm-2">
                                                     expressed as:
                                                 </label>
                                                 <div class="col-sm-5">
-                                                    <input class="form-control" name="translator-expression-0" value="" placeholder="Same"/>
+                                                    <input class="form-control" name="translator-expression-0" value="" placeholder="same"/>
                                                 </div>
                                             </div>
                                             
@@ -273,7 +244,7 @@
                                         <div class="pull-right">
                                             <div class="center-vertical">
                                                 <span>
-                                                    <a href="/progress.html?sponsored=sponsored">
+                                                    <a href="/search.html?sponsored=sponsored">
                                                         List of sponsored texts
                                                     </a>
                                                 </span>
@@ -310,6 +281,70 @@
             <xsl:with-param name="content" select="$content"/>
         </xsl:call-template>
         
+    </xsl:template>
+    
+    <xsl:template name="select-translator">
+        
+        <xsl:param name="translator-id"/>
+        <xsl:param name="control-name"/>
+        
+        <xsl:variable name="summary" select="/m:response/m:translation/m:translation/m:authors/m:summary[1]"/>
+        <xsl:variable name="translator-team-id" select="substring-after($summary/@sameAs, 'translators.xml#')"/>
+        <xsl:variable name="team-translators" select="/m:response/m:translators/m:translator[$translator-team-id = m:team/@id]"/>
+        <xsl:variable name="other-translators" select="/m:response/m:translators/m:translator[not($translator-team-id = m:team/@id)]"/>
+        
+        <select class="form-control">
+            <xsl:attribute name="name" select="$control-name"/>
+            <option value=""/>
+            <xsl:if test="$team-translators">
+                <xsl:for-each select="$team-translators">
+                    <option>
+                        <xsl:attribute name="value" select="concat('translators.xml#', @xml:id)"/>
+                        <xsl:if test="@xml:id eq $translator-id">
+                            <xsl:attribute name="selected" select="'selected'"/>
+                        </xsl:if>
+                        <xsl:value-of select="m:sort-name"/>
+                    </option>
+                </xsl:for-each>
+                <option value="">-</option>
+            </xsl:if>
+            <xsl:for-each select="$other-translators">
+                <option>
+                    <xsl:attribute name="value" select="concat('translators.xml#', @xml:id)"/>
+                    <xsl:if test="@xml:id eq $translator-id">
+                        <xsl:attribute name="selected" select="'selected'"/>
+                    </xsl:if>
+                    <xsl:value-of select="m:sort-name"/>
+                </option>
+            </xsl:for-each>
+        </select>
+    </xsl:template>
+    
+    <xsl:template name="select-sponsor">
+        
+        <xsl:param name="sponsor-id"/>
+        <xsl:param name="control-name"/>
+        
+        <select class="form-control">
+            <xsl:attribute name="name" select="$control-name"/>
+            <option value=""/>
+            <xsl:for-each select="/m:response/m:sponsors/m:sponsor">
+                <option>
+                    <xsl:attribute name="value" select="concat('sponsors.xml#', @xml:id)"/>
+                    <xsl:if test="@xml:id eq $sponsor-id">
+                        <xsl:attribute name="selected" select="'selected'"/>
+                    </xsl:if>
+                    <xsl:choose>
+                        <xsl:when test="m:internal-name">
+                            <xsl:value-of select="concat(m:name, ' / ', m:internal-name)"/>
+                        </xsl:when>
+                        <xsl:otherwise>
+                            <xsl:value-of select="m:name"/>
+                        </xsl:otherwise>
+                    </xsl:choose>
+                </option>
+            </xsl:for-each>
+        </select>
     </xsl:template>
     
 </xsl:stylesheet>

@@ -348,6 +348,7 @@
                                                                     <xsl:if test="m:title-variants/m:title/text()">
                                                                         <h4>Title variants</h4>
                                                                         <ul class="list-unstyled">
+                                                                            <xsl:attribute name="id" select="concat(m:toh/@key, '-title-variants')"/>
                                                                             <xsl:for-each select="m:title-variants/m:title">
                                                                                 <li>
                                                                                     <xsl:attribute name="class" select="common:lang-class(@xml:lang)"/>
@@ -686,7 +687,15 @@
                         
                         <div class="row">
                             <div class="col-sm-offset-2 col-sm-8 text-center">
-                                <ul class="list-inline">
+                                <ul class="list-inline breadcrumb">
+                                    <li>
+                                        <a href="/search.html" class="text-success">
+                                            <span class="btn-round green sml">
+                                                <i class="fa fa-search"/>
+                                            </span>
+                                            Search the Reading Room
+                                        </a>
+                                    </li>
                                     <li>
                                         <a href="/section/all-translated.html" class="text-danger">
                                             <span class="btn-round red sml">

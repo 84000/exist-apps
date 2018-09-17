@@ -888,6 +888,11 @@
                                         <a href="/section/all-translated.html">View Translated Texts</a>
                                     </td>
                                 </tr>
+                                <tr>
+                                    <td>
+                                        <a href="/search.html">Search the Reading Room</a>
+                                    </td>
+                                </tr>
                             </tbody>
                         </table>
                         <a href="http://84000.co/how-you-can-help/donate/#sap" class="btn btn-primary btn-uppercase">Sponsor Translation</a>

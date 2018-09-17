@@ -70,8 +70,13 @@
                                                     <a>
                                                         <xsl:attribute name="href" select="concat('/edit-sponsor.html?id=', $sponsor-id)"/>
                                                         <xsl:value-of select="m:name"/>
+                                                        <xsl:if test="m:internal-name">
+                                                            <xsl:value-of select="concat(' / ', m:internal-name)"/>
+                                                        </xsl:if>
                                                     </a>
-                                                    <xsl:value-of select="concat(' (', $sponsor-id, ')')"/>
+                                                    <span class="small text-muted">
+                                                        <xsl:value-of select="concat(' (', $sponsor-id, ')')"/>
+                                                    </span>
                                                 </div>
                                                 <div class="col-sm-2">
                                                     <xsl:value-of select="m:country"/>
@@ -100,7 +105,6 @@
                                             
                                             <xsl:if test="m:acknowledgement">
                                                 <div class="row">
-                                                    <xsl:attribute name="data-match-height" select="concat('group-', $sponsor-id)"/>
                                                     <xsl:call-template name="acknowledgements">
                                                         <xsl:with-param name="acknowledgements" select="m:acknowledgement"/>
                                                         <xsl:with-param name="group" select="$sponsor-id"/>

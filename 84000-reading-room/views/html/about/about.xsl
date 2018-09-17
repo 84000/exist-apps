@@ -116,11 +116,11 @@
         <h4 class="title-en">
             <xsl:choose>
                 <xsl:when test="$text/@status eq '1'">
-                    <xsl:if test="$text/m:titles/m:parent">
-                        <xsl:value-of select="$text/m:titles/m:parent/m:title"/>, 
-                    </xsl:if>
                     <a>
                         <xsl:attribute name="href" select="concat('/translation/', $text/m:toh/@key, '.html')"/>
+                        <xsl:if test="$text/m:titles/m:parent">
+                            <xsl:value-of select="concat($text/m:titles/m:parent/m:title, ', ')"/>
+                        </xsl:if>
                         <xsl:value-of select="$text/m:titles/m:title[@xml:lang eq 'en']"/>
                     </a>
                 </xsl:when>
