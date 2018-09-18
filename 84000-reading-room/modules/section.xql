@@ -198,6 +198,9 @@ declare function section:sections($id as xs:string, $published-only as xs:boolea
     <sections xmlns="http://read.84000.co/ns/1.0">
     {
         for $section in $section:sections//tei:TEI[tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl/tei:idno/@parent-id eq upper-case($id)]
+            order by 
+                xs:integer($section//tei:teiHeader/tei:fileDesc/tei:sourceDesc/@sort-index),
+                $section//tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:title[@type eq "mainTitle"][@xml:lang eq "en"][1]
         return
             section:section($section, $published-only)
     }

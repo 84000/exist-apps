@@ -39,12 +39,14 @@ else if (ends-with($exist:resource, ".html")) then
                 <set-attribute name="xslt.stylesheet" value="{concat($exist:root, $exist:controller, '/views/', substring-before($exist:resource, '.'), '.xsl')}"/>
             </forward>
         </view>
+        <cache-control cache="no"/>
+        <!--
         <error-handler>
             <forward servlet="XSLTServlet">
-                <set-attribute name="xslt.stylesheet" value="{concat($exist:root, "/84000-reading-room/views/html/error.xsl")}"/>
+                <set-attribute name="xslt.stylesheet" value="{concat($exist:root, "/84000-reading-room", "/views/html/error.xsl")}"/>
             </forward>
         </error-handler>
-        <!---->
+        -->
     </dispatch>
     
 else

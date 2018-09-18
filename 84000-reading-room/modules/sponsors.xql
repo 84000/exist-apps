@@ -90,25 +90,25 @@ declare function sponsors:acknowledgements($uri as xs:string){
                 }
 };
 
-declare function sponsors:sponsorship-statuses($selected-status as xs:string) as node() {
+declare function sponsors:sponsorship-statuses($selected-status as xs:string?) as node() {
     <sponsorhip-statuses xmlns="http://read.84000.co/ns/1.0">
     {(
         element status 
         { 
             attribute value { '' },
-            if ($selected-status = '') then attribute selected { 'selected' } else '',
+            if (not($selected-status) or $selected-status eq '') then attribute selected { 'selected' } else '',
             text { 'Not sponsored' }
         },
         element status 
         { 
             attribute value { 'full' },
-            if ($selected-status = 'full') then attribute selected { 'selected' } else '',
+            if ($selected-status eq 'full') then attribute selected { 'selected' } else '',
             text { 'Fully sponsored' }
         },
         element status 
         { 
             attribute value { 'part' },
-            if ($selected-status = 'part') then attribute selected { 'selected' } else '',
+            if ($selected-status eq 'part') then attribute selected { 'selected' } else '',
             text { 'Partly sponsored' }
         }
     )}

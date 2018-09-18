@@ -76,7 +76,9 @@
                                                         <xsl:value-of select="m:sort-name"/>
                                                     </a>
                                                     <br/>
-                                                    <xsl:value-of select="$team-id"/>
+                                                    <span class="small text-muted">
+                                                        <xsl:value-of select="$team-id"/>
+                                                    </span>
                                                 </div>
                                                 
                                                 <div class="col-sm-4">

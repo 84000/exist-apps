@@ -59,7 +59,7 @@ declare function download:file-path($requested-file as xs:string) as xs:string* 
 
 declare function download:store-new-pdf($file-path as xs:string, $version as xs:string) as xs:string* {
     let $pdf-service := 'https://pdfmyurl.com/api'
-    let $license-key := '7e6eKbbZ8EfC'
+    let $license-key := 'ebSLYb5dKn7W'
     let $file-path-tokenized := tokenize($file-path, '/')
     let $file-collection := string-join(subsequence($file-path-tokenized, 1, count($file-path-tokenized) - 1), '/')
     let $file-name := lower-case($file-path-tokenized[last()])

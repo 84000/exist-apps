@@ -647,7 +647,7 @@ declare function translation:translators($translation as node(), $include-acknow
                                     else
                                         $translator/m:name/text()
                             return
-                                <phrase occur="should">{ lower-case($translator-name) }</phrase>
+                                <phrase>{ lower-case($translator-name) }</phrase>
                         }
                         </query>
                     let $query-result := $translation//tei:front/tei:div[@type eq "acknowledgment"]/tei:p[ft:query(., $query, $query-options)]
@@ -658,10 +658,13 @@ declare function translation:translators($translation as node(), $include-acknow
                             $translation//tei:front/tei:div[@type eq "acknowledgment"]/tei:p
                         
                     return
+                    (
+                        $query,
                         element tei:div {
                             $translation//tei:front/tei:div[@type eq "acknowledgment"]/@*,
                             $expanded
                         }
+                    )
             else
                 ()
         )}

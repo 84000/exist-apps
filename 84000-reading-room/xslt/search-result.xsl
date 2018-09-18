@@ -63,7 +63,7 @@
                 </xsl:choose>
                 
             </xsl:when>
-            <xsl:when test="$source[@tei-type eq 'section']">
+            <xsl:when test="$source[@tei-type = ('section', 'grouping')]">
                 <xsl:variable name="page-url" select="concat('/section/', $source/@resource-id, '.html')"/>
                 <xsl:choose>
                     <!-- Has an xml:id -->

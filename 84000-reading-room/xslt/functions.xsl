@@ -85,7 +85,7 @@
         <xsl:param name="count-records" as="xs:integer"/>
         <xsl:param name="append-to-url" as="xs:string"/>
         
-        <xsl:variable name="count-pages" select="xs:integer(($count-records div $max-records) + 1)"/>
+        <xsl:variable name="count-pages" select="xs:integer(ceiling($count-records div $max-records))" as="xs:integer"/>
         <xsl:variable name="max-pages" select="if ($count-pages le 15) then $count-pages else 15"/>
         
         <nav aria-label="Page navigation" class="text-right">

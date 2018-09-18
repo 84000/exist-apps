@@ -80,10 +80,11 @@ declare function search:search($request as xs:string, $first-record as xs:double
                         
                         let $tei := doc($result-group/@document-uri)
                         let $tei-type := 
-                            if($tei//tei:teiHeader/tei:fileDesc/@type eq 'section') then
+                            if($tei//tei:teiHeader/tei:fileDesc/@type = ('section', 'grouping')) then
                                 'section'
                             else
                                 'translation'
+                                
                         let $first-bibl := tei-content:source-bibl($tei, '')
                         let $first-bibl-key :=  if($first-bibl/@key) then $first-bibl/@key else ''
 
@@ -96,11 +97,11 @@ declare function search:search($request as xs:string, $first-record as xs:double
                                 <title>{ tei-content:title($tei) }</title>
                                 { 
                                     if($tei-type eq 'translation') then
-                                        for $bibl in $tei//tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl
+                                        for $toh-key in $tei//tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl/@key
                                         return
                                             <bibl>
-                                                { translation:toh($tei, $bibl/@key) }
-                                                { tei-content:ancestors($tei, $bibl/@key, 1) }
+                                                { translation:toh($tei, $toh-key) }
+                                                { tei-content:ancestors($tei, $toh-key, 1) }
                                             </bibl>
                                             
                                     else
