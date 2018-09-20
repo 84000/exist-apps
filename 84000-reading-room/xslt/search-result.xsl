@@ -91,18 +91,14 @@
                 <div class="col-sm-12">
                     <xsl:apply-templates select="node()"/>
                 </div>
-                <xsl:choose>
-                    <xsl:when test="tei:note[exist:match] | tei:l/tei:note[exist:match]">
-                        <xsl:for-each select="tei:note[exist:match] | tei:l/tei:note[exist:match]">
-                            <div class="col-sm-1">
-                                <xsl:value-of select="@index"/>
-                            </div>
-                            <div class="col-sm-11">
-                                <xsl:apply-templates select="node()"/>
-                            </div>
-                        </xsl:for-each>
-                    </xsl:when>
-                </xsl:choose>
+                <xsl:for-each select="descendant::tei:note[descendant::exist:match]">
+                    <div class="col-sm-1">
+                        <xsl:value-of select="@index"/>
+                    </div>
+                    <div class="col-sm-11">
+                        <xsl:apply-templates select="node()"/>
+                    </div>
+                </xsl:for-each>
             </div>
         </a>
     </xsl:template>

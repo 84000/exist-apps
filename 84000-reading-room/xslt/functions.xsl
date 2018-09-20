@@ -179,7 +179,7 @@
                     Translated
                 </span>
             </xsl:when>
-            <xsl:when test="$status gt ''">
+            <xsl:when test="$status gt '0'">
                 <span class="label label-warning in-progress">
                     In progress
                 </span>

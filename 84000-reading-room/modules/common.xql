@@ -88,7 +88,7 @@ declare function common:normalized-chars($string as xs:string) as xs:string{
 };
 
 declare function common:alphanumeric($string as xs:string) as xs:string* {
-    replace($string, '[^a-zA-Z0-9]', '')
+    replace($string, '[^a-zA-Z0-9\s\-­]', '')
 };
 
 declare function common:word-count($strings as xs:string*) as xs:integer

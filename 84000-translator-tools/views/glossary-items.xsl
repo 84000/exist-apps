@@ -33,15 +33,25 @@
                      <xsl:if test="m:term">
                          <div class="col-sm-6">
                              <ul>
-                                 <xsl:for-each select="m:term">
-                                     <xsl:if test="text()">
+                                 <xsl:for-each select="(m:term | m:alternatives/m:alternative)">
+                                     <xsl:if test="normalize-space(text())">
                                          <li>
                                              <span>
                                                  <xsl:attribute name="lang" select="@xml:lang"/>
                                                  <xsl:if test="@xml:lang eq 'bo'">
                                                      <xsl:attribute name="class" select="'text-bo'"/>
                                                  </xsl:if>
-                                                 <xsl:apply-templates select="text()"/>
+                                                 <xsl:choose>
+                                                     <xsl:when test="self::m:alternative">
+                                                         <span class="text-muted">
+                                                             Also: <xsl:apply-templates select="text()"/>
+                                                         </span>
+                                                     </xsl:when>
+                                                     <xsl:otherwise>
+                                                         <xsl:apply-templates select="text()"/>
+                                                     </xsl:otherwise>
+                                                 </xsl:choose>
+                                                 
                                              </span>
                                          </li>
                                      </xsl:if>

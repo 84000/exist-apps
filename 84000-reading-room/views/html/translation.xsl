@@ -659,7 +659,7 @@
                                     </xsl:call-template>
                                     <div class="render-in-viewport">
                                         <xsl:for-each select="m:translation/m:glossary/m:item">
-                                            <xsl:sort select="common:standardized-sa(m:term[lower-case(@xml:lang) = 'en'][1])"/>
+                                            <xsl:sort select="m:sort-term"/>
                                             <div class="glossary-item rw">
                                                 
                                                 <xsl:attribute name="id" select="@uid/string()"/>

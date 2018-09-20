@@ -172,18 +172,21 @@ declare function local:last-updated($doc) {
 
 declare function local:glossary-bo($doc, $do-all as xs:boolean) {
     (: Convert bo-ltn to bo term for glossary items :)
-    for $gloss in $doc//tei:div[@type='glossary']//tei:gloss
-    return
-        if($do-all or count($gloss/tei:term[lower-case(@xml:lang) = 'bo']) ne count($gloss/tei:term[lower-case(@xml:lang) = 'bo-ltn'])) then
-            (
-                update delete $gloss/tei:term[lower-case(@xml:lang) = 'bo'],
-                for $bo-ltn in $gloss/tei:term[lower-case(@xml:lang) = 'bo-ltn'][normalize-space(text())]
-                return
-                    update insert <term xmlns="http://www.tei-c.org/ns/1.0" xml:lang="bo">{ common:bo-term($bo-ltn/text()) }</term> following $bo-ltn
-           )
+    
+    let $glosses := 
+        if($do-all) then
+            $doc//tei:div[@type='glossary']//tei:gloss
         else
-            ()
-
+            $doc//tei:div[@type='glossary']//tei:gloss[not(count(tei:term[@xml:lang eq 'bo']) eq count(tei:term[@xml:lang eq 'Bo-Ltn']))]
+    
+    for $gloss in $glosses
+    return
+    (
+        update delete $gloss/tei:term[lower-case(@xml:lang) = 'bo'],
+        for $bo-ltn in $gloss/tei:term[lower-case(@xml:lang) = 'bo-ltn'][normalize-space(text())]
+        return
+            update insert <term xmlns="http://www.tei-c.org/ns/1.0" xml:lang="bo">{ common:bo-term($bo-ltn/text()) }</term> following $bo-ltn
+   )
 };
 
 declare function local:glossary-prioritise($doc) {

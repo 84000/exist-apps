@@ -260,17 +260,13 @@ declare function translation:prologue($translation as node()) as node()* {
 
 declare function translation:body($translation as node()) as node()* {
     <body xmlns="http://read.84000.co/ns/1.0" prefix="tr">
-        <honoration>{ data($translation//tei:body/tei:div[@type='translation']/tei:head[@type='titleHon']) }</honoration>
-        <main-title>{ data($translation//tei:body/tei:div[@type='translation']/tei:head[@type='titleMain']) }</main-title>
+        <honoration>{ data($translation//tei:body/tei:div[@type eq 'translation']/tei:head[@type='titleHon']) }</honoration>
+        <main-title>{ data($translation//tei:body/tei:div[@type eq 'translation']/tei:head[@type='titleMain']) }</main-title>
         { 
-            for $chapter at $chapter-index in $translation//tei:body//tei:div[@type='translation']/*[@type=('section', 'chapter')][not(tei:head/text()[lower-case(.) = "prologue"])]
+            for $chapter at $chapter-index in $translation//tei:body//tei:div[@type eq 'translation']/tei:div[@type = ('section', 'chapter')][not(tei:head/text()[lower-case(.) = "prologue"])]
             return
                 <chapter chapter-index="{ $chapter-index }" prefix="{ $chapter-index }">
-                    <title>
-                    {
-                        $chapter/tei:head[@type eq 'chapterTitle']/text()
-                    }
-                    </title>
+                    <title>{ $chapter/tei:head[@type eq 'chapterTitle']/text() }</title>
                     <title-number>
                     {
                         if($chapter/tei:head[@type eq 'chapter']/text())then
@@ -312,11 +308,7 @@ declare function translation:appendix($translation as node()) as node()* {
                     $chapter-number
         return
             <chapter chapter-index="{ $chapter-class }" prefix="{ concat('ap', $chapter-class) }">
-                <title>
-                {
-                    $chapter/tei:head[@type = ('section', 'chapter', 'prologue')]/text()
-                }
-                </title>
+                <title>{ $chapter/tei:head[@type = ('section', 'chapter', 'prologue')]/text() }</title>
                 {
                    $chapter/*[self::tei:p | self::tei:milestone | self::tei:ab | self::tei:lg | self::tei:lb | self::tei:q | self::tei:list | self::tei:trailer | self::tei:label ]/.
                 }
@@ -409,18 +401,15 @@ declare function translation:glossary($translation as node()) as node()* {
     <glossary xmlns="http://read.84000.co/ns/1.0" prefix="g">
     {
         for $gloss in $translation//tei:back//*[@type='glossary']//tei:gloss
+            let $main-term := $gloss/tei:term[not(@xml:lang)][not(@type)][1]/text()
         return
             <item 
                 uid="{ $gloss/@xml:id/string() }" 
                 type="{ $gloss/@type/string() }" 
                 mode="{ $gloss/@mode/string() }">
-                <term xml:lang="en">
-                { 
-                    normalize-space(functx:capitalize-first($gloss/tei:term[not(@xml:lang)][not(@type)][1]/text())) 
-                }
-                </term>
+                <term xml:lang="en">{ normalize-space(functx:capitalize-first($main-term)) }</term>
                 {
-                    for $item in $gloss/tei:term
+                    for $item in $gloss/tei:term[not(text() eq $main-term)]
                     return 
                         if($item[@type eq 'definition']) then
                             <definition>
@@ -434,8 +423,8 @@ declare function translation:glossary($translation as node()) as node()* {
                                 normalize-space(string($item)) 
                             }
                             </alternative>
-                        else if ($item[@xml:lang]) then
-                            <term xml:lang="{ lower-case($item/@xml:lang) }">
+                        else
+                            <term xml:lang="{ if($item/@xml:lang) then lower-case($item/@xml:lang) else 'en' }">
                             {
                                 if (not($item/text())) then
                                     common:app-text(concat('glossary.term-empty-', lower-case($item/@xml:lang)))
@@ -445,9 +434,8 @@ declare function translation:glossary($translation as node()) as node()* {
                                     $item/text() 
                             }
                             </term>
-                        else 
-                            ()
                  }
+                 <sort-term>{ common:alphanumeric(common:normalized-chars($main-term)) }</sort-term>
             </item>
     }
     </glossary>

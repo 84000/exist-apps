@@ -164,7 +164,7 @@ declare function translations:filtered-texts($section as xs:string, $status as x
         else
         (
             if(functx:is-value-in-sequence('0', $status)) then
-                $tei[tei:teiHeader/tei:fileDesc/tei:publicationStmt[@status eq '' or not(@status)]]
+                $tei[tei:teiHeader/tei:fileDesc/tei:publicationStmt[@status = ('', '0') or not(@status)]]
             else
                 ()
         ,
@@ -246,7 +246,7 @@ declare function translations:filtered-texts($section as xs:string, $status as x
                     return $text
                 else if($sort eq 'status') then
                     for $text in $texts
-                        order by if ($text/@status gt '') then $text/@status else '4'
+                        order by if ($text/@status = $tei-content:text-statuses/m:status/@status-id) then $text/@status else '4'
                     return $text
                 else if($sort eq 'longest') then
                     for $text in $texts

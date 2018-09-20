@@ -111,8 +111,8 @@
                                 </li>
                             </ul>
                             
-                            <form action="http://84000.co/" method="get" role="search" name="searchformTop" class="navbar-form navbar-right">
-                                
+                            <form method="get" role="search" name="searchformTop" class="navbar-form navbar-right">
+                                <xsl:attribute name="action" select="concat($reading-room-path, '/search.html')"/>
                                 <div id="search-controls" class="input-group">
                                     <input type="text" name="s" class="form-control" placeholder="Search..."/>
                                     <input type="submit" value="Submit" class="hidden"/>
