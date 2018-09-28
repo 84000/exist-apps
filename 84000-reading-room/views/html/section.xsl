@@ -588,36 +588,10 @@
                                                     </a>
                                                     
                                                     <xsl:if test="m:warning/tei:p">
-                                                        <p class="notes">
-                                                            <a data-toggle="modal" class="warning">
-                                                                <xsl:attribute name="href" select="concat('#tantra-warning-', $child-id)"/>
-                                                                <xsl:attribute name="data-target" select="concat('#tantra-warning-', $child-id)"/>
-                                                                <i class="fa fa-info-circle" aria-hidden="true"/>
-                                                                Tantra Text Warning
-                                                            </a>
-                                                        </p>
-                                                        <div class="modal fade" tabindex="-1" role="dialog">
-                                                            <xsl:attribute name="id" select="concat('tantra-warning-', $child-id)"/>
-                                                            <xsl:attribute name="aria-labelledby" select="concat('tantra-warning-label-', $child-id)"/>
-                                                            <div class="modal-dialog" role="document">
-                                                                <div class="modal-content">
-                                                                    <div class="modal-header">
-                                                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                                                            <span aria-hidden="true">
-                                                                                <i class="fa fa-times"/>
-                                                                            </span>
-                                                                        </button>
-                                                                        <h4 class="modal-title">
-                                                                            <xsl:attribute name="id" select="concat('tantra-warning-label-', $child-id)"/>
-                                                                            Tantra Text Warning
-                                                                        </h4>
-                                                                    </div>
-                                                                    <div class="modal-body">
-                                                                        <xsl:apply-templates select="m:warning"/>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                        </div>
+                                                        <xsl:call-template name="tantra-warning">
+                                                            <xsl:with-param name="id" select="$child-id"/>
+                                                            <xsl:with-param name="node" select="m:warning"/>
+                                                        </xsl:call-template>
                                                     </xsl:if>
                                                     
                                                 </div>
@@ -828,6 +802,47 @@
                         <xsl:apply-templates select="$section/m:abstract/*"/>
                     </xsl:if>
                     
+                    <xsl:if test="$section/m:warning/tei:p">
+                        <xsl:call-template name="tantra-warning">
+                            <xsl:with-param name="id" select="'title'"/>
+                            <xsl:with-param name="node" select="$section/m:warning"/>
+                        </xsl:call-template>
+                    </xsl:if>
+                    
+                </div>
+            </div>
+        </div>
+    </xsl:template>
+    
+    <xsl:template name="tantra-warning">
+        <xsl:param name="id"/>
+        <xsl:param name="node"/>
+        <a data-toggle="modal" class="warning">
+            <xsl:attribute name="href" select="concat('#tantra-warning-', $id)"/>
+            <xsl:attribute name="data-target" select="concat('#tantra-warning-', $id)"/>
+            <i class="fa fa-exclamation-circle" aria-hidden="true"/>
+            Tantra Text Warning
+        </a>
+        
+        <div class="modal fade" tabindex="-1" role="dialog">
+            <xsl:attribute name="id" select="concat('tantra-warning-', $id)"/>
+            <xsl:attribute name="aria-labelledby" select="concat('tantra-warning-label-', $id)"/>
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">
+                                <i class="fa fa-times"/>
+                            </span>
+                        </button>
+                        <h4 class="modal-title">
+                            <xsl:attribute name="id" select="concat('tantra-warning-label-', $id)"/>
+                            Tantra Text Warning
+                        </h4>
+                    </div>
+                    <div class="modal-body">
+                        <xsl:apply-templates select="$node"/>
+                    </div>
                 </div>
             </div>
         </div>

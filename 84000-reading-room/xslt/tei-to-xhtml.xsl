@@ -210,7 +210,7 @@
                     <xsl:apply-templates select="node()"/>
                 </p>
             </xsl:with-param>
-            <xsl:with-param name="row-classes" select="if (self::tei:trailer or self::tei:ab[@type = 'mantra']) then 'space' else ''"/>
+            <xsl:with-param name="row-classes" select="                 if (self::tei:trailer or self::tei:ab[@type eq 'mantra']) then                      'space'                  else ''             "/>
         </xsl:call-template>
     </xsl:template>
     
@@ -228,21 +228,20 @@
                     <xsl:apply-templates select="node()"/>
                 </h5>
             </xsl:with-param>
+            <xsl:with-param name="row-classes" select="'rw-label'"/>
         </xsl:call-template>
     </xsl:template>
     
     <xsl:template match="tei:list[tei:item]">
         <xsl:call-template name="milestone">
             <xsl:with-param name="content">
-                <div class="list">
-                    <xsl:if test="parent::tei:item">
-                        <xsl:attribute name="class" select="'list list-sublist'"/>
-                    </xsl:if>
+                <div>
+                    <xsl:attribute name="class" select="                         concat(                             'list',                             if(parent::tei:item) then                                 ' list-sublist'                             else '',                             if(@type eq 'section') then                                 ' list-section'                             else                                 ' list-bullet'                         )                     "/>
                     <xsl:apply-templates select="node()"/>
                 </div>
             </xsl:with-param>
             <xsl:with-param name="row-classes" select="'space-after'"/>
-            <xsl:with-param name="milestone-classes" select="'milestone-space'"/>
+            <xsl:with-param name="milestone-classes" select="''"/>
         </xsl:call-template>
     </xsl:template>
     
@@ -250,20 +249,22 @@
         <xsl:call-template name="milestone">
             <xsl:with-param name="content">
                 <div class="list-item">
-                    <xsl:variable name="css-classes">
-                        list-item 
-                        <xsl:if test="parent::tei:list/tei:item[1] = .">
-                            list-item-first 
-                        </xsl:if>
-                        <xsl:if test="parent::tei:list/tei:item[count(parent::tei:list/tei:item)] = .">
-                            list-item-last 
-                        </xsl:if>
-                    </xsl:variable>
-                    <xsl:attribute name="class" select="normalize-space($css-classes)"/>
+                    <xsl:attribute name="class" select="                         concat(                             'list-item',                             if(parent::tei:list/tei:item[1] = .) then                                  ' list-item-first'                             else '',                             if(parent::tei:list/tei:item[count(parent::tei:list/tei:item)] = .) then                                 ' list-item-last'                             else ''                         )                     "/>
                     <xsl:apply-templates select="node()"/>
                 </div>
             </xsl:with-param>
-            <xsl:with-param name="row-classes" select="'space'"/>
+        </xsl:call-template>
+    </xsl:template>
+    
+    <xsl:template match="tei:head[parent::tei:list]">
+        <xsl:call-template name="milestone">
+            <xsl:with-param name="content">
+                <h5 class="section-label">
+                    <xsl:call-template name="tid"/>
+                    <xsl:apply-templates select="node()"/>
+                </h5>
+            </xsl:with-param>
+            <xsl:with-param name="row-classes" select="'rw-heading'"/>
         </xsl:call-template>
     </xsl:template>
     
@@ -289,17 +290,6 @@
                     </xsl:if>
                     <xsl:apply-templates select="node()"/>
                 </div>
-            </xsl:with-param>
-        </xsl:call-template>
-    </xsl:template>
-    
-    <xsl:template match="tei:head[parent::tei:list]">
-        <xsl:call-template name="milestone">
-            <xsl:with-param name="content">
-                <h5 class="section-label">
-                    <xsl:call-template name="tid"/>
-                    <xsl:apply-templates select="node()"/>
-                </h5>
             </xsl:with-param>
         </xsl:call-template>
     </xsl:template>
@@ -384,7 +374,9 @@
                 <div class="rw">
                     
                     <!-- Concat classes for the row -->
-                    <xsl:attribute name="class" select="concat('rw', if(../(tei:q | tei:p | tei:ab | tei:trailer | tei:bibl | tei:list | tei:lg)[1] = .) then ' first-child' else '', if($row-classes gt '') then concat(' ', $row-classes) else '')"/>
+                    <xsl:variable name="first-child-class" select="if(../*[1] = .) then 'first-child' else ''"/>
+                    <xsl:variable name="space-after-class" select="                         if (                             following-sibling::*[1][self::tei:list[@type eq 'section']]                             or (following-sibling::*[1][self::tei:milestone] and following-sibling::*[2][self::tei:list[@type eq 'section']])) then                             'space-after'                          else ''                     "/>
+                    <xsl:attribute name="class" select="string-join(('rw', $first-child-class, $space-after-class, $row-classes), ' ')"/>
                     
                     <xsl:variable name="milestone" select="preceding-sibling::*[1][self::tei:milestone] | preceding-sibling::*[2][self::tei:milestone[following-sibling::*[1][self::tei:lb]]]"/>
                     

@@ -73,7 +73,7 @@
                                                                 <a>
                                                                     <xsl:attribute name="href" select="concat($reading-room-path ,'/section/', @id, '.tei')"/>
                                                                     <xsl:attribute name="target" select="concat(@id, '.tei')"/>
-                                                                    <span class="label label-warning">
+                                                                    <span class="label label-primary">
                                                                         <xsl:value-of select="concat(@id, '.tei')"/>
                                                                     </span>
                                                                 </a>
@@ -82,7 +82,7 @@
                                                                 <a>
                                                                     <xsl:attribute name="href" select="concat($reading-room-path ,'/section/', @id, '.xml')"/>
                                                                     <xsl:attribute name="target" select="concat(@id, '.xml')"/>
-                                                                    <span class="label label-warning">
+                                                                    <span class="label label-primary">
                                                                         <xsl:value-of select="concat(@id, '.xml')"/>
                                                                     </span>
                                                                 </a>
@@ -91,7 +91,7 @@
                                                                 <a>
                                                                     <xsl:attribute name="href" select="concat($reading-room-path ,'/section/', @id, '.html')"/>
                                                                     <xsl:attribute name="target" select="concat(@id, '.html')"/>
-                                                                    <span class="label label-warning">
+                                                                    <span class="label label-primary">
                                                                         <xsl:value-of select="concat(@id, '.html')"/>
                                                                     </span>
                                                                 </a>

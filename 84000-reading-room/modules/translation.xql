@@ -10,6 +10,7 @@ import module namespace common="http://read.84000.co/common" at "common.xql";
 import module namespace tei-content="http://read.84000.co/tei-content" at "tei-content.xql";
 import module namespace sponsors="http://read.84000.co/sponsors" at "sponsors.xql";
 import module namespace translators="http://read.84000.co/translators" at "translators.xql";
+import module namespace download="http://read.84000.co/download" at "download.xql";
 
 declare function translation:titles($translation as node()) as node()* {
     <titles xmlns="http://read.84000.co/ns/1.0">
@@ -176,34 +177,56 @@ declare function translation:filename($translation as node(), $resource-id as xs
         $filename
 };
 
-declare function translation:downloads($translation as node(), $resource-id as xs:string) as node()* {
-    let $filename := translation:filename($translation, $resource-id)
+declare function translation:version-str($translation as node()) as xs:string {
+    let $edition := data($translation//tei:editionStmt/tei:edition[1])
     return
-        <downloads xmlns="http://read.84000.co/ns/1.0">
-            {
-                if(util:binary-doc-available(concat($common:data-path, '/pdf/', $resource-id ,'.pdf'))) then
-                    <download type="pdf" url="{ concat('/data/', $filename ,'.pdf') }" fa-icon-class="fa-file-pdf-o">
-                        Download PDF
-                    </download>
+        replace(normalize-space(replace($edition, '[^a-z0-9\s\.]', ' ')), '\s', '-')
+};
+
+declare function translation:downloads($translation as node(), $resource-id as xs:string, $include as xs:string) as node()* {
+    
+    let $file-name := translation:filename($translation, $resource-id)
+    let $tei-version := translation:version-str($translation)
+    
+    return
+        <downloads xmlns="http://read.84000.co/ns/1.0" tei-version="{ $tei-version }">
+        {
+            for $type in ('pdf', 'epub', 'azw3')
+                let $stored-version := download:stored-version-str($resource-id, $type)
+            return
+                if(
+                    ($include eq 'all')                                                                 (: return all types :)
+                    or ($include eq 'any-version' and $stored-version gt '0')                           (: return if there is any version :)
+                    or ($include eq 'latest-version' and compare($stored-version, $tei-version) eq 0)   (: return only if it's the latest version :)
+                ) then
+                    element download {
+                        attribute type { $type },
+                        attribute url { concat('/data/', $file-name ,'.', $type) },
+                        attribute version { $stored-version },
+                        attribute fa-icon-class {
+                            if($type eq 'epub') then
+                                'fa-book'
+                            else if($type eq 'azw3') then
+                                'fa-amazon'
+                            else if($type eq 'pdf') then
+                                'fa-file-pdf-o'
+                            else
+                                ''
+                        },
+                        text {
+                            if($type eq 'epub') then
+                                'Download EPUB'
+                            else if($type eq 'azw3') then
+                                'Download AZW3 (Kindle)'
+                            else if($type eq 'pdf') then
+                                'Download PDF'
+                            else
+                                ''
+                        }
+                    }
                 else
                     ()
-            }
-            {
-                if(util:binary-doc-available(concat($common:data-path, '/epub/', $resource-id ,'.epub'))) then
-                    <download type="epub" url="{ concat('/data/', $filename ,'.epub') }" fa-icon-class="fa-book">
-                        Download EPUB
-                    </download>
-                else
-                    ()
-            }
-            {
-                if(util:binary-doc-available(concat($common:data-path, '/azw3/', $resource-id ,'.azw3'))) then
-                    <download type="azw3" url="{ concat('/data/', $filename ,'.azw3') }" fa-icon-class="fa-amazon">
-                        Download AZW3 (Kindle)
-                    </download>
-                else
-                    ()
-            }
+        }
         </downloads>
 };
 
@@ -229,7 +252,7 @@ declare function translation:nested-section($section as node()*) as node()* {
     if($section) then
         <nested-section xmlns="http://read.84000.co/ns/1.0">
             {
-                $section/*[self::tei:head[not(lower-case(text()) = ("prologue", "colophon"))] | self::tei:p | self::tei:milestone | self::tei:ab | self::tei:lg | self::tei:lb | self::tei:q | self::tei:list | self::tei:trailer | self::tei:label ]
+                $section/*[self::tei:head[@type = ("prologue", "colophon")] | self::tei:p | self::tei:milestone | self::tei:ab | self::tei:lg | self::tei:lb | self::tei:q | self::tei:list | self::tei:trailer | self::tei:label ]
             }
             {
                 for $sub-section in $section/tei:div[@type eq 'section']
@@ -253,20 +276,20 @@ declare function translation:introduction($translation as node()) as node()* {
 declare function translation:prologue($translation as node()) as node()* {
     <prologue xmlns="http://read.84000.co/ns/1.0" prefix="p">
     { 
-        translation:nested-section($translation//tei:body/tei:div[@type='translation']/tei:div[@type='prologue' or tei:head/text()[lower-case(.) = "prologue"]])
+        translation:nested-section($translation//tei:body/tei:div[@type='translation']/tei:div[@type eq 'prologue'])
     }
     </prologue>
 };
 
 declare function translation:body($translation as node()) as node()* {
     <body xmlns="http://read.84000.co/ns/1.0" prefix="tr">
-        <honoration>{ data($translation//tei:body/tei:div[@type eq 'translation']/tei:head[@type='titleHon']) }</honoration>
-        <main-title>{ data($translation//tei:body/tei:div[@type eq 'translation']/tei:head[@type='titleMain']) }</main-title>
+        <honoration>{ data($translation//tei:body/tei:div[@type eq 'translation']/tei:head[@type eq 'titleHon']) }</honoration>
+        <main-title>{ data($translation//tei:body/tei:div[@type eq 'translation']/tei:head[@type eq 'titleMain']) }</main-title>
         { 
-            for $chapter at $chapter-index in $translation//tei:body//tei:div[@type eq 'translation']/tei:div[@type = ('section', 'chapter')][not(tei:head/text()[lower-case(.) = "prologue"])]
+            for $chapter at $chapter-index in $translation//tei:body//tei:div[@type eq 'translation']/tei:div[@type = ('section', 'chapter')]
             return
                 <chapter chapter-index="{ $chapter-index }" prefix="{ $chapter-index }">
-                    <title>{ $chapter/tei:head[@type eq 'chapterTitle']/text() }</title>
+                    <title>{ $chapter/tei:head[@type = ('chapterTitle', 'section')]/text() }</title>
                     <title-number>
                     {
                         if($chapter/tei:head[@type eq 'chapter']/text())then
@@ -297,12 +320,12 @@ declare function translation:appendix($translation as node()) as node()* {
     <appendix xmlns="http://read.84000.co/ns/1.0" prefix="ap">
     { 
         let $count-appendix := 
-            count($translation//tei:back//*[@type='appendix']/*[@type = 'prologue' or tei:head[lower-case(text()) eq "appendix prologue"]])
+            count($translation//tei:back//*[@type='appendix']/*[@type = 'prologue'])
             
         for $chapter at $chapter-index in $translation//tei:back//*[@type='appendix']/*[@type=('section', 'chapter', 'prologue')]
             let $chapter-number := xs:string($chapter-index - $count-appendix)
             let $chapter-class := 
-                if($chapter/tei:head[lower-case(text()) eq "appendix prologue"])then
+                if($chapter/@type eq 'prologue')then
                     'p'
                 else
                     $chapter-number
@@ -320,12 +343,8 @@ declare function translation:appendix($translation as node()) as node()* {
 declare function translation:abbreviations($translation as node()) as node()* {
     <abbreviations xmlns="http://read.84000.co/ns/1.0" prefix="ab">
     {
-        if($translation//tei:list[@type='abbreviations']/tei:head[text() and not(lower-case(text()) = ('abbreviations', 'abbreviations:'))])then
-            <head>
-            {
-                $translation//tei:list[@type='abbreviations']/tei:head/text()
-            }
-            </head>
+        if($translation//tei:list[@type='abbreviations']/tei:head/text())then
+            <head>{$translation//tei:list[@type='abbreviations']/tei:head/text()}</head>
         else
             ()
     }
@@ -339,11 +358,7 @@ declare function translation:abbreviations($translation as node()) as node()* {
     }
     {
         if($translation//tei:list[@type='abbreviations']/tei:item[not(tei:abbr)]/text())then
-            <foot>
-            {
-                $translation//tei:list[@type='abbreviations']/tei:item[not(tei:abbr)]/text()
-            }
-            </foot>
+            <foot>{ $translation//tei:list[@type='abbreviations']/tei:item[not(tei:abbr)]/text() }</foot>
         else
             ()
     }

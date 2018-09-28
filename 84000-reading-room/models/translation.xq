@@ -49,7 +49,7 @@ let $response :=
                 { translation:long-titles($tei) }
                 { $source }
                 { translation:translation($tei) }
-                { translation:downloads($tei, $resource-id) }
+                { translation:downloads($tei, $resource-id, 'any-version') }
                 { translation:summary($tei) }
                 { translation:acknowledgment($tei) }
                 { translation:introduction($tei) }

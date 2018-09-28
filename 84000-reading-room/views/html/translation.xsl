@@ -210,7 +210,7 @@
                                                         <a href="#contents" class="scroll-to-anchor">Contents</a>
                                                     </td>
                                                 </tr>
-                                                <xsl:if test="m:translation/m:summary//tei:p">
+                                                <xsl:if test="m:translation/m:summary//tei:*">
                                                     <tr>
                                                         <td>
                                                             <xsl:value-of select="concat(m:translation/m:summary/@prefix, '.')"/>
@@ -220,7 +220,7 @@
                                                         </td>
                                                     </tr>
                                                 </xsl:if>
-                                                <xsl:if test="m:translation/m:acknowledgment//tei:p">
+                                                <xsl:if test="m:translation/m:acknowledgment//tei:*">
                                                     <tr>
                                                         <td>
                                                             <xsl:value-of select="concat(m:translation/m:acknowledgment/@prefix, '.')"/>
@@ -230,7 +230,7 @@
                                                         </td>
                                                     </tr>
                                                 </xsl:if>
-                                                <xsl:if test="m:translation/m:introduction//tei:p">
+                                                <xsl:if test="m:translation/m:introduction//tei:*">
                                                     <tr>
                                                         <td>
                                                             <xsl:value-of select="concat(m:translation/m:introduction/@prefix, '.')"/>
@@ -248,7 +248,7 @@
                                                         <a href="#body-title" class="scroll-to-anchor">The Translation</a>
                                                         <table>
                                                             <tbody>
-                                                                <xsl:if test="m:translation/m:prologue//tei:p">
+                                                                <xsl:if test="m:translation/m:prologue//tei:*">
                                                                     <tr>
                                                                         <td>
                                                                             <xsl:value-of select="concat(m:translation/m:prologue/@prefix, '.')"/>
@@ -282,7 +282,7 @@
                                                         </table>
                                                     </td>
                                                 </tr>
-                                                <xsl:if test="m:translation/m:colophon//tei:p">
+                                                <xsl:if test="m:translation/m:colophon//tei:*">
                                                     <tr>
                                                         <td>
                                                             <xsl:value-of select="concat(m:translation/m:colophon/@prefix, '.')"/>
@@ -292,7 +292,7 @@
                                                         </td>
                                                     </tr>
                                                 </xsl:if>
-                                                <xsl:if test="m:translation/m:appendix//tei:p">
+                                                <xsl:if test="m:translation/m:appendix//tei:*">
                                                     <xsl:variable name="appendix-prefix" select="m:translation/m:appendix/@prefix"/>
                                                     <tr>
                                                         <td>
@@ -374,7 +374,7 @@
                                     </div>
                                 </section>
     
-                                 <hr class="hidden-print"/>
+                                <hr class="hidden-print"/>
     
                                 <section id="acknowledgements" class="text">
                                     <xsl:call-template name="section-title">
@@ -423,7 +423,7 @@
                                     </div>
                                 </section>
                                 
-                                <xsl:if test="m:translation/m:prologue//tei:p">
+                                <xsl:if test="m:translation/m:prologue//tei:*">
                                     <hr class="hidden-print"/>
                                     <section id="prologue" class="page text glossarize-section">
                                         <xsl:call-template name="section-title">
@@ -449,7 +449,7 @@
                                         <section>
                                             <xsl:attribute name="id" select="concat('chapter-', @chapter-index/string())"/>
                                             <xsl:choose>
-                                                <xsl:when test="m:title/text() or m:title-number/text() or m:translation/m:prologue//tei:p">
+                                                <xsl:when test="m:title/text() or m:title-number/text() or m:translation/m:prologue//tei:*">
                                                     <xsl:attribute name="class" select="'chapter text glossarize-section page'"/>
                                                 </xsl:when>
                                                 <xsl:otherwise>
@@ -504,7 +504,7 @@
                                     </xsl:for-each>
                                 </div>
                                 
-                                <xsl:if test="m:translation/m:colophon//tei:p">
+                                <xsl:if test="m:translation/m:colophon//tei:*">
                                     
                                     <hr class="hidden-print"/>
                                     
@@ -521,7 +521,7 @@
                                     </section>
                                 </xsl:if>
                                 
-                                <xsl:if test="m:translation/m:appendix//tei:p">
+                                <xsl:if test="m:translation/m:appendix//tei:*">
                                     
                                     <hr class="hidden-print"/>
                                     
@@ -532,7 +532,7 @@
                                             <xsl:with-param name="title" select="'Appendix'"/>
                                             <xsl:with-param name="title-tag" select="'h3'"/>
                                         </xsl:call-template>
-                                            
+                                        
                                         <div class="render-in-viewport">
                                             <xsl:for-each select="m:translation/m:appendix/m:chapter">
                                                 
@@ -569,7 +569,7 @@
                                         </xsl:call-template>
                                         <div class="render-in-viewport">
                                             <div class="rw">
-                                                <xsl:if test="m:translation/m:abbreviations/m:head">
+                                                <xsl:if test="m:translation/m:abbreviations/m:head[not(lower-case(text()) = ('abbreviations', 'abbreviations:'))]">
                                                     <h5>
                                                         <xsl:apply-templates select="m:translation/m:abbreviations/m:head/text()"/>
                                                     </h5>
@@ -949,7 +949,7 @@
         <xsl:param name="prefix" required="yes"/>
         <xsl:param name="title" required="yes"/>
         <xsl:param name="title-tag" select="'h3'" required="no"/>
-        <div class="rw">
+        <div class="rw rw-heading">
             <div class="gtr">
                 <a title="Bookmark this section">
                     <xsl:attribute name="href" select="concat('#', $id)"/>
@@ -957,7 +957,7 @@
                     <xsl:value-of select="concat($prefix, '.')"/>
                 </a>
             </div>
-            <div class="rw-heading">
+            <div class="rw">
                 <xsl:choose>
                     <xsl:when test="$title-tag eq 'h2'">
                         <h2>
@@ -976,7 +976,6 @@
                     </xsl:otherwise>
                 </xsl:choose>
             </div>
-            
         </div>
     </xsl:template>
     

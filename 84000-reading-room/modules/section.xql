@@ -151,7 +151,7 @@ declare function section:texts($section-id as xs:string, $published-only as xs:b
                     { translation:toh($tei, $resource-id) }
                     { translation:titles($tei) }
                     { translation:title-variants($tei) }
-                    { translation:downloads($tei, $resource-id) }
+                    { translation:downloads($tei, $resource-id, 'any-version') }
                     { translation:summary($tei) }
                 </text>
     
@@ -184,7 +184,7 @@ declare function section:all-translated-texts() as node() {
                 { translation:titles($tei) }
                 { translation:title-variants($tei) }
                 { tei-content:ancestors($tei, $resource-id, 1) }
-                { translation:downloads($tei, $resource-id) }
+                { translation:downloads($tei, $resource-id, 'any-version') }
                 { translation:summary($tei) }
             </text>
         

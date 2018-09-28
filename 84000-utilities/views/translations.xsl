@@ -30,6 +30,12 @@
                     
                     <div class="panel-body">
                         
+                        <xsl:if test="m:updated">
+                            <div class="alert alert-success" role="alert">
+                                <xsl:value-of select="m:updated"/>
+                            </div>
+                        </xsl:if>
+                        
                         <xsl:call-template name="tabs">
                             <xsl:with-param name="active-tab" select="@model-type"/>
                         </xsl:call-template>
@@ -48,6 +54,8 @@
                                     <xsl:for-each select="//m:translations/m:translation">
                                         <xsl:sort select="number(m:toh/@number)"/>
                                         <xsl:sort select="m:toh/m:base"/>
+                                        <xsl:variable name="toh" select="m:toh"/>
+                                        <xsl:variable name="tei-version" select="m:downloads/@tei-version"/>
                                         <tr>
                                             <td rowspan="2">
                                                 <xsl:value-of select="m:toh/m:base"/>
@@ -57,13 +65,12 @@
                                             </td>
                                             <td colspan="2" class="nowrap">
                                                 <xsl:value-of select="@id"/>
-                                                <xsl:choose>
-                                                    <xsl:when test="@status eq 'published'">
-                                                        <div class="label label-success pull-right">
-                                                            Published
-                                                        </div>
-                                                    </xsl:when>
-                                                </xsl:choose>
+                                                <div class="label label-warning pull-right">
+                                                    <xsl:if test="@status-id eq '1'">
+                                                        <xsl:attribute name="class" select="'label label-success pull-right'"/>
+                                                    </xsl:if>
+                                                    <xsl:value-of select="@status-id"/>
+                                                </div>
                                             </td>
                                         </tr>
                                         <tr class="sub">
@@ -71,81 +78,42 @@
                                                 <ul class="list-inline">
                                                     <li>
                                                         <a>
-                                                            <xsl:attribute name="href" select="concat($reading-room-path ,'/translation/', m:toh/@key, '.xml')"/>
-                                                            <xsl:attribute name="target" select="concat(m:toh/@key, '.xml')"/>
-                                                            <span class="label label-warning">
-                                                                <xsl:value-of select="concat(m:toh/@key, '.xml / live')"/>
+                                                            <xsl:attribute name="href" select="concat($reading-room-path ,'/translation/', $toh/@key, '.xml')"/>
+                                                            <xsl:attribute name="target" select="concat($toh/@key, '.xml')"/>
+                                                            <span class="label label-primary">
+                                                                <xsl:value-of select="concat($toh/@key, '.xml')"/>
                                                             </span>
                                                         </a>
                                                     </li>
                                                     <li>
                                                         <a>
-                                                            <xsl:attribute name="href" select="concat($reading-room-path ,'/translation/', m:toh/@key, '.html')"/>
-                                                            <xsl:attribute name="target" select="concat(m:toh/@key, '.html')"/>
-                                                            <span class="label label-warning">
-                                                                <xsl:value-of select="concat(m:toh/@key, '.html / live')"/>
+                                                            <xsl:attribute name="href" select="concat($reading-room-path ,'/translation/', $toh/@key, '.html')"/>
+                                                            <xsl:attribute name="target" select="concat($toh/@key, '.html')"/>
+                                                            <span class="label label-primary">
+                                                                <xsl:value-of select="concat($toh/@key, '.html')"/>
                                                             </span>
                                                         </a>
                                                     </li>
-                                                    <li>
-                                                        <a>
-                                                            <xsl:attribute name="href" select="concat($reading-room-path ,'/translation/', m:toh/@key, '.epub')"/>
-                                                            <span class="label label-warning">
-                                                                <xsl:value-of select="concat(m:toh/@key, '.epub / live')"/>
-                                                            </span>
-                                                        </a>
-                                                    </li>
-                                                    <li>
-                                                        <xsl:choose>
-                                                            <xsl:when test="m:downloads/m:download[@type eq 'pdf']">
-                                                                <a>
-                                                                    <xsl:attribute name="href" select="concat($reading-room-path ,'/data/pdf/', m:toh/@key, '.pdf')"/>
-                                                                    <span class="label label-primary">
-                                                                        <xsl:value-of select="concat(m:toh/@key, '.pdf / cached')"/>
-                                                                    </span>
-                                                                </a>
-                                                            </xsl:when>
-                                                            <xsl:otherwise>
-                                                                <span class="label label-default">
-                                                                    <xsl:value-of select="concat(m:toh/@key, '.pdf / missing')"/>
-                                                                </span>
-                                                            </xsl:otherwise>
-                                                        </xsl:choose>
-                                                    </li>
-                                                    <li>
-                                                        <xsl:choose>
-                                                            <xsl:when test="m:downloads/m:download[@type eq 'epub']">
-                                                                <a>
-                                                                    <xsl:attribute name="href" select="concat($reading-room-path ,'/data/epub/', m:toh/@key, '.epub')"/>
-                                                                    <span class="label label-primary">
-                                                                        <xsl:value-of select="concat(m:toh/@key, '.epub / cached')"/>
-                                                                    </span>
-                                                                </a>
-                                                            </xsl:when>
-                                                            <xsl:otherwise>
-                                                                <span class="label label-default">
-                                                                    <xsl:value-of select="concat(m:toh/@key, '.epub / missing')"/>
-                                                                </span>
-                                                            </xsl:otherwise>
-                                                        </xsl:choose>
-                                                    </li>
-                                                    <li>
-                                                        <xsl:choose>
-                                                            <xsl:when test="m:downloads/m:download[@type eq 'azw3']">
-                                                                <a>
-                                                                    <xsl:attribute name="href" select="concat($reading-room-path ,'/data/azw3/', m:toh/@key, '.azw3')"/>
-                                                                    <span class="label label-primary">
-                                                                        <xsl:value-of select="concat(m:toh/@key, '.azw3 / cached')"/>
-                                                                    </span>
-                                                                </a>
-                                                            </xsl:when>
-                                                            <xsl:otherwise>
-                                                                <span class="label label-default">
-                                                                    <xsl:value-of select="concat(m:toh/@key, '.azw3 / missing')"/>
-                                                                </span>
-                                                            </xsl:otherwise>
-                                                        </xsl:choose>
-                                                    </li>
+                                                    <xsl:for-each select="m:downloads/m:download">
+                                                        <li>
+                                                            <a>
+                                                                <xsl:choose>
+                                                                    <xsl:when test="compare(@version, $tei-version) eq 0">
+                                                                        <xsl:attribute name="href" select="concat($reading-room-path, @url)"/>
+                                                                        <span class="label label-primary">
+                                                                            <xsl:value-of select="concat($toh/@key, '.', @type)"/>
+                                                                        </span>
+                                                                    </xsl:when>
+                                                                    <xsl:otherwise>
+                                                                        <xsl:attribute name="href" select="concat('/translations.html?store=', $toh/@key, '.', @type)"/>
+                                                                        <span class="label label-warning">
+                                                                            <xsl:value-of select="concat('Update ', $toh/@key, '.', @type)"/>
+                                                                        </span>
+                                                                    </xsl:otherwise>
+                                                                </xsl:choose>
+                                                            </a>
+                                                        </li>
+                                                    </xsl:for-each>
                                                 </ul>
                                                 <span class="small">
                                                     File: 

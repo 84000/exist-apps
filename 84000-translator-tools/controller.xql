@@ -62,7 +62,11 @@ else if (lower-case($resource-id) eq 'cumulative-glossary') then
             <forward url="{concat($exist:controller, '/models/cumulative-glossary.xq')}"/>
         </dispatch>
 else
-    (: everything else is passed through :)
+    (: pass to data :)
     <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-        <cache-control cache="yes"/>
+        <forward url="{ $exist:path }">
+            <set-header name="Content-Disposition" value="attachment"/>
+        </forward>
     </dispatch>
+    
+    

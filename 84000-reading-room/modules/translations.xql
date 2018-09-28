@@ -262,9 +262,9 @@ declare function translations:filtered-texts($section as xs:string, $status as x
         </texts>
 };
 
-declare function translations:translations($include-stats as xs:boolean, $include-downloads as xs:boolean, $include-folios as xs:boolean) as node() {
+declare function translations:translations($text-statuses as xs:string*, $include-stats as xs:boolean, $include-downloads as xs:string, $include-folios as xs:boolean) as node() {
 
-    let $translations := collection($common:translations-path)//tei:TEI[tei:teiHeader/tei:fileDesc/tei:publicationStmt/@status = $tei-content:published-statuses]
+    let $translations := collection($common:translations-path)//tei:TEI[tei:teiHeader/tei:fileDesc/tei:publicationStmt/@status = $text-statuses]
     
     return
         <translations xmlns="http://read.84000.co/ns/1.0">
@@ -280,13 +280,13 @@ declare function translations:translations($include-stats as xs:boolean, $includ
                 id="{ tei-content:id($tei) }" 
                 wordCount="{ if($include-stats) then translation:word-count($tei) else '' }"
                 glossaryCount="{ if($include-stats) then translation:glossary-count($tei) else '' }"
-                status="published">
+                status-id="{ $tei/tei:teiHeader/tei:fileDesc/tei:publicationStmt/@status }">
                 { translation:toh($tei, $toh-key) }
                 { translation:titles($tei) }
                 { translation:location($tei, $toh-key) }
                 {
-                    if($include-downloads)then
-                        translation:downloads($tei, $toh-key)
+                    if($include-downloads gt '')then
+                        translation:downloads($tei, $toh-key, $include-downloads)
                     else
                         ()
                 }

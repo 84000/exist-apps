@@ -263,7 +263,7 @@ else if(not(common:auth-environment()) or sm:is-authenticated()) then
     else
         (: It's data :)
         if($resource-suffix eq 'pdf') then
-            (:<response>{ concat($common:data-path, '/pdf/',  $exist:resource) }</response>:)
+            (:<response>{ download:file-path($exist:resource) }</response>:)
             <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
                 <forward url="{ download:file-path($exist:resource) }">
                     <set-header name="Content-Type" value="application/pdf"/>

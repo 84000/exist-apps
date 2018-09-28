@@ -32,8 +32,8 @@ declare function search:search($request as xs:string, $first-record as xs:double
     let $query := 
         <query>
             <bool>
-                <near slop="20" occur="should">{ lower-case($request) }</near>
-                <wildcard occur="should">{ concat(lower-case($request),'*') }</wildcard>
+                <near slop="20" occur="should">{ common:normalized-chars($request) }</near>
+                <wildcard occur="should">{ concat(common:normalized-chars($request),'*') }</wildcard>
             </bool>
         </query>
     
@@ -66,7 +66,7 @@ declare function search:search($request as xs:string, $first-record as xs:double
             }
             </result-group>
     
-    return
+    return 
         <search xmlns="http://read.84000.co/ns/1.0" >
             <request>{ $request }</request>
             <results
