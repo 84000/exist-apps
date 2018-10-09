@@ -30,15 +30,19 @@
                     
                     <div class="panel-body">
                         
+                        <xsl:call-template name="tabs">
+                            <xsl:with-param name="active-tab" select="@model-type"/>
+                        </xsl:call-template>
+                        
+                        <div class="alert alert-danger" role="alert">
+                            Due to an underlying restriction in the database platform only database administrators can generate new versions of eBooks.
+                        </div>
+                        
                         <xsl:if test="m:updated">
                             <div class="alert alert-success" role="alert">
                                 <xsl:value-of select="m:updated"/>
                             </div>
                         </xsl:if>
-                        
-                        <xsl:call-template name="tabs">
-                            <xsl:with-param name="active-tab" select="@model-type"/>
-                        </xsl:call-template>
                         
                         <div class="tab-content">
                             

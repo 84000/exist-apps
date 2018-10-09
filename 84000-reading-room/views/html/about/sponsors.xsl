@@ -119,13 +119,13 @@
                                         <xsl:if test="m:summary/tei:p">
                                             <hr/>
                                             <a class="summary-link collapsed" role="button" data-toggle="collapse" aria-expanded="false" aria-controls="collapseExample">
-                                                <xsl:attribute name="href" select="concat('#summary-detail-', position())"/>
+                                                <xsl:attribute name="href" select="concat('#summary-detail-', m:toh/@key)"/>
                                                 <i class="fa fa-chevron-down"/> Summary
                                             </a>
                                             
                                             <div class="collapse summary-detail">
                                                 
-                                                <xsl:attribute name="id" select="concat('summary-detail-', position())"/>
+                                                <xsl:attribute name="id" select="concat('summary-detail-', m:toh/@key)"/>
                                                 
                                                 <div class="well well-sm">
                                                     

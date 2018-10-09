@@ -70,19 +70,6 @@ h5.section-label{
     margin-top: 40pt;
 }
 
-/* blockquote */
-blockquote{
-    padding: 0;
-    margin-bottom: 0;
-    border-left: 1px solid #ccc;
-}
-blockquote p{
-    padding-left: 12pt;
-}
-blockquote .line-group .line{
-    padding-left: 22pt;
-}
-
 /* helpers */
 .bold,
 .text-bold{
@@ -150,6 +137,19 @@ blockquote .line-group .line{
     margin-bottom: 20pt;
 }
 
+/* blockquote */
+blockquote{
+    padding: 0;
+    margin-bottom: 0;
+    border-left: 1px solid #ccc;
+}
+blockquote p{
+    padding-left: 12pt;
+}
+blockquote .line-group .line{
+    padding-left: 34pt;
+}
+
 /* text section */
 .text h2{
     font-weight: normal;
@@ -175,27 +175,29 @@ blockquote .line-group .line{
 }
 
 /* Spaced paragraphs */
-.text h2 + p,
-.text h3 + p,
-.text h4 + p,
+.text h2 + *,
+.text h3 + *,
+.text h4 + *,
 .text br + *,
-.text .rw-heading + .rw,
 .text .space,
-.text .space-after + *,
-.text .list .space,
-.text .list .space-after + *{
+.text .space + *,
+.text .space-after + *, 
+.text .milestone-space {
     margin-top: 14pt;
 }
 /* Remove line indent */
 .text .rw.first-child > p,
+.text .rw:first-child > p,
 .text h2 + .rw p,
 .text h3 + .rw p,
 .text h4 + .rw p,
 .text br + .rw p,
-.text .rw-heading + .rw p,
+.text .space > p,
+.text .space + .rw > p,
 .text .space-after + .rw > p,
-.text p.trailer,
-.footnote-number{
+.text .rw-heading + .rw > p,
+.text .rw-label + .rw > p,
+.text .footnote-number {
     text-indent: 0;
 }
 
@@ -226,26 +228,48 @@ blockquote .line-group .line{
     page-break-after: avoid;
 }
 
-/* list incl. indented lists */
+/* lists */
 .list p,
 .list .section-label{
     margin-top: 0;
 }
-.list .list-item p,
-.list .list-item .section-label{
+
+/* Bullet lists are indented horizontally */
+.list.list-bullet > .rw > .list-item {
+    margin-top: 5pt;
+}
+.list.list-bullet > .rw > .list-item p,
+.list.list-bullet > .rw > .list-item .section-label {
     padding-left: 12pt;
 }
-.list .list-item .list-item p,
-.list .list-item .list-item .section-label{
+.list.list-bullet > .rw > .list-item  .list-bullet > .rw > .list-item  p,
+.list.list-bullet > .rw > .list-item  .list-bullet > .rw > .list-item .section-label {
     padding-left: 24pt;
 }
-.list .list-item .list-item .list-item p,
-.list .list-item .list-item .list-item .section-label{
+.list.list-bullet > .rw > .list-item .list.list-bullet > .rw > .list-item .list.list-bullet > .rw > .list-item p,
+.list.list-bullet > .rw > .list-item .list.list-bullet > .rw > .list-item .list.list-bullet > .rw > .list-item .section-label {
     padding-left: 36pt;
 }
-.list .list-item .list-item .list-item .list-item p,
-.list .list-item .list-item .list-item .list-item .section-label{
+.list.list-bullet > .rw > .list-item .list.list-bullet > .rw > .list-item .list.list-bullet > .rw > .list-item .list.list-bullet > .rw > .list-item p,
+.list.list-bullet > .rw > .list-item .list.list-bullet > .rw > .list-item .list.list-bullet > .rw > .list-item .list.list-bullet > .rw > .list-item .section-label {
     padding-left: 48pt;
+}
+.list.list-bullet > .rw > .list-item .list.list-bullet > .rw > .list-item .list.list-bullet > .rw > .list-item .list.list-bullet > .rw > .list-item .list.list-bullet > .rw > .list-item p,
+.list.list-bullet > .rw > .list-item .list.list-bullet > .rw > .list-item .list.list-bullet > .rw > .list-item .list.list-bullet > .rw > .list-item .list.list-bullet > .rw > .list-item .section-label {
+    padding-left: 60pt;
+}
+.list.list-bullet > .rw > .list-item .list.list-bullet > .rw > .list-item .list.list-bullet > .rw > .list-item .list.list-bullet > .rw > .list-item .list.list-bullet > .rw > .list-item .list.list-bullet > .rw > .list-item p,
+.list.list-bullet > .rw > .list-item .list.list-bullet > .rw > .list-item .list.list-bullet > .rw > .list-item .list.list-bullet > .rw > .list-item .list.list-bullet > .rw > .list-item .list.list-bullet > .rw > .list-item .section-label {
+    padding-left: 72pt;
+}
+
+/* Section lists are spaced vertically */
+.list.list-section > .rw {
+    margin-top: 14pt;
+}
+.list.list-section > .rw.first-child,
+.list.list-section > .rw.rw-heading + .rw {
+    margin-top: 0;
 }
 
 /* Footnotes */

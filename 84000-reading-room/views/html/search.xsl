@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" version="2.0" exclude-result-prefixes="#all">
     
-    <xsl:import href="../../xslt/search-result.xsl"/>
+    <xsl:import href="../../xslt/translation-search.xsl"/>
     <xsl:include href="website-page.xsl"/>
     
     <xsl:template match="/m:response">
@@ -64,121 +64,11 @@
                                 </div>
                             </div>
                         </div>
-                        <div id="search-container" class="row">
-                            
-                            <div class="col-md-10 col-md-offset-1 col-lg-8 col-lg-offset-2">
-                                
-                                <form action="search.html" method="post" class="form-horizontal">
-                                    <input type="hidden" name="tab" value="search"/>
-                                    <div class="input-group">
-                                        <input type="text" name="s" id="search" class="form-control" placeholder="Search" required="required">
-                                            <xsl:attribute name="value" select="m:search/m:request/text()"/>
-                                        </input>
-                                        <span class="input-group-btn">
-                                            <button type="submit" class="btn btn-primary">
-                                                Search
-                                            </button>
-                                        </span>
-                                    </div>
-                                </form>
-                                
-                                <xsl:choose>
-                                    <xsl:when test="m:search/m:results/m:item">
-                                        <xsl:variable name="first-record" select="m:search/m:results/@first-record"/>
-                                        <xsl:for-each select="m:search/m:results/m:item">
-                                            <xsl:variable name="source" select="m:source"/>
-                                            <div class="search-result">
-                                                
-                                                <div class="row">
-                                                    
-                                                    <div class="col-sm-1 text-muted">
-                                                        <xsl:value-of select="$first-record + (position() - 1)"/>.
-                                                    </div>
-                                                    
-                                                    <div class="col-sm-11 col-md-9">
-                                                        <a>
-                                                            <xsl:attribute name="href" select="m:match-url($source)"/>
-                                                            <xsl:value-of select="$source/m:title/text()"/>
-                                                        </a>
-                                                    </div>
-                                                    
-                                                    <div class="col-sm-11 col-sm-offset-1 col-md-2 col-md-offset-0">
-                                                        <xsl:choose>
-                                                            <xsl:when test="$source[@tei-type eq 'section']">
-                                                                <span class="label label-success">
-                                                                    Section
-                                                                </span>
-                                                            </xsl:when>
-                                                            <xsl:otherwise>
-                                                                <xsl:call-template name="translation-status">
-                                                                    <xsl:with-param name="status" select="m:source/@translation-status"/>
-                                                                </xsl:call-template>
-                                                            </xsl:otherwise>
-                                                        </xsl:choose>
-                                                    </div>
-                                                    
-                                                </div>
-                                                    
-                                                <xsl:for-each select="$source/m:bibl">
-                                                    <div class="row">
-                                                        <div class="col-sm-11 col-sm-offset-1 small text-muted">
-                                                            in
-                                                            <ul class="breadcrumb">
-                                                                <xsl:for-each select="m:parent | m:parent//m:parent">
-                                                                    <xsl:sort select="@nesting" order="descending"/>
-                                                                    <li>
-                                                                        <xsl:value-of select="m:title[@xml:lang='en']/text()"/>
-                                                                    </li>
-                                                                </xsl:for-each>
-                                                                <xsl:if test="m:toh/m:full">
-                                                                    <li>
-                                                                        <a>
-                                                                            <xsl:attribute name="href" select="m:match-url($source)"/>
-                                                                            <xsl:value-of select="m:toh/m:full"/>
-                                                                        </a>
-                                                                    </li>
-                                                                </xsl:if>
-                                                            </ul>
-                                                        </div>
-                                                    </div>
-                                                </xsl:for-each>
-                                                
-                                                <section>
-                                                    <xsl:attribute name="id" select="concat('result-matches-', position())"/>
-                                                    <div>
-                                                        <xsl:if test="count(m:match) gt 1">
-                                                            <xsl:attribute name="class" select="'render-in-viewport'"/>
-                                                        </xsl:if>
-                                                        <xsl:for-each select="m:match">
-                                                            <!-- Don't bother if it's the title, we already show this -->
-                                                            <xsl:if test="not(@node-type eq 'title' and @type eq 'mainTitle' and @xml:lang eq 'en')">
-                                                                <div class="row">
-                                                                    <div class="col-sm-offset-1 col-sm-11">
-                                                                        <xsl:apply-templates select="."/>
-                                                                    </div>
-                                                                </div>
-                                                            </xsl:if>
-                                                        </xsl:for-each>
-                                                    </div>
-                                                </section>
-                                                    
-                                            </div>
-                                        </xsl:for-each>
-                                        
-                                        <!-- Pagination -->
-                                        <xsl:copy-of select="common:pagination(m:search/m:results/@first-record, m:search/m:results/@max-records, m:search/m:results/@count-records, concat('&amp;s=', m:search/m:request/text()))"/>
-                                        
-                                    </xsl:when>
-                                    <xsl:otherwise>
-                                        <br/>
-                                        <p>
-                                            No search results
-                                        </p>
-                                    </xsl:otherwise>
-                                </xsl:choose>
-                                
-                            </div>
-                        </div>
+                        
+                        <xsl:call-template name="search">
+                            <xsl:with-param name="action" select="'search.html'"/>
+                        </xsl:call-template>
+                        
                     </div>
                     
                     <div id="bookmarks-sidebar" class="fixed-sidebar collapse width hidden-print">
@@ -217,7 +107,7 @@
             <xsl:with-param name="content" select="$content"/>
             <xsl:with-param name="nav-tab" select="'reading-room'"/>
         </xsl:call-template>
-            
+        
     </xsl:template>
     
 </xsl:stylesheet>

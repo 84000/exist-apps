@@ -155,7 +155,7 @@
                                         </li>
                                     </xsl:if>
                                     
-                                    <xsl:if test="m:section/m:sections/m:section">
+                                    <xsl:if test="m:section/m:sections/m:section[not(@type eq 'grouping')]">
                                         <li role="presentation">
                                             <xsl:attribute name="class" select="if(not($show-texts)) then 'active' else ''"/>
                                             <a href="#sections" aria-controls="sections" role="tab" data-toggle="tab">Sections</a>
@@ -195,9 +195,9 @@
                                     
                                     <div class="row table-headers">
                                         
-                                        <div class="col-sm-1 hidden-xs">Toh</div>
-                                        <div class="col-sm-7 col-md-8">Title</div>
-                                        <div class="col-xs-12 col-sm-4 col-md-3">
+                                        <div class="hidden-xs hidden-sm col-md-1">Toh</div>
+                                        <div class="col-md-8">Title</div>
+                                        <div class="col-md-3">
                                             
                                             <!-- Filter translated -->
                                             <form action="" method="post" class="filter-form">
@@ -225,10 +225,11 @@
                                     
                                     <xsl:for-each select="m:section | m:section/m:sections/m:section">
                                         <xsl:sort select="number(m:texts/m:text[1]/m:toh/@number)"/>
-                                        <div class="list-section">
+                                        <div class="list-grouping">
                                             
                                             <xsl:if test="parent::m:sections and m:texts/m:text">
-                                                <xsl:attribute name="class" select="'list-section border'"/>
+                                                <xsl:attribute name="class" select="'list-grouping border'"/>
+                                                <xsl:attribute name="id" select="concat('grouping-', @id)"/>
                                                 
                                                 <xsl:call-template name="section-title">
                                                     <xsl:with-param name="section" select="."/>
@@ -245,17 +246,15 @@
                                                     
                                                     <xsl:attribute name="id" select="@resource-id"/>
                                                     
-                                                    <div class="col-sm-1">
-                                                        
-                                                        <span class="visible-xs-inline">Toh </span>
+                                                    <div class="col-md-1">
                                                         
                                                         <xsl:value-of select="m:toh/m:full"/>
                                                         
-                                                        <hr class="visible-xs-block"/>
+                                                        <hr class="visible-xs-block visible-sm-block"/>
                                                         
                                                     </div>
                                                     
-                                                    <div class="col-sm-7 col-md-8">
+                                                    <div class="col-md-8">
                                                         
                                                         <h4 class="title-en">
                                                             <xsl:choose>
@@ -329,14 +328,14 @@
                                                             <hr/>
                                                             
                                                             <a class="summary-link collapsed" role="button" data-toggle="collapse" aria-expanded="false">
-                                                                <xsl:attribute name="href" select="concat('#summary-detail-', position())"/>
-                                                                <xsl:attribute name="aria-controls" select="concat('summary-detail-', position())"/>
+                                                                <xsl:attribute name="href" select="concat('#summary-detail-', m:toh/@key)"/>
+                                                                <xsl:attribute name="aria-controls" select="concat('summary-detail-', m:toh/@key)"/>
                                                                 <i class="fa fa-chevron-down"/> Summary &amp; variant titles
                                                             </a>
                                                             
                                                             <div class="collapse summary-detail">
                                                                 
-                                                                <xsl:attribute name="id" select="concat('summary-detail-', position())"/>
+                                                                <xsl:attribute name="id" select="concat('summary-detail-', m:toh/@key)"/>
                                                                 
                                                                 <div class="well well-sm">
                                                                     
@@ -351,8 +350,10 @@
                                                                             <xsl:attribute name="id" select="concat(m:toh/@key, '-title-variants')"/>
                                                                             <xsl:for-each select="m:title-variants/m:title">
                                                                                 <li>
-                                                                                    <xsl:attribute name="class" select="common:lang-class(@xml:lang)"/>
-                                                                                    <xsl:value-of select="text()"/>
+                                                                                    <span>
+                                                                                        <xsl:attribute name="class" select="concat('title ', common:lang-class(@xml:lang))"/>
+                                                                                        <xsl:value-of select="text()"/>
+                                                                                    </span>
                                                                                 </li>
                                                                             </xsl:for-each>
                                                                         </ul>
@@ -363,11 +364,11 @@
                                                             
                                                         </xsl:if>
                                                         
-                                                        <hr class="visible-xs-block"/>
+                                                        <hr class="visible-xs-block visible-sm-block"/>
                                                         
                                                     </div>
                                                     
-                                                    <div class="col-sm-4 col-md-3 position-static">
+                                                    <div class="col-md-3 position-static">
                                                         
                                                         <xsl:if test="$section-id ne 'all-translated'">
                                                             <div class="translation-status">
@@ -561,7 +562,7 @@
                                                 
                                                 <xsl:attribute name="class" select="normalize-space($panel-class)"/>
                                                 
-                                                <div data-match-height="outline-section">
+                                                <div data-match-height="outline-section" data-match-height-media=".sm,.md,.lg">
                                                     <a target="_self" class="block-link">
                                                         <xsl:attribute name="href" select="concat('/section/', @id/string(), '.html')"/> 
                                                         <h3>
@@ -648,7 +649,7 @@
                                 <xsl:attribute name="class" select="normalize-space($summary-class)"/>
                                 
                                 <div class="row">
-                                    <div class="col-sm-offset-2 col-sm-8 text-left">
+                                    <div class="col-md-offset-2 col-md-8 text-left">
                                         <xsl:apply-templates select="m:section/m:about/*"/>
                                     </div>
                                 </div>
@@ -660,33 +661,39 @@
                         <hr/>
                         
                         <div class="row">
-                            <div class="col-sm-offset-2 col-sm-8 text-center">
-                                <ul class="list-inline breadcrumb">
-                                    <li>
-                                        <a href="/search.html" class="text-success">
+                            <div class="col-md-offset-2 col-md-8">
+                                <div class="row">
+                                    <div class="col-xs-6 col-sm-4">
+                                        <a href="/search.html" class="text-success center-vertical center-aligned">
                                             <span class="btn-round green sml">
                                                 <i class="fa fa-search"/>
                                             </span>
-                                            Search the Reading Room
+                                            <span class="btn-round-text">
+                                                Search the Reading Room
+                                            </span>
                                         </a>
-                                    </li>
-                                    <li>
-                                        <a href="/section/all-translated.html" class="text-danger">
+                                    </div>
+                                    <div class="col-xs-6 col-sm-4">
+                                        <a href="/section/all-translated.html" class="text-danger center-vertical center-aligned">
                                             <span class="btn-round red sml">
                                                 <i class="fa fa-list"/>
                                             </span>
-                                            View Translated Texts
+                                            <span class="btn-round-text">
+                                                View Translated Texts
+                                            </span>
                                         </a>
-                                    </li>
-                                    <li>
-                                        <a href="http://84000.co/how-you-can-help/donate/#sap">
+                                    </div>
+                                    <div class="col-xs-12 col-sm-4">
+                                        <a href="http://84000.co/how-you-can-help/donate/#sap" class="center-vertical center-aligned">
                                             <span class="btn-round sml">
                                                 <i class="fa fa-gift"/>
                                             </span>
-                                            Sponsor translation
+                                            <span class="btn-round-text">
+                                                Become a Friend of the Reading Room
+                                            </span>
                                         </a>
-                                    </li>
-                                </ul>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                         
@@ -755,7 +762,7 @@
         <xsl:param name="section"/>
         
         <div class="row">
-            <div class="col-sm-offset-2 col-sm-8">
+            <div class="col-md-offset-2 col-md-8">
                 <div class="title">
                     <xsl:choose>
                         <xsl:when test="lower-case($section/@id) eq 'lobby'">

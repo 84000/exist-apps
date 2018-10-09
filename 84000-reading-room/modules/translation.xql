@@ -252,7 +252,7 @@ declare function translation:nested-section($section as node()*) as node()* {
     if($section) then
         <nested-section xmlns="http://read.84000.co/ns/1.0">
             {
-                $section/*[self::tei:head[@type = ("prologue", "colophon")] | self::tei:p | self::tei:milestone | self::tei:ab | self::tei:lg | self::tei:lb | self::tei:q | self::tei:list | self::tei:trailer | self::tei:label ]
+                $section/*[self::tei:head | self::tei:p | self::tei:milestone | self::tei:ab | self::tei:lg | self::tei:lb | self::tei:q | self::tei:list | self::tei:trailer | self::tei:label ]
             }
             {
                 for $sub-section in $section/tei:div[@type eq 'section']
@@ -422,7 +422,7 @@ declare function translation:glossary($translation as node()) as node()* {
                 uid="{ $gloss/@xml:id/string() }" 
                 type="{ $gloss/@type/string() }" 
                 mode="{ $gloss/@mode/string() }">
-                <term xml:lang="en">{ normalize-space(functx:capitalize-first($main-term)) }</term>
+                <term xml:lang="en">{ functx:capitalize-first(normalize-space($main-term)) }</term>
                 {
                     for $item in $gloss/tei:term[not(text() eq $main-term)]
                     return 

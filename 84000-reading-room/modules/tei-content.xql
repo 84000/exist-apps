@@ -91,7 +91,7 @@ declare function tei-content:title-set($tei as node(), $type as xs:string) as it
         <title xmlns="http://read.84000.co/ns/1.0" xml:lang="bo">
         {
             if(not($bo) and $bo-ltn) then
-                common:bo-title($bo-ltn)
+                common:bo-from-wylie($bo-ltn)
             else
                 $bo
         }
@@ -196,7 +196,7 @@ declare function tei-content:ancestors($tei as node(), $resource-id as xs:string
     
     return
         if($parent-tei) then
-            <parent xmlns="http://read.84000.co/ns/1.0" id="{ $parent-id }" nesting="{ $nest }">
+            <parent xmlns="http://read.84000.co/ns/1.0" id="{ $parent-id }" nesting="{ $nest }" type="{ $parent-tei//tei:teiHeader/tei:fileDesc/@type }">
                 <title xml:lang="en">{ tei-content:title($parent-tei) }</title>
                 { 
                     tei-content:ancestors($parent-tei, '', $nest + 1) 

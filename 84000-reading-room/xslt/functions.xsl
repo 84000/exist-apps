@@ -83,6 +83,7 @@
         <xsl:param name="first-record" as="xs:integer"/>
         <xsl:param name="max-records" as="xs:integer"/>
         <xsl:param name="count-records" as="xs:integer"/>
+        <xsl:param name="base-url" as="xs:string"/>
         <xsl:param name="append-to-url" as="xs:string"/>
         
         <xsl:variable name="count-pages" select="xs:integer(ceiling($count-records div $max-records))" as="xs:integer"/>
@@ -100,7 +101,7 @@
                             <xsl:attribute name="class" select="'active'"/>
                         </xsl:if>
                         <a>
-                            <xsl:attribute name="href" select="concat('?first-record=', $page-first-record, $append-to-url)"/>
+                            <xsl:attribute name="href" select="concat($base-url, if(contains($base-url, '?')) then '&amp;' else '?', 'first-record=', $page-first-record, $append-to-url)"/>
                             <xsl:value-of select="position()"/>
                         </a>
                     </li>
@@ -191,5 +192,10 @@
             </xsl:otherwise>
         </xsl:choose>
     </xsl:template>
+    
+    <xsl:function name="common:folio-id" as="xs:string">
+        <xsl:param name="folio-str" as="xs:string"/>
+        <xsl:value-of select="concat('ref-', lower-case(replace($folio-str, '\.', '-')))"/>
+    </xsl:function>
     
 </xsl:stylesheet>

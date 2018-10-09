@@ -26,7 +26,14 @@
                                         <xsl:sort select="@nesting" order="descending"/>
                                         <li>
                                             <a>
-                                                <xsl:attribute name="href" select="concat('/section/', @id/string(), '.html')"/>
+                                                <xsl:choose>
+                                                    <xsl:when test="@type eq 'grouping'">
+                                                        <xsl:attribute name="href" select="concat('/section/', m:parent/@id, '.html#grouping-', @id)"/>
+                                                    </xsl:when>
+                                                    <xsl:otherwise>
+                                                        <xsl:attribute name="href" select="concat('/section/', @id, '.html')"/>
+                                                    </xsl:otherwise>
+                                                </xsl:choose>
                                                 <xsl:apply-templates select="m:title[@xml:lang='en']/text()"/>
                                             </a>
                                         </li>
@@ -672,56 +679,58 @@
                                                     </a>
                                                 </div>
                                                 
-                                                <div class="container-fluid">
-                                                    <div class="row">
+                                                <div class="row">
+                                                    
+                                                    <div class="col-md-8 match-this-height print-width-override print-height-override">
                                                         
-                                                        <div class="col-sm-6 col-md-8 match-this-height print-width-override print-height-override">
-                                                            
-                                                            <xsl:attribute name="data-match-height" select="concat('g-', position())"/>
-                                                            
-                                                            <h4 class="term">
-                                                                <xsl:apply-templates select="m:term[lower-case(@xml:lang) = 'en']"/>
-                                                            </h4>
-                                                            
-                                                            <xsl:if test="m:term[lower-case(@xml:lang) eq 'bo-ltn']">
-                                                                <p class="text-wy">
-                                                                    <xsl:value-of select="string-join(m:term[lower-case(@xml:lang) eq 'bo-ltn'], ' · ')"/>
-                                                                </p>
-                                                            </xsl:if>
-                                                            
-                                                            <xsl:if test="m:term[lower-case(@xml:lang) eq 'bo']">
-                                                                <p class="text-bo">
-                                                                    <xsl:value-of select="string-join(m:term[lower-case(@xml:lang) eq 'bo'], ' · ')"/>
-                                                                </p>
-                                                            </xsl:if>
-                                                            
-                                                            <xsl:if test="m:term[lower-case(@xml:lang) eq 'sa-ltn']">
-                                                                <p class="text-sa">
-                                                                    <xsl:value-of select="string-join(m:term[lower-case(@xml:lang) eq 'sa-ltn'], ' · ')"/>
-                                                                </p>
-                                                            </xsl:if>
-                                                            
-                                                            <xsl:for-each select="m:alternative">
-                                                                <p class="term alternative">
-                                                                    <xsl:apply-templates select="text()"/>
-                                                                </p>
-                                                            </xsl:for-each>
-                                                            
-                                                            <xsl:for-each select="m:definition">
-                                                                <p class="definition glossarize">
-                                                                    <xsl:apply-templates select="node()"/>
-                                                                </p>
-                                                            </xsl:for-each>
-                                                            
-                                                        </div>
+                                                        <xsl:attribute name="data-match-height" select="concat('g-', position())"/>
+                                                        <xsl:attribute name="data-match-height-media" select="'.md,.lg'"/>
                                                         
-                                                        <div class="col-sm-6 col-md-4 occurences hidden-print match-height-overflow print-height-override">
-                                                            <xsl:attribute name="data-match-height" select="concat('g-', position())"/>
-                                                            <h6>Finding passages containing this term...</h6>
-                                                        </div>
+                                                        <h4 class="term">
+                                                            <xsl:apply-templates select="m:term[lower-case(@xml:lang) = 'en']"/>
+                                                        </h4>
+                                                        
+                                                        <xsl:if test="m:term[lower-case(@xml:lang) eq 'bo-ltn']">
+                                                            <p class="text-wy">
+                                                                <xsl:value-of select="string-join(m:term[lower-case(@xml:lang) eq 'bo-ltn'], ' · ')"/>
+                                                            </p>
+                                                        </xsl:if>
+                                                        
+                                                        <xsl:if test="m:term[lower-case(@xml:lang) eq 'bo']">
+                                                            <p class="text-bo">
+                                                                <xsl:value-of select="string-join(m:term[lower-case(@xml:lang) eq 'bo'], ' · ')"/>
+                                                            </p>
+                                                        </xsl:if>
+                                                        
+                                                        <xsl:if test="m:term[lower-case(@xml:lang) eq 'sa-ltn']">
+                                                            <p class="text-sa">
+                                                                <xsl:value-of select="string-join(m:term[lower-case(@xml:lang) eq 'sa-ltn'], ' · ')"/>
+                                                            </p>
+                                                        </xsl:if>
+                                                        
+                                                        <xsl:for-each select="m:alternative">
+                                                            <p class="term alternative">
+                                                                <xsl:apply-templates select="text()"/>
+                                                            </p>
+                                                        </xsl:for-each>
+                                                        
+                                                        <xsl:for-each select="m:definition">
+                                                            <p class="definition glossarize">
+                                                                <xsl:apply-templates select="node()"/>
+                                                            </p>
+                                                        </xsl:for-each>
                                                         
                                                     </div>
+                                                    
+                                                    <div class="col-md-4 occurences hidden-print match-height-overflow print-height-override">
+                                                        <xsl:attribute name="data-match-height" select="concat('g-', position())"/>
+                                                        <xsl:attribute name="data-match-height-media" select="'.md,.lg'"/>
+                                                        <hr class="visible-xs-block visible-sm-block"/>
+                                                        <h6>Finding passages containing this term...</h6>
+                                                    </div>
+                                                    
                                                 </div>
+                                                
                                                 
                                             </div>
                                         </xsl:for-each>
@@ -737,44 +746,42 @@
             <div class="nav-controls hidden-print">
                 
                 <div id="navigation-btn-container" class="fixed-btn-container">
-                    
                     <a href="#contents-sidebar" class="btn-round show-sidebar">
                         <i class="fa fa-bars" aria-hidden="true"/>
                     </a>
-                    
                 </div>
                 
                 <div id="bookmarks-btn-container" class="fixed-btn-container">
-                    
                     <a href="#bookmarks-sidebar" id="bookmarks-btn" class="btn-round show-sidebar" aria-haspopup="true">
                         <i class="fa fa-bookmark"/>
                         <span class="badge badge-notification">0</span>
                     </a>
-                    
                 </div>
+                
+                <div id="donate-btn-container" class="fixed-btn-container">
+                    <a href="#donate-sidebar" id="bookmarks-btn" class="btn-round show-sidebar" aria-haspopup="true" data-onload-pulse="10000">
+                        <i class="fa fa-gift"/>
+                    </a>
+                </div>
+                
                 <!-- 
                 <div id="tts-btn-container" class="fixed-btn-container">
-                    
                     <button class="btn-round text-to-speech" title="Read the text for me">
                         <i class="fa fa-volume-up" aria-hidden="true"/>
                     </button>
-                    
                 </div>
                  -->
+                
                 <div id="rewind-btn-container" class="fixed-btn-container hidden">
-                    
                     <button class="btn-round" title="Return to the last location">
                         <i class="fa fa-undo" aria-hidden="true"/>
                     </button>
-                    
                 </div>
                 
                 <div id="link-to-top-container" class="fixed-btn-container">
-                    
                     <a href="#top" id="link-to-top" class="btn-round scroll-to-anchor" title="Return to the top of the page">
                         <i class="fa fa-arrow-up" aria-hidden="true"/>
                     </a>
-                    
                 </div>
                 
             </div>
@@ -895,7 +902,7 @@
                                 </tr>
                             </tbody>
                         </table>
-                        <a href="http://84000.co/how-you-can-help/donate/#sap" class="btn btn-primary btn-uppercase">Sponsor Translation</a>
+                        <a href="http://84000.co/how-you-can-help/donate/#sap" class="btn btn-primary btn-uppercase">Become a Friend of the Reading Room</a>
                     </div>
                 </div>
                 
@@ -918,6 +925,29 @@
                             <tbody/>
                             <tfoot/>
                         </table>
+                    </div>
+                </div>
+                
+                <div class="fixed-btn-container close-btn-container right">
+                    <button type="button" class="btn-round close" aria-label="Close">
+                        <span aria-hidden="true">
+                            <i class="fa fa-times"/>
+                        </span>
+                    </button>
+                </div>
+                
+            </div>
+            
+            <div id="donate-sidebar" class="fixed-sidebar collapse width hidden-print">
+                
+                <div class="container">
+                    <div class="fix-width">
+                        <h4>Become a Friend of the Reading Room</h4>
+                        <p>Some text about how you can support the spread of Buddha Dharma by donating money...</p>
+                        <a class="btn btn-primary">
+                            <xsl:attribute name="href" select="'https://84000.secure.force.com/donate'"/>
+                            Make a donation
+                        </a>
                     </div>
                 </div>
                 

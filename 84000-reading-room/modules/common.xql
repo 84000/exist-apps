@@ -88,7 +88,7 @@ declare function common:normalized-chars($string as xs:string) as xs:string{
 };
 
 declare function common:alphanumeric($string as xs:string) as xs:string* {
-    replace($string, '[^a-zA-Z0-9\s\-­]', '')
+    replace(normalize-space($string), '[^a-zA-Z0-9\s\-­]', '')
 };
 
 declare function common:word-count($strings as xs:string*) as xs:integer
@@ -96,23 +96,29 @@ declare function common:word-count($strings as xs:string*) as xs:integer
   count(tokenize(string-join($strings, ' '), '\W+')[. != ''])
 };
 
-declare function common:bo-title($bo-ltn as xs:string*) as xs:string
+declare function common:bo-from-wylie($bo-ltn as xs:string*) as xs:string
 {
     (: correct the spacing and spacing around underscores :)
     let $bo-ltn-underscores:= 
         if ($bo-ltn) then
-            replace(replace(normalize-space($bo-ltn), ' __,__', '__,__'), '__,__', ' __,__')
-        else
-            ""
-    (: convert to Tibetan unicode :)
-    let $bo :=
-        if ($bo-ltn-underscores ne "") then
-            converter:toUnicode($bo-ltn-underscores)
+            replace(replace(concat(normalize-space($bo-ltn), ' '), ' __,__', '__,__'), '__,__', ' __,__')
         else
             ""
     
+    (: convert to Tibetan unicode :)
     return 
-        xs:string($bo)
+        if ($bo-ltn-underscores gt "") then
+            converter:toUnicode($bo-ltn-underscores)
+        else
+            ""
+};
+
+declare function common:wylie-from-bo($bo as xs:string*) as xs:string
+{
+    if ($bo gt "") then
+        converter:toWylie($bo)
+    else
+        ""
 };
 
 declare function common:bo-term($bo-ltn as xs:string*) as xs:string

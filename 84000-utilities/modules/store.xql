@@ -99,7 +99,7 @@ declare function store:store-new-pdf($file-path as xs:string, $version as xs:str
                     let $store-version-number := store:store-version-str($file-collection, $file-name, $version)
                     return
                         concat('New version saved as ', $file-path)
-                        
+                    
                 else if(name($download) eq 'error') then
                     concat('PDF generation failed: ', $download/m:message)
                     
@@ -245,7 +245,13 @@ declare function store:http-download($file-url as xs:string, $collection as xs:s
             
             return
                 <stored xmlns="http://read.84000.co/ns/1.0">{ $store-file }</stored>
-                
+        
+        else if ($head/@status = '504') then
+            <error xmlns="http://read.84000.co/ns/1.0">
+                <message>The request took too long and has timed out.</message>
+                {$head}
+            </error>
+        
         else
             <error xmlns="http://read.84000.co/ns/1.0">
                 <message>Oops, something went wrong:</message>

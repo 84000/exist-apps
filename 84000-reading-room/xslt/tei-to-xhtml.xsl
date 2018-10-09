@@ -106,7 +106,7 @@
                 <xsl:if test="(not(@rend) or @rend != 'hidden') and (not(@key) or @key eq /m:response/m:translation/m:source/@key)">
                     <xsl:variable name="volume" select="/m:response/m:translation/m:source/m:location/m:start/@volume"/>
                     <xsl:variable name="folio" select="substring-after(lower-case(@cRef), 'f.')"/>
-                    <xsl:variable name="anchor" select="concat('ref-', lower-case(replace(@cRef, '\.', '-')))"/>
+                    <xsl:variable name="anchor" select="common:folio-id(@cRef)"/>
                     <xsl:choose>
                         <!-- Conditions for creating a link... -->
                         <xsl:when test="not(@type) and /m:response/m:request/@doc-type ne 'epub' and $volume and $folio">
@@ -236,7 +236,7 @@
         <xsl:call-template name="milestone">
             <xsl:with-param name="content">
                 <div>
-                    <xsl:attribute name="class" select="                         concat(                             'list',                             if(parent::tei:item) then                                 ' list-sublist'                             else '',                             if(@type eq 'section') then                                 ' list-section'                             else                                 ' list-bullet'                         )                     "/>
+                    <xsl:attribute name="class" select="concat('list',if(parent::tei:item) then ' list-sublist' else '', if(@type eq 'section') then ' list-section' else ' list-bullet' )"/>
                     <xsl:apply-templates select="node()"/>
                 </div>
             </xsl:with-param>
@@ -249,7 +249,7 @@
         <xsl:call-template name="milestone">
             <xsl:with-param name="content">
                 <div class="list-item">
-                    <xsl:attribute name="class" select="                         concat(                             'list-item',                             if(parent::tei:list/tei:item[1] = .) then                                  ' list-item-first'                             else '',                             if(parent::tei:list/tei:item[count(parent::tei:list/tei:item)] = .) then                                 ' list-item-last'                             else ''                         )                     "/>
+                    <xsl:attribute name="class" select="concat( 'list-item', if(parent::tei:list/tei:item[1] = .) then ' list-item-first' else '', if(parent::tei:list/tei:item[count(parent::tei:list/tei:item)] = .) then ' list-item-last' else '' )"/>
                     <xsl:apply-templates select="node()"/>
                 </div>
             </xsl:with-param>

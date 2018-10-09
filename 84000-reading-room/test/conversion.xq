@@ -30,7 +30,7 @@ return
                 }
                 <bo>
                 {
-                    common:bo-title($bo-ltn/string())
+                    common:bo-from-wylie($bo-ltn)
                 }
                 </bo>
             </term>

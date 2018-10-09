@@ -74,7 +74,7 @@
                             </table>
                             
                             <!-- Pagination -->
-                            <xsl:copy-of select="common:pagination(m:errors/@first-record, m:errors/@max-records, m:errors/@count-records, '')"/>
+                            <xsl:copy-of select="common:pagination(m:errors/@first-record, m:errors/@max-records, m:errors/@count-records, 'client-errors.html', '')"/>
                             
                         </div>
                     </div>

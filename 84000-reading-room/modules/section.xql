@@ -299,7 +299,7 @@ declare function section:titles($section) as node() {
             <title xml:lang="bo">
             {
                 if(not($bo) and $bo-ltn) then
-                    common:bo-title($bo-ltn)
+                    common:bo-from-wylie($bo-ltn)
                 else
                     $bo
             }

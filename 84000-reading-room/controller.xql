@@ -126,7 +126,11 @@ else if(not(common:auth-environment()) or sm:is-authenticated()) then
     (: Spreadsheet test :)
     else if (lower-case($exist:resource) eq 'spreadsheet.xlsx') then
         local:dispatch("/views/spreadsheet/spreadsheet.xq", "", <parameters/>)
-
+    
+    (: Test :)
+    else if ($collection-path eq "test") then
+        local:dispatch($exist:path, "", <parameters/>)
+    
     (: Translation :)
     else if ($collection-path eq "translation") then
         if ($resource-suffix eq 'tei') then

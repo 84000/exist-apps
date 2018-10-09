@@ -20,8 +20,8 @@ declare function translation-memory:folio($translation-id as xs:string, $folio a
             translation-id="{ $translation-id }"
             folio="{ $folio }">
         {
-            for $tu in $doc//tmx:tu[tmx:prop[@name="folio"][lower-case(text()) eq lower-case($folio)]]
-                order by $tu/tmx:prop[@name = 'position']
+            for $tu in $doc//tmx:tu[tmx:prop[@name = "folio"][. = $folio]]
+                order by $tu/tmx:prop[@name = 'position'] ! xs:integer(concat('0', .))
             return
                 $tu
         }
