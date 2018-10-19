@@ -34,7 +34,7 @@
                     <div class="panel-body">
                         
                         <!-- Tabs -->
-                        <ul class="nav nav-tabs" role="tablist">
+                        <ul class="nav nav-tabs nav-justified" role="tablist">
                             
                             <!-- Additional tabs -->
                             <xsl:for-each select="m:tabs/m:tab">
@@ -57,6 +57,13 @@
                                 
                                 <!-- Search results -->
                                 <xsl:when test="/m:response/m:request/@tab eq 'search'">
+                                    
+                                    <div class="alert alert-warning small text-center">
+                                        <p>
+                                            Use the form below to search for terms, phrases, titles, and so forth in published and nearly-published 84000 translations. Search results link directly to passages in the Reading Room.
+                                        </p>
+                                    </div>
+                                    
                                     <xsl:call-template name="search">
                                         <xsl:with-param name="action" select="'index.html?tab=search'"/>
                                     </xsl:call-template>
@@ -69,6 +76,14 @@
                                 
                                 <!-- Tibetan Search -->
                                 <xsl:when test="/m:response/m:request/@tab eq 'tibetan-search'">
+                                    
+                                    <div class="alert alert-warning small text-center">
+                                        <p>
+                                            The Tibetan Search below is a convenient way to browse translation memories created from published 84000 translations. Search for a term or phrase by entering Tibetan script or Wylie into the search fields, or simply highlight a segment in the e-Kangyur display on the left. You can learn more about Translation Memories under the <a href="?tab=smartcat">CAT Tools</a> tab.
+                                        </p>
+                                        <p>**Please be aware that this is a beta version.**</p>
+                                    </div>
+                                    
                                     <xsl:call-template name="tibetan-search"/>
                                 </xsl:when>
                                 

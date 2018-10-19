@@ -54,7 +54,7 @@
                                     
                                     <div class="col-sm-11 col-sm-offset-1 col-md-2 col-md-offset-0 text-md-right">
                                         <xsl:choose>
-                                            <xsl:when test="$source[@tei-type eq 'section']">
+                                            <xsl:when test="$source[@tei-type = 'section']">
                                                 <span class="label label-success">
                                                     Section
                                                 </span>
@@ -191,7 +191,7 @@
                 </xsl:choose>
                 
             </xsl:when>
-            <xsl:when test="$source[@tei-type = ('section', 'grouping')]">
+            <xsl:when test="$source[@tei-type = ('section')]">
                 <xsl:variable name="page-url" select="concat($reading-room-path, '/section/', $source/@resource-id, '.html')"/>
                 <xsl:choose>
                     <!-- Has an xml:id -->

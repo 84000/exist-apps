@@ -80,7 +80,7 @@ declare function search:search($request as xs:string, $first-record as xs:double
                         
                         let $tei := doc($result-group/@document-uri)
                         let $tei-type := 
-                            if($tei//tei:teiHeader/tei:fileDesc/@type = ('section', 'grouping')) then
+                            if($tei//tei:teiHeader/tei:fileDesc/@type = ('section', 'grouping', 'pseudo-section')) then
                                 'section'
                             else
                                 'translation'

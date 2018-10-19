@@ -51,7 +51,7 @@ declare function tei-content:tei($resource-id as xs:string, $resource-type as xs
     let $collection := 
         if($resource-type eq 'translation')then
             collection($common:translations-path)
-        else if($resource-type eq 'section') then
+        else if($resource-type = ('section', 'pseudo-section')) then
             collection($common:sections-path)
         else
             ()

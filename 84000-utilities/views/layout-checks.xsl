@@ -71,7 +71,7 @@
                                         <xsl:attribute name="href" select="concat($reading-room-path, '/translation/UT22084-081-006.html#UT22084-081-006-272')"/>
                                         3
                                     </a>, 
-                                    <a>
+                                    <a target="test-layout">
                                         <xsl:attribute name="href" select="concat($reading-room-path, '/translation/UT22084-079-011.html#UT22084-079-011-14')"/>
                                         4
                                     </a>
@@ -103,6 +103,10 @@
                                 <li>
                                     <a target="test-layout">
                                         <xsl:attribute name="href" select="concat($reading-room-path, '/translation/UT22084-079-011.html#prologue')"/> Prologue </a>
+                                </li>
+                                <li>
+                                    <a target="test-layout">
+                                        <xsl:attribute name="href" select="concat($reading-room-path, '/translation/toh11.html#chapter-1')"/> Chapters with numbers and titles </a>
                                 </li>
                                 <li>
                                     <a target="test-layout">

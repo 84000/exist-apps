@@ -236,7 +236,7 @@
         <xsl:call-template name="milestone">
             <xsl:with-param name="content">
                 <div>
-                    <xsl:attribute name="class" select="concat('list',if(parent::tei:item) then ' list-sublist' else '', if(@type eq 'section') then ' list-section' else ' list-bullet' )"/>
+                    <xsl:attribute name="class" select="concat(                         'list',                         if(parent::tei:item) then ' list-sublist' else '',                          if(@type eq 'section') then ' list-section' else ' list-bullet',                         concat(' nesting-', count(ancestor::tei:list[not(@type eq 'section')]))                     )"/>
                     <xsl:apply-templates select="node()"/>
                 </div>
             </xsl:with-param>
@@ -274,6 +274,9 @@
                 <div class="line-group">
                     <!-- id -->
                     <xsl:call-template name="tid"/>
+                    <xsl:if test="@type = ('sdom', 'bar_sdom', 'spyi_sdom')">
+                        <xsl:attribute name="class" select="'line-group italic'"/>
+                    </xsl:if>
                     <xsl:apply-templates select="node()"/>
                 </div>
             </xsl:with-param>
@@ -296,17 +299,10 @@
     
     <xsl:template match="tei:head">
         <xsl:choose>
-            <xsl:when test="@type = ('chapter')">
-                <xsl:call-template name="milestone">
-                    <xsl:with-param name="content">
-                        <div class="rw-heading">
-                            <h4 class="chapter-number">
-                                <xsl:value-of select="text()"/>
-                            </h4>
-                        </div>
-                    </xsl:with-param>
-                    <xsl:with-param name="row-classes" select="'space'"/>
-                </xsl:call-template>
+            <xsl:when test="@type = ('about')">
+                <h1 class="text-center">
+                    <xsl:value-of select="text()"/>
+                </h1>
             </xsl:when>
             <xsl:when test="@type = ('chapterTitle')">
                 <xsl:call-template name="milestone">
@@ -320,22 +316,25 @@
                     <xsl:with-param name="row-classes" select="'space'"/>
                 </xsl:call-template>
             </xsl:when>
-            <xsl:when test="@type = ('section')">
+            <xsl:when test="@type = ('chapter', 'section')">
                 <xsl:call-template name="milestone">
                     <xsl:with-param name="content">
-                        <div class="rw-heading">
+                        <div>
+                            <!-- 
+                            <xsl:if test="ancestor::m:nested-section">
+                                <xsl:attribute name="class" select="concat('rw-heading level-', count(ancestor::m:nested-section))"/>
+                            </xsl:if> -->
+                            <xsl:attribute name="class" select="concat('rw-heading heading-', @type, ' nesting-', ancestor::tei:div[1]/@nesting)"/>
                             <h4>
+                                <xsl:if test="@type eq 'chapter'">
+                                    <xsl:attribute name="class" select="'chapter-number'"/>
+                                </xsl:if>
                                 <xsl:value-of select="text()"/>
                             </h4>
                         </div>
                     </xsl:with-param>
-                    <xsl:with-param name="row-classes" select="'space space-after'"/>
+                    <xsl:with-param name="row-classes" select="if(@type eq 'section') then 'space space-after' else 'space'"/>
                 </xsl:call-template>
-            </xsl:when>
-            <xsl:when test="@type = ('about')">
-                <h1 class="text-center">
-                    <xsl:value-of select="text()"/>
-                </h1>
             </xsl:when>
         </xsl:choose>
     </xsl:template>
@@ -415,15 +414,18 @@
     </xsl:template>
     
     <!-- Nested Sections -->
-    <xsl:template match="m:nested-section">
-        <div class="nested-section">
+    <xsl:template match="tei:div[@type = ('section', 'chapter')]">
+        <div>
+            <xsl:if test="@section-id">
+                <xsl:attribute name="id" select="concat('section-', @section-id)"/>
+            </xsl:if>
+            <xsl:attribute name="class" select="concat('nested-', @type)"/>
             <xsl:apply-templates select="tei:*"/>
-            <xsl:apply-templates select="m:nested-section"/>
         </div>
     </xsl:template>
     
     <!-- Bibliography -->
-    <xsl:template match="m:nested-section[ancestor::m:bibliography]">
+    <xsl:template match="m:section[ancestor::m:bibliography]">
         <div class="nested-section">
             <xsl:if test="m:title/text()">
                 <h5 class="section-label">
@@ -436,7 +438,7 @@
                     <xsl:apply-templates select="node()"/>
                 </p>
             </xsl:for-each>
-            <xsl:apply-templates select="m:nested-section"/>
+            <xsl:apply-templates select="m:section"/>
         </div>
     </xsl:template>
     

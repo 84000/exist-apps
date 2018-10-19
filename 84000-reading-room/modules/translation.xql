@@ -233,7 +233,7 @@ declare function translation:downloads($translation as node(), $resource-id as x
 declare function translation:summary($translation as node()) as node()* {
     <summary xmlns="http://read.84000.co/ns/1.0" prefix="s">
     { 
-        $translation//tei:front//tei:div[@type='summary']/*[self::tei:p | self::tei:milestone | self::tei:lg ]/.
+        $translation//tei:front//tei:div[@type eq 'summary']/*[self::tei:p | self::tei:milestone | self::tei:lg ]/.
     }
     </summary>
 };
@@ -248,18 +248,33 @@ declare function translation:acknowledgment($translation as node()) as node()* {
         </acknowledgment>
 };
 
-declare function translation:nested-section($section as node()*) as node()* {
+declare function translation:nested-section($section as node()*, $nesting as xs:integer, $parent-id) as node()* {
     if($section) then
-        <nested-section xmlns="http://read.84000.co/ns/1.0">
+    (
+        $section/*[
+            self::tei:head
+            | self::tei:p
+            | self::tei:milestone
+            | self::tei:ab
+            | self::tei:lg
+            | self::tei:lb
+            | self::tei:q
+            | self::tei:list
+            | self::tei:trailer
+            | self::tei:label
+        ],
+        for $sub-section at $position in $section/tei:div[@type = ('section', 'chapter')]
+        let $section-id := concat($parent-id, '-', $position)
+        return
+            <div xmlns="http://www.tei-c.org/ns/1.0">
+            { attribute type { $sub-section/@type } }
+            { attribute nesting { $nesting } }
+            { attribute section-id { $section-id } }
             {
-                $section/*[self::tei:head | self::tei:p | self::tei:milestone | self::tei:ab | self::tei:lg | self::tei:lb | self::tei:q | self::tei:list | self::tei:trailer | self::tei:label ]
+                translation:nested-section($sub-section, $nesting + 1, $section-id)
             }
-            {
-                for $sub-section in $section/tei:div[@type eq 'section']
-                return
-                    translation:nested-section($sub-section)
-            }
-        </nested-section>
+            </div>
+    )
     else 
         ()
 };
@@ -268,7 +283,7 @@ declare function translation:introduction($translation as node()) as node()* {
     (: In the intro we flatten out the sections and only space by the heads :)
     <introduction xmlns="http://read.84000.co/ns/1.0" prefix="i">
     {
-        translation:nested-section($translation//tei:front/tei:div[@type eq 'introduction'])
+        translation:nested-section($translation//tei:front/tei:div[@type eq 'introduction'], 0, 'i')
     }
     </introduction>
 };
@@ -276,7 +291,7 @@ declare function translation:introduction($translation as node()) as node()* {
 declare function translation:prologue($translation as node()) as node()* {
     <prologue xmlns="http://read.84000.co/ns/1.0" prefix="p">
     { 
-        translation:nested-section($translation//tei:body/tei:div[@type='translation']/tei:div[@type eq 'prologue'])
+        translation:nested-section($translation//tei:body/tei:div[@type eq 'translation']/tei:div[@type eq 'prologue'], 0, 'p')
     }
     </prologue>
 };
@@ -287,8 +302,9 @@ declare function translation:body($translation as node()) as node()* {
         <main-title>{ data($translation//tei:body/tei:div[@type eq 'translation']/tei:head[@type eq 'titleMain']) }</main-title>
         { 
             for $chapter at $chapter-index in $translation//tei:body//tei:div[@type eq 'translation']/tei:div[@type = ('section', 'chapter')]
+            let $chapter-prefix := $chapter-index
             return
-                <chapter chapter-index="{ $chapter-index }" prefix="{ $chapter-index }">
+                <chapter chapter-index="{ $chapter-index }" prefix="{ $chapter-prefix }">
                     <title>{ $chapter/tei:head[@type = ('chapterTitle', 'section')]/text() }</title>
                     <title-number>
                     {
@@ -301,7 +317,15 @@ declare function translation:body($translation as node()) as node()* {
                     }
                     </title-number>
                     {
-                       $chapter/*[self::tei:p | self::tei:milestone | self::tei:ab | self::tei:lg | self::tei:lb | self::tei:q | self::tei:list | self::tei:trailer | self::tei:label ]/.
+                        (: parse chapter nesting but exclude <head>s in the root as we've already processed them :)
+                        translation:nested-section(
+                            <div xmlns="http://www.tei-c.org/ns/1.0"> {
+                                $chapter/@*, 
+                                $chapter/*[not(self::tei:head)] 
+                            }</div>,
+                            0,
+                            $chapter-index
+                        )
                     }
                 </chapter>
         }
@@ -311,7 +335,7 @@ declare function translation:body($translation as node()) as node()* {
 declare function translation:colophon($translation as node()) as node()* {
     <colophon xmlns="http://read.84000.co/ns/1.0" prefix="c">
     { 
-        translation:nested-section($translation//tei:body/tei:div[@type='translation']/tei:div[@type='colophon'])
+        translation:nested-section($translation//tei:body/tei:div[@type eq 'translation']/tei:div[@type eq 'colophon'], 0, 'c')
     }
     </colophon>
 };
@@ -319,10 +343,9 @@ declare function translation:colophon($translation as node()) as node()* {
 declare function translation:appendix($translation as node()) as node()* {
     <appendix xmlns="http://read.84000.co/ns/1.0" prefix="ap">
     { 
-        let $count-appendix := 
-            count($translation//tei:back//*[@type='appendix']/*[@type = 'prologue'])
+        let $count-appendix := count($translation//tei:back//*[@type eq 'appendix']/*[@type eq 'prologue'])
             
-        for $chapter at $chapter-index in $translation//tei:back//*[@type='appendix']/*[@type=('section', 'chapter', 'prologue')]
+        for $chapter at $chapter-index in $translation//tei:back//*[@type eq 'appendix']/*[@type = ('section', 'chapter', 'prologue')]
             let $chapter-number := xs:string($chapter-index - $count-appendix)
             let $chapter-class := 
                 if($chapter/@type eq 'prologue')then
@@ -382,10 +405,10 @@ declare function translation:notes($translation as node()) as node()* {
 };
 
 declare function translation:bibliography-section($section as node()) as node()* {
-    <nested-section xmlns="http://read.84000.co/ns/1.0">
+    <section xmlns="http://read.84000.co/ns/1.0">
         {
             if($section/tei:head[@type='section']/text())then
-                <title>{ $section/tei:head[@type='section']/text() }</title>
+                <title>{ $section/tei:head[@type eq 'section']/text() }</title>
             else
                 ()
         }
@@ -395,17 +418,17 @@ declare function translation:bibliography-section($section as node()) as node()*
                 <item id="{ $item/@xml:id }">{ $item/node() }</item>
         }
         {
-            for $sub-section in $section/tei:div[@type='section']
+            for $sub-section in $section/tei:div[@type eq 'section']
             return
                 translation:bibliography-section($sub-section)
         }
-    </nested-section>
+    </section>
 };
 
 declare function translation:bibliography($translation as node()) as node()* {
     <bibliography xmlns="http://read.84000.co/ns/1.0" prefix="b">
     {
-        for $section in $translation//tei:back/*[@type='listBibl']/*[@type='section']
+        for $section in $translation//tei:back/*[@type eq 'listBibl']/*[@type eq 'section']
         return
             translation:bibliography-section($section)
     }
@@ -415,7 +438,7 @@ declare function translation:bibliography($translation as node()) as node()* {
 declare function translation:glossary($translation as node()) as node()* {
     <glossary xmlns="http://read.84000.co/ns/1.0" prefix="g">
     {
-        for $gloss in $translation//tei:back//*[@type='glossary']//tei:gloss
+        for $gloss in $translation//tei:back//*[@type eq 'glossary']//tei:gloss
             let $main-term := $gloss/tei:term[not(@xml:lang)][not(@type)][1]/text()
         return
             <item 
@@ -458,7 +481,7 @@ declare function translation:glossary($translation as node()) as node()* {
 
 declare function translation:word-count($translation as node()) as xs:integer {
     let $translated-text := 
-        $translation//tei:text/tei:body/tei:div[@type = "translation"]/*[
+        $translation//tei:text/tei:body/tei:div[@type eq "translation"]/*[
             self::tei:div[@type = ("section", "chapter", "colophon")] 
             or self::tei:head[@type ne 'translation']
         ]//text()[not(ancestor::tei:note)]

@@ -61,14 +61,14 @@ let $response :=
                 { translation:notes($tei) }
                 { translation:bibliography($tei) }
                 { translation:glossary($tei) }
-            </translation>(:,
+            </translation>,
             common:app-texts(
                 'translation',
                 <replace xmlns="http://read.84000.co/ns/1.0">
                     <value key="#CurrentDateTime">{ format-dateTime(current-dateTime(), '[h].[m01][Pn] on [FNn], [D1o] [MNn] [Y0001]') }</value>
                     <value key="#LinkToPage">{ $page-url }</value>
                 </replace>
-            ):)
+            )
         )
     )
 

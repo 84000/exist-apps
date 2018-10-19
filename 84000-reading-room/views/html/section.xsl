@@ -34,15 +34,8 @@
                                     </li>
                                 </xsl:if>
                                 
-                                <xsl:for-each select="m:section/m:parent | m:section/m:parent//m:parent">
-                                    <xsl:sort select="@nesting" order="descending"/>
-                                    <li>
-                                        <a>
-                                            <xsl:attribute name="href" select="concat('/section/', @id/string(), '.html')"/>
-                                            <xsl:value-of select="m:title[@xml:lang='en']/text()"/>
-                                        </a>
-                                    </li>
-                                </xsl:for-each>
+                                <xsl:copy-of select="common:breadcrumb-items(m:section/m:parent | m:section/m:parent//m:parent)"/>
+                                
                             </ul>
                         </span>
                         
@@ -283,15 +276,7 @@
                                                             <hr/>
                                                             in
                                                             <ul class="breadcrumb">
-                                                                <xsl:for-each select="m:parent | m:parent//m:parent">
-                                                                    <xsl:sort select="@nesting" order="descending"/>
-                                                                    <li>
-                                                                        <a>
-                                                                            <xsl:attribute name="href" select="concat('/section/', @id/string(), '.html')"/>
-                                                                            <xsl:value-of select="m:title[@xml:lang='en']/text()"/>
-                                                                        </a>
-                                                                    </li>
-                                                                </xsl:for-each>
+                                                                <xsl:copy-of select="common:breadcrumb-items(m:parent | m:parent//m:parent)"/>
                                                             </ul>
                                                         </xsl:if>
                                                         

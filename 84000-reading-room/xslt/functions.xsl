@@ -171,6 +171,26 @@
         
     </xsl:function>
     
+    <xsl:function name="common:breadcrumb-items">
+        <xsl:param name="parents"/>
+        <xsl:for-each select="$parents">
+            <xsl:sort select="@nesting" order="descending"/>
+            <li>
+                <a>
+                    <xsl:choose>
+                        <xsl:when test="@type eq 'grouping'">
+                            <xsl:attribute name="href" select="concat('/section/', m:parent/@id, '.html#grouping-', @id)"/>
+                        </xsl:when>
+                        <xsl:otherwise>
+                            <xsl:attribute name="href" select="concat('/section/', @id, '.html')"/>
+                        </xsl:otherwise>
+                    </xsl:choose>
+                    <xsl:apply-templates select="m:title[@xml:lang='en']/text()"/>
+                </a>
+            </li>
+        </xsl:for-each>
+    </xsl:function>
+    
     <!-- Translation status -->
     <xsl:template name="translation-status">
         <xsl:param name="status"/>

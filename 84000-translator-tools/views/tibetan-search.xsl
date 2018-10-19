@@ -66,7 +66,7 @@
                                 <xsl:with-param name="data" select="/m:response/m:source/m:language[@xml:lang eq 'bo']"/>
                             </xsl:call-template>
                         </div>
-                        <div id="folio-text" class="text plain text-bo" data-mouseup-set-input="[name='search-bo']">
+                        <div id="folio-text" class="text plain text-bo" data-mouseup-set-input="#search-text-bo">
                             <xsl:call-template name="text-plain">
                                 <xsl:with-param name="data" select="/m:response/m:source/m:language[@xml:lang eq 'bo']//tei:p"/>
                             </xsl:call-template>
@@ -78,6 +78,7 @@
                 <div class="col-sm-4">
                     <form action="index.html" method="post" accept-charset="UTF-8">
                         <input type="hidden" name="tab" value="tibetan-search"/>
+                        <input type="hidden" name="lang" value="bo"/>
                         <input type="hidden" name="volume">
                             <xsl:attribute name="value" select="$request-volume"/>
                         </input>
@@ -88,89 +89,87 @@
                             Select or type some Tibetan
                         </label>
                         <div class="form-group">
-                            <textarea rows="2" class="form-control text-bo" name="search-bo" id="search-text-bo" placeholder="">
-                                <xsl:apply-templates select="/m:response/m:tm-search/m:request[@lang eq 'bo']"/>
+                            <textarea rows="2" class="form-control text-bo" name="s" id="search-text-bo">
+                                <xsl:apply-templates select="/m:response/m:tm-search/m:request-bo"/>
                             </textarea>
                         </div>
+                        <div class="form-group">
+                            <button type="submit" class="btn btn-primary">Search Tibetan</button>
+                        </div>
+                    </form>
+                    <form action="index.html" method="post" accept-charset="UTF-8">
+                        <input type="hidden" name="tab" value="tibetan-search"/>
+                        <input type="hidden" name="lang" value="bo-ltn"/>
+                        <input type="hidden" name="volume">
+                            <xsl:attribute name="value" select="$request-volume"/>
+                        </input>
+                        <input type="hidden" name="page">
+                            <xsl:attribute name="value" select="/m:response/m:request/@page/xs:integer(.)"/>
+                        </input>
                         <label for="search-text-bo-ltn">
-                            Type some Wylie
+                            or type some Wylie
                         </label>
                         <div class="form-group">
-                            <textarea rows="3" class="form-control text-wy" name="search-bo-ltn" id="search-text-bo-ltn" placeholder="">
-                                <xsl:apply-templates select="/m:response/m:tm-search/m:request[@lang eq 'bo-ltn']"/>
+                            <textarea rows="2" class="form-control text-wy" name="s" id="search-text-bo-ltn">
+                                <xsl:apply-templates select="/m:response/m:tm-search/m:request-bo-ltn"/>
                             </textarea>
                         </div>
-                        <div class="center-vertical full-width">
-                            <span class="small text-muted">
-                                <xsl:if test="/m:response/m:tm-search/m:request/@lang eq 'bo-ltn'">
-                                    Tibetan: <span class="text-bo">
-                                        <xsl:apply-templates select="/m:response/m:tm-search/m:request-bo"/>
-                                    </span>
-                                </xsl:if>
-                                <xsl:if test="/m:response/m:tm-search/m:request/@lang eq 'bo'">
-                                    Wylie: <span class="text-wy">
-                                        <xsl:apply-templates select="/m:response/m:tm-search/m:request-bo-ltn"/>
-                                    </span>
-                                </xsl:if>
-                            </span>
-                            <span>
-                                <button type="submit" class="btn btn-primary pull-right">Search</button>
-                            </span>
+                        <div class="form-group">
+                            <button type="submit" class="btn btn-primary">Search Wylie</button>
                         </div>
                     </form>
                 </div>
             </div>
             
-            <hr/>
-            
             <xsl:variable name="results" select="/m:response/m:tm-search/m:results"/>
             <xsl:choose>
                 <xsl:when test="$results/m:item">
-                    
-                    <xsl:for-each select="$results/m:item">
-                        <div class="search-result row">
-                            <div>
-                                <div class="col-sm-6">
-                                    <p class="text-bo">
-                                        <xsl:apply-templates select="tmx:tu/tmx:tuv[@xml:lang eq 'bo']/tmx:seg"/>
-                                    </p>
-                                    <p class="translation">
-                                        <xsl:apply-templates select="tmx:tu/tmx:tuv[@xml:lang eq 'en']/tmx:seg"/>
-                                    </p>
-                                </div>
+                    <div class="search-results">
+                        <xsl:for-each select="$results/m:item">
+                            <div class="search-result row">
                                 <div>
                                     <div class="col-sm-6">
-                                        <p class="title">
-                                            <a target="reading-room">
-                                                <xsl:attribute name="href" select="concat($reading-room-path, '/translation/', m:source/@resource-id, '.html#', common:folio-id(tmx:tu/tmx:prop[@name eq 'folio']/text()))"/>
-                                                <xsl:apply-templates select="m:source/m:title"/>
-                                            </a>
-                                            <br/>
-                                            <span class="translators text-muted small">
-                                                Translated by 
-                                                <xsl:variable name="author-ids" select="m:source/m:translation/m:authors/m:author/@sameAs ! substring-after(., 'translators.xml#')"/>
-                                                <xsl:value-of select="string-join(/m:response/m:translators/m:translator[@xml:id = $author-ids]/m:name, ' · ')"/>
-                                            </span>
-                                            <xsl:for-each select="m:source/m:bibl">
-                                                <br/>
-                                                <span class="ancestors text-muted small">
-                                                    in 
-                                                    <xsl:for-each select="m:parent | m:parent//m:parent">
-                                                        <xsl:sort select="@nesting" order="descending"/>
-                                                        <xsl:value-of select="m:title[@xml:lang='en']/text()"/>
-                                                        / 
-                                                    </xsl:for-each>
-                                                    <xsl:if test="m:toh/m:full">
-                                                        <xsl:value-of select="m:toh/m:full"/>
-                                                    </xsl:if>
-                                                </span>
-                                            </xsl:for-each>
+                                        <p class="text-bo">
+                                            <xsl:apply-templates select="tmx:tu/tmx:tuv[@xml:lang eq 'bo']/tmx:seg"/>
                                         </p>
+                                        <p class="translation">
+                                            <xsl:apply-templates select="tmx:tu/tmx:tuv[@xml:lang eq 'en']/tmx:seg"/>
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <div class="col-sm-6">
+                                            <p class="title">
+                                                <a target="reading-room">
+                                                    <xsl:attribute name="href" select="concat($reading-room-path, '/translation/', m:source/@resource-id, '.html#', common:folio-id(tmx:tu/tmx:prop[@name eq 'folio']/text()))"/>
+                                                    <xsl:apply-templates select="m:source/m:title"/>
+                                                </a>
+                                                <br/>
+                                                <span class="translators text-muted small">
+                                                    Translated by 
+                                                    <xsl:variable name="author-ids" select="m:source/m:translation/m:authors/m:author/@sameAs ! substring-after(., 'translators.xml#')"/>
+                                                    <xsl:value-of select="string-join(/m:response/m:translators/m:translator[@xml:id = $author-ids]/m:name, ' · ')"/>
+                                                </span>
+                                                <xsl:for-each select="m:source/m:bibl">
+                                                    <br/>
+                                                    <span class="ancestors text-muted small">
+                                                        in 
+                                                        <xsl:for-each select="m:parent | m:parent//m:parent">
+                                                            <xsl:sort select="@nesting" order="descending"/>
+                                                            <xsl:value-of select="m:title[@xml:lang='en']/text()"/>
+                                                            / 
+                                                        </xsl:for-each>
+                                                        <xsl:if test="m:toh/m:full">
+                                                            <xsl:value-of select="m:toh/m:full"/>
+                                                        </xsl:if>
+                                                    </span>
+                                                </xsl:for-each>
+                                            </p>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                    </xsl:for-each>
+                        </xsl:for-each>
+                    </div>
                     
                     <!-- Pagination -->
                     <xsl:copy-of select="common:pagination($results/@first-record, $results/@max-records, $results/@count-records, 'index.html?tab=tibetan-search', concat('&amp;s=', /m:response/m:tm-search/m:request/text()))"/>
