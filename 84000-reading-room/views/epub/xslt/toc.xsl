@@ -55,7 +55,7 @@
                     </navLabel>
                     <content src="introduction.xhtml"/>
                 </navPoint>
-                <xsl:if test="m:translation/m:prologue//tei:p">
+                <xsl:if test="m:translation/m:prologue//tei:*">
                     <navPoint id="prologue">
                         <navLabel>
                             <text>Prologue</text>
@@ -89,7 +89,7 @@
                         </content>
                     </navPoint>
                 </xsl:for-each>
-                <xsl:if test="m:translation/m:colophon//tei:p">
+                <xsl:if test="m:translation/m:colophon//tei:*">
                     <navPoint id="colophon">
                         <navLabel>
                             <text>Colophon</text>
@@ -97,7 +97,7 @@
                         <content src="colophon.xhtml"/>
                     </navPoint>
                 </xsl:if>
-                <xsl:if test="m:translation/m:appendix//tei:p">
+                <xsl:if test="m:translation/m:appendix//tei:*">
                     <navPoint id="appendix">
                         <navLabel>
                             <text>Appendix</text>

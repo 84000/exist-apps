@@ -21,29 +21,9 @@
                 <xsl:for-each select="m:translation/m:glossary/m:item">
                     <xsl:sort select="common:standardized-sa(m:term[lower-case(@xml:lang) = 'en'][1])"/>
                     <div class="glossary-item">
-                        <h4 class="term">
-                            <xsl:apply-templates select="m:term[lower-case(@xml:lang) = 'en']"/>
-                        </h4>
-                        <xsl:if test="m:term[lower-case(@xml:lang) eq 'bo-ltn']">
-                            <p class="text-wy">
-                                <xsl:value-of select="string-join(m:term[lower-case(@xml:lang) eq 'bo-ltn'], ' · ')"/>
-                            </p>
-                        </xsl:if>
-                        <xsl:if test="m:term[lower-case(@xml:lang) eq 'bo']">
-                            <p class="text-bo">
-                                <xsl:value-of select="string-join(m:term[lower-case(@xml:lang) eq 'bo'], ' · ')"/>
-                            </p>
-                        </xsl:if>
-                        <xsl:if test="m:term[lower-case(@xml:lang) eq 'sa-ltn']">
-                            <p class="text-sa">
-                                <xsl:value-of select="string-join(m:term[lower-case(@xml:lang) eq 'sa-ltn'], ' · ')"/>
-                            </p>
-                        </xsl:if>
-                        <xsl:for-each select="m:definition">
-                            <p class="definition">
-                                <xsl:apply-templates select="node()"/>
-                            </p>
-                        </xsl:for-each>
+                        <xsl:call-template name="glossary-item">
+                            <xsl:with-param name="glossary-item" select="."/>
+                        </xsl:call-template>
                     </div>
                 </xsl:for-each>
                 

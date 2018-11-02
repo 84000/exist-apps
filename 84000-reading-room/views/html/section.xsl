@@ -674,7 +674,7 @@
                                                 <i class="fa fa-gift"/>
                                             </span>
                                             <span class="btn-round-text">
-                                                Become a Friend of the Reading Room
+                                                Sponsor Translation
                                             </span>
                                         </a>
                                     </div>

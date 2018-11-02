@@ -57,10 +57,16 @@ let $entries := (
                 <item id="contents" href="contents.xhtml" media-type="application/xhtml+xml" properties="nav"/>
                 <item id="summary" href="summary.xhtml" media-type="application/xhtml+xml"/>
                 <item id="acknowledgements" href="acknowledgements.xhtml" media-type="application/xhtml+xml"/>
+                {
+                    if($data/m:response/m:translation/m:preface//tei:*) then 
+                        <item id="preface" href="preface.xhtml" media-type="application/xhtml+xml"/>
+                    else
+                        ()
+                }
                 <item id="introduction" href="introduction.xhtml" media-type="application/xhtml+xml"/>
                 <item id="body-title" href="body-title.xhtml" media-type="application/xhtml+xml"/>
                 {
-                    if($data/m:response/m:translation/m:prologue//tei:p) then 
+                    if($data/m:response/m:translation/m:prologue//tei:*) then 
                         <item id="prologue" href="prologue.xhtml" media-type="application/xhtml+xml"/>
                     else
                         ()
@@ -71,13 +77,13 @@ let $entries := (
                         <item id="chapter-{ $chapter/@chapter-index }" href="chapter-{ $chapter/@chapter-index }.xhtml" media-type="application/xhtml+xml"/>
                 }
                 {
-                    if($data/m:response/m:translation/m:colophon//tei:p) then 
+                    if($data/m:response/m:translation/m:colophon//tei:*) then 
                         <item id="colophon" href="colophon.xhtml" media-type="application/xhtml+xml"/>
                     else
                         ()
                 }
                 {
-                    if($data/m:response/m:translation/m:appendix//tei:p) then 
+                    if($data/m:response/m:translation/m:appendix//tei:*) then 
                         <item id="appendix" href="appendix.xhtml" media-type="application/xhtml+xml"/>
                     else
                         ()
@@ -100,10 +106,16 @@ let $entries := (
                 <itemref idref="contents"/>
                 <itemref idref="summary"/>
                 <itemref idref="acknowledgements"/>
+                {
+                    if($data/m:response/m:translation/m:preface//tei:*) then 
+                        <itemref idref="preface"/>
+                    else
+                        ()
+                }
                 <itemref idref="introduction"/>
                 <itemref idref="body-title"/>
                 {
-                    if($data/m:response/m:translation/m:prologue//tei:p) then 
+                    if($data/m:response/m:translation/m:prologue//tei:*) then 
                         <itemref idref="prologue"/>
                     else
                         ()
@@ -114,13 +126,13 @@ let $entries := (
                         <itemref idref="chapter-{ $chapter/@chapter-index }"/>
                 }
                 {
-                    if($data/m:response/m:translation/m:colophon//tei:p) then 
+                    if($data/m:response/m:translation/m:colophon//tei:*) then 
                         <itemref idref="colophon"/>
                     else
                         ()
                 }
                 {
-                    if($data/m:response/m:translation/m:appendix//tei:p) then 
+                    if($data/m:response/m:translation/m:appendix//tei:*) then 
                         <itemref idref="appendix"/>
                     else
                         ()
@@ -152,9 +164,14 @@ let $entries := (
     <entry name="OEBPS/contents.xhtml" type="xml">{transform:transform($data, doc("xslt/contents.xsl"), ())}</entry>,
     <entry name="OEBPS/summary.xhtml" type="xml">{transform:transform($data, doc("xslt/summary.xsl"), ())}</entry>,
     <entry name="OEBPS/acknowledgements.xhtml" type="xml">{transform:transform($data, doc("xslt/acknowledgements.xsl"), ())}</entry>,
+    if($data/m:response/m:translation/m:preface//tei:*) then 
+        <entry name="OEBPS/preface.xhtml" type="xml">{transform:transform($data, doc("xslt/preface.xsl"), ())}</entry>
+    else
+        ()
+    ,
     <entry name="OEBPS/introduction.xhtml" type="xml">{transform:transform($data, doc("xslt/introduction.xsl"), ())}</entry>,
     <entry name="OEBPS/body-title.xhtml" type="xml">{transform:transform($data, doc("xslt/body-title.xsl"), ())}</entry>,
-    if($data/m:response/m:translation/m:prologue//tei:p) then 
+    if($data/m:response/m:translation/m:prologue//tei:*) then 
         <entry name="OEBPS/prologue.xhtml" type="xml">{transform:transform($data, doc("xslt/prologue.xsl"), ())}</entry>
     else
         ()
@@ -165,12 +182,12 @@ let $entries := (
             { transform:transform($data, doc("xslt/chapter.xsl"), <parameters><param name="chapter-index" value="{ $chapter/@chapter-index }"/></parameters>) }
         </entry>
     ,
-    if($data/m:response/m:translation/m:colophon//tei:p) then 
+    if($data/m:response/m:translation/m:colophon//tei:*) then 
         <entry name="OEBPS/colophon.xhtml" type="xml">{transform:transform($data, doc("xslt/colophon.xsl"), ())}</entry>
     else
         ()
     ,
-    if($data/m:response/m:translation/m:appendix//tei:p) then 
+    if($data/m:response/m:translation/m:appendix//tei:*) then 
         <entry name="OEBPS/appendix.xhtml" type="xml">{transform:transform($data, doc("xslt/appendix.xsl"), ())}</entry>
     else
         ()
@@ -185,7 +202,10 @@ let $entries := (
     <entry name="OEBPS/glossary.xhtml" type="xml">{transform:transform($data, doc("xslt/glossary.xsl"), ())}</entry>,
     <entry name="OEBPS/toc.ncx" type="xml">{transform:transform(transform:transform($data, doc("xslt/toc.xsl"), $parameters), doc("xslt/play-order.xsl"), ())}</entry>
 )
+
 let $zip := compression:zip($entries, true())
 return
     response:stream-binary($zip, 'application/epub+zip')
+
+(:return <entries>{$entries}</entries>:)
 

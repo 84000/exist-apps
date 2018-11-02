@@ -236,7 +236,7 @@
         <xsl:call-template name="milestone">
             <xsl:with-param name="content">
                 <div>
-                    <xsl:attribute name="class" select="concat(                         'list',                         if(parent::tei:item) then ' list-sublist' else '',                          if(@type eq 'section') then ' list-section' else ' list-bullet',                         concat(' nesting-', count(ancestor::tei:list[not(@type eq 'section')]))                     )"/>
+                    <xsl:attribute name="class" select="concat('list', if(parent::tei:item) then ' list-sublist' else '', if(@type eq 'section') then ' list-section' else ' list-bullet', concat(' nesting-', count(ancestor::tei:list[not(@type eq 'section')])) )"/>
                     <xsl:apply-templates select="node()"/>
                 </div>
             </xsl:with-param>
@@ -308,6 +308,7 @@
                 <xsl:call-template name="milestone">
                     <xsl:with-param name="content">
                         <div class="rw-heading">
+                            <xsl:call-template name="tid"/>
                             <h2>
                                 <xsl:value-of select="text()"/>
                             </h2>
@@ -317,24 +318,33 @@
                 </xsl:call-template>
             </xsl:when>
             <xsl:when test="@type = ('chapter', 'section')">
-                <xsl:call-template name="milestone">
-                    <xsl:with-param name="content">
+                <xsl:variable name="heading">
+                    <div>
+                        <xsl:call-template name="tid"/>
+                        <xsl:attribute name="class" select="concat('rw-heading heading-', @type, ' nesting-', ancestor::tei:div[1]/@nesting)"/>
+                        <h4>
+                            <xsl:if test="@type eq 'chapter'">
+                                <xsl:attribute name="class" select="'chapter-number'"/>
+                            </xsl:if>
+                            <xsl:value-of select="text()"/>
+                        </h4>
+                    </div>
+                </xsl:variable>
+                <xsl:choose>
+                    <xsl:when test="/m:response/m:request/@doc-type ne 'epub'">
+                        <xsl:call-template name="milestone">
+                            <xsl:with-param name="content" select="$heading"/>
+                            <xsl:with-param name="row-classes" select="if(@type eq 'section') then 'space space-after' else 'space'"/>
+                        </xsl:call-template>
+                    </xsl:when>
+                    <xsl:otherwise>
                         <div>
-                            <!-- 
-                            <xsl:if test="ancestor::m:nested-section">
-                                <xsl:attribute name="class" select="concat('rw-heading level-', count(ancestor::m:nested-section))"/>
-                            </xsl:if> -->
-                            <xsl:attribute name="class" select="concat('rw-heading heading-', @type, ' nesting-', ancestor::tei:div[1]/@nesting)"/>
-                            <h4>
-                                <xsl:if test="@type eq 'chapter'">
-                                    <xsl:attribute name="class" select="'chapter-number'"/>
-                                </xsl:if>
-                                <xsl:value-of select="text()"/>
-                            </h4>
+                            <xsl:attribute name="class" select="if(@type eq 'section') then 'space space-after' else 'space'"/>
+                            <xsl:copy-of select="$heading"/>
                         </div>
-                    </xsl:with-param>
-                    <xsl:with-param name="row-classes" select="if(@type eq 'section') then 'space space-after' else 'space'"/>
-                </xsl:call-template>
+                    </xsl:otherwise>
+                </xsl:choose>
+                
             </xsl:when>
         </xsl:choose>
     </xsl:template>
@@ -355,7 +365,6 @@
                             <xsl:attribute name="id" select="concat('node-', @tid)"/>
                         </xsl:otherwise>
                     </xsl:choose>
-                    
                 </xsl:when>
             </xsl:choose>
         </xsl:if>
@@ -374,7 +383,7 @@
                     
                     <!-- Concat classes for the row -->
                     <xsl:variable name="first-child-class" select="if(../*[1] = .) then 'first-child' else ''"/>
-                    <xsl:variable name="space-after-class" select="                         if (                             following-sibling::*[1][self::tei:list[@type eq 'section']]                             or (following-sibling::*[1][self::tei:milestone] and following-sibling::*[2][self::tei:list[@type eq 'section']])) then                             'space-after'                          else ''                     "/>
+                    <xsl:variable name="space-after-class" select="if (following-sibling::*[1][self::tei:list[@type eq 'section']] or (following-sibling::*[1][self::tei:milestone] and following-sibling::*[2][self::tei:list[@type eq 'section']])) then 'space-after' else '' "/>
                     <xsl:attribute name="class" select="string-join(('rw', $first-child-class, $space-after-class, $row-classes), ' ')"/>
                     
                     <xsl:variable name="milestone" select="preceding-sibling::*[1][self::tei:milestone] | preceding-sibling::*[2][self::tei:milestone[following-sibling::*[1][self::tei:lb]]]"/>
@@ -442,5 +451,69 @@
         </div>
     </xsl:template>
     
+    <!-- Abbreviations -->
+    <xsl:template name="abbreviations">
+        <!-- Called in epubs and RR -->
+        <xsl:param name="translation" required="yes"/>
+        <xsl:if test="$translation/m:abbreviations/m:head[not(lower-case(text()) = ('abbreviations', 'abbreviations:'))]">
+            <h5>
+                <xsl:apply-templates select="$translation/m:abbreviations/m:head/text()"/>
+            </h5>
+        </xsl:if>
+        <table class="table">
+            <tbody>
+                <xsl:for-each select="$translation/m:abbreviations/m:item">
+                    <xsl:sort select="m:abbreviation/text()"/>
+                    <tr>
+                        <th>
+                            <xsl:apply-templates select="m:abbreviation/text()"/>
+                        </th>
+                        <td>
+                            <xsl:apply-templates select="m:explanation/node()"/>
+                        </td>
+                    </tr>
+                </xsl:for-each>
+            </tbody>
+        </table>
+        <xsl:if test="$translation/m:abbreviations/m:foot">
+            <p>
+                <xsl:apply-templates select="m:translation/m:abbreviations/m:foot/text()"/>
+            </p>
+        </xsl:if>
+    </xsl:template>
+    
+    <!-- Glossary item -->
+    <xsl:template name="glossary-item">
+        <!-- Called in epubs and RR -->
+        <xsl:param name="glossary-item" required="yes"/>
+        <h4 class="term">
+            <xsl:apply-templates select="m:term[lower-case(@xml:lang) = 'en']"/>
+        </h4>
+        <xsl:if test="$glossary-item/m:term[lower-case(@xml:lang) eq 'bo-ltn']">
+            <p class="text-wy">
+                <xsl:value-of select="string-join($glossary-item/m:term[lower-case(@xml:lang) eq 'bo-ltn'], ' · ')"/>
+            </p>
+        </xsl:if>
+        <xsl:if test="$glossary-item/m:term[lower-case(@xml:lang) eq 'bo']">
+            <p class="text-bo">
+                <xsl:value-of select="string-join($glossary-item/m:term[lower-case(@xml:lang) eq 'bo'], ' · ')"/>
+            </p>
+        </xsl:if>
+        <xsl:if test="$glossary-item/m:term[lower-case(@xml:lang) eq 'sa-ltn']">
+            <p class="text-sa">
+                <xsl:value-of select="string-join($glossary-item/m:term[lower-case(@xml:lang) eq 'sa-ltn'], ' · ')"/>
+            </p>
+        </xsl:if>
+        <xsl:for-each select="$glossary-item/m:alternative">
+            <p class="term alternative">
+                <xsl:apply-templates select="text()"/>
+            </p>
+        </xsl:for-each>
+        <xsl:for-each select="$glossary-item/m:definition">
+            <p class="definition glossarize">
+                <xsl:apply-templates select="node()"/>
+            </p>
+        </xsl:for-each>
+    </xsl:template>
     
 </xsl:stylesheet>

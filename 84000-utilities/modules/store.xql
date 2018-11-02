@@ -183,7 +183,8 @@ declare function store:store-new-azw3($file-path as xs:string, $version as xs:st
                     '--embed-all-fonts', 
                     '--disable-fix-indents', 
                     '--disable-dehyphenate', 
-                    '--disable-remove-fake-margins'
+                    '--disable-remove-fake-margins',
+                    '--chapter', '/'
                 ), $options)
             
             (: Upload to database :)

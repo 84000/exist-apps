@@ -226,10 +226,10 @@
                                                 <td>
                                                     <xsl:variable name="status" select="/m:response/m:text-statuses/m:status[@status-id eq $status-id]"/>
                                                     <a href="#" target="_blank">
+                                                        <xsl:attribute name="href" select="concat($reading-room-path ,'/translation/', m:toh/@key, '.html')"/>
                                                         <xsl:choose>
                                                             <xsl:when test="@status-group eq 'published'">
                                                                 <xsl:attribute name="class" select="'label label-success'"/>
-                                                                <xsl:attribute name="href" select="concat($reading-room-path ,'/translation/', m:toh/@key, '.html')"/>
                                                             </xsl:when>
                                                             <xsl:when test="@status-group eq 'translated'">
                                                                 <xsl:attribute name="class" select="'label label-primary'"/>

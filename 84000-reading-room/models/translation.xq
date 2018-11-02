@@ -52,6 +52,7 @@ let $response :=
                 { translation:downloads($tei, $resource-id, 'any-version') }
                 { translation:summary($tei) }
                 { translation:acknowledgment($tei) }
+                { translation:preface($tei) }
                 { translation:introduction($tei) }
                 { translation:prologue($tei) }
                 { translation:body($tei) }

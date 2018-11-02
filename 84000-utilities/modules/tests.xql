@@ -13,15 +13,15 @@ declare namespace tei="http://www.tei-c.org/ns/1.0";
 declare namespace xhtml="http://www.w3.org/1999/xhtml";
 declare namespace m="http://read.84000.co/ns/1.0";
 
-declare function tests:translations($translation-id as xs:string) as item(){
+declare function tests:translations($text-statuses as xs:string*, $translation-id as xs:string) as item(){
     
     (:let $translation-id := 'UT22084-062-012':)
     
     let $outlines := collection($common:outlines-path)
-    let $schema := doc(concat($common:tei-path, '/schema/1.0/translation.rng'))
+    let $schema := doc(concat($common:tei-path, '/schema/current/translation.rng'))
     let $selected-translations := 
         if ($translation-id eq 'all') then 
-            collection($common:translations-path)//tei:TEI[tei:teiHeader/tei:fileDesc/tei:publicationStmt/@status = $tei-content:published-statuses]
+            collection($common:translations-path)//tei:TEI[tei:teiHeader/tei:fileDesc/tei:publicationStmt/@status = $text-statuses]
         else
             tei-content:tei(lower-case($translation-id), 'translation')
     
@@ -46,9 +46,10 @@ declare function tests:translations($translation-id as xs:string) as item(){
              
             return
                <translation 
-                   id="{ $toh-key }" 
-                   status="published">
+                   id="{ tei-content:id($tei) }" 
+                   status="{ $tei/tei:teiHeader/tei:fileDesc/tei:publicationStmt/@status }">
                    <title>{ tei-content:title($tei) }</title>
+                   { translation:toh($tei, $toh-key) }
                    <tests>
                    {
                        let $validation-report := validation:jing-report($tei, $schema)
@@ -103,8 +104,8 @@ declare function tests:translations($translation-id as xs:string) as item(){
                         let $titles := $toh-html//*[@id eq 'titles']/*[self::xhtml:h1 | self::xhtml:h2 | self::xhtml:h3 | self::xhtml:h4]/text()
                         let $long-titles := $toh-html//*[@id eq 'long-titles']/*[self::xhtml:h1 | self::xhtml:h2 | self::xhtml:h3 | self::xhtml:h4]/text()
                         return
-                            <test id="all-titles" pass="{ if(count($titles) eq 4 and count($long-titles) eq 4) then 1 else 0 }">
-                                <title>Titles test: The text has 4 main titles and 4 long titles.</title>
+                            <test id="all-titles" pass="{ if(count($titles) eq 3 and count($long-titles) eq 4) then 1 else 0 }">
+                                <title>Titles test: The text has 3 main titles and 4 long titles.</title>
                                 <details>
                                 { 
                                     for $title in $titles
@@ -157,25 +158,25 @@ declare function tests:translations($translation-id as xs:string) as item(){
                             </test>
                     }
                     {
-                        tests:test-translation-section($tei//tei:front//*[@type eq 'summary'], $toh-html//*[@id eq 'summary'], 'summary', 1, false())
+                        tests:test-translation-section($tei//tei:front//tei:div[@type eq 'summary'], $toh-html//*[@id eq 'summary'], 'summary', 1, false())
                     }
                     {
-                        tests:test-translation-section($tei//tei:front//*[@type eq 'acknowledgment'], $toh-html//*[@id eq 'acknowledgements'], 'acknowledgements', 1, false())
+                        tests:test-translation-section($tei//tei:front//tei:div[@type eq 'acknowledgment'], $toh-html//*[@id eq 'acknowledgements'], 'acknowledgements', 1, false())
                     }
                     {
-                        tests:test-translation-section($tei//tei:front//*[@type eq 'introduction'], $toh-html//*[@id eq 'introduction'], 'introduction', 1, false())
+                        tests:test-translation-section($tei//tei:front//tei:div[@type eq 'introduction'], $toh-html//*[@id eq 'introduction'], 'introduction', 1, false())
                     }
                     {
-                        tests:test-translation-section($tei//tei:body//*[@type eq 'prologue' or tei:head/text()[lower-case(.) = "prologue"]], $toh-html//*[@id eq 'prologue'], 'prologue', 0, false())
+                        tests:test-translation-section($tei//tei:body//tei:div[@type eq 'prologue'], $toh-html//*[@id eq 'prologue'], 'prologue', 0, false())
                     }
                     {
-                        tests:test-translation-section($tei//tei:body//*[@type eq 'translation']/*[@type=('section', 'chapter')][not(tei:head/text()[lower-case(.) = "prologue"])], $toh-html//*[@id eq 'translation'], 'translation', 1, true())
+                        tests:test-translation-section(<tei:div type='translation'>{$tei//tei:body//tei:div[@type eq 'translation']/*[@type=('section', 'chapter')]}</tei:div>, $toh-html//*[@id eq 'translation'], 'translation', 1, true())
                     }
                     {
-                        tests:test-translation-section($tei//tei:body//*[@type eq 'colophon'], $toh-html//*[@id eq 'colophon'], 'colophon', 0, false())
+                        tests:test-translation-section($tei//tei:body//tei:div[@type eq 'colophon'], $toh-html//*[@id eq 'colophon'], 'colophon', 0, false())
                     }
                     {
-                        tests:test-translation-section($tei//tei:back//*[@type eq 'appendix'], $toh-html//*[@id eq 'appendix'], 'appendix', 0, false())
+                        tests:test-translation-section($tei//tei:back//tei:div[@type eq 'appendix'], $toh-html//*[@id eq 'appendix'], 'appendix', 0, false())
                     }
                     {
                         let $notes-count-html := count($toh-html//*[@id eq 'notes']/*/*[contains(@class, 'footnote')])
@@ -220,7 +221,7 @@ declare function tests:translations($translation-id as xs:string) as item(){
                     {
                         let $glossary-count-html := count($toh-html//*[@id eq 'glossary']//*[contains(@class, 'glossary-item')])
                         let $glossary-count-tei := count($tei//tei:back/tei:div[@type='glossary']//tei:gloss)
-                        let $tei-terms-raw := $tei//tei:back/tei:div[@type='glossary']//tei:gloss/tei:term[text()][not(tei:ptr)]
+                        let $tei-terms-raw := $tei//tei:back/tei:div[@type='glossary']//tei:gloss/tei:term[text()][not(tei:ptr)](:[not(@xml:lang and text() = preceding-sibling::tei:term[not(@xml:lang or @type)]/text())]:)
                         
                         let $tei-terms := 
                             for $tei-term in $tei-terms-raw
@@ -293,14 +294,14 @@ declare function tests:test-translation-section($section-tei as element()*, $sec
     let $section-count-tei-q := count($section-tei//tei:q)
     let $section-count-html-q := count($section-html//xhtml:blockquote | $section-html//xhtml:span[contains(@class, 'blockquote')])
     
-    let $section-count-tei-id := count($section-tei//*[@tid][not(ancestor::tei:note)])
+    let $section-count-tei-id := count($section-tei//*[@tid][self::tei:p | self::tei:ab | self::tei:trailer | self::tei:bibl | self::tei:label | self::tei:head[parent::tei:list] | self::tei:lg | self::tei:head[@type = ('chapterTitle', 'chapter', 'section')]][not(ancestor::tei:note)])
     let $section-count-html-id := count($section-html//*[contains(@id, 'node-')])
     
     let $section-count-tei-list-item := count($section-tei//tei:list[not(ancestor::tei:note)]/tei:item)
     let $section-count-html-list-item := count($section-html//xhtml:div[contains(@class, 'list-item')])
     
     let $section-count-tei-chapters := count($section-tei//tei:div[@type = ('section', 'chapter')])
-    let $section-count-html-chapters := count($section-html//xhtml:section[contains(@class, 'chapter')])
+    let $section-count-html-chapters := count($section-html//xhtml:section[contains(@class, 'chapter')] | $section-html//xhtml:div[contains(@class, 'nested-chapter') or contains(@class, 'nested-section')])
     
     let $section-count-tei-milestones := count($section-tei//tei:milestone)
     let $section-count-html-milestones := count($section-html//xhtml:a[contains(@class, 'milestone from-tei')])

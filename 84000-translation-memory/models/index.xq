@@ -13,7 +13,7 @@ import module namespace functx="http://www.functx.com";
 
 declare option exist:serialize "method=xml indent=no";
 
-let $translations := translations:files()
+let $translations := translations:files($tei-content:published-statuses)
 let $translation-id := request:get-parameter('translation-id', $translations/m:file[1]/@id)
 let $translation := tei-content:tei($translation-id, 'translation')
 let $toh-key := translation:toh-key($translation, '') (: get the first/default toh-key so that it is consistent :)

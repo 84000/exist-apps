@@ -81,6 +81,11 @@
                                             <td>
                                                 <ul class="list-inline">
                                                     <li>
+                                                        <span class="label label-info">
+                                                            <xsl:value-of select="m:downloads/@tei-version"/>
+                                                        </span>
+                                                    </li>
+                                                    <li>
                                                         <a>
                                                             <xsl:attribute name="href" select="concat($reading-room-path ,'/translation/', $toh/@key, '.xml')"/>
                                                             <xsl:attribute name="target" select="concat($toh/@key, '.xml')"/>

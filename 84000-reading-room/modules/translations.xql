@@ -34,10 +34,10 @@ declare function translations:file($translation as node()) as node() {
         </file>
 };
 
-declare function translations:files() as node() {
+declare function translations:files($text-statuses as xs:string*) as node() {
     <translations xmlns="http://read.84000.co/ns/1.0">
     {
-        for $translation in collection($common:translations-path)//tei:TEI[tei:teiHeader/tei:fileDesc/tei:publicationStmt/@status = $tei-content:published-statuses]
+        for $translation in collection($common:translations-path)//tei:TEI[tei:teiHeader/tei:fileDesc/tei:publicationStmt/@status = $text-statuses]
         return
             translations:file($translation)
     }

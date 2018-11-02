@@ -6,22 +6,20 @@
     
     <xsl:template match="/m:response">
         
-        <xsl:variable name="page-title" select="'Abbreviations'"/>
+        <xsl:variable name="page-title" select="'Preface'"/>
         <xsl:variable name="translation-title" select="m:translation/m:titles/m:title[@xml:lang eq 'en']"/>
         
         <xsl:variable name="content">
-            
-            <section id="abbreviations">
+            <section id="preface" class="translation" epub:type="preface">
                 <div class="center header">
                     <h2>
                         <xsl:value-of select="$page-title"/>
                     </h2>
                 </div>
-                <xsl:call-template name="abbreviations">
-                    <xsl:with-param name="translation" select="m:translation"/>
-                </xsl:call-template>
+                <div class="text">
+                    <xsl:apply-templates select="m:translation/m:preface"/>
+                </div>
             </section>
-            
         </xsl:variable>
         
         <xsl:call-template name="epub-page">

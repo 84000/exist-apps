@@ -17,9 +17,45 @@ import module namespace translation="http://read.84000.co/translation" at "trans
 import module namespace kwic="http://exist-db.org/xquery/kwic";
 import module namespace functx="http://www.functx.com";
 
+declare function search:text-query($request as xs:string) {
+    
+    (: In leiu of Lucene synonyms :)
+    
+    let $synonyms := 
+        <synonyms xmlns="http://read.84000.co/ns/1.0">
+            <synonym>
+                <term>tohoku</term>
+                <term>toh</term>
+            </synonym>
+        </synonyms>
+        
+    let $request-normalized := common:normalized-chars($request)
+    
+    let $request-tokenized := tokenize(common:normalized-chars($request-normalized), '\s')
+    
+    return
+        <query>
+            <bool>
+                <near slop="20" occur="should">{ $request-normalized }</near>
+                <wildcard occur="should">{ concat($request-normalized,'*') }</wildcard>
+                {
+                    for $request-token in $request-tokenized
+                        for $synonym in $synonyms//m:synonym[m:term/text() = $request-token]/m:term[not(text() = $request-token)]
+                        let $request-synonym := replace($request-normalized, $request-token, $synonym)
+                        return
+                        (
+                            <near slop="20" occur="should">{ $request-synonym }</near>,
+                            <wildcard occur="should">{ concat($request-synonym,'*') }</wildcard>
+                        )
+                }
+            </bool>
+        </query>
+};
+
 declare function search:search($request as xs:string, $first-record as xs:double, $max-records as xs:double) {
     
-    let $teis := collection($common:tei-path)//tei:TEI[tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:idno/@xml:id]
+    let $all := collection($common:tei-path)//tei:TEI[tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:idno/@xml:id]
+    let $translated := $all[tei:teiHeader/tei:fileDesc/tei:publicationStmt/@status = $tei-content:published-statuses]
     
     let $options :=
         <options>
@@ -29,46 +65,46 @@ declare function search:search($request as xs:string, $first-record as xs:double
             <filter-rewrite>yes</filter-rewrite>
         </options>
     
-    let $query := 
-        <query>
-            <bool>
-                <near slop="20" occur="should">{ common:normalized-chars($request) }</near>
-                <wildcard occur="should">{ concat(common:normalized-chars($request),'*') }</wildcard>
-            </bool>
-        </query>
+    let $query := search:text-query($request)
     
     let $results :=
         for $result in 
-            $teis//tei:teiHeader/tei:fileDesc//tei:title[ft:query(., $query, $options)]
-                | $teis//tei:teiHeader/tei:fileDesc/tei:sourceDesc//tei:ref[ft:query(., $query, $options)]
-                | $teis//tei:teiHeader/tei:fileDesc/tei:sourceDesc//tei:biblScope[ft:query(., $query, $options)]
-                | $teis//tei:text//tei:p[ft:query(., $query, $options)]
-                | $teis//tei:text//tei:lg[ft:query(., $query, $options)]
-                | $teis//tei:text//tei:ab[ft:query(., $query, $options)]
-                | $teis//tei:text//tei:trailer[ft:query(., $query, $options)]
-                | $teis//tei:front//tei:list/tei:head[ft:query(., $query, $options)]
-                | $teis//tei:body//tei:list/tei:head[ft:query(., $query, $options)]
-                | $teis//tei:back//tei:bibl[ft:query(., $query, $options)]
-                | $teis//tei:back//tei:gloss[ft:query(., $query, $options)]
+            $all//tei:teiHeader/tei:fileDesc//tei:title[ft:query(., $query, $options)]
+                | $all//tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl[ft:query(., $query, $options)]
+                | $all//tei:teiHeader/tei:fileDesc/tei:sourceDesc//tei:biblScope[ft:query(., $query, $options)]
+                | $translated//tei:text//tei:head[ft:query(., $query, $options)]
+                | $translated//tei:text//tei:p[ft:query(., $query, $options)]
+                | $translated//tei:text//tei:lg[ft:query(., $query, $options)]
+                | $translated//tei:text//tei:ab[ft:query(., $query, $options)]
+                | $translated//tei:text//tei:trailer[ft:query(., $query, $options)]
+                | $translated//tei:back//tei:bibl[ft:query(., $query, $options)]
+                | $translated//tei:back//tei:gloss[ft:query(., $query, $options)]
+            
+            let $scores := ft:score($result)
             
             let $document-uri := base-uri($result)
             group by $document-uri
-            let $scores := 
-                for $single in $result
-                return
-                    ft:score($single)
-            order by sum($scores) descending
+            
+            let $sum-scores := sum($scores)
+            order by $sum-scores descending
          
          return 
-            <result-group xmlns="http://read.84000.co/ns/1.0" document-uri="{ $document-uri }">
+            <result-group xmlns="http://read.84000.co/ns/1.0" document-uri="{ $document-uri }" sum-scores="{ $sum-scores }">
             {
-               util:expand($result, "expand-xincludes=no")
+                for $single in $result
+                return
+                    <match score="{ ft:score($single) }">
+                    {
+                        util:expand($single, "expand-xincludes=no")
+                    }
+                    </match>
             }
             </result-group>
     
     return 
         <search xmlns="http://read.84000.co/ns/1.0" >
             <request>{ $request }</request>
+            { $query }
             <results
                 first-record="{ $first-record }"
                 max-records="{ $max-records }"
@@ -89,21 +125,23 @@ declare function search:search($request as xs:string, $first-record as xs:double
                         let $first-bibl-key :=  if($first-bibl/@key) then $first-bibl/@key else ''
 
                     return
-                        <item>
-                            {
-                                search:source($tei-type, $tei)
-                            }
-                            {
-                                for $node in $result-group/*
-                                return
-                                    <match>
-                                    {
-                                        attribute node-type { node-name($node) },
-                                        $node/@*,
-                                        $node/node()
-                                    }
-                                    </match>
-                            }
+                        <item score="{ $result-group/@sum-scores }">
+                        {
+                            search:source($tei-type, $tei)
+                        }
+                        {
+                            for $match in $result-group/m:match
+                            order by $match/@score descending
+                            return
+                                <match>
+                                {
+                                    attribute node-type { node-name($match/*) },
+                                    attribute score { $match/@score },
+                                    $match/*/@*,
+                                    $match/*/node()
+                                }
+                                </match>
+                        }
                         </item>
                else
                     ()

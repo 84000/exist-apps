@@ -35,19 +35,20 @@
                     <xsl:choose>
                         <xsl:when test="$success">
                             <i class="fa fa-check-circle"/>
-                            Success
+                            Passed Test
                         </xsl:when>
                         <xsl:otherwise>
                             <i class="fa fa-times-circle"/>
-                            Fail
+                            Failed Test
                         </xsl:otherwise>
                     </xsl:choose>
+                    <span> <xsl:value-of select="$test-title"/>
+                    </span>
                 </h3>
                 <p>
-                    <xsl:value-of select="$test-title"/>
-                </p>
-                <p>
-                    <xsl:value-of select="$text-title"/>
+                    <span class="italic">
+                        <xsl:value-of select="$text-title"/>
+                    </span>
                     <br/>
                     <ul class="list-inline">
                         <li>
@@ -128,42 +129,39 @@
                             </div>
                         </form>
                         
-                        <hr/>
-                        
                         <table class="table table-responsive table-icons">
                             <thead>
                                 <tr>
                                     <th>Text</th>
                                     <th>Status</th>
                                     <xsl:for-each select="//m:results/m:translation[1]/m:tests/m:test">
-                                        <th class="test">
+                                        <th class="icon">
                                             <xsl:value-of select="position()"/>
                                         </th>
                                     </xsl:for-each>
+                                    <th class="icon">filter</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <xsl:for-each select="m:results/m:translation">
-                                    <xsl:sort select="count(m:tests/m:test/m:result[text() eq '1'])"/>
+                                    <xsl:sort select="count(m:tests/m:test/m:result[text() eq '1'])" order="descending"/>
                                     <xsl:variable name="table-row" select="position()"/>
+                                    <xsl:variable name="toh-key" select="m:toh/@key"/>
                                     <xsl:variable name="text-id" select="@id"/>
                                     <xsl:variable name="text-title" select="m:title/text()"/>
                                     <tr>
                                         <td>
-                                            <a target="_blank">
-                                                <xsl:attribute name="href" select="concat($reading-room-path, '/translation/', $text-id, '.html')"/>
+                                            <a>
+                                                <xsl:attribute name="href" select="concat($reading-room-path, '/translation/', $toh-key, '.html')"/>
                                                 <xsl:attribute name="title" select="$text-title"/>
-                                                <xsl:value-of select="$text-id"/>
+                                                <xsl:attribute name="target" select="$toh-key"/>
+                                                <xsl:value-of select="m:toh/m:full"/>
                                             </a>
                                         </td>
                                         <td>
-                                            <xsl:choose>
-                                                <xsl:when test="@status = 'published'">
-                                                    <div class="label label-success">
-                                                        Published
-                                                    </div>
-                                                </xsl:when>
-                                            </xsl:choose>
+                                            <xsl:call-template name="translation-status">
+                                                <xsl:with-param name="status" select="@status"/>
+                                            </xsl:call-template>
                                         </td>
                                         <xsl:for-each select="m:tests/m:test">
                                             <xsl:variable name="test-id" select="position()"/>
@@ -171,10 +169,17 @@
                                             <xsl:variable name="test-title" select="concat($test-id, '. ', m:title/text())"/>
                                             <xsl:variable name="test-result" select="xs:boolean(@pass)"/>
                                             <xsl:variable name="test-details" select="m:details"/>
-                                            <td class="test">
-                                                <xsl:copy-of select="m:test-result($test-result, $cell-id, $text-id, $text-title, $test-title, $test-details)"/>
+                                            <td class="icon">
+                                                <xsl:copy-of select="m:test-result($test-result, $cell-id, $toh-key, $text-title, $test-title, $test-details)"/>
                                             </td>
                                         </xsl:for-each>
+                                        <td class="icon">
+                                            <a>
+                                                <xsl:attribute name="href" select="concat('?translation-id=', $text-id)"/>
+                                                <xsl:attribute name="title" select="'Run tests on this text only'"/>
+                                                <i class="fa fa-filter"/>
+                                            </a>
+                                        </td>
                                     </tr>
                                 </xsl:for-each>
                             </tbody>

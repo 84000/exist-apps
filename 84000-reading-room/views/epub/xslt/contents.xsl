@@ -33,7 +33,7 @@
                     <li>
                         <a href="introduction.xhtml">Introduction</a>
                     </li>
-                    <xsl:if test="m:translation/m:prologue//tei:p">
+                    <xsl:if test="m:translation/m:prologue//tei:*">
                         <li>
                             <a href="prologue.xhtml">Prologue</a>
                         </li>
@@ -54,14 +54,20 @@
                                     </xsl:otherwise>
                                 </xsl:choose>
                             </a>
+                            <xsl:if test="tei:div[@type = ('section', 'chapter')][tei:head/text()]">
+                                <xsl:call-template name="sub-chapters">
+                                    <xsl:with-param name="sub-chapters" select="tei:div[@type = ('section', 'chapter')][tei:head/text()]"/>
+                                    <xsl:with-param name="chapter-index" select="@chapter-index"/>
+                                </xsl:call-template>
+                            </xsl:if>
                         </li>
                     </xsl:for-each>
-                    <xsl:if test="m:translation/m:colophon//tei:p">
+                    <xsl:if test="m:translation/m:colophon//tei:*">
                         <li>
                             <a href="colophon.xhtml">Colophon</a>
                         </li>
                     </xsl:if>
-                    <xsl:if test="m:translation/m:appendix//tei:p">
+                    <xsl:if test="m:translation/m:appendix//tei:*">
                         <li>
                             <a href="appendix.xhtml">Appendix</a>
                         </li>
@@ -91,4 +97,37 @@
         </xsl:call-template>
         
     </xsl:template>
+    
+    <xsl:template name="sub-chapters">
+        <xsl:param name="sub-chapters" required="yes"/>
+        <xsl:param name="chapter-index" required="yes"/>
+        <ol>
+            <xsl:for-each select="$sub-chapters">
+                <xsl:variable name="id" select="if(@prefix) then concat('chapter-', @prefix) else concat('section-', @section-id)"/>
+                <li>
+                    <a>
+                        <xsl:attribute name="href" select="concat('chapter-', $chapter-index, '.xhtml#', $id)"/>
+                        <xsl:choose>
+                            <xsl:when test="tei:head/text()">
+                                <xsl:apply-templates select="tei:head/text()"/>
+                            </xsl:when>
+                            <xsl:when test="m:title/text()">
+                                <xsl:apply-templates select="m:title/text()"/>
+                            </xsl:when>
+                            <xsl:otherwise>
+                                <xsl:apply-templates select="m:title-number/text()"/>
+                            </xsl:otherwise>
+                        </xsl:choose>
+                    </a>
+                    <xsl:if test="tei:div[@type = ('section', 'chapter')][tei:head/text()]">
+                        <xsl:call-template name="sub-chapters">
+                            <xsl:with-param name="sub-chapters" select="tei:div[@type = ('section', 'chapter')][tei:head/text()]"/>
+                            <xsl:with-param name="chapter-index" select="$chapter-index"/>
+                        </xsl:call-template>
+                    </xsl:if>
+                </li>
+            </xsl:for-each>
+        </ol>
+    </xsl:template>
+    
 </xsl:stylesheet>

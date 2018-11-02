@@ -223,6 +223,7 @@ blockquote .line-group .line{
 }
 
 /* additional avoid page breaks */
+.nested-chapter > .first-child,
 .nested-section > .first-child,
 .footnote-number{
     page-break-after: avoid;
@@ -242,24 +243,24 @@ blockquote .line-group .line{
 .list.list-bullet > .rw > .list-item .section-label {
     padding-left: 12pt;
 }
-.list.list-bullet > .rw > .list-item  .list-bullet > .rw > .list-item  p,
-.list.list-bullet > .rw > .list-item  .list-bullet > .rw > .list-item .section-label {
+.list.list-bullet.nesting-1 > .rw > .list-item p,
+.list.list-bullet.nesting-1 > .rw > .list-item .section-label {
     padding-left: 24pt;
 }
-.list.list-bullet > .rw > .list-item .list.list-bullet > .rw > .list-item .list.list-bullet > .rw > .list-item p,
-.list.list-bullet > .rw > .list-item .list.list-bullet > .rw > .list-item .list.list-bullet > .rw > .list-item .section-label {
+.list.list-bullet.nesting-2 > .rw > .list-item p,
+.list.list-bullet.nesting-2 > .rw > .list-item .section-label {
     padding-left: 36pt;
 }
-.list.list-bullet > .rw > .list-item .list.list-bullet > .rw > .list-item .list.list-bullet > .rw > .list-item .list.list-bullet > .rw > .list-item p,
-.list.list-bullet > .rw > .list-item .list.list-bullet > .rw > .list-item .list.list-bullet > .rw > .list-item .list.list-bullet > .rw > .list-item .section-label {
+.list.list-bullet.nesting-3 > .rw > .list-item p,
+.list.list-bullet.nesting-3 > .rw > .list-item .section-label {
     padding-left: 48pt;
 }
-.list.list-bullet > .rw > .list-item .list.list-bullet > .rw > .list-item .list.list-bullet > .rw > .list-item .list.list-bullet > .rw > .list-item .list.list-bullet > .rw > .list-item p,
-.list.list-bullet > .rw > .list-item .list.list-bullet > .rw > .list-item .list.list-bullet > .rw > .list-item .list.list-bullet > .rw > .list-item .list.list-bullet > .rw > .list-item .section-label {
+.list.list-bullet.nesting-4 > .rw > .list-item p,
+.list.list-bullet.nesting-4 > .rw > .list-item .section-label {
     padding-left: 60pt;
 }
-.list.list-bullet > .rw > .list-item .list.list-bullet > .rw > .list-item .list.list-bullet > .rw > .list-item .list.list-bullet > .rw > .list-item .list.list-bullet > .rw > .list-item .list.list-bullet > .rw > .list-item p,
-.list.list-bullet > .rw > .list-item .list.list-bullet > .rw > .list-item .list.list-bullet > .rw > .list-item .list.list-bullet > .rw > .list-item .list.list-bullet > .rw > .list-item .list.list-bullet > .rw > .list-item .section-label {
+.list.list-bullet.nesting-5 > .rw > .list-item p,
+.list.list-bullet.nesting-5 > .rw > .list-item .section-label {
     padding-left: 72pt;
 }
 
@@ -396,4 +397,79 @@ img.logo-84000{
 }
 .glossary-item .alternative{
     display: none;
+}
+
+/* Headings */
+.heading-chapter h4 {
+    text-transform: uppercase;
+    text-align:center;
+}
+.heading-section {
+    display: table;
+    margin: 0px auto;
+}
+.heading-section h4 {
+    margin-bottom: 0px;
+    display: table-cell;
+    padding-top: 22px;
+    font-size: 1.1em;
+    text-align:center;
+}
+.heading-section:before {
+    padding-right: 10px;
+    display: table-cell;
+    text-align: right;
+}
+.heading-section:after {
+    padding-left: 10px;
+    display: table-cell;
+    text-align: left;
+}
+.heading-section.nesting-1:before {
+    content: '·';
+}
+.heading-section.nesting-1:after {
+    content: '·';
+}
+.heading-section.nesting-1 h4 {
+    font-size: 1.05em;
+}
+.heading-section.nesting-2:before {
+    content: '··';
+}
+.heading-section.nesting-2:after {
+    content: '··';
+}
+.heading-section.nesting-2 h4 {
+    font-size: 1em;
+}
+.heading-section.nesting-3:before {
+    content: '···';
+}
+.heading-section.nesting-3:after {
+    content: '···';
+}
+.heading-section.nesting-3 h4 {
+    font-size: 1em;
+    font-weight:normal;
+}
+.heading-section.nesting-4:before {
+    content: '····';
+}
+.heading-section.nesting-4:after {
+    content: '····';
+}
+.heading-section.nesting-4 h4 {
+    font-size: 1em;
+    font-weight:normal;
+}
+.heading-section.nesting-5:before {
+    content: '·····';
+}
+.heading-section.nesting-5:after {
+    content: '·····';
+}
+.heading-section.nesting-5 h4 {
+    font-size: 1em;
+    font-weight:normal;
 }

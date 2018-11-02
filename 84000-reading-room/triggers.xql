@@ -29,6 +29,7 @@ declare function local:after-update-document-functions($doc) {
 };
 
 declare function local:footnote-indexes($doc) {
+
     (: Add indexes to footnotes :)
     (: This supports stable numbering accross all sections :)
     let $count-notes := count($doc/tei:TEI/tei:text//tei:note)
@@ -83,6 +84,7 @@ declare function local:temporary-ids($doc) {
     let $max-id := max($doc//@tid ! xs:integer(concat('0', .)))
     for $element at $index in 
         $doc//tei:text//tei:p[(not(@tid) or @tid='')]
+        | $doc//tei:text//tei:head[(not(@tid) or @tid='')]
         | $doc//tei:text//tei:lg[(not(@tid) or @tid='')]
         | $doc//tei:text//tei:ab[(not(@tid) or @tid='')]
         | $doc//tei:text//tei:trailer[(not(@tid) or @tid='')]
