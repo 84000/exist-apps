@@ -44,6 +44,46 @@
                             </div>
                         </xsl:if>
                         
+                        <xsl:if test="$environment/m:store-conf">
+                            <ul class="list-inline">
+                                <li>
+                                    <span class="small">
+                                        Key:
+                                    </span>
+                                </li>
+                                <li>
+                                    <span class="label label-info">
+                                        current version
+                                    </span>
+                                </li>
+                                <li>
+                                    <span class="label label-primary">
+                                        dynamic
+                                    </span>
+                                </li>
+                                <li>
+                                    <span class="label label-success">
+                                        file is the latest version
+                                    </span>
+                                </li>
+                                <li>
+                                    <span class="label label-warning">
+                                        file is an old version
+                                    </span>
+                                </li>
+                                <li>
+                                    <span class="label label-danger">
+                                        there is no file
+                                    </span>
+                                </li>
+                                <li>
+                                    <span class="label label-default">
+                                        disabled
+                                    </span>
+                                </li>
+                            </ul>
+                        </xsl:if>
+                        
                         <div class="tab-content">
                             
                             <table class="table table-responsive">
@@ -61,6 +101,7 @@
                                         <xsl:variable name="toh" select="m:toh"/>
                                         <xsl:variable name="tei-version" select="m:downloads/@tei-version"/>
                                         <tr>
+                                            <xsl:attribute name="id" select="$toh/@key"/>
                                             <td rowspan="2">
                                                 <xsl:value-of select="m:toh/m:base"/>
                                             </td>
@@ -109,15 +150,42 @@
                                                                 <xsl:choose>
                                                                     <xsl:when test="compare(@version, $tei-version) eq 0">
                                                                         <xsl:attribute name="href" select="concat($reading-room-path, @url)"/>
-                                                                        <span class="label label-primary">
-                                                                            <xsl:value-of select="concat($toh/@key, '.', @type)"/>
+                                                                        <span class="label label-success">
+                                                                            <xsl:value-of select="concat('Download ', $toh/@key, '.', @type)"/>
                                                                         </span>
                                                                     </xsl:when>
                                                                     <xsl:otherwise>
-                                                                        <xsl:attribute name="href" select="concat('/translations.html?store=', $toh/@key, '.', @type)"/>
-                                                                        <span class="label label-warning">
-                                                                            <xsl:value-of select="concat('Update ', $toh/@key, '.', @type)"/>
-                                                                        </span>
+                                                                        <xsl:choose>
+                                                                            <xsl:when test="$environment/m:store-conf">
+                                                                                <xsl:attribute name="href" select="concat('/translations.html?store=', $toh/@key, '.', @type, '#', $toh/@key)"/>
+                                                                                <xsl:choose>
+                                                                                    <xsl:when test="@version gt '0'">
+                                                                                        <span class="label label-warning">
+                                                                                            <xsl:value-of select="concat('Update ', $toh/@key, '.', @type)"/>
+                                                                                        </span>
+                                                                                    </xsl:when>
+                                                                                    <xsl:otherwise>
+                                                                                        <span class="label label-danger">
+                                                                                            <xsl:value-of select="concat('Create ', $toh/@key, '.', @type)"/>
+                                                                                        </span>
+                                                                                    </xsl:otherwise>
+                                                                                </xsl:choose>
+                                                                            </xsl:when>
+                                                                            <xsl:otherwise>
+                                                                                <xsl:attribute name="href" select="'#'"/>
+                                                                                <span class="label label-default">
+                                                                                    <xsl:choose>
+                                                                                        <xsl:when test="@version gt '0'">
+                                                                                            <xsl:value-of select="concat(@type, ' out of date')"/>
+                                                                                        </xsl:when>
+                                                                                        <xsl:otherwise>
+                                                                                            <xsl:value-of select="concat(@type, ' missing')"/>
+                                                                                        </xsl:otherwise>
+                                                                                    </xsl:choose>
+                                                                                </span>
+                                                                            </xsl:otherwise>
+                                                                        </xsl:choose>
+                                                                        
                                                                     </xsl:otherwise>
                                                                 </xsl:choose>
                                                             </a>

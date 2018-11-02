@@ -10,6 +10,8 @@ import module namespace tei-content="http://read.84000.co/tei-content" at "../..
 import module namespace translation = "http://read.84000.co/translation" at "../../84000-reading-room/modules/translation.xql";
 import module namespace download = "http://read.84000.co/download" at "../../84000-reading-room/modules/download.xql";
 
+import module namespace httpclient = "http://exist-db.org/xquery/httpclient";
+
 declare variable $store:conf := $common:environment//m:store-conf;
 declare variable $store:file-group := 'utilities';
 declare variable $store:file-permissions := 'rw-rw-r--';
@@ -74,7 +76,7 @@ declare function store:stored-version-str($resource-id as xs:string, $file-exten
     
 };
 
-declare function store:store-new-pdf($file-path as xs:string, $version as xs:string) as xs:string* {
+declare function store:store-new-pdf($file-path as xs:string, $version as xs:string) {
     
     let $pdf-config := $store:conf/m:pdfs
     
@@ -88,8 +90,9 @@ declare function store:store-new-pdf($file-path as xs:string, $version as xs:str
             let $source-url := concat($pdf-config/m:html-source-url, '/translation/', $resource-id, '.html')
             let $request-url := concat($pdf-config/m:service-endpoint, '?license=', $pdf-config/m:license-key, '&amp;url=', $source-url)
             
-            let $download := store:http-download($request-url, $file-collection, $file-name)
+            let $download := store:http-get-and-store($request-url, $file-collection, $file-name)
             
+            (: let $download := store:http-download($request-url, $file-collection, $file-name):)
             return
                 if(name($download) eq 'stored') then
                 
@@ -214,10 +217,11 @@ declare function store:store-new-azw3($file-path as xs:string, $version as xs:st
 };
 
 declare function store:http-download($file-url as xs:string, $collection as xs:string, $file-name as xs:string) as item()* {
-    
+
     let $request := <hc:request href="{$file-url}" method="GET"/>
     let $response := hc:send-request($request)
     let $head := $response[1]
+    let $body := $response[2]
     
     (:let $store-response := xmldb:store($collection, concat($file-name, '.debug.xml'), <response>{ $response }</response>, 'application/xml'):)
     
@@ -227,16 +231,16 @@ declare function store:http-download($file-url as xs:string, $collection as xs:s
             (: override the stated media type if the file is known to be .xml :)
             let $media-type := $head/hc:body/@media-type
             let $mime-type := 
-                if (ends-with($file-url, '.xml') and $media-type = 'text/plain') then
+                if (contains(lower-case($file-url), '.xml') and $media-type = 'text/plain') then
                     'application/xml'
                 else 
                     $media-type
             
             (: if the file is XML and the payload is binary, we need convert the binary to string :)
             let $content-transfer-encoding := $head/hc:body[@name = 'content-transfer-encoding']/@value
-            let $body := $response[2]
+            
             let $file := 
-                if (ends-with($file-url, '.xml') and $content-transfer-encoding = 'binary') then 
+                if (contains(lower-case($file-url), '.xml') and $content-transfer-encoding = 'binary') then 
                     util:binary-to-string($body) 
                 else 
                     $body
@@ -256,6 +260,50 @@ declare function store:http-download($file-url as xs:string, $collection as xs:s
             <error xmlns="http://read.84000.co/ns/1.0">
                 <message>Oops, something went wrong:</message>
                 {$head}
+            </error>
+};
+
+declare function store:http-get-and-store($file-url as xs:string, $collection as xs:string, $file-name as xs:string)  as item()* {
+
+    let $response := httpclient:get(xs:anyURI($file-url), false(),())
+    
+    let $headers := $response//httpclient:headers/httpclient:header
+    let $body := $response//httpclient:body
+    
+    return
+        (: check to ensure the remote server indicates success :)
+        if ($response/@statusCode = '200' and $body) then
+        
+            let $mime-type := 
+                if (contains(lower-case($file-url), '.xml') and $body/@mimetype = 'text/plain') then
+                    'application/xml'
+                else 
+                    $body/@mimetype
+            
+            (: if the file is XML and the payload is binary, we need convert the binary to string :)
+            let $content-transfer-encoding := $headers[lower-case(@name) = 'content-transfer-encoding']/@value
+            
+            let $file := 
+                if (contains(lower-case($file-url), '.xml') and lower-case($content-transfer-encoding) = 'binary') then 
+                    util:binary-to-string($body)
+                else 
+                    xs:base64Binary($body/text())
+            
+            let $store-file := xmldb:store($collection, $file-name, $file, $mime-type)
+            
+            return
+                <stored xmlns="http://read.84000.co/ns/1.0">{ $store-file }</stored>
+        
+        else if ($response/@statusCode = '504') then
+            <error xmlns="http://read.84000.co/ns/1.0">
+                <message>The request took too long and has timed out.</message>
+                { $headers }
+            </error>
+        
+        else
+            <error xmlns="http://read.84000.co/ns/1.0">
+                <message>Oops, something went wrong:</message>
+                { $headers }
             </error>
 };
 
