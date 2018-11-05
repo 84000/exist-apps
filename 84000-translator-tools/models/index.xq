@@ -40,12 +40,14 @@ return
         concat('translator-tools/', $tab),
         'translator-tools',
         (
-            <request xmlns="http://read.84000.co/ns/1.0" tab="{ $tab }" volume="{ $volume }" page="{ $page }"/>,
+            <request xmlns="http://read.84000.co/ns/1.0" tab="{ $tab }" volume="{ $volume }" page="{ $page }">
+                <search>{ $search }</search>
+            </request>,
             $tabs,
             if($tab eq 'search' and compare($search, '') gt 0) then 
                 search:search($search, $first-record, 15)
             else if($tab eq 'glossary') then 
-                glossary:glossary-terms($type, $lang)
+                glossary:glossary-terms($type, $lang, $search)
             else if($tab eq 'tibetan-search') then 
             (
                 search:tm-search($search, $lang, $first-record, 15),

@@ -104,7 +104,6 @@ declare function search:search($request as xs:string, $first-record as xs:double
     return 
         <search xmlns="http://read.84000.co/ns/1.0" >
             <request>{ $request }</request>
-            { $query }
             <results
                 first-record="{ $first-record }"
                 max-records="{ $max-records }"

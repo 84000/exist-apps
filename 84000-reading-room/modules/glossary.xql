@@ -14,22 +14,57 @@ import module namespace translation="http://read.84000.co/translation" at "trans
 import module namespace functx="http://www.functx.com";
 
 declare variable $glossary:translations := collection($common:translations-path)//tei:TEI[tei:teiHeader/tei:fileDesc/tei:publicationStmt/@status = $tei-content:published-statuses];
+declare variable $glossary:types := ('term', 'person', 'place', 'text');
 
-(: tei:gloss @types ('term', 'person', 'place', 'text') :)
-
-declare function glossary:ft-options() as node() {
-    <options>
-        <default-operator>or</default-operator>
-        <phrase-slop>0</phrase-slop>
-        <leading-wildcard>no</leading-wildcard>
-        <filter-rewrite>yes</filter-rewrite>
-    </options>
+declare function glossary:lookup-options() as node() {
+    element options {
+        element default-operator {
+            text { 'or' }
+        },
+        element phrase-slop {
+            text { '0' }
+        },
+        element leading-wildcard {
+            text { 'no' }
+        },
+        element filter-rewrite {
+            text { 'yes' }
+        }
+    }
 };
 
-declare function glossary:ft-query($string as xs:string) as node() {
-    <query>
-        <phrase occur="must">{ $string }</phrase>
-    </query>
+declare function glossary:search-options() as node() {
+    element options {
+        element default-operator {
+            text { 'or' }
+        },
+        element phrase-slop {
+            text { '0' }
+        },
+        element leading-wildcard {
+            text { 'yes' }
+        },
+        element filter-rewrite {
+            text { 'yes' }
+        }
+    }
+};
+
+declare function glossary:lookup-query($string as xs:string) as node() {
+    element query {
+        element phrase {
+            attribute occur {'must'},
+            text { $string }
+        }
+    }
+};
+
+declare function glossary:search-query($string as xs:string) as node() {
+    element query {
+        element wildcard {
+            concat('*', $string,'*')
+        }
+    }
 };
 
 declare function glossary:valid-lang($lang) as xs:string {
@@ -39,32 +74,49 @@ declare function glossary:valid-lang($lang) as xs:string {
         'Sa-Ltn'
     else if(lower-case($lang) eq 'bo') then
         'bo'
-    else
+    else if(lower-case($lang) eq 'en') then
         'en'
+    else
+        ''
 };
 
-declare function glossary:glossary-terms($type as xs:string*, $lang as xs:string) as node() {
+declare function glossary:valid-type($type) as xs:string {
+    if(lower-case($type) = $glossary:types) then
+        lower-case($type)
+    else
+        ''
+};
+
+declare function glossary:glossary-terms($type as xs:string*, $lang as xs:string, $search as xs:string) as node() {
     
     let $valid-lang := glossary:valid-lang($lang)
+    let $valid-type := glossary:valid-type($type)
     
-    let $terms := distinct-values($glossary:translations//tei:back//tei:gloss[@type = $type]/tei:term[@xml:lang eq $valid-lang or ($valid-lang eq 'en' and  not(@xml:lang))][not(@type = ('definition','alternative'))]/text() ! lower-case(.) ! normalize-space(.))
+    let $normalized-search := common:alphanumeric(common:normalized-chars($search))
     
+    let $terms := 
+        if($type eq 'search' and $normalized-search) then
+            distinct-values($glossary:translations//tei:back//tei:gloss/tei:term[not(@type eq 'definition')][ft:query(., glossary:search-query($normalized-search), glossary:search-options())]/text() ! lower-case(.) ! normalize-space(.))
+        else if($type = $glossary:types) then
+            distinct-values($glossary:translations//tei:back//tei:gloss[@type = $valid-type]/tei:term[@xml:lang eq $valid-lang or ($valid-lang eq 'en' and  not(@xml:lang))][not(@type = ('definition','alternative'))]/text() ! lower-case(.) ! normalize-space(.))
+        else
+            ()
+        
     return
         <glossary
             xmlns="http://read.84000.co/ns/1.0"
             model-type="glossary-terms"
-            type="{ $type }"
-            lang="{ $lang }">
+            type="{ $valid-type }"
+            lang="{ $valid-lang }">
         {
             for $main-term in $terms
                 
                 let $normalized-term := common:alphanumeric(common:normalized-chars($main-term))
                 let $start-letter := substring($normalized-term, 1, 1)
                 
-                let $matches := $glossary:translations//tei:back//tei:gloss/tei:term[not(@type eq 'definition')][ft:query(., glossary:ft-query($main-term), glossary:ft-options())]
+                let $matches := $glossary:translations//tei:back//tei:gloss/tei:term[not(@type eq 'definition')][ft:query-field("full-term", glossary:lookup-query($main-term), glossary:lookup-options())]
                 
-                order by $normalized-term
-            
+            order by $normalized-term
             return
                 <term start-letter="{ $start-letter }" count-items="{ count($matches) }">
                     <main-term>{ $main-term }</main-term>
@@ -77,21 +129,17 @@ declare function glossary:glossary-terms($type as xs:string*, $lang as xs:string
 };
 
 declare function glossary:cumulative-glossary() as node() {
-
-    <cumulative-glossary
-        xmlns="http://read.84000.co/ns/1.0"
-        model-type="cumulative-glossary"
-        timestamp="{ current-dateTime() }"
-        app-id="{ $common:app-id }">
-        <disclaimer>
-        {
-            common:app-text('cumulative-glossary.disclaimer')
-        }
-        </disclaimer>
-        {
-            let $terms := distinct-values($glossary:translations//tei:back//tei:gloss/tei:term[(@xml:lang eq 'en' or not(@xml:lang))][not(@type = ('definition','alternative'))]/text() ! normalize-space(.))
-            
-            return
+    
+    let $terms := distinct-values($glossary:translations//tei:back//tei:gloss/tei:term[(@xml:lang eq 'en' or not(@xml:lang))][not(@type = ('definition','alternative'))]/text() ! normalize-space(.))     
+    
+    return
+        <cumulative-glossary xmlns="http://read.84000.co/ns/1.0">
+            <disclaimer>
+            {
+                common:app-text('cumulative-glossary.disclaimer')
+            }
+            </disclaimer>
+            {
                 for $main-term in $terms
                 
                     let $normalized-term := common:alphanumeric(common:normalized-chars($main-term))
@@ -104,15 +152,14 @@ declare function glossary:cumulative-glossary() as node() {
                         <term>{ $main-term }</term>
                         <items>{ $glossary-items//m:item }</items>
                     </term>
-                
-        }
-    </cumulative-glossary>
+            }
+        </cumulative-glossary>
         
 };
 
 declare function glossary:glossary-items($normalized-term as xs:string) as node() {
     
-    let $terms := $glossary:translations//tei:back//tei:gloss/tei:term[not(@type eq 'definition')][ft:query(., glossary:ft-query($normalized-term), glossary:ft-options())]
+    let $terms := $glossary:translations//tei:back//tei:gloss/tei:term[not(@type eq 'definition')][ft:query-field("full-term", glossary:lookup-query($normalized-term), glossary:lookup-options())]
     
     return
         <glossary

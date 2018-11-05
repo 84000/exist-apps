@@ -6,15 +6,15 @@
     <xsl:template name="glossary">
         
         <div id="cumulative-glossary">
-            <div class="row">
-                <div class="col-sm-4">
+            <div class="center-vertical full-width">
+                <span>
                     <ul class="nav nav-pills">
                         <li role="presentation">
                             <xsl:if test="m:glossary/@type eq 'term'">
                                 <xsl:attribute name="class" select="'active'"/>
                             </xsl:if>
                             <a>
-                                <xsl:attribute name="href" select="concat('?tab=glossary&amp;type=term&amp;lang=', m:glossary/@lang)"/>
+                                <xsl:attribute name="href" select="concat('?tab=glossary&amp;type=term&amp;lang=', if(m:glossary/@lang gt '') then m:glossary/@lang else 'en')"/>
                                 Terms
                             </a>
                         </li>
@@ -23,7 +23,7 @@
                                 <xsl:attribute name="class" select="'active'"/>
                             </xsl:if>
                             <a>
-                                <xsl:attribute name="href" select="concat('?tab=glossary&amp;type=person&amp;lang=', m:glossary/@lang)"/>
+                                <xsl:attribute name="href" select="concat('?tab=glossary&amp;type=person&amp;lang=', if(m:glossary/@lang gt '') then m:glossary/@lang else 'en')"/>
                                 Persons
                             </a>
                         </li>
@@ -32,7 +32,7 @@
                                 <xsl:attribute name="class" select="'active'"/>
                             </xsl:if>
                             <a>
-                                <xsl:attribute name="href" select="concat('?tab=glossary&amp;type=place&amp;lang=', m:glossary/@lang)"/>
+                                <xsl:attribute name="href" select="concat('?tab=glossary&amp;type=place&amp;lang=', if(m:glossary/@lang gt '') then m:glossary/@lang else 'en')"/>
                                 Places
                             </a>
                         </li>
@@ -41,20 +41,20 @@
                                 <xsl:attribute name="class" select="'active'"/>
                             </xsl:if>
                             <a>
-                                <xsl:attribute name="href" select="concat('?tab=glossary&amp;type=text&amp;lang=', m:glossary/@lang)"/>
+                                <xsl:attribute name="href" select="concat('?tab=glossary&amp;type=text&amp;lang=', if(m:glossary/@lang gt '') then m:glossary/@lang else 'en')"/>
                                 Texts
                             </a>
                         </li>
                     </ul>
-                </div>
-                <div class="col-sm-4">
+                </span>
+                <span>
                     <ul class="nav nav-pills">
                         <li role="presentation">
                             <xsl:if test="lower-case(m:glossary/@lang) eq 'en'">
                                 <xsl:attribute name="class" select="'active'"/>
                             </xsl:if>
                             <a>
-                                <xsl:attribute name="href" select="concat('?tab=glossary&amp;type=', m:glossary/@type,'&amp;lang=en')"/>
+                                <xsl:attribute name="href" select="concat('?tab=glossary&amp;type=', if(m:glossary/@type gt '') then m:glossary/@type else 'term','&amp;lang=en')"/>
                                 English
                             </a>
                         </li>
@@ -63,7 +63,7 @@
                                 <xsl:attribute name="class" select="'active'"/>
                             </xsl:if>
                             <a>
-                                <xsl:attribute name="href" select="concat('?tab=glossary&amp;type=', m:glossary/@type,'&amp;lang=Sa-Ltn')"/>
+                                <xsl:attribute name="href" select="concat('?tab=glossary&amp;type=', if(m:glossary/@type gt '') then m:glossary/@type else 'term','&amp;lang=Sa-Ltn')"/>
                                 Sanskrit
                             </a>
                         </li>
@@ -72,20 +72,40 @@
                                 <xsl:attribute name="class" select="'active'"/>
                             </xsl:if>
                             <a>
-                                <xsl:attribute name="href" select="concat('?tab=glossary&amp;type=', m:glossary/@type,'&amp;lang=Bo-Ltn')"/>
+                                <xsl:attribute name="href" select="concat('?tab=glossary&amp;type=', if(m:glossary/@type gt '') then m:glossary/@type else 'term','&amp;lang=Bo-Ltn')"/>
                                 Wylie
                             </a>
                         </li>
                     </ul>
-                </div>
-                <div class="col-sm-4">
-                    <a href="cumulative-glossary.zip" class="download-link center-vertical">
-                        <span>
-                            <i class="fa fa-cloud-download"/>
-                        </span>
-                        <span>Download All (.xml)</span>
-                    </a>
-                </div>
+                </span>
+                <span>
+                    <form method="post" role="search" class="form-inline">
+                        <xsl:attribute name="action" select="'/index.html'"/>
+                        <input type="hidden" name="tab" value="glossary"/>
+                        <input type="hidden" name="type" value="search"/>
+                        <input type="hidden" name="lang" value=""/>
+                        <div id="search-controls" class="input-group">
+                            <input type="text" name="s" class="form-control" placeholder="Search...">
+                                <xsl:attribute name="value" select="/m:response/m:request/m:search"/>
+                            </input>
+                            <span class="input-group-btn">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fa fa-search"/>
+                                </button>
+                            </span>
+                        </div>
+                    </form>
+                </span>
+                <span>
+                    <div class="pull-right">
+                        <a href="cumulative-glossary.zip" class="download-link center-vertical">
+                            <span>
+                                <i class="fa fa-cloud-download"/>
+                            </span>
+                            <span>Download All (.xml)</span>
+                        </a>
+                    </div>
+                </span>
             </div>
             <div class="row">
                 
