@@ -311,13 +311,16 @@ declare function translation:body($tei as node()) as node()* {
                 <chapter chapter-index="{ $chapter-index }" prefix="{ $chapter-index }">
                     <title>
                     {
-                        attribute tid { $chapter/tei:head/@tid }
+                        attribute tid { $chapter/tei:head[@type = ('chapterTitle', 'section')]/@tid }
                     }
                     { 
                         $chapter/tei:head[@type = ('chapterTitle', 'section')]/text() 
                     }
                     </title>
                     <title-number>
+                    {
+                        attribute tid { $chapter/tei:head[@type eq 'chapter']/@tid }
+                    }
                     {
                         if($chapter/tei:head[@type eq 'chapter']/text())then
                             $chapter/tei:head[@type eq 'chapter']/text()

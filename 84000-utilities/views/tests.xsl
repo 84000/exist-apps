@@ -70,6 +70,9 @@
                                         <li>
                                             <a href="/test-translations.html" target="test-translations">Translations</a>
                                         </li>
+                                        <li>
+                                            <a href="/test-sections.html" target="test-sections">Sections</a>
+                                        </li>
                                     </ul>
                                 </li>
                                 <li>

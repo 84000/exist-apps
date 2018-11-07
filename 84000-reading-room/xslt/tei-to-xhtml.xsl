@@ -193,7 +193,9 @@
             <xsl:with-param name="content">
                 <p>
                     <!-- id -->
-                    <xsl:call-template name="tid"/>
+                    <xsl:call-template name="tid">
+                        <xsl:with-param name="node" select="."/>
+                    </xsl:call-template>
                     <!-- class -->
                     <xsl:variable name="cssClass">
                         <xsl:if test="/m:response/m:request/@doc-type ne 'epub'">
@@ -224,7 +226,9 @@
         <xsl:call-template name="milestone">
             <xsl:with-param name="content">
                 <h5 class="section-label">
-                    <xsl:call-template name="tid"/>
+                    <xsl:call-template name="tid">
+                        <xsl:with-param name="node" select="."/>
+                    </xsl:call-template>
                     <xsl:apply-templates select="node()"/>
                 </h5>
             </xsl:with-param>
@@ -260,7 +264,9 @@
         <xsl:call-template name="milestone">
             <xsl:with-param name="content">
                 <h5 class="section-label">
-                    <xsl:call-template name="tid"/>
+                    <xsl:call-template name="tid">
+                        <xsl:with-param name="node" select="."/>
+                    </xsl:call-template>
                     <xsl:apply-templates select="node()"/>
                 </h5>
             </xsl:with-param>
@@ -273,7 +279,9 @@
             <xsl:with-param name="content">
                 <div class="line-group">
                     <!-- id -->
-                    <xsl:call-template name="tid"/>
+                    <xsl:call-template name="tid">
+                        <xsl:with-param name="node" select="."/>
+                    </xsl:call-template>
                     <xsl:if test="@type = ('sdom', 'bar_sdom', 'spyi_sdom')">
                         <xsl:attribute name="class" select="'line-group italic'"/>
                     </xsl:if>
@@ -308,7 +316,9 @@
                 <xsl:call-template name="milestone">
                     <xsl:with-param name="content">
                         <div class="rw-heading">
-                            <xsl:call-template name="tid"/>
+                            <xsl:call-template name="tid">
+                                <xsl:with-param name="node" select="."/>
+                            </xsl:call-template>
                             <h2>
                                 <xsl:value-of select="text()"/>
                             </h2>
@@ -320,7 +330,9 @@
             <xsl:when test="@type = ('chapter', 'section')">
                 <xsl:variable name="heading">
                     <div>
-                        <xsl:call-template name="tid"/>
+                        <xsl:call-template name="tid">
+                            <xsl:with-param name="node" select="."/>
+                        </xsl:call-template>
                         <xsl:attribute name="class" select="concat('rw-heading heading-', @type, ' nesting-', ancestor::tei:div[1]/@nesting)"/>
                         <h4>
                             <xsl:if test="@type eq 'chapter'">
@@ -351,18 +363,19 @@
     
     <!-- Temporary id -->
     <xsl:template name="tid">
-        <xsl:if test="@tid">
+        <xsl:param name="node" required="yes"/>
+        <xsl:if test="$node/@tid">
             <xsl:choose>
                 <xsl:when test="/m:response/m:translation">
-                    <xsl:attribute name="id" select="concat('node-', @tid)"/>
+                    <xsl:attribute name="id" select="concat('node-', $node/@tid)"/>
                 </xsl:when>
                 <xsl:when test="/m:response/m:section">
                     <xsl:choose>
                         <xsl:when test="ancestor::m:text">
-                            <xsl:attribute name="id" select="concat(ancestor::m:text/@resource-id, '-node-', @tid)"/>
+                            <xsl:attribute name="id" select="concat($node/ancestor::m:text/@resource-id, '-node-', $node/@tid)"/>
                         </xsl:when>
                         <xsl:otherwise>
-                            <xsl:attribute name="id" select="concat('node-', @tid)"/>
+                            <xsl:attribute name="id" select="concat('node-', $node/@tid)"/>
                         </xsl:otherwise>
                     </xsl:choose>
                 </xsl:when>

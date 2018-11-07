@@ -56,21 +56,21 @@
                         </li>
                         <li>
                             <a>
-                                <xsl:attribute name="href" select="concat($reading-room-path, '/translation/', $text-id, '.html')"/>
+                                <xsl:attribute name="href" select="concat($reading-room-path, '/section/', $text-id, '.html')"/>
                                 <xsl:attribute name="target" select="concat($text-id, '-html')"/>
                                 .html
                             </a>
                         </li>
                         <li>
                             <a>
-                                <xsl:attribute name="href" select="concat($reading-room-path, '/translation/', $text-id, '.xml')"/>
+                                <xsl:attribute name="href" select="concat($reading-room-path, '/section/', $text-id, '.xml')"/>
                                 <xsl:attribute name="target" select="concat($text-id, '-xml')"/>
                                 .xml
                             </a>
                         </li>
                         <li>
                             <a>
-                                <xsl:attribute name="href" select="concat($reading-room-path, '/translation/', $text-id, '.tei')"/>
+                                <xsl:attribute name="href" select="concat($reading-room-path, '/section/', $text-id, '.tei')"/>
                                 <xsl:attribute name="target" select="concat($text-id, '-tei')"/>
                                 .tei
                             </a>
@@ -101,25 +101,25 @@
                     <div class="panel-heading panel-heading-bold hidden-print center-vertical">
                         
                         <span class="title">
-                            Automated Tests on Translations
+                            Automated Tests on Sections
                         </span>
                         
                     </div>
                     
                     <div class="panel-body min-height-md">
                         
-                        <form action="/test-translations.html" method="post" class="form-inline filter-form">
+                        <form action="/test-sections.html" method="post" class="form-inline filter-form">
                             <div class="form-group">
-                                <select name="translation-id" id="translation-id" class="form-control">
-                                    <option value="all">All translations</option>
-                                    <xsl:for-each select="m:translations/m:file">
-                                        <xsl:sort select="@id"/>
+                                <label for="section-id" class="sr-only">Section</label>
+                                <select name="section-id" id="section-id" class="form-control">
+                                    <option value="all">All sections</option>
+                                    <xsl:for-each select="//m:child">
                                         <option>
                                             <xsl:attribute name="value" select="@id"/>
-                                            <xsl:if test="@id eq /m:response/m:request/@translation-id">
+                                            <xsl:if test="@id eq /m:response/m:request/@section-id">
                                                 <xsl:attribute name="selected" select="'selected'"/>
                                             </xsl:if>
-                                            <xsl:value-of select="concat(@id, ' / ', common:limit-str(data(.), 100))"/>
+                                            <xsl:value-of select="concat(@id, ' / ', common:limit-str(data(m:title), 100))"/>
                                         </option>
                                     </xsl:for-each>
                                 </select>
@@ -135,8 +135,7 @@
                             <thead>
                                 <tr>
                                     <th>Text</th>
-                                    <th>Status</th>
-                                    <xsl:for-each select="//m:results/m:translation[1]/m:tests/m:test">
+                                    <xsl:for-each select="//m:results/m:section[1]/m:tests/m:test">
                                         <th class="icon">
                                             <xsl:value-of select="position()"/>
                                         </th>
@@ -145,25 +144,20 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <xsl:for-each select="m:results/m:translation">
+                                <xsl:for-each select="m:results/m:section">
                                     <xsl:sort select="count(m:tests/m:test[@pass eq '1'])" order="ascending"/>
+                                    <xsl:sort select="@filename"/>
                                     <xsl:variable name="table-row" select="position()"/>
-                                    <xsl:variable name="toh-key" select="m:toh/@key"/>
                                     <xsl:variable name="text-id" select="@id"/>
                                     <xsl:variable name="text-title" select="m:title/text()"/>
                                     <tr>
                                         <td>
                                             <a>
-                                                <xsl:attribute name="href" select="concat($reading-room-path, '/translation/', $toh-key, '.html')"/>
+                                                <xsl:attribute name="href" select="concat($reading-room-path, '/section/', $text-id, '.html')"/>
                                                 <xsl:attribute name="title" select="$text-title"/>
-                                                <xsl:attribute name="target" select="$toh-key"/>
-                                                <xsl:value-of select="m:toh/m:full"/>
+                                                <xsl:attribute name="target" select="$text-id"/>
+                                                <xsl:value-of select="common:limit-str(concat($text-id, ' / ', $text-title), 50)"/>
                                             </a>
-                                        </td>
-                                        <td>
-                                            <xsl:call-template name="translation-status">
-                                                <xsl:with-param name="status" select="@status"/>
-                                            </xsl:call-template>
                                         </td>
                                         <xsl:for-each select="m:tests/m:test">
                                             <xsl:variable name="test-id" select="position()"/>
@@ -172,12 +166,12 @@
                                             <xsl:variable name="test-result" select="xs:boolean(@pass)"/>
                                             <xsl:variable name="test-details" select="m:details"/>
                                             <td class="icon">
-                                                <xsl:copy-of select="m:test-result($test-result, $cell-id, $toh-key, $text-title, $test-title, $test-details)"/>
+                                                <xsl:copy-of select="m:test-result($test-result, $cell-id, $text-id, $text-title, $test-title, $test-details)"/>
                                             </td>
                                         </xsl:for-each>
                                         <td class="icon">
                                             <a>
-                                                <xsl:attribute name="href" select="concat('?translation-id=', $text-id)"/>
+                                                <xsl:attribute name="href" select="concat('?section-id=', $text-id)"/>
                                                 <xsl:attribute name="title" select="'Run tests on this file only'"/>
                                                 <i class="fa fa-filter"/>
                                             </a>
@@ -217,8 +211,8 @@
         <xsl:call-template name="reading-room-page">
             <xsl:with-param name="page-url" select="''"/>
             <xsl:with-param name="page-class" select="'utilities tests'"/>
-            <xsl:with-param name="page-title" select="'Translation Tests :: 84000 Utilities'"/>
-            <xsl:with-param name="page-description" select="'Automated tests for 84000 translations'"/>
+            <xsl:with-param name="page-title" select="'Section Tests :: 84000 Utilities'"/>
+            <xsl:with-param name="page-description" select="'Automated tests for 84000 sections'"/>
             <xsl:with-param name="content" select="$content"/>
         </xsl:call-template>
         

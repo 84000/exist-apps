@@ -61,9 +61,17 @@ declare function glossary:lookup-query($string as xs:string) as node() {
 
 declare function glossary:search-query($string as xs:string) as node() {
     element query {
-        element wildcard {
-            concat('*', $string,'*')
+        element bool {
+            element near {
+                attribute slop { '20' },
+                attribute occur { 'should' },
+                text { $string }
+            },
+            element wildcard {
+                concat('*', $string,'*')
+            }
         }
+        
     }
 };
 

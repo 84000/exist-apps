@@ -85,7 +85,7 @@
                         <input type="hidden" name="type" value="search"/>
                         <input type="hidden" name="lang" value=""/>
                         <div id="search-controls" class="input-group">
-                            <input type="text" name="s" class="form-control" placeholder="Search...">
+                            <input type="text" name="s" class="form-control" placeholder="Search all types and languages...">
                                 <xsl:attribute name="value" select="/m:response/m:request/m:search"/>
                             </input>
                             <span class="input-group-btn">
@@ -107,43 +107,62 @@
                     </div>
                 </span>
             </div>
+            
             <div class="row">
                 
-                <div class="col-items div-list">
-                    
-                    <xsl:for-each select="m:glossary/m:term">
-                        <div class="item">
+                <xsl:choose>
+                    <xsl:when test="m:glossary/m:term">
+                        
+                        <div class="col-items div-list">
                             
-                            <xsl:copy-of select="common:marker(@start-letter, if(preceding-sibling::m:term[1]/@start-letter) then preceding-sibling::m:term[1]/@start-letter else '')"/>
+                            <xsl:for-each select="m:glossary/m:term">
+                                <div class="item">
+                                    
+                                    <xsl:if test="position() eq 1">
+                                        <xsl:attribute name="class" select="'item item-first'"/>
+                                    </xsl:if>
+                                    
+                                    <xsl:copy-of select="common:marker(@start-letter, if(preceding-sibling::m:term[1]/@start-letter) then preceding-sibling::m:term[1]/@start-letter else '')"/>
+                                    
+                                    <div class="row">
+                                        <div class="col-sm-6 name">
+                                            <xsl:value-of select="normalize-space(m:main-term/text())"/>
+                                        </div>
+                                        <div class="col-sm-6 text-right">
+                                            <a target="_self">
+                                                <xsl:attribute name="href" select="concat('glossary-items.html?term=', fn:encode-for-uri(m:main-term/text()))"/>
+                                                <xsl:attribute name="data-ajax-target" select="concat('#occurrences-', position())"/>
+                                                <xsl:choose>
+                                                    <xsl:when test="@count-items &gt; 1">
+                                                        <xsl:value-of select="@count-items"/> matches
+                                                    </xsl:when>
+                                                    <xsl:otherwise>
+                                                        <xsl:value-of select="@count-items"/> match
+                                                    </xsl:otherwise>
+                                                </xsl:choose>
+                                                
+                                            </a>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="collpase">
+                                        <xsl:attribute name="id" select="concat('occurrences-', position())"/>
+                                    </div>
+                                    
+                                </div>                                    
+                            </xsl:for-each>
                             
-                            <div class="row">
-                                <div class="col-sm-6 name">
-                                    <xsl:value-of select="normalize-space(m:main-term/text())"/>
-                                </div>
-                                <div class="col-sm-6 text-right">
-                                    <a target="_self">
-                                        <xsl:attribute name="href" select="concat('glossary-items.html?term=', fn:encode-for-uri(m:main-term/text()))"/>
-                                        <xsl:attribute name="data-ajax-target" select="concat('#occurrences-', position())"/>
-                                        <xsl:choose>
-                                            <xsl:when test="@count-items &gt; 1">
-                                                <xsl:value-of select="@count-items"/> matches
-                                            </xsl:when>
-                                            <xsl:otherwise>
-                                                <xsl:value-of select="@count-items"/> match
-                                            </xsl:otherwise>
-                                        </xsl:choose>
-                                        
-                                    </a>
-                                </div>
+                        </div>
+                    </xsl:when>
+                    <xsl:otherwise>
+                        <div class="col-sm-12 div-list">
+                            <div class="item item-first text-muted italic">
+                                No search results
                             </div>
-                            
-                            <div class="collpase">
-                                <xsl:attribute name="id" select="concat('occurrences-', position())"/>
-                            </div>
-                            
-                        </div>                                    
-                    </xsl:for-each>
-                </div>
+                        </div>
+                    </xsl:otherwise>
+                </xsl:choose>
+                
                 
                 <div id="letters-nav" class="col-nav">
                     <xsl:copy-of select="common:marker-nav(m:glossary/m:term)"/>

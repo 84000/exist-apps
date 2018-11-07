@@ -791,7 +791,9 @@
                     
                     <xsl:if test="$section/m:abstract/*">
                         <hr/>
-                        <xsl:apply-templates select="$section/m:abstract/*"/>
+                        <div id="abstract">
+                            <xsl:apply-templates select="$section/m:abstract/*"/>
+                        </div>
                     </xsl:if>
                     
                     <xsl:if test="$section/m:warning/tei:p">

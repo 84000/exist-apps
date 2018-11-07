@@ -511,14 +511,13 @@
                 </a>
             </div>
             <div class="rw-heading">
-                <!-- id -->
-                <xsl:if test="$title/@tid">
-                    <xsl:attribute name="id" select="concat('node-', $title/@tid)"/>
-                </xsl:if>
                 <xsl:choose>
                     <xsl:when test="$title-number/text() and not($title/text())">
                         <xsl:if test="$title-number/text()">
                             <h2 class="chapter-number">
+                                <xsl:call-template name="tid">
+                                    <xsl:with-param name="node" select="$title-number"/>
+                                </xsl:call-template>
                                 <xsl:apply-templates select="$title-number/text()"/>
                             </h2>
                         </xsl:if>
@@ -526,11 +525,17 @@
                     <xsl:otherwise>
                         <xsl:if test="$title-number/text()">
                             <h4 class="chapter-number">
+                                <xsl:call-template name="tid">
+                                    <xsl:with-param name="node" select="$title-number"/>
+                                </xsl:call-template>
                                 <xsl:apply-templates select="$title-number/text()"/>
                             </h4>
                         </xsl:if>
                         <xsl:if test="$title/text()">
                             <h2>
+                                <xsl:call-template name="tid">
+                                    <xsl:with-param name="node" select="$title"/>
+                                </xsl:call-template>
                                 <xsl:apply-templates select="$title/text()"/>
                             </h2>
                         </xsl:if>
