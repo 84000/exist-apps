@@ -9,14 +9,7 @@ import module namespace translations="http://read.84000.co/translations" at "../
 
 declare option exist:serialize "method=xml indent=no";
 
-let $post-status := request:get-parameter('status[]', '')
-let $get-status := tokenize(request:get-parameter('status', ''), ',')
-let $status := 
-    if (count($get-status)) then
-        $get-status
-    else
-        $post-status
-
+let $status := local:get-status-parameter()
 let $section := request:get-parameter('section', 'O1JC11494')
 let $sort := request:get-parameter('sort', '')
 let $range := request:get-parameter('range', '')

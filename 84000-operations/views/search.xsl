@@ -225,8 +225,7 @@
                                                 </td>
                                                 <td>
                                                     <xsl:variable name="status" select="/m:response/m:text-statuses/m:status[@status-id eq $status-id]"/>
-                                                    <a href="#" target="_blank">
-                                                        <xsl:attribute name="href" select="concat($reading-room-path ,'/translation/', m:toh/@key, '.html')"/>
+                                                    <span>
                                                         <xsl:choose>
                                                             <xsl:when test="@status-group eq 'published'">
                                                                 <xsl:attribute name="class" select="'label label-success'"/>
@@ -243,14 +242,11 @@
                                                         </xsl:choose>
                                                         <xsl:attribute name="title" select="$status/text()"/>
                                                         <xsl:value-of select="if($status-id) then $status-id else '0'"/>
-                                                    </a>
+                                                    </span>
                                                 </td>
                                                 <td>
-                                                    <a>
-                                                        <xsl:attribute name="href" select="concat('/edit-text.html?id=', @id)"/>
-                                                        <xsl:if test="m:titles/m:parent/m:title">
-                                                            <xsl:value-of select="m:titles/m:parent/m:title"/>, 
-                                                        </xsl:if>
+                                                    <a target="_blank">
+                                                        <xsl:attribute name="href" select="concat($reading-room-path ,'/translation/', m:toh/@key, '.html')"/>
                                                         <xsl:value-of select="m:titles/m:title[@xml:lang eq 'en']"/>
                                                     </a>
                                                 </td>
@@ -278,6 +274,25 @@
                                                             </div>
                                                         </xsl:when>
                                                     </xsl:choose>
+                                                </td>
+                                            </tr>
+                                            <tr class="sub">
+                                                <td colspan="2"/>
+                                                <td colspan="5">
+                                                    <ul class="list-inline inline-dots">
+                                                        <li>
+                                                            <a class="small">
+                                                                <xsl:attribute name="href" select="concat('/edit-text.html?id=', @id)"/>
+                                                                Edit headers
+                                                            </a>
+                                                        </li>
+                                                        <li>
+                                                            <a class="small">
+                                                                <xsl:attribute name="href" select="concat('/edit-text-sponsors.html?id=', @id)"/>
+                                                                Edit sponsors
+                                                            </a>
+                                                        </li>
+                                                    </ul>
                                                 </td>
                                             </tr>
                                             <xsl:if test="m:sponsors/tei:div[@type eq 'acknowledgment']/tei:p">

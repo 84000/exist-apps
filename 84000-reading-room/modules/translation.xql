@@ -638,46 +638,48 @@ declare function translation:sponsors($tei as node(), $include-acknowledgements 
         <sponsors xmlns="http://read.84000.co/ns/1.0" >
         {(
             $sponsors,
-            if($include-acknowledgements and $acknowledgment/tei:p) then
-                let $query-options := 
-                    <options>
-                        <default-operator>and</default-operator>
-                        <phrase-slop>0</phrase-slop>
-                        <leading-wildcard>no</leading-wildcard>
-                    </options>
-                return
-                    let $query := 
-                        <query>
-                        {
-                            for $sponsor in $sponsors
-                                let $translation-sponsor := $tei//tei:titleStmt/tei:sponsor[substring-after(@sameAs, 'sponsors.xml#') eq $sponsor/@xml:id]
-                                let $sponsor-name := 
-                                    if($translation-sponsor/text() gt '') then
-                                        $translation-sponsor/text()
-                                    else
-                                        $sponsor/m:name/text()
-                            return
-                                <phrase occur="should">{ lower-case($sponsor-name) }</phrase>
-                        }
-                        </query>
+            if($include-acknowledgements) then
+                if($acknowledgment/tei:p and $sponsors) then
+                
+                    let $sponsor-strings := 
+                        for $sponsor in $sponsors
+                            let $translation-sponsor := $tei//tei:titleStmt/tei:sponsor[substring-after(@sameAs, 'sponsors.xml#') eq $sponsor/@xml:id]
+                            let $sponsor-name := 
+                                if($translation-sponsor/text() gt '') then
+                                    $translation-sponsor/text()
+                                else
+                                    $sponsor/m:name/text()
+                        return
+                            normalize-space(lower-case($sponsor-name))
                     
-                    let $query-result := $acknowledgment/tei:p[ft:query(., $query, $query-options)]
-                    let $expanded := 
-                        if($query-result) then
-                            util:expand($query-result, "expand-xincludes=no")
-                        else
-                            $acknowledgment/tei:p
                     
                     return
-                        element tei:div {
-                            attribute type { "acknowledgment" },
-                            $expanded
-                        }
-            else
+                        let $marked-paragraphs :=
+                            for $paragraph-text in $acknowledgment/tei:p/data()
+                                let $marked-paragraph := common:marked-paragraph( $paragraph-text, $sponsor-strings )
+                            return
+                                if($marked-paragraph[exist:match]) then
+                                    $marked-paragraph
+                                else
+                                    ()
+                                    
+                        return
+                            if($marked-paragraphs) then
+                                element tei:div {
+                                    attribute type { "acknowledgment" },
+                                    $marked-paragraphs
+                                }
+                            else
+                                $acknowledgment
+                else
+                    $acknowledgment
+             else
                 ()
         )}
         </sponsors>
 };
+
+
 
 
 declare function translation:translators($tei as node(), $include-acknowledgements as xs:boolean) as node() {
@@ -733,9 +735,9 @@ declare function translation:translators($tei as node(), $include-acknowledgemen
         </translators>
 };
 
-declare function translation:update($tei as node(), $request-parameters as xs:string*) {
+declare function translation:update($tei as node()) {
 
-    for $request-parameter in $request-parameters
+    for $request-parameter in request:get-parameter-names()
         
         (: Get the new value :)
         let $new-value := 
@@ -767,7 +769,7 @@ declare function translation:update($tei as node(), $request-parameters as xs:st
                     <author xmlns="http://www.tei-c.org/ns/1.0" role="translatorMain" sameAs="{ request:get-parameter('translator-team-id', '') }"/>
             
             (: Sponsor node :)
-            else if(starts-with($request-parameter, 'sponsor-id-') and ($request-parameter ne 'sponsor-id-0' or request:get-parameter('sponsor-id-0', '') gt '')) then
+            else if(starts-with($request-parameter, 'sponsor-id-')) then
                 let $sponsor-index := substring-after($request-parameter, 'sponsor-id-')
                 let $sponsor-id := request:get-parameter(concat('sponsor-id-', $sponsor-index), '')
                 return
@@ -831,7 +833,13 @@ declare function translation:update($tei as node(), $request-parameters as xs:st
             else if($request-parameter eq 'sponsorship-status') then
                 $parent/@sponsored
             else if(starts-with($request-parameter, 'sponsor-id-')) then
-                $parent/tei:sponsor[xs:integer(substring-after($request-parameter, 'sponsor-id-'))]
+                (: $parent/tei:sponsor[@sameAs = request:get-parameter($request-parameter, '')] :)
+                let $sponsor-index := substring-after($request-parameter, 'sponsor-id-')
+                return
+                if($sponsor-index and functx:is-a-number($sponsor-index) and count($parent/tei:sponsor) ge xs:integer($sponsor-index)) then
+                    $parent/tei:sponsor[xs:integer($sponsor-index)]
+                else
+                    ()
             else if($request-parameter eq 'translator-team-id') then
                 $parent/tei:author[@role eq 'translatorMain'][1]
             else if(starts-with($request-parameter, 'translator-id-')) then
@@ -851,7 +859,9 @@ declare function translation:update($tei as node(), $request-parameters as xs:st
                 ()
         
         return
-            
-            common:update($request-parameter, $existing-value, $new-value, $parent, $insert-following) 
+            if($existing-value or $new-value) then
+                common:update($request-parameter, $existing-value, $new-value, $parent, $insert-following)
+            else
+                ()
 
 };

@@ -14,6 +14,7 @@ declare variable $sponsors:texts := collection($common:translations-path);
 declare variable $sponsors:prefixes := '(Dr\.|Prof\.)';
 
 declare function sponsors:sponsors($include-acknowledgements as xs:boolean){
+
     let $sponsors-ordered := 
         for $sponsor in $sponsors:sponsors/m:sponsors/m:sponsor
         order by normalize-space(replace(concat($sponsor/m:name, ' ', $sponsor/m:internal-name), $sponsors:prefixes, ''))

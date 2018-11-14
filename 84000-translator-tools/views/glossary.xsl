@@ -55,7 +55,7 @@
                             </xsl:if>
                             <a>
                                 <xsl:attribute name="href" select="concat('?tab=glossary&amp;type=', if(m:glossary/@type gt '') then m:glossary/@type else 'term','&amp;lang=en')"/>
-                                English
+                                Translation
                             </a>
                         </li>
                         <li role="presentation">

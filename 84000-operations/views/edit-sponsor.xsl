@@ -118,7 +118,7 @@
                                                 <xsl:with-param name="acknowledgements" select="m:sponsor/m:acknowledgement"/>
                                                 <xsl:with-param name="css-class" select="''"/>
                                                 <xsl:with-param name="group" select="''"/>
-                                                <xsl:with-param name="reading-room-path" select="$reading-room-path"/>
+                                                <xsl:with-param name="link-href" select="'/edit-text-sponsors.html?id=@translation-id'"/>
                                             </xsl:call-template>
                                         </xsl:if>
                                     </div>

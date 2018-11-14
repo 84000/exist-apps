@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:common="http://read.84000.co/common" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" version="2.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:common="http://read.84000.co/common" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" xmlns:exslt="http://exslt.org/common" version="3.0" exclude-result-prefixes="#all">
     
     <xsl:include href="../../84000-reading-room/xslt/tei-to-xhtml.xsl"/>
     
@@ -63,6 +63,15 @@
                     </a>
                 </li>
             </xsl:if>
+            <xsl:if test="$active-tab eq 'operations/edit-text-sponsors'">
+                <li role="presentation">
+                    <xsl:attribute name="class" select="'active'"/>
+                    <a>
+                        <xsl:attribute name="href" select="concat('/edit-text-sponsors.html?id=', /m:response/m:request/@id)"/>
+                        Edit Text Sponsors
+                    </a>
+                </li>
+            </xsl:if>
             <xsl:if test="$active-tab eq 'operations/edit-sponsor'">
                 <li role="presentation">
                     <xsl:attribute name="class" select="'active'"/>
@@ -104,10 +113,10 @@
     
     <xsl:template name="acknowledgements">
         
-        <xsl:param name="acknowledgements"/>
-        <xsl:param name="group" as="xs:string"/>
-        <xsl:param name="css-class" as="xs:string"/>
-        <xsl:param name="reading-room-path" as="xs:string"/>
+        <xsl:param name="acknowledgements" required="yes"/>
+        <xsl:param name="group" as="xs:string" required="yes"/>
+        <xsl:param name="css-class" as="xs:string" required="yes"/>
+        <xsl:param name="link-href" as="xs:string" required="yes"/>
         
         <xsl:for-each select="$acknowledgements">
             <xsl:sort select="xs:integer(m:toh/@number)"/>
@@ -119,7 +128,7 @@
                 <div class="pull-quote">
                     <div class="title top-vertical">
                         <a>
-                            <xsl:attribute name="href" select="concat('/edit-text.html?id=', @translation-id)"/>
+                            <xsl:attribute name="href" select="replace($link-href, '@translation-id', @translation-id)"/>
                             <xsl:value-of select="m:toh/m:full"/> / <xsl:value-of select="m:title"/>
                         </a>
                         <span>

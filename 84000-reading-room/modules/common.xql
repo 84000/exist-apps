@@ -9,6 +9,7 @@ declare namespace xhtml = "http://www.w3.org/1999/xhtml";
 declare namespace sm = "http://exist-db.org/xquery/securitymanager";
 declare namespace pkg="http://expath.org/ns/pkg";
 declare namespace repo="http://exist-db.org/xquery/repo";
+declare namespace xpath="http://www.w3.org/2005/xpath-functions";
 
 import module namespace functx="http://www.functx.com";
 import module namespace converter="http://tbrc.org/xquery/ewts2unicode" at "java:org.tbrc.xquery.extensions.EwtsToUniModule";
@@ -204,17 +205,24 @@ declare function common:search-result($nodes as node()*) as node()*
         )
 };
 
-declare function common:mark-string($nodes as node()*, $mark-str as xs:string) as node()*
-{
-    for $node in $nodes
+declare function common:marked-paragraph($text as xs:string, $find as xs:string*) as item() {
+    
+    let $find-escaped := $find ! functx:escape-for-regex(.)
+    let $regex := concat('(', string-join($find-escaped, '|'),')')
+    let $analyze-result := analyze-string(normalize-space($text), $regex, 'gi')
+    
     return
-        transform:transform(
-            $node, 
-            doc(concat($common:app-path, "/xslt/mark-string.xsl")), 
-            <parameters>
-                <param name="mark-str" value="{ $mark-str }"/>
-            </parameters>
-        )
+        element tei:p {
+            for $node in $analyze-result/xpath:*
+            return
+                if($node[self::xpath:match]) then
+                    element exist:match {
+                        data($node)
+                    }
+                else
+                    data($node)
+        }
+        
 };
 
 declare function common:limit-str($str as xs:string*, $limit as xs:integer) as xs:string* 
