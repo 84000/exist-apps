@@ -1,6 +1,6 @@
 xquery version "3.0";
 
-module namespace local="http://utilities.84000.co/local";
+module namespace local="http://translator-tools.84000.co/local";
 
 import module namespace common="http://read.84000.co/common" at "../../84000-reading-room/modules/common.xql";
 

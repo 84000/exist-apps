@@ -9,7 +9,7 @@ import module namespace functx="http://www.functx.com";
 import module namespace common="http://read.84000.co/common" at "common.xql";
 import module namespace tei-content="http://read.84000.co/tei-content" at "tei-content.xql";
 import module namespace sponsors="http://read.84000.co/sponsors" at "sponsors.xql";
-import module namespace translators="http://read.84000.co/translators" at "translators.xql";
+import module namespace contributors="http://read.84000.co/contributors" at "contributors.xql";
 import module namespace download="http://read.84000.co/download" at "download.xql";
 
 declare function translation:titles($tei as node()) as node()* {
@@ -44,29 +44,26 @@ declare function translation:title-variants($tei as node()) as node()* {
 
 declare function translation:translation($tei as node()) as node()* {
     <translation xmlns="http://read.84000.co/ns/1.0" sponsored="{ $tei//tei:titleStmt/@sponsored }">
-        <authors>
+        <contributors>
             {
-                for $author in $tei//tei:titleStmt/tei:author
+                for $contributor in $tei//tei:titleStmt/tei:author[@role eq 'translatorMain']
                 return 
-                    element {
-                        if($author/@role eq 'translatorMain') then
-                            'summary'
-                        else
-                            'author'
-                    }
-                    {
-                        $author/@sameAs,
-                        $author/node()
+                    element summary {
+                        $contributor/@sameAs,
+                        $contributor/node()
                     }
             }
-        </authors>
-        <editors>
-        {
-            for $editor in $tei//tei:titleStmt/tei:editor
-            return 
-                <editor>{ normalize-space($editor/text()) }</editor>
-        }
-        </editors>
+            {
+                for $contributor in $tei//tei:titleStmt/tei:author[not(@role eq 'translatorMain')] | $tei//tei:titleStmt/tei:editor | $tei//tei:titleStmt/tei:consultant
+                return 
+                    element { local-name($contributor) }
+                    {
+                        $contributor/@role,
+                        $contributor/@sameAs,
+                        normalize-space($contributor/text())
+                    }
+            }
+        </contributors>
         <sponsors>
             {
                 for $sponsor in $tei//tei:titleStmt/tei:sponsor
@@ -196,7 +193,7 @@ declare function translation:downloads($tei as node(), $resource-id as xs:string
             return
                 if(
                     ($include eq 'all')                                                                 (: return all types :)
-                    or ($include eq 'any-version' and $stored-version gt '0')                           (: return if there is any version :)
+                    or ($include eq 'any-version' and not($stored-version eq 'none'))                   (: return if there is any version :)
                     or ($include eq 'latest-version' and compare($stored-version, $tei-version) eq 0)   (: return only if it's the latest version :)
                 ) then
                     element download {
@@ -272,14 +269,12 @@ declare function translation:nested-section($section as node()*, $nesting as xs:
         for $sub-section at $position in $section/tei:div[@type = ('section', 'chapter')]
         let $section-id := concat($parent-id, '-', $position)
         return
-            <div xmlns="http://www.tei-c.org/ns/1.0">
-            { attribute type { $sub-section/@type } }
-            { attribute nesting { $nesting } }
-            { attribute section-id { $section-id } }
-            {
+            element tei:div {
+                attribute type { $sub-section/@type },
+                attribute nesting { $nesting },
+                attribute section-id { $section-id },
                 translation:nested-section($sub-section, $nesting + 1, $section-id)
             }
-            </div>
     )
     else 
         ()
@@ -517,9 +512,9 @@ declare function translation:glossary($tei as node()) as node()* {
 declare function translation:word-count($tei as node()) as xs:integer {
     let $translated-text := 
         $tei//tei:text/tei:body/tei:div[@type eq "translation"]/*[
-            self::tei:div[@type = ("section", "chapter", "colophon")] 
-            or self::tei:head[@type ne 'translation']
-        ]//text()[not(ancestor::tei:note)]
+               self::tei:div[@type = ("section", "chapter", "prologue", "colophon")] 
+               or self::tei:head[@type ne 'translation']
+           ]//text()[count(ancestor::tei:note) eq 0]
     return
         common:word-count($translated-text)
 };
@@ -627,10 +622,11 @@ declare function translation:folio-content($tei as node(), $folio as xs:string, 
 
 declare function translation:sponsors($tei as node(), $include-acknowledgements as xs:boolean) as node() {
     
-    let $sponsors := 
-        for $translation-sponsor in $tei//tei:titleStmt/tei:sponsor
-        return 
-            $sponsors:sponsors/m:sponsors/m:sponsor[@xml:id eq substring-after($translation-sponsor/@sameAs, 'sponsors.xml#')]
+    let $translation-sponsors := $tei//tei:titleStmt/tei:sponsor
+    
+    let $sponsor-ids := $translation-sponsors ! substring-after(./@sameAs, 'sponsors.xml#')
+    
+    let $sponsors := $sponsors:sponsors/m:sponsors/m:sponsor[@xml:id = $sponsor-ids]
     
     let $acknowledgment := $tei//tei:front/tei:div[@type eq "acknowledgment"]
     
@@ -643,34 +639,17 @@ declare function translation:sponsors($tei as node(), $include-acknowledgements 
                 
                     let $sponsor-strings := 
                         for $sponsor in $sponsors
-                            let $translation-sponsor := $tei//tei:titleStmt/tei:sponsor[substring-after(@sameAs, 'sponsors.xml#') eq $sponsor/@xml:id]
+                            let $translation-sponsor := $translation-sponsors[substring-after(@sameAs, 'sponsors.xml#') eq $sponsor/@xml:id]
                             let $sponsor-name := 
                                 if($translation-sponsor/text() gt '') then
                                     $translation-sponsor/text()
                                 else
-                                    $sponsor/m:name/text()
+                                    replace($sponsor/m:label, $sponsors:prefixes, '')
                         return
                             normalize-space(lower-case($sponsor-name))
                     
-                    
                     return
-                        let $marked-paragraphs :=
-                            for $paragraph-text in $acknowledgment/tei:p/data()
-                                let $marked-paragraph := common:marked-paragraph( $paragraph-text, $sponsor-strings )
-                            return
-                                if($marked-paragraph[exist:match]) then
-                                    $marked-paragraph
-                                else
-                                    ()
-                                    
-                        return
-                            if($marked-paragraphs) then
-                                element tei:div {
-                                    attribute type { "acknowledgment" },
-                                    $marked-paragraphs
-                                }
-                            else
-                                $acknowledgment
+                        common:marked-section($acknowledgment, $sponsor-strings)
                 else
                     $acknowledgment
              else
@@ -679,189 +658,243 @@ declare function translation:sponsors($tei as node(), $include-acknowledgements 
         </sponsors>
 };
 
-
-
-
-declare function translation:translators($tei as node(), $include-acknowledgements as xs:boolean) as node() {
+declare function translation:contributors($tei as node(), $include-acknowledgements as xs:boolean) as node() {
     
-    let $translators := 
-        for $translation-translators in $tei//tei:titleStmt/tei:author
-        return 
-            $translators:translators/m:translators/m:translator[@xml:id eq substring-after($translation-translators/@sameAs, 'translators.xml#')]
+    let $translation-contributors := $tei//tei:titleStmt/tei:*[self::tei:author | self::tei:editor | self::tei:consultant]
+    
+    let $contributor-ids := $translation-contributors ! substring-after(./@sameAs, 'contributors.xml#')
+    
+    let $contributors := $contributors:contributors/m:contributors/m:person[@xml:id = $contributor-ids]
+    
+    let $acknowledgment := $tei//tei:front/tei:div[@type eq "acknowledgment"]
+    
     return
-        <translators xmlns="http://read.84000.co/ns/1.0" >
+        <contributors xmlns="http://read.84000.co/ns/1.0" >
         {(
-            $translators,
+            $contributors,
             if($include-acknowledgements) then
-                let $query-options := 
-                    <options>
-                        <default-operator>and</default-operator>
-                        <phrase-slop>0</phrase-slop>
-                        <leading-wildcard>no</leading-wildcard>
-                    </options>
-                return
-                    let $query := 
-                        <query>
-                        {
-                            for $translator in $translators
-                                let $translation-translator := $tei//tei:titleStmt/tei:author[substring-after(@sameAs, 'translators.xml#') eq $translator/@xml:id]
-                                let $translator-name := 
-                                    if($translation-translator/text() gt '') then
-                                        $translation-translator/text()
-                                    else
-                                        $translator/m:name/text()
-                            return
-                                <phrase>{ lower-case($translator-name) }</phrase>
-                        }
-                        </query>
-                    let $query-result := $tei//tei:front/tei:div[@type eq "acknowledgment"]/tei:p[ft:query(., $query, $query-options)]
-                    let $expanded := 
-                        if($query-result) then
-                            util:expand($query-result, "expand-xincludes=no")
-                        else
-                            $tei//tei:front/tei:div[@type eq "acknowledgment"]/tei:p
-                        
+                if($acknowledgment/tei:p and $contributors) then
+                    let $contributor-strings := 
+                        for $contributor in $contributors
+                            let $translation-contributor := $translation-contributors[substring-after(@sameAs, 'contributors.xml#') eq $contributor/@xml:id]
+                            let $contributor-name := 
+                                if($translation-contributor/text() gt '') then
+                                    $translation-contributor/text()
+                                else
+                                    replace($contributor/m:label, $contributors:person-prefixes, '')
+                        return
+                            normalize-space(lower-case($contributor-name))
                     return
-                    (
-                        $query,
-                        element tei:div {
-                            $tei//tei:front/tei:div[@type eq "acknowledgment"]/@*,
-                            $expanded
-                        }
-                    )
+                        common:marked-section($acknowledgment, $contributor-strings)
+                else
+                    ()
             else
                 ()
         )}
-        </translators>
+        </contributors>
 };
 
 declare function translation:update($tei as node()) {
 
-    for $request-parameter in request:get-parameter-names()
-        
-        (: Get the new value :)
-        let $new-value := 
-        
-            (: Title node :)
-            if($request-parameter eq 'title-zh') then
-                <title xmlns="http://www.tei-c.org/ns/1.0" type='otherTitle' xml:lang='zh'>{ 
-                    request:get-parameter('title-zh', '') 
-                }</title>
+    (# exist:batch-transaction #) {
+    
+        (: The updates have to follow in the correct order e.g. input-1, input-2... :)
+        for $request-parameter in common:sort-trailing-number-in-string(request:get-parameter-names(), '-')
             
-            (: Location :)
-            else if(starts-with($request-parameter, 'location-')) then
-                let $toh-key := substring-after($request-parameter, 'location-')
-                return
-                    <location xmlns="http://www.tei-c.org/ns/1.0" count-pages="{ request:get-parameter(concat('count-pages-', $toh-key), '0') }">
-                        <start volume="{ request:get-parameter(concat('start-volume-', $toh-key), '0') }" page="{ request:get-parameter(concat('start-page-', $toh-key), '0') }"/>
-                        <end volume="{ request:get-parameter(concat('end-volume-', $toh-key), '0') }" page="{ request:get-parameter(concat('end-page-', $toh-key), '0') }"/>
-                    </location>
+            (: Get the new value :)
+            let $new-value := 
             
-            (: Translator summary node may or may not exist :)
-            else if($request-parameter eq 'translator-team-id') then
-                if($tei//tei:fileDesc/tei:titleStmt/tei:author[@role eq 'translatorMain'][1]) then
-                    functx:add-or-update-attributes(
-                        $tei//tei:fileDesc/tei:titleStmt/tei:author[@role eq 'translatorMain'][1], 
-                        xs:QName('sameAs'), 
-                        request:get-parameter('translator-team-id', '')
-                    )
-                 else
-                    <author xmlns="http://www.tei-c.org/ns/1.0" role="translatorMain" sameAs="{ request:get-parameter('translator-team-id', '') }"/>
-            
-            (: Sponsor node :)
-            else if(starts-with($request-parameter, 'sponsor-id-')) then
-                let $sponsor-index := substring-after($request-parameter, 'sponsor-id-')
-                let $sponsor-id := request:get-parameter(concat('sponsor-id-', $sponsor-index), '')
-                return
-                    if($sponsor-id) then
-                        <sponsor xmlns="http://www.tei-c.org/ns/1.0" sameAs="{ $sponsor-id }">{
-                            request:get-parameter(concat('sponsor-expression-', $sponsor-index), '')
-                        }</sponsor>
+                (: Title node :)
+                if(starts-with($request-parameter, 'title-text-')) then
+                    let $title-index := substring-after($request-parameter, 'title-text-')
+                    let $title-type := request:get-parameter(concat('title-type-', $title-index), '')
+                    let $title-lang := request:get-parameter(concat('title-lang-', $title-index), '')
+                    let $title-text := request:get-parameter(concat('title-text-', $title-index), '')
+                    return
+                        if($title-text gt '') then
+                            element { QName("http://www.tei-c.org/ns/1.0", "title") }{
+                                attribute type { $title-type },
+                                attribute xml:lang { $title-lang },
+                                text { $title-text }
+                            }
+                        else
+                            ()
+                
+                (: Location :)
+                else if(starts-with($request-parameter, 'location-')) then
+                    let $toh-key := substring-after($request-parameter, 'location-')
+                    return
+                        element { QName("http://www.tei-c.org/ns/1.0", "location") }{
+                            attribute count-pages { request:get-parameter(concat('count-pages-', $toh-key), '0') },
+                            element start {
+                                attribute volume { request:get-parameter(concat('start-volume-', $toh-key), '0') },
+                                attribute page { request:get-parameter(concat('start-page-', $toh-key), '0') }
+                            },
+                            element end {
+                                attribute volume { request:get-parameter(concat('end-volume-', $toh-key), '0') },
+                                attribute page { request:get-parameter(concat('end-page-', $toh-key), '0') }
+                            }
+                        }
+                
+                (: Translator summary node may or may not exist :)
+                else if($request-parameter eq 'translator-team-id') then
+                    if($tei//tei:fileDesc/tei:titleStmt/tei:author[@role eq 'translatorMain'][1]) then
+                        functx:add-or-update-attributes(
+                            $tei//tei:fileDesc/tei:titleStmt/tei:author[@role eq 'translatorMain'][1], 
+                            xs:QName('sameAs'), 
+                            request:get-parameter('translator-team-id', '')
+                        )
+                     else
+                        element { QName("http://www.tei-c.org/ns/1.0", "author") }{
+                            attribute role { "translatorMain" },
+                            attribute sameAs { request:get-parameter('translator-team-id', '') }
+                        }
+                
+                (: Sponsor node :)
+                else if(starts-with($request-parameter, 'sponsor-id-')) then
+                    let $sponsor-index := substring-after($request-parameter, 'sponsor-id-')
+                    let $sponsor-id := request:get-parameter(concat('sponsor-id-', $sponsor-index), '')
+                    return
+                        if($sponsor-id) then
+                            element { QName("http://www.tei-c.org/ns/1.0", "sponsor") }{
+                                attribute sameAs { $sponsor-id },
+                                text { request:get-parameter(concat('sponsor-expression-', $sponsor-index), '') }
+                            }
+                        else
+                            ()
+                
+                (: Contributor (author/editor node :)
+                else if(starts-with($request-parameter, 'contributor-id-')) then
+                    let $contributor-index := substring-after($request-parameter, 'contributor-id-')
+                    let $contributor-id := request:get-parameter(concat('contributor-id-', $contributor-index), '')
+                    let $contributor-type := request:get-parameter(concat('contributor-type-', $contributor-index), '')
+                    let $contributor-type-tokenized := tokenize($contributor-type, '-')
+                    let $contributor-node-name := $contributor-type-tokenized[1]
+                    let $contributor-role := if(count($contributor-type-tokenized) eq 2) then $contributor-type-tokenized[2] else ''
+                    return
+                        if($contributor-id and $contributor-node-name and $contributor-role) then
+                            element { QName("http://www.tei-c.org/ns/1.0", $contributor-node-name) }{
+                                attribute role { $contributor-role },
+                                attribute sameAs { $contributor-id },
+                                text { request:get-parameter(concat('contributor-expression-', $contributor-index), '') }
+                            }
+                        else
+                            ()
+                
+                (: Version :)
+                else if($request-parameter eq 'text-version') then
+                    element { QName("http://www.tei-c.org/ns/1.0", "editionStmt") }{
+                        element { QName("http://www.tei-c.org/ns/1.0", "edition") }{
+                            text { concat(normalize-space(request:get-parameter('text-version', '')), ' ') },
+                            if(request:get-parameter('text-version-date', '')) then
+                                element { QName("http://www.tei-c.org/ns/1.0", "date") } {
+                                    request:get-parameter('text-version-date', '')
+                                }
+                            else 
+                                ()
+                        }
+                    }
+                
+                (: Publication date :)
+                else if($request-parameter eq 'publication-date') then
+                    element { QName("http://www.tei-c.org/ns/1.0", "date") }{
+                        text { request:get-parameter('publication-date', '') }
+                    }
+                
+                (: 
+                    Text nodes / attributes can be handled generically
+                    - if zero set to '' 
+                :)
+                else if($request-parameter = ('translation-status')) then
+                    if(request:get-parameter($request-parameter, '') eq '0') then
+                        ''
                     else
-                        ()
-            
-            (: Author node :)
-            else if(starts-with($request-parameter, 'translator-id-') and ($request-parameter ne 'translator-id-0' or request:get-parameter('translator-id-0', '') gt '')) then
-                let $translator-index := substring-after($request-parameter, 'translator-id-')
-                let $translator-id := request:get-parameter(concat('translator-id-', $translator-index), '')
-                return
-                    if($translator-id) then
-                        <author xmlns="http://www.tei-c.org/ns/1.0" role="translatorEng" sameAs="{ $translator-id }">{
-                            request:get-parameter(concat('translator-expression-', $translator-index), '')
-                        }</author>
-                    else
-                        ()
-            
-            (: Set to '' if zero :)
-            else if($request-parameter = ('translation-status')) then
-                if(request:get-parameter('translation-status', '') eq '0') then
-                    ''
-                else
-                    request:get-parameter('translation-status', '')
-            
-            (: Default to a string value :)
-            else
-                request:get-parameter($request-parameter, '')
-        
-        (: Get the context so we can add :)
-        let $parent :=
-            if($request-parameter eq 'title-zh') then
-                $tei//tei:fileDesc/tei:titleStmt
-            else if(starts-with($request-parameter, 'location-')) then
-                 $tei//tei:fileDesc/tei:sourceDesc/tei:bibl[@key eq substring-after($request-parameter, 'location-')]
-            else if($request-parameter eq 'translation-status') then
-                $tei//tei:fileDesc/tei:publicationStmt
-            else if($request-parameter eq 'sponsorship-status') then
-                $tei//tei:fileDesc/tei:titleStmt
-            else if(starts-with($request-parameter, 'sponsor-id-')) then
-                $tei//tei:fileDesc/tei:titleStmt
-            else if($request-parameter eq 'translator-team-id') then
-                $tei//tei:fileDesc/tei:titleStmt
-            else if(starts-with($request-parameter, 'translator-id-')) then
-                $tei//tei:fileDesc/tei:titleStmt
-            else
-                ()
-        
-        (: Get the existing value so we can compare :)
-        let $existing-value := 
-            if($request-parameter eq 'title-zh') then
-                $parent/tei:title[@type='otherTitle'][lower-case(@xml:lang) eq 'zh']
-            else if(starts-with($request-parameter, 'location-')) then
-                $parent/tei:location
-            else if($request-parameter eq 'translation-status') then
-                $parent/@status
-            else if($request-parameter eq 'sponsorship-status') then
-                $parent/@sponsored
-            else if(starts-with($request-parameter, 'sponsor-id-')) then
-                (: $parent/tei:sponsor[@sameAs = request:get-parameter($request-parameter, '')] :)
-                let $sponsor-index := substring-after($request-parameter, 'sponsor-id-')
-                return
-                if($sponsor-index and functx:is-a-number($sponsor-index) and count($parent/tei:sponsor) ge xs:integer($sponsor-index)) then
-                    $parent/tei:sponsor[xs:integer($sponsor-index)]
+                        request:get-parameter($request-parameter, '')
+                
+                (: Default to a string value :)
+                else if(not(ends-with($request-parameter, '[]'))) then
+                    request:get-parameter($request-parameter, '')
                 else
                     ()
-            else if($request-parameter eq 'translator-team-id') then
-                $parent/tei:author[@role eq 'translatorMain'][1]
-            else if(starts-with($request-parameter, 'translator-id-')) then
-                $parent/tei:author[not(@role eq 'translatorMain')][xs:integer(substring-after($request-parameter, 'translator-id-'))]
-            else
-                ()
-        
-        (: Specify a location to add it to if necessary :)
-        let $insert-following :=
-            if($request-parameter eq 'title-zh') then
-                $parent//tei:title[last()]
-            else if($request-parameter eq 'translator-team-id') then
-                $parent//tei:title[last()]
-            else if(starts-with($request-parameter, 'translator-id-')) then
-                $parent//tei:author[last()]
-            else
-                ()
-        
-        return
-            if($existing-value or $new-value) then
-                common:update($request-parameter, $existing-value, $new-value, $parent, $insert-following)
-            else
-                ()
-
+            
+            (: Get the context so we can add :)
+            let $parent :=
+                if(starts-with($request-parameter, 'title-text-')) then
+                    $tei//tei:fileDesc/tei:titleStmt
+                else if(starts-with($request-parameter, 'location-')) then
+                     $tei//tei:fileDesc/tei:sourceDesc/tei:bibl[@key eq substring-after($request-parameter, 'location-')]
+                else if($request-parameter eq 'translation-status') then
+                    $tei//tei:fileDesc/tei:publicationStmt
+                else if($request-parameter eq 'sponsorship-status') then
+                    $tei//tei:fileDesc/tei:titleStmt
+                else if(starts-with($request-parameter, 'sponsor-id-')) then
+                    $tei//tei:fileDesc/tei:titleStmt
+                else if($request-parameter eq 'translator-team-id') then
+                    $tei//tei:fileDesc/tei:titleStmt
+                else if(starts-with($request-parameter, 'contributor-id-')) then
+                    $tei//tei:fileDesc/tei:titleStmt
+                else if($request-parameter eq 'publication-date') then
+                    $tei//tei:fileDesc/tei:publicationStmt
+                else if($request-parameter eq 'text-version') then
+                    $tei//tei:fileDesc
+                else
+                    ()
+            
+            (: Get the existing value so we can compare :)
+            let $existing-value := 
+                if(starts-with($request-parameter, 'title-text-')) then
+                    common:item-from-index($parent/tei:title, substring-after($request-parameter, 'title-text-'))
+                else if(starts-with($request-parameter, 'location-')) then
+                    $parent/tei:location
+                else if($request-parameter eq 'translation-status') then
+                    $parent/@status
+                else if($request-parameter eq 'sponsorship-status') then
+                    $parent/@sponsored
+                else if(starts-with($request-parameter, 'sponsor-id-')) then
+                    common:item-from-index($parent/tei:sponsor, substring-after($request-parameter, 'sponsor-id-'))
+                else if($request-parameter eq 'translator-team-id') then
+                    $parent/tei:author[@role eq 'translatorMain'][1]
+                else if(starts-with($request-parameter, 'contributor-id-')) then
+                    let $contributors := ($parent/tei:author[not(@role eq 'translatorMain')] | $parent/tei:editor | $parent/tei:consultant)
+                    return
+                        common:item-from-index($contributors, substring-after($request-parameter, 'contributor-id-'))
+                else if($request-parameter eq 'publication-date') then
+                    $parent/tei:date
+                else if($request-parameter eq 'text-version') then
+                    $parent/tei:editionStmt
+                else
+                    ()
+            
+            (: Specify a location to add it to if necessary :)
+            let $insert-following :=
+                if(starts-with($request-parameter, 'title-text-')) then
+                    $parent//tei:title[last()]
+                else if($request-parameter eq 'translator-team-id') then
+                    $parent//tei:title[last()]
+                else if(starts-with($request-parameter, 'contributor-id-')) then
+                    let $contributors := ($parent/tei:author[not(@role eq 'translatorMain')] | $parent/tei:editor | $parent/tei:consultant)
+                    return
+                        $contributors[last()]
+                else if(starts-with($request-parameter, 'sponsor-id-')) then
+                    $parent//tei:sponsor[last()]
+                else if($request-parameter eq 'publication-date') then
+                    $parent/tei:idno[last()]
+                else if($request-parameter eq 'text-version') then
+                    $parent/tei:titleStmt
+                else
+                    ()
+            
+            return
+                if($existing-value or $new-value) then
+                    common:update($request-parameter, $existing-value, $new-value, $parent, $insert-following)
+                    (:element update-debug {
+                        element request-parameter { $request-parameter }, 
+                        element existing-value { $existing-value }, 
+                        element new-value { $new-value }, 
+                        element parent { $parent }, 
+                        element insert-following { $insert-following }
+                    }:)
+                else
+                    ()
+     }
 };

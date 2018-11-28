@@ -18,35 +18,19 @@ declare variable $glossary:types := ('term', 'person', 'place', 'text');
 
 declare function glossary:lookup-options() as node() {
     element options {
-        element default-operator {
-            text { 'or' }
-        },
-        element phrase-slop {
-            text { '0' }
-        },
-        element leading-wildcard {
-            text { 'no' }
-        },
-        element filter-rewrite {
-            text { 'yes' }
-        }
+        element default-operator { text { 'or' } },
+        element phrase-slop { text { '0' } },
+        element leading-wildcard { text { 'no' } },
+        element filter-rewrite { text { 'yes' } }
     }
 };
 
 declare function glossary:search-options() as node() {
     element options {
-        element default-operator {
-            text { 'or' }
-        },
-        element phrase-slop {
-            text { '0' }
-        },
-        element leading-wildcard {
-            text { 'yes' }
-        },
-        element filter-rewrite {
-            text { 'yes' }
-        }
+        element default-operator { text { 'or' } },
+        element phrase-slop { text { '0' } },
+        element leading-wildcard { text { 'yes' } },
+        element filter-rewrite { text { 'yes' } }
     }
 };
 

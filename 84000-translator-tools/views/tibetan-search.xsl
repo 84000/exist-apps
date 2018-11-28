@@ -146,8 +146,8 @@
                                                 <br/>
                                                 <span class="translators text-muted small">
                                                     Translated by 
-                                                    <xsl:variable name="author-ids" select="m:source/m:translation/m:authors/m:author/@sameAs ! substring-after(., 'translators.xml#')"/>
-                                                    <xsl:value-of select="string-join(/m:response/m:translators/m:translator[@xml:id = $author-ids]/m:name, ' · ')"/>
+                                                    <xsl:variable name="author-ids" select="m:source/m:translation/m:contributors/*[self::m:author | self::m:editor]/@sameAs ! substring-after(., 'contributors.xml#')"/>
+                                                    <xsl:value-of select="string-join(/m:response/m:contributor-persons/m:person[@xml:id = $author-ids]/m:label, ' · ')"/>
                                                 </span>
                                                 <xsl:for-each select="m:source/m:bibl">
                                                     <br/>

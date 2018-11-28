@@ -39,7 +39,9 @@ declare function download:stored-version-str($resource-id as xs:string, $file-ex
     return
         if($file-exists and $file-version-node) then
             $file-version-node/@version
+        else if($file-exists) then
+            'unknown'
         else
-            '0'
+            'none'
     
 };

@@ -32,7 +32,7 @@
                     <ol>
                         <xsl:for-each select="m:sponsorship/m:sponsor[@type eq 'founding']">
                             <li>
-                                <xsl:value-of select="m:name"/>
+                                <xsl:value-of select="m:label"/>
                             </li>
                         </xsl:for-each>
                     </ol>
@@ -44,7 +44,7 @@
                     <ul class="list-unstyled">
                         <xsl:for-each select="m:sponsorship/m:sponsor[@type eq 'matching-funds']">
                             <li>
-                                <xsl:value-of select="m:name"/>
+                                <xsl:value-of select="m:label"/>
                             </li>
                         </xsl:for-each>
                     </ul>
@@ -108,13 +108,6 @@
                                             </div>
                                             
                                         </xsl:if>
-                                        
-                                        <!-- 
-                                        <xsl:if test="@status-group = ('published') and m:translation/m:authors/m:author">
-                                            <hr/>
-                                            Translated by: 
-                                            <xsl:value-of select="string-join(m:translation/m:authors/m:author/text(), ', ')"/>.
-                                        </xsl:if> -->
                                         
                                         <xsl:if test="m:summary/tei:p">
                                             <hr/>

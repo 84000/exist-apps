@@ -2,6 +2,7 @@
 <xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" version="2.0" exclude-result-prefixes="#all">
     
     <xsl:include href="../../84000-reading-room/views/html/reading-room-page.xsl"/>
+    <xsl:include href="../../84000-reading-room/xslt/forms.xsl"/>
     <xsl:include href="common.xsl"/>
     
     <xsl:template match="/m:response">
@@ -69,7 +70,7 @@
                                                     <xsl:otherwise>New sponsor </xsl:otherwise>
                                                 </xsl:choose>
                                             </legend>
-                                            <xsl:copy-of select="m:text-input('Name','name', m:sponsor/m:name, 9, 'required')"/>
+                                            <xsl:copy-of select="m:text-input('Name','name', m:sponsor/m:label, 9, 'required')"/>
                                             <xsl:copy-of select="m:text-input('Internal name','internal-name', m:sponsor/m:internal-name, 9, '')"/>
                                             <xsl:copy-of select="m:text-input('Country','country', m:sponsor/m:country, 9, '')"/>
                                             <div class="form-group">

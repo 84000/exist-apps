@@ -129,10 +129,13 @@
                                         <xsl:with-param name="text" select="."/>
                                     </xsl:call-template>
                                     
-                                    <xsl:if test="m:translation/m:authors/m:author">
+                                    <xsl:if test="m:translation/m:contributors/m:summary">
                                         <hr/>
-                                        Translated by: 
-                                        <xsl:value-of select="string-join(m:translation/m:authors/m:author/text(), ', ')"/>.
+                                        <xsl:for-each select="m:translation/m:contributors/m:summary">
+                                            <p>
+                                                <xsl:value-of select="node()"/>
+                                            </p>
+                                        </xsl:for-each>
                                     </xsl:if>
                                     
                                 </div>

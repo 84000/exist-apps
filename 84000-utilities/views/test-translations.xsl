@@ -161,9 +161,7 @@
                                             </a>
                                         </td>
                                         <td>
-                                            <xsl:call-template name="translation-status">
-                                                <xsl:with-param name="status" select="@status"/>
-                                            </xsl:call-template>
+                                            <xsl:copy-of select="common:translation-status(@status)"/>
                                         </td>
                                         <xsl:for-each select="m:tests/m:test">
                                             <xsl:variable name="test-id" select="position()"/>

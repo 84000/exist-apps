@@ -7,10 +7,11 @@ declare namespace tei="http://www.tei-c.org/ns/1.0";
 declare namespace m = "http://read.84000.co/ns/1.0";
 
 import module namespace common="http://read.84000.co/common" at "common.xql";
-import module namespace tei-content="http://read.84000.co/tei-content" at "../modules/tei-content.xql";
+import module namespace tei-content="http://read.84000.co/tei-content" at "tei-content.xql";
 import module namespace section="http://read.84000.co/section" at "section.xql";
 import module namespace translation="http://read.84000.co/translation" at "translation.xql";
 import module namespace sponsors="http://read.84000.co/sponsors" at "sponsors.xql";
+import module namespace translation-status="http://read.84000.co/translation-status" at "translation-status.xql";
 import module namespace functx="http://www.functx.com";
 
 declare function translations:section-tei($section-id as xs:string) as node()* {
@@ -278,8 +279,8 @@ declare function translations:translations($text-statuses as xs:string*, $includ
                 uri="{ base-uri($tei) }"
                 fileName="{ util:unescape-uri(replace(base-uri($tei), ".+/(.+)$", "$1"), 'UTF-8') }"
                 id="{ tei-content:id($tei) }" 
-                wordCount="{ if($include-stats) then translation:word-count($tei) else '' }"
-                glossaryCount="{ if($include-stats) then translation:glossary-count($tei) else '' }"
+                wordCount="{ if($include-stats) then translation-status:word-count($tei) else '' }"
+                glossaryCount="{ if($include-stats) then translation-status:glossary-count($tei) else '' }"
                 status-id="{ $tei/tei:teiHeader/tei:fileDesc/tei:publicationStmt/@status }">
                 { translation:toh($tei, $toh-key) }
                 { translation:titles($tei) }

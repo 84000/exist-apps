@@ -292,7 +292,9 @@ declare function store:http-get-and-store($file-url as xs:string, $collection as
             let $store-file := xmldb:store($collection, $file-name, $file, $mime-type)
             
             return
-                <stored xmlns="http://read.84000.co/ns/1.0">{ $store-file }</stored>
+                <stored xmlns="http://read.84000.co/ns/1.0">
+                    { $store-file }
+                </stored>
         
         else if ($response/@statusCode = '504') then
             <error xmlns="http://read.84000.co/ns/1.0">

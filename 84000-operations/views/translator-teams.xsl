@@ -26,96 +26,96 @@
                             <xsl:with-param name="active-tab" select="@model-type"/>
                         </xsl:call-template>
                         
-                        <div class="tab-content">
+                        <div class="center-vertical full-width bottom-margin">
                             
-                            <div class="row">
-                                <div class="col-items div-list">
+                            <span class="small text-muted">
+                                Listing
+                                <xsl:value-of select="fn:format-number(xs:integer(count(m:contributor-teams/m:team)),'#,##0')"/> translator teams 
+                            </span>
+                            
+                            <span>
+                                <form method="post" action="/translator-teams.html" class="form-inline filter-form pull-right">
+                                    
+                                    <div class="checkbox">
+                                        <label>
+                                            <input type="checkbox" name="include-acknowledgements" value="1">
+                                                <xsl:if test="m:request/@include-acknowledgements eq 'true'">
+                                                    <xsl:attribute name="checked" select="'checked'"/>
+                                                </xsl:if>
+                                            </input>
+                                            List all acknowledgements
+                                        </label>
+                                    </div>
+                                    
+                                    <a class="btn btn-primary btn-sml">
+                                        <xsl:attribute name="href" select="'/edit-translator-team.html'"/>
+                                        Add a translator team
+                                    </a>
+                                    
+                                </form>
+                            </span>
+                            
+                        </div>
+                            
+                        <div class="row">
+                            <div class="col-items div-list">
+                                
+                                <xsl:for-each select="m:contributor-teams/m:team">
+                                    <xsl:sort select="@start-letter"/>
+                                    
+                                    <xsl:variable name="team-id" select="@xml:id"/>
                                     
                                     <div class="item">
                                         
-                                        <span class="small text-muted">
-                                            Listing
-                                            <xsl:value-of select="fn:format-number(xs:integer(count(m:translator-teams/m:team)),'#,##0')"/> translator teams 
-                                        </span>
+                                        <xsl:copy-of select="common:marker(@start-letter, if(preceding-sibling::m:team[1]/@start-letter) then preceding-sibling::m:team[1]/@start-letter else '')"/>
                                         
-                                        <form method="post" action="/translator-teams.html" class="form-inline filter-form pull-right">
-                                            
-                                            <div class="checkbox">
-                                                <label>
-                                                    <input type="checkbox" name="include-acknowledgements" value="1">
-                                                        <xsl:if test="m:request/@include-acknowledgements eq 'true'">
-                                                            <xsl:attribute name="checked" select="'checked'"/>
-                                                        </xsl:if>
-                                                    </input>
-                                                    List all acknowledgements
-                                                </label>
+                                        <div class="row">
+                                            <div class="col-sm-3">
+                                                <a>
+                                                    <xsl:attribute name="href" select="concat('/edit-translator-team.html?id=', $team-id)"/>
+                                                    <xsl:value-of select="m:sort-name"/>
+                                                </a>
+                                                <br/>
+                                                <span class="small text-muted">
+                                                    <xsl:value-of select="$team-id"/>
+                                                </span>
                                             </div>
                                             
-                                            <a class="btn btn-primary btn-sml">
-                                                <xsl:attribute name="href" select="'/edit-translator-team.html'"/>
-                                                Add a translator team
-                                            </a>
+                                            <div class="col-sm-4">
+                                                <ul>
+                                                    <xsl:for-each select="/m:response/m:contributor-persons/m:person[m:team/@id = $team-id]">
+                                                        <xsl:variable name="translator" select="."/>
+                                                        <li>
+                                                            <xsl:value-of select="$translator/m:label"/>
+                                                            <xsl:value-of select="concat(' (', $translator/@xml:id, ')')"/>
+                                                        </li>
+                                                    </xsl:for-each>
+                                                </ul>
+                                            </div>
                                             
-                                        </form>
+                                            <div class="col-sm-5">
+                                                <xsl:call-template name="acknowledgements">
+                                                    <xsl:with-param name="acknowledgements" select="m:acknowledgement"/>
+                                                    <xsl:with-param name="group" select="$team-id"/>
+                                                    <xsl:with-param name="css-class" select="'col-sm-12'"/>
+                                                    <xsl:with-param name="link-href" select="concat($reading-room-path, '/translation/@translation-id.html')"/>
+                                                </xsl:call-template>
+                                            </div>
+                                        </div>
+                                        
                                         
                                     </div>
-                                    
-                                    <xsl:for-each select="m:translator-teams/m:team">
-                                        <xsl:sort select="@start-letter"/>
-                                        
-                                        <xsl:variable name="team-id" select="@xml:id"/>
-                                        
-                                        <div class="item">
-                                            
-                                            <xsl:copy-of select="common:marker(@start-letter, if(preceding-sibling::m:team[1]/@start-letter) then preceding-sibling::m:team[1]/@start-letter else '')"/>
-                                            
-                                            <div class="row">
-                                                <div class="col-sm-3">
-                                                    <a>
-                                                        <xsl:attribute name="href" select="concat('/edit-translator-team.html?id=', $team-id)"/>
-                                                        <xsl:value-of select="m:sort-name"/>
-                                                    </a>
-                                                    <br/>
-                                                    <span class="small text-muted">
-                                                        <xsl:value-of select="$team-id"/>
-                                                    </span>
-                                                </div>
-                                                
-                                                <div class="col-sm-4">
-                                                    <ul>
-                                                        <xsl:for-each select="/m:response/m:translators/m:translator[m:team/@id = $team-id]">
-                                                            <xsl:variable name="translator" select="."/>
-                                                            <li>
-                                                                <xsl:value-of select="$translator/m:name"/>
-                                                                <xsl:value-of select="concat(' (', $translator/@xml:id, ')')"/>
-                                                            </li>
-                                                        </xsl:for-each>
-                                                    </ul>
-                                                </div>
-                                                
-                                                <div class="col-sm-5">
-                                                    <xsl:call-template name="acknowledgements">
-                                                        <xsl:with-param name="acknowledgements" select="m:acknowledgement"/>
-                                                        <xsl:with-param name="group" select="$team-id"/>
-                                                        <xsl:with-param name="css-class" select="'col-sm-12'"/>
-                                                        <xsl:with-param name="link-href" select="concat($reading-room-path, '/translation/@translation-id.html')"/>
-                                                    </xsl:call-template>
-                                                </div>
-                                            </div>
-                                            
-                                            
-                                        </div>
-                                    </xsl:for-each>
-                                    
-                                </div>
-                                
-                                <div id="letters-nav" class="col-nav">
-                                    <xsl:copy-of select="common:marker-nav(m:translator-teams/m:team)"/>
-                                </div>
+                                </xsl:for-each>
                                 
                             </div>
                             
+                            <div id="letters-nav" class="col-nav">
+                                <xsl:copy-of select="common:marker-nav(m:contributor-teams/m:team)"/>
+                            </div>
+                            
                         </div>
+                            
+                        
                     </div>
                 </div>
             </div>

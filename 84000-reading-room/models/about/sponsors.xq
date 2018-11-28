@@ -2,6 +2,7 @@ xquery version "3.0" encoding "UTF-8";
 
 import module namespace common="http://read.84000.co/common" at "../../modules/common.xql";
 import module namespace translations="http://read.84000.co/translations" at "../../modules/translations.xql";
+import module namespace sponsors="http://read.84000.co/sponsors" at "../../modules/sponsors.xql";
 
 declare namespace m="http://read.84000.co/ns/1.0";
 
@@ -27,20 +28,6 @@ let $header :=
         </quote>
     </header>
 
-let $sponsors := doc(concat($common:data-path, '/operations/sponsors.xml'))
-let $sponsorship := 
-    <sponsorship xmlns="http://read.84000.co/ns/1.0">
-        {
-            $sponsors/m:sponsors/m:sponsor[@type eq 'founding']
-        }
-        {
-            $sponsors/m:sponsors/m:sponsor[@type eq 'matching-funds']
-        }
-        {
-            translations:sponsored()
-        }
-    </sponsorship>
-
 return
     common:response(
         "about/sponsors", 
@@ -49,6 +36,16 @@ return
             $header,
             $tabs,
             translations:summary(),
-            $sponsorship
+            <sponsorship xmlns="http://read.84000.co/ns/1.0">
+            {
+                $sponsors:sponsors/m:sponsors/m:sponsor[@type eq 'founding']
+            }
+            {
+                $sponsors:sponsors/m:sponsors/m:sponsor[@type eq 'matching-funds']
+            }
+            {
+                translations:sponsored()
+            }
+            </sponsorship>
         )
     )

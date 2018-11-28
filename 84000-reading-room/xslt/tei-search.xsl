@@ -64,14 +64,12 @@
                                     <div class="col-sm-11 col-sm-offset-1 col-md-2 col-md-offset-0 text-md-right">
                                         <xsl:choose>
                                             <xsl:when test="$source[@tei-type = 'section']">
-                                                <span class="label label-success">
+                                                <span class="label label-danger">
                                                     Section
                                                 </span>
                                             </xsl:when>
                                             <xsl:otherwise>
-                                                <xsl:call-template name="translation-status">
-                                                    <xsl:with-param name="status" select="m:source/@translation-status"/>
-                                                </xsl:call-template>
+                                                <xsl:copy-of select="common:translation-status(m:source/@translation-status)"/>
                                             </xsl:otherwise>
                                         </xsl:choose>
                                     </div>

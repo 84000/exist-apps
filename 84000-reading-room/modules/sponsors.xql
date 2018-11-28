@@ -9,7 +9,7 @@ import module namespace translation="http://read.84000.co/translation" at "trans
 declare namespace m="http://read.84000.co/ns/1.0";
 declare namespace tei="http://www.tei-c.org/ns/1.0";
 
-declare variable $sponsors:sponsors := doc(concat($common:data-path, '/operations/sponsors.xml'));
+declare variable $sponsors:sponsors := doc(concat($common:data-path, '/entities/sponsors.xml'));
 declare variable $sponsors:texts := collection($common:translations-path);
 declare variable $sponsors:prefixes := '(Dr\.|Prof\.)';
 
@@ -17,7 +17,7 @@ declare function sponsors:sponsors($include-acknowledgements as xs:boolean){
 
     let $sponsors-ordered := 
         for $sponsor in $sponsors:sponsors/m:sponsors/m:sponsor
-        order by normalize-space(replace(concat($sponsor/m:name, ' ', $sponsor/m:internal-name), $sponsors:prefixes, ''))
+        order by normalize-space(replace(concat($sponsor/m:label, ' ', $sponsor/m:internal-name), $sponsors:prefixes, ''))
         return $sponsor
     
     return
@@ -35,7 +35,7 @@ declare function sponsors:sponsor($id as xs:string, $include-acknowledgements as
     return
         element { node-name($sponsor) } {
             $sponsor/@*,
-            attribute start-letter { upper-case(substring(normalize-space(replace($sponsor/m:name, $sponsors:prefixes, '')), 1, 1)) },
+            attribute start-letter { upper-case(substring(normalize-space(replace($sponsor/m:label, $sponsors:prefixes, '')), 1, 1)) },
             $sponsor/node(),
             if($include-acknowledgements) then
                 sponsors:acknowledgements(concat('sponsors.xml#', $sponsor/@xml:id))
@@ -56,20 +56,20 @@ declare function sponsors:acknowledgements($uri as xs:string){
     let $sponsor-id := substring-after($uri, 'sponsors.xml#')
     
     return
-        for $tei in $sponsors:texts//tei:TEI[tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:sponsor[@sameAs eq $uri]]
+        for $tei in $sponsors:texts//tei:TEI[tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:sponsor/@sameAs eq $uri]
+        
             let $translation-sponsor := $tei//tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:sponsor[@sameAs eq $uri][1]
+            
             let $sponsor-name := 
                 if($translation-sponsor/text() gt '') then
                     $translation-sponsor/text()
                 else
-                    $sponsors:sponsors/m:sponsors/m:sponsor[@xml:id eq $sponsor-id]/m:name/text()
+                    $sponsors:sponsors/m:sponsors/m:sponsor[@xml:id eq $sponsor-id]/m:label/text()
             
-            let $query := 
-                <query>
-                    <phrase occur="must">{ lower-case($sponsor-name) }</phrase>
-                </query>
+            let $acknowledgment := $tei//tei:front/tei:div[@type eq "acknowledgment"]
             
-            let $query-result := $tei//tei:front/tei:div[@type eq "acknowledgment"]/tei:p[ft:query(., $query, $query-options)]
+            let $marked-acknowledgement := common:marked-section($acknowledgment, $sponsor-name)
+            
             let $title := tei-content:title($tei)
             let $translation-id := tei-content:id($tei)
             let $translation-status := $tei//tei:teiHeader/tei:fileDesc/tei:publicationStmt/@status
@@ -86,7 +86,7 @@ declare function sponsors:acknowledgements($uri as xs:string){
                     $toh,
                     element tei:div {
                         attribute type {'acknowledgment'},
-                        util:expand($query-result, "expand-xincludes=no")
+                        $marked-acknowledgement
                     }
                 }
 };
@@ -137,7 +137,7 @@ declare function sponsors:update($sponsor as node()?) as xs:string {
         <sponsor xmlns="http://read.84000.co/ns/1.0" 
             type="{ $sponsor-type }"
             xml:id="{ $sponsor-id }">
-            <name>{ $name }</name>
+            <label>{ $name }</label>
             {
                 if($internal-name) then
                     <internal-name>{ $internal-name }</internal-name>

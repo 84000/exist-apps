@@ -70,13 +70,20 @@
         <xsl:param name="string" as="xs:string"/>
         <xsl:param name="max-length" as="xs:integer"/>
         <xsl:choose>
-            <xsl:when test="string-length( $string ) &gt; $max-length ">
-                <xsl:value-of select="concat(substring( $string ,0, $max-length ), '...')"/>
+            <xsl:when test="string-length($string) gt $max-length ">
+                <xsl:value-of select="concat(substring($string ,1, $max-length), '...')"/>
             </xsl:when>
             <xsl:otherwise>
-                <xsl:value-of select=" $string "/>
+                <xsl:value-of select="$string"/>
             </xsl:otherwise>
         </xsl:choose>
+    </xsl:function>
+    
+    <xsl:function name="common:date-user-string">
+        <xsl:param name="action-text" as="xs:string" required="yes"/>
+        <xsl:param name="date-time" as="xs:dateTime" required="yes"/>
+        <xsl:param name="user-name" as="xs:string" required="yes"/>
+        <xsl:value-of select="concat($action-text, ' at ', format-dateTime($date-time, '[H01]:[m01] on [FNn,*-3], [D1o] [MNn,*-3] [Y01]'), ' by ', $user-name)"/>
     </xsl:function>
     
     <xsl:function name="common:pagination">
@@ -192,7 +199,7 @@
     </xsl:function>
     
     <!-- Translation status -->
-    <xsl:template name="translation-status">
+    <xsl:function name="common:translation-status">
         <xsl:param name="status"/>
         <xsl:choose>
             <xsl:when test="$status eq '1'">
@@ -211,7 +218,7 @@
                 </span>
             </xsl:otherwise>
         </xsl:choose>
-    </xsl:template>
+    </xsl:function>
     
     <xsl:function name="common:folio-id" as="xs:string">
         <xsl:param name="folio-str" as="xs:string"/>

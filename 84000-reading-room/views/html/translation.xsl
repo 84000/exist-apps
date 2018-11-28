@@ -17,21 +17,18 @@
                 
                 <div class="panel panel-default">
                     
-                    <div>
-                        <xsl:choose>
-                            <xsl:when test="m:translation/@status = '1'">
-                                <xsl:attribute name="class" select="'panel-heading panel-heading-bold hidden-print'"/>
-                                <ul id="outline" class="breadcrumb">
-                                    <xsl:copy-of select="common:breadcrumb-items(m:translation/m:parent | m:translation/m:parent//m:parent)"/>
-                                </ul>
-                            </xsl:when>
-                            <xsl:otherwise>
-                                <xsl:attribute name="class" select="'panel-heading panel-heading-bold panel-heading-danger'"/>
-                                This text is not yet ready for publication!
-                            </xsl:otherwise>
-                        </xsl:choose>
+                    <xsl:if test="not(m:translation/@status eq '1')">
+                        <div class="panel-heading panel-heading-bold panel-heading-danger">
+                            This text is not yet ready for publication!
+                        </div>
+                    </xsl:if>
+                    
+                    <div class="panel-heading panel-heading-bold hidden-print">
+                        <ul id="outline" class="breadcrumb">
+                            <xsl:copy-of select="common:breadcrumb-items(m:translation/m:parent | m:translation/m:parent//m:parent)"/>
+                        </ul>
                     </div>
-    
+                    
                     <div class="panel-body">
                         <div class="row">
                             <div class="col-sm-offset-1 col-sm-10 col-lg-offset-2 col-lg-8 print-width-override">
@@ -881,7 +878,7 @@
             </div>
             
             <div class="well">
-                <xsl:for-each select="$translation/m:translation/m:authors/m:summary">
+                <xsl:for-each select="$translation/m:translation/m:contributors/m:summary">
                     <p id="authours-summary">
                         <xsl:apply-templates select="node()"/>
                     </p>

@@ -84,6 +84,15 @@
                     </a>
                 </li>
             </xsl:if>
+            <xsl:if test="$active-tab eq 'utilities/edit-text-header'">
+                <li role="presentation">
+                    <xsl:attribute name="class" select="'active'"/>
+                    <a>
+                        <xsl:attribute name="href" select="concat('/edit-text-header.html?id=', /m:response/m:request/@id)"/>
+                        Edit Text Header
+                    </a>
+                </li>
+            </xsl:if>
         </ul>
     </xsl:template>
     

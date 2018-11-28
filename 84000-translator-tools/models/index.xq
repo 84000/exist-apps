@@ -2,12 +2,12 @@ xquery version "3.0" encoding "UTF-8";
 
 declare namespace m="http://read.84000.co/ns/1.0";
 
-import module namespace local="http://utilities.84000.co/local" at "../modules/local.xql";
+import module namespace local="http://translator-tools.84000.co/local" at "../modules/local.xql";
 import module namespace common="http://read.84000.co/common" at "../../84000-reading-room/modules/common.xql";
 import module namespace glossary="http://read.84000.co/glossary" at "../../84000-reading-room/modules/glossary.xql";
 import module namespace search="http://read.84000.co/search" at "../../84000-reading-room/modules/search.xql";
 import module namespace source="http://read.84000.co/source" at "../../84000-reading-room/modules/source.xql";
-import module namespace translators="http://read.84000.co/translators" at "../../84000-reading-room/modules/translators.xql";
+import module namespace contributors="http://read.84000.co/contributors" at "../../84000-reading-room/modules/contributors.xql";
 import module namespace functx="http://www.functx.com";
 
 declare option exist:serialize "method=xml indent=no";
@@ -16,7 +16,10 @@ let $tabs := local:user-tabs()
 let $tab := $tabs//m:tab[@id eq request:get-parameter('tab','')]/@id
 let $tab := 
     if(not($tab gt ''))then
-        $tabs//m:tab[@home]/@id
+        if($tabs//m:tab[@home]) then
+            $tabs//m:tab[@home]/@id
+        else
+            $tabs//m:tab[1]/@id
     else
         $tab
 
@@ -53,7 +56,7 @@ return
                 search:tm-search($search, $lang, $first-record, 15),
                 source:ekangyur-page(source:ekangyur-volume-number(xs:integer($volume)), xs:integer($page), true()),
                 source:ekangyur-volumes(),
-                translators:translators(false())
+                contributors:persons(false())
             )
             else
                 $xml-section

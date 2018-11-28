@@ -33,7 +33,7 @@
                 </div>
             </section>
             <section class="center full-title" epub:type="contributors">
-                <xsl:for-each select="m:translation/m:translation/m:authors/m:summary">
+                <xsl:for-each select="m:translation/m:translation/m:contributors/m:summary">
                     <p class="translator">
                         <xsl:apply-templates select="node()"/>
                     </p>

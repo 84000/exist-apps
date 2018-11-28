@@ -205,6 +205,30 @@ declare function common:search-result($nodes as node()*) as node()*
         )
 };
 
+declare function common:marked-section($section as node()?, $strings as xs:string*) as item()?{
+    
+    let $marked-paragraphs :=
+        if($section) then
+            for $paragraph-text in $section/tei:p/data()
+                let $marked-paragraph := common:marked-paragraph( $paragraph-text, $strings )
+            return
+                if($marked-paragraph[exist:match]) then
+                    $marked-paragraph
+                else
+                    ()
+        else
+            ()
+
+    return
+        if($marked-paragraphs) then
+            element tei:div {
+                $section/@*,
+                $marked-paragraphs
+            }
+        else
+            $section
+};
+
 declare function common:marked-paragraph($text as xs:string, $find as xs:string*) as item() {
     
     let $find-escaped := $find ! functx:escape-for-regex(.)
@@ -312,7 +336,7 @@ declare function common:replace($node as node(), $replacements as node()) {
         default return $node
 };
 
-declare function common:update($request-parameter as xs:string, $existing-value, $new-value, $insert-into as node()?, $insert-following as node()?) as node()? {
+declare function common:update($request-parameter as xs:string, $existing-value as item()?, $new-value as item()?, $insert-into as node()?, $insert-following as node()?) as element()? {
 
     if(functx:node-kind($existing-value) eq 'text' and compare($existing-value, $new-value) eq 0) then 
         () (: Data unchanged, do nothing :)
@@ -345,4 +369,34 @@ declare function common:update($request-parameter as xs:string, $existing-value,
                     with $new-value
 
         }</updated>
+};
+
+
+declare function common:sort-trailing-number-in-string($seq as xs:string*, $separator) as xs:string* {
+
+    for $string in $seq
+        let $string-tokens := tokenize($string, $separator)
+        let $number-str := $string-tokens[last()]
+        let $number := 
+            if(functx:is-a-number($number-str)) then 
+                xs:integer($number-str) 
+            else 
+                0
+                
+        let $prefix := 
+            if(functx:is-a-number($number-str)) then 
+                string-join(subsequence($string-tokens, 1, count($string-tokens) - 1), $separator)
+            else
+                $string
+    
+    order by $prefix, $number
+    return $string
+ 
+};
+
+declare function common:item-from-index($items as item()*, $index) as item()? {
+    if($index and functx:is-a-number($index) and count($items) ge xs:integer($index)) then
+        $items[xs:integer($index)]
+    else
+        ()
 };

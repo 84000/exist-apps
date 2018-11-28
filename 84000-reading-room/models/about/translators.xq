@@ -1,7 +1,7 @@
 xquery version "3.0" encoding "UTF-8";
 
 import module namespace common="http://read.84000.co/common" at "../../modules/common.xql";
-import module namespace translators="http://read.84000.co/translators" at "../../modules/translators.xql";
+import module namespace contributors="http://read.84000.co/contributors" at "../../modules/contributors.xql";
 import module namespace translations="http://read.84000.co/translations" at "../../modules/translations.xql";
 
 declare namespace m="http://read.84000.co/ns/1.0";
@@ -26,10 +26,10 @@ return
         $common:app-id,
         (
             $header,
-            translators:teams(false()),
-            translators:translators(false()),
-            translators:regions(true()),
-            translators:institution-types(true()),
+            contributors:teams(false()),
+            contributors:persons(false()),
+            contributors:regions(true()),
+            contributors:institution-types(true()),
             translations:summary()
         )
     )

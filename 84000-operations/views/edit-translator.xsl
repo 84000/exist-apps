@@ -2,6 +2,7 @@
 <xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" version="2.0" exclude-result-prefixes="#all">
     
     <xsl:include href="../../84000-reading-room/views/html/reading-room-page.xsl"/>
+    <xsl:include href="../../84000-reading-room/xslt/forms.xsl"/>
     <xsl:include href="common.xsl"/>
     
     <xsl:template match="/m:response">
@@ -35,7 +36,7 @@
                                 </div>
                             </xsl:if>
                             
-                            <xsl:if test="m:translator/@locked-by-user gt ''">
+                            <xsl:if test="m:person/@locked-by-user gt ''">
                                 <div class="alert alert-danger" role="alert">
                                     <xsl:value-of select="concat('File sponsors.xml is currenly locked by user ', m:translation/@locked-by-user, '. ')"/>
                                     You cannot modify this file until the lock is released.
@@ -48,8 +49,8 @@
                                 
                                 <input type="hidden" name="post-id">
                                     <xsl:choose>
-                                        <xsl:when test="m:translator/@xml:id">
-                                            <xsl:attribute name="value" select="m:translator/@xml:id"/>
+                                        <xsl:when test="m:person/@xml:id">
+                                            <xsl:attribute name="value" select="m:person/@xml:id"/>
                                         </xsl:when>
                                         <xsl:otherwise>
                                             <xsl:attribute name="value" select="'new'"/>
@@ -63,29 +64,61 @@
                                         <fieldset>
                                             <legend>
                                                 <xsl:choose>
-                                                    <xsl:when test="m:translator/@xml:id">
-                                                        ID: <xsl:value-of select="m:translator/@xml:id"/>
+                                                    <xsl:when test="m:person/@xml:id">
+                                                        ID: <xsl:value-of select="m:person/@xml:id"/>
                                                     </xsl:when>
-                                                    <xsl:otherwise>New sponsor </xsl:otherwise>
+                                                    <xsl:otherwise>New contributor</xsl:otherwise>
                                                 </xsl:choose>
                                             </legend>
-                                            <xsl:copy-of select="m:text-input('Name','name', m:translator/m:name, 9, 'required')"/>
+                                            <xsl:copy-of select="m:text-input('Name','name', m:person/m:label, 9, 'required')"/>
                                             
-                                            <xsl:for-each select="m:translator/m:team">
-                                                <xsl:variable name="label" select="if(position() eq 1) then 'Team(s)' else ''"/>
-                                                <xsl:copy-of select="m:select-input-name($label, concat('team-id-', position()), 9, /m:response/m:translator-teams/m:team, @id)"/>
-                                            </xsl:for-each>
+                                            <div class="add-nodes-container">
+                                                <xsl:choose>
+                                                    <xsl:when test="m:person/m:team">
+                                                        <xsl:for-each select="m:person/m:team">
+                                                            <div class="add-nodes-group">
+                                                                <xsl:copy-of select="m:select-input-name('Team', concat('team-id-', position()), 9, /m:response/m:contributor-teams/m:team, @id)"/>
+                                                            </div>
+                                                        </xsl:for-each>
+                                                    </xsl:when>
+                                                    <xsl:otherwise>
+                                                        <div class="add-nodes-group">
+                                                            <xsl:copy-of select="m:select-input-name('Team', 'team-id-1', 9, /m:response/m:contributor-teams/m:team, '')"/>
+                                                        </div>
+                                                    </xsl:otherwise>
+                                                </xsl:choose>
+                                                <div class="form-group">
+                                                    <div class="col-sm-offset-3 col-sm-9">
+                                                        <a href="#add-nodes" class="add-nodes">
+                                                            <span class="monospace">+</span> add a team
+                                                        </a>
+                                                    </div>
+                                                </div>
+                                            </div>
                                             
-                                            <xsl:variable name="label" select="if(count(m:translator/m:team) eq 0) then 'Team' else 'Add'"/>
-                                            <xsl:copy-of select="m:select-input-name($label, 'team-id-0', 9, /m:response/m:translator-teams/m:team, '')"/>
-                                            
-                                            <xsl:for-each select="m:translator/m:institution">
-                                                <xsl:variable name="label" select="if(position() eq 1) then 'Institution(s)' else ''"/>
-                                                <xsl:copy-of select="m:select-input-name($label, concat('institution-id-', position()), 9, /m:response/m:translator-institutions/m:institution, @id)"/>
-                                            </xsl:for-each>
-                                            
-                                            <xsl:variable name="label" select="if(count(m:translator/m:institution) eq 0) then 'Institution' else 'Add'"/>
-                                            <xsl:copy-of select="m:select-input-name($label, 'institution-id-0', 9, /m:response/m:translator-institutions/m:institution, '')"/>
+                                            <div class="add-nodes-container">
+                                                <xsl:choose>
+                                                    <xsl:when test="m:person/m:institution">
+                                                        <xsl:for-each select="m:person/m:institution">
+                                                            <div class="add-nodes-group">
+                                                                <xsl:copy-of select="m:select-input-name('Institution', concat('institution-id-', position()), 9, /m:response/m:contributor-institutions/m:institution, @id)"/>
+                                                            </div>
+                                                        </xsl:for-each>
+                                                    </xsl:when>
+                                                    <xsl:otherwise>
+                                                        <div class="add-nodes-group">
+                                                            <xsl:copy-of select="m:select-input-name('Institution', 'institution-id-1', 9, /m:response/m:contributor-institutions/m:institution, '')"/>
+                                                        </div>
+                                                    </xsl:otherwise>
+                                                </xsl:choose>
+                                                <div class="form-group">
+                                                    <div class="col-sm-offset-3 col-sm-9">
+                                                        <a href="#add-nodes" class="add-nodes">
+                                                            <span class="monospace">+</span> add an institution
+                                                        </a>
+                                                    </div>
+                                                </div>
+                                            </div>
                                             
                                             <div class="row">
                                                 <div class="col-sm-6">
@@ -106,13 +139,13 @@
                                     </div>
                                     
                                     <div class="col-sm-6">
-                                        <xsl:if test="m:translator/m:acknowledgement">
+                                        <xsl:if test="m:person/m:acknowledgement">
                                             <h4>Acknowledgements</h4>
                                             <xsl:call-template name="acknowledgements">
-                                                <xsl:with-param name="acknowledgements" select="m:translator/m:acknowledgement"/>
+                                                <xsl:with-param name="acknowledgements" select="m:person/m:acknowledgement"/>
                                                 <xsl:with-param name="css-class" select="''"/>
                                                 <xsl:with-param name="group" select="''"/>
-                                                <xsl:with-param name="link-href" select="concat($reading-room-path, '/translation/@translation-id.html')"/>
+                                                <xsl:with-param name="link-href" select="'/edit-text-header.html?id=@translation-id'"/>
                                             </xsl:call-template>
                                         </xsl:if>
                                     </div>

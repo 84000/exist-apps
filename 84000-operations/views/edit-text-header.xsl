@@ -34,11 +34,18 @@
                             
                             <xsl:call-template name="alert-translation-locked"/>
                             
-                            <div class="center-vertical full-width bottom-margin">
+                            <!-- Title -->
+                            <div class="center-vertical full-width">
                                 <span class="h3 text-sa">
                                     <a target="_blank" class="text-muted">
                                         <xsl:attribute name="href" select="concat($reading-room-path, '/translation/', m:translation/@id, '.html')"/>
-                                        <xsl:value-of select="m:translation/m:titles/m:title[@xml:lang eq 'en']"/>
+                                        <xsl:value-of select="m:translation/m:title"/>
+                                        <xsl:if test="normalize-space(m:translation/m:translation/m:edition)">
+                                             / 
+                                            <span class="small">
+                                                <xsl:value-of select="m:translation/m:translation/m:edition"/>
+                                            </span>
+                                        </xsl:if>
                                     </a>
                                 </span>
                                 <span>
@@ -48,11 +55,40 @@
                                 </span>
                             </div>
                             
-                            <xsl:call-template name="sponsors-form"/>
+                            <hr class="sml-margin"/>
                             
+                            <!-- Summary -->
+                            <div class="top-vertical bottom-margin">
+                                <a role="button" data-toggle="collapse" href="#panelStatus" aria-expanded="false" aria-controls="panelTitles" class="italic text-color">
+                                    <xsl:choose>
+                                        <xsl:when test="m:translation-status/m:notes/text()">
+                                            <xsl:value-of select="common:limit-str(m:translation-status/m:notes, 180)"/>
+                                        </xsl:when>
+                                        <xsl:otherwise>
+                                            [No notes]
+                                        </xsl:otherwise>
+                                    </xsl:choose>
+                                </a>
+                                <a role="button" data-toggle="collapse" href="#panelStatus" aria-expanded="false" aria-controls="panelTitles">
+                                    <span class="badge badge-notification">
+                                        <xsl:value-of select="count(m:translation-status/m:task[not(@checked-off)])"/>
+                                    </span>
+                                </a>
+                            </div>
+                            
+                            <div class="panel-group" role="tablist" aria-multiselectable="true" id="forms-accordion">
+                                
+                                <xsl:call-template name="titles-form-panel"/>
+                                
+                                <xsl:call-template name="locations-form-panel"/>
+                                
+                                <xsl:call-template name="contributors-form-panel"/>
+                                
+                                <xsl:call-template name="translation-status-form-panel"/>
+                                
+                            </div>
                         </div>
                     </div>
-                    
                 </div>
             </div>
             
@@ -67,5 +103,6 @@
         </xsl:call-template>
         
     </xsl:template>
+    
     
 </xsl:stylesheet>

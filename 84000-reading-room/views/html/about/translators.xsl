@@ -12,16 +12,16 @@
                     
                     <h2>84000 Translators</h2>
                     
-                    <xsl:for-each select="m:translator-teams/m:team">
+                    <xsl:for-each select="m:contributor-teams/m:team">
                         <xsl:variable name="team-id" select="@xml:id"/>
                         <div>
                             <h3>
-                                <xsl:value-of select="m:name"/>
+                                <xsl:value-of select="m:label"/>
                             </h3>
                             <ul class="list-unstyled">
-                                <xsl:for-each select="/m:response/m:translators/m:translator[m:team/@id = $team-id]">
+                                <xsl:for-each select="/m:response/m:contributor-persons/m:person[m:team/@id = $team-id]">
                                     <li>
-                                        <xsl:value-of select="m:name"/>
+                                        <xsl:value-of select="m:label"/>
                                     </li>
                                 </xsl:for-each>
                             </ul>
@@ -38,7 +38,7 @@
                             <div class="heading">Number of Teams</div>
                             <div class="data">
                                 <span>
-                                    <xsl:value-of select="format-number(count(m:translator-teams/m:team), '#,###')"/>
+                                    <xsl:value-of select="format-number(count(m:contributor-teams/m:team), '#,###')"/>
                                 </span> teams
                             </div>
                         </div>
@@ -48,7 +48,7 @@
                             <div class="heading">Number of Translators</div>
                             <div class="data">
                                 <span>
-                                    <xsl:value-of select="format-number(count(m:translators/m:translator), '#,###')"/>
+                                    <xsl:value-of select="format-number(count(m:contributor-persons/m:person), '#,###')"/>
                                 </span> translators
                             </div>
                         </div>
@@ -57,35 +57,35 @@
                         
                         <h5>Translators by affiliation</h5>
                         
-                        <xsl:for-each select="m:translator-institution-types/m:institution-type">
+                        <xsl:for-each select="m:contributor-institution-types/m:institution-type">
                             <div>
                                 <xsl:attribute name="class" select="concat('stat ', common:position-to-color((position() + 2), 'id'))"/>
                                 <div class="heading">
-                                    <xsl:value-of select="m:name"/>
+                                    <xsl:value-of select="m:label"/>
                                 </div>
                                 <div class="data">
                                     <span>
-                                        <xsl:value-of select="m:stat[@type eq 'translator-percentage']/@value"/>%
+                                        <xsl:value-of select="m:stat[@type eq 'contributor-percentage']/@value"/>%
                                     </span> of translators
                                 </div>
                             </div>
                         </xsl:for-each>
                         
-                        <xsl:variable name="count-institution-types" select="count(m:translator-institution-types/m:institution-type)"/>
+                        <xsl:variable name="count-institution-types" select="count(m:contributor-institution-types/m:institution-type)"/>
                         <xsl:variable name="institution-types-chart-data">
-                            <xsl:for-each select="m:translator-institution-types/m:institution-type">
-                                <xsl:value-of select="m:stat[@type eq 'translator-percentage']/@value"/>
+                            <xsl:for-each select="m:contributor-institution-types/m:institution-type">
+                                <xsl:value-of select="m:stat[@type eq 'contributor-percentage']/@value"/>
                                 <xsl:if test="position() lt $count-institution-types">,</xsl:if>
                             </xsl:for-each>
                         </xsl:variable>
                         <xsl:variable name="institution-types-chart-labels">
-                            <xsl:for-each select="m:translator-institution-types/m:institution-type">
-                                '<xsl:value-of select="m:name"/>'
+                            <xsl:for-each select="m:contributor-institution-types/m:institution-type">
+                                '<xsl:value-of select="m:label"/>'
                                 <xsl:if test="position() lt $count-institution-types">,</xsl:if>
                             </xsl:for-each>
                         </xsl:variable>
                         <xsl:variable name="institution-types-chart-colours">
-                            <xsl:for-each select="m:translator-institution-types/m:institution-type">
+                            <xsl:for-each select="m:contributor-institution-types/m:institution-type">
                                 '<xsl:value-of select="common:position-to-color((position() + 2), 'hex')"/>'
                                 <xsl:if test="position() lt $count-institution-types">,</xsl:if>
                             </xsl:for-each>
@@ -118,35 +118,35 @@
                         
                         <h5>Translators by region</h5>
                         
-                        <xsl:for-each select="m:translator-regions/m:region">
+                        <xsl:for-each select="m:contributor-regions/m:region">
                             <div>
                                 <xsl:attribute name="class" select="concat('stat ', common:position-to-color(position(), 'id'))"/>
                                 <div class="heading">
-                                    <xsl:value-of select="m:name"/>
+                                    <xsl:value-of select="m:label"/>
                                 </div>
                                 <div class="data">
                                     <span>
-                                        <xsl:value-of select="m:stat[@type eq 'translator-percentage']/@value"/>%
+                                        <xsl:value-of select="m:stat[@type eq 'contributor-percentage']/@value"/>%
                                     </span> of translators
                                 </div>
                             </div>
                         </xsl:for-each>
                         
-                        <xsl:variable name="count-regions" select="count(m:translator-regions/m:region)"/>
+                        <xsl:variable name="count-regions" select="count(m:contributor-regions/m:region)"/>
                         <xsl:variable name="region-chart-data">
-                            <xsl:for-each select="m:translator-regions/m:region">
-                                <xsl:value-of select="m:stat[@type eq 'translator-percentage']/@value"/>
+                            <xsl:for-each select="m:contributor-regions/m:region">
+                                <xsl:value-of select="m:stat[@type eq 'contributor-percentage']/@value"/>
                                 <xsl:if test="position() lt $count-regions">,</xsl:if>
                             </xsl:for-each>
                         </xsl:variable>
                         <xsl:variable name="region-chart-labels">
-                            <xsl:for-each select="m:translator-regions/m:region">
-                                '<xsl:value-of select="m:name"/>'
+                            <xsl:for-each select="m:contributor-regions/m:region">
+                                '<xsl:value-of select="m:label"/>'
                                 <xsl:if test="position() lt $count-regions">,</xsl:if>
                             </xsl:for-each>
                         </xsl:variable>
                         <xsl:variable name="region-chart-colours">
-                            <xsl:for-each select="m:translator-regions/m:region">
+                            <xsl:for-each select="m:contributor-regions/m:region">
                                 '<xsl:value-of select="common:position-to-color(position(), 'hex')"/>'
                                 <xsl:if test="position() lt $count-regions">,</xsl:if>
                             </xsl:for-each>

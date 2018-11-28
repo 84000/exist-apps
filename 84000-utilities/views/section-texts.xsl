@@ -35,9 +35,7 @@
                         </td>
                         <td class="nowrap">
                             <xsl:value-of select="@id"/>
-                            <xsl:call-template name="translation-status">
-                                <xsl:with-param name="status" select="@status"/>
-                            </xsl:call-template>
+                            <xsl:copy-of select="common:translation-status(@status)"/>
                         </td>
                     </tr>
                     <tr class="sub">

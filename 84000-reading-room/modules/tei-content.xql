@@ -12,28 +12,21 @@ import module namespace common="http://read.84000.co/common" at "common.xql";
 declare variable $tei-content:text-statuses := doc(concat($common:data-path, '/config/text-statuses.xml'))/m:text-statuses;
 declare variable $tei-content:published-statuses := $tei-content:text-statuses/m:status[@group = ('published')]/@status-id;
 declare variable $tei-content:in-progress-statuses := $tei-content:text-statuses/m:status[@group = ('translated', 'in-translation')]/@status-id;
+declare variable $tei-content:title-types :=
+    <title-types xmlns="http://read.84000.co/ns/1.0">
+        <title-type id="mainTitle">Main</title-type>
+        <title-type id="longTitle">Long</title-type>
+        <title-type id="otherTitle">Other</title-type>
+        <title-lang id="en">English</title-lang>
+        <title-lang id="bo">Tibetan</title-lang>
+        <title-lang id="Bo-Ltn">Wylie</title-lang>
+        <title-lang id="Sa-Ltn">Sanskrit</title-lang>
+        <title-lang id="zh">Chinese</title-lang>
+    </title-types>;
 
 declare function tei-content:id($tei as node()) as xs:string {
     (: Returns the idno in a given tei doc :)
     $tei//tei:publicationStmt/tei:idno/@xml:id
-};
-
-declare function tei-content:title($tei as node()) as xs:string {
-    (: Returns a standardised title in a given tei doc :)
-    
-    let $title := normalize-space($tei//tei:fileDesc//tei:title[@type='mainTitle'][@xml:lang eq 'en'][1]/text())
-    
-    let $title := 
-        if(not($title gt ''))then
-            normalize-space($tei//tei:fileDesc//tei:title[@xml:lang eq 'en'][1]/text())
-        else
-            $title
-            
-    return
-        if(not($title gt ''))then
-            concat(normalize-space($tei//tei:fileDesc//tei:title[@xml:lang eq 'Sa-Ltn'][1]/text()), ' (awaiting English title)')
-        else
-            $title
 };
 
 declare function tei-content:tei($resource-id as xs:string, $resource-type as xs:string) as node()* {
@@ -72,8 +65,45 @@ declare function tei-content:tei($resource-id as xs:string, $resource-type as xs
     
 };
 
-declare function tei-content:title($tei as node(), $type as xs:string, $lang as xs:string*) as xs:string? {
-    normalize-space(data($tei//tei:titleStmt/tei:title[@type eq $type][lower-case(@xml:lang) = $lang]))
+declare function tei-content:title($tei as node()) as xs:string {
+    (: Returns a standardised title in a given tei doc :)
+    
+    let $title := normalize-space($tei//tei:fileDesc//tei:title[@type='mainTitle'][@xml:lang eq 'en'][1]/text())
+    
+    let $title := 
+        if(not($title gt ''))then
+            normalize-space($tei//tei:fileDesc//tei:title[@xml:lang eq 'en'][1]/text())
+        else
+            $title
+            
+    let $title-missing :=
+        if(not($title gt ''))then
+            concat(normalize-space($tei//tei:fileDesc//tei:title[@xml:lang eq 'Sa-Ltn'][1]/text()), ' (awaiting English title)')
+        else
+            $title
+    
+    return
+        translate($title-missing, '&#x2003;', '&#x20;')
+};
+
+declare function tei-content:title($tei as node(), $type as xs:string?, $lang as xs:string*) as xs:string {
+    translate(normalize-space(data($tei//tei:titleStmt/tei:title[@type eq $type][lower-case(@xml:lang) = $lang])), '&#x2003;', '&#x20;')
+};
+
+declare function tei-content:titles($tei as node()) as item()* {
+
+    <titles xmlns="http://read.84000.co/ns/1.0">
+    {
+        for $title in $tei//tei:titleStmt/tei:title
+        return
+            <title 
+                xml:lang="{ $title/@xml:lang }"
+                type="{ $title/@type }">{
+                translate(normalize-space($title/text()), '&#x2003;', '&#x20;') 
+            }</title>
+    }
+    </titles>
+    
 };
 
 declare function tei-content:title-set($tei as node(), $type as xs:string) as item()* {
@@ -125,7 +155,7 @@ declare function tei-content:translation-status-group($tei as node()) {
 };
 
 declare function tei-content:text-statuses-selected($selected-ids as xs:string*) as node() {
-    <text-statuses xmlns="http://read.84000.co/ns/1.0" not-started="{ if(functx:is-value-in-sequence('0', $selected-ids)) then 'selected' else '' }">
+    <text-statuses xmlns="http://read.84000.co/ns/1.0">
     {
         element status 
         { 
@@ -205,3 +235,27 @@ declare function tei-content:ancestors($tei as node(), $resource-id as xs:string
          else
             ()
 };
+
+
+declare function tei-content:locked-by-user($tei as node()) as xs:string? {
+    
+    let $document-uri := base-uri($tei)
+    let $document-uri-tokenised := tokenize($document-uri, '/')
+    let $document-filename := $document-uri-tokenised[last()]
+    let $document-path := substring-before($document-uri, $document-filename)
+    return
+        xmldb:document-has-lock(concat("xmldb:exist://", $document-path), $document-filename)
+
+};
+
+declare function tei-content:document-url($tei as node()) as xs:string {
+    
+    let $document-uri := base-uri($tei)
+    let $document-uri-tokenised := tokenize($document-uri, '/')
+    let $document-filename := $document-uri-tokenised[last()]
+    let $document-path := substring-before($document-uri, $document-filename)
+    return
+        concat($document-path, $document-filename)
+
+};
+

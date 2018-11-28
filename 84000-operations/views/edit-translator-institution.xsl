@@ -2,6 +2,7 @@
 <xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" version="2.0" exclude-result-prefixes="#all">
     
     <xsl:include href="../../84000-reading-room/views/html/reading-room-page.xsl"/>
+    <xsl:include href="../../84000-reading-room/xslt/forms.xsl"/>
     <xsl:include href="common.xsl"/>
     
     <xsl:template match="/m:response">
@@ -70,9 +71,9 @@
                                                 </xsl:choose>
                                             </legend>
                                             
-                                            <xsl:copy-of select="m:text-input('Name','name', m:institution/text(), 9, 'required')"/>
-                                            <xsl:copy-of select="m:select-input-name('Type', 'institution-type-id', 9, /m:response/m:translator-institution-types/m:institution-type, m:institution/@institution-type-id)"/>
-                                            <xsl:copy-of select="m:select-input-name('Region', 'region-id', 9, /m:response/m:translator-regions/m:region, m:institution/@region-id)"/>
+                                            <xsl:copy-of select="m:text-input('Name','name', m:institution/m:label, 9, 'required')"/>
+                                            <xsl:copy-of select="m:select-input-name('Region', 'region-id', 9, /m:response/m:contributor-regions/m:region, m:institution/@region-id)"/>
+                                            <xsl:copy-of select="m:select-input-name('Type', 'institution-type-id', 9, /m:response/m:contributor-institution-types/m:institution-type, m:institution/@institution-type-id)"/>
                                             
                                             <button type="submit" class="btn btn-primary pull-right">
                                                 Save

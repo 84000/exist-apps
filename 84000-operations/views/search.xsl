@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" version="2.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" version="2.0" exclude-result-prefixes="#all">
     
     <xsl:include href="../../84000-reading-room/views/html/reading-room-page.xsl"/>
     <xsl:include href="common.xsl"/>
@@ -211,6 +211,7 @@
                                     </thead>
                                     <tbody>
                                         <xsl:for-each select="m:texts/m:text">
+                                            <xsl:variable name="text-id" select="@id"/>
                                             <xsl:variable name="status-id" select="xs:string(@status)"/>
                                             <tr>
                                                 <td class="nowrap">
@@ -279,31 +280,61 @@
                                             <tr class="sub">
                                                 <td colspan="2"/>
                                                 <td colspan="5">
-                                                    <ul class="list-inline inline-dots">
+                                                    <ul class="list-inline inline-dots no-bottom-margin">
+                                                        <xsl:if test="/m:response/m:permission[@group eq 'utilities']">
+                                                            <li>
+                                                                <a class="small">
+                                                                    <xsl:attribute name="href" select="concat('/edit-text-header.html?id=', $text-id)"/>
+                                                                    Edit headers
+                                                                </a>
+                                                            </li>
+                                                        </xsl:if>
                                                         <li>
                                                             <a class="small">
-                                                                <xsl:attribute name="href" select="concat('/edit-text.html?id=', @id)"/>
-                                                                Edit headers
-                                                            </a>
-                                                        </li>
-                                                        <li>
-                                                            <a class="small">
-                                                                <xsl:attribute name="href" select="concat('/edit-text-sponsors.html?id=', @id)"/>
+                                                                <xsl:attribute name="href" select="concat('/edit-text-sponsors.html?id=', $text-id)"/>
                                                                 Edit sponsors
                                                             </a>
                                                         </li>
                                                     </ul>
                                                 </td>
                                             </tr>
+                                            <xsl:if test="/m:response/m:permission[@group eq 'utilities']">
+                                                <xsl:variable name="translation-status" select="/m:response/m:translation-status/m:text[@text-id eq $text-id]"/>
+                                                <xsl:if test="$translation-status/m:notes/text() | $translation-status/m:task[not(@checked-off)]">
+                                                    <tr class="sub">
+                                                        <td colspan="2"/>
+                                                        <td colspan="5">
+                                                            <div class="top-vertical">
+                                                                <a class="italic text-color">
+                                                                    <xsl:attribute name="href" select="concat('/edit-text-header.html?id=', $text-id, '#publication-status-form')"/>
+                                                                    <xsl:choose>
+                                                                        <xsl:when test="$translation-status/m:notes/text()">
+                                                                            <xsl:value-of select="common:limit-str($translation-status/m:notes, 80)"/>
+                                                                        </xsl:when>
+                                                                        <xsl:otherwise>
+                                                                            [No notes]
+                                                                        </xsl:otherwise>
+                                                                    </xsl:choose>
+                                                                </a>
+                                                                <a>
+                                                                    <xsl:attribute name="href" select="concat('/edit-text-header.html?id=', $text-id, '#publication-status-form')"/>
+                                                                    <span class="badge badge-notification">
+                                                                        <xsl:value-of select="count($translation-status/m:task[not(@checked-off)])"/>
+                                                                    </span>
+                                                                </a>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                </xsl:if>
+                                            </xsl:if>
                                             <xsl:if test="m:sponsors/tei:div[@type eq 'acknowledgment']/tei:p">
                                                 <tr class="sub">
                                                     <td colspan="2"/>
-                                                    <td>
+                                                    <td colspan="5">
                                                         <div class="pull-quote">
                                                             <xsl:apply-templates select="m:sponsors/tei:div[@type eq 'acknowledgment']/tei:p"/>
                                                         </div>
                                                     </td>
-                                                    <td colspan="4"/>
                                                 </tr>
                                             </xsl:if>
                                         </xsl:for-each>

@@ -357,9 +357,7 @@
                                                         
                                                         <xsl:if test="$section-id ne 'all-translated'">
                                                             <div class="translation-status">
-                                                                <xsl:call-template name="translation-status">
-                                                                    <xsl:with-param name="status" select="@status"/>
-                                                                </xsl:call-template>
+                                                                <xsl:copy-of select="common:translation-status(@status)"/>
                                                             </div>
                                                         </xsl:if>
                                                         
