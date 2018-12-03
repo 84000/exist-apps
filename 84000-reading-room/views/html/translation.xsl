@@ -240,7 +240,7 @@
                                     </section>
                                 </xsl:if>
                                 
-                                <xsl:if test="m:translation/m:abbreviations/m:item">
+                                <xsl:if test="m:translation/m:abbreviations/m:list/m:item">
                                     
                                     <hr class="hidden-print"/>
                                     
@@ -682,7 +682,7 @@
                         </xsl:call-template>
                     </xsl:if>
                 </xsl:if>
-                <xsl:if test="$translation/m:abbreviations/m:item">
+                <xsl:if test="$translation/m:abbreviations/m:list/m:item">
                     <tr>
                         <td>
                             <xsl:value-of select="concat($translation/m:abbreviations/@prefix, '.')"/>

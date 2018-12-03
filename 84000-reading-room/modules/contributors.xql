@@ -269,23 +269,24 @@ declare function contributors:update-person($person as node()?) as xs:string {
         else
             concat('person-', xs:string(contributors:next-id()))
     
+    let $request-parameter-names := common:sort-trailing-number-in-string(request:get-parameter-names(), '-')
+    
     let $new-value := 
         <person xmlns="http://read.84000.co/ns/1.0" 
             xml:id="{ $person-id }">
             <label>{  request:get-parameter('name', '') }</label>
             {
-                for $index in 0 to count($person/m:institution/@id)
+                for $request-parameter-name in $request-parameter-names
                 return
-                    if(request:get-parameter(concat('institution-id-', $index), '') gt '') then
-                        <institution id="{ request:get-parameter(concat('institution-id-', $index), '') }"/>
+                    if(starts-with($request-parameter-name, 'institution-id-') and request:get-parameter($request-parameter-name, '') gt '') then
+                        <institution id="{ request:get-parameter($request-parameter-name, '') }"/>
                     else
                         ()
-            }
-            {
-                for $index in 0 to count($person/m:team/@id)
+                ,
+                for $request-parameter-name in $request-parameter-names
                 return
-                    if(request:get-parameter(concat('team-id-', $index), '') gt '') then
-                        <team id="{ request:get-parameter(concat('team-id-', $index), '') }"/>
+                    if(starts-with($request-parameter-name, 'team-id-') and request:get-parameter($request-parameter-name, '') gt '') then
+                        <team id="{ request:get-parameter($request-parameter-name, '') }"/>
                     else
                         ()
             }

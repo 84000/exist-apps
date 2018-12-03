@@ -89,7 +89,7 @@ let $entries := (
                         ()
                 }
                 {
-                    if($data/m:response/m:translation/m:abbreviations/m:item) then 
+                    if($data/m:response/m:translation/m:abbreviations/m:list/m:item) then 
                         <item id="abbreviations" href="abbreviations.xhtml" media-type="application/xhtml+xml"/>
                     else
                         ()
@@ -138,7 +138,7 @@ let $entries := (
                         ()
                 }
                 {
-                    if($data/m:response/m:translation/m:abbreviations/m:item) then 
+                    if($data/m:response/m:translation/m:abbreviations/m:list/m:item) then 
                         <itemref idref="abbreviations"/>
                     else
                         ()
@@ -192,7 +192,7 @@ let $entries := (
     else
         ()
     ,
-    if($data/m:response/m:translation/m:abbreviations/m:item) then 
+    if($data/m:response/m:translation/m:abbreviations/m:list/m:item) then 
         <entry name="OEBPS/abbreviations.xhtml" type="xml">{transform:transform($data, doc("xslt/abbreviations.xsl"), ())}</entry>
     else
         ()

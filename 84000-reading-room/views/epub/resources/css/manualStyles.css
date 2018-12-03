@@ -370,8 +370,11 @@ img.logo-84000{
 }
 
 /* Abbreviations */
+#abbreviations h5{
+    margin-top: 16pt;
+    margin-bottom: 8pt;
+}
 #abbreviations table{
-    margin-top: 8pt;
     margin-bottom: 8pt;
 }
 #abbreviations table th{
@@ -379,6 +382,9 @@ img.logo-84000{
     vertical-align: top;
     font-weight: normal;
     text-align: left;
+}
+#abbreviations p{
+    margin-bottom: 8pt;
 }
 
 /* Bibliography */

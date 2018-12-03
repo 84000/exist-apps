@@ -46,11 +46,12 @@
                             <form method="post" class="form-horizontal">
                                 
                                 <xsl:attribute name="action" select="'edit-sponsor.html'"/>
+                                <xsl:variable name="sponsor-id" select="m:sponsor/@xml:id"/>
                                 
                                 <input type="hidden" name="post-id">
                                     <xsl:choose>
-                                        <xsl:when test="m:sponsor/@xml:id">
-                                            <xsl:attribute name="value" select="m:sponsor/@xml:id"/>
+                                        <xsl:when test="$sponsor-id">
+                                            <xsl:attribute name="value" select="$sponsor-id"/>
                                         </xsl:when>
                                         <xsl:otherwise>
                                             <xsl:attribute name="value" select="'new'"/>
@@ -64,8 +65,8 @@
                                         <fieldset>
                                             <legend>
                                                 <xsl:choose>
-                                                    <xsl:when test="m:sponsor/@xml:id">
-                                                        ID: <xsl:value-of select="m:sponsor/@xml:id"/>
+                                                    <xsl:when test="$sponsor-id">
+                                                        ID: <xsl:value-of select="$sponsor-id"/>
                                                     </xsl:when>
                                                     <xsl:otherwise>New sponsor </xsl:otherwise>
                                                 </xsl:choose>
@@ -100,31 +101,57 @@
                                                     </select>
                                                 </div>
                                             </div>
-                                            <hr/>
-                                            <a class="btn btn-danger">
-                                                <xsl:attribute name="href" select="concat('/sponsors.html?delete=', m:sponsor/@xml:id)"/>
-                                                Delete
-                                            </a>
-                                            <button type="submit" class="btn btn-primary pull-right">
-                                                Save
-                                            </button>
                                         </fieldset>
                                         
                                     </div>
                                     
                                     <div class="col-sm-6">
                                         <xsl:if test="m:sponsor/m:acknowledgement">
+                                            
                                             <h4>Acknowledgements</h4>
+                                            
                                             <xsl:call-template name="acknowledgements">
                                                 <xsl:with-param name="acknowledgements" select="m:sponsor/m:acknowledgement"/>
                                                 <xsl:with-param name="css-class" select="''"/>
                                                 <xsl:with-param name="group" select="''"/>
                                                 <xsl:with-param name="link-href" select="'/edit-text-sponsors.html?id=@translation-id'"/>
                                             </xsl:call-template>
+                                            
                                         </xsl:if>
+                                        
+                                        <!-- 
+                                            
+                                        <hr/>
+                                        
+                                        <div class="form-group">
+                                            <label class="control-label col-sm-3" for="sponsor-text">
+                                                Add as sponsor:
+                                            </label>
+                                            <div class="col-sm-9">
+                                                <select name="sponsor-text" id="sponsor-text" class="form-control">
+                                                    <xsl:for-each select="m:sponsored-texts/m:text[not(m:sponsors/m:sponsor[@xml:id eq $sponsor-id])]">
+                                                        <xsl:sort select="xs:integer(m:toh/@number)"/>
+                                                        <xsl:sort select="xs:integer(concat('0', m:toh/@chapter-number))"/>
+                                                        <option>
+                                                            <xsl:attribute name="value" select="@id"/>
+                                                            <xsl:value-of select="concat(m:toh/m:full, ' / ', m:titles/m:title[@xml:lang eq 'en'])"/>
+                                                        </option>
+                                                    </xsl:for-each>
+                                                </select>
+                                            </div>
+                                        </div>
+                                         -->
+                                        
                                     </div>
-                                    
                                 </div>
+                                <hr/>
+                                <a class="btn btn-danger">
+                                    <xsl:attribute name="href" select="concat('/sponsors.html?delete=', $sponsor-id)"/>
+                                    Delete
+                                </a>
+                                <button type="submit" class="btn btn-primary pull-right">
+                                    Save
+                                </button>
                             </form>
                             
                         </div>

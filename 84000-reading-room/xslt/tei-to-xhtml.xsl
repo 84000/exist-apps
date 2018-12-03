@@ -361,6 +361,12 @@
         </xsl:choose>
     </xsl:template>
     
+    <xsl:template match="tei:hi[@rend eq 'subscript']">
+        <sub>
+            <xsl:apply-templates select="node()"/>
+        </sub>
+    </xsl:template>
+    
     <!-- Temporary id -->
     <xsl:template name="tid">
         <xsl:param name="node" required="yes"/>
@@ -468,31 +474,39 @@
     <xsl:template name="abbreviations">
         <!-- Called in epubs and RR -->
         <xsl:param name="translation" required="yes"/>
-        <xsl:if test="$translation/m:abbreviations/m:head[not(lower-case(text()) = ('abbreviations', 'abbreviations:'))]">
-            <h5>
-                <xsl:apply-templates select="$translation/m:abbreviations/m:head/text()"/>
-            </h5>
-        </xsl:if>
-        <table class="table">
-            <tbody>
-                <xsl:for-each select="$translation/m:abbreviations/m:item">
-                    <xsl:sort select="m:abbreviation/text()"/>
-                    <tr>
-                        <th>
-                            <xsl:apply-templates select="m:abbreviation/text()"/>
-                        </th>
-                        <td>
-                            <xsl:apply-templates select="m:explanation/node()"/>
-                        </td>
-                    </tr>
-                </xsl:for-each>
-            </tbody>
-        </table>
-        <xsl:if test="$translation/m:abbreviations/m:foot">
-            <p>
-                <xsl:apply-templates select="m:translation/m:abbreviations/m:foot/text()"/>
-            </p>
-        </xsl:if>
+        <xsl:for-each select="$translation/m:abbreviations/m:list">
+            <xsl:if test="m:head[not(lower-case(text()) = ('abbreviations', 'abbreviations:'))]">
+                <h5>
+                    <xsl:apply-templates select="m:head/text()"/>
+                </h5>
+            </xsl:if>
+            <xsl:for-each select="m:description">
+                <p>
+                    <xsl:apply-templates select="node()"/>
+                </p>
+            </xsl:for-each>
+            <table class="table">
+                <tbody>
+                    <xsl:for-each select="m:item">
+                        <xsl:sort select="m:abbreviation/text()"/>
+                        <tr>
+                            <th>
+                                <xsl:apply-templates select="m:abbreviation/node()"/>
+                            </th>
+                            <td>
+                                <xsl:apply-templates select="m:explanation/node()"/>
+                            </td>
+                        </tr>
+                    </xsl:for-each>
+                </tbody>
+            </table>
+            <xsl:if test="m:foot">
+                <p>
+                    <xsl:apply-templates select="m:foot/node()"/>
+                </p>
+            </xsl:if>
+        </xsl:for-each>
+        
     </xsl:template>
     
     <!-- Glossary item -->

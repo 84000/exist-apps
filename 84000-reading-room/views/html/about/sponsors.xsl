@@ -30,7 +30,7 @@
                     <p>Dzongsar Khyentse Rinpoche, chairperson of 84000, has written a message addressed to all 108 Founding Sponsors. Click here to <a href="http://84000.co/message-to-founding-sponsors/">view Rinpoche’s message</a>.</p>
                     <h3>Our Founding Sponsors</h3>
                     <ol>
-                        <xsl:for-each select="m:sponsorship/m:sponsor[@type eq 'founding']">
+                        <xsl:for-each select="m:sponsors/m:sponsor[@type eq 'founding']">
                             <li>
                                 <xsl:value-of select="m:label"/>
                             </li>
@@ -42,7 +42,7 @@
                     <p>The Matching Funds Program is designed to incentivize small-dollar donors to give to 84000 on a recurring basis by offering to match those donations dollar-for-dollar. We would like to thank the following Matching Funds sponsors for their gift to 84000 and their generosity in allowing small-dollar donors to feel their contribution is making a more significant impact on the progress of the translation of the Tibetan Buddhist canon.</p>
                     <h3>Our Matching Funds Sponsors</h3>
                     <ul class="list-unstyled">
-                        <xsl:for-each select="m:sponsorship/m:sponsor[@type eq 'matching-funds']">
+                        <xsl:for-each select="m:sponsors/m:sponsor[@type eq 'matching-funds']">
                             <li>
                                 <xsl:value-of select="m:label"/>
                             </li>
@@ -59,7 +59,7 @@
                             <div class="col-sm-10">Title</div>
                         </div>
                         <div class="list-section">
-                            <xsl:for-each select="m:sponsorship/m:sponsored-texts/m:text">
+                            <xsl:for-each select="m:sponsored-texts/m:text">
                                 <xsl:sort select="number(m:toh/@number)"/>
                                 <xsl:sort select="m:toh/@letter"/>
                                 <xsl:sort select="number(m:toh/@chapter-number)"/>
@@ -97,7 +97,11 @@
                                         <xsl:if test="m:sponsors/tei:div[@type eq 'acknowledgment']/tei:p">
                                             <hr/>
                                             <div>
-                                                <xsl:apply-templates select="m:sponsors/tei:div[@type eq 'acknowledgment']/tei:p"/>
+                                                <xsl:for-each select="m:sponsors/tei:div[@type eq 'acknowledgment']/tei:p">
+                                                    <p>
+                                                        <xsl:value-of select="data(.)"/>
+                                                    </p>
+                                                </xsl:for-each>
                                                 <xsl:if test="m:translation/@sponsored eq 'part'">
                                                     <p class="text-muted">
                                                         <a href="http://84000.co/sutra" class="italic">

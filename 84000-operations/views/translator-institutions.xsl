@@ -26,9 +26,9 @@
                             <xsl:with-param name="active-tab" select="@model-type"/>
                         </xsl:call-template>
                         
-                        <div class="center-vertical full-width bottom-margin">
+                        <div class="well well-sm center-vertical full-width bottom-margin">
                             
-                            <span class="small text-muted">
+                            <span class="small">
                                 Listing 
                                 <xsl:value-of select="fn:format-number(xs:integer(count(m:contributor-institutions/m:institution)),'#,##0')"/> institutions 
                             </span>

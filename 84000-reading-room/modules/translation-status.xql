@@ -17,7 +17,10 @@ declare function translation-status:text($text-id as xs:string) as item()?{
 };
 
 declare function translation-status:texts($text-id as xs:string*) as item()*{
-    $translation-status:data/m:translation-status/m:text[@text-id = $text-id]
+    if(count($text-id) gt 0)then
+        $translation-status:data/m:translation-status/m:text[@text-id = $text-id]
+    else
+        ()
 };
 
 declare function translation-status:notes($text-id as xs:string) as element()?{

@@ -3,6 +3,7 @@ xquery version "3.0" encoding "UTF-8";
 import module namespace local="http://operations.84000.co/local" at "../modules/local.xql";
 import module namespace common="http://read.84000.co/common" at "../../84000-reading-room/modules/common.xql";
 import module namespace sponsors="http://read.84000.co/sponsors" at "../../84000-reading-room/modules/sponsors.xql";
+import module namespace translations="http://read.84000.co/translations" at "../../84000-reading-room/modules/translations.xql";
 
 declare namespace m="http://read.84000.co/ns/1.0";
 
@@ -18,11 +19,11 @@ let $new-id :=
 
 let $sponsor := 
     if($new-id gt '') then
-        sponsors:sponsor($new-id, true())
+        sponsors:sponsor($new-id, true(), true())
     else if($post-id gt '') then
-        sponsors:sponsor($post-id, true())
+        sponsors:sponsor($post-id, true(), true())
     else if($request-id gt '') then
-        sponsors:sponsor($request-id, true())
+        sponsors:sponsor($request-id, true(), true())
     else
         ()
 
@@ -38,6 +39,7 @@ return
                 xmlns="http://read.84000.co/ns/1.0" >
                 { if($new-id) then <updated/> else () }
             </updates>,
-            $sponsor
+            $sponsor(:,
+            translations:sponsored():)
         )
     )

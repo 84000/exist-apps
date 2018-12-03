@@ -111,43 +111,6 @@
         </ul>
     </xsl:template>
     
-    <xsl:template name="acknowledgements">
-        
-        <xsl:param name="acknowledgements" required="yes"/>
-        <xsl:param name="group" as="xs:string" required="yes"/>
-        <xsl:param name="css-class" as="xs:string" required="yes"/>
-        <xsl:param name="link-href" as="xs:string" required="yes"/>
-        
-        <xsl:for-each select="$acknowledgements">
-            <xsl:sort select="xs:integer(m:toh/@number)"/>
-            <div>
-                <xsl:attribute name="class" select="$css-class"/>
-                <xsl:if test="$group gt ''">
-                    <xsl:attribute name="data-match-height" select="concat('group-', $group)"/>
-                </xsl:if>
-                <div class="pull-quote">
-                    <div class="title top-vertical full-width">
-                        <a>
-                            <xsl:attribute name="href" select="replace($link-href, '@translation-id', @translation-id)"/>
-                            <xsl:value-of select="m:toh/m:full"/> / <xsl:value-of select="m:title"/>
-                        </a>
-                        <span>
-                            <xsl:copy-of select="common:translation-status(@translation-status)"/>
-                        </span>
-                    </div>
-                    <xsl:apply-templates select="tei:div[@type eq 'acknowledgment']/*"/>
-                </div>
-            </div>
-        </xsl:for-each>
-        
-    </xsl:template>
-    
-    <xsl:template match="exist:match">
-        <span class="mark">
-            <xsl:apply-templates select="text()"/>
-        </span>
-    </xsl:template>
-    
     <xsl:template name="link-to-top">
         <!-- Link to top of page -->
         <div class="hidden-print">

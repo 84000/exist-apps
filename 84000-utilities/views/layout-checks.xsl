@@ -126,6 +126,10 @@
                                 </li>
                                 <li>
                                     <a target="test-layout">
+                                        <xsl:attribute name="href" select="concat($reading-room-path, '/translation/UT22084-079-008.html#abbreviations')"/> Multiple abbreviations lists</a>
+                                </li>
+                                <li>
+                                    <a target="test-layout">
                                         <xsl:attribute name="href" select="concat($reading-room-path, '/translation/UT22084-031-002.html#bibliography')"/> Structured bibliography </a>
                                 </li>
                                 <li>

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" exclude-result-prefixes="xs" version="2.0">
+<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" exclude-result-prefixes="xs" version="2.0">
     
     <xsl:include href="functions.xsl"/>
     
@@ -517,29 +517,31 @@
                                     </div>
                                 </div>
                                 
-                                <h4>Recently done</h4>
-                                <xsl:for-each select="m:translation-status/m:task[not(@hidden)][@checked-off]">
-                                    <xsl:sort select="@checked-off" order="descending"/>
-                                    <div class="small text-muted">
-                                        <xsl:value-of select="common:date-user-string('Marked done', @checked-off, @checked-off-by)"/>
-                                    </div>
-                                    <div class="row">
-                                        <div class="col-sm-9">
-                                            <p class="line-through text-muted margin-top-sm pull-quote">
-                                                <xsl:value-of select="text()"/>
-                                            </p>
+                                <xsl:if test="m:translation-status/m:task[not(@hidden)][@checked-off]">
+                                    <h4>Recently done</h4>
+                                    <xsl:for-each select="m:translation-status/m:task[not(@hidden)][@checked-off]">
+                                        <xsl:sort select="@checked-off" order="descending"/>
+                                        <div class="small text-muted">
+                                            <xsl:value-of select="common:date-user-string('Marked done', @checked-off, @checked-off-by)"/>
                                         </div>
-                                        <div class="col-sm-3">
-                                            <div class="checkbox">
-                                                <label class="small">
-                                                    <input type="checkbox" name="task-hide[]">
-                                                        <xsl:attribute name="value" select="@xml:id"/>
-                                                    </input> Hide
-                                                </label>
+                                        <div class="row">
+                                            <div class="col-sm-9">
+                                                <p class="line-through text-muted margin-top-sm pull-quote">
+                                                    <xsl:value-of select="text()"/>
+                                                </p>
+                                            </div>
+                                            <div class="col-sm-3">
+                                                <div class="checkbox">
+                                                    <label class="small">
+                                                        <input type="checkbox" name="task-hide[]">
+                                                            <xsl:attribute name="value" select="@xml:id"/>
+                                                        </input> Hide
+                                                    </label>
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
-                                </xsl:for-each>
+                                    </xsl:for-each>
+                                </xsl:if>
                                 
                                 <xsl:if test="m:translation-status/m:task[@hidden]">
                                     
@@ -830,5 +832,42 @@
             </div>
         </div>
     </xsl:function>
+    
+    <xsl:template name="acknowledgements">
+        
+        <xsl:param name="acknowledgements" required="yes"/>
+        <xsl:param name="group" as="xs:string" required="yes"/>
+        <xsl:param name="css-class" as="xs:string" required="yes"/>
+        <xsl:param name="link-href" as="xs:string" required="yes"/>
+        
+        <xsl:for-each select="$acknowledgements">
+            <xsl:sort select="xs:integer(m:toh/@number)"/>
+            <div>
+                <xsl:attribute name="class" select="$css-class"/>
+                <xsl:if test="$group gt ''">
+                    <xsl:attribute name="data-match-height" select="concat('group-', $group)"/>
+                </xsl:if>
+                <div class="pull-quote">
+                    <div class="title top-vertical full-width">
+                        <a>
+                            <xsl:attribute name="href" select="replace($link-href, '@translation-id', @translation-id)"/>
+                            <xsl:value-of select="m:toh/m:full"/> / <xsl:value-of select="m:title"/>
+                        </a>
+                        <span>
+                            <xsl:copy-of select="common:translation-status(@translation-status)"/>
+                        </span>
+                    </div>
+                    <xsl:apply-templates select="tei:div[@type eq 'acknowledgment']/*"/>
+                </div>
+            </div>
+        </xsl:for-each>
+        
+    </xsl:template>
+    
+    <xsl:template match="exist:match">
+        <span class="mark">
+            <xsl:apply-templates select="node()"/>
+        </span>
+    </xsl:template>
     
 </xsl:stylesheet>

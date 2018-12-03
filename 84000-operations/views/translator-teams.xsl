@@ -2,6 +2,7 @@
 <xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" version="2.0" exclude-result-prefixes="#all">
     
     <xsl:include href="../../84000-reading-room/views/html/reading-room-page.xsl"/>
+    <xsl:include href="../../84000-reading-room/xslt/forms.xsl"/>
     <xsl:include href="common.xsl"/>
     
     <xsl:template match="/m:response">
@@ -26,9 +27,9 @@
                             <xsl:with-param name="active-tab" select="@model-type"/>
                         </xsl:call-template>
                         
-                        <div class="center-vertical full-width bottom-margin">
+                        <div class="well well-sm center-vertical full-width bottom-margin">
                             
-                            <span class="small text-muted">
+                            <span class="small">
                                 Listing
                                 <xsl:value-of select="fn:format-number(xs:integer(count(m:contributor-teams/m:team)),'#,##0')"/> translator teams 
                             </span>
@@ -37,7 +38,7 @@
                                 <form method="post" action="/translator-teams.html" class="form-inline filter-form pull-right">
                                     
                                     <div class="checkbox">
-                                        <label>
+                                        <label class="small">
                                             <input type="checkbox" name="include-acknowledgements" value="1">
                                                 <xsl:if test="m:request/@include-acknowledgements eq 'true'">
                                                     <xsl:attribute name="checked" select="'checked'"/>

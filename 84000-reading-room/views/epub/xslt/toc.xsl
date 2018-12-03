@@ -105,7 +105,7 @@
                         <content src="appendix.xhtml"/>
                     </navPoint>
                 </xsl:if>
-                <xsl:if test="m:translation/m:abbreviations/m:item">
+                <xsl:if test="m:translation/m:abbreviations/m:list/m:item">
                     <navPoint id="abbreviations">
                         <navLabel>
                             <text>Abbreviations</text>

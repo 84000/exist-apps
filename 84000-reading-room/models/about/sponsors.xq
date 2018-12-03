@@ -36,16 +36,7 @@ return
             $header,
             $tabs,
             translations:summary(),
-            <sponsorship xmlns="http://read.84000.co/ns/1.0">
-            {
-                $sponsors:sponsors/m:sponsors/m:sponsor[@type eq 'founding']
-            }
-            {
-                $sponsors:sponsors/m:sponsors/m:sponsor[@type eq 'matching-funds']
-            }
-            {
-                translations:sponsored()
-            }
-            </sponsorship>
+            sponsors:sponsors($sponsors:sponsors/m:sponsors/m:sponsor[@type = ('founding', 'matching-funds')]/@xml:id, false(), false()),
+            translations:sponsored()
         )
     )

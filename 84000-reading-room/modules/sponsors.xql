@@ -13,10 +13,10 @@ declare variable $sponsors:sponsors := doc(concat($common:data-path, '/entities/
 declare variable $sponsors:texts := collection($common:translations-path);
 declare variable $sponsors:prefixes := '(Dr\.|Prof\.)';
 
-declare function sponsors:sponsors($include-acknowledgements as xs:boolean){
+declare function sponsors:sponsors($sponsor-ids as xs:string*, $include-acknowledgements as xs:boolean, $include-internal-names as xs:boolean){
 
     let $sponsors-ordered := 
-        for $sponsor in $sponsors:sponsors/m:sponsors/m:sponsor
+        for $sponsor in $sponsors:sponsors/m:sponsors/m:sponsor[@xml:id = (if($sponsor-ids = 'all') then @xml:id else $sponsor-ids)]
         order by normalize-space(replace(concat($sponsor/m:label, ' ', $sponsor/m:internal-name), $sponsors:prefixes, ''))
         return $sponsor
     
@@ -25,18 +25,24 @@ declare function sponsors:sponsors($include-acknowledgements as xs:boolean){
         {
             for $sponsor in $sponsors-ordered
             return
-                sponsors:sponsor($sponsor/@xml:id, $include-acknowledgements)
+                sponsors:sponsor($sponsor/@xml:id, $include-acknowledgements, $include-internal-names)
          }
          </sponsors>
 };
 
-declare function sponsors:sponsor($id as xs:string, $include-acknowledgements as xs:boolean){
+declare function sponsors:sponsor($id as xs:string, $include-acknowledgements as xs:boolean, $include-internal-names as xs:boolean){
     let $sponsor := $sponsors:sponsors/m:sponsors/m:sponsor[@xml:id eq $id]
     return
         element { node-name($sponsor) } {
             $sponsor/@*,
             attribute start-letter { upper-case(substring(normalize-space(replace($sponsor/m:label, $sponsors:prefixes, '')), 1, 1)) },
-            $sponsor/node(),
+            $sponsor/m:label,
+            $sponsor/m:country,
+            if($include-internal-names) then
+                $sponsor/m:internal-name
+            else
+                ()
+            ,
             if($include-acknowledgements) then
                 sponsors:acknowledgements(concat('sponsors.xml#', $sponsor/@xml:id))
             else
@@ -45,13 +51,6 @@ declare function sponsors:sponsor($id as xs:string, $include-acknowledgements as
 };
 
 declare function sponsors:acknowledgements($uri as xs:string){
-    
-    let $query-options := 
-        <options>
-            <default-operator>and</default-operator>
-            <phrase-slop>0</phrase-slop>
-            <leading-wildcard>no</leading-wildcard>
-        </options>
     
     let $sponsor-id := substring-after($uri, 'sponsors.xml#')
     
@@ -154,7 +153,7 @@ declare function sponsors:update($sponsor as node()?) as xs:string {
     
     let $parent := $sponsors:sponsors/m:sponsors
     
-    let $update := common:update('sponsor', $sponsor, $new-value, $parent, ())
+    let $update-sponsor := common:update('sponsor', $sponsor, $new-value, $parent, ())
     
     return
         $new-value//@xml:id

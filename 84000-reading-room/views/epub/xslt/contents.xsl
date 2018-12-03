@@ -72,7 +72,7 @@
                             <a href="appendix.xhtml">Appendix</a>
                         </li>
                     </xsl:if>
-                    <xsl:if test="m:translation/m:abbreviations/m:item">
+                    <xsl:if test="m:translation/m:abbreviations/m:list/m:item">
                         <li>
                             <a href="abbreviations.xhtml">Abbreviations</a>
                         </li>

@@ -28,7 +28,7 @@ declare function translations:file($translation as node()) as node() {
         <file xmlns="http://read.84000.co/ns/1.0"
             uri="{ $base-uri }"
             fileName="{ util:unescape-uri(replace($base-uri, ".+/(.+)$", "$1"), 'UTF-8') }"
-            id="{ $translation//tei:fileDesc/tei:publicationStmt/tei:idno/@xml:id }" >
+            id="{ tei-content:id($translation) }" >
             {
                 tei-content:title($translation)
             }
@@ -124,7 +124,8 @@ declare function translations:sponsored() as node() {
         return
             <text 
                 status="{ tei-content:translation-status($tei) }" 
-                status-group="{ tei-content:translation-status-group($tei) }">
+                status-group="{ tei-content:translation-status-group($tei) }"
+                id="{ tei-content:id($tei) }" >
                 { translation:toh($tei, '') }
                 { translation:titles($tei) }
                 { translation:title-variants($tei) }

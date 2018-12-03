@@ -393,24 +393,35 @@ declare function translation:appendix($tei as node()) as node()* {
 declare function translation:abbreviations($tei as node()) as node()* {
     <abbreviations xmlns="http://read.84000.co/ns/1.0" prefix="ab">
     {
-        if($tei//tei:list[@type='abbreviations']/tei:head/text())then
-            <head>{$tei//tei:list[@type='abbreviations']/tei:head/text()}</head>
-        else
-            ()
-    }
-    {
-        for $item in $tei//tei:list[@type='abbreviations']/tei:item[tei:abbr]
+        for $list in $tei//tei:back//tei:list[@type='abbreviations']
         return
-            <item>
-                <abbreviation>{ normalize-space($item/tei:abbr/text()) }</abbreviation>
-                <explanation>{ $item/tei:expan/node() }</explanation>
-            </item>
-    }
-    {
-        if($tei//tei:list[@type='abbreviations']/tei:item[not(tei:abbr)]/text())then
-            <foot>{ $tei//tei:list[@type='abbreviations']/tei:item[not(tei:abbr)]/text() }</foot>
-        else
-            ()
+            <list>
+            {
+                if($list/tei:head[@type eq 'abbreviations']/text())then
+                    <head>{$list/tei:head[@type eq 'abbreviations']/text()}</head>
+                else
+                    ()
+            }
+            {
+                for $description in $list/tei:head[@type eq 'description']
+                return
+                    <description>{$description/node()}</description>
+            }
+            {
+                for $item in $list/tei:item[tei:abbr]
+                return
+                    <item>
+                        <abbreviation>{ $item/tei:abbr/node() }</abbreviation>
+                        <explanation>{ $item/tei:expan/node() }</explanation>
+                    </item>
+            }
+            {
+                if($list/tei:item[not(tei:abbr)]/text())then
+                    <foot>{ $list/tei:item[not(tei:abbr)]/text() }</foot>
+                else
+                    ()
+            }
+            </list>
     }
     </abbreviations>
 };
@@ -626,19 +637,19 @@ declare function translation:sponsors($tei as node(), $include-acknowledgements 
     
     let $sponsor-ids := $translation-sponsors ! substring-after(./@sameAs, 'sponsors.xml#')
     
-    let $sponsors := $sponsors:sponsors/m:sponsors/m:sponsor[@xml:id = $sponsor-ids]
+    let $sponsors := sponsors:sponsors($sponsor-ids, false(), false())
     
     let $acknowledgment := $tei//tei:front/tei:div[@type eq "acknowledgment"]
     
     return
         <sponsors xmlns="http://read.84000.co/ns/1.0" >
         {(
-            $sponsors,
+            $sponsors/m:sponsor,
             if($include-acknowledgements) then
-                if($acknowledgment/tei:p and $sponsors) then
+                if($acknowledgment/tei:p and $sponsors/m:sponsor) then
                 
                     let $sponsor-strings := 
-                        for $sponsor in $sponsors
+                        for $sponsor in $sponsors/m:sponsor
                             let $translation-sponsor := $translation-sponsors[substring-after(@sameAs, 'sponsors.xml#') eq $sponsor/@xml:id]
                             let $sponsor-name := 
                                 if($translation-sponsor/text() gt '') then
