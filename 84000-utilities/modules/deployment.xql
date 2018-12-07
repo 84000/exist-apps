@@ -67,10 +67,6 @@ declare function deployment:commit-apps($action as xs:string, $commit-msg as xs:
 
     let $deployment-conf := common:deployment-conf()
     let $is-admin-password := xmldb:authenticate('/db', 'admin', $admin-password)
-    let $options := 
-        <options>
-            <workingDir>/{ $deployment-conf/m:exist-path/text() }</workingDir>
-        </options>
     
     (: Sync app :)
     let $sync :=
@@ -85,8 +81,10 @@ declare function deployment:commit-apps($action as xs:string, $commit-msg as xs:
                        ()
                     ),
                     process:execute(
-                        ('bin/backup.sh', '-u', 'admin', '-p', $admin-password, '-b', concat('/db/apps/', $collection), '-d', concat('/', $deployment-conf/m:sync-path/text(), '/', $collection, '/', $collection, '.zip')), 
-                        $options
+                        ('bin/backup.sh', '-u', 'admin', '-p', $admin-password, '-b', concat('/db/apps/', $collection), '-d', concat('/', $deployment-conf/m:sync-path/text(), '/', $collection, '/zip/', $collection, '.zip')), 
+                        <options>
+                            <workingDir>/{ $deployment-conf/m:exist-path/text() }</workingDir>
+                        </options>
                     )
                 )
             )
