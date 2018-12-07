@@ -89,7 +89,7 @@ let $entries := (
                         ()
                 }
                 {
-                    if($data/m:response/m:translation/m:abbreviations/m:list/m:item) then 
+                    if($data/m:response/m:translation/m:abbreviations//m:list/m:item) then 
                         <item id="abbreviations" href="abbreviations.xhtml" media-type="application/xhtml+xml"/>
                     else
                         ()
@@ -138,7 +138,7 @@ let $entries := (
                         ()
                 }
                 {
-                    if($data/m:response/m:translation/m:abbreviations/m:list/m:item) then 
+                    if($data/m:response/m:translation/m:abbreviations//m:list/m:item) then 
                         <itemref idref="abbreviations"/>
                     else
                         ()
@@ -179,7 +179,12 @@ let $entries := (
     for $chapter in $data/m:response/m:translation/m:body/m:chapter
     return
         <entry name="OEBPS/chapter-{ $chapter/@chapter-index }.xhtml" type="xml">
-            { transform:transform($data, doc("xslt/chapter.xsl"), <parameters><param name="chapter-index" value="{ $chapter/@chapter-index }"/></parameters>) }
+            { transform:transform($data, doc("xslt/chapter.xsl"), 
+                <parameters>
+                    <param name="chapter-index" value="{ $chapter/@chapter-index }"/>
+                    <param name="prefix" value="{ $chapter/@prefix }"/>
+                </parameters>
+            ) }
         </entry>
     ,
     if($data/m:response/m:translation/m:colophon//tei:*) then 
@@ -192,7 +197,7 @@ let $entries := (
     else
         ()
     ,
-    if($data/m:response/m:translation/m:abbreviations/m:list/m:item) then 
+    if($data/m:response/m:translation/m:abbreviations//m:list/m:item) then 
         <entry name="OEBPS/abbreviations.xhtml" type="xml">{transform:transform($data, doc("xslt/abbreviations.xsl"), ())}</entry>
     else
         ()

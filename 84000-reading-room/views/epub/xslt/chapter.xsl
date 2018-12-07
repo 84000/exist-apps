@@ -4,7 +4,8 @@
     <xsl:import href="../../../xslt/tei-to-xhtml.xsl"/>
     <xsl:import href="epub-page.xsl"/>
     
-    <xsl:param name="chapter-index"/>
+    <xsl:param name="chapter-index" required="yes"/>
+    <xsl:param name="prefix" required="yes"/>
     
     <xsl:template match="/m:response">
         
@@ -16,8 +17,7 @@
             
             <section class="translation" epub:type="chapter">
                 
-                <xsl:attribute name="id" select="concat('chapter-', $chapter-index)"/>
-                <xsl:variable name="chapter-index" select="$chapter-index"/>
+                <xsl:attribute name="id" select="concat('chapter-', $prefix)"/>
                 
                 <xsl:if test="$chapter/m:title/text() or $chapter/m:title-number/text()">
                     <div class="center header">

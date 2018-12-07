@@ -8,11 +8,12 @@ declare option exist:serialize "method=xml indent=no";
 
 let $action := request:get-parameter('action', '')
 let $commit-msg := request:get-parameter('message', '')
+let $admin-password := request:get-parameter('password', '')
 
 return 
     common:response(
         'utilities/deployment',
         'utilities',
-        deployment:push-app($action, $commit-msg)
+        deployment:commit-apps($action, $commit-msg, $admin-password)
     )
 

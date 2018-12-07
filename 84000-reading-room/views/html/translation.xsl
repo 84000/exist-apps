@@ -31,7 +31,7 @@
                     
                     <div class="panel-body">
                         <div class="row">
-                            <div class="col-sm-offset-1 col-sm-10 col-lg-offset-2 col-lg-8 print-width-override">
+                            <div class="col-md-offset-1 col-md-10 col-lg-offset-2 col-lg-8 print-width-override">
     
                                 <section id="front-matter">
                                     <xsl:call-template name="front-matter">
@@ -150,7 +150,7 @@
                                         </xsl:if>
                                         
                                         <section>
-                                            <xsl:attribute name="id" select="concat('chapter-', @chapter-index/string())"/>
+                                            <xsl:attribute name="id" select="concat('chapter-', @prefix)"/>
                                             
                                             <xsl:choose>
                                                 <xsl:when test="m:title/text() or m:title-number/text() or m:translation/m:prologue//tei:*">
@@ -240,7 +240,7 @@
                                     </section>
                                 </xsl:if>
                                 
-                                <xsl:if test="m:translation/m:abbreviations/m:list/m:item">
+                                <xsl:if test="m:translation/m:abbreviations//m:list/m:item">
                                     
                                     <hr class="hidden-print"/>
                                     
@@ -503,7 +503,7 @@
         <div class="rw">
             <div class="gtr">
                 <a class="milestone milestone-h4" title="Bookmark this section">
-                    <xsl:attribute name="href" select="concat('#chapter-', $chapter-index)"/>
+                    <xsl:attribute name="href" select="concat('#chapter-', $prefix)"/>
                     <xsl:value-of select="concat($prefix, '.')"/>
                 </a>
             </div>
@@ -555,7 +555,7 @@
                     <xsl:value-of select="concat($prefix, '.')"/>
                 </a>
             </div>
-            <div class="rw">
+            <div class="rw-heading">
                 <xsl:choose>
                     <xsl:when test="$title-tag eq 'h2'">
                         <h2>
@@ -682,7 +682,7 @@
                         </xsl:call-template>
                     </xsl:if>
                 </xsl:if>
-                <xsl:if test="$translation/m:abbreviations/m:list/m:item">
+                <xsl:if test="$translation/m:abbreviations//m:list/m:item">
                     <tr>
                         <td>
                             <xsl:value-of select="concat($translation/m:abbreviations/@prefix, '.')"/>

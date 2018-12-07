@@ -71,7 +71,7 @@
                 </navPoint>
                 <xsl:for-each select="m:translation/m:body/m:chapter[m:title/text() | m:title-number/text()]">
                     <navPoint>
-                        <xsl:attribute name="id" select="concat('chapter-', @chapter-index/string())"/>
+                        <xsl:attribute name="id" select="concat('chapter-', @chapter-index)"/>
                         <navLabel>
                             <text>
                                 <xsl:choose>
@@ -105,7 +105,7 @@
                         <content src="appendix.xhtml"/>
                     </navPoint>
                 </xsl:if>
-                <xsl:if test="m:translation/m:abbreviations/m:list/m:item">
+                <xsl:if test="m:translation/m:abbreviations//m:list/m:item">
                     <navPoint id="abbreviations">
                         <navLabel>
                             <text>Abbreviations</text>

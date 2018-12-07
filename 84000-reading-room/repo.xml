@@ -3,12 +3,12 @@
     <description>84000 Reading Room</description>
     <author>84000 Translating the words of the Buddha</author>
     <website>http://84000.co</website>
-    <status>alpha</status>
+    <status>stable</status>
     <license>GNU-LGPL</license>
     <copyright>true</copyright>
     <type>application</type>
     <target>84000-reading-room</target>
     <prepare>pre-install.xql</prepare>
     <finish/>
-    <permissions user="admin" group="dba" mode="rw-rw-r--"/>
+    <permissions xmlns:repo="http://exist-db.org/xquery/repo" password="" user="admin" group="dba" mode="rw-r--r--"/>
 </meta>

@@ -12,7 +12,7 @@ import module namespace httpclient = "http://exist-db.org/xquery/httpclient";
 
 declare variable $download:file-versions-file-name := "file-versions.xml";
 
-declare function download:file-path($requested-file as xs:string) (: as xs:string* :) {
+declare function download:file-path($requested-file as xs:string) as xs:string {
     
     (: Sanitize the file name i.e. toh and extension only :)
     let $file-name := replace(lower-case($requested-file), '_.*\.', '.')

@@ -1,7 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" exclude-result-prefixes="xs" version="2.0">
     
-    <xsl:include href="functions.xsl"/>
+    <xsl:import href="tei-to-xhtml.xsl"/>
+    
+    <!-- Look up environment variables -->
+    <xsl:variable name="environment" select="doc(/m:response/@environment-path)/m:environment"/>
+    <xsl:variable name="operations-path" select="$environment/m:url[@id eq 'operations']/text()"/>
     
     <xsl:template name="alert-updated">
         <xsl:if test="m:updates/m:updated">
@@ -311,7 +315,11 @@
                                 <div class="pull-right">
                                     <div class="center-vertical">
                                         <span>
-                                            <a href="/edit-translator.html">
+                                            <a>
+                                                <xsl:if test="not(/m:response/@model-type eq 'operations/edit-text-sponsors')">
+                                                    <xsl:attribute name="target" select="'operations'"/>
+                                                </xsl:if>
+                                                <xsl:attribute name="href" select="concat($operations-path, '/edit-translator.html')"/>
                                                 Enter a new contributor
                                             </a>
                                         </span>
@@ -648,13 +656,21 @@
                     <div class="pull-right">
                         <div class="center-vertical">
                             <span>
-                                <a href="/search.html?sponsored=sponsored">
+                                <a>
+                                    <xsl:if test="not(/m:response/@model-type eq 'operations/edit-text-sponsors')">
+                                        <xsl:attribute name="target" select="'operations'"/>
+                                    </xsl:if>
+                                    <xsl:attribute name="href" select="concat($operations-path, '/search.html?sponsored=sponsored')"/>
                                     List of sponsored texts
                                 </a>
                             </span>
                             <span>|</span>
                             <span>
-                                <a href="/edit-sponsor.html">
+                                <a>
+                                    <xsl:if test="not(/m:response/@model-type eq 'operations/edit-text-sponsors')">
+                                        <xsl:attribute name="target" select="'operations'"/>
+                                    </xsl:if>
+                                    <xsl:attribute name="href" select="concat($operations-path, '/edit-sponsor.html')"/>
                                     Add a new sponsor
                                 </a>
                             </span>
@@ -862,12 +878,6 @@
             </div>
         </xsl:for-each>
         
-    </xsl:template>
-    
-    <xsl:template match="exist:match">
-        <span class="mark">
-            <xsl:apply-templates select="node()"/>
-        </span>
     </xsl:template>
     
 </xsl:stylesheet>

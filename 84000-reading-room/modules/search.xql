@@ -17,7 +17,7 @@ import module namespace translation="http://read.84000.co/translation" at "trans
 import module namespace kwic="http://exist-db.org/xquery/kwic";
 import module namespace functx="http://www.functx.com";
 
-declare function search:text-query($request as xs:string) {
+declare function search:text-query($request as xs:string) as element() {
     
     (: In leiu of Lucene synonyms :)
     
@@ -52,7 +52,7 @@ declare function search:text-query($request as xs:string) {
         </query>
 };
 
-declare function search:search($request as xs:string, $first-record as xs:double, $max-records as xs:double) {
+declare function search:search($request as xs:string, $first-record as xs:double, $max-records as xs:double) as element() {
     
     let $all := collection($common:tei-path)//tei:TEI[tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:idno/@xml:id]
     let $translated := $all[tei:teiHeader/tei:fileDesc/tei:publicationStmt/@status = $tei-content:published-statuses]
@@ -149,7 +149,7 @@ declare function search:search($request as xs:string, $first-record as xs:double
         </search>(::)
 };
 
-declare function search:source($tei-type as xs:string, $tei as node()) as node() {
+declare function search:source($tei-type as xs:string, $tei as node()) as element() {
     <source xmlns="http://read.84000.co/ns/1.0"
         tei-type="{ $tei-type }" 
         resource-id="{ tei-content:id($tei) }" 
@@ -178,7 +178,7 @@ declare function search:source($tei-type as xs:string, $tei as node()) as node()
     </source>
 };
 
-declare function search:tm-search($request as xs:string, $lang as xs:string, $first-record as xs:double, $max-records as xs:double) as node() {
+declare function search:tm-search($request as xs:string, $lang as xs:string, $first-record as xs:double, $max-records as xs:double)  as element() {
     
     let $request-bo := 
         if($lang eq 'bo') then

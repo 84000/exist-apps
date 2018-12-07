@@ -36,7 +36,7 @@ declare variable $contributors:types :=
     4. use this instead of the translators module
 :)
 
-declare function contributors:persons($include-acknowledgements as xs:boolean) as node() {
+declare function contributors:persons($include-acknowledgements as xs:boolean) as element() {
     
     let $contributors := 
         for $contributor in $contributors:contributors/m:contributors/m:person
@@ -53,7 +53,7 @@ declare function contributors:persons($include-acknowledgements as xs:boolean) a
         </contributor-persons>
 };
 
-declare function contributors:person($id as xs:string, $include-acknowledgements as xs:boolean) as node() {
+declare function contributors:person($id as xs:string, $include-acknowledgements as xs:boolean) as element() {
     
     let $contributor := $contributors:contributors/m:contributors/m:person[@xml:id eq $id]
     
@@ -109,7 +109,7 @@ declare function contributors:acknowledgements($uri as xs:string){
             contributors:acknowledgement($tei, $marked-acknowledgement/tei:p)
 };
 
-declare function contributors:acknowledgement($tei, $content){
+declare function contributors:acknowledgement($tei as element(), $content) as element()* {
     let $title := tei-content:title($tei)
     let $translation-id := tei-content:id($tei)
     let $translation-status := $tei//tei:teiHeader/tei:fileDesc/tei:publicationStmt/@status
@@ -128,7 +128,7 @@ declare function contributors:acknowledgement($tei, $content){
         }
 };
 
-declare function contributors:teams($include-acknowledgements as xs:boolean) as node(){
+declare function contributors:teams($include-acknowledgements as xs:boolean) as element(){
 
     let $teams := 
         for $team in $contributors:contributors/m:contributors/m:team
@@ -145,7 +145,7 @@ declare function contributors:teams($include-acknowledgements as xs:boolean) as 
         </contributor-teams>
 };
 
-declare function contributors:team($id as xs:string, $include-acknowledgements as xs:boolean) as node() {
+declare function contributors:team($id as xs:string, $include-acknowledgements as xs:boolean) as element() {
     
     let $team := $contributors:contributors/m:contributors/m:team[@xml:id eq $id]
     
@@ -165,7 +165,7 @@ declare function contributors:team($id as xs:string, $include-acknowledgements a
         }
 };
 
-declare function contributors:regions($include-stats as xs:boolean){
+declare function contributors:regions($include-stats as xs:boolean) as element() {
     
     let $region-ids := $contributors:contributors/m:contributors/m:region/@id
     let $regions-institution-xmlids := $contributors:contributors/m:contributors/m:institution[@region-id = $region-ids]/@xml:id
@@ -200,7 +200,7 @@ declare function contributors:regions($include-stats as xs:boolean){
         </contributor-regions>
 };
 
-declare function contributors:institutions(){
+declare function contributors:institutions() as element() {
     
     let $institutions := 
         for $institution in $contributors:contributors/m:contributors/m:institution
@@ -222,7 +222,7 @@ declare function contributors:institutions(){
         </contributor-institutions>
 };
 
-declare function contributors:institution-types($include-stats as xs:boolean){
+declare function contributors:institution-types($include-stats as xs:boolean) as element() {
 
     let $institution-type-ids := $contributors:contributors/m:contributors/m:institution-type/@id
     let $institution-types-institutions-xmlids := $contributors:contributors/m:contributors/m:institution[@institution-type-id = $institution-type-ids]/@xml:id
@@ -301,7 +301,7 @@ declare function contributors:update-person($person as node()?) as xs:string {
         
 };
 
-declare function contributors:delete($person as node()){
+declare function contributors:delete($person as node()) as element()? {
     common:update('contributor-person', $person, (), (), ())
 };
 

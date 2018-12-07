@@ -70,7 +70,7 @@
                         <xsl:attribute name="class" select="'active'"/>
                     </xsl:if>
                     <a href="snapshot.html">
-                        Snapshot
+                        Data Snapshot
                     </a>
                 </li>
             </xsl:if>
@@ -80,7 +80,7 @@
                         <xsl:attribute name="class" select="'active'"/>
                     </xsl:if>
                     <a href="deployment.html">
-                        Deployment
+                        Deploy Code
                     </a>
                 </li>
             </xsl:if>

@@ -16,7 +16,7 @@ import module namespace functx="http://www.functx.com";
 declare variable $glossary:translations := collection($common:translations-path)//tei:TEI[tei:teiHeader/tei:fileDesc/tei:publicationStmt/@status = $tei-content:published-statuses];
 declare variable $glossary:types := ('term', 'person', 'place', 'text');
 
-declare function glossary:lookup-options() as node() {
+declare function glossary:lookup-options() as element() {
     element options {
         element default-operator { text { 'or' } },
         element phrase-slop { text { '0' } },
@@ -25,7 +25,7 @@ declare function glossary:lookup-options() as node() {
     }
 };
 
-declare function glossary:search-options() as node() {
+declare function glossary:search-options() as element() {
     element options {
         element default-operator { text { 'or' } },
         element phrase-slop { text { '0' } },
@@ -34,7 +34,7 @@ declare function glossary:search-options() as node() {
     }
 };
 
-declare function glossary:lookup-query($string as xs:string) as node() {
+declare function glossary:lookup-query($string as xs:string) as element() {
     element query {
         element phrase {
             attribute occur {'must'},
@@ -43,7 +43,7 @@ declare function glossary:lookup-query($string as xs:string) as node() {
     }
 };
 
-declare function glossary:search-query($string as xs:string) as node() {
+declare function glossary:search-query($string as xs:string) as element() {
     element query {
         element bool {
             element near {
@@ -79,7 +79,7 @@ declare function glossary:valid-type($type) as xs:string {
         ''
 };
 
-declare function glossary:glossary-terms($type as xs:string*, $lang as xs:string, $search as xs:string) as node() {
+declare function glossary:glossary-terms($type as xs:string*, $lang as xs:string, $search as xs:string) as element() {
     
     let $valid-lang := glossary:valid-lang($lang)
     let $valid-type := glossary:valid-type($type)
@@ -120,7 +120,7 @@ declare function glossary:glossary-terms($type as xs:string*, $lang as xs:string
         
 };
 
-declare function glossary:cumulative-glossary() as node() {
+declare function glossary:cumulative-glossary() as element() {
     
     let $terms := distinct-values($glossary:translations//tei:back//tei:gloss/tei:term[(@xml:lang eq 'en' or not(@xml:lang))][not(@type = ('definition','alternative'))]/text() ! normalize-space(.))     
     
@@ -149,7 +149,7 @@ declare function glossary:cumulative-glossary() as node() {
         
 };
 
-declare function glossary:glossary-items($normalized-term as xs:string) as node() {
+declare function glossary:glossary-items($normalized-term as xs:string) as element() {
     
     let $terms := $glossary:translations//tei:back//tei:gloss/tei:term[not(@type eq 'definition')][ft:query-field("full-term", glossary:lookup-query($normalized-term), glossary:lookup-options())]
     
@@ -246,13 +246,13 @@ declare function glossary:glossary-items($normalized-term as xs:string) as node(
         </glossary>
 };
 
-declare function glossary:item-count($translation as node()) as xs:integer {
+declare function glossary:item-count($translation as element()) as xs:integer {
 
     count($translation//tei:back//tei:div[@type eq 'glossary']//tei:item)
     
 };
 
-declare function glossary:item-query($item as node()) as node(){
+declare function glossary:item-query($item as element()) as element() {
     <query>
         <bool>
         {
@@ -271,7 +271,7 @@ declare function glossary:item-query($item as node()) as node(){
     </query>
 };
 
-declare function glossary:translation-glossary($translation as node()) as node()* {
+declare function glossary:translation-glossary($translation as element()) as element() {
     <glossary xmlns="http://read.84000.co/ns/1.0">
     {
         let $options := 

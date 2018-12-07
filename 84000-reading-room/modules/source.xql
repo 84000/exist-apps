@@ -14,7 +14,7 @@ declare function source:folio-to-number($folio as xs:string) as numeric {
     number(translate($folio, 'ab', '05'))
 };
 
-declare function source:ekangyur-mappings($volume as xs:integer, $page as xs:string) as node() {
+declare function source:ekangyur-mappings($volume as xs:integer, $page as xs:string) as element() {
 
     let $mapping := collection(concat($common:data-path, '/config'))//m:folio-mappings/m:mapping[@source eq "ekangyur"]
     
@@ -79,15 +79,15 @@ declare function source:translation-folio($ekangyur-volume-number as xs:integer,
         concat('F', '.', $page-number, '.', $side)
 };
 
-declare function source:ekangyur-id($volume-number as xs:string) as xs:string{
+declare function source:ekangyur-id($volume-number as xs:string) as xs:string {
     concat('UT4CZ5369-I1KG9', xs:string($volume-number), '-0000')
 };
 
-declare function source:ekangyur-volume($ekangyur-id as xs:string) as node()*{
+declare function source:ekangyur-volume($ekangyur-id as xs:string) as element()* {
     collection($common:ekangyur-path)//tei:TEI[tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:idno[@type eq 'TBRC_TEXT_RID']/text() eq $ekangyur-id]
 };
 
-declare function source:ekangyur-page($ekangyur-volume-number as xs:integer, $ekangyur-page-number as xs:integer, $add-context as xs:boolean) as node() {
+declare function source:ekangyur-page($ekangyur-volume-number as xs:integer, $ekangyur-page-number as xs:integer, $add-context as xs:boolean) as element() {
     
     let $ekangyur-id := source:ekangyur-id($ekangyur-volume-number)
     let $ekangyur-volume := source:ekangyur-volume($ekangyur-id)
@@ -163,7 +163,7 @@ declare function source:bo-ltn($bo as xs:string) as xs:string {
     </p>
 };
 
-declare function source:ekangyur-volumes() as node() {
+declare function source:ekangyur-volumes() as element() {
     <volumes xmlns="http://read.84000.co/ns/1.0">
     { 
         let $volumes := collection($common:ekangyur-path)
@@ -179,7 +179,7 @@ declare function source:ekangyur-volumes() as node() {
     </volumes>
 };
 
-declare function source:translated-pages($ignore-ekangur-pages) as node()* {
+declare function source:translated-pages($ignore-ekangur-pages) as element() {
     (: 
         Look up folio <refs> in translations
         Map them to eKangyur pages

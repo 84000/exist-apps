@@ -44,7 +44,7 @@ declare function common:app-id() as xs:string {
     
 };
 
-declare function common:response($model-type as xs:string, $app-id as xs:string, $data) as node() {
+declare function common:response($model-type as xs:string, $app-id as xs:string, $data) as element() {
     (:
         A response node
         -------------------------------------
@@ -81,7 +81,7 @@ declare function common:xml-lang($node) as xs:string {
         $node/@lang/string()
 };
 
-declare function common:normalized-chars($string as xs:string) as xs:string{
+declare function common:normalized-chars($string as xs:string) as xs:string {
     let $in  := 'āḍḥīḷḹṃṇñṅṛṝṣśṭūṁ'
     let $out := 'adhillmnnnrrsstum'
     return 
@@ -92,13 +92,11 @@ declare function common:alphanumeric($string as xs:string) as xs:string* {
     replace(normalize-space($string), '[^a-zA-Z0-9\s\-­]', '')
 };
 
-declare function common:word-count($strings as xs:string*) as xs:integer
-{
+declare function common:word-count($strings as xs:string*) as xs:integer {
   count(tokenize(string-join($strings, ' '), '\W+')[. != ''])
 };
 
-declare function common:bo-from-wylie($bo-ltn as xs:string*) as xs:string
-{
+declare function common:bo-from-wylie($bo-ltn as xs:string) as xs:string {
     (: correct the spacing and spacing around underscores :)
     let $bo-ltn-underscores:= 
         if ($bo-ltn) then
@@ -114,16 +112,14 @@ declare function common:bo-from-wylie($bo-ltn as xs:string*) as xs:string
             ""
 };
 
-declare function common:wylie-from-bo($bo as xs:string*) as xs:string
-{
+declare function common:wylie-from-bo($bo as xs:string) as xs:string {
     if ($bo gt "") then
         converter:toWylie($bo)
     else
         ""
 };
 
-declare function common:bo-term($bo-ltn as xs:string*) as xs:string
-{   
+declare function common:bo-term($bo-ltn as xs:string) as xs:string {   
     
     (: correct the spacing and spacing around underscores :)
     let $bo-ltn-underscores:= 
@@ -174,16 +170,14 @@ declare function common:bo-term($bo-ltn as xs:string*) as xs:string
         xs:string($bo)
 };
 
-declare function common:bo-ltn($string as xs:string*) as xs:string
-{
+declare function common:bo-ltn($string as xs:string) as xs:string {
     if ($string) then
         replace(normalize-space($string), '__', ' ')
     else
         ""
 };
 
-declare function common:unescape($text as xs:string*) as node()* 
-{
+declare function common:unescape($text as xs:string*) as node()* {
     let $html := util:parse-html($text)
     return
         if($html/HTML/xhtml:body) then
@@ -205,7 +199,7 @@ declare function common:search-result($nodes as node()*) as node()*
         )
 };
 
-declare function common:marked-section($section as node()?, $strings as xs:string*) as item()?{
+declare function common:marked-section($section as element()?, $strings as xs:string*) as element()?{
     
     let $marked-paragraphs :=
         if($section) then
@@ -229,7 +223,7 @@ declare function common:marked-section($section as node()?, $strings as xs:strin
             $section
 };
 
-declare function common:marked-paragraph($text as xs:string, $find as xs:string*) as item() {
+declare function common:marked-paragraph($text as xs:string, $find as xs:string*) as element() {
     
     let $find-escaped := $find ! functx:escape-for-regex(.)
     let $regex := concat('(', string-join($find-escaped, '|'),')')
@@ -249,31 +243,26 @@ declare function common:marked-paragraph($text as xs:string, $find as xs:string*
         
 };
 
-declare function common:limit-str($str as xs:string*, $limit as xs:integer) as xs:string* 
-{
+declare function common:limit-str($str as xs:string, $limit as xs:integer) as xs:string {
     if(string-length($str) > $limit) then
         concat(substring($str, 1, $limit), '...')
     else
         $str
 };
 
-declare function common:epub-resource($file as xs:string) as xs:base64Binary
-{
+declare function common:epub-resource($file as xs:string) as xs:base64Binary {
     util:binary-doc(xs:anyURI(concat($common:app-path, '/views/epub/resources/', $file)))
 };
 
-declare function common:test-conf() as node()* 
-{
+declare function common:test-conf() as node()* {
     $common:environment//m:test-conf
 };
 
-declare function common:snapshot-conf() as node()* 
-{
+declare function common:snapshot-conf() as node()* {
     $common:environment//m:snapshot-conf
 };
 
-declare function common:deployment-conf() as node()* 
-{
+declare function common:deployment-conf() as node()* {
     $common:environment//m:deployment-conf
 };
 
@@ -302,7 +291,7 @@ declare function common:app-text($key as xs:string) {
             $result
 };
 
-declare function common:app-texts($search as xs:string, $replacements as node()) {
+declare function common:app-texts($search as xs:string, $replacements as element()) {
 
     let $results := doc(concat($common:data-path, '/config/app-text.xml'))//m:item[contains(@key, concat($search, '.'))]
     
@@ -322,7 +311,7 @@ declare function common:app-texts($search as xs:string, $replacements as node())
         
 };
 
-declare function common:replace($node as node(), $replacements as node()) {
+declare function common:replace($node as node(), $replacements as element()) {
     typeswitch ($node)
         case element() return 
             element { node-name($node) } {

@@ -16,7 +16,7 @@ return
         'utilities/snapshot',
         'utilities',
         (
-            deployment:snapshot($action, $sync-resource, $commit-msg),
+            deployment:commit-data($action, $sync-resource, $commit-msg),
             translations:files($tei-content:published-statuses)
         )
     )

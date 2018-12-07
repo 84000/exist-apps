@@ -14,7 +14,7 @@ import module namespace sponsors="http://read.84000.co/sponsors" at "sponsors.xq
 import module namespace translation-status="http://read.84000.co/translation-status" at "translation-status.xql";
 import module namespace functx="http://www.functx.com";
 
-declare function translations:section-tei($section-id as xs:string) as node()* {
+declare function translations:section-tei($section-id as xs:string) as element()* {
     let $root := tei-content:tei($section-id, 'section')
     let $descendants := section:descendants($root, 1, false())
     let $descendants-ids := $descendants//@id
@@ -22,7 +22,7 @@ declare function translations:section-tei($section-id as xs:string) as node()* {
         collection($common:translations-path)//tei:TEI[tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl/tei:idno/@parent-id = $descendants-ids]
 };
 
-declare function translations:file($translation as node()) as node() {
+declare function translations:file($translation as element()) as element() {
     let $base-uri := base-uri($translation)
     return
         <file xmlns="http://read.84000.co/ns/1.0"
@@ -35,7 +35,7 @@ declare function translations:file($translation as node()) as node() {
         </file>
 };
 
-declare function translations:files($text-statuses as xs:string*) as node() {
+declare function translations:files($text-statuses as xs:string*) as element() {
     <translations xmlns="http://read.84000.co/ns/1.0">
     {
         for $translation in collection($common:translations-path)//tei:TEI[tei:teiHeader/tei:fileDesc/tei:publicationStmt/@status = $text-statuses]
@@ -45,7 +45,7 @@ declare function translations:files($text-statuses as xs:string*) as node() {
     </translations>
 };
 
-declare function translations:summary() as node() {
+declare function translations:summary() as element() {
     
     let $tei := translations:section-tei('O1JC11494')
     
@@ -116,7 +116,7 @@ declare function translations:summary() as node() {
         </outline-summary>
 };
 
-declare function translations:sponsored() as node() {
+declare function translations:sponsored() as element() {
     
     <sponsored-texts xmlns="http://read.84000.co/ns/1.0">
     {
@@ -138,7 +138,7 @@ declare function translations:sponsored() as node() {
         
 };
 
-declare function translations:filtered-text($tei as node(), $toh-key as xs:string?, $include-sponsors as xs:boolean) as node(){
+declare function translations:filtered-text($tei as element(), $toh-key as xs:string?, $include-sponsors as xs:boolean) as element(){
     <text xmlns="http://read.84000.co/ns/1.0" 
         id="{ tei-content:id($tei) }" 
         status="{ tei-content:translation-status($tei) }"
@@ -156,7 +156,7 @@ declare function translations:filtered-text($tei as node(), $toh-key as xs:strin
     </text>
 };
 
-declare function translations:filtered-texts($section as xs:string, $status as xs:string*, $sort as xs:string, $range as xs:string, $sponsored as xs:string, $search-toh as xs:string, $deduplicate as xs:boolean) as node() {
+declare function translations:filtered-texts($section as xs:string, $status as xs:string*, $sort as xs:string, $range as xs:string, $sponsored as xs:string, $search-toh as xs:string, $deduplicate as xs:boolean) as element() {
     
     let $tei := translations:section-tei($section)
     
@@ -264,7 +264,7 @@ declare function translations:filtered-texts($section as xs:string, $status as x
         </texts>
 };
 
-declare function translations:translations($text-statuses as xs:string*, $include-stats as xs:boolean, $include-downloads as xs:string, $include-folios as xs:boolean) as node() {
+declare function translations:translations($text-statuses as xs:string*, $include-stats as xs:boolean, $include-downloads as xs:string, $include-folios as xs:boolean) as element() {
 
     let $translations := collection($common:translations-path)//tei:TEI[tei:teiHeader/tei:fileDesc/tei:publicationStmt/@status = $text-statuses]
     

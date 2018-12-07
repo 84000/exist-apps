@@ -6,7 +6,7 @@ declare namespace m="http://read.84000.co/ns/1.0";
 
 import module namespace common="http://read.84000.co/common" at "../../84000-reading-room/modules/common.xql";
 
-declare function deployment:snapshot($action as xs:string, $sync-resource as xs:string, $commit-msg as xs:string) {
+declare function deployment:commit-data($action as xs:string, $sync-resource as xs:string, $commit-msg as xs:string) {
 
     let $snapshot-conf := common:snapshot-conf()
     let $sync-path := $snapshot-conf/m:sync-path/text()
@@ -19,7 +19,7 @@ declare function deployment:snapshot($action as xs:string, $sync-resource as xs:
                 return
                     file:sync(
                         concat($common:data-path, '/', $collection), 
-                        concat('/', $sync-path, '/', $collection), 
+                        concat($sync-path, '/', $collection), 
                         ()
                     )
             )
@@ -63,22 +63,32 @@ declare function deployment:snapshot($action as xs:string, $sync-resource as xs:
     
 };
 
-declare function deployment:push-app($action as xs:string, $commit-msg as xs:string) {
+declare function deployment:commit-apps($action as xs:string, $commit-msg as xs:string, $admin-password as xs:string) as element() {
 
     let $deployment-conf := common:deployment-conf()
-    let $sync-path := $deployment-conf/m:sync-path/text()
+    let $is-admin-password := xmldb:authenticate('/db', 'admin', $admin-password)
+    let $options := 
+        <options>
+            <workingDir>/{ $deployment-conf/m:exist-path/text() }</workingDir>
+        </options>
     
     (: Sync app :)
     let $sync :=
-        if($action eq 'sync' and $sync-path) then
+        if($action eq 'sync' and $deployment-conf/m:sync-path/text() and $is-admin-password) then
             (
                 for $collection in ('84000-import','84000-reading-room','84000-utilities','84000-translation-memory','84000-translator-tools','84000-operations')
                 return
-                   file:sync(
+                (
+                    file:sync(
                        concat('/db/apps/', $collection), 
-                       concat('/', $sync-path, '/', $collection), 
+                       concat('/', $deployment-conf/m:sync-path/text(), '/', $collection), 
                        ()
-                   )
+                    ),
+                    process:execute(
+                        ('bin/backup.sh', '-u', 'admin', '-p', $admin-password, '-b', concat('/db/apps/', $collection), '-d', concat('/', $deployment-conf/m:sync-path/text(), '/', $collection, '/', $collection, '.zip')), 
+                        $options
+                    )
+                )
             )
         else
             ()
@@ -90,14 +100,14 @@ declare function deployment:push-app($action as xs:string, $commit-msg as xs:str
                 $deployment-conf/m:view-repo-url/text() 
             }
             </view-repo-url>
-            <sync>
+            <sync is-admin-password="{ $is-admin-password }">
             {
                 $sync
             }
             </sync>
             {
                 if($sync) then
-                    deployment:git-push($sync-path, $deployment-conf/m:path/text(), $deployment-conf/m:home/text(), '.', $commit-msg)
+                    deployment:git-push($deployment-conf/m:sync-path/text(), $deployment-conf/m:path/text(), $deployment-conf/m:home/text(), '.', $commit-msg)
                 else
                     ()
             }
@@ -106,6 +116,7 @@ declare function deployment:push-app($action as xs:string, $commit-msg as xs:str
 };
 
 declare function deployment:git-push($working-dir as xs:string, $path as xs:string, $home as xs:string, $git-add as xs:string, $commit-msg as xs:string) as node()*{
+    
     let $options := 
         <options>
             <workingDir>/{ $working-dir }</workingDir>
@@ -114,6 +125,7 @@ declare function deployment:git-push($working-dir as xs:string, $path as xs:stri
                 <env name="HOME" value="/{ $home }"/>
             </environment>
         </options>
+        
     return 
     (
         (: Push it to GitHub :)

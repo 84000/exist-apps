@@ -370,6 +370,12 @@ img.logo-84000{
 }
 
 /* Abbreviations */
+#abbreviations .nested-section {
+    margin-bottom: 8pt;
+}
+#abbreviations .section-label {
+    text-align: center;
+}
 #abbreviations h5{
     margin-top: 16pt;
     margin-bottom: 8pt;

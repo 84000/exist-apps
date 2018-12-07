@@ -6,7 +6,7 @@ declare namespace m="http://read.84000.co/ns/1.0";
 
 import module namespace common="http://read.84000.co/common" at "common.xql";
 
-declare function local:parameters() {
+declare function local:parameters() as element()* {
     for $parameter in request:get-parameter-names()
     return 
         <parameter xmlns="http://read.84000.co/ns/1.0" name="{ $parameter }">
@@ -14,8 +14,7 @@ declare function local:parameters() {
         </parameter>
 };
 
-declare function log:log-request($request as xs:string, $app as xs:string, $type as xs:string, $resource-id as xs:string, $resource-suffix as xs:string) as empty-sequence()
-{
+declare function log:log-request($request as xs:string, $app as xs:string, $type as xs:string, $resource-id as xs:string, $resource-suffix as xs:string) as empty-sequence() {
     let $logfile-collection := $common:log-path
     let $logfile-name := "requests.xml"
     let $logfile-full := concat($logfile-collection, '/', $logfile-name)
@@ -38,11 +37,13 @@ declare function log:log-request($request as xs:string, $app as xs:string, $type
                 into doc($logfile-full)/m:log
 };
 
-declare function local:dateTimes($timestamps){
-    for $i in $timestamps return xs:dateTime($i)
+declare function local:dateTimes($timestamps) as item()* {
+    for $i in $timestamps 
+    return 
+        xs:dateTime($i)
 };
 
-declare function local:dateTimeStr($timestamp){
+declare function local:dateTimeStr($timestamp) as xs:string {
     format-dateTime($timestamp, '[D01]/[M01]/[Y0001] at [H01]:[m01]:[s01]')
 };
 
@@ -66,7 +67,7 @@ declare function local:days-ago-str($duration) as xs:string {
             
 };
 
-declare function log:requests($first-record as xs:double, $max-records as xs:double) {
+declare function log:requests($first-record as xs:double, $max-records as xs:double) as element() {
     let $log := doc(concat($common:log-path, '/requests.xml'))
     let $grouped-requests :=
         for $request in $log/m:log/m:request
@@ -110,7 +111,7 @@ declare function log:requests($first-record as xs:double, $max-records as xs:dou
        </requests>
 };
 
-declare function log:client-errors($first-record as xs:double, $max-records as xs:double) {
+declare function log:client-errors($first-record as xs:double, $max-records as xs:double) as element() {
     let $log := doc(concat($common:log-path, '/requests.xml'))
     
     let $grouped-errors :=

@@ -13,7 +13,7 @@ declare variable $sponsors:sponsors := doc(concat($common:data-path, '/entities/
 declare variable $sponsors:texts := collection($common:translations-path);
 declare variable $sponsors:prefixes := '(Dr\.|Prof\.)';
 
-declare function sponsors:sponsors($sponsor-ids as xs:string*, $include-acknowledgements as xs:boolean, $include-internal-names as xs:boolean){
+declare function sponsors:sponsors($sponsor-ids as xs:string*, $include-acknowledgements as xs:boolean, $include-internal-names as xs:boolean) as element() {
 
     let $sponsors-ordered := 
         for $sponsor in $sponsors:sponsors/m:sponsors/m:sponsor[@xml:id = (if($sponsor-ids = 'all') then @xml:id else $sponsor-ids)]
@@ -30,7 +30,7 @@ declare function sponsors:sponsors($sponsor-ids as xs:string*, $include-acknowle
          </sponsors>
 };
 
-declare function sponsors:sponsor($id as xs:string, $include-acknowledgements as xs:boolean, $include-internal-names as xs:boolean){
+declare function sponsors:sponsor($id as xs:string, $include-acknowledgements as xs:boolean, $include-internal-names as xs:boolean) as element() {
     let $sponsor := $sponsors:sponsors/m:sponsors/m:sponsor[@xml:id eq $id]
     return
         element { node-name($sponsor) } {
@@ -50,7 +50,7 @@ declare function sponsors:sponsor($id as xs:string, $include-acknowledgements as
         }
 };
 
-declare function sponsors:acknowledgements($uri as xs:string){
+declare function sponsors:acknowledgements($uri as xs:string) as element()* {
     
     let $sponsor-id := substring-after($uri, 'sponsors.xml#')
     
@@ -90,7 +90,7 @@ declare function sponsors:acknowledgements($uri as xs:string){
                 }
 };
 
-declare function sponsors:sponsorship-statuses($selected-status as xs:string?) as node() {
+declare function sponsors:sponsorship-statuses($selected-status as xs:string?) as element()  {
     <sponsorhip-statuses xmlns="http://read.84000.co/ns/1.0">
     {(
         element status 
@@ -160,6 +160,6 @@ declare function sponsors:update($sponsor as node()?) as xs:string {
         
 };
 
-declare function sponsors:delete($sponsor as node()){
+declare function sponsors:delete($sponsor as element()){
     common:update('sponsor', $sponsor, (), (), ())
 };
