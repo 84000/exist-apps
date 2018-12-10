@@ -95,7 +95,7 @@ declare function deployment:deploy-apps($admin-password as xs:string, $commit-ms
     (: Sync app :)
     let $sync :=
         if($repo-path and $exist-path and $admin-password-correct) then
-            if($action eq 'push' and  $commit-msg) then
+            if($action eq 'push') then
                 (
                     for $push-collection in $deployment:deployment-conf/m:apps/m:app/@collection
                         (: Sync files with the file system :)
@@ -147,7 +147,7 @@ declare function deployment:deploy-apps($admin-password as xs:string, $commit-ms
             }
             </sync>
             {
-                if($sync) then
+                if($action eq 'push' and  $sync and $git-options) then
                     deployment:git-push('.', $commit-msg, $git-options)
                 else
                     ()
