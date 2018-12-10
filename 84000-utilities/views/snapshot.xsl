@@ -35,13 +35,14 @@
                         </xsl:call-template>
                         
                         <div class="tab-content">
-                    
-                            <p class="text-muted text-center small">
-                                This function makes a snapshot of the selected resource(s) and pushes it to the public 
-                                <a target="_blank">
-                                    <xsl:attribute name="href" select="//m:view-repo-url/text()"/>
-                                    GitHub repository</a>.
-                            </p>
+                            <div class="alert alert-warning small text-center">
+                                <p>
+                                    This function makes a snapshot of the selected resource(s) and pushes it to the public 
+                                    <a target="_blank" class="alert-link">
+                                        <xsl:attribute name="href" select="//m:view-repo-url/text()"/>
+                                        GitHub repository</a>.
+                                </p>
+                            </div>
                             <form action="/snapshot.html" method="post" class="form-horizontal">
                                 
                                 <input type="hidden" name="tab" value="snapshot"/>

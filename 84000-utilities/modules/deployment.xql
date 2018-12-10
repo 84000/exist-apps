@@ -71,9 +71,9 @@ declare function deployment:commit-apps($action as xs:string, $commit-msg as xs:
     
     (: Sync app :)
     let $sync :=
-        if($action eq 'sync' and $deployment-conf/m:sync-path/text() and $admin-password-correct) then
+        if($action eq 'push' and $deployment-conf/m:sync-path/text() and $admin-password-correct) then
             (
-                for $collection in ('84000-import','84000-reading-room','84000-utilities','84000-translation-memory','84000-translator-tools','84000-operations')
+                for $collection in $deployment-conf/m:apps/m:app/@collection
                     (: Sync files with the file system :)
                     let $file-sync := 
                         file:sync(

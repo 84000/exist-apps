@@ -36,10 +36,11 @@
                         
                         <div class="tab-content">
                             
-                            <p class="text-muted text-center small">
-                                This does not reflect Reading Room site traffic as most requests will be mediated by the CDN.
-                                <br/>This will however reflect the full diversity of requests made to the server.
-                            </p>
+                            <div class="alert alert-warning small text-center">
+                                <p>
+                                    This does <strong>NOT</strong> reflect Reading Room site traffic as most requests will be mediated by the CDN. This will however reflect the full diversity of requests made to the server.
+                                </p>
+                            </div>
                             
                             <table class="table table-responsive">
                                 <thead>

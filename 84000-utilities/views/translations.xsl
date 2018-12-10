@@ -35,7 +35,7 @@
                             <xsl:with-param name="active-tab" select="@model-type"/>
                         </xsl:call-template>
                         
-                        <div class="alert alert-danger" role="alert">
+                        <div class="alert alert-danger small text-center" role="alert">
                             Due to an underlying restriction in the database platform only database administrators can generate new versions of eBooks.
                         </div>
                         

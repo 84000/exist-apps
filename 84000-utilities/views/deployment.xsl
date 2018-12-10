@@ -36,60 +36,122 @@
                         
                         <div class="tab-content">
                             
-                            <p class="text-muted text-center small">
-                                This function commits updates of the 84000 eXist apps to the 
-                                <a target="_blank">
-                                    <xsl:attribute name="href" select="//m:view-repo-url/text()"/>
-                                    GitHub repository</a>.
-                            </p>
-                            <form action="/deployment.html" method="post" class="form-horizontal">
-                                
-                                <input type="hidden" name="tab" value="deployment"/>
-                                <input type="hidden" name="action" value="sync"/>
-                                
-                                <div class="form-group">
-                                    <label for="message" class="col-sm-2 control-label">
-                                        Commit message
-                                    </label>
-                                    <div class="col-sm-10">
-                                        <input type="text" name="message" id="message" value="" required="required" maxlength="100" class="form-control" placeholder="e.g. bug fix for ebooks"/>
+                            <div class="row">
+                                <div class="col-sm-offset-3 col-sm-6">
+                                    
+                                    <div class="alert alert-warning small text-center">
+                                        <p>
+                                            Manage updates of the 84000 eXist apps in the 
+                                            <a target="_blank" class="alert-link">
+                                                <xsl:attribute name="href" select="//m:view-repo-url/text()"/>
+                                                GitHub repository</a>.
+                                        </p>
                                     </div>
+                                    
+                                    <xsl:if test="m:apps/m:app">
+                                        
+                                        <xsl:variable name="role" select="m:apps/@role"/>
+                                        
+                                        <form action="/deployment.html" method="post" class="form-horizontal">
+                                            
+                                            <input type="hidden" name="tab" value="deployment"/>
+                                            <input type="hidden" name="action" value="sync">
+                                                <xsl:attribute name="value" select="$role"/>
+                                            </input>
+                                            
+                                            <xsl:choose>
+                                                <xsl:when test="$role eq 'push'">
+                                                    
+                                                    <h3 class="text-center text-danger uppercase">Commit a new version</h3>
+                                                    
+                                                    <div class="form-group">
+                                                        <label for="message" class="col-sm-4 control-label">
+                                                            Commit message
+                                                        </label>
+                                                        <div class="col-sm-8">
+                                                            <input type="text" name="message" id="message" value="" required="required" maxlength="100" class="form-control" placeholder="e.g. bug fix for ebooks"/>
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    <div class="form-group">
+                                                        <label for="password" class="col-sm-4 control-label">
+                                                            Admin password
+                                                        </label>
+                                                        <div class="col-sm-4">
+                                                            <input type="password" name="password" id="password" value="" required="required" class="form-control" autocomplete="off"/>
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    <div class="form-group">
+                                                        <div class="col-sm-8 col-sm-offset-4">
+                                                            <button type="submit" class="btn btn-danger">Commit</button>
+                                                        </div>
+                                                    </div>
+                                                    
+                                                </xsl:when>
+                                                <xsl:when test="$role eq 'pull'">
+                                                    
+                                                    <h3 class="text-center text-success uppercase">Load the latest version</h3>
+                                                    
+                                                    <div class="form-group">
+                                                        <label for="app" class="col-sm-4 control-label">
+                                                            84000 app 
+                                                        </label>
+                                                        <div class="col-sm-8">
+                                                            <select name="app" id="app" class="form-control">
+                                                                <option/>
+                                                                <xsl:for-each select="m:apps/m:app">
+                                                                    <option>
+                                                                        <xsl:attribute name="value" select="@collection"/>
+                                                                        <xsl:value-of select="normalize-space(@collection)"/>
+                                                                    </option>
+                                                                </xsl:for-each>
+                                                            </select>
+                                                            
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    <div class="form-group">
+                                                        <label for="password" class="col-sm-4 control-label">
+                                                            Admin password
+                                                        </label>
+                                                        <div class="col-sm-4">
+                                                            <input type="password" name="password" id="password" value="" required="required" class="form-control" autocomplete="off"/>
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    <div class="form-group">
+                                                        <div class="col-sm-8 col-sm-offset-4">
+                                                            <button type="submit" class="btn btn-success">Load</button>
+                                                        </div>
+                                                    </div>
+                                                    
+                                                </xsl:when>
+                                            </xsl:choose>
+                                            
+                                        </form>
+                                    </xsl:if>
+                                    
+                                    <xsl:if test="//m:execute">
+                                        <div class="well well-sm">
+                                            <code>
+                                                <xsl:for-each select="//m:execute">
+                                                    $ <xsl:value-of select="execution/commandline/text()"/>
+                                                    <br/>
+                                                    <xsl:for-each select="execution/stdout/line">
+                                                        $ <xsl:value-of select="text()"/>
+                                                        <br/>
+                                                    </xsl:for-each>
+                                                    <xsl:if test="not(position() = last())">
+                                                        <hr/>
+                                                    </xsl:if>
+                                                </xsl:for-each>
+                                            </code>
+                                        </div>
+                                    </xsl:if>
+                                    
                                 </div>
-                                
-                                <div class="form-group">
-                                    <label for="password" class="col-sm-2 control-label">
-                                        Admin password
-                                    </label>
-                                    <div class="col-sm-3">
-                                        <input type="password" name="password" id="password" value="" required="required" class="form-control" autocomplete="off"/>
-                                    </div>
-                                </div>
-                                
-                                <div class="form-group">
-                                    <div class="col-sm-10 col-sm-offset-2">
-                                        <button type="submit" class="btn btn-warning">Commit this version</button>
-                                    </div>
-                                </div>
-                                
-                            </form>
-                            
-                            <xsl:if test="//m:execute">
-                                <div class="well well-sm">
-                                    <code>
-                                        <xsl:for-each select="//m:execute">
-                                            $ <xsl:value-of select="execution/commandline/text()"/>
-                                            <br/>
-                                            <xsl:for-each select="execution/stdout/line">
-                                                $ <xsl:value-of select="text()"/>
-                                                <br/>
-                                            </xsl:for-each>
-                                            <xsl:if test="not(position() = last())">
-                                                <hr/>
-                                            </xsl:if>
-                                        </xsl:for-each>
-                                    </code>
-                                </div>
-                            </xsl:if>
+                            </div>
                         </div>
                     </div>
                 </div>

@@ -36,21 +36,23 @@
                         
                         <div class="tab-content">
                             
-                            <p class="text-muted text-center small">
-                                This data in xml format: 
-                                <a target="sections-xml">
-                                    <xsl:attribute name="href" select="concat($utilities-path, '/sections.xml')"/>
-                                    All sections
-                                </a> | 
-                                <a target="kangyur-texts-xml">
-                                    <xsl:attribute name="href" select="concat($utilities-path, '/section-texts.xml?section-id=O1JC11494&amp;include-descendants=true')"/>
-                                    Kangyur texts
-                                </a> | 
-                                <a target="tengyur-texts-xml">
-                                    <xsl:attribute name="href" select="concat($utilities-path, '/section-texts.xml?section-id=O1JC7630&amp;include-descendants=true')"/>
-                                    Tengyur texts
-                                </a>
-                            </p>
+                            <div class="alert alert-warning small text-center">
+                                <p>
+                                    This data in xml format: 
+                                    <a target="sections-xml" class="alert-link">
+                                        <xsl:attribute name="href" select="concat($utilities-path, '/sections.xml')"/>
+                                        All sections
+                                    </a> | 
+                                    <a target="kangyur-texts-xml" class="alert-link">
+                                        <xsl:attribute name="href" select="concat($utilities-path, '/section-texts.xml?section-id=O1JC11494&amp;include-descendants=true')"/>
+                                        Kangyur texts
+                                    </a> | 
+                                    <a target="tengyur-texts-xml" class="alert-link">
+                                        <xsl:attribute name="href" select="concat($utilities-path, '/section-texts.xml?section-id=O1JC7630&amp;include-descendants=true')"/>
+                                        Tengyur texts
+                                    </a>
+                                </p>
+                            </div>
                             
                             <table class="table table-responsive">
                                 <thead>

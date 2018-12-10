@@ -20,8 +20,11 @@
                             <xsl:with-param name="active-tab" select="@model-type"/>
                         </xsl:call-template>
                         <div class="tab-content">
-                            <p class="text-muted text-center small"> These link to examples of various layout elements in the Reading Room. <br/>These should be checked on desktop, mobile and print if
-                                the styles are changed. </p>
+                            <div class="alert alert-warning small text-center">
+                                <p>
+                                    These link to examples of various layout elements in the Reading Room. These should be checked on <strong>desktop</strong>, <strong>mobile</strong> and <strong>print</strong> if the styles are changed. 
+                                </p>
+                            </div>
                             <ul>
                                 <li>
                                     <em>Bulleted</em> lists: <a target="test-layout">
