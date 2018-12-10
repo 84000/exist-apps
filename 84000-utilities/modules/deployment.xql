@@ -124,13 +124,15 @@ declare function deployment:deploy-apps($admin-password as xs:string, $commit-ms
                 (
                     deployment:git-pull($git-options),
                     process:execute(
-                        ('bin/backup.sh', '-u', 'admin', '-p', $admin-password, '-b', concat('/db/apps/', $pull-collection), '-d', concat('/', $repo-path, '/', $pull-collection, '/zip/', $pull-collection, '.zip')), 
+                        ('bin/backup.sh', '-u', 'admin', '-p', $admin-password, '-P', $admin-password, '-r', concat('/', $repo-path, '/', $pull-collection, '/zip/', $pull-collection, '.zip')),
                         <options>
                             <workingDir>/{ $exist-path }</workingDir>
                         </options>
                     ),
-                    repair:clean-all(),
-                    repair:repair()
+                    (
+                        repair:clean-all(),
+                        repair:repair()
+                    )
                 )
             else
                 ()
