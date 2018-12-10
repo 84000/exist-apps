@@ -113,7 +113,7 @@ declare function search:search($request as xs:string, $first-record as xs:double
  
                     for $result-group in subsequence($results, $first-record, $max-records)
                         
-                        let $tei := doc($result-group/@document-uri)
+                        let $tei := doc($result-group/@document-uri)/tei:TEI
                         let $tei-type := 
                             if($tei//tei:teiHeader/tei:fileDesc/@type = ('section', 'grouping', 'pseudo-section')) then
                                 'section'
