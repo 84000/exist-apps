@@ -82,24 +82,27 @@ declare function deployment:commit-data($action as xs:string, $sync-resource as 
     
 };
 
-declare function deployment:commit-apps($action as xs:string, $admin-password as xs:string, $commit-msg as xs:string, $get-app as xs:string) as element() {
+declare function deployment:deploy-apps($admin-password as xs:string, $commit-msg as xs:string, $get-app as xs:string) as element() {
 
     let $repo-path := $deployment:deployment-conf/m:repo-path/text()
     let $exist-path := $deployment:deployment-conf/m:exist-path/text()
+    let $action := $deployment:deployment-conf/m:apps/@role
+    let $pull-collection := $deployment:deployment-conf/m:apps/m:app[@collection eq $get-app]/@collection
+    
     let $admin-password-correct := xmldb:authenticate('/db', 'admin', $admin-password)
     let $git-options := deployment:git-options($repo-path)
     
     (: Sync app :)
     let $sync :=
-        if($repo-path and $admin-password-correct) then
-            if($action eq 'push') then
+        if($repo-path and $exist-path and $admin-password-correct) then
+            if($action eq 'push' and  $commit-msg) then
                 (
-                    for $collection in $deployment:deployment-conf/m:apps/m:app/@collection
+                    for $push-collection in $deployment:deployment-conf/m:apps/m:app/@collection
                         (: Sync files with the file system :)
                         let $file-sync := 
                             file:sync(
-                               concat('/db/apps/', $collection), 
-                               concat('/', $repo-path, '/', $collection), 
+                               concat('/db/apps/', $push-collection), 
+                               concat('/', $repo-path, '/', $push-collection), 
                                ()
                             )
                     return
@@ -108,7 +111,7 @@ declare function deployment:commit-apps($action as xs:string, $admin-password as
                         (: If files were updated then create a new zip of the app :)
                         if(count($file-sync//file:update) gt 0 and $exist-path) then
                             process:execute(
-                                ('bin/backup.sh', '-u', 'admin', '-p', $admin-password, '-b', concat('/db/apps/', $collection), '-d', concat('/', $repo-path, '/', $collection, '/zip/', $collection, '.zip')), 
+                                ('bin/backup.sh', '-u', 'admin', '-p', $admin-password, '-b', concat('/db/apps/', $push-collection), '-d', concat('/', $repo-path, '/', $push-collection, '/zip/', $push-collection, '.zip')), 
                                 <options>
                                     <workingDir>/{ $exist-path }</workingDir>
                                 </options>
@@ -117,27 +120,22 @@ declare function deployment:commit-apps($action as xs:string, $admin-password as
                             ()
                     )
                 )
-            else if($action eq 'pull') then
-                let $collection := $deployment:deployment-conf/m:apps/m:app[@collection eq $get-app]/@collection
-                return
-                    if($collection and $exist-path)then
-                        (
-                            deployment:git-pull($git-options),
-                            process:execute(
-                                ('bin/backup.sh', '-u', 'admin', '-p', $admin-password, '-b', concat('/db/apps/', $collection), '-d', concat('/', $repo-path, '/', $collection, '/zip/', $collection, '.zip')), 
-                                <options>
-                                    <workingDir>/{ $exist-path }</workingDir>
-                                </options>
-                            ),
-                            repair:clean-all(),
-                            repair:repair()
-                        )
-                    else
-                        ()
+            else if($action eq 'pull' and $pull-collection) then
+                (
+                    deployment:git-pull($git-options),
+                    process:execute(
+                        ('bin/backup.sh', '-u', 'admin', '-p', $admin-password, '-b', concat('/db/apps/', $pull-collection), '-d', concat('/', $repo-path, '/', $pull-collection, '/zip/', $pull-collection, '.zip')), 
+                        <options>
+                            <workingDir>/{ $exist-path }</workingDir>
+                        </options>
+                    ),
+                    repair:clean-all(),
+                    repair:repair()
+                )
             else
                 ()
         else
-        ()
+            ()
     
     return 
         <result xmlns="http://read.84000.co/ns/1.0">

@@ -8,7 +8,6 @@ declare namespace m="http://read.84000.co/ns/1.0";
 
 declare option exist:serialize "method=xml indent=no";
 
-let $action := request:get-parameter('action', '')
 let $admin-password := request:get-parameter('password', '')
 let $commit-msg := request:get-parameter('message', '')
 let $get-app := request:get-parameter('app', '')
@@ -19,8 +18,8 @@ return
         'utilities',
         (
             $deployment:git-conf/m:view-repo-url,
-            deployment:commit-apps($action, $admin-password, $commit-msg, $get-app),
-            $deployment:deployment-conf/m:apps
+            $deployment:deployment-conf/m:apps,
+            deployment:deploy-apps($admin-password, $commit-msg, $get-app)
         )
     )
 

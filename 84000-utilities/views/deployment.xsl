@@ -55,9 +55,6 @@
                                         <form action="/deployment.html" method="post" class="form-horizontal">
                                             
                                             <input type="hidden" name="tab" value="deployment"/>
-                                            <input type="hidden" name="action" value="sync">
-                                                <xsl:attribute name="value" select="$role"/>
-                                            </input>
                                             
                                             <xsl:choose>
                                                 <xsl:when test="$role eq 'push'">
