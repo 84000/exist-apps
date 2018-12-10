@@ -62,25 +62,22 @@
                                                     <h3 class="text-center text-danger uppercase">Commit a new version</h3>
                                                     
                                                     <div class="form-group">
-                                                        <label for="message" class="col-sm-4 control-label">
+                                                        <label for="message" class="col-sm-3 control-label">
                                                             Commit message
                                                         </label>
-                                                        <div class="col-sm-8">
+                                                        <div class="col-sm-9">
                                                             <input type="text" name="message" id="message" value="" required="required" maxlength="100" class="form-control" placeholder="e.g. bug fix for ebooks"/>
                                                         </div>
                                                     </div>
                                                     
                                                     <div class="form-group">
-                                                        <label for="password" class="col-sm-4 control-label">
+                                                        <label for="password" class="col-sm-3 control-label">
                                                             Admin password
                                                         </label>
-                                                        <div class="col-sm-4">
+                                                        <div class="col-sm-6">
                                                             <input type="password" name="password" id="password" value="" required="required" class="form-control" autocomplete="off"/>
                                                         </div>
-                                                    </div>
-                                                    
-                                                    <div class="form-group">
-                                                        <div class="col-sm-8 col-sm-offset-4">
+                                                        <div class="col-sm-3">
                                                             <button type="submit" class="btn btn-danger">Commit</button>
                                                         </div>
                                                     </div>
@@ -88,13 +85,13 @@
                                                 </xsl:when>
                                                 <xsl:when test="$role eq 'pull'">
                                                     
-                                                    <h3 class="text-center text-success uppercase">Load the latest version</h3>
+                                                    <h3 class="text-center text-success uppercase">Pull the latest versions of the apps</h3>
                                                     
                                                     <div class="form-group">
-                                                        <label for="app" class="col-sm-4 control-label">
+                                                        <label for="app" class="col-sm-3 control-label">
                                                             84000 app 
                                                         </label>
-                                                        <div class="col-sm-8">
+                                                        <div class="col-sm-9">
                                                             <select name="app" id="app" class="form-control">
                                                                 <option/>
                                                                 <xsl:for-each select="m:apps/m:app">
@@ -109,17 +106,14 @@
                                                     </div>
                                                     
                                                     <div class="form-group">
-                                                        <label for="password" class="col-sm-4 control-label">
+                                                        <label for="password" class="col-sm-3 control-label">
                                                             Admin password
                                                         </label>
-                                                        <div class="col-sm-4">
+                                                        <div class="col-sm-3">
                                                             <input type="password" name="password" id="password" value="" required="required" class="form-control" autocomplete="off"/>
                                                         </div>
-                                                    </div>
-                                                    
-                                                    <div class="form-group">
-                                                        <div class="col-sm-8 col-sm-offset-4">
-                                                            <button type="submit" class="btn btn-success">Load</button>
+                                                        <div class="col-sm-3">
+                                                            <button type="submit" class="btn btn-success">Pull updates</button>
                                                         </div>
                                                     </div>
                                                     
@@ -132,13 +126,15 @@
                                     <xsl:if test="//m:execute">
                                         <div class="well well-sm">
                                             <code>
-                                                <xsl:for-each select="//m:execute">
-                                                    <xsl:if test="execution/commandline/text()">
-                                                        $ <xsl:value-of select="execution/commandline/text()"/>
+                                                <xsl:for-each select="//execution">
+                                                    <xsl:if test="commandline/text()">
+                                                        $ <xsl:value-of select="commandline/text()"/>
                                                     </xsl:if>
                                                     <br/>
-                                                    <xsl:for-each select="execution/stdout/line">
-                                                        $ <xsl:value-of select="text()"/>
+                                                    <xsl:for-each select="stdout/line">
+                                                        <xsl:if test="text()">
+                                                            $ <xsl:value-of select="text()"/>
+                                                        </xsl:if>
                                                         <br/>
                                                     </xsl:for-each>
                                                     <xsl:if test="not(position() = last())">

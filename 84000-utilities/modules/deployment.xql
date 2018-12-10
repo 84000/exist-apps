@@ -109,7 +109,7 @@ declare function deployment:deploy-apps($admin-password as xs:string, $commit-ms
                     (
                         $file-sync,
                         (: If files were updated then create a new zip of the app :)
-                        if(count($file-sync//file:update) gt 0 and $exist-path) then
+                        if(count($file-sync//file:update) gt 0) then
                             process:execute(
                                 ('bin/backup.sh', '-u', 'admin', '-p', $admin-password, '-b', concat('/db/apps/', $push-collection), '-d', concat('/', $repo-path, '/', $push-collection, '/zip/', $push-collection, '.zip')), 
                                 <options>
@@ -121,19 +121,25 @@ declare function deployment:deploy-apps($admin-password as xs:string, $commit-ms
                     )
                 )
             else if($action eq 'pull' and $pull-collection) then
-                (
-                    deployment:git-pull($git-options),
+                let $git-pull := deployment:git-pull($git-options)
+                let $restore :=
                     process:execute(
                         ('bin/backup.sh', '-u', 'admin', '-p', $admin-password, '-P', $admin-password, '-r', concat('/', $repo-path, '/', $pull-collection, '/zip/', $pull-collection, '.zip')),
                         <options>
                             <workingDir>/{ $exist-path }</workingDir>
                         </options>
-                    ),
+                    )
+                let $clean-up := 
                     (
                         repair:clean-all(),
                         repair:repair()
                     )
-                )
+                return
+                    (
+                        $git-pull,
+                        $restore,
+                        $clean-up
+                    )
             else
                 ()
         else

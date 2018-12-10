@@ -53,10 +53,10 @@
                                         <input type="hidden" name="action" value="sync"/>
                                         
                                         <div class="form-group">
-                                            <label for="resource" class="col-sm-4 control-label">
+                                            <label for="resource" class="col-sm-3 control-label">
                                                 Resources
                                             </label>
-                                            <div class="col-sm-8">
+                                            <div class="col-sm-9">
                                                 <select name="resource" id="resource" class="form-control">
                                                     <option value="all">All data (translations, schemas and outlines)</option>
                                                     <option value="translation-memory">Translation memory files</option>
@@ -72,17 +72,17 @@
                                         </div>
                                         
                                         <div class="form-group">
-                                            <label for="message" class="col-sm-4 control-label">
+                                            <label for="message" class="col-sm-3 control-label">
                                                 Commit message
                                             </label>
-                                            <div class="col-sm-8">
+                                            <div class="col-sm-9">
                                                 <input type="text" name="message" id="message" value="" maxlength="100" class="form-control" placeholder="e.g. Toh X updates Jan 2018"/>
                                             </div>
                                         </div>
                                         
                                         <div class="form-group">
                                             <div class="col-sm-8 col-sm-offset-4">
-                                                <button type="submit" class="btn btn-warning">Make a snapshot</button>
+                                                <button type="submit" class="btn btn-primary">Make a snapshot</button>
                                             </div>
                                         </div>
                                         
