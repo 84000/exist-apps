@@ -135,12 +135,6 @@ declare function deployment:git-push($working-dir as xs:string, $path as xs:stri
     return 
     (
         (: Push it to GitHub :)
-        (:
-        <execute xmlns="http://read.84000.co/ns/1.0">
-        {
-            process:execute(('whoami'), ())
-        }
-        </execute>,:)
         <execute xmlns="http://read.84000.co/ns/1.0">
         {
             process:execute(('git', 'status'), $options)

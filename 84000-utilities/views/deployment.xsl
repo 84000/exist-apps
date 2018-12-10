@@ -42,7 +42,7 @@
                                     <xsl:attribute name="href" select="//m:view-repo-url/text()"/>
                                     GitHub repository</a>.
                             </p>
-                            <form action="/deployment.xml" method="post" class="form-horizontal">
+                            <form action="/deployment.html" method="post" class="form-horizontal">
                                 
                                 <input type="hidden" name="tab" value="deployment"/>
                                 <input type="hidden" name="action" value="sync"/>
