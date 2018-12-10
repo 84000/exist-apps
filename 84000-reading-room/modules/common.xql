@@ -258,14 +258,6 @@ declare function common:test-conf() as node()* {
     $common:environment//m:test-conf
 };
 
-declare function common:snapshot-conf() as node()* {
-    $common:environment//m:snapshot-conf
-};
-
-declare function common:deployment-conf() as node()* {
-    $common:environment//m:deployment-conf
-};
-
 declare function common:user-name() as xs:string* {
     let $user := sm:id()
     return
