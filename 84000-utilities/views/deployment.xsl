@@ -37,7 +37,7 @@
                         <div class="tab-content">
                             
                             <div class="row">
-                                <div class="col-sm-offset-3 col-sm-6">
+                                <div class="col-sm-offset-2 col-sm-8">
                                     
                                     <div class="alert alert-warning small text-center">
                                         <p>
@@ -136,7 +136,9 @@
                                         <div class="well well-sm">
                                             <code>
                                                 <xsl:for-each select="//m:execute">
-                                                    $ <xsl:value-of select="execution/commandline/text()"/>
+                                                    <xsl:if test="execution/commandline/text()">
+                                                        $ <xsl:value-of select="execution/commandline/text()"/>
+                                                    </xsl:if>
                                                     <br/>
                                                     <xsl:for-each select="execution/stdout/line">
                                                         $ <xsl:value-of select="text()"/>

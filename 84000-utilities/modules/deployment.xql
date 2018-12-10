@@ -67,9 +67,6 @@ declare function deployment:commit-data($action as xs:string, $sync-resource as 
     
     return 
         <result xmlns="http://read.84000.co/ns/1.0">
-            { 
-                $deployment:snapshot-conf/m:view-repo-url
-            }
             <sync>
             {
                 $sync
@@ -144,9 +141,6 @@ declare function deployment:commit-apps($action as xs:string, $admin-password as
     
     return 
         <result xmlns="http://read.84000.co/ns/1.0">
-            { 
-                $deployment:deployment-conf/m:view-repo-url
-            }
             <sync admin-password-correct="{ $admin-password-correct }">
             {
                 $sync

@@ -254,10 +254,6 @@ declare function common:epub-resource($file as xs:string) as xs:base64Binary {
     util:binary-doc(xs:anyURI(concat($common:app-path, '/views/epub/resources/', $file)))
 };
 
-declare function common:test-conf() as node()* {
-    $common:environment//m:test-conf
-};
-
 declare function common:user-name() as xs:string* {
     let $user := sm:id()
     return

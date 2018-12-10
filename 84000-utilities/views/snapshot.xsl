@@ -35,72 +35,79 @@
                         </xsl:call-template>
                         
                         <div class="tab-content">
-                            <div class="alert alert-warning small text-center">
-                                <p>
-                                    This function makes a snapshot of the selected resource(s) and pushes it to the public 
-                                    <a target="_blank" class="alert-link">
-                                        <xsl:attribute name="href" select="//m:view-repo-url/text()"/>
-                                        GitHub repository</a>.
-                                </p>
-                            </div>
-                            <form action="/snapshot.html" method="post" class="form-horizontal">
-                                
-                                <input type="hidden" name="tab" value="snapshot"/>
-                                <input type="hidden" name="action" value="sync"/>
-                                
-                                <div class="form-group">
-                                    <label for="resource" class="col-sm-2 control-label">
-                                        Resources
-                                    </label>
-                                    <div class="col-sm-10 col-md-6">
-                                        <select name="resource" id="resource" class="form-control">
-                                            <option value="all">All data (translations, schemas and outlines)</option>
-                                            <option value="translation-memory">Translation memory files</option>
-                                            <xsl:for-each select="m:translations/m:file">
-                                                <xsl:sort select="@fileName"/>
-                                                <option>
-                                                    <xsl:attribute name="value" select="@uri"/>
-                                                    <xsl:value-of select="@fileName"/>
-                                                </option>
-                                            </xsl:for-each>
-                                        </select>
-                                    </div>
-                                </div>
-                                
-                                <div class="form-group">
-                                    <label for="message" class="col-sm-2 control-label">
-                                        Commit message
-                                    </label>
-                                    <div class="col-sm-10">
-                                        <input type="text" name="message" id="message" value="" maxlength="100" class="form-control" placeholder="e.g. Toh X updates Jan 2018"/>
-                                    </div>
-                                </div>
-                                
-                                <div class="form-group">
-                                    <div class="col-sm-10 col-sm-offset-2">
-                                        <button type="submit" class="btn btn-warning">Make a snapshot</button>
-                                    </div>
-                                </div>
-                                
-                            </form>
                             
-                            <xsl:if test="//m:execute">
-                                <div class="well well-sm">
-                                    <code>
-                                        <xsl:for-each select="//m:execute">
-                                            $ <xsl:value-of select="execution/commandline/text()"/>
-                                            <br/>
-                                            <xsl:for-each select="execution/stdout/line">
-                                                $ <xsl:value-of select="text()"/>
-                                                <br/>
-                                            </xsl:for-each>
-                                            <xsl:if test="not(position() = last())">
-                                                <hr/>
-                                            </xsl:if>
-                                        </xsl:for-each>
-                                    </code>
+                            <div class="row">
+                                <div class="col-sm-offset-2 col-sm-8">
+                                    
+                                    <div class="alert alert-warning small text-center">
+                                        <p>
+                                            This function makes a snapshot of the selected resource(s) and pushes it to the public 
+                                            <a target="_blank" class="alert-link">
+                                                <xsl:attribute name="href" select="//m:view-repo-url/text()"/>
+                                                GitHub repository</a>.
+                                        </p>
+                                    </div>
+                                    <form action="/snapshot.html" method="post" class="form-horizontal">
+                                        
+                                        <input type="hidden" name="tab" value="snapshot"/>
+                                        <input type="hidden" name="action" value="sync"/>
+                                        
+                                        <div class="form-group">
+                                            <label for="resource" class="col-sm-4 control-label">
+                                                Resources
+                                            </label>
+                                            <div class="col-sm-8">
+                                                <select name="resource" id="resource" class="form-control">
+                                                    <option value="all">All data (translations, schemas and outlines)</option>
+                                                    <option value="translation-memory">Translation memory files</option>
+                                                    <xsl:for-each select="m:translations/m:file">
+                                                        <xsl:sort select="@fileName"/>
+                                                        <option>
+                                                            <xsl:attribute name="value" select="@uri"/>
+                                                            <xsl:value-of select="@fileName"/>
+                                                        </option>
+                                                    </xsl:for-each>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="form-group">
+                                            <label for="message" class="col-sm-4 control-label">
+                                                Commit message
+                                            </label>
+                                            <div class="col-sm-8">
+                                                <input type="text" name="message" id="message" value="" maxlength="100" class="form-control" placeholder="e.g. Toh X updates Jan 2018"/>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="form-group">
+                                            <div class="col-sm-8 col-sm-offset-4">
+                                                <button type="submit" class="btn btn-warning">Make a snapshot</button>
+                                            </div>
+                                        </div>
+                                        
+                                    </form>
+                                    
+                                    <xsl:if test="//m:execute">
+                                        <div class="well well-sm">
+                                            <code>
+                                                <xsl:for-each select="//m:execute">
+                                                    $ <xsl:value-of select="execution/commandline/text()"/>
+                                                    <br/>
+                                                    <xsl:for-each select="execution/stdout/line">
+                                                        $ <xsl:value-of select="text()"/>
+                                                        <br/>
+                                                    </xsl:for-each>
+                                                    <xsl:if test="not(position() = last())">
+                                                        <hr/>
+                                                    </xsl:if>
+                                                </xsl:for-each>
+                                            </code>
+                                        </div>
+                                    </xsl:if>
+                                    
                                 </div>
-                            </xsl:if>
+                            </div>
                             
                         </div>
                     </div>

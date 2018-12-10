@@ -24,7 +24,7 @@ declare function tests:translations($text-statuses as xs:string*, $translation-i
         else
             tei-content:tei(lower-case($translation-id), 'translation')
     
-    let $test-config := common:test-conf()
+    let $test-config := $common:environment//m:test-conf
     
     return
         <results xmlns="http://read.84000.co/ns/1.0">
@@ -125,7 +125,7 @@ declare function tests:sections($section-id as xs:string) as item(){
         else
             tei-content:tei(lower-case($section-id), 'section')
     
-    let $test-config := common:test-conf()
+    let $test-config := $common:environment//m:test-conf
     
     return
         <results xmlns="http://read.84000.co/ns/1.0">
