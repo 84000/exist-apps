@@ -1,9 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" version="2.0" exclude-result-prefixes="#all">
-    
     <xsl:import href="../../84000-reading-room/views/html/reading-room-page.xsl"/>
     <xsl:import href="tabs.xsl"/>
-    
     <xsl:template match="/m:response">
         <xsl:variable name="environment" select="doc(/m:response/@environment-path)/m:environment"/>
         <xsl:variable name="reading-room-path" select="$environment/m:url[@id eq 'reading-room']/text()"/>
@@ -26,57 +24,24 @@
                                 the styles are changed. </p>
                             <ul>
                                 <li>
-                                    <em>Bulleted</em> lists: 
-                                    <a target="test-layout">
-                                        <xsl:attribute name="href" select="concat($reading-room-path, '/translation/UT22084-057-009.html#UT22084-057-009-12')"/>
-                                        1
-                                    </a>, 
-                                    <a target="test-layout">
-                                        <xsl:attribute name="href" select="concat($reading-room-path, '/translation/UT22084-046-001.html#UT22084-046-001-1454')"/>
-                                        2
-                                    </a>, 
-                                    <a target="test-layout">
-                                        <xsl:attribute name="href" select="concat($reading-room-path, '/translation/UT22084-031-002.html#UT22084-031-002-25')"/>
-                                        3
-                                    </a>, 
-                                    <a target="test-layout">
-                                        <xsl:attribute name="href" select="concat($reading-room-path, '/translation/UT22084-047-002.html#UT22084-047-002-15')"/>
-                                        4
-                                    </a>
+                                    <em>Bulleted</em> lists: <a target="test-layout">
+                                        <xsl:attribute name="href" select="concat($reading-room-path, '/translation/UT22084-057-009.html#UT22084-057-009-12')"/> 1 </a>, <a target="test-layout">
+                                        <xsl:attribute name="href" select="concat($reading-room-path, '/translation/UT22084-046-001.html#UT22084-046-001-1454')"/> 2 </a>, <a target="test-layout">
+                                        <xsl:attribute name="href" select="concat($reading-room-path, '/translation/UT22084-031-002.html#UT22084-031-002-25')"/> 3 </a>, <a target="test-layout">
+                                        <xsl:attribute name="href" select="concat($reading-room-path, '/translation/UT22084-047-002.html#UT22084-047-002-15')"/> 4 </a>
                                 </li>
                                 <li>
-                                    <em>Section</em> lists: 
-                                    <a target="test-layout">
-                                        <xsl:attribute name="href" select="concat($reading-room-path, '/translation/UT22084-031-002.html#UT22084-031-002-36')"/>
-                                        1
-                                    </a>, 
-                                    <a target="test-layout">
-                                        <xsl:attribute name="href" select="concat($reading-room-path, '/translation/UT22084-031-002.html#UT22084-031-002-46')"/>
-                                        2
-                                    </a>, 
-                                    <a target="test-layout">
-                                        <xsl:attribute name="href" select="concat($reading-room-path, '/translation/UT22084-055-001.html#UT22084-055-001-44')"/>
-                                        3
-                                    </a>
+                                    <em>Section</em> lists: <a target="test-layout">
+                                        <xsl:attribute name="href" select="concat($reading-room-path, '/translation/UT22084-031-002.html#UT22084-031-002-36')"/> 1 </a>, <a target="test-layout">
+                                        <xsl:attribute name="href" select="concat($reading-room-path, '/translation/UT22084-031-002.html#UT22084-031-002-46')"/> 2 </a>, <a target="test-layout">
+                                        <xsl:attribute name="href" select="concat($reading-room-path, '/translation/UT22084-055-001.html#UT22084-055-001-44')"/> 3 </a>
                                 </li>
                                 <li>
-                                    <em>Mixed</em> lists: 
-                                    <a target="test-layout">
-                                        <xsl:attribute name="href" select="concat($reading-room-path, '/translation/UT22084-051-004.html#UT22084-051-004-45')"/>
-                                        1
-                                    </a>, 
-                                    <a target="test-layout">
-                                        <xsl:attribute name="href" select="concat($reading-room-path, '/translation/UT22084-080-015.html#UT22084-080-015-866')"/>
-                                        2
-                                    </a>, 
-                                    <a target="test-layout">
-                                        <xsl:attribute name="href" select="concat($reading-room-path, '/translation/UT22084-081-006.html#UT22084-081-006-272')"/>
-                                        3
-                                    </a>, 
-                                    <a target="test-layout">
-                                        <xsl:attribute name="href" select="concat($reading-room-path, '/translation/UT22084-079-011.html#UT22084-079-011-14')"/>
-                                        4
-                                    </a>
+                                    <em>Mixed</em> lists: <a target="test-layout">
+                                        <xsl:attribute name="href" select="concat($reading-room-path, '/translation/UT22084-051-004.html#UT22084-051-004-45')"/> 1 </a>, <a target="test-layout">
+                                        <xsl:attribute name="href" select="concat($reading-room-path, '/translation/UT22084-080-015.html#UT22084-080-015-866')"/> 2 </a>, <a target="test-layout">
+                                        <xsl:attribute name="href" select="concat($reading-room-path, '/translation/UT22084-081-006.html#UT22084-081-006-272')"/> 3 </a>, <a target="test-layout">
+                                        <xsl:attribute name="href" select="concat($reading-room-path, '/translation/UT22084-079-011.html#UT22084-079-011-14')"/> 4 </a>
                                 </li>
                                 <li>
                                     <a target="test-layout">
@@ -149,6 +114,10 @@
                                 <li>
                                     <a target="test-layout">
                                         <xsl:attribute name="href" select="concat($reading-room-path, '/translation/UT22084-080-015.html#UT22084-080-015-1670')"/> Long milestone </a>
+                                </li>
+                                <li>
+                                    <a target="test-layout">
+                                        <xsl:attribute name="href" select="concat($reading-room-path, '/translation/UT22084-044-005.html#UT22084-044-005-3')"/> Small caps </a>
                                 </li>
                             </ul>
                         </div>

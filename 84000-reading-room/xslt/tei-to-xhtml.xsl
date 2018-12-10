@@ -101,9 +101,9 @@
     </xsl:template>
     
     <xsl:template match="tei:ref">
-        <xsl:choose>
-            <xsl:when test="@cRef">
-                <xsl:if test="(not(@rend) or @rend != 'hidden') and (not(@key) or @key eq /m:response/m:translation/m:source/@key)">
+        <xsl:if test="(not(@rend) or not(@rend eq 'hidden')) and (not(@key) or @key eq /m:response/m:translation/m:source/@key)">
+            <xsl:choose>
+                <xsl:when test="@cRef">
                     <xsl:variable name="volume" select="/m:response/m:translation/m:source/m:location/m:start/@volume"/>
                     <xsl:variable name="folio" select="substring-after(lower-case(@cRef), 'f.')"/>
                     <xsl:variable name="anchor" select="common:folio-id(@cRef)"/>
@@ -121,25 +121,25 @@
                             <span class="ref">[<xsl:apply-templates select="@cRef"/>]</span>
                         </xsl:otherwise>
                     </xsl:choose>
-                </xsl:if>
-            </xsl:when>
-            <xsl:when test="@target">
-                <a target="_blank">
-                    <xsl:attribute name="href">
-                        <xsl:value-of select="@target"/>
-                    </xsl:attribute>
-                    <xsl:attribute name="title">
-                        <xsl:value-of select="@target"/>
-                    </xsl:attribute>
-                    <xsl:apply-templates select="text()"/>
-                </a>
-            </xsl:when>
-            <xsl:otherwise>
-                <span class="ref">
-                    <xsl:apply-templates select="text()"/>
-                </span>
-            </xsl:otherwise>
-        </xsl:choose>
+                </xsl:when>
+                <xsl:when test="@target">
+                    <a target="_blank">
+                        <xsl:attribute name="href">
+                            <xsl:value-of select="@target"/>
+                        </xsl:attribute>
+                        <xsl:attribute name="title">
+                            <xsl:value-of select="@target"/>
+                        </xsl:attribute>
+                        <xsl:apply-templates select="text()"/>
+                    </a>
+                </xsl:when>
+                <xsl:otherwise>
+                    <span class="ref">
+                        <xsl:apply-templates select="text()"/>
+                    </span>
+                </xsl:otherwise>
+            </xsl:choose>
+        </xsl:if>
     </xsl:template>
     
     <xsl:template match="tei:lb">

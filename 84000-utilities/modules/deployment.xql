@@ -3,6 +3,7 @@ xquery version "3.0";
 module namespace deployment="http://read.84000.co/deployment";
 
 declare namespace m="http://read.84000.co/ns/1.0";
+declare namespace file="http://exist-db.org/xquery/file";
 
 import module namespace common="http://read.84000.co/common" at "../../84000-reading-room/modules/common.xql";
 
@@ -66,26 +67,33 @@ declare function deployment:commit-data($action as xs:string, $sync-resource as 
 declare function deployment:commit-apps($action as xs:string, $commit-msg as xs:string, $admin-password as xs:string) as element() {
 
     let $deployment-conf := common:deployment-conf()
-    let $is-admin-password := xmldb:authenticate('/db', 'admin', $admin-password)
+    let $admin-password-correct := xmldb:authenticate('/db', 'admin', $admin-password)
     
     (: Sync app :)
     let $sync :=
-        if($action eq 'sync' and $deployment-conf/m:sync-path/text() and $is-admin-password) then
+        if($action eq 'sync' and $deployment-conf/m:sync-path/text() and $admin-password-correct) then
             (
                 for $collection in ('84000-import','84000-reading-room','84000-utilities','84000-translation-memory','84000-translator-tools','84000-operations')
+                    (: Sync files with the file system :)
+                    let $file-sync := 
+                        file:sync(
+                           concat('/db/apps/', $collection), 
+                           concat('/', $deployment-conf/m:sync-path/text(), '/', $collection), 
+                           ()
+                        )
                 return
                 (
-                    file:sync(
-                       concat('/db/apps/', $collection), 
-                       concat('/', $deployment-conf/m:sync-path/text(), '/', $collection), 
-                       ()
-                    ),
-                    process:execute(
-                        ('bin/backup.sh', '-u', 'admin', '-p', $admin-password, '-b', concat('/db/apps/', $collection), '-d', concat('/', $deployment-conf/m:sync-path/text(), '/', $collection, '/zip/', $collection, '.zip')), 
-                        <options>
-                            <workingDir>/{ $deployment-conf/m:exist-path/text() }</workingDir>
-                        </options>
-                    )
+                    $file-sync,
+                    (: If files were updated then create a new zip of the app :)
+                    if($file-sync//file:update) then
+                        process:execute(
+                            ('bin/backup.sh', '-u', 'admin', '-p', $admin-password, '-b', concat('/db/apps/', $collection), '-d', concat('/', $deployment-conf/m:sync-path/text(), '/', $collection, '/zip/', $collection, '.zip')), 
+                            <options>
+                                <workingDir>/{ $deployment-conf/m:exist-path/text() }</workingDir>
+                            </options>
+                        )
+                    else
+                        ()
                 )
             )
         else
@@ -98,7 +106,7 @@ declare function deployment:commit-apps($action as xs:string, $commit-msg as xs:
                 $deployment-conf/m:view-repo-url/text() 
             }
             </view-repo-url>
-            <sync is-admin-password="{ $is-admin-password }">
+            <sync admin-password-correct="{ $admin-password-correct }">
             {
                 $sync
             }
