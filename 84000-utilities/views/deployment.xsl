@@ -39,15 +39,6 @@
                             <div class="row">
                                 <div class="col-sm-offset-2 col-sm-8">
                                     
-                                    <div class="alert alert-warning small text-center">
-                                        <p>
-                                            Manage updates of the 84000 eXist apps in the 
-                                            <a target="_blank" class="alert-link">
-                                                <xsl:attribute name="href" select="//m:view-repo-url/text()"/>
-                                                GitHub repository</a>.
-                                        </p>
-                                    </div>
-                                    
                                     <xsl:if test="m:apps/m:app">
                                         
                                         <xsl:variable name="role" select="m:apps/@role"/>
@@ -59,7 +50,14 @@
                                             <xsl:choose>
                                                 <xsl:when test="$role eq 'push'">
                                                     
-                                                    <h3 class="text-center text-danger uppercase">Commit a new version</h3>
+                                                    <div class="alert alert-danger small text-center">
+                                                        <p>
+                                                            Commit new versions of the 84000 eXist apps to the 
+                                                            <a target="_blank" class="alert-link">
+                                                                <xsl:attribute name="href" select="//m:view-repo-url/text()"/>
+                                                                GitHub repository</a>.
+                                                        </p>
+                                                    </div>
                                                     
                                                     <div class="form-group">
                                                         <label for="message" class="col-sm-3 control-label">
@@ -85,7 +83,14 @@
                                                 </xsl:when>
                                                 <xsl:when test="$role eq 'pull'">
                                                     
-                                                    <h3 class="text-center text-success uppercase">Pull the latest versions of the apps</h3>
+                                                    <div class="alert alert-success small text-center">
+                                                        <p>
+                                                            Get new versions of the 84000 eXist apps from the 
+                                                            <a target="_blank" class="alert-link">
+                                                                <xsl:attribute name="href" select="//m:view-repo-url/text()"/>
+                                                                GitHub repository</a>.
+                                                        </p>
+                                                    </div>
                                                     
                                                     <div class="form-group">
                                                         <label for="app" class="col-sm-3 control-label">
