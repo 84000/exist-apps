@@ -18,7 +18,7 @@ return
         'utilities/snapshot',
         'utilities',
         (
-            $deployment:git-conf/m:view-repo-url,
+            $deployment:snapshot-conf/m:view-repo-url,
             deployment:commit-data($action, $sync-resource, $commit-msg),
             translations:files($tei-content:published-statuses)
         )

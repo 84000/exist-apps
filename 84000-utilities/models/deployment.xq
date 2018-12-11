@@ -17,7 +17,7 @@ return
         'utilities/deployment',
         'utilities',
         (
-            $deployment:git-conf/m:view-repo-url,
+            $deployment:deployment-conf/m:view-repo-url,
             $deployment:deployment-conf/m:apps,
             deployment:deploy-apps($admin-password, $commit-msg, $get-app)
         )
