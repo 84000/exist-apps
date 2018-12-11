@@ -523,7 +523,7 @@
                 <table class="table">
                     <tbody>
                         <xsl:for-each select="$section/m:item">
-                            <xsl:sort select="m:abbreviation/text()"/>
+                            <xsl:sort select="m:abbreviation"/>
                             <tr>
                                 <th>
                                     <xsl:apply-templates select="m:abbreviation/node()"/>
