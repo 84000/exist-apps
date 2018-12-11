@@ -43,7 +43,7 @@ declare function deployment:commit-data($action as xs:string, $sync-resource as 
                 return
                     file:sync(
                         concat($common:data-path, '/', $collection), 
-                        concat($repo-path, '/', $collection), 
+                        concat('/', $repo-path, '/', $collection), 
                         ()
                     )
             )
