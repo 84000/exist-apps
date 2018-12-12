@@ -400,7 +400,7 @@ declare function translation:appendix($tei as element()) as element() {
                         }
                         </div>,
                         0,
-                        $chapter-number
+                        concat('ap', $chapter-class)
                     )
                 }
             </chapter>
