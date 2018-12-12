@@ -20,7 +20,7 @@
                         </span>
                         
                         <span class="text-right">
-                            <a target="_self">
+                            <a target="reading-room">
                                 <xsl:attribute name="href" select="$reading-room-path"/>
                                 Reading Room
                             </a>

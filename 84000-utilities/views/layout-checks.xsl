@@ -11,7 +11,7 @@
                     <div class="panel-heading panel-heading-bold hidden-print center-vertical">
                         <span class="title"> 84000 Utilities </span>
                         <span class="text-right">
-                            <a target="_self">
+                            <a target="reading-room">
                                 <xsl:attribute name="href" select="$reading-room-path"/> Reading Room </a>
                         </span>
                     </div>

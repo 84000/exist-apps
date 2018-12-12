@@ -20,7 +20,7 @@
                         </span>
                         
                         <span class="text-right">
-                            <a target="_self">
+                            <a target="reading-room">
                                 <xsl:attribute name="href" select="$reading-room-path"/>
                                 Reading Room
                             </a>
@@ -117,6 +117,15 @@
                                                         <div class="col-sm-3">
                                                             <input type="password" name="password" id="password" value="" required="required" class="form-control" autocomplete="off"/>
                                                         </div>
+                                                        <!-- 
+                                                        <div class="col-sm-3">
+                                                            <div class="checkbox">
+                                                                <label>
+                                                                    <input type="checkbox" name="get-fe" value="1"/>
+                                                                    Get front-end
+                                                                </label>
+                                                            </div>
+                                                        </div> -->
                                                         <div class="col-sm-3">
                                                             <button type="submit" class="btn btn-success">Pull updates</button>
                                                         </div>

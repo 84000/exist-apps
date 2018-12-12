@@ -785,12 +785,10 @@
                 </xsl:if>
                 
                 <div>
-                    
                     <xsl:if test="$expand-id">
                         <xsl:attribute name="class" select="'collapse print-expand collapse-chapter'"/>
                         <xsl:attribute name="id" select="$expand-id"/>
                     </xsl:if>
-                    
                     <table>
                         <tbody>
                             <xsl:call-template name="table-of-contents-chapters">
@@ -798,7 +796,6 @@
                             </xsl:call-template>
                         </tbody>
                     </table>
-                    
                 </div>
                 
             </td>

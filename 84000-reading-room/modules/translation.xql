@@ -111,36 +111,54 @@ declare function translation:toh-key($tei as node(), $resource-id as xs:string) 
             ''
 };
 
+declare function translation:toh-str($bibl as element()) as xs:string? {
+    replace(lower-case($bibl/@key), '^toh', '')
+};
+
+declare function translation:toh-full($bibl as element()) as xs:string? {
+    normalize-space(string-join($bibl/tei:ref//text(), ' +'))
+};
+
 declare function translation:toh($tei as element(), $resource-id as xs:string) as element() {
     (: Returns a toh meta-data for sorting grouping  :)
     let $bibl := tei-content:source-bibl($tei, $resource-id)
     let $bibls := $tei//tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl
-    let $toh := replace(lower-case($bibl/@key), '^toh', '')
-    let $full := normalize-space(string-join($bibl/tei:ref//text(), ' +'))
+    let $toh-str := translation:toh-str($bibl)
+    let $full := translation:toh-full($bibl)
     return
         <toh xmlns="http://read.84000.co/ns/1.0" 
             key="{ $bibl/@key }"
-            number="{ replace($toh, '^(\d+)([a-zA-Z]*)\-*(\d*)([a-zA-Z]*)', '$1') }"
-            letter="{ replace($toh, '^(\d+)([a-zA-Z]*)\-*(\d*)([a-zA-Z]*)', '$2') }"
-            chapter-number="{ replace($toh, '^(\d+)([a-zA-Z]*)\-*(\d*)([a-zA-Z]*)', '$3') }"
-            chapter-letter="{ replace($toh, '^(\d+)([a-zA-Z]*)\-*(\d*)([a-zA-Z]*)', '$4') }">
-            <base>{ $toh }</base>
+            number="{ replace($toh-str, '^(\d+)([a-zA-Z]*)\-*(\d*)([a-zA-Z]*)', '$1') }"
+            letter="{ replace($toh-str, '^(\d+)([a-zA-Z]*)\-*(\d*)([a-zA-Z]*)', '$2') }"
+            chapter-number="{ replace($toh-str, '^(\d+)([a-zA-Z]*)\-*(\d*)([a-zA-Z]*)', '$3') }"
+            chapter-letter="{ replace($toh-str, '^(\d+)([a-zA-Z]*)\-*(\d*)([a-zA-Z]*)', '$4') }">
+            <base>{ $toh-str }</base>
             <full>{ $full }</full>
-            <duplicates>
             {
                 if(count($bibls) gt 1) then
-                    concat(
-                        'Toh ',
-                        string-join(
-                            for $bibl-i in $bibls
-                            return
-                                normalize-space(string-join(replace(lower-case($bibl-i/@key), '^toh', ''), ' +'))
-                        , ' / ')
-                    )
+                    
+                    let $duplicates := 
+                        for $sibling in $bibls[@key ne $bibl/@key]
+                        return
+                            <duplicate key="{ $sibling/@key }">
+                                <base>{ translation:toh-str($sibling) }</base>
+                                <full>{ translation:toh-full($sibling) }</full>
+                            </duplicate>
+                            
+                    return
+                        <duplicates>
+                        {
+                            $duplicates,
+                            <full>
+                            {
+                                concat('Toh ', string-join(($toh-str, $duplicates/m:base/text()), ' / '))
+                            }
+                            </full>
+                        }
+                        </duplicates>
                 else
-                    $full
+                    ()
             }
-            </duplicates>
         </toh>
 };
 

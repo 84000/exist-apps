@@ -241,7 +241,9 @@
                                                     
                                                     <div class="col-md-1">
                                                         
-                                                        <xsl:value-of select="m:toh/m:full"/>
+                                                        <xsl:call-template name="expandable-toh">
+                                                            <xsl:with-param name="toh" select="m:toh"/>
+                                                        </xsl:call-template>
                                                         
                                                         <hr class="visible-xs-block visible-sm-block"/>
                                                         

@@ -215,13 +215,15 @@
                                             <xsl:variable name="text-id" select="@id"/>
                                             <xsl:variable name="status-id" select="xs:string(@status)"/>
                                             <tr>
-                                                <td class="nowrap">
+                                                <td>
                                                     <xsl:choose>
-                                                        <xsl:when test="/m:response/m:texts/@deduplicate eq 'true'">
-                                                            <xsl:value-of select="m:toh/m:duplicates"/>
+                                                        <xsl:when test="/m:response/m:texts/@deduplicate eq 'true' and m:toh/m:duplicates">
+                                                            <xsl:value-of select="m:toh/m:duplicates/m:full"/>
                                                         </xsl:when>
                                                         <xsl:otherwise>
-                                                            <xsl:value-of select="m:toh/m:base"/>
+                                                            <xsl:call-template name="expandable-toh">
+                                                                <xsl:with-param name="toh" select="m:toh"/>
+                                                            </xsl:call-template>
                                                         </xsl:otherwise>
                                                     </xsl:choose>
                                                 </td>
