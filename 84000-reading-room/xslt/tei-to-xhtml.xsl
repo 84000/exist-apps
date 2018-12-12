@@ -345,7 +345,9 @@
     </xsl:template>
     
     <xsl:template match="tei:hi[@rend eq 'small-caps']">
-        <xsl:copy-of select="translate(text(), 'abcdefghijklmnopqrstuvwxyz', 'ᴀʙᴄᴅᴇꜰɢʜɪᴊᴋʟᴍɴᴏᴘǫʀsᴛᴜᴠᴡxʏᴢ')"/>
+        <span class="small-caps">
+            <xsl:copy-of select="translate(text(), 'abcdefghijklmnopqrstuvwxyz', 'ᴀʙᴄᴅᴇꜰɢʜɪᴊᴋʟᴍɴᴏᴘǫʀsᴛᴜᴠᴡxʏᴢ')"/>
+        </span>
     </xsl:template>
     
     <xsl:template match="exist:match">

@@ -72,7 +72,7 @@
                                                         <label for="password" class="col-sm-3 control-label">
                                                             Admin password
                                                         </label>
-                                                        <div class="col-sm-6">
+                                                        <div class="col-sm-3">
                                                             <input type="password" name="password" id="password" value="" required="required" class="form-control" autocomplete="off"/>
                                                         </div>
                                                         <div class="col-sm-3">
