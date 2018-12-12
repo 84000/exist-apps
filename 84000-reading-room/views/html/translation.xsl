@@ -475,7 +475,7 @@
     
     <xsl:template name="body-title">
         <xsl:param name="translation" required="yes"/>
-        <div class="rw">
+        <div class="rw rw-body-title">
             <div class="gtr">
                 <a href="#body-title" class="milestone milestone-h3" title="Bookmark this section">
                     <xsl:value-of select="concat($translation/m:body/@prefix, '.')"/>
@@ -500,7 +500,7 @@
         <xsl:param name="prefix" required="yes"/>
         <xsl:param name="title" required="yes"/>
         <xsl:param name="title-number" required="yes"/>
-        <div class="rw">
+        <div class="rw rw-chapter-title">
             <div class="gtr">
                 <a class="milestone milestone-h4" title="Bookmark this section">
                     <xsl:attribute name="href" select="concat('#chapter-', $prefix)"/>
@@ -547,7 +547,7 @@
         <xsl:param name="prefix" required="yes"/>
         <xsl:param name="title" required="yes"/>
         <xsl:param name="title-tag" select="'h3'" required="no"/>
-        <div class="rw rw-heading">
+        <div class="rw rw-section-title">
             <div class="gtr">
                 <a title="Bookmark this section">
                     <xsl:attribute name="href" select="concat('#', $id)"/>

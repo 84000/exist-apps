@@ -17,10 +17,9 @@
                     </h2>
                 </div>
                 <xsl:for-each select="m:translation/m:appendix/m:chapter">
-                    
                     <div class="chapter">
                         <div class="text">
-                            <div class="center space-after">
+                            <div class="center">
                                 <h4>
                                     <xsl:apply-templates select="m:title"/>
                                 </h4>

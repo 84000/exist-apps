@@ -85,6 +85,10 @@
                                         </li>
                                         <li>
                                             <a target="test-layout">
+                                                <xsl:attribute name="href" select="concat($reading-room-path, '/translation/UT22084-051-004.html#UT22084-051-004-136')"/> Trailer </a>
+                                        </li>
+                                        <li>
+                                            <a target="test-layout">
                                                 <xsl:attribute name="href" select="concat($reading-room-path, '/translation/UT22084-046-001.html#colophon')"/> Colophon chapters </a>
                                         </li>
                                         <li>

@@ -13,12 +13,12 @@ h6,
 p,
 pre,
 code,
-blockquote{
+blockquote {
     margin: 0;
     padding: 0;
     border-width: 0;
 }
-body{
+body {
     color: #000000;
     font-family: "IndUni-P";
 }
@@ -27,104 +27,103 @@ h2,
 h3,
 h4,
 h5,
-h6{
+h6 {
     display: block;
     width: 100%;
     text-align: inherit;
     font-weight: bold;
 }
 section,
-aside{
+aside {
     display: block;
     page-break-before: always;
     max-width: 100%;
 }
-p{
+p {
     line-height: 1.5;
     page-break-after: auto;
     page-break-before: auto;
     text-align: left;
 }
-a{
+a {
     color: #003f5f;
 }
 
 /* headings */
-h1{
+h1 {
     font-size: 1.4em;
 }
-h2{
+h2 {
     font-size: 1.3em;
 }
-h3{
+h3 {
     font-size: 1.2em;
 }
 h4{
     font-size: 1.1em;
 }
-h5{
+h5 {
     font-size: 1em;
 }
-h5.space-before,
-h5.section-label{
-    margin-top: 40pt;
+h5.section-label {
+    margin-top: 24pt;
 }
 
 /* helpers */
 .bold,
-.text-bold{
+.text-bold {
     font-weight: bold;
 }
-.center{
+.center {
     text-align: center;
 }
-.center p{
+.center p {
     text-align: center;
 }
-.italic{
+.italic {
     font-style: italic;
 }
-.title{
+.title {
     font-style: italic;
 }
-.name{
+.name {
     font-style: italic;
     font-weight: bold;
 }
-.uppercase{
+.uppercase {
     text-transform: uppercase;
 }
-.small{
+.small {
     font-size: .75em;
 }
-.speaker{
+.speaker {
     font-style: italic;
 }
-.trailer{
+.trailer {
     font-style: italic;
 }
 .trailer .ref,
-.trailer .footnote-link{
+.trailer .footnote-link {
     font-style: normal;
 }
 
 /* other scripts */
-.text-bo{
+.text-bo {
     font-family: "DDC Uchen";
     line-height: 2em;
 }
-.text-sa{
+.text-sa {
     font-style: italic;
 }
-.text-wy{
+.text-wy {
     font-style: italic;
 }
-.text-zh{
+.text-zh {
     font-style: normal !important;
 }
 
 /* section header */
-.header{
+.header {
     padding-top: 20%;
     padding-bottom: 20pt;
     page-break-after: avoid;
@@ -132,84 +131,101 @@ h5.section-label{
 .header h1,
 .header h2,
 .header h3,
-.header h4{
+.header h4 {
     margin-top: 0;
     margin-bottom: 20pt;
 }
 
 /* blockquote */
-blockquote{
+blockquote {
     padding: 0;
     margin-bottom: 0;
     border-left: 1px solid #ccc;
 }
-blockquote p{
+blockquote p {
     padding-left: 12pt;
 }
-blockquote .line-group .line{
+blockquote .line-group .line {
     padding-left: 34pt;
 }
 
 /* text section */
-.text h2{
+.text h2 {
     font-weight: normal;
     page-break-after: avoid;
 }
-.text h4{
+.text h4 {
     margin-top: 22pt;
     page-break-after: avoid;
 }
-.text br{
+.text br {
     display: none;
 }
-.text p{
+.text p {
     text-align: justify;
     text-indent: 22pt;
 }
-.text p.mantra{
+.text p.mantra {
     text-indent: 0;
     padding: 0 22pt;
 }
-.text p br{
+.text p br {
     display: block;
 }
 
-/* Spaced paragraphs */
-.text h2 + *,
-.text h3 + *,
-.text h4 + *,
-.text br + *,
-.text .space,
-.text .space + *,
-.text .space-after + *, 
-.text .milestone-space {
-    margin-top: 14pt;
+/* Add a space */
+br+*,
+.rw-chapter-title+.rw,
+.rw-section-head+.rw,
+.rw-chapter-head+.rw,
+.rw-list-section+.rw,
+.rw-list-bullet+.rw,
+.rw-line-group,
+.rw-line-group+.rw,
+.rw-blockquote,
+.rw-blockquote+.rw,
+.rw-mantra,
+.rw-mantra+.rw,
+.rw-trailer {
+    margin-top: 12pt;
 }
+
+/* Add a double space */
+.rw-section-head {
+    margin-top: 24pt;
+}
+
 /* Remove line indent */
-.text .rw.first-child > p,
-.text .rw:first-child > p,
-.text h2 + .rw p,
-.text h3 + .rw p,
-.text h4 + .rw p,
-.text br + .rw p,
-.text .space > p,
-.text .space + .rw > p,
-.text .space-after + .rw > p,
-.text .rw-heading + .rw > p,
-.text .rw-label + .rw > p,
-.text .footnote-number {
+.footnote-number,
+br+.rw > p,
+.rw:first-child > p,
+.rw.first-child > p,
+.rw.rw-label+.rw > p,
+.rw.rw-list-head +.rw > p,
+.rw-chapter-title+.rw > p,
+.rw-section-head+.rw > p,
+.rw-chapter-head+.rw > p,
+.rw-list-section+.rw > p,
+.rw-list-bullet+.rw > p,
+.rw-line-group > p,
+.rw-line-group+.rw > p,
+.rw-blockquote > p,
+.rw-blockquote+.rw > p,
+.rw-mantra > p,
+.rw-mantra+.rw > p,
+.rw-trailer > p {
     text-indent: 0;
 }
 
 /* Gutter for Milestones */
-.rw{
+.rw {
     display: block;
     padding-left: 35pt;
 }
-.rw .rw{
+.rw .rw {
     margin-left: -35pt;
 }
-.gtr{
+.gtr {
     display: block;
     float: left;
     margin-left: -35pt;
@@ -225,13 +241,13 @@ blockquote .line-group .line{
 /* additional avoid page breaks */
 .nested-chapter > .first-child,
 .nested-section > .first-child,
-.footnote-number{
+.footnote-number {
     page-break-after: avoid;
 }
 
 /* lists */
 .list p,
-.list .section-label{
+.list .section-label {
     margin-top: 0;
 }
 
@@ -239,28 +255,28 @@ blockquote .line-group .line{
 .list.list-bullet > .rw > .list-item {
     margin-top: 5pt;
 }
-.list.list-bullet > .rw > .list-item p,
-.list.list-bullet > .rw > .list-item .section-label {
+.list.list-bullet > .rw > .list-item > .rw > p,
+.list.list-bullet > .rw > .list-item > .rw > .section-label {
     padding-left: 12pt;
 }
-.list.list-bullet.nesting-1 > .rw > .list-item p,
-.list.list-bullet.nesting-1 > .rw > .list-item .section-label {
+.list.list-bullet.nesting-1 > .rw > .list-item > .rw > p,
+.list.list-bullet.nesting-1 > .rw > .list-item > .rw > .section-label {
     padding-left: 24pt;
 }
-.list.list-bullet.nesting-2 > .rw > .list-item p,
-.list.list-bullet.nesting-2 > .rw > .list-item .section-label {
+.list.list-bullet.nesting-2 > .rw > .list-item > .rw > p,
+.list.list-bullet.nesting-2 > .rw > .list-item > .rw > .section-label {
     padding-left: 36pt;
 }
-.list.list-bullet.nesting-3 > .rw > .list-item p,
-.list.list-bullet.nesting-3 > .rw > .list-item .section-label {
+.list.list-bullet.nesting-3 > .rw > .list-item > .rw > p,
+.list.list-bullet.nesting-3 > .rw > .list-item > .rw > .section-label {
     padding-left: 48pt;
 }
-.list.list-bullet.nesting-4 > .rw > .list-item p,
-.list.list-bullet.nesting-4 > .rw > .list-item .section-label {
+.list.list-bullet.nesting-4 > .rw > .list-item > .rw > p,
+.list.list-bullet.nesting-4 > .rw > .list-item > .rw > .section-label {
     padding-left: 60pt;
 }
-.list.list-bullet.nesting-5 > .rw > .list-item p,
-.list.list-bullet.nesting-5 > .rw > .list-item .section-label {
+.list.list-bullet.nesting-5 > .rw > .list-item > .rw > p,
+.list.list-bullet.nesting-5 > .rw > .list-item > .rw > .section-label {
     padding-left: 72pt;
 }
 
@@ -268,18 +284,14 @@ blockquote .line-group .line{
 .list.list-section > .rw {
     margin-top: 14pt;
 }
-.list.list-section > .rw.first-child,
-.list.list-section > .rw.rw-heading + .rw {
-    margin-top: 0;
-}
 
 /* Footnotes */
-.footnote{
+.footnote {
     margin-bottom: 12pt;
 }
 
 /* footnote links */
-.footnote-link{
+.footnote-link {
     font-size: .75em;
     line-height: .75em;
     vertical-align: super;
@@ -287,24 +299,24 @@ blockquote .line-group .line{
 }
 
 /* Images */
-img.illustration{
+img.illustration {
     display: block;
     page-break-before: always;
     max-width: 100%;
     max-height: 100%;
     margin: 0 auto;
 }
-img.divider{
+img.divider {
     display: block;
     margin: 30pt auto 30pt auto;
     page-break-after: always;
 }
-img.logo-84000{
+img.logo-84000 {
     width: 25%;
 }
 
 /* line-groups */
-.line-group .line{
+.line-group .line {
     padding-left: 22pt;
     text-indent: -22pt;
     line-height: 1.5;
@@ -313,17 +325,17 @@ img.logo-84000{
 /* title pages */
 .half-title,
 .full-title,
-.colophon{
+.colophon {
     padding-top: 20%;
 }
 .full-title h1,
 .full-title h2,
 .half-title h1,
 .half-title h2,
-.full-title p{
+.full-title p {
     margin-bottom: 15pt;
 }
-.half-title .logo{
+.half-title .logo {
     display: inline-block;
     margin: 0 auto;
     margin-top: 20%;
@@ -331,24 +343,24 @@ img.logo-84000{
 .half-title h2,
 .full-title h2,
 .full-title h3,
-.full-title p{
+.full-title p {
     font-size: 13pt;
     font-weight: normal;
 }
-.full-title .translator{
+.full-title .translator {
     padding: 10pt 15pt;
     background-color: #eee;
     margin-bottom: 0;
 }
 
 /* imprint */
-.imprint{
+.imprint {
     padding-top: 20%;
 }
-.imprint h5{
+.imprint h5 {
     margin-bottom: 11pt;
 }
-.imprint .logo{
+.imprint .logo {
     display: block;
     margin: 0 auto;
     margin-top: 5%;
@@ -356,16 +368,16 @@ img.logo-84000{
 }
 
 /* contents */
-.contents a{
+.contents a {
     text-decoration: none;
 }
-.contents > ol{
+.contents > ol {
     list-style-type: disc;
 }
-.contents > ol ol{
+.contents > ol ol {
     list-style-type: circle;
 }
-.contents li{
+.contents li {
     margin-top: 5pt;
 }
 
@@ -376,38 +388,38 @@ img.logo-84000{
 #abbreviations .section-label {
     text-align: center;
 }
-#abbreviations h5{
+#abbreviations h5 {
     margin-top: 16pt;
     margin-bottom: 8pt;
 }
-#abbreviations table{
+#abbreviations table {
     margin-bottom: 8pt;
 }
-#abbreviations table th{
+#abbreviations table th {
     padding-right: 8pt;
     vertical-align: top;
     font-weight: normal;
     text-align: left;
 }
-#abbreviations p{
+#abbreviations p {
     margin-bottom: 8pt;
 }
 
 /* Bibliography */
-#bibliography p{
+#bibliography p {
     padding-left: 2em;
     text-indent: -2em;
     margin-top: 14pt;
 }
 
 /* Glossary */
-.glossary-item{
+.glossary-item {
     margin-bottom: 20pt;
 }
-.glossary-item .term{
+.glossary-item .term {
     margin-top: 0pt;
 }
-.glossary-item .alternative{
+.glossary-item .alternative {
     display: none;
 }
 
