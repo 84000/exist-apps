@@ -224,17 +224,25 @@
                                                 <xsl:variable name="translation-status" select="/m:response/m:translation-status/m:text[@text-id eq $text-id]"/>
                                                 <xsl:if test="$translation-status/m:notes/text() | $translation-status/m:task[not(@checked-off)]">
                                                     <div class="top-vertical margin-top-sm">
-                                                        <a class="italic text-muted">
-                                                            <xsl:attribute name="href" select="concat('/edit-text-header.html?id=', $text-id, '#publication-status-form')"/>
-                                                            <xsl:choose>
-                                                                <xsl:when test="$translation-status/m:notes/text()">
-                                                                    <xsl:value-of select="common:limit-str($translation-status/m:notes, 80)"/>
-                                                                </xsl:when>
-                                                                <xsl:otherwise>
+                                                        <xsl:choose>
+                                                            <xsl:when test="$translation-status/m:notes/text()">
+                                                                <span>
+                                                                    <div class="collapse-one-line">
+                                                                        <a class="italic text-color printable">
+                                                                            <xsl:attribute name="href" select="concat('/edit-text-header.html?id=', $text-id, '#publication-status-form')"/>
+                                                                            <xsl:value-of select="$translation-status/m:notes"/>
+                                                                        </a>
+                                                                    </div>
+                                                                </span>
+                                                            </xsl:when>
+                                                            <xsl:otherwise>
+                                                                <!-- If there are no notes then link to the form -->
+                                                                <a target="_self" class="italic text-color printable">
+                                                                    <xsl:attribute name="href" select="concat('/edit-text-header.html?id=', $text-id, '#publication-status-form')"/>
                                                                     [No notes]
-                                                                </xsl:otherwise>
-                                                            </xsl:choose>
-                                                        </a>
+                                                                </a>
+                                                            </xsl:otherwise>
+                                                        </xsl:choose>
                                                         <xsl:if test="$translation-status/m:task[not(@checked-off)]">
                                                             <a role="button" data-toggle="collapse" href="#panelStatus" aria-expanded="false" aria-controls="panelTitles">
                                                                 <span class="badge badge-notification">

@@ -62,7 +62,7 @@
                                 <a role="button" data-toggle="collapse" href="#panelStatus" aria-expanded="false" aria-controls="panelTitles" class="italic text-color">
                                     <xsl:choose>
                                         <xsl:when test="m:translation-status/m:notes/text()">
-                                            <xsl:value-of select="common:limit-str(m:translation-status/m:notes, 180)"/>
+                                            <xsl:value-of select="common:limit-str(m:translation-status/m:notes, 160)"/>
                                         </xsl:when>
                                         <xsl:otherwise>
                                             [No notes]
