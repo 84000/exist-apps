@@ -60,9 +60,9 @@
                                 </input>
                                 
                                 <div class="row">
-                                    
                                     <div class="col-sm-6">
-                                        <fieldset>
+                                        <fieldset class="bottom-margin">
+                                            
                                             <legend>
                                                 <xsl:choose>
                                                     <xsl:when test="$team-id">
@@ -74,47 +74,76 @@
                                             
                                             <xsl:copy-of select="m:text-input('Name','name', m:team/m:label, 9, 'required')"/>
                                             
+                                            <hr/>
+                                            
+                                            <div>
+                                                
+                                                <xsl:if test="$team-id">
+                                                    <xsl:choose>
+                                                        <xsl:when test="count(m:team/m:person) gt 0">
+                                                            <!-- Disable if there are acknowledgments -->
+                                                            <span title="You cannot delete a team with members">
+                                                                <a href="#" class="btn btn-default disabled">
+                                                                    <xsl:value-of select="'Delete'"/>
+                                                                </a>
+                                                            </span>
+                                                        </xsl:when>
+                                                        <xsl:otherwise>
+                                                            <a class="btn btn-danger">
+                                                                <xsl:attribute name="href" select="concat('/translator-teams.html?delete=', $team-id)"/>
+                                                                <xsl:value-of select="'Delete'"/>
+                                                            </a>
+                                                        </xsl:otherwise>
+                                                    </xsl:choose>
+                                                </xsl:if>
+                                                
+                                                <button type="submit" class="btn btn-primary pull-right">
+                                                    Save
+                                                </button>
+                                                
+                                            </div>
                                         </fieldset>
+                                        
+                                        <xsl:if test="m:team/m:acknowledgement">
+                                            <section>
+                                                <div class="relative" id="team-acknowledgements">
+                                                    <xsl:if test="count(m:team/m:acknowledgement) gt 1">
+                                                        <xsl:attribute name="class" select="'relative preview-list render-in-viewport'"/>
+                                                    </xsl:if>
+                                                    <h4>Acknowledgements</h4>
+                                                    <xsl:call-template name="acknowledgements">
+                                                        <xsl:with-param name="acknowledgements" select="m:team/m:acknowledgement"/>
+                                                        <xsl:with-param name="css-class" select="''"/>
+                                                        <xsl:with-param name="group" select="''"/>
+                                                        <xsl:with-param name="link-href" select="concat($reading-room-path, '/translation/@translation-id.html')"/>
+                                                    </xsl:call-template>
+                                                </div>
+                                            </section>
+                                        </xsl:if>
+                                        
                                     </div>
                                     
                                     <div class="col-sm-6">
-                                        <xsl:if test="m:team/m:acknowledgement">
-                                            <h4>Acknowledgements</h4>
-                                            <xsl:call-template name="acknowledgements">
-                                                <xsl:with-param name="acknowledgements" select="m:team/m:acknowledgement"/>
-                                                <xsl:with-param name="css-class" select="''"/>
-                                                <xsl:with-param name="group" select="''"/>
-                                                <xsl:with-param name="link-href" select="concat($reading-room-path, '/translation/@translation-id.html')"/>
-                                            </xsl:call-template>
+                                        <xsl:if test="m:team/m:person">
+                                            <div class="relative" id="team-persons">
+                                                <h4>Contributors</h4>
+                                                <ul>
+                                                    <xsl:for-each select="m:team/m:person">
+                                                        <li>
+                                                            <a target="_self">
+                                                                <xsl:attribute name="href" select="concat('/edit-translator.html?id=', @xml:id)"/>
+                                                                <xsl:value-of select="m:label"/>
+                                                            </a>
+                                                        </li>
+                                                    </xsl:for-each>
+                                                </ul>
+                                            </div>
                                         </xsl:if>
                                     </div>
-                                    
                                 </div>
-                                <hr/>
-                                <xsl:choose>
-                                    <xsl:when test="count(m:team/m:person) gt 0">
-                                        <!-- Disable if there are acknowledgments -->
-                                        <span title="You cannot delete a team with members">
-                                            <a href="#" class="btn btn-default disabled">
-                                                <xsl:value-of select="'Delete'"/>
-                                            </a>
-                                        </span>
-                                    </xsl:when>
-                                    <xsl:otherwise>
-                                        <a class="btn btn-danger">
-                                            <xsl:attribute name="href" select="concat('/translator-teams.html?delete=', $team-id)"/>
-                                            <xsl:value-of select="'Delete'"/>
-                                        </a>
-                                    </xsl:otherwise>
-                                </xsl:choose>
-                                <button type="submit" class="btn btn-primary pull-right">
-                                    Save
-                                </button>
                             </form>
-                            
                         </div>
                     </div>
-                    
                 </div>
             </div>
             

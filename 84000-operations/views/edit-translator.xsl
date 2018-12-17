@@ -59,10 +59,11 @@
                                     </xsl:choose>
                                 </input>
                                 
+                                
                                 <div class="row">
-                                    
                                     <div class="col-sm-6">
                                         <fieldset>
+                                            
                                             <legend>
                                                 <xsl:choose>
                                                     <xsl:when test="$person-id">
@@ -71,6 +72,7 @@
                                                     <xsl:otherwise>New contributor</xsl:otherwise>
                                                 </xsl:choose>
                                             </legend>
+                                            
                                             <xsl:copy-of select="m:text-input('Name','name', m:person/m:label, 9, 'required')"/>
                                             
                                             <div class="add-nodes-container">
@@ -120,49 +122,58 @@
                                                     </div>
                                                 </div>
                                             </div>
+                                            
+                                            <hr/>
+                                            
+                                            <div>
+                                                <xsl:if test="$person-id">
+                                                    <xsl:choose>
+                                                        <xsl:when test="m:person/m:acknowledgement">
+                                                            <!-- Disable if there are acknowledgments -->
+                                                            <span title="You cannot delete a credited translator">
+                                                                <a href="#" class="btn btn-default disabled">
+                                                                    <xsl:value-of select="'Delete'"/>
+                                                                </a>
+                                                            </span>
+                                                        </xsl:when>
+                                                        <xsl:otherwise>
+                                                            <a class="btn btn-danger">
+                                                                <xsl:attribute name="href" select="concat('/translators.html?delete=', $person-id)"/>
+                                                                <xsl:value-of select="'Delete'"/>
+                                                            </a>
+                                                        </xsl:otherwise>
+                                                    </xsl:choose>
+                                                </xsl:if>
+                                            
+                                                <button type="submit" class="btn btn-primary pull-right">
+                                                    Save
+                                                </button>
+                                            </div>
+                                            
                                         </fieldset>
-                                        
                                     </div>
-                                    
-                                    <div class="col-sm-6">
+                                
+                                    <section class="col-sm-6">
                                         <xsl:if test="m:person/m:acknowledgement">
-                                            <h4>Acknowledgements</h4>
-                                            <xsl:call-template name="acknowledgements">
-                                                <xsl:with-param name="acknowledgements" select="m:person/m:acknowledgement"/>
-                                                <xsl:with-param name="css-class" select="''"/>
-                                                <xsl:with-param name="group" select="''"/>
-                                                <xsl:with-param name="link-href" select="'/edit-text-header.html?id=@translation-id'"/>
-                                            </xsl:call-template>
+                                            <div class="relative" id="person-acknowledgements">
+                                                <xsl:if test="count(m:person/m:acknowledgement) gt 1">
+                                                    <xsl:attribute name="class" select="'relative preview-list render-in-viewport'"/>
+                                                </xsl:if>
+                                                <h4>Acknowledgements</h4>
+                                                <xsl:call-template name="acknowledgements">
+                                                    <xsl:with-param name="acknowledgements" select="m:person/m:acknowledgement"/>
+                                                    <xsl:with-param name="css-class" select="''"/>
+                                                    <xsl:with-param name="group" select="''"/>
+                                                    <xsl:with-param name="link-href" select="'/edit-text-header.html?id=@translation-id'"/>
+                                                </xsl:call-template>
+                                            </div>
                                         </xsl:if>
-                                    </div>
+                                    </section>
                                     
                                 </div>
-                                <hr/>
-                                
-                                <xsl:choose>
-                                    <xsl:when test="m:person/m:acknowledgement">
-                                        <!-- Disable if there are acknowledgments -->
-                                        <span title="You cannot delete an active translator">
-                                            <a href="#" class="btn btn-default disabled">
-                                                <xsl:value-of select="'Delete'"/>
-                                            </a>
-                                        </span>
-                                    </xsl:when>
-                                    <xsl:otherwise>
-                                        <a class="btn btn-danger">
-                                            <xsl:attribute name="href" select="concat('/translators.html?delete=', $person-id)"/>
-                                            <xsl:value-of select="'Delete'"/>
-                                        </a>
-                                    </xsl:otherwise>
-                                </xsl:choose>
-                                <button type="submit" class="btn btn-primary pull-right">
-                                    Save
-                                </button>
                             </form>
-                            
                         </div>
                     </div>
-                    
                 </div>
             </div>
             

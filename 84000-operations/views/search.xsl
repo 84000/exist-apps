@@ -42,7 +42,7 @@
                                                 <div class="checkbox">
                                                     <xsl:choose>
                                                         <xsl:when test="@selected eq 'selected'">
-                                                            <xsl:attribute name="class" select="'checkbox visible-print-block'"/>
+                                                            <xsl:attribute name="class" select="'checkbox'"/>
                                                         </xsl:when>
                                                         <xsl:otherwise>
                                                             <xsl:attribute name="class" select="'checkbox hidden-print'"/>
