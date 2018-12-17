@@ -920,9 +920,20 @@ declare function translation:update($tei as element()) as element()* {
                 else if($request-parameter eq 'translator-team-id') then
                     $parent//tei:title[last()]
                 else if(starts-with($request-parameter, 'contributor-id-')) then
-                    let $contributors := ($parent/tei:author[not(@role eq 'translatorMain')] | $parent/tei:editor | $parent/tei:consultant)
+                    let $contributor-index := substring-after($request-parameter, 'contributor-id-')
+                    let $contributor-type := request:get-parameter(concat('contributor-type-', $contributor-index), '')
+                    let $contributor-type-tokenized := tokenize($contributor-type, '-')
+                    let $contributor-node-name := $contributor-type-tokenized[1]
+                    let $contributors-of-type := 
+                        if($contributor-node-name eq 'consultant') then
+                            $parent/tei:consultant
+                        else if($contributor-node-name eq 'editor') then
+                            $parent/tei:editor
+                        else
+                            $parent/tei:author[not(@role eq 'translatorMain')]
                     return
-                        $contributors[last()]
+                        $contributors-of-type[last()]
+                        
                 else if(starts-with($request-parameter, 'sponsor-id-')) then
                     $parent//tei:sponsor[last()]
                 else if($request-parameter eq 'publication-date') then

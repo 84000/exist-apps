@@ -43,7 +43,8 @@ let $response :=
                 xmlns="http://read.84000.co/ns/1.0" 
                 id="{ tei-content:id($tei) }"
                 status="{ tei-content:translation-status($tei) }"
-                page-url="{ $page-url }">
+                page-url="{ $page-url }"
+                ekangyur-work="{ $common:ekangyur-work }">
                 { tei-content:ancestors($tei, $resource-id, 1) }
                 { translation:titles($tei) }
                 { translation:long-titles($tei) }

@@ -18,11 +18,11 @@ let $new-id :=
 
 let $team := 
     if($new-id gt '') then
-        contributors:team($new-id, true())
+        contributors:team($new-id, true(), true())
     else if($post-id gt '') then
-        contributors:team($post-id, true())
+        contributors:team($post-id, true(), true())
     else if($request-id gt '') then
-        contributors:team($request-id, true())
+        contributors:team($request-id, true(), true())
     else
         ()
 

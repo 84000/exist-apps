@@ -13,7 +13,7 @@ let $include-acknowledgements := (request:get-parameter('include-acknowledgement
 
 let $delete-sponsor-id := request:get-parameter('delete', '')
 
-let $dummy := 
+let $delete-sponsor := 
     if($delete-sponsor-id gt '') then
         sponsors:delete($sponsors:sponsors/m:sponsors/m:sponsor[@xml:id eq $delete-sponsor-id])
     else

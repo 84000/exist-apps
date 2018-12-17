@@ -43,7 +43,7 @@
                                 </div>
                             </xsl:if>
                             
-                            <form method="post" class="form-horizontal">
+                            <form method="post" class="form-horizontal form-update">
                                 
                                 <xsl:attribute name="action" select="'edit-sponsor.html'"/>
                                 <xsl:variable name="sponsor-id" select="m:sponsor/@xml:id"/>
@@ -145,10 +145,22 @@
                                     </div>
                                 </div>
                                 <hr/>
-                                <a class="btn btn-danger">
-                                    <xsl:attribute name="href" select="concat('/sponsors.html?delete=', $sponsor-id)"/>
-                                    Delete
-                                </a>
+                                <xsl:choose>
+                                    <xsl:when test="m:sponsor/m:acknowledgement">
+                                        <!-- Disable if there are acknowledgments -->
+                                        <span title="You cannot delete an active sponsor">
+                                            <a href="#" class="btn btn-default disabled">
+                                                <xsl:value-of select="'Delete'"/>
+                                            </a>
+                                        </span>
+                                    </xsl:when>
+                                    <xsl:otherwise>
+                                        <a class="btn btn-danger">
+                                            <xsl:attribute name="href" select="concat('/sponsors.html?delete=', $sponsor-id)"/>
+                                            <xsl:value-of select="'Delete'"/>
+                                        </a>
+                                    </xsl:otherwise>
+                                </xsl:choose>
                                 <button type="submit" class="btn btn-primary pull-right">
                                     Save
                                 </button>

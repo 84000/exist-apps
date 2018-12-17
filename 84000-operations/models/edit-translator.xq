@@ -40,6 +40,6 @@ return
             </updates>,
             $translator,
             contributors:teams(false()),
-            contributors:institutions()
+            contributors:institutions(false())
         )
     )

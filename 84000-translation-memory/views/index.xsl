@@ -126,7 +126,7 @@
                                 
                             </div>
                             <div class="col-sm-4">
-                                <form action="index.html" method="post" id="tmx-form">
+                                <form action="index.html" method="post" id="tmx-form" class="form-update">
                                     
                                     <input type="hidden" name="action" value="remember-translation"/>
                                     

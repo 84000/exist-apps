@@ -24,7 +24,8 @@ declare variable $common:tei-path := concat($common:data-path, '/tei');
 declare variable $common:translations-path := concat($common:tei-path, '/translations');
 declare variable $common:sections-path := concat($common:tei-path, '/sections');
 declare variable $common:outlines-path := concat($common:data-path, '/outlines');
-declare variable $common:ekangyur-path := '/db/apps/eKangyur/data/UT4CZ5369';
+declare variable $common:ekangyur-work := 'UT4CZ5369';
+declare variable $common:ekangyur-path := concat('/db/apps/eKangyur/data/', $common:ekangyur-work);
 declare variable $common:environment-path := '/db/system/config/db/system/environment.xml';
 declare variable $common:environment := doc($common:environment-path)/m:environment;
 

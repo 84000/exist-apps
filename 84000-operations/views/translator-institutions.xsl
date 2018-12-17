@@ -37,6 +37,17 @@
                             <span>
                                 <form method="post" action="/translator-institutions.html" class="form-inline filter-form pull-right">
                                     
+                                    <div class="checkbox">
+                                        <label class="small">
+                                            <input type="checkbox" name="include-contributors" value="1">
+                                                <xsl:if test="m:request/@include-contributors eq 'true'">
+                                                    <xsl:attribute name="checked" select="'checked'"/>
+                                                </xsl:if>
+                                            </input>
+                                            Show associated contributors
+                                        </label>
+                                    </div>
+                                    
                                     <a class="btn btn-primary btn-sml">
                                         <xsl:attribute name="href" select="'/edit-translator-institution.html'"/>
                                         Add an institution
@@ -52,6 +63,7 @@
                                 
                                 <xsl:for-each select="m:contributor-institutions/m:institution">
                                     <xsl:sort select="@start-letter"/>
+                                    <xsl:variable name="institution-id" select="@xml:id"/>
                                     <xsl:variable name="region-id" select="@region-id"/>
                                     <xsl:variable name="institution-type-id" select="@institution-type-id"/>
                                     <div class="item">
@@ -61,7 +73,7 @@
                                         <div class="row">
                                             <div class="col-sm-6">
                                                 <a>
-                                                    <xsl:attribute name="href" select="concat('/edit-translator-institution.html?id=', @xml:id)"/>
+                                                    <xsl:attribute name="href" select="concat('/edit-translator-institution.html?id=', $institution-id)"/>
                                                     <xsl:value-of select="m:sort-name"/>
                                                 </a>
                                             </div>
@@ -73,8 +85,19 @@
                                             <div class="col-sm-3">
                                                 <xsl:value-of select="/m:response/m:contributor-institution-types/m:institution-type[@id eq $institution-type-id]/m:label"/>
                                             </div>
+                                            
+                                            <xsl:if test="/m:response/m:request/@include-contributors eq 'true'">
+                                                <div class="col-sm-12">
+                                                    <ul>
+                                                        <xsl:for-each select="/m:response/m:contributor-persons/m:person[m:institution/@id = $institution-id]">
+                                                            <li>
+                                                                <xsl:value-of select="m:label"/>
+                                                            </li>
+                                                        </xsl:for-each>
+                                                    </ul>
+                                                </div>
+                                            </xsl:if>
                                         </div>
-                                        
                                         
                                     </div>
                                 </xsl:for-each>

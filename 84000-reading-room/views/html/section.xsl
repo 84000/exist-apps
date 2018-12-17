@@ -241,9 +241,12 @@
                                                     
                                                     <div class="col-md-1">
                                                         
-                                                        <xsl:call-template name="expandable-toh">
-                                                            <xsl:with-param name="toh" select="m:toh"/>
-                                                        </xsl:call-template>
+                                                        <xsl:value-of select="m:toh/m:full"/>
+                                                        
+                                                        <xsl:for-each select="m:toh/m:duplicates/m:duplicate">
+                                                            <br class="hidden-xs hidden-sm"/>
+                                                            <xsl:value-of select="concat(' / ', m:base)"/>
+                                                        </xsl:for-each>
                                                         
                                                         <hr class="visible-xs-block visible-sm-block"/>
                                                         
@@ -309,6 +312,15 @@
                                                                 <xsl:value-of select="m:titles/m:title[@xml:lang='sa-ltn']/text()"/> 
                                                             </span>
                                                         </xsl:if>
+                                                        
+                                                        <!-- 
+                                                        <xsl:if test="m:toh/m:duplicates">
+                                                            <hr/>
+                                                            <span>
+                                                                <xsl:value-of select="concat('Duplication: ', string-join(m:toh/m:duplicates/m:duplicate/m:full/text(), ' / '))"/>
+                                                            </span>
+                                                        </xsl:if>
+                                                         -->
                                                         
                                                         <xsl:if test="m:summary/tei:p or m:title-variants/m:title/text()">
                                                             

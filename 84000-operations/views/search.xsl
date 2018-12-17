@@ -12,7 +12,7 @@
         
         <xsl:variable name="content">
             
-            <div class="container">
+            <div class="container print-small-font">
                 <div class="panel panel-default">
                     <div class="panel-heading panel-heading-bold hidden-print center-vertical">
                         
@@ -29,14 +29,25 @@
                         </xsl:call-template>
                         
                         <div class="tab-content">
-                            <form action="search.html" method="post">
+                            <h3 class="visible-print-block">
+                                84000 Operations text search
+                            </h3>
+                            <form action="search.html" method="post" class="bottom-margin">
                                 <div class="row">
                                     
                                     <div class="col-sm-8">
-                                        <div class="text-bold">Translation statuses</div>
                                         <div class="form-group">
+                                            <h4 class="text-bold no-bottom-margin hidden-print">Text statuses:</h4>
                                             <xsl:for-each select="m:text-statuses/m:status">
                                                 <div class="checkbox">
+                                                    <xsl:choose>
+                                                        <xsl:when test="@selected eq 'selected'">
+                                                            <xsl:attribute name="class" select="'checkbox visible-print-block'"/>
+                                                        </xsl:when>
+                                                        <xsl:otherwise>
+                                                            <xsl:attribute name="class" select="'checkbox hidden-print'"/>
+                                                        </xsl:otherwise>
+                                                    </xsl:choose>
                                                     <label>
                                                         <input type="checkbox" name="status[]">
                                                             <xsl:attribute name="value" select="@value"/>
@@ -49,13 +60,12 @@
                                                 </div>
                                             </xsl:for-each>
                                         </div>
-                                        
                                     </div>
                                     
                                     <div class="col-sm-4">
                                     
                                         <div class="form-group">
-                                            <select class="form-control" name="section" disabled="disabled">
+                                            <select class="form-control hidden-print" name="section" disabled="disabled">
                                                 <option value="O1JC11494">
                                                     <xsl:if test="m:texts/@section eq 'O1JC11494'">
                                                         <xsl:attribute name="selected" select="'selected'"/>
@@ -75,6 +85,7 @@
                                                     All
                                                 </option>
                                             </select>
+                                            
                                         </div>
                                         
                                         <div class="form-group">
@@ -160,12 +171,12 @@
                                         
                                         <div class="form-group">
                                             <div class="row">
-                                                <div class="col-sm-5">
+                                                <div class="col-sm-5 hidden-print">
                                                     <input type="text" name="search-toh" value="" class="form-control" placeholder="Filter Tohs">
                                                         <xsl:attribute name="value" select="m:texts/@search-toh"/>
                                                     </input>
                                                 </div>
-                                                <div class="col-sm-4">
+                                                <div class="col-sm-4 print-width-override">
                                                     <div class="checkbox">
                                                         <label>
                                                             <input type="checkbox" name="deduplicate" value="true">
@@ -177,7 +188,7 @@
                                                         </label>
                                                     </div>
                                                 </div>
-                                                <div class="col-sm-3">
+                                                <div class="col-sm-3 hidden-print">
                                                     <input type="submit" value="Apply" class="btn btn-primary pull-right"/>
                                                 </div>
                                             </div>
@@ -195,8 +206,7 @@
                                     </div>
                                 </div>
                             </form>
-                            
-                            
+                                                        
                             <xsl:if test="m:texts/m:text">
                                 <table class="table table-responsive">
                                     <thead>
@@ -215,10 +225,16 @@
                                             <xsl:variable name="text-id" select="@id"/>
                                             <xsl:variable name="status-id" select="xs:string(@status)"/>
                                             <tr>
-                                                <td>
+                                                <td rowspan="2">
                                                     <xsl:choose>
                                                         <xsl:when test="/m:response/m:texts/@deduplicate eq 'true' and m:toh/m:duplicates">
-                                                            <xsl:value-of select="m:toh/m:duplicates/m:full"/>
+                                                            <xsl:value-of select="m:toh/m:full/text()"/>
+                                                            <xsl:for-each select="m:toh/m:duplicates/m:duplicate">
+                                                                <br/>
+                                                                <span class="nowrap">
+                                                                    <xsl:value-of select="normalize-space(concat(' / ', m:full/text()))"/>
+                                                                </span>
+                                                            </xsl:for-each>
                                                         </xsl:when>
                                                         <xsl:otherwise>
                                                             <xsl:call-template name="expandable-toh">
@@ -227,7 +243,7 @@
                                                         </xsl:otherwise>
                                                     </xsl:choose>
                                                 </td>
-                                                <td>
+                                                <td rowspan="2">
                                                     <xsl:variable name="status" select="/m:response/m:text-statuses/m:status[@status-id eq $status-id]"/>
                                                     <span>
                                                         <xsl:choose>
@@ -249,7 +265,7 @@
                                                     </span>
                                                 </td>
                                                 <td>
-                                                    <a target="_blank">
+                                                    <a target="_blank" class="printable">
                                                         <xsl:attribute name="href" select="concat($reading-room-path ,'/translation/', m:toh/@key, '.html')"/>
                                                         <xsl:value-of select="m:titles/m:title[@xml:lang eq 'en']"/>
                                                     </a>
@@ -281,9 +297,8 @@
                                                 </td>
                                             </tr>
                                             <tr class="sub">
-                                                <td colspan="2"/>
                                                 <td colspan="5">
-                                                    <ul class="list-inline inline-dots no-bottom-margin">
+                                                    <ul class="list-inline inline-dots no-bottom-margin hidden-print">
                                                         <xsl:if test="/m:response/m:permission[@group eq 'utilities']">
                                                             <li>
                                                                 <a class="small">
@@ -308,23 +323,37 @@
                                                         <td colspan="2"/>
                                                         <td colspan="5">
                                                             <div class="top-vertical">
-                                                                <a class="italic text-color">
-                                                                    <xsl:attribute name="href" select="concat('/edit-text-header.html?id=', $text-id, '#publication-status-form')"/>
-                                                                    <xsl:choose>
-                                                                        <xsl:when test="$translation-status/m:notes/text()">
-                                                                            <xsl:value-of select="common:limit-str($translation-status/m:notes, 80)"/>
-                                                                        </xsl:when>
-                                                                        <xsl:otherwise>
+                                                                <xsl:choose>
+                                                                    <xsl:when test="$translation-status/m:notes/text()">
+                                                                        <span>
+                                                                            <div class="collapse-one-line">
+                                                                                <a class="italic text-color printable">
+                                                                                    <xsl:attribute name="href" select="concat('/edit-text-header.html?id=', $text-id, '#publication-status-form')"/>
+                                                                                    <xsl:value-of select="$translation-status/m:notes"/>
+                                                                                </a>
+                                                                            </div>
+                                                                        </span>
+                                                                    </xsl:when>
+                                                                    <xsl:otherwise>
+                                                                        <!-- If there are no notes then link to the form -->
+                                                                        <a target="_self" class="italic text-color printable">
+                                                                            <xsl:attribute name="href" select="concat('/edit-text-header.html?id=', $text-id, '#publication-status-form')"/>
                                                                             [No notes]
-                                                                        </xsl:otherwise>
-                                                                    </xsl:choose>
-                                                                </a>
-                                                                <a>
-                                                                    <xsl:attribute name="href" select="concat('/edit-text-header.html?id=', $text-id, '#publication-status-form')"/>
-                                                                    <span class="badge badge-notification">
-                                                                        <xsl:value-of select="count($translation-status/m:task[not(@checked-off)])"/>
+                                                                        </a>
+                                                                    </xsl:otherwise>
+                                                                </xsl:choose>
+                                                                <xsl:if test="$translation-status/m:task[not(@checked-off)]">
+                                                                    <!-- If there are tasks then link to the form -->
+                                                                    <a target="_self" class="hidden-print">
+                                                                        <xsl:attribute name="href" select="concat('/edit-text-header.html?id=', $text-id, '#publication-status-form')"/>
+                                                                        <span class="badge badge-notification">
+                                                                            <xsl:value-of select="count($translation-status/m:task[not(@checked-off)])"/>
+                                                                        </span>
+                                                                    </a>
+                                                                    <span class="italic visible-print-inline-block">
+                                                                        <xsl:value-of select="count($translation-status/m:task[not(@checked-off)])"/> task(s)
                                                                     </span>
-                                                                </a>
+                                                                </xsl:if>
                                                             </div>
                                                         </td>
                                                     </tr>
@@ -352,6 +381,12 @@
                                     Please select your search critera from the options above.
                                 </p>
                             </xsl:if>
+                            
+                            <hr/>
+                            
+                            <div class="text-muted small">
+                                <xsl:value-of select="common:date-user-string('Report generated', current-dateTime(), /m:response/@user-name)"/>
+                            </div>
                         </div>
                     </div>
                 </div>

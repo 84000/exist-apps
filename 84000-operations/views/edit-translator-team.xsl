@@ -43,14 +43,15 @@
                                 </div>
                             </xsl:if>
                             
-                            <form method="post" class="form-horizontal">
+                            <form method="post" class="form-horizontal form-update">
                                 
                                 <xsl:attribute name="action" select="'edit-translator-team.html'"/>
+                                <xsl:variable name="team-id" select="m:team/@xml:id"/>
                                 
                                 <input type="hidden" name="post-id">
                                     <xsl:choose>
-                                        <xsl:when test="m:team/@xml:id">
-                                            <xsl:attribute name="value" select="m:team/@xml:id"/>
+                                        <xsl:when test="$team-id">
+                                            <xsl:attribute name="value" select="$team-id"/>
                                         </xsl:when>
                                         <xsl:otherwise>
                                             <xsl:attribute name="value" select="'new'"/>
@@ -64,8 +65,8 @@
                                         <fieldset>
                                             <legend>
                                                 <xsl:choose>
-                                                    <xsl:when test="m:team/@xml:id">
-                                                        ID: <xsl:value-of select="m:team/@xml:id"/>
+                                                    <xsl:when test="$team-id">
+                                                        ID: <xsl:value-of select="$team-id"/>
                                                     </xsl:when>
                                                     <xsl:otherwise>New team </xsl:otherwise>
                                                 </xsl:choose>
@@ -73,9 +74,6 @@
                                             
                                             <xsl:copy-of select="m:text-input('Name','name', m:team/m:label, 9, 'required')"/>
                                             
-                                            <button type="submit" class="btn btn-primary pull-right">
-                                                Save
-                                            </button>
                                         </fieldset>
                                     </div>
                                     
@@ -92,6 +90,26 @@
                                     </div>
                                     
                                 </div>
+                                <hr/>
+                                <xsl:choose>
+                                    <xsl:when test="count(m:team/m:person) gt 0">
+                                        <!-- Disable if there are acknowledgments -->
+                                        <span title="You cannot delete a team with members">
+                                            <a href="#" class="btn btn-default disabled">
+                                                <xsl:value-of select="'Delete'"/>
+                                            </a>
+                                        </span>
+                                    </xsl:when>
+                                    <xsl:otherwise>
+                                        <a class="btn btn-danger">
+                                            <xsl:attribute name="href" select="concat('/translator-teams.html?delete=', $team-id)"/>
+                                            <xsl:value-of select="'Delete'"/>
+                                        </a>
+                                    </xsl:otherwise>
+                                </xsl:choose>
+                                <button type="submit" class="btn btn-primary pull-right">
+                                    Save
+                                </button>
                             </form>
                             
                         </div>

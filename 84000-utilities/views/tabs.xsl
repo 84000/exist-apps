@@ -7,7 +7,7 @@
         
         <xsl:variable name="environment" select="doc(/m:response/@environment-path)/m:environment"/>
         
-        <ul class="nav nav-tabs" role="tablist">
+        <ul class="nav nav-tabs active-tab-refresh" role="tablist">
             <li role="presentation">
                 <xsl:if test="$active-tab eq 'utilities/translations'">
                     <xsl:attribute name="class" select="'active'"/>

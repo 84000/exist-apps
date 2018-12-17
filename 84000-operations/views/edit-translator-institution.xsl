@@ -43,14 +43,15 @@
                                 </div>
                             </xsl:if>
                             
-                            <form method="post" class="form-horizontal">
+                            <form method="post" class="form-horizontal form-update">
                                 
                                 <xsl:attribute name="action" select="'edit-translator-institution.html'"/>
+                                <xsl:variable name="institution-id" select="m:institution/@xml:id"/>
                                 
                                 <input type="hidden" name="post-id">
                                     <xsl:choose>
-                                        <xsl:when test="m:institution/@xml:id">
-                                            <xsl:attribute name="value" select="m:institution/@xml:id"/>
+                                        <xsl:when test="$institution-id">
+                                            <xsl:attribute name="value" select="$institution-id"/>
                                         </xsl:when>
                                         <xsl:otherwise>
                                             <xsl:attribute name="value" select="'new'"/>
@@ -64,8 +65,8 @@
                                         <fieldset>
                                             <legend>
                                                 <xsl:choose>
-                                                    <xsl:when test="m:institution/@xml:id">
-                                                        ID: <xsl:value-of select="m:institution/@xml:id"/>
+                                                    <xsl:when test="$institution-id">
+                                                        ID: <xsl:value-of select="$institution-id"/>
                                                     </xsl:when>
                                                     <xsl:otherwise>New institution </xsl:otherwise>
                                                 </xsl:choose>
@@ -75,13 +76,44 @@
                                             <xsl:copy-of select="m:select-input-name('Region', 'region-id', 9, /m:response/m:contributor-regions/m:region, m:institution/@region-id)"/>
                                             <xsl:copy-of select="m:select-input-name('Type', 'institution-type-id', 9, /m:response/m:contributor-institution-types/m:institution-type, m:institution/@institution-type-id)"/>
                                             
-                                            <button type="submit" class="btn btn-primary pull-right">
-                                                Save
-                                            </button>
                                         </fieldset>
                                     </div>
                                     
+                                    <div class="col-sm-4">
+                                        <h4>Contributors</h4>
+                                        <ul>
+                                            <xsl:for-each select="m:person">
+                                                <li>
+                                                    <a target="_self">
+                                                        <xsl:attribute name="href" select="concat('/edit-translator.html?id=', @xml:id)"/>
+                                                        <xsl:value-of select="m:label"/>
+                                                    </a>
+                                                </li>
+                                            </xsl:for-each>
+                                        </ul>
+                                    </div>
+                                    
                                 </div>
+                                <hr/>
+                                <xsl:choose>
+                                    <xsl:when test="count(m:person) gt 0">
+                                        <!-- Disable if there are acknowledgments -->
+                                        <span title="You cannot delete an institution with contributors">
+                                            <a href="#" class="btn btn-default disabled">
+                                                <xsl:value-of select="'Delete'"/>
+                                            </a>
+                                        </span>
+                                    </xsl:when>
+                                    <xsl:otherwise>
+                                        <a class="btn btn-danger">
+                                            <xsl:attribute name="href" select="concat('/translator-institutions.html?delete=', $institution-id)"/>
+                                            <xsl:value-of select="'Delete'"/>
+                                        </a>
+                                    </xsl:otherwise>
+                                </xsl:choose>
+                                <button type="submit" class="btn btn-primary pull-right">
+                                    Save
+                                </button>
                             </form>
                             
                         </div>

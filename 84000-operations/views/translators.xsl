@@ -71,14 +71,14 @@
                                         <xsl:copy-of select="common:marker(@start-letter, if(preceding-sibling::m:person[1]/@start-letter) then preceding-sibling::m:person[1]/@start-letter else '')"/>
                                         
                                         <div class="row">
-                                            <div class="col-sm-3">
+                                            <div class="col-sm-5">
                                                 <a>
                                                     <xsl:attribute name="href" select="concat('/edit-translator.html?id=', $person-id)"/>
                                                     <xsl:value-of select="m:sort-name"/>
                                                 </a>
-                                            </div>
-                                            <div class="col-sm-2">
-                                                <xsl:value-of select="$person-id"/>
+                                                <span class="small text-muted">
+                                                    <xsl:value-of select="concat(' / ', $person-id)"/>
+                                                </span>
                                             </div>
                                             <div class="col-sm-3">
                                                 <xsl:if test="m:team">

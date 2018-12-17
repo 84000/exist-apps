@@ -23,3 +23,7 @@
   font-weight: bold;
   font-style: italic;
 }
+@font-face {
+  font-family: "Cardo-Regular";
+  src: url(../fonts/Cardo-Regular.ttf);
+}

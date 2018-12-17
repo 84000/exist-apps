@@ -3,7 +3,7 @@
     
     <xsl:template name="tabs">
         <xsl:param name="active-tab"/>
-        <ul class="nav nav-tabs" role="tablist">
+        <ul class="nav nav-tabs active-tab-refresh hidden-print" role="tablist">
             <li role="presentation">
                 <xsl:if test="$active-tab eq 'operations/index'">
                     <xsl:attribute name="class" select="'active'"/>

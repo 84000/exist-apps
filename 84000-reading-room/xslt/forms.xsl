@@ -35,7 +35,7 @@
             </div>
             <div id="panelTitles" class="panel-collapse collapse" role="tabpanel" aria-labelledby="panelHeadingTitles">
                 <div class="panel-body">
-                    <form method="post" class="form-horizontal" id="titles-form">
+                    <form method="post" class="form-horizontal form-update" id="titles-form">
                         
                         <xsl:attribute name="action" select="'edit-text-header.html#titles-form'"/>
                         
@@ -147,7 +147,7 @@
             </div>
             <div id="panelLocations" class="panel-collapse collapse" role="tabpanel" aria-labelledby="panelHeadingLocations">
                 <div class="panel-body">
-                    <form method="post" class="form-horizontal" id="locations-form">
+                    <form method="post" class="form-horizontal form-update" id="locations-form">
                         
                         <xsl:attribute name="action" select="'edit-text-header.html#locations-form'"/>
                         
@@ -217,7 +217,7 @@
             </div>
             <div id="panelContributors" class="panel-collapse collapse" role="tabpanel" aria-labelledby="panelHeadingContributors">
                 <div class="panel-body">
-                    <form method="post" class="form-horizontal" id="contributors-form">
+                    <form method="post" class="form-horizontal form-update" id="contributors-form">
                         
                         <xsl:attribute name="action" select="'edit-text-header.html#contributors-form'"/>
                         
@@ -431,7 +431,7 @@
             </div>
             <div id="panelStatus" class="panel-collapse collapse" role="tabpanel" aria-labelledby="panelHeadingStatus">
                 <div class="panel-body">
-                    <form method="post" class="form-horizontal" id="publication-status-form">
+                    <form method="post" class="form-horizontal form-update" id="publication-status-form">
                         
                         <xsl:attribute name="action" select="'edit-text-header.html#publication-status-form'"/>
                         
@@ -502,7 +502,7 @@
                                     </div>
                                     <div class="row">
                                         <div class="col-sm-9">
-                                            <p class="margin-top-sm pull-quote">
+                                            <p class="margin-top-sm pull-quote red-quote">
                                                 <xsl:value-of select="text()"/>
                                             </p>
                                         </div>
@@ -596,7 +596,7 @@
     </xsl:template>
     
     <xsl:template name="sponsors-form">
-        <form method="post" class="form-horizontal">
+        <form method="post" class="form-horizontal form-update">
             
             <xsl:attribute name="action" select="'edit-text-sponsors.html'"/>
             

@@ -119,14 +119,17 @@ declare function translation-status:update($text-id as xs:string) as element()? 
             attribute version { $tei-version-str },
             attribute word-count { $word-count },
             attribute glossary-count { $glossary-count },
-            if($new-notes-text and not(compare($existing-notes/text(), $new-notes-text) eq 0)) then
-                element notes {
-                    attribute last-edited { current-dateTime() },
-                    attribute last-edited-by { common:user-name() },
-                    text { $new-notes-text }
-                }
+            if($new-notes-text) then
+                if(not(compare($existing-notes/text(), $new-notes-text) eq 0))then
+                    element notes {
+                        attribute last-edited { current-dateTime() },
+                        attribute last-edited-by { common:user-name() },
+                        text { $new-notes-text }
+                    }
+                else
+                    $existing-notes
             else
-                $existing-notes
+                ()
             ,
             for $task in $existing-value/m:task
             return

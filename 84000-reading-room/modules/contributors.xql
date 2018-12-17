@@ -140,12 +140,12 @@ declare function contributors:teams($include-acknowledgements as xs:boolean) as 
         {
             for $team in $teams
             return
-                contributors:team($team/@xml:id, $include-acknowledgements)
+                contributors:team($team/@xml:id, $include-acknowledgements, false())
         }
         </contributor-teams>
 };
 
-declare function contributors:team($id as xs:string, $include-acknowledgements as xs:boolean) as element() {
+declare function contributors:team($id as xs:string, $include-acknowledgements as xs:boolean, $include-persons as xs:boolean) as element() {
     
     let $team := $contributors:contributors/m:contributors/m:team[@xml:id eq $id]
     
@@ -160,6 +160,10 @@ declare function contributors:team($id as xs:string, $include-acknowledgements a
                     let $acknowledgement := $tei/tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:*[@sameAs eq concat('contributors.xml#', $team/@xml:id)]
                 return
                     contributors:acknowledgement($tei, element tei:p { $acknowledgement })
+            else
+                (),
+            if($include-persons) then
+                $contributors:contributors/m:contributors/m:person[m:team/@id eq $id]
             else
                 ()
         }
@@ -200,7 +204,7 @@ declare function contributors:regions($include-stats as xs:boolean) as element()
         </contributor-regions>
 };
 
-declare function contributors:institutions() as element() {
+declare function contributors:institutions($include-persons as xs:boolean) as element() {
     
     let $institutions := 
         for $institution in $contributors:contributors/m:contributors/m:institution
@@ -216,7 +220,11 @@ declare function contributors:institutions() as element() {
                     $institution/@*,
                     attribute start-letter { upper-case(substring(normalize-space(replace($institution/m:label/text(), $contributors:institution-prefixes, '')), 1, 1)) },
                     $institution/*,
-                    element sort-name { replace($institution/m:label/text(), concat($contributors:institution-prefixes, '\s(.*)'), '$2, $1') }
+                    element sort-name { replace($institution/m:label/text(), concat($contributors:institution-prefixes, '\s(.*)'), '$2, $1') },
+                    if($include-persons) then
+                        $contributors:contributors/m:contributors/m:person[m:institution/@id eq $institution/@xml:id]
+                    else
+                        ()
                  }
         }
         </contributor-institutions>

@@ -109,7 +109,7 @@
                     <xsl:variable name="anchor" select="common:folio-id(@cRef)"/>
                     <xsl:choose>
                         <!-- Conditions for creating a link... -->
-                        <xsl:when test="not(@type) and /m:response/m:request/@doc-type ne 'epub' and $volume and $folio">
+                        <xsl:when test="not(@type) and /m:response/m:request/@doc-type ne 'epub'  and (not(@work) or compare(@work, /m:response/m:translation/@ekangyur-work) eq 0) and $volume and $folio">
                             <a class="ref log-click">
                                 <xsl:attribute name="id" select="$anchor"/>
                                 <xsl:attribute name="href" select="concat('/source/', /m:response/m:translation/m:source/@key, '.html?folio=', $folio, '&amp;anchor=', $anchor)"/>
@@ -561,9 +561,6 @@
                     <xsl:value-of select="$toh/m:full"/>
                     <span class="collapsed-show">
                         <span class="monospace">+</span>
-                    </span>
-                    <span class="collapsed-hide">
-                        <span class="monospace">-</span>
                     </span>
                 </a>
                 <div class="collapse print-expand">

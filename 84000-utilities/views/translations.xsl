@@ -235,11 +235,13 @@
                                                                 </xsl:otherwise>
                                                             </xsl:choose>
                                                         </a>
-                                                        <a role="button" data-toggle="collapse" href="#panelStatus" aria-expanded="false" aria-controls="panelTitles">
-                                                            <span class="badge badge-notification">
-                                                                <xsl:value-of select="count($translation-status/m:task[not(@checked-off)])"/>
-                                                            </span>
-                                                        </a>
+                                                        <xsl:if test="$translation-status/m:task[not(@checked-off)]">
+                                                            <a role="button" data-toggle="collapse" href="#panelStatus" aria-expanded="false" aria-controls="panelTitles">
+                                                                <span class="badge badge-notification">
+                                                                    <xsl:value-of select="count($translation-status/m:task[not(@checked-off)])"/>
+                                                                </span>
+                                                            </a>
+                                                        </xsl:if>
                                                     </div>
                                                 </xsl:if>
                                             </td>

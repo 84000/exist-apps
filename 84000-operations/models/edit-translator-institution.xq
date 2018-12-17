@@ -39,6 +39,7 @@ return
                 { if($new-id) then <updated/> else () }
             </updates>,
             $institution,
+            $contributors:contributors/m:contributors/m:person[m:institution/@id eq $institution/@xml:id],
             contributors:regions(false()),
             contributors:institution-types(false())
         )

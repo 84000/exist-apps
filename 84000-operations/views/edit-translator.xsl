@@ -43,14 +43,15 @@
                                 </div>
                             </xsl:if>
                             
-                            <form method="post" class="form-horizontal">
+                            <form method="post" class="form-horizontal form-update">
                                 
                                 <xsl:attribute name="action" select="'edit-translator.html'"/>
+                                <xsl:variable name="person-id" select="m:person/@xml:id"/>
                                 
                                 <input type="hidden" name="post-id">
                                     <xsl:choose>
-                                        <xsl:when test="m:person/@xml:id">
-                                            <xsl:attribute name="value" select="m:person/@xml:id"/>
+                                        <xsl:when test="$person-id">
+                                            <xsl:attribute name="value" select="$person-id"/>
                                         </xsl:when>
                                         <xsl:otherwise>
                                             <xsl:attribute name="value" select="'new'"/>
@@ -64,8 +65,8 @@
                                         <fieldset>
                                             <legend>
                                                 <xsl:choose>
-                                                    <xsl:when test="m:person/@xml:id">
-                                                        ID: <xsl:value-of select="m:person/@xml:id"/>
+                                                    <xsl:when test="$person-id">
+                                                        ID: <xsl:value-of select="$person-id"/>
                                                     </xsl:when>
                                                     <xsl:otherwise>New contributor</xsl:otherwise>
                                                 </xsl:choose>
@@ -119,21 +120,6 @@
                                                     </div>
                                                 </div>
                                             </div>
-                                            
-                                            <div class="row">
-                                                <div class="col-sm-6">
-                                                    <!-- 
-                                                    <a class="btn btn-danger">
-                                                        <xsl:attribute name="href" select="concat('/translators.html?delete=', m:translator/@xml:id)"/>
-                                                        Delete
-                                                    </a> -->
-                                                </div>
-                                                <div class="col-sm-6">
-                                                    <button type="submit" class="btn btn-primary pull-right">
-                                                        Save
-                                                    </button>
-                                                </div>
-                                            </div>
                                         </fieldset>
                                         
                                     </div>
@@ -151,6 +137,27 @@
                                     </div>
                                     
                                 </div>
+                                <hr/>
+                                
+                                <xsl:choose>
+                                    <xsl:when test="m:person/m:acknowledgement">
+                                        <!-- Disable if there are acknowledgments -->
+                                        <span title="You cannot delete an active translator">
+                                            <a href="#" class="btn btn-default disabled">
+                                                <xsl:value-of select="'Delete'"/>
+                                            </a>
+                                        </span>
+                                    </xsl:when>
+                                    <xsl:otherwise>
+                                        <a class="btn btn-danger">
+                                            <xsl:attribute name="href" select="concat('/translators.html?delete=', $person-id)"/>
+                                            <xsl:value-of select="'Delete'"/>
+                                        </a>
+                                    </xsl:otherwise>
+                                </xsl:choose>
+                                <button type="submit" class="btn btn-primary pull-right">
+                                    Save
+                                </button>
                             </form>
                             
                         </div>
