@@ -285,38 +285,40 @@
                                                     </div>
                                                 </div>
                                                 
-                                                <!-- Translation notes (link to the form) -->
-                                                <xsl:variable name="translation-status" select="/m:response/m:translation-status/m:text[@text-id eq $text-id]"/>
-                                                <hr class="sml-margin"/>
-                                                <div class="center-vertical">
-                                                    <xsl:choose>
-                                                        <xsl:when test="$translation-status/m:notes/text()">
-                                                            <!-- If there are no notes then link to the form -->
+                                                <!-- Translation notes / link to the header form, only on master -->
+                                                <xsl:if test="$environment/m:store-conf[@type eq 'master']">
+                                                    <xsl:variable name="translation-status" select="/m:response/m:translation-status/m:text[@text-id eq $text-id]"/>
+                                                    <hr class="sml-margin"/>
+                                                    <div class="center-vertical">
+                                                        <xsl:choose>
+                                                            <xsl:when test="$translation-status/m:notes/text()">
+                                                                <!-- If there are no notes then link to the form -->
+                                                                <span>
+                                                                    <div class="collapse-one-line">
+                                                                        <a class="small printable">
+                                                                            <xsl:attribute name="href" select="concat('/edit-text-header.html?id=', $text-id, '#publication-status-form')"/>
+                                                                            <xsl:value-of select="$translation-status/m:notes"/>
+                                                                        </a>
+                                                                    </div>
+                                                                </span>
+                                                            </xsl:when>
+                                                            <xsl:otherwise>
+                                                                <!-- If there are no notes then link to the form -->
+                                                                <a target="_self" class="small">
+                                                                    <xsl:attribute name="href" select="concat('/edit-text-header.html?id=', $text-id, '#publication-status-form')"/>
+                                                                    Add notes
+                                                                </a>
+                                                            </xsl:otherwise>
+                                                        </xsl:choose>
+                                                        <xsl:if test="$translation-status/m:task[not(@checked-off)]">
                                                             <span>
-                                                                <div class="collapse-one-line">
-                                                                    <a class="small printable">
-                                                                        <xsl:attribute name="href" select="concat('/edit-text-header.html?id=', $text-id, '#publication-status-form')"/>
-                                                                        <xsl:value-of select="$translation-status/m:notes"/>
-                                                                    </a>
-                                                                </div>
+                                                                <span class="badge badge-notification">
+                                                                    <xsl:value-of select="count($translation-status/m:task[not(@checked-off)])"/>
+                                                                </span>
                                                             </span>
-                                                        </xsl:when>
-                                                        <xsl:otherwise>
-                                                            <!-- If there are no notes then link to the form -->
-                                                            <a target="_self" class="small">
-                                                                <xsl:attribute name="href" select="concat('/edit-text-header.html?id=', $text-id, '#publication-status-form')"/>
-                                                                Add notes
-                                                            </a>
-                                                        </xsl:otherwise>
-                                                    </xsl:choose>
-                                                    <xsl:if test="$translation-status/m:task[not(@checked-off)]">
-                                                        <span>
-                                                            <span class="badge badge-notification">
-                                                                <xsl:value-of select="count($translation-status/m:task[not(@checked-off)])"/>
-                                                            </span>
-                                                        </span>
-                                                    </xsl:if>
-                                                </div>
+                                                        </xsl:if>
+                                                    </div>
+                                                </xsl:if>
                                                 
                                             </td>
                                             <td>                                                

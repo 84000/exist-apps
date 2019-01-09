@@ -14,6 +14,9 @@ declare namespace tei="http://www.tei-c.org/ns/1.0";
 
 declare option exist:serialize "method=xml indent=no";
 
+(: Only allow on collaboration (master) :)
+let $store-conf := $common:environment/m:store-conf
+
 (: Request parameters :)
 let $request-id := request:get-parameter('id', '') (: in get :)
 let $post-id := request:get-parameter('post-id', '') (: in post :)
@@ -26,8 +29,9 @@ let $tei :=
 let $translation-id := tei-content:id($tei)
 
 (: Process input, if it's posted :)
+(: Only allow on collaboration (master) :)
 let $updated := 
-    if($post-id) then
+    if($post-id and $store-conf[@type eq 'master']) then
         (
             translation:update($tei),
             translation-status:update($translation-id)
