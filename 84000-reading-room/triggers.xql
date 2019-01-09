@@ -63,7 +63,7 @@ declare function local:chapter-indexes($doc) {
 declare function local:permanent-ids($doc) {
     (: Add ids to linkable nodes :)
     (: This enables persistent bookmarks :)
-    let $translation-id := tei-content:id($doc)
+    let $translation-id := tei-content:id($doc//tei:TEI)
     let $max-id := max($doc//@xml:id ! substring-after(., $translation-id) ! substring(., 2) ! xs:integer(concat('0', .)))
     for $element at $index in 
         $doc//tei:milestone[(not(@xml:id) or @xml:id='')]
@@ -107,7 +107,7 @@ declare function local:remove-temporary-ids($doc) {
 declare function local:glossary-types($doc) {
     (: Add types to glossary items :)
     (: Converts old format to new :)
-    let $translation-id := tei-content:id($doc)
+    let $translation-id := tei-content:id($doc//tei:TEI)
     for $glossary in $doc//tei:div[@type='glossary']//tei:gloss[not(@type) or not(@type = ('term', 'person', 'place', 'text'))]
         let $glossary-id := $glossary/tei:term[@xml:id][1]/@xml:id
         let $glossary-id-end := substring-after($glossary-id, $translation-id)

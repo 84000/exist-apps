@@ -12,11 +12,63 @@ import module namespace download = "http://read.84000.co/download" at "../../840
 
 import module namespace httpclient = "http://exist-db.org/xquery/httpclient";
 
-declare variable $store:conf := $common:environment//m:store-conf;
+declare variable $store:conf := $common:environment//m:store-conf[@type eq 'master'];
 declare variable $store:file-group := 'utilities';
 declare variable $store:file-permissions := 'rw-rw-r--';
 
-declare function store:file($file-name as xs:string) (: as xs:string* :) {
+declare function store:download-master($file-name as xs:string, $translations-master-host as xs:string) as element() {
+    
+    (: extract elements from the file name :)
+    let $file-name-tokenized := tokenize($file-name, '\.')
+    let $resource-id := lower-case($file-name-tokenized[1])
+    let $file-extension := lower-case($file-name-tokenized[last()])
+    
+    (: look-up this existing document with this id :)
+    let $current-doc := tei-content:tei($resource-id, 'translation')
+    
+    let $download := 
+        if($file-extension = ('tei')) then
+            
+            (: get the file name and location :)
+            let $current-doc-path := tei-content:document-url($current-doc)
+            let $current-doc-path-tokenized := tokenize($current-doc-path, '/')
+            let $current-doc-file-name := $current-doc-path-tokenized[last()]
+            let $current-doc-folder := string-join(subsequence($current-doc-path-tokenized, 1, last()-1), '/')
+            return
+                if($current-doc-file-name and $current-doc-folder)then
+                    store:http-download(concat($translations-master-host, '/translation/', $file-name), $current-doc-folder, $current-doc-file-name)
+                else
+                    ()
+                
+        else if($file-extension = ('pdf', 'epub', 'azw3')) then
+            
+            (:  
+                Download the latest file from the master and set the version
+                NOTE: this assumes the local TEI is up to date as it uses that to set the version of the file. 
+                Otherwise we would have to know the version of the file on master which is a bit long winded.
+            :)
+            let $file-version := translation:version-str($current-doc)
+            let $file-collection := concat($common:data-path, '/', $file-extension)
+            let $download-file := store:http-download(concat($translations-master-host, '/data/', $file-name), $file-collection, $file-name)
+            let $store-version-string := store:store-version-str($file-collection, $file-name, $file-version)
+            return
+                $download-file
+                
+        else
+            ()
+    
+    return
+       if($download)then
+           <updated xmlns="http://read.84000.co/ns/1.0">
+           {
+               $download
+           }
+           </updated>
+       else
+           ()
+};
+
+declare function store:create($file-name as xs:string) as element() {
     
     let $file-name-tokenized := tokenize($file-name, '\.')
     let $resource-id := lower-case($file-name-tokenized[1])
@@ -242,6 +294,11 @@ declare function store:http-download($file-url as xs:string, $collection as xs:s
             let $file := 
                 if (contains(lower-case($file-url), '.xml') and $content-transfer-encoding = 'binary') then 
                     util:binary-to-string($body) 
+                else if(contains(lower-case($file-url), '.tei')) then
+                    document {
+                        <?xml-model href="../../../schema/current/translation.rng" type="application/xml" schematypens="http://relaxng.org/ns/structure/1.0"?>,
+                        $body
+                    }
                 else 
                     $body
             

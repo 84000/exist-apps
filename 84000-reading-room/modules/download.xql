@@ -8,7 +8,6 @@ declare namespace tei="http://www.tei-c.org/ns/1.0";
 import module namespace common = "http://read.84000.co/common" at "common.xql";
 import module namespace tei-content="http://read.84000.co/tei-content" at "tei-content.xql";
 import module namespace translation = "http://read.84000.co/translation" at "translation.xql";
-import module namespace httpclient = "http://exist-db.org/xquery/httpclient";
 
 declare variable $download:file-versions-file-name := "file-versions.xml";
 

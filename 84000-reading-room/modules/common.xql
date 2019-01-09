@@ -10,6 +10,7 @@ declare namespace sm = "http://exist-db.org/xquery/securitymanager";
 declare namespace pkg="http://expath.org/ns/pkg";
 declare namespace repo="http://exist-db.org/xquery/repo";
 declare namespace xpath="http://www.w3.org/2005/xpath-functions";
+declare namespace test="http://exist-db.org/xquery/xqsuite";
 
 import module namespace functx="http://www.functx.com";
 import module namespace converter="http://tbrc.org/xquery/ewts2unicode" at "java:org.tbrc.xquery.extensions.EwtsToUniModule";
@@ -29,7 +30,10 @@ declare variable $common:ekangyur-path := concat('/db/apps/eKangyur/data/', $com
 declare variable $common:environment-path := '/db/system/config/db/system/environment.xml';
 declare variable $common:environment := doc($common:environment-path)/m:environment;
 
-declare function common:app-id() as xs:string {
+
+declare
+    %test:assertEquals("84000-reading-room")
+function common:app-id() as xs:string {
 
     (:
         Single point to set the app id
@@ -45,7 +49,10 @@ declare function common:app-id() as xs:string {
     
 };
 
-declare function common:response($model-type as xs:string, $app-id as xs:string, $data) as element() {
+declare
+    %test:args('dummy', 'dummy', '<data xmlns="http://read.84000.co/ns/1.0" />') 
+    %test:assertXPath("$result//m:data")
+function common:response($model-type as xs:string, $app-id as xs:string, $data as item()*) as element() {
     (:
         A response node
         -------------------------------------
@@ -66,7 +73,12 @@ declare function common:response($model-type as xs:string, $app-id as xs:string,
     </response>
 };
 
-declare function common:xml-lang($node) as xs:string {
+declare
+    %test:args('<data lang="tibetan" encoding="native"/>') 
+    %test:assertEquals('bo-ltn')
+    %test:args('<data lang="other"/>') 
+    %test:assertEquals('other')
+function common:xml-lang($node as element()) as xs:string {
 
     if($node/@encoding eq "extendedWylie") then
         "bo-ltn"
@@ -82,22 +94,34 @@ declare function common:xml-lang($node) as xs:string {
         $node/@lang/string()
 };
 
-declare function common:normalized-chars($string as xs:string) as xs:string {
-    let $in  := 'āḍḥīḷḹṃṇñṅṛṝṣśṭūṁ'
-    let $out := 'adhillmnnnrrsstum'
+declare 
+    %test:args('ṇñṅṛṝṣśṭūāḍḥīḷḹṃṁ') 
+    %test:assertEquals('nnnrrsstuadhillmm')
+function common:normalized-chars($string as xs:string) as xs:string {
+    let $in  := 'āḍḥīḷḹṃṁṇñṅṛṝṣśṭū'
+    let $out := 'adhillmmnnnrrsstu'
     return 
         translate(lower-case($string), $in, $out)
 };
 
-declare function common:alphanumeric($string as xs:string) as xs:string* {
+declare
+    %test:args('0!123/4567ṃṁṇñṅ abcde?f*ghi-') 
+    %test:assertEquals('01234567 abcdefghi-')
+function common:alphanumeric($string as xs:string) as xs:string* {
     replace(normalize-space($string), '[^a-zA-Z0-9\s\-­]', '')
 };
 
-declare function common:word-count($strings as xs:string*) as xs:integer {
+declare
+    %test:args('one two three, four   five!') 
+    %test:assertEquals(5)
+function common:word-count($strings as xs:string*) as xs:integer {
   count(tokenize(string-join($strings, ' '), '\W+')[. != ''])
 };
 
-declare function common:bo-from-wylie($bo-ltn as xs:string) as xs:string {
+declare
+    %test:args("ar mo nig lta bu'i rdo leb/") 
+    %test:assertEquals('ཨར་མོ་ནིག་ལྟ་བུའི་རྡོ་ལེབ། ')
+function common:bo-from-wylie($bo-ltn as xs:string) as xs:string {
     (: correct the spacing and spacing around underscores :)
     let $bo-ltn-underscores:= 
         if ($bo-ltn) then
@@ -113,14 +137,26 @@ declare function common:bo-from-wylie($bo-ltn as xs:string) as xs:string {
             ""
 };
 
-declare function common:wylie-from-bo($bo as xs:string) as xs:string {
+declare
+    %test:args('ཨར་མོ་ནིག་ལྟ་བུའི་རྡོ་ལེབ།') 
+    %test:assertEquals("ar mo nig lta bu'i rdo leb/")
+function common:wylie-from-bo($bo as xs:string) as xs:string {
     if ($bo gt "") then
         converter:toWylie($bo)
     else
         ""
 };
 
-declare function common:bo-term($bo-ltn as xs:string) as xs:string {   
+declare
+    %test:args("chos kyi phyag rgya bzhi__,__bka' rtags kyi phyag rgya bzhi")
+    %test:assertEquals("ཆོས་ཀྱི་ཕྱག་རྒྱ་བཞི་  ,  བཀའ་རྟགས་ཀྱི་ཕྱག་རྒྱ་བཞི།")
+    %test:args('gso sbyong') 
+    %test:assertEquals("གསོ་སྦྱོང་།")
+    %test:args('gsang tshig') 
+    %test:assertEquals("གསང་ཚིག")
+    %test:args('gsang ste ston pa') 
+    %test:assertEquals("གསང་སྟེ་སྟོན་པ།")
+function common:bo-term($bo-ltn as xs:string) as xs:string {   
     
     (: correct the spacing and spacing around underscores :)
     let $bo-ltn-underscores:= 
@@ -171,7 +207,10 @@ declare function common:bo-term($bo-ltn as xs:string) as xs:string {
         xs:string($bo)
 };
 
-declare function common:bo-ltn($string as xs:string) as xs:string {
+declare
+    %test:args('  a__b  ')
+    %test:assertEquals('a b') 
+function common:bo-ltn($string as xs:string) as xs:string {
     if ($string) then
         replace(normalize-space($string), '__', ' ')
     else
@@ -244,7 +283,12 @@ declare function common:marked-paragraph($text as xs:string, $find as xs:string*
         
 };
 
-declare function common:limit-str($str as xs:string, $limit as xs:integer) as xs:string {
+declare
+    %test:args('0123456789', 5)
+    %test:assertEquals('01234...') 
+    %test:args('01234', 5)
+    %test:assertEquals('01234') 
+function common:limit-str($str as xs:string, $limit as xs:integer) as xs:string {
     if(string-length($str) > $limit) then
         concat(substring($str, 1, $limit), '...')
     else
@@ -255,7 +299,9 @@ declare function common:epub-resource($file as xs:string) as xs:base64Binary {
     util:binary-doc(xs:anyURI(concat($common:app-path, '/views/epub/resources/', $file)))
 };
 
-declare function common:user-name() as xs:string* {
+declare
+    %test:assertEquals('admin') 
+function common:user-name() as xs:string* {
     let $user := sm:id()
     return
         $user//sm:real/sm:username

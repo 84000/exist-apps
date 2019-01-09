@@ -146,7 +146,12 @@ declare function tei-content:title-set($tei as element(), $type as xs:string) as
 
 declare function tei-content:translation-status($tei as element()) as xs:string {
     (: Returns the status of the text :)
-    $tei//tei:teiHeader//tei:publicationStmt/@status
+    let $status := $tei//tei:teiHeader//tei:publicationStmt/@status
+    return
+        if($status) then
+            $status
+        else
+            ''
 };
 
 declare function tei-content:translation-status-group($tei as element()) as xs:string? {
