@@ -9,8 +9,6 @@ declare option exist:serialize "method=xml indent=no";
 
 let $section-id := request:get-parameter('section-id', 'all')
 
-let $lobby := tei-content:tei('lobby', 'section')
-
 return 
     common:response(
         'utilities/test-sections',
@@ -18,6 +16,6 @@ return
         (
             <request xmlns="http://read.84000.co/ns/1.0" section-id="{$section-id}" />,
             tests:sections($section-id),
-            section:descendants($lobby, 1, false())
+            section:descendants(tei-content:tei('lobby', 'section'), false())
         )
     )

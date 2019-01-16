@@ -38,6 +38,7 @@
                             
                             <div class="alert alert-warning small text-center">
                                 <p>
+                                    Expresses the division of the translations by folio reference. 
                                     This data can be shared in xml format at:  
                                     <a target="folios-xml" class="alert-link">
                                         <xsl:attribute name="href" select="concat($utilities-path, '/folios.xml')"/>

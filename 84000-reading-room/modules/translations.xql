@@ -16,7 +16,7 @@ import module namespace functx="http://www.functx.com";
 
 declare function translations:section-tei($section-id as xs:string) as element()* {
     let $root := tei-content:tei($section-id, 'section')
-    let $descendants := section:descendants($root, 1, false())
+    let $descendants := section:descendants($root, false())
     let $descendants-ids := $descendants//@id
     return
         collection($common:translations-path)//tei:TEI[tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl/tei:idno/@parent-id = $descendants-ids]

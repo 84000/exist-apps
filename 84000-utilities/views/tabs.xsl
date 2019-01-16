@@ -6,94 +6,95 @@
         <xsl:param name="active-tab"/>
         
         <xsl:variable name="environment" select="doc(/m:response/@environment-path)/m:environment"/>
-        
-        <ul class="nav nav-tabs active-tab-refresh" role="tablist">
-            <li role="presentation">
-                <xsl:if test="$active-tab eq 'utilities/translations'">
-                    <xsl:attribute name="class" select="'active'"/>
-                </xsl:if>
-                <a href="translations.html">
-                    Translations
-                </a>
-            </li>
-            <li role="presentation">
-                <xsl:if test="$active-tab eq 'utilities/sections'">
-                    <xsl:attribute name="class" select="'active'"/>
-                </xsl:if>
-                <a href="sections.html">
-                    Sections
-                </a>
-            </li>
-            <li role="presentation">
-                <xsl:if test="$active-tab eq 'utilities/folios'">
-                    <xsl:attribute name="class" select="'active'"/>
-                </xsl:if>
-                <a href="folios.html">
-                    Folios
-                </a>
-            </li>
-            <li role="presentation">
-                <xsl:if test="$active-tab eq 'utilities/tests'">
-                    <xsl:attribute name="class" select="'active'"/>
-                </xsl:if>
-                <a href="tests.html">
-                    Tests
-                </a>
-            </li>
-            <li role="presentation">
-                <xsl:if test="$active-tab eq 'utilities/layout-checks'">
-                    <xsl:attribute name="class" select="'active'"/>
-                </xsl:if>
-                <a href="layout-checks.html">
-                    Layout Checks
-                </a>
-            </li>
-            <li role="presentation">
-                <xsl:if test="$active-tab eq 'utilities/requests'">
-                    <xsl:attribute name="class" select="'active'"/>
-                </xsl:if>
-                <a href="requests.html">
-                    Requests
-                </a>
-            </li>
-            <li role="presentation">
-                <xsl:if test="$active-tab eq 'utilities/client-errors'">
-                    <xsl:attribute name="class" select="'active'"/>
-                </xsl:if>
-                <a href="client-errors.html">
-                    Client Errors
-                </a>
-            </li>
-            <xsl:if test="$environment/m:snapshot-conf">
+        <div class="tabs-container-center">
+            <ul class="nav nav-tabs active-tab-refresh" role="tablist">
                 <li role="presentation">
-                    <xsl:if test="$active-tab eq 'utilities/snapshot'">
+                    <xsl:if test="$active-tab eq 'utilities/translations'">
                         <xsl:attribute name="class" select="'active'"/>
                     </xsl:if>
-                    <a href="snapshot.html">
-                        Data Snapshot
+                    <a href="translations.html">
+                        Translations
                     </a>
                 </li>
-            </xsl:if>
-            <xsl:if test="$environment/m:deployment-conf">
                 <li role="presentation">
-                    <xsl:if test="$active-tab eq 'utilities/deployment'">
+                    <xsl:if test="$active-tab eq 'utilities/sections'">
                         <xsl:attribute name="class" select="'active'"/>
                     </xsl:if>
-                    <a href="deployment.html">
-                        Deploy Code
+                    <a href="sections.html">
+                        Sections
                     </a>
                 </li>
-            </xsl:if>
-            <xsl:if test="$active-tab eq 'utilities/edit-text-header'">
                 <li role="presentation">
-                    <xsl:attribute name="class" select="'active'"/>
-                    <a>
-                        <xsl:attribute name="href" select="concat('/edit-text-header.html?id=', /m:response/m:request/@id)"/>
-                        Edit Text Header
+                    <xsl:if test="$active-tab eq 'utilities/folios'">
+                        <xsl:attribute name="class" select="'active'"/>
+                    </xsl:if>
+                    <a href="folios.html">
+                        Folios
                     </a>
                 </li>
-            </xsl:if>
-        </ul>
+                <li role="presentation">
+                    <xsl:if test="$active-tab eq 'utilities/tests'">
+                        <xsl:attribute name="class" select="'active'"/>
+                    </xsl:if>
+                    <a href="tests.html">
+                        Tests
+                    </a>
+                </li>
+                <li role="presentation">
+                    <xsl:if test="$active-tab eq 'utilities/layout-checks'">
+                        <xsl:attribute name="class" select="'active'"/>
+                    </xsl:if>
+                    <a href="layout-checks.html">
+                        Layout Checks
+                    </a>
+                </li>
+                <li role="presentation">
+                    <xsl:if test="$active-tab eq 'utilities/requests'">
+                        <xsl:attribute name="class" select="'active'"/>
+                    </xsl:if>
+                    <a href="requests.html">
+                        Requests
+                    </a>
+                </li>
+                <li role="presentation">
+                    <xsl:if test="$active-tab eq 'utilities/client-errors'">
+                        <xsl:attribute name="class" select="'active'"/>
+                    </xsl:if>
+                    <a href="client-errors.html">
+                        Client Errors
+                    </a>
+                </li>
+                <xsl:if test="$environment/m:snapshot-conf">
+                    <li role="presentation">
+                        <xsl:if test="$active-tab eq 'utilities/snapshot'">
+                            <xsl:attribute name="class" select="'active'"/>
+                        </xsl:if>
+                        <a href="snapshot.html">
+                            Data Snapshot
+                        </a>
+                    </li>
+                </xsl:if>
+                <xsl:if test="$environment/m:deployment-conf">
+                    <li role="presentation">
+                        <xsl:if test="$active-tab eq 'utilities/deployment'">
+                            <xsl:attribute name="class" select="'active'"/>
+                        </xsl:if>
+                        <a href="deployment.html">
+                            Deploy Code
+                        </a>
+                    </li>
+                </xsl:if>
+                <xsl:if test="$active-tab eq 'utilities/edit-text-header'">
+                    <li role="presentation">
+                        <xsl:attribute name="class" select="'active'"/>
+                        <a>
+                            <xsl:attribute name="href" select="concat('/edit-text-header.html?id=', /m:response/m:request/@id)"/>
+                            Edit Text Header
+                        </a>
+                    </li>
+                </xsl:if>
+            </ul>
+        </div>
     </xsl:template>
     
 </xsl:stylesheet>

@@ -90,7 +90,7 @@ declare function glossary:glossary-terms($type as xs:string*, $lang as xs:string
         if($type eq 'search' and $normalized-search) then
             distinct-values($glossary:translations//tei:back//tei:gloss/tei:term[not(@type eq 'definition')][ft:query(., glossary:search-query($normalized-search), glossary:search-options())]/text() ! lower-case(.) ! normalize-space(.))
         else if($type = $glossary:types) then
-            distinct-values($glossary:translations//tei:back//tei:gloss[@type = $valid-type]/tei:term[@xml:lang eq $valid-lang or ($valid-lang eq 'en' and  not(@xml:lang))][not(@type = ('definition','alternative'))]/text() ! lower-case(.) ! normalize-space(.))
+            distinct-values($glossary:translations//tei:back//tei:gloss[@type = $valid-type]/tei:term[@xml:lang eq $valid-lang or ($valid-lang eq 'en' and  not(@xml:lang))][not(@type = ('definition','alternative'))]/text() ! lower-case(.) ! normalize-space(.) ! normalize-unicode(., 'NFC'))
         else
             ()
         

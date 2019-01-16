@@ -22,24 +22,7 @@ return
         "section", 
         $common:app-id,
         (
-            <section
-                xmlns="http://read.84000.co/ns/1.0" 
-                id="{ $resource-id }" 
-                type="{ $tei//tei:teiHeader/tei:fileDesc/@type }">
-                { section:titles($tei) }
-                { tei-content:ancestors($tei, '', 1) }
-                { section:abstract($tei) }
-                { section:warning($tei) }
-                { section:about($tei) }
-                { section:text-stats($tei) }
-                { 
-                    if(lower-case($resource-id) eq 'all-translated') then
-                        section:all-translated-texts()
-                    else
-                        section:texts($resource-id, $published-only, false())
-                }
-                { section:sections($resource-id, $published-only) }
-            </section>,
+            section:base-section($tei, $published-only, true()),
             common:app-texts(
                 'section',
                 <replace xmlns="http://read.84000.co/ns/1.0"/>

@@ -49,6 +49,10 @@
                         
                         <div class="tab-content">
                             
+                            <div class="alert alert-warning small text-center">
+                                <p>Lists the status of current translations and related files.</p>
+                            </div>
+                            
                             <table class="table table-responsive">
                                 <thead>
                                     <tr>

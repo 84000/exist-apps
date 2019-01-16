@@ -113,7 +113,7 @@
                                 <label for="section-id" class="sr-only">Section</label>
                                 <select name="section-id" id="section-id" class="form-control">
                                     <option value="all">All sections</option>
-                                    <xsl:for-each select="//m:child">
+                                    <xsl:for-each select="//m:descendants">
                                         <option>
                                             <xsl:attribute name="value" select="@id"/>
                                             <xsl:if test="@id eq /m:response/m:request/@section-id">

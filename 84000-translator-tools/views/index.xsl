@@ -35,8 +35,6 @@
                         
                         <!-- Tabs -->
                         <ul class="nav nav-tabs nav-justified" role="tablist">
-                            
-                            <!-- Additional tabs -->
                             <xsl:for-each select="m:tabs/m:tab">
                                 <li role="presentation">
                                     <xsl:if test="/m:response/m:request/@tab eq @id">
@@ -48,8 +46,8 @@
                                     </a>
                                 </li>
                             </xsl:for-each>
-                            
                         </ul>
+                        
                         <!-- Content -->
                         <div class="tab-content">
                             

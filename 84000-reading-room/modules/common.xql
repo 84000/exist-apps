@@ -102,6 +102,7 @@ function common:normalized-chars($string as xs:string) as xs:string {
     let $out := 'adhillmmnnnrrsstu'
     return 
         translate(lower-case($string), $in, $out)
+        (: translate(lower-case(normalize-unicode($string, 'NFKC')), $in, $out) :)
 };
 
 declare
