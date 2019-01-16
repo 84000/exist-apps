@@ -146,7 +146,7 @@ declare function section:texts($section-id as xs:string, $published-only as xs:b
         if($include-descendants) then
             let $tei := tei-content:tei($section-id, 'section')
             let $descendants :=  section:descendants($tei, false())
-            let $descendants-ids := ($section-id, $descendants//m:section/@id)
+            let $descendants-ids := ($section-id, $descendants//m:descendants/@id)
             return 
                 $descendants-ids
         else
