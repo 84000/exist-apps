@@ -3,6 +3,44 @@
     
     <xsl:import href="common.xsl"/>
     
+    <xsl:import href="../../xslt/navigation.xsl"/>
+    
+    <!-- Look up environment variables -->
+    <xsl:variable name="environment-path" select="if(/m:response/@environment-path)then /m:response/@environment-path else '/db/system/config/db/system/environment.xml'"/>
+    <xsl:variable name="environment" select="doc($environment-path)/m:environment"/>
+    <xsl:variable name="front-end-path" select="$environment/m:url[@id eq 'front-end']/text()"/>
+    <xsl:variable name="reading-room-path" select="$environment/m:url[@id eq 'reading-room']/text()"/>
+    <xsl:variable name="communications-site-path" select="$environment/m:url[@id eq 'communications-site']/text()"/>
+    <xsl:variable name="app-version" select="doc('../../expath-pkg.xml')/pkg:package/@version"/>
+    <xsl:variable name="ga-tracking-id" select="$environment/m:google-analytics/@tracking-id"/>
+    
+    <!-- get navigation config -->
+    <xsl:variable name="navigation" select="doc('../../xslt/navigation.xml')/m:navigation"/>
+    
+    <!-- override navigation params -->
+    <xsl:variable name="lang" select="'en'"/>
+    <xsl:variable name="active-url">
+        <xsl:variable name="active-url-base">
+            <xsl:choose>
+                <xsl:when test="/m:response/m:section/@id eq 'ALL-TRANSLATED'">
+                    <xsl:value-of select="'http://read.84000.co/section/all-translated.html'"/>
+                </xsl:when>
+                <xsl:when test="/m:response/m:section/@id eq 'LOBBY'">
+                    <xsl:value-of select="'http://read.84000.co/section/lobby.html'"/>
+                </xsl:when>
+                <xsl:when test="/m:response/@model-type eq 'search'">
+                    <xsl:value-of select="'http://read.84000.co/search.html'"/>
+                </xsl:when>
+                <xsl:otherwise>
+                    <xsl:value-of select="'#reading-room'"/>
+                </xsl:otherwise>
+            </xsl:choose>
+        </xsl:variable>
+        <xsl:value-of select="concat($active-url-base, if($lang eq 'zh') then '?lang=zh' else '')"/>
+    </xsl:variable>
+    <xsl:variable name="local-comms-url" select="$communications-site-path"/>
+    <xsl:variable name="local-reading-room-url" select="$reading-room-path"/>
+    
     <xsl:output method="html" indent="no" doctype-system="about:legacy-compat"/>
     
     <xsl:template name="website-page">
@@ -13,15 +51,6 @@
         <xsl:param name="page-description"/>
         <xsl:param name="content"/>
         <xsl:param name="nav-tab"/>
-        
-        <!-- Look up environment variables -->
-        <xsl:variable name="environment-path" select="if(/m:response/@environment-path)then /m:response/@environment-path else '/db/system/config/db/system/environment.xml'"/>
-        <xsl:variable name="environment" select="doc($environment-path)/m:environment"/>
-        <xsl:variable name="front-end-path" select="$environment/m:url[@id eq 'front-end']/text()"/>
-        <xsl:variable name="reading-room-path" select="$environment/m:url[@id eq 'reading-room']/text()"/>
-        <xsl:variable name="communications-site-path" select="$environment/m:url[@id eq 'communications-site']/text()"/>
-        <xsl:variable name="app-version" select="doc('../../expath-pkg.xml')/pkg:package/@version"/>
-        <xsl:variable name="ga-tracking-id" select="$environment/m:google-analytics/@tracking-id"/>
         
         <html>
             
@@ -84,32 +113,7 @@
                     <div class="container">
                         <div id="navbar" class="navbar-collapse collapse" aria-expanded="false">
                             
-                            <ul class="nav navbar-nav">
-                                <li class="home">
-                                    <xsl:attribute name="class" select="concat('home', if($nav-tab eq 'home') then ' active' else '')"/>
-                                    <a href="http://84000.co">Home</a>
-                                </li>
-                                <li class="news">
-                                    <xsl:attribute name="class" select="concat('news', if($nav-tab eq 'news') then ' active' else '')"/>
-                                    <a href="http://84000.co/news">News</a>
-                                </li>
-                                <li class="reading-room">
-                                    <xsl:attribute name="class" select="concat('reading-room', if($nav-tab eq 'reading-room') then ' active' else '')"/>
-                                    <a href="/section/lobby.html">Reading Room</a>
-                                </li>
-                                <li class="about">
-                                    <xsl:attribute name="class" select="concat('about', if($nav-tab eq 'about') then ' active' else '')"/>
-                                    <a href="http://84000.co/about/vision">About</a>
-                                </li>
-                                <li class="resources">
-                                    <xsl:attribute name="class" select="concat('resources', if($nav-tab eq 'resources') then ' active' else '')"/>
-                                    <a href="http://84000.co/resources/translator-training">Resources</a>
-                                </li>
-                                <li class="how-to-help">
-                                    <xsl:attribute name="class" select="concat('how-to-help', if($nav-tab eq 'how-to-help') then ' active' else '')"/>
-                                    <a href="http://84000.co/how-you-can-help/donate/#sap">How you can help</a>
-                                </li>
-                            </ul>
+                            <xsl:apply-templates select="$navigation"/>
                             
                             <form method="get" role="search" name="searchformTop" class="navbar-form navbar-right">
                                 <xsl:attribute name="action" select="concat($reading-room-path, '/search.html')"/>

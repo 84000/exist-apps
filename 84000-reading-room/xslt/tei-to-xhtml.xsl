@@ -521,7 +521,7 @@
         <!-- Called in epubs and RR -->
         <xsl:param name="glossary-item" required="yes"/>
         <h4 class="term">
-            <xsl:apply-templates select="m:term[lower-case(@xml:lang) = 'en']"/>
+            <xsl:apply-templates select="$glossary-item/m:term[lower-case(@xml:lang) = 'en']"/>
         </h4>
         <xsl:if test="$glossary-item/m:term[lower-case(@xml:lang) eq 'bo-ltn']">
             <p class="text-wy">
