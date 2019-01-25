@@ -37,6 +37,27 @@
                 <label>Search The Reading Room</label>
             </item>
         </item>
+        <item class="resources" url="#resources">
+            <label>Resources</label>
+            <item url="http://84000.co/resources/translator-training">
+                <label>Translator Training</label>
+            </item>
+            <item url="http://84000.co/resources/grants">
+                <label>Grants</label>
+            </item>
+            <item url="http://84000.co/resources/tools-and-resources">
+                <label>Tools</label>
+            </item>
+            <item url="http://84000.co/resources/commentaries">
+                <label>Commentaries</label>
+            </item>
+            <item url="http://84000.co/resources/resounding">
+                <label>Resounding</label>
+            </item>
+            <item url="http://84000.co/resources/other-resources">
+                <label>Other Resources</label>
+            </item>
+        </item>
         <item class="about" url="#about">
             <label>About</label>
             <item url="http://84000.co/about/vision">
@@ -56,9 +77,6 @@
             </item>
             <item url="http://84000.co/about/work-flow">
                 <label>Work Flow</label>
-            </item>
-            <item url="http://84000.co/about/copyright">
-                <label>Copyright</label>
             </item>
             <item url="http://84000.co/about/copyright">
                 <label>Copyright</label>
@@ -84,28 +102,7 @@
             <item url="http://84000.co/about/privacy-policy">
                 <label>Privacy Policy</label>
             </item>
-        </item>
-        <item class="resources" url="#resources">
-            <label>Resources</label>
-            <item url="http://84000.co/resources/translator-training">
-                <label>Translator Training</label>
-            </item>
-            <item url="http://84000.co/resources/grants">
-                <label>Grants</label>
-            </item>
-            <item url="http://84000.co/resources/tools-and-resources">
-                <label>Tools</label>
-            </item>
-            <item url="http://84000.co/resources/commentaries">
-                <label>Commentaries</label>
-            </item>
-            <item url="http://84000.co/resources/resounding">
-                <label>Resounding</label>
-            </item>
-            <item url="http://84000.co/resources/other-resources">
-                <label>Other Resources</label>
-            </item>
-        </item>
+        </item>        
         <item class="how-to-help" url="#how-to-help">
             <label>How You Can Help</label>
             <item url="http://84000.co/how-you-can-help/donate">
@@ -147,14 +144,29 @@
                 <label>電子通訊</label>
             </item>
         </item>
-        <item class="reading-room" url="http://read.84000.co/?lang=zh">
+        <item class="reading-room" url="#reading-room">
             <label>雲端藏經閣</label>
+            <item url="http://read.84000.co/section/lobby.html?lang=zh">
+                <label>首頁</label>
+            </item>
+            <item url="http://read.84000.co/section/all-translated.html?lang=zh">
+                <label>已翻譯經典</label>
+            </item>
+            <item url="http://read.84000.co/search.html?lang=zh">
+                <label>雲端藏經閣檢索</label>
+            </item>
+        </item>
+        <item class="resources" url="#ch-resources">
+            <label>資源</label>
+            <item url="http://84000.co/ch-resources/ch-commentaries">
+                <label>論著</label>
+            </item>
+            <item url="http://84000.co/ch-resources/ch-resounding">
+                <label>經典迴響</label>
+            </item>
         </item>
         <item class="about" url="#ch-about">
             <label>關於我們</label>
-            <item url="http://84000.co/ch-about/ch-about-vision">
-                <label>百年願景</label>
-            </item>
             <item url="http://84000.co/ch-about/ch-about-origin">
                 <label>成立緣起</label>
             </item>
@@ -184,18 +196,6 @@
             </item>
             <item url="http://84000.co/ch-about/ch-about-contact">
                 <label>聯繫方式</label>
-            </item>
-        </item>
-        <item class="resources" url="#ch-resources">
-            <label>資源</label>
-            <item url="http://84000.co/ch-resources/ch-resources-training">
-                <label>翻譯培訓</label>
-            </item>
-            <item url="http://84000.co/ch-resources/ch-commentaries">
-                <label>論著</label>
-            </item>
-            <item url="http://84000.co/ch-resources/ch-resounding">
-                <label>經典迴響</label>
             </item>
         </item>
         <item class="how-to-help" url="#ch-howhelp">

@@ -182,7 +182,7 @@ declare function translations:filtered-texts($section as xs:string, $status as x
         </page-size-ranges>
     
     let $selected-range := $page-size-ranges//m:range[xs:string(@id) eq $range]
-        
+    
     let $page-size-tei :=
         if($selected-range) then
             $status-tei[tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl[tei:location/@count-pages gt '0']/tei:location/@count-pages[. >= xs:integer($selected-range/@min)][. <= xs:integer($selected-range/@max)]]
@@ -222,6 +222,12 @@ declare function translations:filtered-texts($section as xs:string, $status as x
     
     let $texts-count := count($texts)
     let $texts-pages-count := sum($texts/tei:bibl/tei:location[functx:is-a-number(@count-pages)]/@count-pages)
+    
+    let $texts :=
+        if($texts-count gt 1024) then
+            subsequence($texts, 1, 1024)
+        else
+            $texts
     
     return 
         <texts xmlns="http://read.84000.co/ns/1.0"

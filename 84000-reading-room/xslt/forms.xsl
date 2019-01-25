@@ -25,15 +25,31 @@
     </xsl:template>
     
     <xsl:template name="titles-form-panel">
+        <xsl:param name="active"/>
         <div class="panel panel-default no-shadow">
             <div class="panel-heading" role="tab" id="panelHeadingTitles">
-                <a role="button" data-toggle="collapse" href="#panelTitles" aria-expanded="false" aria-controls="panelTitles" data-parent="#forms-accordion">
-                    <h3 class="panel-title">
-                        Titles
-                    </h3>
+                <a role="button" data-toggle="collapse" href="#panelTitles" aria-expanded="false" aria-controls="panelTitles" data-parent="#forms-accordion" class="collapsed">
+                    <xsl:if test="$active">
+                        <xsl:attribute name="class" select="''"/>
+                        <xsl:attribute name="aria-expanded" select="'true'"/>
+                    </xsl:if>
+                    <div class="center-vertical full-width ">
+                        <span>
+                            <h3 class="panel-title">
+                                Titles
+                            </h3>
+                        </span>
+                        <span class="text-right">
+                            <i class="fa fa-plus collapsed-show"/>
+                            <i class="fa fa-minus collapsed-hide"/>
+                        </span>
+                    </div>
                 </a>
             </div>
             <div id="panelTitles" class="panel-collapse collapse" role="tabpanel" aria-labelledby="panelHeadingTitles">
+                <xsl:if test="$active">
+                    <xsl:attribute name="class" select="'panel-collapse collapse in'"/>
+                </xsl:if>
                 <div class="panel-body">
                     <form method="post" class="form-horizontal form-update" id="titles-form">
                         
@@ -137,15 +153,32 @@
     </xsl:template>
     
     <xsl:template name="locations-form-panel">
+        <xsl:param name="active"/>
+        
         <div class="panel panel-default no-shadow">
             <div class="panel-heading" role="tab" id="panelHeadingLocations">
-                <a role="button" data-toggle="collapse" href="#panelLocations" aria-expanded="false" aria-controls="panelTitles" data-parent="#forms-accordion">
-                    <h3 class="panel-title">
-                        Locations
-                    </h3>
+                <a role="button" data-toggle="collapse" href="#panelLocations" aria-expanded="false" aria-controls="panelTitles" data-parent="#forms-accordion" class="collapsed">
+                    <xsl:if test="$active">
+                        <xsl:attribute name="class" select="''"/>
+                        <xsl:attribute name="aria-expanded" select="'true'"/>
+                    </xsl:if>
+                    <div class="center-vertical full-width ">
+                        <span>
+                            <h3 class="panel-title">
+                                Locations
+                            </h3>
+                        </span>
+                        <span class="text-right">
+                            <i class="fa fa-plus collapsed-show"/>
+                            <i class="fa fa-minus collapsed-hide"/>
+                        </span>
+                    </div>
                 </a>
             </div>
             <div id="panelLocations" class="panel-collapse collapse" role="tabpanel" aria-labelledby="panelHeadingLocations">
+                <xsl:if test="$active">
+                    <xsl:attribute name="class" select="'panel-collapse collapse in'"/>
+                </xsl:if>
                 <div class="panel-body">
                     <form method="post" class="form-horizontal form-update" id="locations-form">
                         
@@ -176,7 +209,7 @@
         <xsl:for-each select="$tohs">
             
             <xsl:variable name="toh-key" select="@key"/>
-            <xsl:variable name="toh-location" select="/m:response/m:translation/m:location[@key eq $toh-key]"/>
+            <xsl:variable name="toh-location" select="m:translation/m:location[@key eq $toh-key]"/>
             
             <input type="hidden">
                 <xsl:attribute name="name" select="concat('location-', $toh-key)"/>
@@ -207,15 +240,32 @@
     </xsl:template>
     
     <xsl:template name="contributors-form-panel">
+        <xsl:param name="active"/>
+        
         <div class="panel panel-default no-shadow">
             <div class="panel-heading" role="tab" id="panelHeadingContributors">
-                <a role="button" data-toggle="collapse" href="#panelContributors" aria-expanded="false" aria-controls="panelTitles" data-parent="#forms-accordion">
-                    <h3 class="panel-title">
-                        Contributors
-                    </h3>
+                <a role="button" data-toggle="collapse" href="#panelContributors" aria-expanded="false" aria-controls="panelTitles" data-parent="#forms-accordion" class="collapsed">
+                    <xsl:if test="$active">
+                        <xsl:attribute name="class" select="''"/>
+                        <xsl:attribute name="aria-expanded" select="'true'"/>
+                    </xsl:if>
+                    <div class="center-vertical full-width ">
+                        <span>
+                            <h3 class="panel-title">
+                                Contributors
+                            </h3>
+                        </span>
+                        <span class="text-right">
+                            <i class="fa fa-plus collapsed-show"/>
+                            <i class="fa fa-minus collapsed-hide"/>
+                        </span>
+                    </div>
                 </a>
             </div>
             <div id="panelContributors" class="panel-collapse collapse" role="tabpanel" aria-labelledby="panelHeadingContributors">
+                <xsl:if test="$active">
+                    <xsl:attribute name="class" select="'panel-collapse collapse in'"/>
+                </xsl:if>
                 <div class="panel-body">
                     <form method="post" class="form-horizontal form-update" id="contributors-form">
                         
@@ -257,30 +307,32 @@
                                     
                                 </div>
                                 
-                                <div class="add-nodes-container">
-                                    <xsl:variable name="contributors" select="m:translation/m:translation/m:contributors/m:author | m:translation/m:translation/m:contributors/m:editor | m:translation/m:translation/m:contributors/m:consultant"/>
-                                    <xsl:choose>
-                                        <xsl:when test="$contributors">
-                                            <xsl:call-template name="contributors-controls">
-                                                <xsl:with-param name="text-contributors" select="$contributors"/>
-                                                <xsl:with-param name="contributor-types" select="/m:response/m:contributor-types/m:contributor-type"/>
-                                            </xsl:call-template>
-                                        </xsl:when>
-                                        <xsl:otherwise>
-                                            <xsl:call-template name="contributors-controls">
-                                                <xsl:with-param name="text-contributors">
-                                                    <m:author sameAs="dummy"/>
-                                                </xsl:with-param>
-                                                <xsl:with-param name="contributor-types" select="/m:response/m:contributor-types/m:contributor-type"/>
-                                            </xsl:call-template>
-                                        </xsl:otherwise>
-                                    </xsl:choose>
-                                    <div>
-                                        <a href="#add-nodes" class="add-nodes">
-                                            <span class="monospace">+</span> add a contributor
-                                        </a>
+                                <!-- Force user to add group first -->
+                                <xsl:if test="$translator-summary">
+                                    <div class="add-nodes-container">
+                                        <xsl:variable name="contributors" select="m:translation/m:translation/m:contributors/m:*[self::m:author | self::m:editor | self::m:consultant]"/>
+                                        <xsl:choose>
+                                            <xsl:when test="$contributors">
+                                                <xsl:call-template name="contributors-controls">
+                                                    <xsl:with-param name="text-contributors" select="$contributors"/>
+                                                    <xsl:with-param name="contributor-types" select="/m:response/m:contributor-types/m:contributor-type"/>
+                                                </xsl:call-template>
+                                            </xsl:when>
+                                            <xsl:otherwise>
+                                                <xsl:call-template name="contributors-controls">
+                                                    <!-- use the summary as a dummy author record -->
+                                                    <xsl:with-param name="text-contributors" select="$translator-summary"/>
+                                                    <xsl:with-param name="contributor-types" select="/m:response/m:contributor-types/m:contributor-type"/>
+                                                </xsl:call-template>
+                                            </xsl:otherwise>
+                                        </xsl:choose>
+                                        <div>
+                                            <a href="#add-nodes" class="add-nodes">
+                                                <span class="monospace">+</span> add a contributor
+                                            </a>
+                                        </div>
                                     </div>
-                                </div>
+                                </xsl:if>
                                 
                             </div>
                             <div class="col-sm-4">
@@ -344,9 +396,10 @@
         <xsl:param name="contributor-types" required="yes"/>
         
         <xsl:for-each select="$text-contributors">
-            <xsl:variable name="contributor-id" select="substring-after(@sameAs, 'contributors.xml#')"/>
+            <xsl:variable name="contributor-id" select="substring-after(./@sameAs, 'contributors.xml#')"/>
             <xsl:variable name="contributor-type" select="concat(node-name(.), '-', @role)"/>
             <xsl:variable name="index" select="position()"/>
+            
             <div class="form-group add-nodes-group">
                 <div class="col-sm-2">
                     <select class="form-control">
@@ -375,7 +428,9 @@
                 <div class="col-sm-4">
                     <input class="form-control" placeholder="same">
                         <xsl:attribute name="name" select="concat('contributor-expression-', $index)"/>
-                        <xsl:attribute name="value" select="text()"/>
+                        <xsl:if test="$contributor-type != ('summary-')">
+                            <xsl:attribute name="value" select="text()"/>
+                        </xsl:if>
                     </input>
                 </div>
             </div>
@@ -385,13 +440,13 @@
     
     <xsl:template name="select-contributor">
         
-        <xsl:param name="contributor-id" required="yes"/>
-        <xsl:param name="control-name" required="yes"/>
+        <xsl:param name="contributor-id"/>
+        <xsl:param name="control-name"/>
         
         <xsl:variable name="summary" select="/m:response/m:translation/m:translation/m:contributors/m:summary[1]"/>
         <xsl:variable name="translator-team-id" select="substring-after($summary/@sameAs, 'contributors.xml#')"/>
-        <xsl:variable name="team-contributors" select="/m:response/m:contributor-persons/m:person[$translator-team-id = m:team/@id]"/>
-        <xsl:variable name="other-contributors" select="/m:response/m:contributor-persons/m:person[not($translator-team-id = m:team/@id)]"/>
+        <xsl:variable name="team-contributors" select="/m:response/m:contributor-persons/m:person[m:team[@id = $translator-team-id]]"/>
+        <xsl:variable name="other-contributors" select="/m:response/m:contributor-persons/m:person[not(m:team[@id = $translator-team-id])]"/>
         
         <select class="form-control">
             <xsl:attribute name="name" select="$control-name"/>
@@ -421,19 +476,36 @@
     </xsl:template>
     
     <xsl:template name="translation-status-form-panel">
+        <xsl:param name="active"/>
+        
         <div class="panel panel-default no-shadow">
             <div class="panel-heading" role="tab" id="panelHeadingStatus">
-                <a role="button" data-toggle="collapse" href="#panelStatus" aria-expanded="false" aria-controls="panelTitles" data-parent="#forms-accordion">
-                    <h3 class="panel-title">
-                        Status
-                    </h3>
+                <a role="button" data-toggle="collapse" href="#panelStatus" aria-expanded="false" aria-controls="panelTitles" data-parent="#forms-accordion" class="collapsed">
+                    <xsl:if test="$active">
+                        <xsl:attribute name="class" select="''"/>
+                        <xsl:attribute name="aria-expanded" select="'true'"/>
+                    </xsl:if>
+                    <div class="center-vertical full-width ">
+                        <span>
+                            <h3 class="panel-title">
+                                Translation status
+                            </h3>
+                        </span>
+                        <span class="text-right">
+                            <i class="fa fa-plus collapsed-show"/>
+                            <i class="fa fa-minus collapsed-hide"/>
+                        </span>
+                    </div>
                 </a>
             </div>
             <div id="panelStatus" class="panel-collapse collapse" role="tabpanel" aria-labelledby="panelHeadingStatus">
+                <xsl:if test="$active">
+                    <xsl:attribute name="class" select="'panel-collapse collapse in'"/>
+                </xsl:if>
                 <div class="panel-body">
                     <form method="post" class="form-horizontal form-update" id="publication-status-form">
                         
-                        <xsl:attribute name="action" select="'edit-text-header.html#publication-status-form'"/>
+                        <xsl:attribute name="action" select="'edit-text-header.html'"/>
                         
                         <input type="hidden" name="post-id">
                             <xsl:attribute name="value" select="m:translation/@id"/>
@@ -477,14 +549,43 @@
                                 </div>
                                 
                                 <div class="form-group">
-                                    <label class="control-label col-sm-3" for="status-notes">Notes:</label>
+                                    <label class="control-label col-sm-3" for="progress-notes">Awaiting action from:</label>
+                                    <div class="col-sm-3">
+                                        <input type="text" class="form-control" name="action-note" id="action-note" placeholder="e.g. Konchog">
+                                            <xsl:attribute name="value" select="m:translation-status/m:action-note/text()"/>
+                                        </input>
+                                        
+                                    </div>
+                                    <div class="col-sm-6 small text-muted margin-top-sm">
+                                        <xsl:if test="m:translation-status/m:action-note/@last-edited">
+                                            <xsl:value-of select="common:date-user-string('Last updated', m:translation-status/m:action-note/@last-edited, m:translation-status/m:action-note/@last-edited-by)"/>
+                                        </xsl:if>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label class="control-label col-sm-3" for="progress-note">Progress notes:</label>
                                     <div class="col-sm-9">
-                                        <textarea class="form-control" rows="12" name="status-notes" id="status-notes" placeholder="Notes about the current status of the text...">
-                                            <xsl:copy-of select="m:translation-status/m:notes/text()"/>
+                                        <textarea class="form-control" rows="6" name="progress-note" id="progress-note" placeholder="Notes about the status of the translation...">
+                                            <xsl:copy-of select="m:translation-status/m:progress-note/text()"/>
                                         </textarea>
-                                        <xsl:if test="m:translation-status/m:notes/@last-edited">
+                                        <xsl:if test="m:translation-status/m:progress-note/@last-edited">
                                             <div class="small text-muted margin-top-sm">
-                                                <xsl:value-of select="common:date-user-string('Last updated', m:translation-status/m:notes/@last-edited, m:translation-status/m:notes/@last-edited-by)"/>
+                                                <xsl:value-of select="common:date-user-string('Last updated', m:translation-status/m:progress-note/@last-edited, m:translation-status/m:progress-note/@last-edited-by)"/>
+                                            </div>
+                                        </xsl:if>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label class="control-label col-sm-3" for="text-note">Text notes:</label>
+                                    <div class="col-sm-9">
+                                        <textarea class="form-control" rows="6" name="text-note" id="text-note" placeholder="Notes about the text itself...">
+                                            <xsl:copy-of select="m:translation-status/m:text-note/text()"/>
+                                        </textarea>
+                                        <xsl:if test="m:translation-status/m:text-note/@last-edited">
+                                            <div class="small text-muted margin-top-sm">
+                                                <xsl:value-of select="common:date-user-string('Last updated', m:translation-status/m:text-note/@last-edited, m:translation-status/m:text-note/@last-edited-by)"/>
                                             </div>
                                         </xsl:if>
                                     </div>

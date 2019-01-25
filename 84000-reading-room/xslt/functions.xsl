@@ -179,17 +179,18 @@
     </xsl:function>
     
     <xsl:function name="common:breadcrumb-items">
-        <xsl:param name="parents"/>
+        <xsl:param name="parents" required="yes"/>
+        <xsl:param name="lang" required="yes"/>
         <xsl:for-each select="$parents">
             <xsl:sort select="@nesting" order="descending"/>
             <li>
                 <a>
                     <xsl:choose>
                         <xsl:when test="@type eq 'grouping'">
-                            <xsl:attribute name="href" select="concat('/section/', m:parent/@id, '.html#grouping-', @id)"/>
+                            <xsl:attribute name="href" select="common:internal-link(concat('/section/', m:parent/@id, '.html'), (), concat('#grouping-', @id), /m:response/@lang)"/>
                         </xsl:when>
                         <xsl:otherwise>
-                            <xsl:attribute name="href" select="concat('/section/', @id, '.html')"/>
+                            <xsl:attribute name="href" select="common:internal-link(concat('/section/', @id, '.html'), (), '', /m:response/@lang)"/>
                         </xsl:otherwise>
                     </xsl:choose>
                     <xsl:apply-templates select="m:title[@xml:lang='en']/text()"/>
@@ -223,6 +224,40 @@
     <xsl:function name="common:folio-id" as="xs:string">
         <xsl:param name="folio-str" as="xs:string"/>
         <xsl:value-of select="concat('ref-', lower-case(replace($folio-str, '\.', '-')))"/>
+    </xsl:function>
+    
+    <!-- Localization helpers -->
+    <xsl:function name="common:internal-link">
+        <xsl:param name="url" required="yes"/>
+        <xsl:param name="attributes" required="yes"/>
+        <xsl:param name="fragment-id" required="yes"/>
+        <xsl:param name="lang" required="yes"/>
+        <xsl:variable name="lang-attribute" select="if($lang = ('zh')) then concat('lang=', $lang) else ()"/>
+        <xsl:variable name="attributes-with-lang" select="($attributes, $lang-attribute)"/>
+        <xsl:value-of select="concat($url, if(count($attributes-with-lang) gt 0) then concat('?', string-join($attributes-with-lang, '&amp;')) else '', $fragment-id)"/>
+    </xsl:function>
+    
+    <xsl:function name="common:homepage-link">
+        <xsl:param name="lang" required="yes"/>
+        <xsl:value-of select="if($lang eq 'zh') then 'http://84000.co/ch' else 'http://84000.co'"/>
+    </xsl:function>
+    
+    <xsl:function name="common:override-href">
+        <xsl:param name="lang" required="yes"/>
+        <xsl:param name="url-lang" required="yes"/>
+        <xsl:param name="lang-url" required="yes"/>
+        <xsl:if test="$lang eq $url-lang">
+            <xsl:attribute name="href" select="$lang-url"/>
+        </xsl:if>
+    </xsl:function>
+    
+    <xsl:function name="common:localise-form">
+        <xsl:param name="lang" required="yes"/>
+        <xsl:if test="$lang eq 'zh'">
+            <input type="hidden" name="lang">
+                <xsl:attribute name="value" select="$lang"/>
+            </input>
+        </xsl:if>
     </xsl:function>
     
 </xsl:stylesheet>

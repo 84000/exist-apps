@@ -62,8 +62,7 @@ return
                 { translation:translation($tei) }
             </translation>,
             sponsors:sponsorship-statuses($tei//tei:teiHeader/tei:fileDesc/tei:titleStmt/@sponsored),
-            sponsors:sponsors('all', false(), false()),
-            request:get-parameter-names()
+            sponsors:sponsors('all', false(), false())
         )
     )
     

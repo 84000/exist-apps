@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" version="2.0" exclude-result-prefixes="#all">
     
-    <xsl:import href="../../84000-reading-room/views/html/reading-room-page.xsl"/>
+    <xsl:import href="../../84000-reading-room/views/html/website-page.xsl"/>
     <xsl:import href="../../84000-reading-room/xslt/forms.xsl"/>
     <xsl:import href="common.xsl"/>
     
@@ -29,14 +29,14 @@
                         </xsl:call-template>
                         
                         <div class="tab-content">
-                            <h3 class="visible-print-block">
+                            <h3 class="visible-print-block no-top-margin">
                                 84000 Operations text search
                             </h3>
                             <form action="search.html" method="post" class="bottom-margin">
                                 <div class="row">
                                     
-                                    <div class="col-sm-8">
-                                        <div class="form-group">
+                                    <div class="col-sm-8 print-width-override">
+                                        <div class="form-group print-no-margin">
                                             <h4 class="text-bold no-bottom-margin hidden-print">Text statuses:</h4>
                                             <xsl:for-each select="m:text-statuses/m:status">
                                                 <div class="checkbox">
@@ -62,10 +62,10 @@
                                         </div>
                                     </div>
                                     
-                                    <div class="col-sm-4">
+                                    <div class="col-sm-4 print-width-override">
                                     
-                                        <div class="form-group">
-                                            <select class="form-control hidden-print" name="section" disabled="disabled">
+                                        <div class="form-group hidden-print">
+                                            <select class="form-control" name="section" disabled="disabled">
                                                 <option value="O1JC11494">
                                                     <xsl:if test="m:texts/@section eq 'O1JC11494'">
                                                         <xsl:attribute name="selected" select="'selected'"/>
@@ -85,10 +85,9 @@
                                                     All
                                                 </option>
                                             </select>
-                                            
                                         </div>
                                         
-                                        <div class="form-group">
+                                        <div class="form-group print-no-margin">
                                             <select name="sponsored" class="form-control">
                                                 <option value="none">
                                                     <xsl:if test="m:texts/@sponsored eq 'none'">
@@ -123,7 +122,7 @@
                                             </select>
                                         </div>
                                         
-                                        <div class="form-group">
+                                        <div class="form-group print-no-margin">
                                             <select name="range" class="form-control">
                                                 <option value="0">
                                                     No size filter
@@ -140,7 +139,7 @@
                                             </select>
                                         </div>
                                         
-                                        <div class="form-group">
+                                        <div class="form-group print-no-margin">
                                             <select name="sort" class="form-control">
                                                 <option value="toh">
                                                     <xsl:if test="m:texts/@sort eq 'toh'">
@@ -169,7 +168,7 @@
                                             </select>
                                         </div>
                                         
-                                        <div class="form-group">
+                                        <div class="form-group print-no-margin">
                                             <div class="row">
                                                 <div class="col-sm-5 hidden-print">
                                                     <input type="text" name="search-toh" value="" class="form-control" placeholder="Filter Tohs">
@@ -196,16 +195,22 @@
                                         
                                         <div class="well well-sm no-bottom-margin small">
                                             <strong>
-                                                <xsl:value-of select="format-number(count(m:texts/m:text), '#,###')"/>
+                                                <xsl:value-of select="format-number(m:texts/@count, '#,###')"/>
                                             </strong> texts, 
                                             <strong>
-                                                <xsl:value-of select="format-number(sum(m:texts/m:text/tei:bibl/tei:location[@count-pages gt '']/@count-pages), '#,###')"/>
+                                                <xsl:value-of select="format-number(m:texts/@count-pages, '#,###')"/>
                                             </strong> pages.
                                         </div>
                                         
                                     </div>
                                 </div>
                             </form>
+                            
+                            <xsl:if test="xs:integer(m:texts/@count) gt count(m:texts/m:text)">
+                                <div class="alert alert-danger small text-center">
+                                    <xsl:value-of select="concat('This search has ', xs:integer(m:texts/@count), ' results but only the first ', count(m:texts/m:text), ' have been returned.')"/>
+                                </div>
+                            </xsl:if>
                                                         
                             <xsl:if test="m:texts/m:text">
                                 <table class="table table-responsive">
@@ -316,58 +321,58 @@
                                                     </ul>
                                                 </td>
                                             </tr>
-                                            <xsl:if test="/m:response/m:permission[@group eq 'utilities']">
-                                                <xsl:variable name="translation-status" select="/m:response/m:translation-status/m:text[@text-id eq $text-id]"/>
-                                                <xsl:if test="$translation-status/m:notes/text() | $translation-status/m:task[not(@checked-off)]">
-                                                    <tr class="sub">
-                                                        <td colspan="2"/>
-                                                        <td colspan="5">
-                                                            <div class="top-vertical">
-                                                                <xsl:choose>
-                                                                    <xsl:when test="$translation-status/m:notes/text()">
-                                                                        <span>
-                                                                            <div class="collapse-one-line">
-                                                                                <a class="italic text-color printable">
-                                                                                    <xsl:attribute name="href" select="concat('/edit-text-header.html?id=', $text-id, '#publication-status-form')"/>
-                                                                                    <xsl:value-of select="$translation-status/m:notes"/>
-                                                                                </a>
-                                                                            </div>
-                                                                        </span>
-                                                                    </xsl:when>
-                                                                    <xsl:otherwise>
-                                                                        <!-- If there are no notes then link to the form -->
-                                                                        <a target="_self" class="italic text-color printable">
-                                                                            <xsl:attribute name="href" select="concat('/edit-text-header.html?id=', $text-id, '#publication-status-form')"/>
-                                                                            [No notes]
-                                                                        </a>
-                                                                    </xsl:otherwise>
-                                                                </xsl:choose>
-                                                                <xsl:if test="$translation-status/m:task[not(@checked-off)]">
-                                                                    <!-- If there are tasks then link to the form -->
-                                                                    <a target="_self" class="hidden-print">
-                                                                        <xsl:attribute name="href" select="concat('/edit-text-header.html?id=', $text-id, '#publication-status-form')"/>
-                                                                        <span class="badge badge-notification">
-                                                                            <xsl:value-of select="count($translation-status/m:task[not(@checked-off)])"/>
-                                                                        </span>
-                                                                    </a>
-                                                                    <span class="italic visible-print-inline-block">
-                                                                        <xsl:value-of select="count($translation-status/m:task[not(@checked-off)])"/> task(s)
-                                                                    </span>
-                                                                </xsl:if>
-                                                            </div>
-                                                        </td>
-                                                    </tr>
-                                                </xsl:if>
-                                            </xsl:if>
                                             <xsl:if test="m:sponsors/tei:div[@type eq 'acknowledgment']/tei:p">
                                                 <tr class="sub">
-                                                    <td colspan="2"/>
-                                                    <td colspan="5">
+                                                    <td colspan="7">
                                                         <div class="pull-quote">
                                                             <xsl:apply-templates select="m:sponsors/tei:div[@type eq 'acknowledgment']/tei:p"/>
                                                         </div>
                                                     </td>
                                                 </tr>
+                                            </xsl:if>
+                                            <xsl:if test="/m:response/m:permission[@group eq 'utilities']">
+                                                <xsl:variable name="translation-status" select="/m:response/m:translation-status/m:text[@text-id eq $text-id]"/>
+                                                <xsl:if test="$translation-status/m:*[self::m:action-note | self::m:progress-note | self::m:text-note]/text() | $translation-status/m:task[not(@checked-off)]">
+                                                    <tr class="sub">
+                                                        <td colspan="7">
+                                                            <div class="well well-sm no-bottom-margin">
+                                                                <xsl:if test="$translation-status/m:action-note/text() | $translation-status/m:task[not(@checked-off)]">
+                                                                    <div class="top-vertical">
+                                                                        <span class="collapse-one-line small italic ">
+                                                                            <xsl:value-of select="concat('Awaiting action from: ', if($translation-status/m:action-note/text()) then $translation-status/m:action-note else '[empty]')"/>
+                                                                        </span>
+                                                                        <span>
+                                                                            <span class="badge badge-notification">
+                                                                                <xsl:value-of select="count($translation-status/m:task[not(@checked-off)])"/>
+                                                                            </span>
+                                                                            <span class="italic visible-print-inline-block">
+                                                                                <xsl:value-of select="count($translation-status/m:task[not(@checked-off)])"/> task(s)
+                                                                            </span>
+                                                                        </span>
+                                                                    </div>
+                                                                    <xsl:if test="$translation-status/m:*[self::m:progress-note | self::m:text-note]/text()">
+                                                                        <hr class="xs-margin"/>
+                                                                    </xsl:if>
+                                                                </xsl:if>
+                                                                
+                                                                <xsl:if test="$translation-status/m:progress-note/text()">
+                                                                    <div class="collapse-one-line small italic">
+                                                                        <xsl:value-of select="$translation-status/m:progress-note"/>
+                                                                    </div>
+                                                                    <xsl:if test="$translation-status/m:*[self::m:text-note]/text()">
+                                                                        <hr class="xs-margin"/>
+                                                                    </xsl:if>
+                                                                </xsl:if>
+                                                                
+                                                                <xsl:if test="$translation-status/m:text-note/text()">
+                                                                    <div class="collapse-one-line small italic">
+                                                                        <xsl:value-of select="$translation-status/m:text-note"/>
+                                                                    </div>
+                                                                </xsl:if>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                </xsl:if>
                                             </xsl:if>
                                         </xsl:for-each>
                                     </tbody>

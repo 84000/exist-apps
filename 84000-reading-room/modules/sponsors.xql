@@ -38,6 +38,7 @@ declare function sponsors:sponsor($id as xs:string, $include-acknowledgements as
             attribute start-letter { upper-case(substring(normalize-space(replace($sponsor/m:label, $sponsors:prefixes, '')), 1, 1)) },
             $sponsor/m:label,
             $sponsor/m:country,
+            $sponsor/m:type,
             if($include-internal-names) then
                 $sponsor/m:internal-name
             else
@@ -127,14 +128,12 @@ declare function sponsors:update($sponsor as node()?) as xs:string {
         else
             concat('sponsor-', xs:string(sponsors:next-id()))
     
-    let $sponsor-type := request:get-parameter('sponsor-type', '')
     let $name := request:get-parameter('name', '')
     let $internal-name := request:get-parameter('internal-name', '')
     let $country := request:get-parameter('country', '')
     
     let $new-value := 
         <sponsor xmlns="http://read.84000.co/ns/1.0" 
-            type="{ $sponsor-type }"
             xml:id="{ $sponsor-id }">
             <label>{ $name }</label>
             {
@@ -148,6 +147,14 @@ declare function sponsors:update($sponsor as node()?) as xs:string {
                     <country>{ $country}</country>
                 else
                     ()
+            }
+            {
+                for $type in ('founding', 'matching', 'sutra')
+                return
+                    if(request:get-parameter(concat($type, '-type'), '')) then
+                        <type id="{ $type }"/>
+                    else
+                        ()
             }
         </sponsor>
     

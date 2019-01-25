@@ -66,7 +66,8 @@ function common:response($model-type as xs:string, $app-id as xs:string, $data a
         app-id="{ $app-id }" 
         app-version="{ doc(concat($common:root-path, '/expath-pkg.xml'))/pkg:package/@version }"
         environment-path="{ $common:environment-path }"
-        user-name="{ common:user-name() }" >
+        user-name="{ common:user-name() }" 
+        lang="{ request:get-parameter('lang', 'en') }">
         {
             $data
         }
@@ -243,7 +244,7 @@ declare function common:search-result($nodes as node()*) as node()*
 declare function common:marked-section($section as element()?, $strings as xs:string*) as element()?{
     
     let $marked-paragraphs :=
-        if($section) then
+        if($section and count($strings) gt 0) then
             for $paragraph-text in $section/tei:p/data()
                 let $marked-paragraph := common:marked-paragraph( $paragraph-text, $strings )
             return

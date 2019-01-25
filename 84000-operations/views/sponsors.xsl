@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" version="2.0" exclude-result-prefixes="#all">
     
-    <xsl:import href="../../84000-reading-room/views/html/reading-room-page.xsl"/>
+    <xsl:import href="../../84000-reading-room/views/html/website-page.xsl"/>
     <xsl:import href="../../84000-reading-room/xslt/forms.xsl"/>
     <xsl:import href="common.xsl"/>
     
@@ -69,25 +69,6 @@
                                         <xsl:copy-of select="common:marker(@start-letter, if(preceding-sibling::m:sponsor[1]/@start-letter) then preceding-sibling::m:sponsor[1]/@start-letter else '')"/>
                                         
                                         <div class="row">
-                                            <div class="col-sm-1">
-                                                <xsl:choose>
-                                                    <xsl:when test="@type eq 'sutra'">
-                                                        <span class="label label-danger">
-                                                            Sutra
-                                                        </span>
-                                                    </xsl:when>
-                                                    <xsl:when test="@type eq 'founding'">
-                                                        <span class="label label-warning">
-                                                            Founding
-                                                        </span>
-                                                    </xsl:when>
-                                                    <xsl:when test="@type eq 'matching-funds'">
-                                                        <span class="label label-success">
-                                                            Matching
-                                                        </span>
-                                                    </xsl:when>
-                                                </xsl:choose>
-                                            </div>
                                             <div class="col-sm-9">
                                                 <a>
                                                     <xsl:attribute name="href" select="concat('/edit-sponsor.html?id=', $sponsor-id)"/>
@@ -105,6 +86,23 @@
                                                     <xsl:value-of select="concat(' / ', $sponsor-id)"/>
                                                 </span>
                                             </div>
+                                            <div class="col-sm-3 text-right">
+                                                <xsl:if test="m:type[@id eq 'matching']">
+                                                    <span class="label label-danger">
+                                                        Matching
+                                                    </span>
+                                                </xsl:if>
+                                                <xsl:if test="m:type[@id eq 'founding']">
+                                                    <span class="label label-info">
+                                                        Founding
+                                                    </span>
+                                                </xsl:if>
+                                                <xsl:if test="m:type[@id eq 'sutra']">
+                                                    <span class="label label-warning">
+                                                        Sutra
+                                                    </span>
+                                                </xsl:if>
+                                            </div>
                                         </div>
                                         
                                         <xsl:if test="m:acknowledgement">
@@ -112,7 +110,7 @@
                                                 <xsl:call-template name="acknowledgements">
                                                     <xsl:with-param name="acknowledgements" select="m:acknowledgement"/>
                                                     <xsl:with-param name="group" select="''"/>
-                                                    <xsl:with-param name="css-class" select="'col-sm-11 col-sm-offset-1'"/>
+                                                    <xsl:with-param name="css-class" select="'col-sm-12'"/>
                                                     <xsl:with-param name="link-href" select="'/edit-text-sponsors.html?id=@translation-id'"/>
                                                 </xsl:call-template>
                                             </div>

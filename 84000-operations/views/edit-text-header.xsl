@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" version="2.0" exclude-result-prefixes="#all">
     
-    <xsl:import href="../../84000-reading-room/views/html/reading-room-page.xsl"/>
+    <xsl:import href="../../84000-reading-room/views/html/website-page.xsl"/>
     <xsl:import href="../../84000-reading-room/xslt/forms.xsl"/>
     <xsl:import href="common.xsl"/>
     
@@ -35,7 +35,7 @@
                             <xsl:call-template name="alert-translation-locked"/>
                             
                             <!-- Title -->
-                            <div class="center-vertical full-width">
+                            <div class="center-vertical full-width bottom-margin">
                                 <span class="h3 text-sa">
                                     <a target="_blank" class="text-muted">
                                         <xsl:attribute name="href" select="concat($reading-room-path, '/translation/', m:translation/@id, '.html')"/>
@@ -55,9 +55,9 @@
                                 </span>
                             </div>
                             
+                            <!-- 
                             <hr class="sml-margin"/>
-                            
-                            <!-- Summary -->
+                            Summary
                             <div class="top-vertical bottom-margin">
                                 <a role="button" data-toggle="collapse" href="#panelStatus" aria-expanded="false" aria-controls="panelTitles" class="italic text-color">
                                     <xsl:choose>
@@ -76,7 +76,7 @@
                                        </span>
                                    </a>
                                 </xsl:if>
-                            </div>
+                            </div> -->
                             
                             <div class="panel-group" role="tablist" aria-multiselectable="true" id="forms-accordion">
                                 
@@ -86,7 +86,9 @@
                                 
                                 <xsl:call-template name="contributors-form-panel"/>
                                 
-                                <xsl:call-template name="translation-status-form-panel"/>
+                                <xsl:call-template name="translation-status-form-panel">
+                                    <xsl:with-param name="active" select="true()"/>
+                                </xsl:call-template>
                                 
                             </div>
                         </div>

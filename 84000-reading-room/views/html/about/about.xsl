@@ -104,7 +104,7 @@
             <xsl:with-param name="page-title" select="/m:response/m:header/m:title/text()"/>
             <xsl:with-param name="page-description" select="''"/>
             <xsl:with-param name="content" select="$content"/>
-            <xsl:with-param name="nav-tab" select="'about'"/>
+            <xsl:with-param name="nav-tab" select="'#about'"/>
         </xsl:call-template>
         
     </xsl:template>

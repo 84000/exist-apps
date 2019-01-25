@@ -296,11 +296,13 @@ else if(not(common:auth-environment()) or sm:is-authenticated()) then
                 </forward>
             </dispatch>
         else
+            (: Return an error :)
             <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-                <forward url="{ $exist:path }">
-                    <set-header name="Content-Type" value="text/xml"/>
-                    <set-header name="Content-Disposition" value="attachment"/>
-                </forward>
+                <error-handler>
+                    <forward servlet="XSLTServlet">
+                        <set-attribute name="xslt.stylesheet" value="{concat($exist:root, $exist:controller, "/views/html/error.xsl")}"/>
+                    </forward>
+                </error-handler>
             </dispatch>
             
 else

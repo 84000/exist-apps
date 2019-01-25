@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" version="2.0" exclude-result-prefixes="#all">
     
-    <xsl:import href="../../84000-reading-room/views/html/reading-room-page.xsl"/>
+    <xsl:import href="../../84000-reading-room/views/html/website-page.xsl"/>
     <xsl:import href="../../84000-reading-room/xslt/forms.xsl"/>
     <xsl:import href="common.xsl"/>
     
@@ -81,28 +81,23 @@
                                                 <label class="control-label col-sm-3" for="sponsor-type">
                                                     Sponsor type:
                                                 </label>
-                                                <div class="col-sm-4">
-                                                    <select name="sponsor-type" id="sponsor-type" class="form-control">
-                                                        <option value="sutra">
-                                                            <xsl:if test="m:sponsor/@type eq 'sutra'">
-                                                                <xsl:attribute name="selected" select="'selected'"/>
-                                                            </xsl:if>
-                                                            Sutra
-                                                        </option>
-                                                        <option value="founding">
-                                                            <xsl:if test="m:sponsor/@type eq 'founding'">
-                                                                <xsl:attribute name="selected" select="'selected'"/>
-                                                            </xsl:if>
-                                                            Founding
-                                                        </option>
-                                                        <option value="matching-funds">
-                                                            <xsl:if test="m:sponsor/@type eq 'matching-funds'">
-                                                                <xsl:attribute name="selected" select="'selected'"/>
-                                                            </xsl:if>
-                                                            Matching Funds
-                                                        </option>
-                                                    </select>
-                                                </div>
+                                                <xsl:variable name="sponsor" select="m:sponsor"/>
+                                                <xsl:for-each select="('founding', 'sutra', 'matching')">
+                                                    <xsl:variable name="sponsor-type-id" select="."/>
+                                                    <div class="col-sm-3">
+                                                        <div class="checkbox">
+                                                            <label>
+                                                                <input type="checkbox" value="1">
+                                                                    <xsl:attribute name="name" select="concat($sponsor-type-id, '-type')"/>
+                                                                    <xsl:if test="$sponsor/m:type[@id eq $sponsor-type-id]">
+                                                                        <xsl:attribute name="checked" select="'checked'"/>
+                                                                    </xsl:if>
+                                                                </input>
+                                                                <xsl:value-of select="concat(upper-case(substring($sponsor-type-id,1,1)), substring($sponsor-type-id,2))"/>
+                                                            </label>
+                                                        </div>
+                                                    </div>
+                                                </xsl:for-each>
                                             </div>
                                             
                                             <hr/>

@@ -685,16 +685,19 @@ declare function translation:sponsors($tei as element(), $include-acknowledgemen
             if($include-acknowledgements) then
                 if($acknowledgment/tei:p and $sponsors/m:sponsor) then
                 
+                    (: Use the label from the entities file unless it's specified in the tei :)
                     let $sponsor-strings := 
-                        for $sponsor in $sponsors/m:sponsor
-                            let $translation-sponsor := $translation-sponsors[substring-after(@sameAs, 'sponsors.xml#') eq $sponsor/@xml:id]
-                            let $sponsor-name := 
-                                if($translation-sponsor/text() gt '') then
-                                    $translation-sponsor/text()
-                                else
-                                    replace($sponsor/m:label, $sponsors:prefixes, '')
+                        for $translation-sponsor in $translation-sponsors
+                            let $translation-sponsor-text := normalize-space(lower-case($translation-sponsor/text()))
+                            let $translation-sponsor-id := substring-after($translation-sponsor/@sameAs, 'sponsors.xml#')
+                            let $sponsor-label-text := normalize-space(lower-case($sponsors/m:sponsor[@xml:id eq $translation-sponsor-id]/m:label))
                         return
-                            normalize-space(lower-case($sponsor-name))
+                            if($translation-sponsor-text gt '') then
+                                normalize-space(lower-case($translation-sponsor-text))
+                            else if($sponsor-label-text gt '') then
+                                replace($sponsor-label-text, $sponsors:prefixes, '')
+                            else
+                                ()
                     
                     return
                         common:marked-section($acknowledgment, $sponsor-strings)
@@ -722,16 +725,16 @@ declare function translation:contributors($tei as element(), $include-acknowledg
             $contributors,
             if($include-acknowledgements) then
                 if($acknowledgment/tei:p and $contributors) then
+                
+                    (: Use the label from the entities file unless it's specified in the tei :)
                     let $contributor-strings := 
-                        for $contributor in $contributors
-                            let $translation-contributor := $translation-contributors[substring-after(@sameAs, 'contributors.xml#') eq $contributor/@xml:id]
-                            let $contributor-name := 
-                                if($translation-contributor/text() gt '') then
-                                    $translation-contributor/text()
-                                else
-                                    replace($contributor/m:label, $contributors:person-prefixes, '')
-                        return
-                            normalize-space(lower-case($contributor-name))
+                        for $translation-contributor in $translation-contributors
+                            let $contributor := $contributors[@xml:id eq substring-after($translation-contributor/@sameAs, 'contributors.xml#')]
+                        return 
+                            if($translation-contributor/text()) then
+                                normalize-space(lower-case($translation-contributor))
+                            else
+                                replace($contributor/m:label, $contributors:person-prefixes, '')
                     return
                         common:marked-section($acknowledgment, $contributor-strings)
                 else
@@ -802,11 +805,18 @@ declare function translation:update($tei as element()) as element()* {
                 else if(starts-with($request-parameter, 'sponsor-id-')) then
                     let $sponsor-index := substring-after($request-parameter, 'sponsor-id-')
                     let $sponsor-id := request:get-parameter(concat('sponsor-id-', $sponsor-index), '')
+                    let $sponsor-expression := request:get-parameter(concat('sponsor-expression-', $sponsor-index), '')
+                    let $sponsor-expression := 
+                        if($sponsor-expression gt '') then
+                            $sponsor-expression
+                        else
+                            $sponsors:sponsors//m:sponsor[@xml:id eq substring-after($sponsor-id, 'sponsors.xml#')]/m:label/text()
+                            
                     return
                         if($sponsor-id) then
                             element { QName("http://www.tei-c.org/ns/1.0", "sponsor") }{
                                 attribute sameAs { $sponsor-id },
-                                text { request:get-parameter(concat('sponsor-expression-', $sponsor-index), '') }
+                                text { $sponsor-expression }
                             }
                         else
                             ()
@@ -819,12 +829,18 @@ declare function translation:update($tei as element()) as element()* {
                     let $contributor-type-tokenized := tokenize($contributor-type, '-')
                     let $contributor-node-name := $contributor-type-tokenized[1]
                     let $contributor-role := if(count($contributor-type-tokenized) eq 2) then $contributor-type-tokenized[2] else ''
+                    let $contributor-expression := request:get-parameter(concat('contributor-expression-', $contributor-index), '')
+                    let $contributor-expression := 
+                        if($contributor-expression gt '') then
+                            $contributor-expression
+                        else
+                            $contributors:contributors//m:person[@xml:id eq substring-after($contributor-id, 'contributors.xml#')]/m:label/text()
                     return
                         if($contributor-id and $contributor-node-name and $contributor-role) then
                             element { QName("http://www.tei-c.org/ns/1.0", $contributor-node-name) }{
                                 attribute role { $contributor-role },
                                 attribute sameAs { $contributor-id },
-                                text { request:get-parameter(concat('contributor-expression-', $contributor-index), '') }
+                                text { $contributor-expression }
                             }
                         else
                             ()
@@ -849,15 +865,20 @@ declare function translation:update($tei as element()) as element()* {
                         text { request:get-parameter('publication-date', '') }
                     }
                 
-                (: 
-                    Text nodes / attributes can be handled generically
-                    - if zero set to '' 
-                :)
-                else if($request-parameter = ('translation-status')) then
-                    if(request:get-parameter($request-parameter, '') eq '0') then
-                        ''
-                    else
-                        request:get-parameter($request-parameter, '')
+                (: Attributes: sponsorship status / Translation status :)
+                else if($request-parameter = ('translation-status', 'sponsorship-status')) then
+                    attribute {
+                        if($request-parameter eq 'sponsorship-status') then
+                            'sponsored'
+                        else
+                            'status'
+                    } {
+                        (: force zero to '' :)
+                        if(request:get-parameter($request-parameter, '') eq '0') then
+                            ''
+                        else
+                            request:get-parameter($request-parameter, '')
+                    }
                 
                 (: Default to a string value :)
                 else if(not(ends-with($request-parameter, '[]'))) then

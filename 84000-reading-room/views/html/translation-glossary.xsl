@@ -2,7 +2,7 @@
 <xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" exclude-result-prefixes="#all" version="2.0">
     
     <xsl:import href="../../xslt/functions.xsl"/>
-    <xsl:import href="reading-room-page.xsl"/>
+    <xsl:import href="website-page.xsl"/>
     
     <xsl:output method="html" indent="no" doctype-system="about:legacy-compat"/>
     

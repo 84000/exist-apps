@@ -15,7 +15,8 @@
                         <span>
                             <ul class="breadcrumb">
                                 <li>
-                                    <a href="/section/lobby.html">
+                                    <a>
+                                        <xsl:attribute name="href" select="common:internal-link('/section/lobby.html', (), '', /m:response/@lang)"/>
                                         The Lobby
                                     </a>
                                 </li>
@@ -23,7 +24,8 @@
                         </span>
                         <span>
                             <div class="pull-right center-vertical">
-                                <a href="/section/all-translated.html" class="center-vertical together">
+                                <a class="center-vertical together">
+                                    <xsl:attribute name="href" select="common:internal-link('/section/all-translated.html', (), '', /m:response/@lang)"/>
                                     <span>
                                         <span class="btn-round white-red sml">
                                             <i class="fa fa-list"/>
@@ -67,6 +69,7 @@
                         
                         <xsl:call-template name="search">
                             <xsl:with-param name="action" select="'search.html'"/>
+                            <xsl:with-param name="lang" select="/m:response/@lang"/>
                         </xsl:call-template>
                         
                     </div>
@@ -105,7 +108,7 @@
             <xsl:with-param name="page-title" select="concat('Search results for ', m:search/m:request/text())"/>
             <xsl:with-param name="page-description" select="''"/>
             <xsl:with-param name="content" select="$content"/>
-            <xsl:with-param name="nav-tab" select="'reading-room'"/>
+            <xsl:with-param name="nav-tab" select="'#reading-room'"/>
         </xsl:call-template>
         
     </xsl:template>

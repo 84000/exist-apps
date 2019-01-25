@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<navigation xmlns="http://read.84000.co/ns/1.0">
+    <language xml:lang="en">
+        <item class="home" url="http://84000.co/">
+            <label>Home</label>
+        </item>
+        <item class="news" url="http://84000.co/news">
+            <label>News</label>
+        </item>
+        <item class="reading-room" url="#reading-room">
+            <label>Reading Room</label>
+            <item url="http://read.84000.co/section/lobby.html">
+                <label>The Lobby</label>
+            </item>
+            <item url="http://read.84000.co/section/all-translated.html">
+                <label>All Translated Texts</label>
+            </item>
+            <item url="http://read.84000.co/search.html">
+                <label>Search The Reading Room</label>
+            </item>
+        </item>
+        <item class="about" url="http://84000.co/about/vision">
+            <label>About</label>
+        </item>
+        <item class="resources" url="http://84000.co/resources/translator-training">
+            <label>Resources</label>
+        </item>
+        <item class="how-to-help" url="http://84000.co/how-you-can-help/donate/#sap">
+            <label>How You Can Help</label>
+        </item>
+    </language>
+</navigation>

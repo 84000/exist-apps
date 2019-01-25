@@ -2,7 +2,7 @@
 <xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:common="http://read.84000.co/common" xmlns:epub="http://www.idpf.org/2007/ops" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" exclude-result-prefixes="#all" version="2.0">
     
     <xsl:import href="../../xslt/tei-to-xhtml.xsl"/>
-    <xsl:import href="reading-room-page.xsl"/>
+    <xsl:import href="website-page.xsl"/>
     
     <!-- Look up environment variables -->
     <xsl:variable name="environment" select="doc(/m:response/@environment-path)/m:environment"/>
@@ -25,7 +25,7 @@
                     
                     <div class="panel-heading panel-heading-bold hidden-print">
                         <ul id="outline" class="breadcrumb">
-                            <xsl:copy-of select="common:breadcrumb-items(m:translation/m:parent | m:translation/m:parent//m:parent)"/>
+                            <xsl:copy-of select="common:breadcrumb-items(m:translation/m:parent | m:translation/m:parent//m:parent, /m:response/@lang)"/>
                         </ul>
                     </div>
                     
@@ -1059,47 +1059,66 @@
             <tbody>
                 <tr>
                     <td>
-                        <a href="http://84000.co">
+                        <a>
+                            <xsl:attribute name="href" select="common:homepage-link(/m:response/@lang)"/>
                             <i class="fa fa-home"/>
                         </a>
                     </td>
                     <td>
-                        <a href="http://84000.co">84000 Homepage</a>
+                        <a>
+                            <xsl:attribute name="href" select="common:homepage-link(/m:response/@lang)"/>
+                            <xsl:value-of select="'84000 Homepage'"/>
+                        </a>
                     </td>
                 </tr>
                 <tr>
                     <td>
-                        <a href="/">
+                        <a>
+                            <xsl:attribute name="href" select="common:internal-link('/', (), '', /m:response/@lang)"/>
                             <i class="fa fa-bookmark"/>
                         </a>
                     </td>
                     <td>
-                        <a href="/">Reading Room Lobby</a>
+                        <a>
+                            <xsl:attribute name="href" select="common:internal-link('/', (), '', /m:response/@lang)"/>
+                            <xsl:value-of select="'Reading Room Lobby'"/>
+                        </a>
                     </td>
                 </tr>
                 <tr>
                     <td>
-                        <a href="/section/all-translated.html">
+                        <a>
+                            <xsl:attribute name="href" select="common:internal-link('/section/all-translated.html', (), '', /m:response/@lang)"/>
                             <i class="fa fa-list"/>
                         </a>
                     </td>
                     <td>
-                        <a href="/section/all-translated.html">View Translated Texts</a>
+                        <a>
+                            <xsl:attribute name="href" select="common:internal-link('/section/all-translated.html', (), '', /m:response/@lang)"/>
+                            <xsl:value-of select="'View Translated Texts'"/>
+                        </a>
                     </td>
                 </tr>
                 <tr>
                     <td>
-                        <a href="/search.html">
+                        <a>
+                            <xsl:attribute name="href" select="common:internal-link('/search.html', (), '', /m:response/@lang)"/>
                             <i class="fa fa-search"/>
                         </a>
                     </td>
                     <td>
-                        <a href="/search.html">Search the Reading Room</a>
+                        <a href="/search.html">
+                            <xsl:attribute name="href" select="common:internal-link('/search.html', (), '', /m:response/@lang)"/>
+                            <xsl:value-of select="'Search the Reading Room'"/>
+                        </a>
                     </td>
                 </tr>
             </tbody>
         </table>
-        <a href="http://84000.co/how-you-can-help/donate/#sap" class="btn btn-primary btn-uppercase">Sponsor Translation</a>
+        <a href="http://84000.co/how-you-can-help/donate/#sap" class="btn btn-primary btn-uppercase">
+            <xsl:copy-of select="common:override-href(/m:response/@lang, 'zh', 'http://84000.co/ch-howhelp/donate')"/>
+            <xsl:value-of select="'Sponsor Translation'"/>
+        </a>
     </xsl:template>
     
     <!-- 

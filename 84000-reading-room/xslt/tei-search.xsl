@@ -12,7 +12,8 @@
     <xsl:variable name="reading-room-path" select="$environment/m:url[@id eq 'reading-room']/text()"/>
     
     <xsl:template name="search">
-        <xsl:param name="action"/>
+        <xsl:param name="action" required="yes"/>
+        <xsl:param name="lang" required="no"/>
         
         <div id="search-container" class="row">
             
@@ -20,6 +21,11 @@
                 
                 <form method="post" class="form-horizontal">
                     <xsl:attribute name="action" select="$action"/>
+                    <xsl:if test="$lang eq 'zh'">
+                        <input type="hidden" name="lang">
+                            <xsl:attribute name="value" select="$lang"/>
+                        </input>
+                    </xsl:if>
                     <div class="input-group">
                         <input type="text" name="s" id="search" class="form-control" placeholder="Search" required="required">
                             <xsl:attribute name="value" select="m:search/m:request/text()"/>
@@ -49,7 +55,7 @@
                                     
                                     <div class="col-sm-11 col-md-9">
                                         <a>
-                                            <xsl:attribute name="href" select="m:match-url($source)"/>
+                                            <xsl:attribute name="href" select="common:match-url($source, /m:response/@lang)"/>
                                             <xsl:choose>
                                                 <xsl:when test="$matches[@node-type eq 'title' and @type eq 'mainTitle' and @xml:lang eq 'en']">
                                                     <xsl:apply-templates select="$matches[@node-type eq 'title' and @type eq 'mainTitle' and @xml:lang eq 'en']"/>
@@ -92,7 +98,7 @@
                                                 <xsl:if test="m:toh/m:full">
                                                     <li>
                                                         <a>
-                                                            <xsl:attribute name="href" select="m:match-url($source)"/>
+                                                            <xsl:attribute name="href" select="common:match-url($source, /m:response/@lang)"/>
                                                             <xsl:choose>
                                                                 <xsl:when test="$matches[@key eq $toh-key and @node-type eq 'bibl']">
                                                                     <xsl:apply-templates select="$matches[@key eq $toh-key and @node-type eq 'bibl']"/>
@@ -164,8 +170,8 @@
                     </xsl:when>
                     <xsl:otherwise>
                         <br/>
-                        <p>
-                            No search results
+                        <p class="text-center text-muted italic">
+                            - No search results -
                         </p>
                     </xsl:otherwise>
                 </xsl:choose>
@@ -178,8 +184,9 @@
         <xsl:value-of select="translate(normalize-space(concat('', translate(., '&#xA;', ''), '')), '', '')"/>
     </xsl:template>
     
-    <xsl:function name="m:match-url" as="xs:string">
+    <xsl:function name="common:match-url" as="xs:string">
         <xsl:param name="node"/>
+        <xsl:param name="lang"/>
         <!-- Pass the m:match node with an m:source sibling or just pass the m:source -->
         <xsl:variable name="source" select="($node[self::m:source] | $node/preceding-sibling::m:source)[1]"/>
         <xsl:choose>
@@ -189,67 +196,77 @@
                     <xsl:when test="$source/@translation-status eq '1'">
                         <!-- Published translation -->
                         <xsl:variable name="page-url" select="concat($reading-room-path, '/translation/', $source/m:bibl[1]/m:toh/@key, '.html')"/>
-                        <xsl:choose>
-                            <!-- Has an xml:id -->
-                            <xsl:when test="$node/@xml:id">
-                                <xsl:value-of select="concat($page-url, '#', $node/@xml:id)"/>
-                            </xsl:when>
-                            <!-- Has an id -->
-                            <xsl:when test="$node/@tid">
-                                <xsl:value-of select="concat($page-url, '#node-', $node/@tid)"/>
-                            </xsl:when>
-                            <!-- Toh / Scope -->
-                            <xsl:when test="$node/@node-type = ('ref', 'biblScope')">
-                                <xsl:value-of select="concat($page-url, '#toh')"/>
-                            </xsl:when>
-                            <!-- Author -->
-                            <xsl:when test="$node/@node-type = ('author', 'sponsor')">
-                                <xsl:value-of select="concat($page-url, '#acknowledgements')"/>
-                            </xsl:when>
-                            <!-- Default to the beginning of the page -->
-                            <xsl:otherwise>
-                                <xsl:value-of select="$page-url"/>
-                            </xsl:otherwise>
-                        </xsl:choose>
+                        <xsl:variable name="fragment-id">
+                            <xsl:choose>
+                                <!-- Has an xml:id -->
+                                <xsl:when test="$node/@xml:id">
+                                    <xsl:value-of select="concat('#', $node/@xml:id)"/>
+                                </xsl:when>
+                                <!-- Has an id -->
+                                <xsl:when test="$node/@tid">
+                                    <xsl:value-of select="concat('#node-', $node/@tid)"/>
+                                </xsl:when>
+                                <!-- Toh / Scope -->
+                                <xsl:when test="$node/@node-type = ('ref', 'biblScope')">
+                                    <xsl:value-of select="'#toh'"/>
+                                </xsl:when>
+                                <!-- Author -->
+                                <xsl:when test="$node/@node-type = ('author', 'sponsor')">
+                                    <xsl:value-of select="'#acknowledgements'"/>
+                                </xsl:when>
+                                <!-- Default to the beginning of the page -->
+                                <xsl:otherwise>
+                                    <xsl:value-of select="''"/>
+                                </xsl:otherwise>
+                            </xsl:choose>
+                        </xsl:variable>
+                        <xsl:value-of select="common:internal-link($page-url, (), $fragment-id, $lang)"/>
+                        
                     </xsl:when>
                     
                     <xsl:otherwise>
                         <!-- Un-published text -->
                         <xsl:variable name="page-url" select="concat($reading-room-path, '/section/', $source/m:bibl[1]/m:parent/@id, '.html')"/>
-                        <xsl:choose>
-                            <xsl:when test="$node/@tid">
-                                <!-- Has an id that must be elaborated to work in the section/texts list -->
-                                <xsl:value-of select="concat($page-url, '#', $source/m:bibl[1]/m:toh/@key,'-node-', $node/@tid)"/>
-                            </xsl:when>
-                            <xsl:when test="$node[@node-type eq 'title' and @type eq 'otherTitle']">
-                                <!-- Has a collapsed title in the section/texts list -->
-                                <xsl:value-of select="concat($page-url, '#', $source/m:bibl[1]/m:toh/@key, '-title-variants')"/>
-                            </xsl:when>
-                            <!-- Default to the location in the section page -->
-                            <xsl:otherwise>
-                                <xsl:value-of select="concat($page-url, '#', $source/m:bibl[1]/m:toh/@key)"/>
-                            </xsl:otherwise>
-                        </xsl:choose>
+                        <xsl:variable name="fragment-id">
+                            <xsl:choose>
+                                <xsl:when test="$node/@tid">
+                                    <!-- Has an id that must be elaborated to work in the section/texts list -->
+                                    <xsl:value-of select="concat('#', $source/m:bibl[1]/m:toh/@key,'-node-', $node/@tid)"/>
+                                </xsl:when>
+                                <xsl:when test="$node[@node-type eq 'title' and @type eq 'otherTitle']">
+                                    <!-- Has a collapsed title in the section/texts list -->
+                                    <xsl:value-of select="concat('#', $source/m:bibl[1]/m:toh/@key, '-title-variants')"/>
+                                </xsl:when>
+                                <!-- Default to the location in the section page -->
+                                <xsl:otherwise>
+                                    <xsl:value-of select="concat('#', $source/m:bibl[1]/m:toh/@key)"/>
+                                </xsl:otherwise>
+                            </xsl:choose>
+                        </xsl:variable>
+                        <xsl:value-of select="common:internal-link($page-url, (), $fragment-id, $lang)"/>
                     </xsl:otherwise>
                 </xsl:choose>
                 
             </xsl:when>
             <xsl:when test="$source[@tei-type = ('section')]">
                 <xsl:variable name="page-url" select="concat($reading-room-path, '/section/', $source/@resource-id, '.html')"/>
-                <xsl:choose>
-                    <!-- Has an xml:id -->
-                    <xsl:when test="$node/@xml:id">
-                        <xsl:value-of select="concat($page-url, '#', $node/@xml:id)"/>
-                    </xsl:when>
-                    <!-- Has an id -->
-                    <xsl:when test="$node/@tid">
-                        <xsl:value-of select="concat($page-url, '#node-', $node/@tid)"/>
-                    </xsl:when>
-                    <!-- Default to the beginning of the page -->
-                    <xsl:otherwise>
-                        <xsl:value-of select="$page-url"/>
-                    </xsl:otherwise>
-                </xsl:choose>
+                <xsl:variable name="fragment-id">
+                    <xsl:choose>
+                        <!-- Has an xml:id -->
+                        <xsl:when test="$node/@xml:id">
+                            <xsl:value-of select="concat('#', $node/@xml:id)"/>
+                        </xsl:when>
+                        <!-- Has an id -->
+                        <xsl:when test="$node/@tid">
+                            <xsl:value-of select="concat('#node-', $node/@tid)"/>
+                        </xsl:when>
+                        <!-- Default to the beginning of the page -->
+                        <xsl:otherwise>
+                            <xsl:value-of select="''"/>
+                        </xsl:otherwise>
+                    </xsl:choose>
+                </xsl:variable>
+                <xsl:value-of select="common:internal-link($page-url, (), $fragment-id, $lang)"/>
             </xsl:when>
         </xsl:choose>
         
@@ -307,7 +324,7 @@
                     <div class="row">
                         <div class="col-sm-12">
                             <a class="small">
-                                <xsl:attribute name="href" select="m:match-url(.)"/>
+                                <xsl:attribute name="href" select="common:match-url(., /m:response/@lang)"/>
                                 read...
                             </a>
                         </div>

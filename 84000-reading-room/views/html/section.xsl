@@ -28,13 +28,14 @@
                                 
                                 <xsl:if test="$section-id eq 'all-translated'">
                                     <li>
-                                        <a href="/section/lobby.html">
+                                        <a>
+                                            <xsl:attribute name="href" select="common:internal-link('/section/lobby.html', (), '', /m:response/@lang)"/>
                                             <xsl:value-of select="'The Lobby'"/>
                                         </a>
                                     </li>
                                 </xsl:if>
                                 
-                                <xsl:copy-of select="common:breadcrumb-items(m:section/m:parent | m:section/m:parent//m:parent)"/>
+                                <xsl:copy-of select="common:breadcrumb-items(m:section/m:parent | m:section/m:parent//m:parent, /m:response/@lang)"/>
                                 
                             </ul>
                         </span>
@@ -45,7 +46,8 @@
                                 
                                 <xsl:if test="not($section-id eq 'all-translated')">
                                     
-                                    <a href="/section/all-translated.html" class="center-vertical together">
+                                    <a class="center-vertical together">
+                                        <xsl:attribute name="href" select="common:internal-link('/section/all-translated.html', (), '', /m:response/@lang)"/>
                                         <span>
                                             <span class="btn-round white-red sml">
                                                 <i class="fa fa-list"/>
@@ -204,7 +206,8 @@
                             <div class="col-md-offset-2 col-md-8">
                                 <div class="row">
                                     <div class="col-xs-6 col-sm-4">
-                                        <a href="/search.html" class="text-success center-vertical center-aligned">
+                                        <a class="text-success center-vertical center-aligned">
+                                            <xsl:attribute name="href" select="common:internal-link('/search.html', (), '', /m:response/@lang)"/>
                                             <span class="btn-round green sml">
                                                 <i class="fa fa-search"/>
                                             </span>
@@ -214,7 +217,8 @@
                                         </a>
                                     </div>
                                     <div class="col-xs-6 col-sm-4">
-                                        <a href="/section/all-translated.html" class="text-danger center-vertical center-aligned">
+                                        <a class="text-danger center-vertical center-aligned">
+                                            <xsl:attribute name="href" select="common:internal-link('/section/all-translated.html', (), '', /m:response/@lang)"/>
                                             <span class="btn-round red sml">
                                                 <i class="fa fa-list"/>
                                             </span>
@@ -225,6 +229,7 @@
                                     </div>
                                     <div class="col-xs-12 col-sm-4">
                                         <a href="http://84000.co/how-you-can-help/donate/#sap" class="center-vertical center-aligned">
+                                            <xsl:copy-of select="common:override-href(/m:response/@lang, 'zh', 'http://84000.co/ch-howhelp/donate')"/>
                                             <span class="btn-round sml">
                                                 <i class="fa fa-gift"/>
                                             </span>
@@ -292,7 +297,7 @@
             <xsl:with-param name="page-title" select="m:section/m:titles/m:title[@xml:lang = 'en']"/>
             <xsl:with-param name="page-description" select="normalize-space(m:section/m:abstract/tei:p[1]/text())"/>
             <xsl:with-param name="content" select="$content"/>
-            <xsl:with-param name="nav-tab" select="'reading-room'"/>
+            <xsl:with-param name="nav-tab" select="'#reading-room'"/>
         </xsl:call-template>
         
     </xsl:template>
@@ -496,7 +501,7 @@
                                             <xsl:choose>
                                                 <xsl:when test="@status = '1'">
                                                     <a>
-                                                        <xsl:attribute name="href" select="concat('/translation/', m:source/@key, '.html')"/> 
+                                                        <xsl:attribute name="href" select="common:internal-link(concat('/translation/', m:source/@key, '.html'), (), '', /m:response/@lang)"/>
                                                         <xsl:copy-of select="normalize-space(m:titles/m:title[@xml:lang='en'][not(@type)])"/> 
                                                     </a>
                                                 </xsl:when>
@@ -518,7 +523,7 @@
                                     <hr/>
                                     in
                                     <ul class="breadcrumb">
-                                        <xsl:copy-of select="common:breadcrumb-items(m:parent | m:parent//m:parent)"/>
+                                        <xsl:copy-of select="common:breadcrumb-items(m:parent | m:parent//m:parent, /m:response/@lang)"/>
                                     </ul>
                                 </xsl:if>
                                 
@@ -610,7 +615,7 @@
                                     <ul class="translation-options">
                                         <li>
                                             <a>
-                                                <xsl:attribute name="href" select="concat('/translation/', m:source/@key, '.html')"/>
+                                                <xsl:attribute name="href" select="common:internal-link(concat('/translation/', m:source/@key, '.html'), (), '', /m:response/@lang)"/>
                                                 <i class="fa fa-laptop"/>
                                                 <xsl:value-of select="'Read online'"/>
                                             </a>
@@ -770,7 +775,7 @@
                     
                     <div data-match-height="outline-section" data-match-height-media=".sm,.md,.lg">
                         <a target="_self" class="block-link">
-                            <xsl:attribute name="href" select="concat('/section/', @id/string(), '.html')"/> 
+                            <xsl:attribute name="href" select="common:internal-link(concat('/section/', @id/string(), '.html'), (), '', /m:response/@lang)"/>
                             <h3>
                                 <xsl:value-of select="m:titles/m:title[@xml:lang='en']/text()"/> 
                             </h3>
