@@ -8,8 +8,6 @@ declare namespace file="http://exist-db.org/xquery/file";
 import module namespace common="http://read.84000.co/common" at "../../84000-reading-room/modules/common.xql";
 import module namespace repair="http://exist-db.org/xquery/repo/repair" at "resource:org/exist/xquery/modules/expathrepo/repair.xql";
 
-(: declare variable $deployment:git-conf := $common:environment//m:git-conf; :)
-
 declare variable $deployment:snapshot-conf := $common:environment//m:snapshot-conf;
 declare variable $deployment:deployment-conf := $common:environment//m:deployment-conf;
 
@@ -23,19 +21,6 @@ declare function deployment:execute-options($working-dir as xs:string) as elemen
                 <env name="{ upper-case($env-var/@id) }" value="/{ $env-var/text() }"/>
         }
         </environment>
-        <!--<environment>
-        {
-            if($deployment:git-conf/m:path)then
-                <env name="PATH" value="/{ $deployment:git-conf/m:path/text() }"/>
-            else
-                ()
-            ,
-            if($deployment:git-conf/m:home)then
-                <env name="HOME" value="/{ $deployment:git-conf/m:home/text() }"/>
-            else
-                ()
-        }
-        </environment>-->
     </options>
 };
 
