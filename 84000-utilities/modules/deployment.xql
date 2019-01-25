@@ -8,13 +8,24 @@ declare namespace file="http://exist-db.org/xquery/file";
 import module namespace common="http://read.84000.co/common" at "../../84000-reading-room/modules/common.xql";
 import module namespace repair="http://exist-db.org/xquery/repo/repair" at "resource:org/exist/xquery/modules/expathrepo/repair.xql";
 
+declare variable $deployment:env-vars := $common:environment//m:env-vars;
+
 declare variable $deployment:git-conf := $common:environment//m:git-conf;
+
 declare variable $deployment:snapshot-conf := $common:environment//m:snapshot-conf;
 declare variable $deployment:deployment-conf := $common:environment//m:deployment-conf;
 
-declare function deployment:git-options($working-dir as xs:string) as element() {
+declare function deployment:execute-options($working-dir as xs:string) as element() {
     <options>
         <workingDir>/{ $working-dir }</workingDir>
+        <!--
+        <environment>
+        {
+            for $env-var in $deployment:env-vars
+            return 
+                <env name="{ upper-case($env-var/@id) }" value="/{ $env-var/text() }"/>
+        }
+        </environment>-->
         <environment>
         {
             if($deployment:git-conf/m:path)then
@@ -74,7 +85,7 @@ declare function deployment:commit-data($action as xs:string, $sync-resource as 
             </sync>
             {
                 if($sync) then
-                    deployment:git-push($git-add, $commit-msg, deployment:git-options($repo-path))
+                    deployment:git-push($git-add, $commit-msg, deployment:execute-options($repo-path))
                 else
                     ()
             }
@@ -90,7 +101,9 @@ declare function deployment:deploy-apps($admin-password as xs:string, $commit-ms
     let $pull-collection := $deployment:deployment-conf/m:apps/m:app[@collection eq $get-app]/@collection
     
     let $admin-password-correct := xmldb:authenticate('/db', 'admin', $admin-password)
-    let $git-options := deployment:git-options($repo-path)
+    
+    let $git-options := deployment:execute-options($repo-path)
+    let $exist-options := deployment:execute-options($exist-path)
     
     (: Sync app :)
     let $sync :=
@@ -112,9 +125,7 @@ declare function deployment:deploy-apps($admin-password as xs:string, $commit-ms
                         if(count($file-sync//file:update) gt 0) then
                             process:execute(
                                 ('bin/backup.sh', '-u', 'admin', '-p', $admin-password, '-b', concat('/db/apps/', $push-collection), '-d', concat('/', $repo-path, '/', $push-collection, '/zip/', $push-collection, '.zip')), 
-                                <options>
-                                    <workingDir>/{ $exist-path }</workingDir>
-                                </options>
+                                $exist-options
                             )
                         else
                             ()
@@ -125,9 +136,7 @@ declare function deployment:deploy-apps($admin-password as xs:string, $commit-ms
                 let $restore :=
                     process:execute(
                         ('bin/backup.sh', '-u', 'admin', '-p', $admin-password, '-P', $admin-password, '-r', concat('/', $repo-path, '/', $pull-collection, '/zip/', $pull-collection, '.zip')),
-                        <options>
-                            <workingDir>/{ $exist-path }</workingDir>
-                        </options>
+                        $exist-options
                     )
                 let $clean-up := 
                     (
