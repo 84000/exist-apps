@@ -209,7 +209,7 @@
         <xsl:for-each select="$tohs">
             
             <xsl:variable name="toh-key" select="@key"/>
-            <xsl:variable name="toh-location" select="m:translation/m:location[@key eq $toh-key]"/>
+            <xsl:variable name="toh-location" select="/m:response/m:translation/m:location[@key eq $toh-key]"/>
             
             <input type="hidden">
                 <xsl:attribute name="name" select="concat('location-', $toh-key)"/>

@@ -120,41 +120,32 @@ declare function translation-status:update($text-id as xs:string) as element()? 
             attribute version { $tei-version-str },
             attribute word-count { $word-count },
             attribute glossary-count { $glossary-count },
-            if(request:get-parameter('action-note', '')) then
-                if(not(compare($existing-value/m:action-note/text(), request:get-parameter('action-note', '')) eq 0))then
-                    element action-note {
-                        attribute last-edited { current-dateTime() },
-                        attribute last-edited-by { common:user-name() },
-                        text { request:get-parameter('action-note', '') }
-                    }
-                else
-                    $existing-value/m:action-note
+            if('action-note' = request:get-parameter-names() and not(compare($existing-value/m:action-note/text(), request:get-parameter('action-note', '')) eq 0))then
+                element action-note {
+                    attribute last-edited { current-dateTime() },
+                    attribute last-edited-by { common:user-name() },
+                    text { request:get-parameter('action-note', '') }
+                }
             else
-                ()
+                $existing-value/m:action-note
             ,
-            if(request:get-parameter('progress-note', '')) then
-                if(not(compare($existing-value/m:progress-note/text(), request:get-parameter('progress-note', '')) eq 0))then
-                    element progress-note {
-                        attribute last-edited { current-dateTime() },
-                        attribute last-edited-by { common:user-name() },
-                        text { request:get-parameter('progress-note', '') }
-                    }
-                else
-                    $existing-value/m:progress-note
+            if('progress-note' = request:get-parameter-names() and not(compare($existing-value/m:progress-note/text(), request:get-parameter('progress-note', '')) eq 0))then
+                element progress-note {
+                    attribute last-edited { current-dateTime() },
+                    attribute last-edited-by { common:user-name() },
+                    text { request:get-parameter('progress-note', '') }
+                }
             else
-                ()
+                $existing-value/m:progress-note
             ,
-            if(request:get-parameter('text-note', '')) then
-                if(not(compare($existing-value/m:text-note/text(), request:get-parameter('text-note', '')) eq 0))then
-                    element text-note {
-                        attribute last-edited { current-dateTime() },
-                        attribute last-edited-by { common:user-name() },
-                        text { request:get-parameter('text-note', '') }
-                    }
-                else
-                    $existing-value/m:text-note
+            if('text-note' = request:get-parameter-names() and not(compare($existing-value/m:text-note/text(), request:get-parameter('text-note', '')) eq 0))then
+                element text-note {
+                    attribute last-edited { current-dateTime() },
+                    attribute last-edited-by { common:user-name() },
+                    text { request:get-parameter('text-note', '') }
+                }
             else
-                ()
+                $existing-value/m:text-note
             ,
             for $task in $existing-value/m:task
             return
