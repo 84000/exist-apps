@@ -39,7 +39,7 @@
                             <div class="row">
                                 <div class="col-sm-offset-2 col-sm-8">
                                     
-                                    <div class="alert alert-warning small text-center">
+                                    <div class="alert alert-info small text-center">
                                         <p>
                                             This function makes a snapshot of the selected resource(s) and pushes it to the public 
                                             <a target="_blank" class="alert-link">

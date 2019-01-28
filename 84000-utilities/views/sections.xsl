@@ -36,7 +36,7 @@
                         
                         <div class="tab-content">
                             
-                            <div class="alert alert-warning small text-center">
+                            <div class="alert alert-info small text-center">
                                 <p>
                                     Expresses the structure of divisions in the 84000 version of the canon. 
                                     This data in xml format: 

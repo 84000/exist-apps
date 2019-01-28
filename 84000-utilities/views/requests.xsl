@@ -36,7 +36,7 @@
                         
                         <div class="tab-content">
                             
-                            <div class="alert alert-warning small text-center">
+                            <div class="alert alert-info small text-center">
                                 <p>
                                     This does <strong>NOT</strong> reflect Reading Room site traffic as most requests will be mediated by the CDN. This will however reflect the full diversity of requests made to the server.
                                 </p>

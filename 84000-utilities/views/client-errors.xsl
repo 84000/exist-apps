@@ -36,7 +36,7 @@
                         
                         <div class="tab-content">
                             
-                            <div class="alert alert-warning small text-center">
+                            <div class="alert alert-info small text-center">
                                 <p>
                                     This view lists client errors i.e. urls that were requested that returned an error to the client.
                                 </p>

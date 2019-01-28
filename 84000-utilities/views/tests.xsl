@@ -37,7 +37,7 @@
                         <div class="tab-content">
                             <div class="row">
                                 <div class="col-sm-6 col-sm-offset-3">
-                                    <div class="alert alert-warning small text-center">
+                                    <div class="alert alert-info small text-center">
                                         <p>Each new release of the software should be validated against these tests.</p>
                                     </div>
                                     <ul>

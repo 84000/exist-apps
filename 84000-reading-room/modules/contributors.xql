@@ -128,10 +128,16 @@ declare function contributors:acknowledgement($tei as element(), $content) as el
         }
 };
 
-declare function contributors:teams($include-acknowledgements as xs:boolean) as element(){
-
+declare function contributors:teams($include-hidden as xs:boolean, $include-acknowledgements as xs:boolean) as element(){
+    
     let $teams := 
-        for $team in $contributors:contributors/m:contributors/m:team
+        if($include-hidden) then
+            $contributors:contributors/m:contributors/m:team
+        else
+            $contributors:contributors/m:contributors/m:team[not(@rend eq 'hidden')]
+    
+    let $teams := 
+        for $team in $teams
         order by normalize-space(replace($team/m:label/text(), $contributors:team-prefixes,''))
         return $team
     

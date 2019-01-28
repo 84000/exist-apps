@@ -71,7 +71,7 @@ return
             </translation>,
             tei-content:text-statuses-selected(tei-content:translation-status($tei)),
             contributors:persons(false()),
-            contributors:teams(false()),
+            contributors:teams(true(), false()),
             $tei-content:title-types,
             $contributors:types,
             element { QName('http://read.84000.co/ns/1.0', 'translation-status') } {

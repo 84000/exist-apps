@@ -22,7 +22,7 @@
                         <div class="tab-content">
                             <div class="row">
                                 <div class="col-sm-6 col-sm-offset-3">
-                                    <div class="alert alert-warning small text-center">
+                                    <div class="alert alert-info small text-center">
                                         <p> Each layout example in the list should be checked on <strong>desktop</strong>, <strong>mobile</strong> and <strong>print</strong> each time the styles are
                                             changed. </p>
                                     </div>
