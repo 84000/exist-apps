@@ -26,8 +26,7 @@ return
         $common:app-id,
         (
             $header,
-            contributors:teams(false(), false()),
-            contributors:persons(false()),
+            contributors:teams(false(), false(), true()),
             contributors:regions(true()),
             contributors:institution-types(true()),
             translations:summary()

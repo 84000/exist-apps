@@ -111,15 +111,4 @@
         </div>
     </xsl:template>
     
-    <xsl:template name="link-to-top">
-        <!-- Link to top of page -->
-        <div class="hidden-print">
-            <div id="link-to-top-container" class="fixed-btn-container">
-                <a href="#top" id="link-to-top" class="btn-round scroll-to-anchor" title="Return to the top of the page">
-                    <i class="fa fa-arrow-up" aria-hidden="true"/>
-                </a>
-            </div>
-        </div>
-    </xsl:template>
-    
 </xsl:stylesheet>

@@ -74,6 +74,21 @@
                                             
                                             <xsl:copy-of select="m:text-input('Name','name', m:team/m:label, 9, 'required')"/>
                                             
+                                            <div class="form-group">
+                                                <div class="col-sm-offset-3 col-sm-9">
+                                                    <div class="checkbox">
+                                                        <label>
+                                                            <input type="checkbox" name="hidden" id="hidden" value="1">
+                                                                <xsl:if test="m:team[@rend eq 'hidden']">
+                                                                    <xsl:attribute name="checked" select="'checked'"/>
+                                                                </xsl:if>
+                                                            </input>
+                                                            <xsl:value-of select="'Hidden'"/>
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
                                             <hr/>
                                             
                                             <div>

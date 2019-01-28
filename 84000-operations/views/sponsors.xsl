@@ -131,8 +131,6 @@
                 </div>
             </div>
             
-            <xsl:call-template name="link-to-top"/>
-            
         </xsl:variable>
         
         <xsl:call-template name="reading-room-page">

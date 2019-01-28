@@ -76,6 +76,11 @@
                                                     <xsl:attribute name="href" select="concat('/edit-translator-team.html?id=', $team-id)"/>
                                                     <xsl:value-of select="m:sort-name"/>
                                                 </a>
+                                                <xsl:if test="@rend eq 'hidden'">
+                                                    <span class="label label-default">
+                                                        <xsl:value-of select="'Hidden'"/>
+                                                    </span>
+                                                </xsl:if>
                                                 <br/>
                                                 <span class="small text-muted">
                                                     <xsl:value-of select="$team-id"/>
@@ -120,8 +125,6 @@
                     </div>
                 </div>
             </div>
-            
-            <xsl:call-template name="link-to-top"/>
             
         </xsl:variable>
         

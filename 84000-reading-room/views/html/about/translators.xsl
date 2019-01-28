@@ -19,7 +19,7 @@
                                 <xsl:value-of select="m:label"/>
                             </h3>
                             <ul class="list-unstyled">
-                                <xsl:for-each select="/m:response/m:contributor-persons/m:person[m:team/@id = $team-id]">
+                                <xsl:for-each select="m:person">
                                     <li>
                                         <xsl:value-of select="m:label"/>
                                     </li>
@@ -48,7 +48,7 @@
                             <div class="heading">Number of Translators</div>
                             <div class="data">
                                 <span>
-                                    <xsl:value-of select="format-number(count(m:contributor-persons/m:person), '#,###')"/>
+                                    <xsl:value-of select="format-number(count(distinct-values(//m:team/m:person/@xml:id)), '#,###')"/>
                                 </span> translators
                             </div>
                         </div>

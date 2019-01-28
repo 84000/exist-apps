@@ -39,7 +39,7 @@ return
                 { if($new-id) then <updated/> else () }
             </updates>,
             $translator,
-            contributors:teams(true(), false()),
+            contributors:teams(true(), false(), false()),
             contributors:institutions(false())
         )
     )

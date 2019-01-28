@@ -139,7 +139,7 @@
                                     
                                     <xsl:if test="//m:execute">
                                         <div class="well well-sm">
-                                            <code>
+                                            <code class="small">
                                                 <xsl:for-each select="//execution">
                                                     <xsl:if test="commandline/text()">
                                                         $ <xsl:value-of select="commandline/text()"/>

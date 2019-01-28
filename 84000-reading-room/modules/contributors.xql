@@ -128,7 +128,7 @@ declare function contributors:acknowledgement($tei as element(), $content) as el
         }
 };
 
-declare function contributors:teams($include-hidden as xs:boolean, $include-acknowledgements as xs:boolean) as element(){
+declare function contributors:teams($include-hidden as xs:boolean, $include-acknowledgements as xs:boolean, $include-persons as xs:boolean) as element(){
     
     let $teams := 
         if($include-hidden) then
@@ -146,7 +146,7 @@ declare function contributors:teams($include-hidden as xs:boolean, $include-ackn
         {
             for $team in $teams
             return
-                contributors:team($team/@xml:id, $include-acknowledgements, false())
+                contributors:team($team/@xml:id, $include-acknowledgements, $include-persons)
         }
         </contributor-teams>
 };
@@ -332,13 +332,17 @@ declare function contributors:update-team($team as node()?) as xs:string {
             concat('team-', xs:string(contributors:next-team-id()))
     
     let $new-value := 
-        <team xmlns="http://read.84000.co/ns/1.0" xml:id="{ $team-id }">{
-            <label>
-            {
-                request:get-parameter('name', '')
+        element { QName('http://read.84000.co/ns/1.0', 'team') } {
+            attribute xml:id { $team-id },
+            if(request:get-parameter('hidden', '') eq '1') then
+                attribute rend { 'hidden' }
+            else
+                ()
+            ,
+            element { QName('http://read.84000.co/ns/1.0', 'label') } {
+                text { request:get-parameter('name', '') }
             }
-            </label>
-        }</team>
+        }
     
     let $parent := $contributors:contributors/m:contributors
     
