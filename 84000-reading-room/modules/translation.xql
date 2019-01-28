@@ -735,10 +735,11 @@ declare function translation:contributors($tei as element(), $include-acknowledg
                                 normalize-space(lower-case($translation-contributor))
                             else
                                 replace($contributor/m:label, $contributors:person-prefixes, '')
+                    
                     return
                         common:marked-section($acknowledgment, $contributor-strings)
                 else
-                    ()
+                    $acknowledgment
             else
                 ()
         )}
