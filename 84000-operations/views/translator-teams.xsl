@@ -89,7 +89,7 @@
                                             
                                             <div class="col-sm-4">
                                                 <ul>
-                                                    <xsl:for-each select="/m:response/m:contributor-persons/m:person[m:team/@id = $team-id]">
+                                                    <xsl:for-each select="m:person">
                                                         <xsl:variable name="translator" select="."/>
                                                         <li>
                                                             <xsl:value-of select="$translator/m:label"/>

@@ -13,13 +13,13 @@
             <div class="container">
                 <div class="row">
                     <div class="col-md-9 col-md-merge-right">
-                        <div class="panel panel-default main-panel foreground">
+                        <div class="panel panel-default panel-about main-panel foreground">
                             
                             <div class="panel-img-header thumbnail">
                                 <img data-max-horizontal-crop="50">
                                     <xsl:attribute name="src" select="/m:response/m:header/m:img/text()"/>
                                 </img>
-                                <h1 class="bg-red">
+                                <h1>
                                     <xsl:value-of select="/m:response/m:header/m:title/text()"/>
                                 </h1>
                             </div>
