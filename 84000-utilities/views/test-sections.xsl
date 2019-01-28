@@ -58,21 +58,21 @@
                             <a>
                                 <xsl:attribute name="href" select="concat($reading-room-path, '/section/', $text-id, '.html')"/>
                                 <xsl:attribute name="target" select="concat($text-id, '-html')"/>
-                                .html
+                                <xsl:value-of select="'.html'"/>
                             </a>
                         </li>
                         <li>
                             <a>
                                 <xsl:attribute name="href" select="concat($reading-room-path, '/section/', $text-id, '.xml')"/>
                                 <xsl:attribute name="target" select="concat($text-id, '-xml')"/>
-                                .xml
+                                <xsl:value-of select="'.xml'"/>
                             </a>
                         </li>
                         <li>
                             <a>
                                 <xsl:attribute name="href" select="concat($reading-room-path, '/section/', $text-id, '.tei')"/>
                                 <xsl:attribute name="target" select="concat($text-id, '-tei')"/>
-                                .tei
+                                <xsl:value-of select="'.tei'"/>
                             </a>
                         </li>
                     </ul>

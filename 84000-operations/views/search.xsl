@@ -290,12 +290,12 @@
                                                     <xsl:choose>
                                                         <xsl:when test="m:translation/@sponsored eq 'full'">
                                                             <div class="label label-danger">
-                                                                Fully sponsored
+                                                                <xsl:value-of select="'Fully sponsored'"/>
                                                             </div>
                                                         </xsl:when>
                                                         <xsl:when test="m:translation/@sponsored eq 'part'">
                                                             <div class="label label-warning">
-                                                                Part sponsored
+                                                                <xsl:value-of select="'Part sponsored'"/>
                                                             </div>
                                                         </xsl:when>
                                                     </xsl:choose>
@@ -308,14 +308,14 @@
                                                             <li>
                                                                 <a class="small">
                                                                     <xsl:attribute name="href" select="concat('/edit-text-header.html?id=', $text-id)"/>
-                                                                    Edit headers
+                                                                    <xsl:value-of select="'Edit headers'"/>
                                                                 </a>
                                                             </li>
                                                         </xsl:if>
                                                         <li>
                                                             <a class="small">
                                                                 <xsl:attribute name="href" select="concat('/edit-text-sponsors.html?id=', $text-id)"/>
-                                                                Edit sponsors
+                                                                <xsl:value-of select="'Edit sponsors'"/>
                                                             </a>
                                                         </li>
                                                     </ul>

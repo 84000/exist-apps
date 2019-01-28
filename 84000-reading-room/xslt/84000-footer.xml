@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<eft-footer xmlns="http://read.84000.co/ns/1.0">
+    <translation id="copyright">
+        <text xml:lang="en">Copyright © 2011-2018 </text>
+        <text xml:lang="zh">Copyright © 2011-2018 </text>
+    </translation>
+    <translation id="org-name">
+        <text xml:lang="en">84000: Translating the Words of the Buddha</text>
+        <text xml:lang="zh">84000: Translating the Words of the Buddha</text>
+    </translation>
+    <translation id="rights-reserved">
+        <text xml:lang="en"> - All Rights Reserved</text>
+        <text xml:lang="zh"> - All Rights Reserved</text>
+    </translation>
+    <translation id="contact-label">
+        <text xml:lang="en">Contact: </text>
+        <text xml:lang="zh">Contact: </text>
+    </translation>
+    <translation id="contact-link">
+        <text xml:lang="en">mailto:info@84000.co</text>
+        <text xml:lang="zh">mailto:info@84000.co</text>
+    </translation>
+    <translation id="contact-link-text">
+        <text xml:lang="en">info@84000.co</text>
+        <text xml:lang="zh">info@84000.co</text>
+    </translation>
+    <translation id="website-label">
+        <text xml:lang="en">Website: </text>
+        <text xml:lang="zh">Website: </text>
+    </translation>
+    <translation id="website-link">
+        <text xml:lang="en">http://84000.co</text>
+        <text xml:lang="zh">http://84000.co/ch</text>
+    </translation>
+    <translation id="website-link-text">
+        <text xml:lang="en">http://84000.co</text>
+        <text xml:lang="zh">http://84000.co/ch</text>
+    </translation>
+    <translation id="privacy-label">
+        <text xml:lang="en">Privacy Policy</text>
+        <text xml:lang="zh">Privacy Policy</text>
+    </translation>
+    <translation id="privacy-link">
+        <text xml:lang="en">http://84000.co/about/privacy-policy</text>
+        <text xml:lang="zh">http://84000.co/about/privacy-policy</text>
+    </translation>
+</eft-footer>

@@ -2,7 +2,7 @@
 <xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:m="http://read.84000.co/ns/1.0" xmlns:pkg="http://expath.org/ns/pkg" xmlns:xhtml="http://www.w3.org/1999/xhtml" version="2.0" exclude-result-prefixes="#all">
     
     <!-- include navigation stylesheet -->
-    <xsl:import href="../../xslt/navigation.xsl"/>
+    <xsl:import href="../../xslt/84000-html.xsl"/>
     <xsl:import href="../../xslt/functions.xsl"/>
     
     <!-- Look up environment variables -->
@@ -14,8 +14,9 @@
     <xsl:variable name="app-version" select="doc('../../expath-pkg.xml')/pkg:package/@version"/>
     <xsl:variable name="ga-tracking-id" select="$environment/m:google-analytics/@tracking-id"/>
     
-    <!-- get navigation config -->
-    <xsl:variable name="navigation" select="doc('../../xslt/navigation.xml')/m:navigation"/>
+    <!-- get shared html -->
+    <xsl:variable name="eft-header" select="doc('../../xslt/84000-header.xml')/m:eft-header"/>
+    <xsl:variable name="eft-footer" select="doc('../../xslt/84000-footer.xml')/m:eft-footer"/>
     
     <!-- override navigation params -->
     <xsl:variable name="lang" select="if(/m:response/@lang) then /m:response/@lang else 'en'"/>
@@ -53,8 +54,10 @@
     
     <xsl:variable name="local-comms-url" select="$communications-site-path"/>
     <xsl:variable name="local-reading-room-url" select="$reading-room-path"/>
+    <xsl:variable name="local-front-end-url" select="$front-end-path"/>
+    <xsl:variable name="default-search-form-target" select="'reading-room'"/>
     
-    <xsl:output method="html" indent="no" doctype-system="about:legacy-compat"/>
+    <xsl:output method="html" indent="no" doctype-system="about:legacy-compat" encoding="UTF-8"/>
     
     <!-- html head tag -->
     <xsl:template name="html-head">
@@ -145,26 +148,8 @@
         <xsl:param name="front-end-path" required="yes"/>
         <xsl:param name="ga-tracking-id"/>
         
-        <footer class="hidden-print">
-            <div class="container" itemscope="itemscope" itemtype="http://schema.org/Organization">
-                Copyright © 2011-2018 <span itemprop="name">84000: Translating the Words of the Buddha</span> - All Rights Reserved
-                <br/>
-                Contact: <a href="mailto:info@84000.co" itemprop="email">info@84000.co</a> | 
-                Website: <a href="http://84000.co" itemprop="url">http://84000.co</a> | 
-                <a href="http://84000.co/about/privacy-policy" itemprop="url">Privacy Policy</a>
-            </div>
-        </footer>
-        
-        <span id="media_test">
-            <span class="visible-xs"/>
-            <span class="visible-sm"/>
-            <span class="visible-md"/>
-            <span class="visible-lg"/>
-            <span class="visible-print"/>
-            <span class="visible-mobile"/>
-            <span class="visible-desktop"/>
-            <span class="event-hover"/>
-        </span>
+        <!-- Shared footer -->
+        <xsl:apply-templates select="$eft-footer"/>
         
         <script type="text/javascript">
             function downloadJSAtOnload() {
@@ -231,112 +216,11 @@
                     <div class="container"/>
                 </div>
                 
-                <!-- Navigation -->
-                <nav class="navbar navbar-default">
-                    
-                    <div class="brand-header">
-                        <div class="container">
-                            <div class="navbar-header">
-                                <div class="navbar-brand center-vertical">
-                                    
-                                    <a href="http://84000.co" class="logo">
-                                        <img>
-                                            <xsl:attribute name="src" select="concat($front-end-path, '/imgs/logo.png')"/>
-                                        </img>
-                                    </a>
-                                    
-                                    <span class="tag-line">
-                                        Translating the words of the Buddha
-                                    </span>
-                                    
-                                    <span class="nav-button">
-                                        <button id="navigation-button" class="btn-round navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
-                                            <i class="fa fa-bars" aria-hidden="true"/>
-                                        </button>
-                                    </span>
-                                    
-                                </div>
-                            </div>
-                        </div>
-                        
-                    </div>
-                    
-                    <div class="container">
-                        <div id="navbar" class="navbar-collapse collapse" aria-expanded="false">
-                            
-                            <xsl:apply-templates select="$navigation"/>
-                            
-                            <form method="get" role="search" name="searchformTop" class="navbar-form navbar-right">
-                                <xsl:attribute name="action" select="concat($reading-room-path, '/search.html')"/>
-                                <xsl:copy-of select="common:localise-form($lang)"/>
-                                <div id="search-controls" class="input-group">
-                                    <input type="text" name="s" class="form-control" placeholder="Search..."/>
-                                    <input type="submit" value="Submit" class="hidden"/>
-                                    <span class="input-group-btn">
-                                        <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                            <i class="fa fa-search"/> <span class="caret"/>
-                                        </button>
-                                        <ul class="dropdown-menu">
-                                            <li>
-                                                <a class="on-click-submit">
-                                                    <xsl:attribute name="href" select="concat($reading-room-path, '/search.html')"/>
-                                                    <i class="fa fa-caret-right"/>
-                                                    Search the Reading Room
-                                                </a>
-                                            </li>
-                                            <li>
-                                                <a class="on-click-submit">
-                                                    <xsl:attribute name="href" select="concat($communications-site-path, '/')"/>
-                                                    <i class="fa fa-caret-right"/>
-                                                    Search the Website
-                                                </a>
-                                            </li>
-                                        </ul>
-                                    </span>
-                                </div>
-                                
-                                <div id="language-links">
-                                    <a href="?lang=en">English</a> | <a href="?lang=zh">中文</a>
-                                </div>
-                                
-                            </form>
-                            
-                            <div id="social" class="center-vertical">
-                                <span>Follow our work:</span>
-                                <a href="mailto:info@84000.co" target="_blank">
-                                    <i class="fa fa-envelope-square" aria-hidden="true"/>
-                                </a>
-                                <a href="http://www.facebook.com/Translate84000" target="_blank">
-                                    <i class="fa fa-facebook-square" aria-hidden="true"/>
-                                </a>
-                                <a href="https://twitter.com/Translate84000" target="_blank">
-                                    <i class="fa fa-twitter-square" aria-hidden="true"/>
-                                </a>
-                                <a href="http://www.youtube.com/Translate84000" target="_blank">
-                                    <i class="fa fa-youtube-square" aria-hidden="true"/>
-                                </a>
-                            </div>
-                            
-                        </div>
-                    </div>
-                    
-                </nav>
+                <!-- Shared header -->
+                <xsl:apply-templates select="$eft-header"/>
                 
                 <!-- Content -->
                 <xsl:copy-of select="$content"/>
-                <!-- 
-                    Potentially apply templates to parse / internationalise all links and forms
-                    <xsl:apply-templates select="$content"/>
-                -->
-                
-                <!-- Link to top of page -->
-                <div class="hidden-print">
-                    <div id="link-to-top-container" class="fixed-btn-container">
-                        <a href="#top" id="link-to-top" class="btn-round scroll-to-anchor" title="Return to the top of the page">
-                            <i class="fa fa-arrow-up" aria-hidden="true"/>
-                        </a>
-                    </div>
-                </div>
                 
                 <!-- Get the common <footer> -->
                 <xsl:call-template name="html-footer">
@@ -473,34 +357,5 @@
         </html>
         
     </xsl:template>
-    
-    <!-- Internationalise the html
-    <xsl:template match="xhtml:form">
-        <form>
-            <xsl:copy-of select="@*"/>
-            <xsl:copy-of select="common:localise-form($lang)"/>
-            <xsl:copy-of select="node()"/>
-        </form>
-    </xsl:template>
-    
-    <xsl:template match="xhtml:a[starts-with(@href, $reading-room-path)]">
-        <a>
-            <xsl:copy-of select="@*"/>
-            <xsl:attribute name="href">
-                <xsl:call-template name="internal-link">
-                    <xsl:with-param name="url" select="@href"/>
-                    <xsl:with-param name="lang" select="$lang"></xsl:with-param>
-                </xsl:call-template>
-            </xsl:attribute>
-            <xsl:copy-of select="node()"/>
-        </a>
-    </xsl:template>
-    
-    <xsl:template match="xhtml:*">
-        <xsl:copy>
-            <xsl:copy-of select="@*|text()" />
-            <xsl:apply-templates select="*" />
-        </xsl:copy>
-    </xsl:template> -->
     
 </xsl:stylesheet>
