@@ -395,47 +395,63 @@
         <xsl:param name="text-contributors" required="yes"/>
         <xsl:param name="contributor-types" required="yes"/>
         
-        <xsl:for-each select="$text-contributors">
-            <xsl:variable name="contributor-id" select="substring-after(./@sameAs, 'contributors.xml#')"/>
-            <xsl:variable name="contributor-type" select="concat(node-name(.), '-', @role)"/>
-            <xsl:variable name="index" select="position()"/>
-            
-            <div class="form-group add-nodes-group">
-                <div class="col-sm-2">
-                    <select class="form-control">
-                        <xsl:attribute name="name" select="concat('contributor-type-', $index)"/>
-                        <xsl:for-each select="$contributor-types">
-                            <option>
-                                <xsl:variable name="value" select="concat(@node-name, '-', @role)"/>
-                                <xsl:attribute name="value" select="$value"/>
-                                <xsl:if test="$value eq $contributor-type">
-                                    <xsl:attribute name="selected" select="'selected'"/>
-                                </xsl:if>
-                                <xsl:value-of select="m:label/text()"/>
-                            </option>
-                        </xsl:for-each>
-                    </select>
+        <xsl:for-each select="$contributor-types">
+            <xsl:variable name="contributor-types-node-name" select="@node-name"/>
+            <xsl:variable name="contributor-types-role" select="@role"/>
+            <xsl:for-each select="$text-contributors[xs:string(node-name(.)) eq $contributor-types-node-name][xs:string(@role) eq $contributor-types-role]">
+                <xsl:variable name="contributor-id" select="substring-after(./@sameAs, 'contributors.xml#')"/>
+                <xsl:variable name="contributor-type" select="concat(node-name(.), '-', @role)"/>
+                <xsl:variable name="index" select="position()"/>
+                
+                <div class="form-group add-nodes-group">
+                    <div class="col-sm-2">
+                        <xsl:call-template name="select-contributor-type">
+                            <xsl:with-param name="contributor-types" select="$contributor-types"/>
+                            <xsl:with-param name="control-name" select="concat('contributor-type-', $index)"/>
+                            <xsl:with-param name="selected-value" select="$contributor-type"/>
+                        </xsl:call-template>
+                    </div>
+                    <div class="col-sm-4">
+                        <xsl:call-template name="select-contributor">
+                            <xsl:with-param name="contributor-id" select="$contributor-id"/>
+                            <xsl:with-param name="control-name" select="concat('contributor-id-', $index)"/>
+                        </xsl:call-template>
+                    </div>
+                    <label class="control-label col-sm-2">
+                        expressed as:
+                    </label>
+                    <div class="col-sm-4">
+                        <input class="form-control" placeholder="same">
+                            <xsl:attribute name="name" select="concat('contributor-expression-', $index)"/>
+                            <xsl:if test="$contributor-type != ('summary-')">
+                                <xsl:attribute name="value" select="text()"/>
+                            </xsl:if>
+                        </input>
+                    </div>
                 </div>
-                <div class="col-sm-4">
-                    <xsl:call-template name="select-contributor">
-                        <xsl:with-param name="contributor-id" select="$contributor-id"/>
-                        <xsl:with-param name="control-name" select="concat('contributor-id-', $index)"/>
-                    </xsl:call-template>
-                </div>
-                <label class="control-label col-sm-2">
-                    expressed as:
-                </label>
-                <div class="col-sm-4">
-                    <input class="form-control" placeholder="same">
-                        <xsl:attribute name="name" select="concat('contributor-expression-', $index)"/>
-                        <xsl:if test="$contributor-type != ('summary-')">
-                            <xsl:attribute name="value" select="text()"/>
-                        </xsl:if>
-                    </input>
-                </div>
-            </div>
+            </xsl:for-each>
         </xsl:for-each>
         
+    </xsl:template>
+    
+    <xsl:template name="select-contributor-type">
+        <xsl:param name="contributor-types" required="yes"/>
+        <xsl:param name="control-name" required="yes"/>
+        <xsl:param name="selected-value" required="yes"/>
+        
+        <select class="form-control">
+            <xsl:attribute name="name" select="$control-name"/>
+            <xsl:for-each select="$contributor-types">
+                <option>
+                    <xsl:variable name="value" select="concat(@node-name, '-', @role)"/>
+                    <xsl:attribute name="value" select="$value"/>
+                    <xsl:if test="$value eq $selected-value">
+                        <xsl:attribute name="selected" select="'selected'"/>
+                    </xsl:if>
+                    <xsl:value-of select="m:label/text()"/>
+                </option>
+            </xsl:for-each>
+        </select>
     </xsl:template>
     
     <xsl:template name="select-contributor">

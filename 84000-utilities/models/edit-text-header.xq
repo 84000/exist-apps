@@ -77,7 +77,7 @@ return
             contributors:persons(false()),
             contributors:teams(true(), false(), false()),
             $tei-content:title-types,
-            $contributors:types,
+            doc(concat($common:data-path, '/config/contributor-types.xml')),
             element { QName('http://read.84000.co/ns/1.0', 'translation-status') } {
                 translation-status:notes($translation-id),
                 translation-status:tasks($translation-id)

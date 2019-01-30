@@ -14,27 +14,6 @@ declare variable $contributors:texts := collection($common:translations-path);
 declare variable $contributors:person-prefixes := '(Dr\.|Prof\.|Ven\.)';
 declare variable $contributors:team-prefixes := '(Dr\.|The|Prof\.)';
 declare variable $contributors:institution-prefixes := '(The|University\sof)';
-declare variable $contributors:types :=
-    <contributor-types
-        xmlns="http://read.84000.co/ns/1.0">
-        <contributor-type node-name="author" role="translatorEng"><label>English Translator</label></contributor-type>
-        <contributor-type node-name="author" role="translatorTib"><label>Tibetan Translator</label></contributor-type>
-        <contributor-type node-name="author" role="preface"><label>Preface author</label></contributor-type>
-        <contributor-type node-name="editor" role="reviser"><label>Revision editor</label></contributor-type>
-        <contributor-type node-name="editor" role="mainEditor"><label>Main editor</label></contributor-type>
-        <contributor-type node-name="editor" role="proofreader"><label>Proofreader</label></contributor-type>
-        <contributor-type node-name="editor" role="associateEditor"><label>Associate editor</label></contributor-type>
-        <contributor-type node-name="editor" role="projectEditor"><label>Project editor</label></contributor-type>
-        <contributor-type node-name="editor" role="externalReviewer"><label>External reviewer</label></contributor-type>
-        <contributor-type node-name="editor" role="copyEditor"><label>Copy editor</label></contributor-type>
-        <contributor-type node-name="editor" role="finalReviewer"><label>Final reviewer</label></contributor-type>
-        <contributor-type node-name="editor" role="TEImarkupEditor"><label>Markup editor</label></contributor-type>
-        <contributor-type node-name="consultant" role="advisor"><label>Advising consultant</label></contributor-type>
-    </contributor-types>;
-
-(: 
-    4. use this instead of the translators module
-:)
 
 declare function contributors:persons($include-acknowledgements as xs:boolean) as element() {
     
