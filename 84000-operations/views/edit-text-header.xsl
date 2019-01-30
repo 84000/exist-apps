@@ -39,9 +39,9 @@
                                 <span class="h3 text-sa">
                                     <a target="_blank" class="text-muted">
                                         <xsl:attribute name="href" select="concat($reading-room-path, '/translation/', m:translation/@id, '.html')"/>
-                                        <xsl:value-of select="m:translation/m:title"/>
+                                        <xsl:value-of select="concat(m:translation/m:toh/m:full, ': ', m:translation/m:title)"/>
                                         <xsl:if test="normalize-space(m:translation/m:translation/m:edition)">
-                                             / 
+                                            <xsl:value-of select="' / '"/>
                                             <span class="small">
                                                 <xsl:value-of select="m:translation/m:translation/m:edition"/>
                                             </span>
