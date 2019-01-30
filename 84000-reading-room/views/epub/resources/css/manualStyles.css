@@ -168,9 +168,10 @@ blockquote .line-group .line {
     text-align: justify;
     text-indent: 22pt;
 }
-.text p.mantra {
+.text .mantra {
     text-indent: 0;
-    padding: 0 22pt;
+    padding: 0;
+    padding-left: 22pt;
 }
 .text p br {
     display: block;

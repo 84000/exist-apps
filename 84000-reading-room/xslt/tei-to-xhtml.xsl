@@ -197,11 +197,11 @@
                         <xsl:with-param name="node" select="."/>
                     </xsl:call-template>
                     <!-- class -->
-                    <xsl:attribute name="class" select="string-join(('glossarize', if(self::tei:ab[@type = 'mantra']) then 'mantra' else '', if(self::tei:trailer) then 'trailer' else ''), ' ')"/>
+                    <xsl:attribute name="class" select="string-join(('glossarize', if(@rend = 'mantra' or @type = 'mantra') then 'mantra' else '', if(self::tei:trailer) then 'trailer' else ''), ' ')"/>
                     <xsl:apply-templates select="node()"/>
                 </p>
             </xsl:with-param>
-            <xsl:with-param name="row-type" select="if(self::tei:ab[@type = 'mantra']) then 'mantra' else if(self::tei:trailer) then 'trailer' else 'paragraph'"/>
+            <xsl:with-param name="row-type" select="if(@rend = 'mantra' or @type = 'mantra') then 'mantra' else if(self::tei:trailer) then 'trailer' else 'paragraph'"/>
         </xsl:call-template>
     </xsl:template>
     
@@ -257,9 +257,15 @@
                     <xsl:call-template name="tid">
                         <xsl:with-param name="node" select="."/>
                     </xsl:call-template>
-                    <xsl:if test="@type = ('sdom', 'bar_sdom', 'spyi_sdom')">
-                        <xsl:attribute name="class" select="'line-group italic'"/>
-                    </xsl:if>
+                    <xsl:attribute name="class">
+                        <xsl:value-of select="'line-group'"/>
+                        <xsl:if test="@type = ('sdom', 'bar_sdom', 'spyi_sdom')">
+                            <xsl:value-of select="' italic'"/>
+                        </xsl:if>
+                        <xsl:if test="@rend = 'mantra'">
+                            <xsl:value-of select="' mantra'"/>
+                        </xsl:if>
+                    </xsl:attribute>
                     <xsl:apply-templates select="node()"/>
                 </div>
             </xsl:with-param>
