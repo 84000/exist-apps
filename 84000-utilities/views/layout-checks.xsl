@@ -110,6 +110,10 @@
                                         </li>
                                         <li>
                                             <a target="test-layout">
+                                                <xsl:attribute name="href" select="concat($reading-room-path, '/translation/UT22084-001-001.html#UT22084-001-001-108')"/> Line group </a>
+                                        </li>
+                                        <li>
+                                            <a target="test-layout">
                                                 <xsl:attribute name="href" select="concat($reading-room-path, '/translation/UT22084-061-013.html#UT22084-061-013-50')"/> Hanging indent </a>
                                         </li>
                                         <li>

@@ -229,7 +229,21 @@
         <xsl:call-template name="milestone">
             <xsl:with-param name="content">
                 <div>
-                    <xsl:attribute name="class" select="concat('list', if(parent::tei:item) then ' list-sublist' else '', if(@type eq 'section') then ' list-section' else ' list-bullet', concat(' nesting-', count(ancestor::tei:list[not(@type eq 'section')])) )"/>
+                    <xsl:attribute name="class">
+                        <xsl:value-of select="'list'"/>
+                        <xsl:if test="parent::tei:item">
+                            <xsl:value-of select="' list-sublist'"/>
+                        </xsl:if>
+                        <xsl:choose>
+                            <xsl:when test="@type eq 'section'">
+                                <xsl:value-of select="' list-section'"/>
+                            </xsl:when>
+                            <xsl:otherwise>
+                                <xsl:value-of select="' list-bullet'"/>
+                            </xsl:otherwise>
+                        </xsl:choose>
+                        <xsl:value-of select="concat(' nesting-', count(ancestor::tei:list[not(@type eq 'section')]))"/>
+                    </xsl:attribute>
                     <xsl:apply-templates select="node()"/>
                 </div>
             </xsl:with-param>
@@ -241,7 +255,16 @@
         <xsl:call-template name="milestone">
             <xsl:with-param name="content">
                 <div class="list-item">
-                    <xsl:attribute name="class" select="concat( 'list-item', if(common:index-of-node(parent::tei:list/tei:item, .) eq 1) then ' list-item-first' else '', if(common:index-of-node(parent::tei:list/tei:item, .) = count(parent::tei:list/tei:item)) then ' list-item-last' else '' )"/>
+                    <xsl:attribute name="class">
+                        <xsl:variable name="node-index" select="common:index-of-node(parent::tei:list/tei:item, .)"/>
+                        <xsl:value-of select="'list-item'"/>
+                        <xsl:if test="$node-index eq 1">
+                            <xsl:value-of select="' list-item-first'"/>
+                        </xsl:if>
+                        <xsl:if test="$node-index eq count(parent::tei:list/tei:item)">
+                            <xsl:value-of select="' list-item-last'"/>
+                        </xsl:if>
+                    </xsl:attribute>
                     <xsl:apply-templates select="node()"/>
                 </div>
             </xsl:with-param>
@@ -273,7 +296,7 @@
         </xsl:call-template>
     </xsl:template>
     
-    <xsl:template match="tei:l[parent::tei:lg]">
+    <xsl:template match="tei:l(:[parent::tei:lg]:)">
         <xsl:call-template name="milestone">
             <xsl:with-param name="content">
                 <div class="line">
@@ -394,7 +417,17 @@
             <xsl:when test="/m:response/m:translation">
                 <div class="rw">
                     
-                    <xsl:attribute name="class" select="string-join(('rw', concat('rw-', $row-type), if(common:index-of-node(../., .) eq 1) then 'first-child' else '', if(common:index-of-node(../., .) eq count(../.)) then 'last-child' else ''), ' ')"/>
+                    <xsl:attribute name="class">
+                        <xsl:variable name="node-index" select="common:index-of-node(../., .)"/>
+                        <xsl:value-of select="'rw'"/>
+                        <xsl:value-of select="concat(' ', 'rw-', $row-type)"/>
+                        <xsl:if test="$node-index eq 1">
+                            <xsl:value-of select="' first-child'"/>
+                        </xsl:if>
+                        <xsl:if test="$node-index eq count(../.)">
+                            <xsl:value-of select="' last-child'"/>
+                        </xsl:if>
+                    </xsl:attribute>
                     
                     <xsl:variable name="milestone" select="preceding-sibling::*[1][self::tei:milestone] | preceding-sibling::*[2][self::tei:milestone[following-sibling::*[1][self::tei:lb]]]"/>
                     
