@@ -15,9 +15,7 @@ let $type := request:get-parameter('type', 'translations')
 let $section-id := request:get-parameter('section', 'O1JC11494')
 
 let $schema-path := 
-    if($type eq 'translations') then
-        concat($common:tei-path, '/schema/current/translation.rng')
-    else if($type eq 'placeholders') then
+    if($type = ('translations', 'placeholders')) then
         concat($common:tei-path, '/schema/current/translation.rng')
     else
         concat($common:tei-path, '/schema/current/section.rng')

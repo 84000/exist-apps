@@ -18,6 +18,7 @@ declare function tests:translations($text-statuses as xs:string*, $translation-i
     (:let $translation-id := 'UT22084-062-012':)
     
     let $schema := doc(concat($common:tei-path, '/schema/current/translation.rng'))
+    
     let $selected-translations := 
         if ($translation-id eq 'all') then 
             $section:texts//tei:TEI[tei:teiHeader/tei:fileDesc/tei:publicationStmt/@status = $text-statuses]

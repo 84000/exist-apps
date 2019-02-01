@@ -45,54 +45,57 @@
                                         <td>
                                             <xsl:value-of select="concat(position(), '. ', m:title/text())"/>
                                         </td>
-                                    </tr>
-                                    <tr class="sub">
                                         <td>
-                                            <a class="small">
-                                                <xsl:attribute name="href" select="@url"/>
-                                                <xsl:attribute name="target" select="@id"/>
-                                                <xsl:value-of select="@file-name"/> 
-                                            </a>
+                                            <xsl:if test="m:result/m:error">
+                                                <a role="button" data-toggle="collapse" aria-expanded="false" aria-controls="collapseExample" class="center-vertical text-muted">
+                                                    <xsl:attribute name="href" select="concat('#errors-', @id)"/>
+                                                    <xsl:attribute name="aria-controls" select="concat('errors-', @id)"/>
+                                                    <span>
+                                                        <xsl:value-of select="'Show errors'"/>
+                                                    </span>
+                                                    <span>
+                                                        <span class="badge badge-notification">
+                                                            <xsl:value-of select="count(m:result/m:error)"/>
+                                                        </span>
+                                                    </span>
+                                                </a>
+                                            </xsl:if>
                                         </td>
                                     </tr>
-                                    <xsl:for-each select="m:result/m:error">
-                                        <tr class="sub">
-                                            <td/>
-                                            <td>
-                                                <small>
-                                                    <strong>Line <xsl:value-of select="@line"/>
-                                                    </strong> : <xsl:value-of select="text()"/>
-                                                </small>
-                                            </td>
-                                        </tr>
-                                    </xsl:for-each>
+                                    <tr class="sub">
+                                        <td colspan="2">
+                                            <div>
+                                                <a class="small">
+                                                    <xsl:attribute name="href" select="@url"/>
+                                                    <xsl:attribute name="target" select="@id"/>
+                                                    <xsl:value-of select="@file-name"/> 
+                                                </a>
+                                            </div>
+                                            <xsl:if test="m:result/m:error">
+                                                <div class="collapse">
+                                                    <xsl:attribute name="id" select="concat('errors-', @id)"/>
+                                                    <hr class="sml-margin"/>
+                                                    <xsl:for-each select="m:result/m:error">
+                                                        <div class="row small">
+                                                            <div class="col-sm-1 text-bold">
+                                                                <xsl:value-of select="concat('Line ', @line)"/>
+                                                            </div>
+                                                            <div>
+                                                                <xsl:value-of select="text()"/>
+                                                            </div>
+                                                        </div>
+                                                    </xsl:for-each>
+                                                </div>
+                                            </xsl:if>
+                                            
+                                        </td>
+                                    </tr>
+                                    
                                 </xsl:for-each>
                             </tbody>
                         </table>
                     </div>
                 </div>
-            </div>
-            
-            <div id="popup-footer" class="fixed-footer collapse hidden-print">
-                
-                <div class="container">
-                    <div class="panel">
-                        <div class="panel-body">
-                            <div class="fix-height data-container">
-                                
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <div id="fixed-footer-close-container" class="fixed-btn-container">
-                    <button type="button" class="btn-round close" aria-label="Close">
-                        <span aria-hidden="true">
-                            <i class="fa fa-times"/>
-                        </span>
-                    </button>
-                </div>
-                
             </div>
             
             <!-- Link to top of page -->
