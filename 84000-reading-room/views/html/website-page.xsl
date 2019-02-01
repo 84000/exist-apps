@@ -11,7 +11,7 @@
     <xsl:variable name="front-end-path" select="$environment/m:url[@id eq 'front-end']/text()"/>
     <xsl:variable name="reading-room-path" select="$environment/m:url[@id eq 'reading-room']/text()"/>
     <xsl:variable name="communications-site-path" select="$environment/m:url[@id eq 'communications-site']/text()"/>
-    <xsl:variable name="app-version" select="doc('../../expath-pkg.xml')/pkg:package/@version"/>
+    <xsl:variable name="app-version" select="/m:response/@app-version"/>
     <xsl:variable name="ga-tracking-id" select="$environment/m:google-analytics/@tracking-id"/>
     
     <!-- get shared html -->
@@ -295,7 +295,7 @@
         <!-- Look up environment variables -->
         <xsl:variable name="environment-path" select="if(/m:response/@environment-path)then /m:response/@environment-path else '/db/system/config/db/system/environment.xml'"/>
         <xsl:variable name="environment" select="doc($environment-path)/m:environment"/>
-        <xsl:variable name="app-version" select="doc('../../expath-pkg.xml')/pkg:package/@version"/>
+        <xsl:variable name="app-version" select="/m:response/@app-version"/>
         <xsl:variable name="front-end-path" select="$environment/m:url[@id eq 'front-end']/text()"/>
         
         <html>

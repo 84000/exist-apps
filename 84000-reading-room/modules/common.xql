@@ -18,6 +18,7 @@ import module namespace converter="http://tbrc.org/xquery/ewts2unicode" at "java
 declare variable $common:app-id := common:app-id();
 declare variable $common:root-path := concat('/db/apps/', $common:app-id);
 declare variable $common:app-path := concat('/db/apps/', $common:app-id);
+declare variable $common:app-version := doc(concat($common:root-path, '/expath-pkg.xml'))/pkg:package/@version;
 declare variable $common:log-path := '/db/system/logs';
 declare variable $common:data-collection := '/84000-data';
 declare variable $common:data-path := concat('/db/apps', $common:data-collection);
@@ -64,7 +65,7 @@ function common:response($model-type as xs:string, $app-id as xs:string, $data a
         model-type="{ $model-type }"
         timestamp="{ current-dateTime() }"
         app-id="{ $app-id }" 
-        app-version="{ doc(concat($common:root-path, '/expath-pkg.xml'))/pkg:package/@version }"
+        app-version="{ $common:app-version }"
         environment-path="{ $common:environment-path }"
         user-name="{ common:user-name() }" 
         lang="{ request:get-parameter('lang', 'en') }">

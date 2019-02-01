@@ -90,6 +90,10 @@
                                     <xsl:with-param name="active" select="true()"/>
                                 </xsl:call-template>
                                 
+                                <!-- 
+                                Submissions form prototype
+                                <xsl:call-template name="submissions-form-panel"/>
+                                 -->
                             </div>
                         </div>
                     </div>
