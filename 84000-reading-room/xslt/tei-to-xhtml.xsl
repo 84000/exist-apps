@@ -200,7 +200,7 @@
                     <xsl:attribute name="class">
                         <xsl:value-of select="'glossarize'"/>
                         <xsl:choose>
-                            <xsl:when test="@rend = 'mantra' or @type = 'mantra'">
+                            <xsl:when test="(@rend,@type) = 'mantra'">
                                 <xsl:value-of select="' mantra'"/>
                             </xsl:when>
                             <xsl:when test="self::tei:trailer">
@@ -213,7 +213,7 @@
             </xsl:with-param>
             <xsl:with-param name="row-type">
                 <xsl:choose>
-                    <xsl:when test="@rend = 'mantra' or @type = 'mantra'">
+                    <xsl:when test="(@rend,@type) = 'mantra'">
                         <xsl:value-of select="'mantra'"/>
                     </xsl:when>
                     <xsl:when test="self::tei:trailer">
