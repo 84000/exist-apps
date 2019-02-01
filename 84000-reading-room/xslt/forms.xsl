@@ -401,7 +401,7 @@
             <xsl:for-each select="$text-contributors[xs:string(node-name(.)) eq $contributor-types-node-name][xs:string(@role) eq $contributor-types-role]">
                 <xsl:variable name="contributor-id" select="substring-after(./@sameAs, 'contributors.xml#')"/>
                 <xsl:variable name="contributor-type" select="concat(node-name(.), '-', @role)"/>
-                <xsl:variable name="index" select="position()"/>
+                <xsl:variable name="index" select="common:index-of-node($text-contributors, .)"/>
                 
                 <div class="form-group add-nodes-group">
                     <div class="col-sm-2">
