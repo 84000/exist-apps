@@ -240,9 +240,10 @@
                     </input>
                     <div class="row">
                         <div class="col-sm-8">
+                            
                             <xsl:copy-of select="m:select-input('Translation Status', 'translation-status', 9, 1, m:text-statuses/m:status)"/>
-                            <xsl:variable name="translator-summary" select="m:translation/m:translation/m:contributors/m:summary[1]"/>
-                            <xsl:variable name="translator-team-id" select="substring-after($translator-summary/@sameAs, 'contributors.xml#')"/>
+                            
+                            <xsl:variable name="translator-team-id" select="substring-after(m:translation/m:translation/m:contributors/m:summary[1]/@sameAs, 'contributors.xml#')"/>
                             <div class="form-group">
                                 <label class="control-label col-sm-3">
                                     <xsl:value-of select="'Translator Team'"/>
@@ -263,31 +264,18 @@
                                     </select>
                                 </div>
                             </div>
-                            <!-- Force user to add group first -->
-                            <xsl:if test="$translator-summary">
-                                <div class="add-nodes-container">
-                                    <xsl:variable name="contributors" select="m:translation/m:translation/m:contributors/m:*[self::m:author | self::m:editor | self::m:consultant]"/>
-                                    <xsl:choose>
-                                        <xsl:when test="$contributors">
-                                            <xsl:call-template name="contributors-controls">
-                                                <xsl:with-param name="text-contributors" select="$contributors"/>
-                                                <xsl:with-param name="contributor-types" select="/m:response/m:contributor-types/m:contributor-type"/>
-                                            </xsl:call-template>
-                                        </xsl:when>
-                                        <xsl:otherwise>
-                                            <xsl:call-template name="contributors-controls">
-                                                <!-- use the summary as a dummy author record -->
-                                                <xsl:with-param name="text-contributors" select="$translator-summary"/>
-                                                <xsl:with-param name="contributor-types" select="/m:response/m:contributor-types/m:contributor-type"/>
-                                            </xsl:call-template>
-                                        </xsl:otherwise>
-                                    </xsl:choose>
-                                    <div>
-                                        <a href="#add-nodes" class="add-nodes">
-                                            <span class="monospace">+</span> add a contributor </a>
-                                    </div>
+  
+                            <div class="add-nodes-container">
+                                <xsl:call-template name="contributors-controls">
+                                    <xsl:with-param name="text-contributors" select="m:translation/m:translation/m:contributors/m:*[self::m:author | self::m:editor | self::m:consultant]"/>
+                                    <xsl:with-param name="contributor-types" select="/m:response/m:contributor-types/m:contributor-type"/>
+                                </xsl:call-template>
+                                <div>
+                                    <a href="#add-nodes" class="add-nodes">
+                                        <span class="monospace">+</span> add a contributor </a>
                                 </div>
-                            </xsl:if>
+                            </div>
+                            
                         </div>
                         <div class="col-sm-4">
                             <xsl:if test="m:translation/m:translation/m:contributors/m:summary">
@@ -341,25 +329,58 @@
     <xsl:template name="contributors-controls">
         <xsl:param name="text-contributors" required="yes"/>
         <xsl:param name="contributor-types" required="yes"/>
-        <xsl:for-each select="$contributor-types">
-            <xsl:variable name="contributor-types-node-name" select="@node-name"/>
-            <xsl:variable name="contributor-types-role" select="@role"/>
-            <xsl:for-each select="$text-contributors[xs:string(node-name(.)) eq $contributor-types-node-name][xs:string(@role) eq $contributor-types-role]">
-                <xsl:variable name="contributor-id" select="substring-after(./@sameAs, 'contributors.xml#')"/>
-                <xsl:variable name="contributor-type" select="concat(node-name(.), '-', @role)"/>
-                <xsl:variable name="index" select="common:index-of-node($text-contributors, .)"/>
+        <xsl:choose>
+            <xsl:when test="$text-contributors">
+                <xsl:for-each select="$contributor-types">
+                    <xsl:variable name="contributor-types-node-name" select="@node-name"/>
+                    <xsl:variable name="contributor-types-role" select="@role"/>
+                    <xsl:for-each select="$text-contributors[xs:string(local-name(.)) eq $contributor-types-node-name][xs:string(@role) eq $contributor-types-role]">
+                        <xsl:variable name="contributor-id" select="substring-after(./@sameAs, 'contributors.xml#')"/>
+                        <xsl:variable name="contributor-type" select="concat(node-name(.), '-', @role)"/>
+                        <xsl:variable name="index" select="common:index-of-node($text-contributors, .)"/>
+                        <div class="form-group add-nodes-group">
+                            <div class="col-sm-2">
+                                <xsl:call-template name="select-contributor-type">
+                                    <xsl:with-param name="contributor-types" select="$contributor-types"/>
+                                    <xsl:with-param name="control-name" select="concat('contributor-type-', $index)"/>
+                                    <xsl:with-param name="selected-value" select="$contributor-type"/>
+                                </xsl:call-template>
+                            </div>
+                            <div class="col-sm-4">
+                                <xsl:call-template name="select-contributor">
+                                    <xsl:with-param name="contributor-id" select="$contributor-id"/>
+                                    <xsl:with-param name="control-name" select="concat('contributor-id-', $index)"/>
+                                </xsl:call-template>
+                            </div>
+                            <label class="control-label col-sm-2">
+                                <xsl:value-of select="'expressed as:'"/>
+                            </label>
+                            <div class="col-sm-4">
+                                <input class="form-control" placeholder="same">
+                                    <xsl:attribute name="name" select="concat('contributor-expression-', $index)"/>
+                                    <xsl:if test="$contributor-type != ('summary-')">
+                                        <xsl:attribute name="value" select="text()"/>
+                                    </xsl:if>
+                                </input>
+                            </div>
+                        </div>
+                    </xsl:for-each>
+                </xsl:for-each>
+            </xsl:when>
+            <xsl:otherwise>
+                <!-- No existing contributors so show an set of controls -->
                 <div class="form-group add-nodes-group">
                     <div class="col-sm-2">
                         <xsl:call-template name="select-contributor-type">
                             <xsl:with-param name="contributor-types" select="$contributor-types"/>
-                            <xsl:with-param name="control-name" select="concat('contributor-type-', $index)"/>
-                            <xsl:with-param name="selected-value" select="$contributor-type"/>
+                            <xsl:with-param name="control-name" select="'contributor-type-1'"/>
+                            <xsl:with-param name="selected-value" select="''"/>
                         </xsl:call-template>
                     </div>
                     <div class="col-sm-4">
                         <xsl:call-template name="select-contributor">
-                            <xsl:with-param name="contributor-id" select="$contributor-id"/>
-                            <xsl:with-param name="control-name" select="concat('contributor-id-', $index)"/>
+                            <xsl:with-param name="control-name" select="'contributor-id-1'"/>
+                            <xsl:with-param name="contributor-id" select="''"/>
                         </xsl:call-template>
                     </div>
                     <label class="control-label col-sm-2">
@@ -367,15 +388,13 @@
                     </label>
                     <div class="col-sm-4">
                         <input class="form-control" placeholder="same">
-                            <xsl:attribute name="name" select="concat('contributor-expression-', $index)"/>
-                            <xsl:if test="$contributor-type != ('summary-')">
-                                <xsl:attribute name="value" select="text()"/>
-                            </xsl:if>
+                            <xsl:attribute name="name" select="'contributor-expression-1'"/>
                         </input>
                     </div>
                 </div>
-            </xsl:for-each>
-        </xsl:for-each>
+            </xsl:otherwise>
+        </xsl:choose>
+        
     </xsl:template>
     
     <!-- Contributor type <select/> -->
