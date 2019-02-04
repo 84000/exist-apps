@@ -18,7 +18,7 @@
     </translation>
     <translation id="label-social-icons">
         <text xml:lang="en">Follow our work:</text>
-        <text xml:lang="zh"/>
+        <text xml:lang="zh">關注我們</text>
     </translation>
     <navigation xml:lang="en">
         <item class="home" url="http://84000.co/">
@@ -245,6 +245,9 @@
     <social xml:lang="zh">
         <item url="mailto:info@84000.co" icon-class="fa fa-envelope-square">
             <label>Send us an email (ch)</label>
+        </item>
+        <item url="#wechat-qcode" icon-class="fa fa-weixin">
+            <label>WeChat</label>
         </item>
     </social>
 </eft-header>

@@ -225,6 +225,16 @@
                         </xsl:call-template>
                         <xsl:for-each select="m:social[@xml:lang = $lang]/m:item">
                             <a target="_blank">
+                                <xsl:choose>
+                                    <xsl:when test="starts-with(@url, '#')">
+                                        <xsl:attribute name="data-toggle">
+                                            <xsl:value-of select="'modal'"/>
+                                        </xsl:attribute>
+                                        <xsl:attribute name="data-target">
+                                            <xsl:value-of select="@url"/>
+                                        </xsl:attribute>
+                                    </xsl:when>
+                                </xsl:choose>
                                 <xsl:attribute name="href">
                                     <xsl:value-of select="@url"/>
                                 </xsl:attribute>
@@ -241,6 +251,24 @@
                     </div>
                 </div>
             </div>
+            
+            <xsl:if test="m:social[@xml:lang = $lang]/m:item[@url = '#wechat-qcode']">
+                <div class="modal fade" tabindex="-1" role="dialog" id="wechat-qcode">
+                    <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                            <div class="modal-body">
+                                <div class="text-center">
+                                    <img>
+                                        <xsl:attribute name="src">
+                                            <xsl:value-of select="concat($local-front-end-url, '/imgs/84000_WeChat_QRCode.jpg')"/>
+                                        </xsl:attribute>
+                                    </img>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </xsl:if>
             
         </nav>
     </xsl:template>
@@ -337,7 +365,14 @@
         <!-- Link to top of page -->
         <div class="hidden-print">
             <div id="link-to-top-container" class="fixed-btn-container">
-                <a href="#top" id="link-to-top" class="btn-round scroll-to-anchor" title="Return to the top of the page">
+                <a href="#top" id="link-to-top" class="btn-round scroll-to-anchor">
+                    <xsl:attribute name="title">
+                        <xsl:call-template name="translation">
+                            <xsl:with-param name="translation-id" select="'top-link-title'"/>
+                            <xsl:with-param name="lang" select="$lang"/>
+                            <xsl:with-param name="text-node" select="true()"/>
+                        </xsl:call-template>
+                    </xsl:attribute>
                     <i class="fa fa-arrow-up" aria-hidden="true"/>
                 </a>
             </div>
