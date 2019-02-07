@@ -543,7 +543,6 @@
                                 </div>
                             </div>
                         </div>
-                        <!-- 
                         <div class="col-sm-4">
                             <h4 class="no-top-margin text-danger">
                                 <xsl:value-of select="'Task list'"/>
@@ -625,7 +624,8 @@
                                     </xsl:for-each>
                                 </div>
                             </xsl:if>
-                        </div> -->
+                        </div>
+                        <!-- 
                         <div class="col-sm-4">
                             <h4 class="no-top-margin text-danger">
                                 <xsl:value-of select="'Task list'"/>
@@ -682,7 +682,7 @@
                                     <xsl:value-of select="'Approved for publication'"/>
                                 </label>
                             </div>
-                        </div>
+                        </div> -->
                     </div>
                     <hr/>
                     <div class="center-vertical full-width">
