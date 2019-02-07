@@ -12,125 +12,108 @@
         
         <xsl:variable name="content">
             
-            <div class="container">
-                <div class="panel panel-default">
-                    <div class="panel-heading panel-heading-bold hidden-print center-vertical">
-                        
-                        <span class="title">
-                            84000 Operations Reports
-                        </span>
-                        
-                    </div>
+            <xsl:call-template name="operations-page">
+                <xsl:with-param name="reading-room-path" select="$reading-room-path"/>
+                <xsl:with-param name="active-tab" select="@model-type"/>
+                <xsl:with-param name="page-content">
                     
-                    <div class="panel-body">
+                    <xsl:call-template name="alert-updated"/>
+                    
+                    <xsl:call-template name="alert-translation-locked"/>
+                    
+                    <form method="post" class="form-horizontal form-update">
                         
-                        <xsl:call-template name="tabs">
-                            <xsl:with-param name="active-tab" select="@model-type"/>
-                        </xsl:call-template>
+                        <xsl:attribute name="action" select="'edit-translator-institution.html'"/>
+                        <xsl:variable name="institution-id" select="m:institution/@xml:id"/>
                         
-                        <div class="tab-content">
-                            
-                            <xsl:if test="m:updates/m:updated">
-                                <div class="alert alert-success alert-temporary" role="alert">
-                                    Updated
-                                </div>
-                            </xsl:if>
-                            
-                            <xsl:if test="m:institution/@locked-by-user gt ''">
-                                <div class="alert alert-danger" role="alert">
-                                    <xsl:value-of select="concat('File sponsors.xml is currenly locked by user ', m:institution/@locked-by-user, '. ')"/>
-                                    You cannot modify this file until the lock is released.
-                                </div>
-                            </xsl:if>
-                            
-                            <form method="post" class="form-horizontal form-update">
-                                
-                                <xsl:attribute name="action" select="'edit-translator-institution.html'"/>
-                                <xsl:variable name="institution-id" select="m:institution/@xml:id"/>
-                                
-                                <input type="hidden" name="post-id">
-                                    <xsl:choose>
-                                        <xsl:when test="$institution-id">
-                                            <xsl:attribute name="value" select="$institution-id"/>
-                                        </xsl:when>
-                                        <xsl:otherwise>
-                                            <xsl:attribute name="value" select="'new'"/>
-                                        </xsl:otherwise>
-                                    </xsl:choose>
-                                </input>
-                                
-                                
-                                <div class="row">
-                                    <div class="col-sm-6">
-                                        <fieldset>
-                                            
-                                            <legend>
-                                                <xsl:choose>
-                                                    <xsl:when test="$institution-id">
-                                                        ID: <xsl:value-of select="$institution-id"/>
-                                                    </xsl:when>
-                                                    <xsl:otherwise>New institution </xsl:otherwise>
-                                                </xsl:choose>
-                                            </legend>
-                                            
-                                            <xsl:copy-of select="m:text-input('Name','name', m:institution/m:label, 9, 'required')"/>
-                                            <xsl:copy-of select="m:select-input-name('Region', 'region-id', 9, /m:response/m:contributor-regions/m:region, m:institution/@region-id)"/>
-                                            <xsl:copy-of select="m:select-input-name('Type', 'institution-type-id', 9, /m:response/m:contributor-institution-types/m:institution-type, m:institution/@institution-type-id)"/>
-                                            
-                                            <hr/>
-                                            <div>
-                                                <xsl:if test="$institution-id">
-                                                    <xsl:choose>
-                                                        <xsl:when test="count(m:person) gt 0">
-                                                            <!-- Disable if there are acknowledgments -->
-                                                            <span title="You cannot delete an institution with contributors">
-                                                                <a href="#" class="btn btn-default disabled">
-                                                                    <xsl:value-of select="'Delete'"/>
-                                                                </a>
-                                                            </span>
-                                                        </xsl:when>
-                                                        <xsl:otherwise>
-                                                            <a class="btn btn-danger">
-                                                                <xsl:attribute name="href" select="concat('/translator-institutions.html?delete=', $institution-id)"/>
-                                                                <xsl:value-of select="'Delete'"/>
-                                                            </a>
-                                                        </xsl:otherwise>
-                                                    </xsl:choose>
-                                                </xsl:if>
-                                                
-                                                <button type="submit" class="btn btn-primary pull-right">
-                                                    Save
-                                                </button>
-                                            </div>
-                                            
-                                        </fieldset>
+                        <input type="hidden" name="post-id">
+                            <xsl:choose>
+                                <xsl:when test="$institution-id">
+                                    <xsl:attribute name="value" select="$institution-id"/>
+                                </xsl:when>
+                                <xsl:otherwise>
+                                    <xsl:attribute name="value" select="'new'"/>
+                                </xsl:otherwise>
+                            </xsl:choose>
+                        </input>
+                        
+                        
+                        <div class="row">
+                            <div class="col-sm-6">
+                                <fieldset>
+                                    
+                                    <legend>
+                                        <xsl:choose>
+                                            <xsl:when test="$institution-id">
+                                                ID: <xsl:value-of select="$institution-id"/>
+                                            </xsl:when>
+                                            <xsl:otherwise>New institution </xsl:otherwise>
+                                        </xsl:choose>
+                                    </legend>
+                                    
+                                    <xsl:copy-of select="m:text-input('Name','name', m:institution/m:label, 9, 'required')"/>
+                                    <xsl:copy-of select="m:select-input-name('Region', 'region-id', 9, /m:response/m:contributor-regions/m:region, m:institution/@region-id)"/>
+                                    <xsl:copy-of select="m:select-input-name('Type', 'institution-type-id', 9, /m:response/m:contributor-institution-types/m:institution-type, m:institution/@institution-type-id)"/>
+                                    
+                                    <hr/>
+                                    <div>
+                                        <xsl:if test="$institution-id">
+                                            <xsl:choose>
+                                                <xsl:when test="count(m:person) gt 0">
+                                                    <!-- Disable if there are acknowledgments -->
+                                                    <span title="You cannot delete an institution with contributors">
+                                                        <a href="#" class="btn btn-default disabled">
+                                                            <xsl:value-of select="'Delete'"/>
+                                                        </a>
+                                                    </span>
+                                                </xsl:when>
+                                                <xsl:otherwise>
+                                                    <a class="btn btn-danger">
+                                                        <xsl:attribute name="href" select="concat('/translator-institutions.html?delete=', $institution-id)"/>
+                                                        <xsl:value-of select="'Delete'"/>
+                                                    </a>
+                                                </xsl:otherwise>
+                                            </xsl:choose>
+                                        </xsl:if>
+                                        
+                                        <button type="submit" class="btn btn-primary pull-right">
+                                            Save
+                                        </button>
                                     </div>
                                     
-                                    <xsl:if test="m:person">
-                                        <div class="col-sm-6">
-                                            <h4>Contributors</h4>
-                                            <ul>
-                                                <xsl:for-each select="m:person">
-                                                    <li>
-                                                        <a target="_self">
-                                                            <xsl:attribute name="href" select="concat('/edit-translator.html?id=', @xml:id)"/>
-                                                            <xsl:value-of select="m:label"/>
-                                                        </a>
-                                                    </li>
-                                                </xsl:for-each>
-                                            </ul>
+                                </fieldset>
+                            </div>
+                            
+                            <div class="col-sm-6">
+                                <h4>Contributors</h4>
+                                <hr class="sml-margin"/>
+                                <xsl:choose>
+                                    <xsl:when test="m:person">
+                                        <ul class="list-unstyled">
+                                            <xsl:for-each select="m:person">
+                                                <xsl:sort select="m:label"/>
+                                                <li>
+                                                    <a target="_self">
+                                                        <xsl:attribute name="href" select="concat('/edit-translator.html?id=', @xml:id)"/>
+                                                        <xsl:value-of select="m:label"/>
+                                                    </a>
+                                                </li>
+                                            </xsl:for-each>
+                                        </ul>
+                                    </xsl:when>
+                                    <xsl:otherwise>
+                                        <div class="text-muted italic">
+                                            No contributors
                                         </div>
-                                    </xsl:if>
-                                    
-                                </div>
-                                
-                            </form>
+                                    </xsl:otherwise>
+                                </xsl:choose>
+                            </div>
                             
                         </div>
-                    </div>
-                    
-                </div>
-            </div>
+                        
+                    </form>
+                </xsl:with-param>
+            </xsl:call-template>
             
         </xsl:variable>
         

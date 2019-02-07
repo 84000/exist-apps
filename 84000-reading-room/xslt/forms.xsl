@@ -543,6 +543,7 @@
                                 </div>
                             </div>
                         </div>
+                        <!-- 
                         <div class="col-sm-4">
                             <h4 class="no-top-margin text-danger">
                                 <xsl:value-of select="'Task list'"/>
@@ -624,6 +625,63 @@
                                     </xsl:for-each>
                                 </div>
                             </xsl:if>
+                        </div> -->
+                        <div class="col-sm-4">
+                            <h4 class="no-top-margin text-danger">
+                                <xsl:value-of select="'Task list'"/>
+                            </h4>
+                            <hr class="sml-margin"/>
+                            <div class="checkbox">
+                                <label>
+                                    <input type="checkbox" checked="checked"/>
+                                    <xsl:value-of select="'Final draft sumbitted'"/>
+                                </label>
+                                <p class="small text-muted italic">Set by andre at 12:44 26th Jan 2019</p>
+                            </div>
+                            <div class="checkbox">
+                                <label>
+                                    <input type="checkbox" checked="checked"/>
+                                    <xsl:value-of select="'Translation copyedited'"/>
+                                </label>
+                                <p class="small text-muted italic">Set by andre at 12:44 26th Jan 2019</p>
+                            </div>
+                            <div class="checkbox">
+                                <label>
+                                    <input type="checkbox" checked="checked"/>
+                                    <xsl:value-of select="'Glossary copyedited'"/>
+                                </label>
+                                <p class="small text-muted italic">Set by andre at 12:44 26th Jan 2019</p>
+                            </div>
+                            <div class="checkbox">
+                                <label>
+                                    <input type="checkbox"/>
+                                    <xsl:value-of select="'Marked up'"/>
+                                </label>
+                            </div>
+                            <div class="checkbox">
+                                <label>
+                                    <input type="checkbox"/>
+                                    <xsl:value-of select="'Markup editor revisions accepted'"/>
+                                </label>
+                            </div>
+                            <div class="checkbox">
+                                <label>
+                                    <input type="checkbox"/>
+                                    <xsl:value-of select="'Copyeditor reviewed'"/>
+                                </label>
+                            </div>
+                            <div class="checkbox">
+                                <label>
+                                    <input type="checkbox"/>
+                                    <xsl:value-of select="'Copyeditor revisions accepted'"/>
+                                </label>
+                            </div>
+                            <div class="checkbox">
+                                <label>
+                                    <input type="checkbox"/>
+                                    <xsl:value-of select="'Approved for publication'"/>
+                                </label>
+                            </div>
                         </div>
                     </div>
                     <hr/>
@@ -640,7 +698,7 @@
     </xsl:template>
     
     <!-- Sponsors form -->
-    <xsl:template name="sponsors-form">
+    <xsl:template name="text-sponsors-form">
         <form method="post" class="form-horizontal form-update">
             <xsl:attribute name="action" select="'edit-text-sponsors.html'"/>
             <input type="hidden" name="post-id">
@@ -898,27 +956,37 @@
         <xsl:param name="group" as="xs:string" required="yes"/>
         <xsl:param name="css-class" as="xs:string" required="yes"/>
         <xsl:param name="link-href" as="xs:string" required="yes"/>
-        <xsl:for-each select="$acknowledgements">
-            <xsl:sort select="xs:integer(m:toh/@number)"/>
-            <div>
-                <xsl:attribute name="class" select="$css-class"/>
-                <xsl:if test="$group gt ''">
-                    <xsl:attribute name="data-match-height" select="concat('group-', $group)"/>
-                </xsl:if>
-                <div class="pull-quote">
-                    <div class="title top-vertical full-width">
-                        <a>
-                            <xsl:attribute name="href" select="replace($link-href, '@translation-id', @translation-id)"/>
-                            <xsl:value-of select="m:toh/m:full"/> / <xsl:value-of select="m:title"/>
-                        </a>
-                        <span>
-                            <xsl:copy-of select="common:translation-status(@translation-status)"/>
-                        </span>
+        <xsl:choose>
+            <xsl:when test="$acknowledgements">
+                <xsl:for-each select="$acknowledgements">
+                    <xsl:sort select="xs:integer(m:toh/@number)"/>
+                    <div>
+                        <xsl:attribute name="class" select="$css-class"/>
+                        <xsl:if test="$group gt ''">
+                            <xsl:attribute name="data-match-height" select="concat('group-', $group)"/>
+                        </xsl:if>
+                        <div class="pull-quote">
+                            <div class="title top-vertical full-width">
+                                <a>
+                                    <xsl:attribute name="href" select="replace($link-href, '@translation-id', @translation-id)"/>
+                                    <xsl:value-of select="m:toh/m:full"/> / <xsl:value-of select="m:title"/>
+                                </a>
+                                <span>
+                                    <xsl:copy-of select="common:translation-status(@translation-status)"/>
+                                </span>
+                            </div>
+                            <xsl:apply-templates select="tei:div[@type eq 'acknowledgment']/*"/>
+                        </div>
                     </div>
-                    <xsl:apply-templates select="tei:div[@type eq 'acknowledgment']/*"/>
+                </xsl:for-each>
+            </xsl:when>
+            <xsl:otherwise>
+                <div class="text-muted italic">
+                    <xsl:value-of select="'No acknowledgments'"/>
                 </div>
-            </div>
-        </xsl:for-each>
+            </xsl:otherwise>
+        </xsl:choose>
+        
     </xsl:template>
     
     <!-- Submissions panel prototype -->
@@ -936,72 +1004,7 @@
             </xsl:with-param>
             
             <xsl:with-param name="form">
-                <div class="alert alert-warning small text-center">
-                    "Generate TEI" will create or overwrite the toh1-1.tei files in the translation or glossary folders in 84000-import-data. These must then be copy/pasted into the correct TEI file.
-                </div>
-                <div class="row">
-                    <div class="col-sm-3 text-muted small italic">
-                        Uploaded 14th Jan 2019 17:17 by admin
-                    </div>
-                    <div class="col-sm-5">
-                        1. Tohoku 1-1 final draft.docx
-                    </div>
-                    <div class="col-sm-2 text-right">
-                        <a href="#" class="underline small">
-                            Download
-                        </a>
-                    </div>
-                    <div class="col-sm-2 text-right">
-                        <a href="#" class="underline small">
-                            Generate TEI
-                        </a>
-                    </div>
-                </div>
-                <hr class="sml-margin"/>
-                <div class="row">
-                    <div class="col-sm-3 text-muted small italic">
-                        Uploaded 14th Jan 2019 18:15 by admin
-                    </div>
-                    <div class="col-sm-5">
-                        2. Tohoku 1-1 final glossary.xls
-                        <span class="text-muted small italic">
-                            - latest spreadsheed
-                        </span>
-                    </div>
-                    <div class="col-sm-2 text-right">
-                        <a href="#" class="underline small">
-                            Download
-                        </a>
-                    </div>
-                    <div class="col-sm-2 text-right">
-                        <a href="#" class="underline small">
-                            Generate TEI
-                        </a>
-                    </div>
-                </div>
-                <hr class="sml-margin"/>
-                <div class="row">
-                    <div class="col-sm-3 text-muted small italic">
-                        Uploaded 1st Feb 2019 09:15 by admin
-                    </div>
-                    <div class="col-sm-5">
-                        3. Tohoku 1-1 final draft(1).docx
-                        <span class="text-muted small italic">
-                            - latest document
-                        </span>
-                    </div>
-                    <div class="col-sm-2 text-right">
-                        <a href="#" class="underline small">
-                            Download
-                        </a>
-                    </div>
-                    <div class="col-sm-2 text-right">
-                        <a href="#" class="underline small">
-                            Generate TEI
-                        </a>
-                    </div>
-                </div>
-                <hr class="sml-margin"/>
+                
                 <form method="post" class="form-horizontal form-update" id="submissions-form">
                     <xsl:attribute name="action" select="'edit-text-header.html#submissions-form'"/>
                     
@@ -1019,6 +1022,74 @@
                         </div>
                     </div>
                 </form>
+                
+                <xsl:for-each select="('Tohoku 1-1 final draft.xls', 'Tohoku 1-1 final draft(2).docx', 'Tohoku 1-1 final draft(1).docx', 'Tohoku 1-1 final draft.docx')">
+                    <hr class="sml-margin"/>
+                    <div class="row" id="submitted-files-list">
+                        <div class="col-sm-4">
+                            <div class="top-vertical">
+                                <span>
+                                    <xsl:value-of select="concat(position(), '.')"/>
+                                </span>
+                                <span>
+                                    <a href="/edit-text-submission.html?id=3456" class="">
+                                        <xsl:value-of select="."/>
+                                    </a>
+                                    <br/>
+                                    <span class="text-muted italic small">
+                                        <xsl:value-of select="'Submited 14th Jan 2019 17:17 by admin'"/>
+                                    </span>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="col-sm-8">
+                            <xsl:choose>
+                                <xsl:when test="position() eq 1">
+                                    <span class="label label-success">
+                                        <i class="fa fa-check"/>
+                                        <xsl:value-of select="'Latest spreadsheet'"/>
+                                    </span>
+                                    <span class="label label-success">
+                                        <i class="fa fa-check"/>
+                                        <xsl:value-of select="'Copyedited'"/>
+                                    </span>
+                                    <span class="label label-success">
+                                        <i class="fa fa-check"/>
+                                        <xsl:value-of select="'Apostrophes checked'"/>
+                                    </span>
+                                    <span class="label label-success">
+                                        <i class="fa fa-check"/>
+                                        <xsl:value-of select="'TEI generated'"/>
+                                    </span>
+                                </xsl:when>
+                                <xsl:when test="position() eq 2">
+                                    <span class="label label-success">
+                                        <i class="fa fa-check"/>
+                                        <xsl:value-of select="'Latest document'"/>
+                                    </span>
+                                    <span class="label label-success">
+                                        <i class="fa fa-check"/>
+                                        <xsl:value-of select="'Final draft'"/>
+                                    </span>
+                                    <span class="label label-success">
+                                        <i class="fa fa-check"/>
+                                        <xsl:value-of select="'84000 template'"/>
+                                    </span>
+                                    <span class="label label-default">
+                                        <xsl:value-of select="'TEI generated'"/>
+                                    </span>
+                                </xsl:when>
+                                <xsl:otherwise>
+                                    <span class="label label-default">
+                                        <xsl:value-of select="'Older document'"/>
+                                    </span>
+                                </xsl:otherwise>
+                            </xsl:choose>
+                            
+                        </div>
+                    </div>
+                </xsl:for-each>
+                
             </xsl:with-param>
         </xsl:call-template>
     </xsl:template>

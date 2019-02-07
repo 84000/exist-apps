@@ -11,152 +11,120 @@
         <xsl:variable name="reading-room-path" select="$environment/m:url[@id eq 'reading-room']/text()"/>
         
         <xsl:variable name="content">
-            
-            <div class="container">
-                <div class="panel panel-default">
-                    <div class="panel-heading panel-heading-bold hidden-print center-vertical">
-                        
-                        <span class="title">
-                            84000 Operations Reports
-                        </span>
-                        
-                    </div>
+            <xsl:call-template name="operations-page">
+                <xsl:with-param name="reading-room-path" select="$reading-room-path"/>
+                <xsl:with-param name="active-tab" select="@model-type"/>
+                <xsl:with-param name="page-content">
                     
-                    <div class="panel-body">
+                    <xsl:call-template name="alert-updated"/>
+                    
+                    <xsl:call-template name="alert-translation-locked"/>
+                    
+                    <form method="post" class="form-horizontal form-update">
                         
-                        <xsl:call-template name="tabs">
-                            <xsl:with-param name="active-tab" select="@model-type"/>
-                        </xsl:call-template>
+                        <xsl:attribute name="action" select="'edit-sponsor.html'"/>
+                        <xsl:variable name="sponsor-id" select="m:sponsor/@xml:id"/>
                         
-                        <div class="tab-content">
-                        
-                            <xsl:if test="m:updates/m:updated">
-                                <div class="alert alert-success alert-temporary" role="alert">
-                                    Updated
-                                </div>
-                            </xsl:if>
-                            
-                            <xsl:if test="m:sponsor/@locked-by-user gt ''">
-                                <div class="alert alert-danger" role="alert">
-                                    <xsl:value-of select="concat('File sponsors.xml is currenly locked by user ', m:translation/@locked-by-user, '. ')"/>
-                                    You cannot modify this file until the lock is released.
-                                </div>
-                            </xsl:if>
-                            
-                            <form method="post" class="form-horizontal form-update">
+                        <input type="hidden" name="post-id">
+                            <xsl:choose>
+                                <xsl:when test="$sponsor-id">
+                                    <xsl:attribute name="value" select="$sponsor-id"/>
+                                </xsl:when>
+                                <xsl:otherwise>
+                                    <xsl:attribute name="value" select="'new'"/>
+                                </xsl:otherwise>
+                            </xsl:choose>
+                        </input>
+                        <div class="row">
+                            <div class="col-sm-6">
                                 
-                                <xsl:attribute name="action" select="'edit-sponsor.html'"/>
-                                <xsl:variable name="sponsor-id" select="m:sponsor/@xml:id"/>
-                                
-                                <input type="hidden" name="post-id">
-                                    <xsl:choose>
-                                        <xsl:when test="$sponsor-id">
-                                            <xsl:attribute name="value" select="$sponsor-id"/>
-                                        </xsl:when>
-                                        <xsl:otherwise>
-                                            <xsl:attribute name="value" select="'new'"/>
-                                        </xsl:otherwise>
-                                    </xsl:choose>
-                                </input>
-                                <div class="row">
-                                    <div class="col-sm-6">
-                                
-                                        <fieldset>
-                                            <legend>
-                                                <xsl:choose>
-                                                    <xsl:when test="$sponsor-id">
-                                                        ID: <xsl:value-of select="$sponsor-id"/>
-                                                    </xsl:when>
-                                                    <xsl:otherwise>New sponsor </xsl:otherwise>
-                                                </xsl:choose>
-                                            </legend>
-                                        
-                                            
-                                                    
-                                            <xsl:copy-of select="m:text-input('Name','name', m:sponsor/m:label, 9, 'required')"/>
-                                            <xsl:copy-of select="m:text-input('Internal name','internal-name', m:sponsor/m:internal-name, 9, '')"/>
-                                            <xsl:copy-of select="m:text-input('Country','country', m:sponsor/m:country, 9, '')"/>
-                                        
-                                            <div class="form-group">
-                                                <label class="control-label col-sm-3" for="sponsor-type">
-                                                    Sponsor type:
-                                                </label>
-                                                <xsl:variable name="sponsor" select="m:sponsor"/>
-                                                <xsl:for-each select="('founding', 'sutra', 'matching')">
-                                                    <xsl:variable name="sponsor-type-id" select="."/>
-                                                    <div class="col-sm-3">
-                                                        <div class="checkbox">
-                                                            <label>
-                                                                <input type="checkbox" value="1">
-                                                                    <xsl:attribute name="name" select="concat($sponsor-type-id, '-type')"/>
-                                                                    <xsl:if test="$sponsor/m:type[@id eq $sponsor-type-id]">
-                                                                        <xsl:attribute name="checked" select="'checked'"/>
-                                                                    </xsl:if>
-                                                                </input>
-                                                                <xsl:value-of select="concat(upper-case(substring($sponsor-type-id,1,1)), substring($sponsor-type-id,2))"/>
-                                                            </label>
-                                                        </div>
-                                                    </div>
-                                                </xsl:for-each>
+                                <fieldset>
+                                    <legend>
+                                        <xsl:choose>
+                                            <xsl:when test="$sponsor-id">
+                                                ID: <xsl:value-of select="$sponsor-id"/>
+                                            </xsl:when>
+                                            <xsl:otherwise>New sponsor </xsl:otherwise>
+                                        </xsl:choose>
+                                    </legend>
+                                    
+                                    <xsl:copy-of select="m:text-input('Name','name', m:sponsor/m:label, 9, 'required')"/>
+                                    <xsl:copy-of select="m:text-input('Internal name','internal-name', m:sponsor/m:internal-name, 9, '')"/>
+                                    <xsl:copy-of select="m:text-input('Country','country', m:sponsor/m:country, 9, '')"/>
+                                    
+                                    <div class="form-group">
+                                        <label class="control-label col-sm-3" for="sponsor-type">
+                                            Sponsor type:
+                                        </label>
+                                        <xsl:variable name="sponsor" select="m:sponsor"/>
+                                        <xsl:for-each select="('founding', 'sutra', 'matching')">
+                                            <xsl:variable name="sponsor-type-id" select="."/>
+                                            <div class="col-sm-3">
+                                                <div class="checkbox">
+                                                    <label>
+                                                        <input type="checkbox" value="1">
+                                                            <xsl:attribute name="name" select="concat($sponsor-type-id, '-type')"/>
+                                                            <xsl:if test="$sponsor/m:type[@id eq $sponsor-type-id]">
+                                                                <xsl:attribute name="checked" select="'checked'"/>
+                                                            </xsl:if>
+                                                        </input>
+                                                        <xsl:value-of select="concat(upper-case(substring($sponsor-type-id,1,1)), substring($sponsor-type-id,2))"/>
+                                                    </label>
+                                                </div>
                                             </div>
-                                            
-                                            <hr/>
-                                            
-                                            <div>
-                                                <xsl:if test="$sponsor-id">
-                                                    <xsl:choose>
-                                                        <xsl:when test="m:sponsor/m:acknowledgement">
-                                                            <!-- Disable if there are acknowledgments -->
-                                                            <span title="You cannot delete an credited sponsor">
-                                                                <a href="#" class="btn btn-default disabled">
-                                                                    <xsl:value-of select="'Delete'"/>
-                                                                </a>
-                                                            </span>
-                                                        </xsl:when>
-                                                        <xsl:otherwise>
-                                                            <a class="btn btn-danger">
-                                                                <xsl:attribute name="href" select="concat('/sponsors.html?delete=', $sponsor-id)"/>
-                                                                <xsl:value-of select="'Delete'"/>
-                                                            </a>
-                                                        </xsl:otherwise>
-                                                    </xsl:choose>
-                                                </xsl:if>
-                                                
-                                                <button type="submit" class="btn btn-primary pull-right">
-                                                    Save
-                                                </button>
-                                            </div>
-                                            
-                                        </fieldset>
+                                        </xsl:for-each>
                                     </div>
-                                
-                                    <section class="col-sm-6">
-                                        <xsl:if test="m:sponsor/m:acknowledgement">
-                                            <div class="relative" id="sponsor-acknowledgements">
-                                                <xsl:if test="count(m:sponsor/m:acknowledgement) gt 1">
-                                                    <xsl:attribute name="class" select="'relative preview-list render-in-viewport'"/>
-                                                </xsl:if>
-                                                <h4>Acknowledgements</h4>
-                                                <xsl:call-template name="acknowledgements">
-                                                    <xsl:with-param name="acknowledgements" select="m:sponsor/m:acknowledgement"/>
-                                                    <xsl:with-param name="css-class" select="''"/>
-                                                    <xsl:with-param name="group" select="''"/>
-                                                    <xsl:with-param name="link-href" select="'/edit-text-sponsors.html?id=@translation-id'"/>
-                                                </xsl:call-template>
-                                            </div>
+                                    
+                                    <hr/>
+                                    
+                                    <div>
+                                        <xsl:if test="$sponsor-id">
+                                            <xsl:choose>
+                                                <xsl:when test="m:sponsor/m:acknowledgement">
+                                                    <!-- Disable if there are acknowledgments -->
+                                                    <span title="You cannot delete an credited sponsor">
+                                                        <a href="#" class="btn btn-default disabled">
+                                                            <xsl:value-of select="'Delete'"/>
+                                                        </a>
+                                                    </span>
+                                                </xsl:when>
+                                                <xsl:otherwise>
+                                                    <a class="btn btn-danger">
+                                                        <xsl:attribute name="href" select="concat('/sponsors.html?delete=', $sponsor-id)"/>
+                                                        <xsl:value-of select="'Delete'"/>
+                                                    </a>
+                                                </xsl:otherwise>
+                                            </xsl:choose>
                                         </xsl:if>
-                                    </section>
-                                </div>
-                                
-                                
-                                
-                            </form>
+                                        
+                                        <button type="submit" class="btn btn-primary pull-right">
+                                            Save
+                                        </button>
+                                    </div>
+                                    
+                                </fieldset>
+                            </div>
                             
+                            <section class="col-sm-6">
+                                <div class="relative" id="sponsor-acknowledgements">
+                                    <xsl:if test="count(m:sponsor/m:acknowledgement) gt 1">
+                                        <xsl:attribute name="class" select="'relative preview-list render-in-viewport'"/>
+                                    </xsl:if>
+                                    <h4>Acknowledgements</h4>
+                                    <hr class="sml-margin"/>
+                                    <xsl:call-template name="acknowledgements">
+                                        <xsl:with-param name="acknowledgements" select="m:sponsor/m:acknowledgement"/>
+                                        <xsl:with-param name="css-class" select="''"/>
+                                        <xsl:with-param name="group" select="''"/>
+                                        <xsl:with-param name="link-href" select="'/edit-text-sponsors.html?id=@translation-id'"/>
+                                    </xsl:call-template>
+                                </div>
+                            </section>
                         </div>
-                    </div>
-                    
-                </div>
-            </div>
+                        
+                    </form>
+                </xsl:with-param>
+            </xsl:call-template>
             
         </xsl:variable>
         

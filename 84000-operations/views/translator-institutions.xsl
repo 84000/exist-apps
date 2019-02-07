@@ -11,107 +11,94 @@
         <xsl:variable name="reading-room-path" select="$environment/m:url[@id eq 'reading-room']/text()"/>
         
         <xsl:variable name="content">
-            <div class="container">
-                <div class="panel panel-default">
-                    <div class="panel-heading panel-heading-bold hidden-print center-vertical">
+            
+            <xsl:call-template name="operations-page">
+                <xsl:with-param name="reading-room-path" select="$reading-room-path"/>
+                <xsl:with-param name="active-tab" select="@model-type"/>
+                <xsl:with-param name="page-content">
+                    <div class="well well-sm center-vertical full-width bottom-margin">
                         
-                        <span class="title">
-                            84000 Operations Reports
+                        <span class="small">
+                            <xsl:value-of select="concat('Listing ', fn:format-number(xs:integer(count(m:contributor-institutions/m:institution)),'#,##0'), ' institutions')"/>
+                        </span>
+                        
+                        <span>
+                            <form method="post" action="/translator-institutions.html" class="form-inline filter-form pull-right">
+                                
+                                <div class="checkbox">
+                                    <label class="small">
+                                        <input type="checkbox" name="include-contributors" value="1">
+                                            <xsl:if test="m:request/@include-contributors eq 'true'">
+                                                <xsl:attribute name="checked" select="'checked'"/>
+                                            </xsl:if>
+                                        </input>
+                                        <xsl:value-of select="'Show associated contributors'"/>
+                                    </label>
+                                </div>
+                                
+                                <a class="btn btn-primary btn-sml">
+                                    <xsl:attribute name="href" select="'/edit-translator-institution.html'"/>
+                                    <xsl:value-of select="'Add an institution'"/>
+                                </a>
+                                
+                            </form>
                         </span>
                         
                     </div>
                     
-                    <div class="panel-body">
-                        
-                        <xsl:call-template name="tabs">
-                            <xsl:with-param name="active-tab" select="@model-type"/>
-                        </xsl:call-template>
-                        
-                        <div class="well well-sm center-vertical full-width bottom-margin">
+                    <div class="row">
+                        <div class="col-items div-list">
                             
-                            <span class="small">
-                                Listing 
-                                <xsl:value-of select="fn:format-number(xs:integer(count(m:contributor-institutions/m:institution)),'#,##0')"/> institutions 
-                            </span>
-                            
-                            <span>
-                                <form method="post" action="/translator-institutions.html" class="form-inline filter-form pull-right">
+                            <xsl:for-each select="m:contributor-institutions/m:institution">
+                                <xsl:sort select="@start-letter"/>
+                                <xsl:variable name="institution-id" select="@xml:id"/>
+                                <xsl:variable name="region-id" select="@region-id"/>
+                                <xsl:variable name="institution-type-id" select="@institution-type-id"/>
+                                <div class="item">
                                     
-                                    <div class="checkbox">
-                                        <label class="small">
-                                            <input type="checkbox" name="include-contributors" value="1">
-                                                <xsl:if test="m:request/@include-contributors eq 'true'">
-                                                    <xsl:attribute name="checked" select="'checked'"/>
-                                                </xsl:if>
-                                            </input>
-                                            Show associated contributors
-                                        </label>
-                                    </div>
+                                    <xsl:copy-of select="common:marker(@start-letter, if(preceding-sibling::m:institution[1]/@start-letter) then preceding-sibling::m:institution[1]/@start-letter else '')"/>
                                     
-                                    <a class="btn btn-primary btn-sml">
-                                        <xsl:attribute name="href" select="'/edit-translator-institution.html'"/>
-                                        Add an institution
-                                    </a>
-                                    
-                                </form>
-                            </span>
-                            
-                        </div>
-                        
-                        <div class="row">
-                            <div class="col-items div-list">
-                                
-                                <xsl:for-each select="m:contributor-institutions/m:institution">
-                                    <xsl:sort select="@start-letter"/>
-                                    <xsl:variable name="institution-id" select="@xml:id"/>
-                                    <xsl:variable name="region-id" select="@region-id"/>
-                                    <xsl:variable name="institution-type-id" select="@institution-type-id"/>
-                                    <div class="item">
-                                        
-                                        <xsl:copy-of select="common:marker(@start-letter, if(preceding-sibling::m:institution[1]/@start-letter) then preceding-sibling::m:institution[1]/@start-letter else '')"/>
-                                        
-                                        <div class="row">
-                                            <div class="col-sm-6">
-                                                <a>
-                                                    <xsl:attribute name="href" select="concat('/edit-translator-institution.html?id=', $institution-id)"/>
-                                                    <xsl:value-of select="m:sort-name"/>
-                                                </a>
-                                            </div>
-                                            
-                                            <div class="col-sm-3">
-                                                <xsl:value-of select="/m:response/m:contributor-regions/m:region[@id eq $region-id]/m:label"/>
-                                            </div>
-                                            
-                                            <div class="col-sm-3">
-                                                <xsl:value-of select="/m:response/m:contributor-institution-types/m:institution-type[@id eq $institution-type-id]/m:label"/>
-                                            </div>
-                                            
-                                            <xsl:if test="/m:response/m:request/@include-contributors eq 'true'">
-                                                <div class="col-sm-12">
-                                                    <ul>
-                                                        <xsl:for-each select="/m:response/m:contributor-persons/m:person[m:institution/@id = $institution-id]">
-                                                            <li>
-                                                                <xsl:value-of select="m:label"/>
-                                                            </li>
-                                                        </xsl:for-each>
-                                                    </ul>
-                                                </div>
-                                            </xsl:if>
+                                    <div class="row">
+                                        <div class="col-sm-6">
+                                            <a>
+                                                <xsl:attribute name="href" select="concat('/edit-translator-institution.html?id=', $institution-id)"/>
+                                                <xsl:value-of select="m:sort-name"/>
+                                            </a>
                                         </div>
                                         
+                                        <div class="col-sm-3">
+                                            <xsl:value-of select="/m:response/m:contributor-regions/m:region[@id eq $region-id]/m:label"/>
+                                        </div>
+                                        
+                                        <div class="col-sm-3">
+                                            <xsl:value-of select="/m:response/m:contributor-institution-types/m:institution-type[@id eq $institution-type-id]/m:label"/>
+                                        </div>
+                                        
+                                        <xsl:if test="/m:response/m:request/@include-contributors eq 'true'">
+                                            <div class="col-sm-12">
+                                                <ul>
+                                                    <xsl:for-each select="/m:response/m:contributor-persons/m:person[m:institution/@id = $institution-id]">
+                                                        <li>
+                                                            <xsl:value-of select="m:label"/>
+                                                        </li>
+                                                    </xsl:for-each>
+                                                </ul>
+                                            </div>
+                                        </xsl:if>
                                     </div>
-                                </xsl:for-each>
-                                
-                            </div>
-                            
-                            <div id="letters-nav" class="col-nav">
-                                <xsl:copy-of select="common:marker-nav(m:contributor-institutions/m:institution)"/>
-                            </div>
+                                    
+                                </div>
+                            </xsl:for-each>
                             
                         </div>
+                        
+                        <div id="letters-nav" class="col-nav">
+                            <xsl:copy-of select="common:marker-nav(m:contributor-institutions/m:institution)"/>
+                        </div>
+                        
                     </div>
-                </div>
-            </div>
+                </xsl:with-param>
+            </xsl:call-template>
             
         </xsl:variable>
         

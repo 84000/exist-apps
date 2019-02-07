@@ -12,49 +12,32 @@
         
         <xsl:variable name="content">
             
-            <div class="container">
-                <div class="panel panel-default">
-                    <div class="panel-heading panel-heading-bold hidden-print center-vertical">
-                        
-                        <span class="title">
-                            84000 Operations Reports
+            <xsl:call-template name="operations-page">
+                <xsl:with-param name="reading-room-path" select="$reading-room-path"/>
+                <xsl:with-param name="active-tab" select="@model-type"/>
+                <xsl:with-param name="page-content">
+                    
+                    <xsl:call-template name="alert-updated"/>
+                    
+                    <xsl:call-template name="alert-translation-locked"/>
+                    
+                    <div class="center-vertical full-width bottom-margin">
+                        <span class="h3 text-sa">
+                            <a target="_blank" class="text-muted">
+                                <xsl:attribute name="href" select="concat($reading-room-path, '/translation/', m:translation/@id, '.html')"/>
+                                <xsl:value-of select="m:translation/m:titles/m:title[@xml:lang eq 'en']"/>
+                            </a>
                         </span>
-                        
-                    </div>
-                    
-                    <div class="panel-body">
-                        
-                        <xsl:call-template name="tabs">
-                            <xsl:with-param name="active-tab" select="@model-type"/>
-                        </xsl:call-template>
-                        
-                        <div class="tab-content">
-                        
-                            <xsl:call-template name="alert-updated"/>
-                            
-                            <xsl:call-template name="alert-translation-locked"/>
-                            
-                            <div class="center-vertical full-width bottom-margin">
-                                <span class="h3 text-sa">
-                                    <a target="_blank" class="text-muted">
-                                        <xsl:attribute name="href" select="concat($reading-room-path, '/translation/', m:translation/@id, '.html')"/>
-                                        <xsl:value-of select="m:translation/m:titles/m:title[@xml:lang eq 'en']"/>
-                                    </a>
-                                </span>
-                                <span>
-                                    <div class="pull-right">
-                                        <xsl:copy-of select="common:translation-status(m:translation/@status)"/>
-                                    </div>
-                                </span>
+                        <span>
+                            <div class="pull-right">
+                                <xsl:copy-of select="common:translation-status(m:translation/@status)"/>
                             </div>
-                            
-                            <xsl:call-template name="sponsors-form"/>
-                            
-                        </div>
+                        </span>
                     </div>
                     
-                </div>
-            </div>
+                    <xsl:call-template name="text-sponsors-form"/>
+                </xsl:with-param>
+            </xsl:call-template>
             
         </xsl:variable>
         

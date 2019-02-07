@@ -12,93 +12,78 @@
         
         <xsl:variable name="content">
             
-            <div class="container">
-                <div class="panel panel-default">
-                    <div class="panel-heading panel-heading-bold hidden-print center-vertical">
-                        
-                        <span class="title">
-                            84000 Operations Reports
+            <xsl:call-template name="operations-page">
+                <xsl:with-param name="reading-room-path" select="$reading-room-path"/>
+                <xsl:with-param name="active-tab" select="@model-type"/>
+                <xsl:with-param name="page-content">
+                    
+                    <xsl:call-template name="alert-updated"/>
+                    
+                    <xsl:call-template name="alert-translation-locked"/>
+                    
+                    <!-- Title -->
+                    <div class="center-vertical full-width bottom-margin">
+                        <span class="h3 text-sa">
+                            <a target="_blank" class="text-muted">
+                                <xsl:attribute name="href" select="concat($reading-room-path, '/translation/', m:translation/@id, '.html')"/>
+                                <xsl:value-of select="concat(m:translation/m:toh/m:full, ': ', m:translation/m:title)"/>
+                                <xsl:if test="normalize-space(m:translation/m:translation/m:edition)">
+                                    <xsl:value-of select="' / '"/>
+                                    <span class="small">
+                                        <xsl:value-of select="m:translation/m:translation/m:edition"/>
+                                    </span>
+                                </xsl:if>
+                            </a>
                         </span>
-                        
+                        <span>
+                            <div class="pull-right">
+                                <xsl:copy-of select="common:translation-status(m:translation/@status)"/>
+                            </div>
+                        </span>
                     </div>
                     
-                    <div class="panel-body">
+                    <!-- 
+                        <hr class="sml-margin"/>
+                        Summary
+                        <div class="top-vertical bottom-margin">
+                            <a role="button" data-toggle="collapse" href="#panelStatus" aria-expanded="false" aria-controls="panelTitles" class="italic text-color">
+                                <xsl:choose>
+                                    <xsl:when test="m:translation-status/m:notes/text()">
+                                        <xsl:value-of select="common:limit-str(m:translation-status/m:notes, 160)"/>
+                                    </xsl:when>
+                                    <xsl:otherwise>
+                                        [No notes]
+                                    </xsl:otherwise>
+                                </xsl:choose>
+                            </a>
+                            <xsl:if test="m:translation-status/m:task[not(@checked-off)]">
+                               <a role="button" data-toggle="collapse" href="#panelStatus" aria-expanded="false" aria-controls="panelTitles">
+                                   <span class="badge badge-notification">
+                                       <xsl:value-of select="count(m:translation-status/m:task[not(@checked-off)])"/>
+                                   </span>
+                               </a>
+                            </xsl:if>
+                        </div> -->
+                    
+                    <div class="panel-group" role="tablist" aria-multiselectable="true" id="forms-accordion">
                         
-                        <xsl:call-template name="tabs">
-                            <xsl:with-param name="active-tab" select="@model-type"/>
+                        <xsl:call-template name="titles-form-panel"/>
+                        
+                        <xsl:call-template name="locations-form-panel"/>
+                        
+                        <xsl:call-template name="contributors-form-panel"/>
+                        
+                        <xsl:call-template name="translation-status-form-panel">
+                            <xsl:with-param name="active" select="true()"/>
                         </xsl:call-template>
                         
-                        <div class="tab-content">
+                        <!-- 
+                            Submissions form prototype -->
+                        <xsl:call-template name="submissions-form-panel"/>
                         
-                            <xsl:call-template name="alert-updated"/>
-                            
-                            <xsl:call-template name="alert-translation-locked"/>
-                            
-                            <!-- Title -->
-                            <div class="center-vertical full-width bottom-margin">
-                                <span class="h3 text-sa">
-                                    <a target="_blank" class="text-muted">
-                                        <xsl:attribute name="href" select="concat($reading-room-path, '/translation/', m:translation/@id, '.html')"/>
-                                        <xsl:value-of select="concat(m:translation/m:toh/m:full, ': ', m:translation/m:title)"/>
-                                        <xsl:if test="normalize-space(m:translation/m:translation/m:edition)">
-                                            <xsl:value-of select="' / '"/>
-                                            <span class="small">
-                                                <xsl:value-of select="m:translation/m:translation/m:edition"/>
-                                            </span>
-                                        </xsl:if>
-                                    </a>
-                                </span>
-                                <span>
-                                    <div class="pull-right">
-                                        <xsl:copy-of select="common:translation-status(m:translation/@status)"/>
-                                    </div>
-                                </span>
-                            </div>
-                            
-                            <!-- 
-                            <hr class="sml-margin"/>
-                            Summary
-                            <div class="top-vertical bottom-margin">
-                                <a role="button" data-toggle="collapse" href="#panelStatus" aria-expanded="false" aria-controls="panelTitles" class="italic text-color">
-                                    <xsl:choose>
-                                        <xsl:when test="m:translation-status/m:notes/text()">
-                                            <xsl:value-of select="common:limit-str(m:translation-status/m:notes, 160)"/>
-                                        </xsl:when>
-                                        <xsl:otherwise>
-                                            [No notes]
-                                        </xsl:otherwise>
-                                    </xsl:choose>
-                                </a>
-                                <xsl:if test="m:translation-status/m:task[not(@checked-off)]">
-                                   <a role="button" data-toggle="collapse" href="#panelStatus" aria-expanded="false" aria-controls="panelTitles">
-                                       <span class="badge badge-notification">
-                                           <xsl:value-of select="count(m:translation-status/m:task[not(@checked-off)])"/>
-                                       </span>
-                                   </a>
-                                </xsl:if>
-                            </div> -->
-                            
-                            <div class="panel-group" role="tablist" aria-multiselectable="true" id="forms-accordion">
-                                
-                                <xsl:call-template name="titles-form-panel"/>
-                                
-                                <xsl:call-template name="locations-form-panel"/>
-                                
-                                <xsl:call-template name="contributors-form-panel"/>
-                                
-                                <xsl:call-template name="translation-status-form-panel">
-                                    <xsl:with-param name="active" select="true()"/>
-                                </xsl:call-template>
-                                
-                                <!-- 
-                                Submissions form prototype
-                                <xsl:call-template name="submissions-form-panel"/>
-                                 -->
-                            </div>
-                        </div>
                     </div>
-                </div>
-            </div>
+                </xsl:with-param>
+            </xsl:call-template>
             
         </xsl:variable>
         
@@ -111,6 +96,5 @@
         </xsl:call-template>
         
     </xsl:template>
-    
     
 </xsl:stylesheet>

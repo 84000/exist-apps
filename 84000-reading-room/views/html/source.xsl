@@ -44,7 +44,7 @@
                         </div>
                         <div class="well well-sml">
                             <p class="text-center text-muted">
-                                The english translation of this folio by <span class="title">84000 - Translating the words of the Buddha</span> can be found at:
+                                <xsl:copy-of select="m:app-text[@key eq 'source.backlink-label']/xhtml:*" copy-namespaces="no"/>
                                 <br/>
                                 <a href="#">
                                     <xsl:attribute name="href" select="m:back-link/@url"/>

@@ -44,6 +44,13 @@
                         <xsl:if test="m:updated">
                             <div class="alert alert-success" role="alert">
                                 <xsl:value-of select="m:updated"/>
+                                <xsl:value-of select="' | '"/>
+                                <xsl:if test="m:updated/@resource-id">
+                                    <a class="scroll-to-anchor alert-link">
+                                        <xsl:attribute name="href" select="concat('#', m:updated/@resource-id)"/>
+                                        <xsl:value-of select="'Go there'"/>
+                                    </a>
+                                </xsl:if>
                             </div>
                         </xsl:if>
                         
@@ -219,7 +226,7 @@
                                                                         <!-- If outdated then offer to get from master -->
                                                                         <xsl:when test="compare($master-tei-version, $tei-version) ne 0">
                                                                             <a>
-                                                                                <xsl:attribute name="href" select="concat('/translations.html?store=', $toh/@key, '.tei#', $toh/@key)"/>
+                                                                                <xsl:attribute name="href" select="concat('/translations.html?store=', $toh/@key, '.tei')"/>
                                                                                 <span class="label label-success">
                                                                                     <xsl:value-of select="concat('Get ', $master-tei-version)"/>
                                                                                 </span>
@@ -257,7 +264,7 @@
                                                                             <!-- If outdated then offer to get from master -->
                                                                             <xsl:when test="compare($file-version, $master-file-version) ne 0">
                                                                                 <a>
-                                                                                    <xsl:attribute name="href" select="concat('/translations.html?store=', $toh/@key, '.', $file-format, '#', $toh/@key)"/>
+                                                                                    <xsl:attribute name="href" select="concat('/translations.html?store=', $toh/@key, '.', $file-format)"/>
                                                                                     <xsl:attribute name="title" select="'Update this file'"/>
                                                                                     <span class="label label-warning">
                                                                                         <xsl:if test="$status-id eq '1'">
@@ -283,7 +290,7 @@
                                                                             <!-- Versions don't match so offer create option -->
                                                                             <xsl:when test="compare($file-version, $tei-version) ne 0">
                                                                                 <a>
-                                                                                    <xsl:attribute name="href" select="concat('/translations.html?store=', $toh/@key, '.', $file-format, '#', $toh/@key)"/>
+                                                                                    <xsl:attribute name="href" select="concat('/translations.html?store=', $toh/@key, '.', $file-format)"/>
                                                                                     <xsl:attribute name="title" select="'Create this file'"/>
                                                                                     <span class="label label-warning">
                                                                                         <xsl:if test="$status-id eq '1'">
