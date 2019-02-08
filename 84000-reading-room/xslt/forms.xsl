@@ -199,7 +199,7 @@
     <xsl:template name="locations-controls">
         <xsl:param name="tohs" required="yes"/>
         <xsl:for-each select="$tohs">
-            <xsl:variable name="toh-key" select="@key"/>
+            <xsl:variable name="toh-key" select="./@key"/>
             <xsl:variable name="toh-location" select="/m:response/m:translation/m:location[@key eq $toh-key]"/>
             <input type="hidden">
                 <xsl:attribute name="name" select="concat('location-', $toh-key)"/>
@@ -207,7 +207,7 @@
             </input>
             <fieldset>
                 <legend>
-                    <xsl:value-of select="concat('Toh ', m:base)"/>
+                    <xsl:value-of select="concat('Toh ', ./m:base)"/>
                 </legend>
                 <div class="row">
                     <div class="col-sm-4">
@@ -240,9 +240,7 @@
                     </input>
                     <div class="row">
                         <div class="col-sm-8">
-                            
                             <xsl:copy-of select="m:select-input('Translation Status', 'translation-status', 9, 1, m:text-statuses/m:status)"/>
-                            
                             <xsl:variable name="translator-team-id" select="substring-after(m:translation/m:translation/m:contributors/m:summary[1]/@sameAs, 'contributors.xml#')"/>
                             <div class="form-group">
                                 <label class="control-label col-sm-3">
@@ -264,7 +262,21 @@
                                     </select>
                                 </div>
                             </div>
-  
+                        </div>
+                        <div class="col-sm-4">
+                            <xsl:if test="m:translation/m:translation/m:contributors/m:summary">
+                                <div class="text-bold">Attribution</div>
+                                <xsl:for-each select="m:translation/m:translation/m:contributors/m:summary">
+                                    <p>
+                                        <xsl:apply-templates select="node()"/>
+                                    </p>
+                                </xsl:for-each>
+                            </xsl:if>
+                        </div>
+                    </div>
+                    <hr class="sml-margin"/>
+                    <div class="row">
+                        <div class="col-sm-8">
                             <div class="add-nodes-container">
                                 <xsl:call-template name="contributors-controls">
                                     <xsl:with-param name="text-contributors" select="m:translation/m:translation/m:contributors/m:*[self::m:author | self::m:editor | self::m:consultant]"/>
@@ -275,30 +287,22 @@
                                         <span class="monospace">+</span> add a contributor </a>
                                 </div>
                             </div>
-                            
                         </div>
                         <div class="col-sm-4">
-                            <xsl:if test="m:translation/m:translation/m:contributors/m:summary">
-                                <div class="text-bold">Attribution</div>
-                                <xsl:for-each select="m:translation/m:translation/m:contributors/m:summary">
-                                    <p>
-                                        <xsl:apply-templates select="node()"/>
-                                    </p>
-                                </xsl:for-each>
-                                <hr/>
-                            </xsl:if>
                             <xsl:if test="m:translation/m:contributors/tei:div[@type eq 'acknowledgment']/tei:p">
                                 <div class="text-bold">
-                                    <xsl:value-of select="'Acknowledgment'"/>
+                                    <xsl:value-of select="'Acknowledgments'"/>
                                 </div>
                                 <xsl:apply-templates select="m:translation/m:contributors/tei:div[@type eq 'acknowledgment']/tei:p"/>
-                                <hr/>
                             </xsl:if>
-                            <p class="small text-muted"> If a sponsor or a translator is not automatically recognised in the acknowledgement text then please specify what they are "expressed as". If a
-                                sponsor or a translator is already highlighted then you can leave this field blank. </p>
                         </div>
                     </div>
-                    <hr/>
+                    <hr class="sml-margin"/>
+                    <div>
+                        <p class="small text-muted"> If a sponsor or a translator is not automatically recognised in the acknowledgement text then please specify what they are "expressed as". If a
+                            sponsor or a translator is already highlighted then you can leave this field blank. </p>
+                    </div>
+                    <hr class="sml-margin"/>
                     <div class="form-group">
                         <div class="col-sm-offset-2 col-sm-10">
                             <div class="pull-right">
@@ -339,21 +343,21 @@
                         <xsl:variable name="contributor-type" select="concat(node-name(.), '-', @role)"/>
                         <xsl:variable name="index" select="common:index-of-node($text-contributors, .)"/>
                         <div class="form-group add-nodes-group">
-                            <div class="col-sm-2">
+                            <div class="col-sm-3">
                                 <xsl:call-template name="select-contributor-type">
                                     <xsl:with-param name="contributor-types" select="$contributor-types"/>
                                     <xsl:with-param name="control-name" select="concat('contributor-type-', $index)"/>
                                     <xsl:with-param name="selected-value" select="$contributor-type"/>
                                 </xsl:call-template>
                             </div>
-                            <div class="col-sm-4">
+                            <div class="col-sm-3">
                                 <xsl:call-template name="select-contributor">
                                     <xsl:with-param name="contributor-id" select="$contributor-id"/>
                                     <xsl:with-param name="control-name" select="concat('contributor-id-', $index)"/>
                                 </xsl:call-template>
                             </div>
                             <label class="control-label col-sm-2">
-                                <xsl:value-of select="'expressed as:'"/>
+                                <xsl:value-of select="'expression:'"/>
                             </label>
                             <div class="col-sm-4">
                                 <input class="form-control" placeholder="same">
@@ -363,6 +367,37 @@
                                     </xsl:if>
                                 </input>
                             </div>
+                            <!-- 
+                            <div class="col-sm-3">
+                                <select class="form-control">
+                                    <xsl:choose>
+                                        <xsl:when test="$index = (1,3)">
+                                            <option>Translation complete</option>
+                                        </xsl:when>
+                                        <xsl:when test="$index = (6)">
+                                            <option>First edit complete</option>
+                                        </xsl:when>
+                                        <xsl:when test="$index = (4)">
+                                            <option>First proofread</option>
+                                        </xsl:when>
+                                        <xsl:otherwise>
+                                            <option></option>
+                                        </xsl:otherwise>
+                                    </xsl:choose>
+                                </select>
+                            </div>
+                            <div class="col-sm-1">
+                                <xsl:choose>
+                                    <xsl:when test="$index = (4)">
+                                        <span class="label label-success">
+                                            <i class="fa fa-check"/>
+                                            <xsl:value-of select="' Active'"/>
+                                        </span>
+                                    </xsl:when>
+                                    <xsl:otherwise>
+                                    </xsl:otherwise>
+                                </xsl:choose>
+                            </div> -->
                         </div>
                     </xsl:for-each>
                 </xsl:for-each>
@@ -465,6 +500,7 @@
                         <xsl:attribute name="value" select="m:translation/@id"/>
                     </input>
                     <div class="row">
+                        <!-- <div class="col-sm-12"> -->
                         <div class="col-sm-8">
                             <xsl:copy-of select="m:select-input('Translation Status', 'translation-status', 9, 1, m:text-statuses/m:status)"/>
                             <div class="form-group">
@@ -499,6 +535,7 @@
                                     </input>
                                 </div>
                             </div>
+                            <!--  -->
                             <div class="form-group">
                                 <label class="control-label col-sm-3" for="progress-notes">
                                     <xsl:value-of select="'Awaiting action from:'"/>
@@ -517,7 +554,7 @@
                             <div class="form-group">
                                 <label class="control-label col-sm-3" for="progress-note">Progress notes:</label>
                                 <div class="col-sm-9">
-                                    <textarea class="form-control" rows="6" name="progress-note" id="progress-note" placeholder="Notes about the status of the translation...">
+                                    <textarea class="form-control" rows="4" name="progress-note" id="progress-note" placeholder="Notes about the status of the translation...">
                                         <xsl:copy-of select="m:translation-status/m:progress-note/text()"/>
                                     </textarea>
                                     <xsl:if test="m:translation-status/m:progress-note/@last-edited">
@@ -532,7 +569,7 @@
                                     <xsl:value-of select="'Text notes:'"/>
                                 </label>
                                 <div class="col-sm-9">
-                                    <textarea class="form-control" rows="6" name="text-note" id="text-note" placeholder="Notes about the text itself...">
+                                    <textarea class="form-control" rows="4" name="text-note" id="text-note" placeholder="Notes about the text itself...">
                                         <xsl:copy-of select="m:translation-status/m:text-note/text()"/>
                                     </textarea>
                                     <xsl:if test="m:translation-status/m:text-note/@last-edited">
@@ -543,6 +580,8 @@
                                 </div>
                             </div>
                         </div>
+                        
+                        <!--  -->
                         <div class="col-sm-4">
                             <h4 class="no-top-margin text-danger">
                                 <xsl:value-of select="'Task list'"/>
@@ -596,7 +635,9 @@
                                                 <label class="small">
                                                     <input type="checkbox" name="task-hide[]">
                                                         <xsl:attribute name="value" select="@xml:id"/>
-                                                    </input> Hide </label>
+                                                    </input>
+                                                    <xsl:value-of select="'Hide'"/>
+                                                </label>
                                             </div>
                                         </div>
                                     </div>
@@ -606,7 +647,9 @@
                                 <hr class="sml-margin"/>
                                 <h4>
                                     <a href="#hidden-tasks" class="collapsed text-color" role="button" data-toggle="collapse" aria-controls="hidden-tasks" aria-expanded="false">
-                                        <i class="fa fa-chevron-down"/> Hidden tasks </a>
+                                        <i class="fa fa-chevron-down"/>
+                                        <xsl:value-of select="'Hidden tasks'"/>
+                                    </a>
                                 </h4>
                                 <div class="collapse" id="hidden-tasks">
                                     <xsl:for-each select="m:translation-status/m:task[@hidden]">
@@ -625,58 +668,59 @@
                                 </div>
                             </xsl:if>
                         </div>
+                        
                         <!-- 
                         <div class="col-sm-4">
                             <h4 class="no-top-margin text-danger">
                                 <xsl:value-of select="'Task list'"/>
                             </h4>
                             <hr class="sml-margin"/>
-                            <div class="checkbox">
+                            <div class="checkbox pull-quote red-quote">
                                 <label>
                                     <input type="checkbox" checked="checked"/>
                                     <xsl:value-of select="'Final draft sumbitted'"/>
                                 </label>
                                 <p class="small text-muted italic">Set by andre at 12:44 26th Jan 2019</p>
                             </div>
-                            <div class="checkbox">
+                            <div class="checkbox pull-quote red-quote">
                                 <label>
                                     <input type="checkbox" checked="checked"/>
                                     <xsl:value-of select="'Translation copyedited'"/>
                                 </label>
                                 <p class="small text-muted italic">Set by andre at 12:44 26th Jan 2019</p>
                             </div>
-                            <div class="checkbox">
+                            <div class="checkbox pull-quote red-quote">
                                 <label>
                                     <input type="checkbox" checked="checked"/>
                                     <xsl:value-of select="'Glossary copyedited'"/>
                                 </label>
                                 <p class="small text-muted italic">Set by andre at 12:44 26th Jan 2019</p>
                             </div>
-                            <div class="checkbox">
+                            <div class="checkbox pull-quote">
                                 <label>
                                     <input type="checkbox"/>
                                     <xsl:value-of select="'Marked up'"/>
                                 </label>
                             </div>
-                            <div class="checkbox">
+                            <div class="checkbox pull-quote">
                                 <label>
                                     <input type="checkbox"/>
                                     <xsl:value-of select="'Markup editor revisions accepted'"/>
                                 </label>
                             </div>
-                            <div class="checkbox">
+                            <div class="checkbox pull-quote">
                                 <label>
                                     <input type="checkbox"/>
                                     <xsl:value-of select="'Copyeditor reviewed'"/>
                                 </label>
                             </div>
-                            <div class="checkbox">
+                            <div class="checkbox pull-quote">
                                 <label>
                                     <input type="checkbox"/>
                                     <xsl:value-of select="'Copyeditor revisions accepted'"/>
                                 </label>
                             </div>
-                            <div class="checkbox">
+                            <div class="checkbox pull-quote">
                                 <label>
                                     <input type="checkbox"/>
                                     <xsl:value-of select="'Approved for publication'"/>

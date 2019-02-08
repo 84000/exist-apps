@@ -384,7 +384,7 @@
                                 <tbody>
                                     <tr>
                                         <td>
-                                            <xsl:value-of select="concat('Translated: ', format-number(count($section/m:texts/m:text), '#,###'))"/>
+                                            <xsl:value-of select="concat('Published: ', format-number(count($section/m:texts/m:text), '#,###'))"/>
                                         </td>
                                     </tr>
                                 </tbody>
@@ -402,7 +402,7 @@
                                             <xsl:value-of select="concat('Texts: ', format-number($count-texts, '#,###'))"/>
                                         </td>
                                         <td>
-                                            <xsl:value-of select="concat('Translated: ', format-number($count-published, '#,###'))"/>
+                                            <xsl:value-of select="concat('Published: ', format-number($count-published, '#,###'))"/>
                                         </td>
                                         <td>
                                             <xsl:value-of select="concat('In Progress: ', format-number($count-in-progress, '#,###'))"/>
@@ -432,24 +432,46 @@
                 <div class="hidden-xs hidden-sm col-md-1">Toh</div>
                 <div class="col-md-8">Title</div>
                 <div class="col-md-3">
-                    
-                    <!-- Form to filter translated -->
-                    <form method="post" class="filter-form">
-                        <xsl:if test="lower-case($section/@id) eq 'all-translated'">
-                            <xsl:attribute name="class" select="'filter-form hidden'"/>
-                        </xsl:if>
-                        <div class="checkbox">
-                            <label>
-                                <input type="checkbox" name="published-only" value="1">
-                                    <xsl:if test="m:section/m:texts/@published-only eq '1'">
-                                        <xsl:attribute name="checked" select="'checked'"/>
-                                    </xsl:if>
-                                </input>
-                                <xsl:value-of select="'Translated texts only'"/>
-                            </label>
-                        </div>
-                    </form>
-                    
+                    <!-- Filter / Sort options -->
+                    <xsl:choose>
+                        <xsl:when test="lower-case($section/@id) eq 'all-translated'">
+                            <!-- Form to sort translated -->
+                            <form method="post" class="filter-form">
+                                <label class="sr-only">
+                                    <xsl:value-of select="'Sort translations'"/>
+                                </label>
+                                <select name="translations-order" class="form-control">
+                                    <option value="toh">
+                                        <xsl:if test="m:request/@translations-order eq 'toh'">
+                                            <xsl:attribute name="selected" select="'selected'"/>
+                                        </xsl:if>
+                                        <xsl:value-of select="'Sort by Tohoku number'"/>
+                                    </option>
+                                    <option value="latest">
+                                        <xsl:if test="m:request/@translations-order eq 'latest'">
+                                            <xsl:attribute name="selected" select="'latest'"/>
+                                        </xsl:if>
+                                        <xsl:value-of select="'Most recent publications'"/>
+                                    </option>
+                                </select>
+                            </form>
+                        </xsl:when>
+                        <xsl:otherwise>
+                            <!-- Form to filter translated -->
+                            <form method="post" class="filter-form">
+                                <div class="checkbox">
+                                    <label>
+                                        <input type="checkbox" name="published-only" value="1">
+                                            <xsl:if test="m:section/m:texts/@published-only eq '1'">
+                                                <xsl:attribute name="checked" select="'checked'"/>
+                                            </xsl:if>
+                                        </input>
+                                        <xsl:value-of select="'Published texts only'"/>
+                                    </label>
+                                </div>
+                            </form>
+                        </xsl:otherwise>
+                    </xsl:choose>
                 </div>
             </div>
             
@@ -470,6 +492,7 @@
                     
                     <!-- loop through the texts -->
                     <xsl:for-each select="m:texts/m:text">
+                        <xsl:sort select="if(/m:response/m:request/@translations-order eq 'latest') then m:translation/m:publication-date else ''" order="descending"/>
                         <xsl:sort select="number(m:toh/@number)"/>
                         <xsl:sort select="m:toh/@letter"/>
                         <xsl:sort select="number(m:toh/@chapter-number)"/>
@@ -605,13 +628,21 @@
                             <!-- Download options -->
                             <div class="col-md-3 position-static">
                                 
-                                <xsl:if test="lower-case($section/@id) ne 'all-translated'">
-                                    <div class="translation-status">
-                                        <xsl:copy-of select="common:translation-status(@status)"/>
-                                    </div>
-                                </xsl:if>
+                                <div class="translation-status">
+                                    <xsl:choose>
+                                        <xsl:when test="@status eq '1' and m:translation/m:publication-date/text()">
+                                            <span class="label label-success">
+                                                <xsl:value-of select="concat('Published ', format-date(m:translation/m:publication-date, '[FNn,*-3], [D1o] [MNn,*-3] [Y]'))"/>
+                                            </span>
+                                        </xsl:when>
+                                        <xsl:otherwise>
+                                            <xsl:copy-of select="common:translation-status(@status)"/>
+                                        </xsl:otherwise>
+                                    </xsl:choose>
+                                </div>
                                 
                                 <xsl:if test="@status eq '1'">
+                                    
                                     <ul class="translation-options">
                                         <li>
                                             <a>

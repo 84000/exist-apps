@@ -205,7 +205,7 @@
         <xsl:choose>
             <xsl:when test="$status eq '1'">
                 <span class="label label-success published">
-                    Translated
+                    Published
                 </span>
             </xsl:when>
             <xsl:when test="$status gt '0'">

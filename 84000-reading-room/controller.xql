@@ -14,6 +14,7 @@ declare variable $resource-id := lower-case(substring-before($exist:resource, ".
 declare variable $resource-suffix := lower-case(substring-after($exist:resource, "."));
 declare variable $collection-path := lower-case(substring-before(substring-after($exist:path, "/"), "/"));
 declare variable $controller-root := lower-case(substring-after($exist:controller, "/"));
+declare variable $redirects := doc(concat($common:data-path, '/config/redirects.xml'))/m:redirects;
 
 declare function local:dispatch($model as xs:string, $view as xs:string, $parameters as node()) as node(){
     <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
@@ -99,27 +100,15 @@ else if (lower-case($exist:resource) eq "log-error.html") then
 (: If environment wants login then check there is some authentication :)
 else if(not(common:auth-environment()) or sm:is-authenticated()) then
     
-    (: Redirect to root :)
-    if (lower-case($exist:resource) = ('index.html', 'index.htm')) then
-        local:redirect("section/lobby.html")
-    
-    (: Redirects :)
-    else if ($collection-path eq "resources" or $exist:resource eq "resources") then
-        local:redirect($common:environment/m:url[@id eq 'resources']/text())
-    else if (lower-case($exist:resource) eq 'operations.html') then
-        local:redirect($common:environment/m:url[@id eq 'operations']/text())
-    else if (lower-case($exist:resource) eq 'utilities.html') then
-        local:redirect($common:environment/m:url[@id eq 'utilities']/text())
-    else if (lower-case($exist:resource) eq 'translation-memory.html') then
-        local:redirect($common:environment/m:url[@id eq 'translation-memory']/text())
-    else if (lower-case($exist:resource) eq 'translator-tools.html') then
-        local:redirect($common:environment/m:url[@id eq 'translator-tools']/text())
+    (: Resource redirects :)
+    if (lower-case($exist:resource) = $redirects//m:resource/@xml:id) then
+        local:redirect($redirects//m:resource[@xml:id = lower-case($exist:resource)][1]/parent::m:redirect/@target)
     
     (: Trap no path :) (: Trap index/home :)
-    else if ($exist:path = ('', '/') or lower-case( $collection-path) = ('old-app')) then
+    else if ($exist:path = ('', '/') or lower-case($collection-path) = ('old-app')) then
         local:dispatch-html("/models/section.xq", "/views/html/section.xsl", 
             <parameters>
-                <add-parameter name="resource-id" value="lobby"/>
+                <add-parameter name="resource-id" value="lobby.html"/>
             </parameters>
         )
     

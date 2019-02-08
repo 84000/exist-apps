@@ -15,6 +15,7 @@ declare option exist:serialize "method=xml indent=no";
 
 let $resource-id := upper-case(request:get-parameter('resource-id', 'lobby'))
 let $published-only := request:get-parameter('published-only', false())
+let $translations-order := request:get-parameter('translations-order', 'toh')
 let $tei := tei-content:tei($resource-id, 'section')
 
 return
@@ -22,6 +23,10 @@ return
         "section", 
         $common:app-id,
         (
+            <request 
+                xmlns="http://read.84000.co/ns/1.0" 
+                published-only="{ $published-only }"
+                translations-order="{ $translations-order }" />,
             section:base-section($tei, $published-only, true()),
             common:app-texts(
                 'section',
