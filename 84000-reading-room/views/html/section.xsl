@@ -631,7 +631,7 @@
                                 <div class="translation-status">
                                     <xsl:choose>
                                         <xsl:when test="@status eq '1' and m:translation/m:publication-date/text()">
-                                            <span class="label label-success">
+                                            <span class="small text-muted">
                                                 <xsl:value-of select="concat('Published ', format-date(m:translation/m:publication-date, '[FNn,*-3], [D1o] [MNn,*-3] [Y]'))"/>
                                             </span>
                                         </xsl:when>
