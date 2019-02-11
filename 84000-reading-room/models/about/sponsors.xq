@@ -36,7 +36,7 @@ return
             $header,
             $tabs,
             translations:summary(),
-            sponsors:sponsors($sponsors:sponsors/m:sponsors/m:sponsor[@type = ('founding', 'matching-funds')]/@xml:id, false(), false()),
+            sponsors:sponsors($sponsors:sponsors/m:sponsors/m:sponsor[m:type/@id = ('founding', 'matching-funds')]/@xml:id, false(), false()),
             translations:sponsored()
         )
     )

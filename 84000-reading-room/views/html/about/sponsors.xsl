@@ -30,7 +30,7 @@
                     <p>Dzongsar Khyentse Rinpoche, chairperson of 84000, has written a message addressed to all 108 Founding Sponsors. Click here to <a href="http://84000.co/message-to-founding-sponsors/">view Rinpoche’s message</a>.</p>
                     <h3>Our Founding Sponsors</h3>
                     <ol>
-                        <xsl:for-each select="m:sponsors/m:sponsor[@type eq 'founding']">
+                        <xsl:for-each select="m:sponsors/m:sponsor[m:type[@id eq 'founding']]">
                             <li>
                                 <xsl:value-of select="m:label"/>
                             </li>
@@ -42,7 +42,7 @@
                     <p>The Matching Funds Program is designed to incentivize small-dollar donors to give to 84000 on a recurring basis by offering to match those donations dollar-for-dollar. We would like to thank the following Matching Funds sponsors for their gift to 84000 and their generosity in allowing small-dollar donors to feel their contribution is making a more significant impact on the progress of the translation of the Tibetan Buddhist canon.</p>
                     <h3>Our Matching Funds Sponsors</h3>
                     <ul class="list-unstyled">
-                        <xsl:for-each select="m:sponsors/m:sponsor[@type eq 'matching-funds']">
+                        <xsl:for-each select="m:sponsors/m:sponsor[m:type[@id eq 'matching-funds']]">
                             <li>
                                 <xsl:value-of select="m:label"/>
                             </li>
