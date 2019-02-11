@@ -13,7 +13,7 @@ import module namespace tei-content="http://read.84000.co/tei-content" at "../mo
 import module namespace translation="http://read.84000.co/translation" at "translation.xql";
 import module namespace functx="http://www.functx.com";
 
-declare variable $glossary:translations := collection($common:translations-path)//tei:TEI[tei:teiHeader/tei:fileDesc/tei:publicationStmt/@status = $tei-content:published-statuses];
+declare variable $glossary:translations := collection($common:translations-path)//tei:TEI[tei:teiHeader/tei:fileDesc[tei:publicationStmt/@status = $tei-content:published-statuses]];
 declare variable $glossary:types := ('term', 'person', 'place', 'text');
 
 declare function glossary:lookup-options() as element() {
@@ -156,7 +156,7 @@ declare function glossary:glossary-items($normalized-term as xs:string) as eleme
     return
         <glossary
             xmlns="http://read.84000.co/ns/1.0"
-            model-type="glossary-items">
+            model-type="glossary-items" debug="{ count($terms) }">
             <term>{ $normalized-term }</term>
             {
                 for $term in $terms
@@ -212,7 +212,7 @@ declare function glossary:glossary-items($normalized-term as xs:string) as eleme
                             return 
                                 <term xml:lang="{ lower-case($term-alt-langs/@xml:lang) }">
                                 { 
-                                    if ($term-alt-langs/@xml:lang eq 'Bo-Ltn') then
+                                    if ($term-alt-langs[@xml:lang eq 'Bo-Ltn']/text()) then
                                         common:bo-ltn($term-alt-langs/text())
                                     else
                                         $term-alt-langs/text() 

@@ -34,9 +34,6 @@
             <xsl:when test="/m:response/@model-type eq 'about/sponsors'">
                 <xsl:value-of select="common:internal-link('http://84000.co/about/sponsors', (), '', $lang)"/>
             </xsl:when>
-            <xsl:when test="/m:response/@model-type eq 'about/sponsors'">
-                <xsl:value-of select="common:internal-link('http://84000.co/about/sponsors', (), '', $lang)"/>
-            </xsl:when>
             <xsl:when test="/m:response/@model-type eq 'about/impact'">
                 <xsl:value-of select="common:internal-link('http://84000.co/about/impact', (), '', $lang)"/>
             </xsl:when>
