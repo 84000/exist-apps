@@ -13,7 +13,7 @@ declare namespace tei="http://www.tei-c.org/ns/1.0";
 declare namespace xhtml="http://www.w3.org/1999/xhtml";
 declare namespace m="http://read.84000.co/ns/1.0";
 
-declare function tests:translations($text-statuses as xs:string*, $translation-id as xs:string) as item(){
+declare function tests:translations($translation-id as xs:string) as item(){
     
     (:let $translation-id := 'UT22084-062-012':)
     
@@ -21,7 +21,11 @@ declare function tests:translations($text-statuses as xs:string*, $translation-i
     
     let $selected-translations := 
         if ($translation-id eq 'all') then 
-            $section:texts//tei:TEI[tei:teiHeader/tei:fileDesc/tei:publicationStmt/@status = $text-statuses]
+            $section:texts//tei:TEI[tei:teiHeader/tei:fileDesc/tei:publicationStmt/@status = ('1', '2.a')]
+        else if ($translation-id eq 'published') then 
+            $section:texts//tei:TEI[tei:teiHeader/tei:fileDesc/tei:publicationStmt/@status = ('1')]
+            else if ($translation-id eq 'in-progress') then 
+            $section:texts//tei:TEI[tei:teiHeader/tei:fileDesc/tei:publicationStmt/@status = ('2.a')]
         else
             tei-content:tei(lower-case($translation-id), 'translation')
     
@@ -32,6 +36,7 @@ declare function tests:translations($text-statuses as xs:string*, $translation-i
         {
          for $tei in $selected-translations
             for $toh-key in $tei/tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl/@key
+                let $start-time := util:system-dateTime()
                 let $toh-html := 
                     if($test-config) then 
                         httpclient:get(
@@ -43,11 +48,12 @@ declare function tests:translations($text-statuses as xs:string*, $translation-i
                        )
                     else
                         ()
-             
+                let $end-time := util:system-dateTime()
             return
                <translation 
                    id="{ tei-content:id($tei) }" 
-                   status="{ $tei/tei:teiHeader/tei:fileDesc/tei:publicationStmt/@status }">
+                   status="{ $tei/tei:teiHeader/tei:fileDesc/tei:publicationStmt/@status }"
+                   duration="{ functx:total-seconds-from-duration($end-time - $start-time) }">
                    <title>{ tei-content:title($tei) }</title>
                    { translation:toh($tei, $toh-key) }
                    <tests>
@@ -132,6 +138,7 @@ declare function tests:sections($section-id as xs:string) as item(){
         <results xmlns="http://read.84000.co/ns/1.0">
         {
             for $tei at $pos in $selected-tei
+                let $start-time := util:system-dateTime()
                 let $resource-id := tei-content:id($tei)
                 let $html := 
                     if($test-config) then 
@@ -144,10 +151,12 @@ declare function tests:sections($section-id as xs:string) as item(){
                        )
                     else
                         ()
+                 let $end-time := util:system-dateTime()
             return
                 <section 
                     id="{ $resource-id }"
-                    filename="{ base-uri($tei) }">
+                    filename="{ base-uri($tei) }"
+                    duration="{ functx:total-seconds-from-duration($end-time - $start-time) }">
                     <title>{ tei-content:title($tei) }</title>
                     <tests>
                     {
@@ -301,18 +310,17 @@ declare function tests:test-section($section-tei as element()*, $section-html as
     let $section-count-tei-p := 
         count($section-tei//*[self::tei:p | self::tei:ab | self::tei:trailer | self::tei:bibl | self::tei:l[parent::tei:lg[not(ancestor::tei:note)]]])
     let $section-count-html-p := 
-        count($section-html//xhtml:p | $section-html//xhtml:div[contains(@class, 'line ')]) 
-    (: This needs attention: we can't rely on a space after the class 'line' :)
+        count($section-html//xhtml:p | $section-html//xhtml:div[common:contains-class(@class, 'line')]) 
     
     let $section-count-tei-note := 
         count($section-tei//tei:note)
     let $section-count-html-note := 
-        count($section-html//xhtml:a[contains(@class, 'footnote-link')])
+        count($section-html//xhtml:a[common:contains-class(@class, 'footnote-link')])
     
     let $section-count-tei-q := 
         count($section-tei//tei:q)
     let $section-count-html-q := 
-        count($section-html//xhtml:blockquote | $section-html//xhtml:span[contains(@class, 'blockquote')])
+        count($section-html//xhtml:blockquote | $section-html//xhtml:span[common:contains-class(@class, 'blockquote')])
     
     let $section-count-tei-id := 
         if($section-tei/@type = ('prologue')) then
@@ -325,17 +333,17 @@ declare function tests:test-section($section-tei as element()*, $section-html as
     let $section-count-tei-list-item := 
         count($section-tei//tei:list[not(ancestor::tei:note)]/tei:item)
     let $section-count-html-list-item := 
-        count($section-html//xhtml:div[contains(@class, 'list-item')])
+        count($section-html//xhtml:div[common:contains-class(@class, 'list-item')])
     
     let $section-count-tei-chapters := 
         count($section-tei//tei:div[@type = ('section', 'chapter')])
     let $section-count-html-chapters := 
-        count($section-html//xhtml:section[contains(@class, 'chapter')] | $section-html//xhtml:div[contains(@class, 'nested-chapter') or contains(@class, 'nested-section')])
+        count($section-html//xhtml:section[common:contains-class(@class, 'chapter')] | $section-html//xhtml:div[common:contains-class(@class, 'nested-chapter') or common:contains-class(@class, 'nested-section')])
     
     let $section-count-tei-milestones := 
         count($section-tei//tei:milestone)
     let $section-count-html-milestones := 
-        count($section-html//xhtml:a[contains(@class, 'milestone from-tei')])
+        count($section-html//xhtml:a[common:contains-class(@class, 'milestone from-tei')])
     
     let $required-paragraphs-rule := if ($required-paragraphs > 0) then concat(' at least ', $required-paragraphs , ' paragraph(s) and') else ''
     let $count-chapters-rule := if ($count-chapters eq true()) then ', chapters ' else ''
@@ -383,7 +391,7 @@ declare function tests:test-section($section-tei as element()*, $section-html as
 };
 
 declare function tests:notes($tei as element()*, $html as element()*) as item() {
-    let $notes-count-html := count($html//*[@id eq 'notes']/*/*[contains(@class, 'footnote')])
+    let $notes-count-html := count($html//*[@id eq 'notes']/*/*[common:contains-class(@class, 'footnote')])
     let $notes-count-tei := count($tei//tei:text//tei:note)
     return
         <test xmlns="http://read.84000.co/ns/1.0" 
@@ -454,7 +462,7 @@ declare function tests:translation-tantra-warning($tei as element()*, $html as e
 };
 
 declare function tests:glossary($tei as element()*, $html as element()*) as item() {
-    let $glossary-count-html := count($html//*[@id eq 'glossary']//*[contains(@class, 'glossary-item')])
+    let $glossary-count-html := count($html//*[@id eq 'glossary']//*[common:contains-class(@class, 'glossary-item')])
     let $glossary-count-tei := count($tei//tei:back/tei:div[@type='glossary']//tei:gloss)
     let $tei-terms-raw := $tei//tei:back/tei:div[@type='glossary']//tei:gloss/tei:term[text()][not(tei:ptr)](:[not(@xml:lang and text() = preceding-sibling::tei:term[not(@xml:lang or @type)]/text())]:)
     
@@ -469,7 +477,7 @@ declare function tests:glossary($tei as element()*, $html as element()*) as item
     let $terms-count-tei := count($tei-terms)
     
     let $html-terms-untokenized := 
-        $html//*[@id eq 'glossary']//*[contains(@class, 'glossary-item')]//*[self::xhtml:h4 | self::xhtml:p[not(xhtml:a/@class[contains(., 'internal-ref')])]]
+        $html//*[@id eq 'glossary']//*[common:contains-class(@class, 'glossary-item')]//*[self::xhtml:h4 | self::xhtml:p[not(xhtml:a/@class[common:contains-class(., 'internal-ref')])]]
     
     let $empty-term-placeholders := (common:app-text('glossary.term-empty-sa-ltn'), common:app-text('glossary.term-empty-bo-ltn'))
     

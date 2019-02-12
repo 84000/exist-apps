@@ -135,6 +135,7 @@
                             <thead>
                                 <tr>
                                     <th>Text</th>
+                                    <th>Load time</th>
                                     <xsl:for-each select="//m:results/m:section[1]/m:tests/m:test">
                                         <th class="icon">
                                             <xsl:value-of select="position()"/>
@@ -158,6 +159,20 @@
                                                 <xsl:attribute name="target" select="$text-id"/>
                                                 <xsl:value-of select="common:limit-str(concat($text-id, ' / ', $text-title), 50)"/>
                                             </a>
+                                        </td>
+                                        <td>
+                                            <xsl:choose>
+                                                <xsl:when test="number(@duration) gt 1">
+                                                    <span class="label label-info">
+                                                        <xsl:value-of select="concat(@duration, ' secs')"/>
+                                                    </span>
+                                                </xsl:when>
+                                                <xsl:otherwise>
+                                                    <span class="label label-default">
+                                                        <xsl:value-of select="concat(@duration, ' secs')"/>
+                                                    </span>
+                                                </xsl:otherwise>
+                                            </xsl:choose>
                                         </td>
                                         <xsl:for-each select="m:tests/m:test">
                                             <xsl:variable name="test-id" select="position()"/>

@@ -103,8 +103,8 @@ function common:normalized-chars($string as xs:string) as xs:string {
     let $in  := 'āḍḥīḷḹṃṁṇñṅṛṝṣśṭū'
     let $out := 'adhillmmnnnrrsstu'
     return 
-        translate(lower-case($string), $in, $out)
-        (: translate(lower-case(normalize-unicode($string, 'NFKC')), $in, $out) :)
+        (: translate(lower-case($string), $in, $out) :)
+        translate(lower-case(normalize-unicode($string)), $in, $out)
 };
 
 declare
@@ -362,6 +362,27 @@ declare function common:replace($node as node(), $replacements as element()) {
             functx:replace-multi($node, $replacements/m:value/@key, $replacements/m:value/text())
         default return $node
 };
+
+declare 
+    %test:args('line', 'line')
+    %test:assertTrue 
+    %test:args('line other-class', 'line')
+    %test:assertTrue
+    %test:args('other-class line', 'line')
+    %test:assertTrue
+    %test:args('other-class line other-line', 'line other-line')
+    %test:assertTrue
+    %test:args('other-class line', 'other-line')
+    %test:assertFalse
+    %test:args('other-class line other', 'line other-line')
+    %test:assertFalse
+function common:contains-class($string as xs:string?, $class as xs:string ) as xs:boolean {
+    (: for testing existence of a class in a class attribute :)
+    matches(
+        lower-case($string),
+        concat('^(.*\s)?', lower-case(functx:escape-for-regex($class)), '(\s.*)?$')
+    )
+}; 
 
 declare function common:update($request-parameter as xs:string, $existing-value as item()?, $new-value as item()?, $insert-into as node()?, $insert-following as node()?) as element()? {
 

@@ -297,7 +297,7 @@
     <xsl:template match="tei:lg">
         <xsl:call-template name="milestone">
             <xsl:with-param name="content">
-                <div class="line-group">
+                <div>
                     <!-- id -->
                     <xsl:call-template name="tid">
                         <xsl:with-param name="node" select="."/>
@@ -321,10 +321,13 @@
     <xsl:template match="tei:l(:[parent::tei:lg]:)">
         <xsl:call-template name="milestone">
             <xsl:with-param name="content">
-                <div class="line">
-                    <xsl:if test="/m:response/m:request/@doc-type ne 'epub'">
-                        <xsl:attribute name="class" select="'line glossarize'"/>
-                    </xsl:if>
+                <div>
+                    <xsl:attribute name="class">
+                        <xsl:value-of select="'line'"/>
+                        <xsl:if test="/m:response/m:request/@doc-type ne 'epub'">
+                            <xsl:value-of select="' glossarize'"/>
+                        </xsl:if>
+                    </xsl:attribute>
                     <xsl:apply-templates select="node()"/>
                 </div>
             </xsl:with-param>

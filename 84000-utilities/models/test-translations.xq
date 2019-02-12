@@ -6,13 +6,6 @@ import module namespace translations="http://read.84000.co/translations" at "../
 
 declare option exist:serialize "method=xml indent=no";
 
-(: 
- TO DO:
- Select statuses this in the UI.
- For now default to 1 and 2.a.
-:)
-let $text-statuses := request:get-parameter('text-statuses', ('1', '2.a'))
-
 let $translation-id := request:get-parameter('translation-id', 'all')
 
 return 
@@ -21,7 +14,7 @@ return
         'utilities',
         (
             <request xmlns="http://read.84000.co/ns/1.0" translation-id="{$translation-id}" />,
-            tests:translations($text-statuses, $translation-id),
-            translations:files($text-statuses)
+            tests:translations($translation-id),
+            translations:files(('1', '2.a'))
         )
     )

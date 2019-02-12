@@ -112,6 +112,8 @@
                             <div class="form-group">
                                 <select name="translation-id" id="translation-id" class="form-control">
                                     <option value="all">All translations</option>
+                                    <option value="published">Published translations</option>
+                                    <option value="in-progress">In-progress translations</option>
                                     <xsl:for-each select="m:translations/m:file">
                                         <xsl:sort select="@id"/>
                                         <option>
@@ -136,6 +138,7 @@
                                 <tr>
                                     <th>Text</th>
                                     <th>Status</th>
+                                    <th>Load time</th>
                                     <xsl:for-each select="//m:results/m:translation[1]/m:tests/m:test">
                                         <th class="icon">
                                             <xsl:value-of select="position()"/>
@@ -162,6 +165,20 @@
                                         </td>
                                         <td>
                                             <xsl:copy-of select="common:translation-status(@status)"/>
+                                        </td>
+                                        <td>
+                                            <xsl:choose>
+                                                <xsl:when test="number(@duration) gt 1">
+                                                    <span class="label label-info">
+                                                        <xsl:value-of select="concat(@duration, ' secs')"/>
+                                                    </span>
+                                                </xsl:when>
+                                                <xsl:otherwise>
+                                                    <span class="label label-default">
+                                                        <xsl:value-of select="concat(@duration, ' secs')"/>
+                                                    </span>
+                                                </xsl:otherwise>
+                                            </xsl:choose>
                                         </td>
                                         <xsl:for-each select="m:tests/m:test">
                                             <xsl:variable name="test-id" select="position()"/>

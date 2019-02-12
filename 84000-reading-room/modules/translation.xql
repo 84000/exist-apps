@@ -208,39 +208,37 @@ declare function translation:downloads($tei as element(), $resource-id as xs:str
         {
             for $type in ('pdf', 'epub', 'azw3')
                 let $stored-version := download:stored-version-str($resource-id, $type)
-            return
-                if(
+                where (
                     ($include eq 'all')                                                                 (: return all types :)
                     or ($include eq 'any-version' and not($stored-version eq 'none'))                   (: return if there is any version :)
                     or ($include eq 'latest-version' and compare($stored-version, $tei-version) eq 0)   (: return only if it's the latest version :)
-                ) then
-                    element download {
-                        attribute type { $type },
-                        attribute url { concat('/data/', $file-name ,'.', $type) },
-                        attribute version { $stored-version },
-                        attribute fa-icon-class {
-                            if($type eq 'epub') then
-                                'fa-book'
-                            else if($type eq 'azw3') then
-                                'fa-amazon'
-                            else if($type eq 'pdf') then
-                                'fa-file-pdf-o'
-                            else
-                                ''
-                        },
-                        text {
-                            if($type eq 'epub') then
-                                'Download EPUB'
-                            else if($type eq 'azw3') then
-                                'Download AZW3 (Kindle)'
-                            else if($type eq 'pdf') then
-                                'Download PDF'
-                            else
-                                ''
-                        }
+                )
+            return
+                element download {
+                    attribute type { $type },
+                    attribute url { concat('/data/', $file-name ,'.', $type) },
+                    attribute version { $stored-version },
+                    attribute fa-icon-class {
+                        if($type eq 'epub') then
+                            'fa-book'
+                        else if($type eq 'azw3') then
+                            'fa-amazon'
+                        else if($type eq 'pdf') then
+                            'fa-file-pdf-o'
+                        else
+                            ''
+                    },
+                    text {
+                        if($type eq 'epub') then
+                            'Download EPUB'
+                        else if($type eq 'azw3') then
+                            'Download AZW3 (Kindle)'
+                        else if($type eq 'pdf') then
+                            'Download PDF'
+                        else
+                            ''
                     }
-                else
-                    ()
+                }
         }
         </downloads>
 };
@@ -516,44 +514,42 @@ declare function translation:glossary($tei as element()) as element() {
     {
         for $gloss in $tei//tei:back//*[@type eq 'glossary']//tei:gloss
             let $main-term := $gloss/tei:term[not(@xml:lang) or @xml:lang eq 'en'][not(@type)][1]/text()
+            where $main-term
         return
-            if($main-term) then
-                <item 
-                    uid="{ $gloss/@xml:id/string() }" 
-                    type="{ $gloss/@type/string() }" 
-                    mode="{ $gloss/@mode/string() }">
-                    <term xml:lang="en">{ functx:capitalize-first(normalize-space($main-term)) }</term>
-                    {
-                        for $item in $gloss/tei:term[(@xml:lang and not(@xml:lang eq 'en')) or @type](:[not(text() eq $main-term)]:)
-                        return 
-                            if($item[@type eq 'definition']) then
-                                <definition>
-                                { 
-                                    $item/node() 
-                                }
-                                </definition>
-                            else if ($item[@type eq 'alternative']) then
-                                <alternative xml:lang="{ lower-case($item/@xml:lang) }">
-                                { 
-                                    normalize-space(string($item)) 
-                                }
-                                </alternative>
-                            else
-                                <term xml:lang="{ if($item/@xml:lang) then lower-case($item/@xml:lang) else 'en' }">
-                                {
-                                    if (not($item/text())) then
-                                        common:app-text(concat('glossary.term-empty-', lower-case($item/@xml:lang)))
-                                    else if ($item/@xml:lang eq 'Bo-Ltn') then
-                                        common:bo-ltn($item/text())
-                                    else
-                                        $item/text() 
-                                }
-                                </term>
-                     }
-                     <sort-term>{ common:alphanumeric(common:normalized-chars($main-term)) }</sort-term>
-                </item>
-            else
-                ()
+            <item 
+                uid="{ $gloss/@xml:id/string() }" 
+                type="{ $gloss/@type/string() }" 
+                mode="{ $gloss/@mode/string() }">
+                <term xml:lang="en">{ functx:capitalize-first(normalize-space($main-term)) }</term>
+                {
+                    for $item in $gloss/tei:term[(@xml:lang and not(@xml:lang eq 'en')) or @type](:[not(text() eq $main-term)]:)
+                    return 
+                        if($item[@type eq 'definition']) then
+                            <definition>
+                            { 
+                                $item/node() 
+                            }
+                            </definition>
+                        else if ($item[@type eq 'alternative']) then
+                            <alternative xml:lang="{ lower-case($item/@xml:lang) }">
+                            { 
+                                normalize-space(string($item)) 
+                            }
+                            </alternative>
+                        else
+                            <term xml:lang="{ if($item/@xml:lang) then lower-case($item/@xml:lang) else 'en' }">
+                            {
+                                if (not($item/text())) then
+                                    common:app-text(concat('glossary.term-empty-', lower-case($item/@xml:lang)))
+                                else if ($item/@xml:lang eq 'Bo-Ltn') then
+                                    common:bo-ltn($item/text())
+                                else
+                                    $item/text() 
+                            }
+                            </term>
+                 }
+                 <sort-term>{ common:alphanumeric(common:normalized-chars($main-term)) }</sort-term>
+            </item>
     }
     </glossary>
 };
