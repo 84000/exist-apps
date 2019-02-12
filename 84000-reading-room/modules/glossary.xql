@@ -184,7 +184,7 @@ declare function glossary:glossary-items($normalized-term as xs:string) as eleme
                                     for $author in $translation//tei:titleStmt/tei:author[not(@role = 'translatorMain')]
                                     return 
                                         element author {
-                                            $author/@sameAs,
+                                            $author/@ref,
                                             $author/text() ! normalize-space(.) 
                                         }
                                 }
@@ -192,7 +192,7 @@ declare function glossary:glossary-items($normalized-term as xs:string) as eleme
                                     let $translator-main := $translation//tei:titleStmt/tei:author[@role = 'translatorMain'][1]
                                     return
                                         element summary {
-                                            $translator-main/@sameAs,
+                                            $translator-main/@ref,
                                             $translator-main/text() ! concat(normalize-space(.), ' ') ! normalize-space(.) 
                                         }
                                  }

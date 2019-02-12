@@ -56,9 +56,9 @@ declare function sponsors:acknowledgements($uri as xs:string) as element()* {
     let $sponsor-id := substring-after($uri, 'sponsors.xml#')
     
     return
-        for $tei in $sponsors:texts//tei:TEI[tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:sponsor/@sameAs eq $uri]
+        for $tei in $sponsors:texts//tei:TEI[tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:sponsor/@ref eq $uri]
         
-            let $translation-sponsor := $tei//tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:sponsor[@sameAs eq $uri][1]
+            let $translation-sponsor := $tei//tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:sponsor[@ref eq $uri][1]
             
             let $sponsor-name := 
                 if($translation-sponsor/text() gt '') then

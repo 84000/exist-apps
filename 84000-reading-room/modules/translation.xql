@@ -49,7 +49,7 @@ declare function translation:translation($tei as element()) as element() {
                 for $contributor in $tei//tei:titleStmt/tei:author[@role eq 'translatorMain']
                 return 
                     element summary {
-                        $contributor/@sameAs,
+                        $contributor/@ref,
                         $contributor/node()
                     }
             }
@@ -59,7 +59,7 @@ declare function translation:translation($tei as element()) as element() {
                     element { local-name($contributor) }
                     {
                         $contributor/@role,
-                        $contributor/@sameAs,
+                        $contributor/@ref,
                         normalize-space($contributor/text())
                     }
             }
@@ -70,7 +70,7 @@ declare function translation:translation($tei as element()) as element() {
                 return 
                     <sponsor>
                     {
-                        $sponsor/@sameAs,
+                        $sponsor/@ref,
                         normalize-space($sponsor/text())
                     }
                     </sponsor>
@@ -669,7 +669,7 @@ declare function translation:sponsors($tei as element(), $include-acknowledgemen
     
     let $translation-sponsors := $tei//tei:titleStmt/tei:sponsor
     
-    let $sponsor-ids := $translation-sponsors ! substring-after(./@sameAs, 'sponsors.xml#')
+    let $sponsor-ids := $translation-sponsors ! substring-after(./@ref, 'sponsors.xml#')
     
     let $sponsors := sponsors:sponsors($sponsor-ids, false(), false())
     
@@ -686,7 +686,7 @@ declare function translation:sponsors($tei as element(), $include-acknowledgemen
                     let $sponsor-strings := 
                         for $translation-sponsor in $translation-sponsors
                             let $translation-sponsor-text := normalize-space(lower-case($translation-sponsor/text()))
-                            let $translation-sponsor-id := substring-after($translation-sponsor/@sameAs, 'sponsors.xml#')
+                            let $translation-sponsor-id := substring-after($translation-sponsor/@ref, 'sponsors.xml#')
                             let $sponsor-label-text := normalize-space(lower-case($sponsors/m:sponsor[@xml:id eq $translation-sponsor-id]/m:label))
                         return
                             if($translation-sponsor-text gt '') then
@@ -710,7 +710,7 @@ declare function translation:contributors($tei as element(), $include-acknowledg
     
     let $translation-contributors := $tei//tei:titleStmt/tei:*[self::tei:author | self::tei:editor | self::tei:consultant]
     
-    let $contributor-ids := $translation-contributors ! substring-after(./@sameAs, 'contributors.xml#')
+    let $contributor-ids := $translation-contributors ! substring-after(./@ref, 'contributors.xml#')
     
     let $contributors := $contributors:contributors/m:contributors/m:person[@xml:id = $contributor-ids]
     
@@ -726,7 +726,7 @@ declare function translation:contributors($tei as element(), $include-acknowledg
                     (: Use the label from the entities file unless it's specified in the tei :)
                     let $contributor-strings := 
                         for $translation-contributor in $translation-contributors
-                            let $contributor := $contributors[@xml:id eq substring-after($translation-contributor/@sameAs, 'contributors.xml#')]
+                            let $contributor := $contributors[@xml:id eq substring-after($translation-contributor/@ref, 'contributors.xml#')]
                         return 
                             if($translation-contributor/text()) then
                                 normalize-space(lower-case($translation-contributor))
@@ -790,13 +790,13 @@ declare function translation:update($tei as element()) as element()* {
                     if($tei//tei:fileDesc/tei:titleStmt/tei:author[@role eq 'translatorMain'][1]) then
                         functx:add-or-update-attributes(
                             $tei//tei:fileDesc/tei:titleStmt/tei:author[@role eq 'translatorMain'][1], 
-                            xs:QName('sameAs'), 
+                            xs:QName('ref'), 
                             request:get-parameter('translator-team-id', '')
                         )
                      else
                         element { QName("http://www.tei-c.org/ns/1.0", "author") }{
                             attribute role { "translatorMain" },
-                            attribute sameAs { request:get-parameter('translator-team-id', '') }
+                            attribute ref { request:get-parameter('translator-team-id', '') }
                         }
                 
                 (: Sponsor node :)
@@ -813,7 +813,7 @@ declare function translation:update($tei as element()) as element()* {
                     return
                         if($sponsor-id) then
                             element { QName("http://www.tei-c.org/ns/1.0", "sponsor") }{
-                                attribute sameAs { $sponsor-id },
+                                attribute ref { $sponsor-id },
                                 text { $sponsor-expression }
                             }
                         else
@@ -837,7 +837,7 @@ declare function translation:update($tei as element()) as element()* {
                         if($contributor-id and $contributor-node-name and $contributor-role) then
                             element { QName("http://www.tei-c.org/ns/1.0", $contributor-node-name) }{
                                 attribute role { $contributor-role },
-                                attribute sameAs { $contributor-id },
+                                attribute ref { $contributor-id },
                                 text { $contributor-expression }
                             }
                         else

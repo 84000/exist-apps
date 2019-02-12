@@ -92,7 +92,7 @@
                             <xsl:otherwise>
                                 <xsl:call-template name="titles-controls">
                                     <xsl:with-param name="text-titles">
-                                        <m:title sameAs="dummy"/>
+                                        <m:title/>
                                     </xsl:with-param>
                                     <xsl:with-param name="title-types" select="/m:response/m:title-types/m:title-type"/>
                                     <xsl:with-param name="title-langs" select="/m:response/m:title-types/m:title-lang"/>
@@ -241,7 +241,7 @@
                     <div class="row">
                         <div class="col-sm-8">
                             <xsl:copy-of select="m:select-input('Translation Status', 'translation-status', 9, 1, m:text-statuses/m:status)"/>
-                            <xsl:variable name="translator-team-id" select="substring-after(m:translation/m:translation/m:contributors/m:summary[1]/@sameAs, 'contributors.xml#')"/>
+                            <xsl:variable name="translator-team-id" select="substring-after(m:translation/m:translation/m:contributors/m:summary[1]/@ref, 'contributors.xml#')"/>
                             <div class="form-group">
                                 <label class="control-label col-sm-3">
                                     <xsl:value-of select="'Translator Team'"/>
@@ -339,7 +339,7 @@
                     <xsl:variable name="contributor-types-node-name" select="@node-name"/>
                     <xsl:variable name="contributor-types-role" select="@role"/>
                     <xsl:for-each select="$text-contributors[xs:string(local-name(.)) eq $contributor-types-node-name][xs:string(@role) eq $contributor-types-role]">
-                        <xsl:variable name="contributor-id" select="substring-after(./@sameAs, 'contributors.xml#')"/>
+                        <xsl:variable name="contributor-id" select="substring-after(./@ref, 'contributors.xml#')"/>
                         <xsl:variable name="contributor-type" select="concat(node-name(.), '-', @role)"/>
                         <xsl:variable name="index" select="common:index-of-node($text-contributors, .)"/>
                         <div class="form-group add-nodes-group">
@@ -457,7 +457,7 @@
         <xsl:param name="contributor-id"/>
         <xsl:param name="control-name"/>
         <xsl:variable name="summary" select="/m:response/m:translation/m:translation/m:contributors/m:summary[1]"/>
-        <xsl:variable name="translator-team-id" select="substring-after($summary/@sameAs, 'contributors.xml#')"/>
+        <xsl:variable name="translator-team-id" select="substring-after($summary/@ref, 'contributors.xml#')"/>
         <xsl:variable name="team-contributors" select="/m:response/m:contributor-persons/m:person[m:team[@id = $translator-team-id]]"/>
         <xsl:variable name="other-contributors" select="/m:response/m:contributor-persons/m:person[not(m:team[@id = $translator-team-id])]"/>
         <select class="form-control">
@@ -765,7 +765,7 @@
                             <xsl:otherwise>
                                 <xsl:call-template name="sponsors-controls">
                                     <xsl:with-param name="text-sponsors">
-                                        <m:sponsor sameAs="dummy"/>
+                                        <m:sponsor ref="dummy"/>
                                     </xsl:with-param>
                                     <xsl:with-param name="all-sponsors" select="/m:response/m:sponsors/m:sponsor"/>
                                 </xsl:call-template>
@@ -831,7 +831,7 @@
         <xsl:param name="text-sponsors" required="yes"/>
         <xsl:param name="all-sponsors" required="yes"/>
         <xsl:for-each select="$text-sponsors">
-            <xsl:variable name="id" select="substring-after(@sameAs, 'sponsors.xml#')"/>
+            <xsl:variable name="id" select="substring-after(@ref, 'sponsors.xml#')"/>
             <div class="form-group add-nodes-group">
                 <div class="col-sm-5">
                     <select class="form-control">

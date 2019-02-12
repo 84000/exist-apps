@@ -126,13 +126,15 @@
         
     </xsl:template>
     
+    <!-- 
     <xsl:template match="tei:org">
         <span>
-            <xsl:if test="ends-with(@sameAs, ancestor::m:team/@xml:id)">
+            <xsl:if test="ends-with(@ref, ancestor::m:team/@xml:id)">
                 <xsl:attribute name="class" select="'mark'"/>
             </xsl:if>
             <xsl:value-of select="text()"/>
         </span>
     </xsl:template>
+     -->
     
 </xsl:stylesheet>

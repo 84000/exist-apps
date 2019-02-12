@@ -63,15 +63,15 @@ declare function contributors:acknowledgements($uri as xs:string){
     return
         for $tei in 
             $contributors:texts//tei:TEI[
-                tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:author/@sameAs = $uri
-                or tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:editor/@sameAs = $uri
-                or tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:consultant/@sameAs = $uri
+                tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:author/@ref = $uri
+                or tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:editor/@ref = $uri
+                or tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:consultant/@ref = $uri
             ]
             
             let $translation-contributor := (
-                $tei//tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:author[@sameAs eq $uri]
-                | $tei//tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:editor[@sameAs eq $uri]
-                | $tei//tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:consultant[@sameAs eq $uri]
+                $tei//tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:author[@ref eq $uri]
+                | $tei//tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:editor[@ref eq $uri]
+                | $tei//tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:consultant[@ref eq $uri]
             )[1]
             
             let $contributor-name := 
@@ -141,8 +141,8 @@ declare function contributors:team($id as xs:string, $include-acknowledgements a
             $team/* ,
             element sort-name { replace($team/m:label, concat($contributors:team-prefixes, '\s(.*)'), '$2, $1') },
             if($include-acknowledgements) then
-                for $tei in $contributors:texts//tei:TEI[tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:*[@sameAs eq concat('contributors.xml#', $team/@xml:id)]]
-                    let $acknowledgement := $tei/tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:*[@sameAs eq concat('contributors.xml#', $team/@xml:id)]
+                for $tei in $contributors:texts//tei:TEI[tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:*[@ref eq concat('contributors.xml#', $team/@xml:id)]]
+                    let $acknowledgement := $tei/tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:*[@ref eq concat('contributors.xml#', $team/@xml:id)]
                 return
                     contributors:acknowledgement($tei, element tei:p { $acknowledgement })
             else
