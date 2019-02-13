@@ -39,7 +39,6 @@ return
                 xmlns="http://read.84000.co/ns/1.0" >
                 { if($new-id) then <updated/> else () }
             </updates>,
-            $sponsor(:,
-            translations:sponsored():)
+            $sponsor
         )
     )

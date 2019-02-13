@@ -25,7 +25,7 @@
                         <span class="h3 text-sa">
                             <a target="_blank" class="text-muted">
                                 <xsl:attribute name="href" select="concat($reading-room-path, '/translation/', m:translation/@id, '.html')"/>
-                                <xsl:value-of select="m:translation/m:titles/m:title[@xml:lang eq 'en']"/>
+                                <xsl:value-of select="concat(string-join(m:translation/m:toh/m:full, ' / '), ' : ', m:translation/m:titles/m:title[@xml:lang eq 'en'])"/>
                             </a>
                         </span>
                         <span>

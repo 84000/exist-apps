@@ -60,6 +60,7 @@ return
                 { translation:titles($tei) }
                 { translation:sponsors($tei, true()) }
                 { translation:translation($tei) }
+                { translation:toh($tei, '') }
             </translation>,
             sponsors:sponsorship-statuses($tei//tei:teiHeader/tei:fileDesc/tei:titleStmt/@sponsored),
             sponsors:sponsors('all', false(), false())
