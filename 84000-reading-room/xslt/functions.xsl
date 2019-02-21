@@ -83,7 +83,32 @@
         <xsl:param name="action-text" as="xs:string" required="yes"/>
         <xsl:param name="date-time" as="xs:dateTime" required="yes"/>
         <xsl:param name="user-name" as="xs:string" required="yes"/>
-        <xsl:value-of select="concat($action-text, ' at ', format-dateTime($date-time, '[H01]:[m01] on [FNn,*-3], [D1o] [MNn,*-3] [Y01]'), ' by ', $user-name)"/>
+        <xsl:variable name="action-str">
+            <xsl:if test="$action-text">
+                <xsl:value-of select="concat($action-text, ' ')"/>
+            </xsl:if>
+        </xsl:variable>
+        <xsl:variable name="date-str">
+            <xsl:choose>
+                <xsl:when test="$date-time gt xs:dateTime('2000-01-01T00:00:00Z')">
+                    <xsl:value-of select="concat('at ', format-dateTime($date-time, '[H01]:[m01] on [FNn,*-3], [D1o] [MNn,*-3] [Y01]'), ' ')"/>
+                </xsl:when>
+                <xsl:otherwise>
+                    <xsl:value-of select="'at unknown time '"/>
+                </xsl:otherwise>
+            </xsl:choose>
+        </xsl:variable>
+        <xsl:variable name="user-str">
+            <xsl:choose>
+                <xsl:when test="$user-name">
+                    <xsl:value-of select="concat('by ', $user-name)"/>
+                </xsl:when>
+                <xsl:otherwise>
+                    <xsl:value-of select="'by unknown user'"/>
+                </xsl:otherwise>
+            </xsl:choose>
+        </xsl:variable>
+        <xsl:value-of select="concat($action-str, $date-str, $user-str)"/>
     </xsl:function>
     
     <xsl:function name="common:pagination">
@@ -99,7 +124,9 @@
         <nav aria-label="Page navigation" class="text-right">
             <ul class="pagination">
                 <li class="disabled">
-                    <span>Page: </span>
+                    <span>
+                        <xsl:value-of select="'Page: '"/>
+                    </span>
                 </li>
                 <xsl:for-each select="1 to $max-pages">
                     <xsl:variable name="page-first-record" select="(((. - 1) * $max-records) + 1)"/>
@@ -205,17 +232,17 @@
         <xsl:choose>
             <xsl:when test="$status eq '1'">
                 <span class="label label-success published">
-                    Published
+                    <xsl:value-of select="'Published'"/>
                 </span>
             </xsl:when>
             <xsl:when test="$status gt '0'">
                 <span class="label label-warning in-progress">
-                    In progress
+                    <xsl:value-of select="'In progress'"/>
                 </span>
             </xsl:when>
             <xsl:otherwise>
                 <span class="label label-default">
-                    Not Started
+                    <xsl:value-of select="'Not Started'"/>
                 </span>
             </xsl:otherwise>
         </xsl:choose>

@@ -430,8 +430,10 @@
             <!-- Row headers -->
             <div class="row table-headers">
                 <div class="hidden-xs hidden-sm col-md-1">Toh</div>
-                <div class="col-md-8">Title</div>
-                <div class="col-md-3">
+                <div class="col-md-8 col-xs-4">
+                    <xsl:value-of select="'Title'"/>
+                </div>
+                <div class="col-md-3 col-xs-8">
                     <!-- Filter / Sort options -->
                     <xsl:choose>
                         <xsl:when test="lower-case($section/@id) eq 'all-translated'">

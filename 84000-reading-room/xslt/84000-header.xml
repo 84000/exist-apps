@@ -6,15 +6,15 @@
     </translation>
     <translation id="placeholder-search">
         <text xml:lang="en">Search...</text>
-        <text xml:lang="zh">Search... (ch)</text>
+        <text xml:lang="zh">Search...</text>
     </translation>
     <translation id="button-search-reading-room">
         <text xml:lang="en">Search the Reading Room</text>
-        <text xml:lang="zh">Search the Reading Room (ch)</text>
+        <text xml:lang="zh">Search the Reading Room</text>
     </translation>
     <translation id="button-search-comms">
         <text xml:lang="en">Search the Website</text>
-        <text xml:lang="zh">Search the Website (ch)</text>
+        <text xml:lang="zh">網站檢索</text>
     </translation>
     <translation id="label-social-icons">
         <text xml:lang="en">Follow our work:</text>
@@ -48,7 +48,7 @@
         <item class="reading-room" url="#reading-room">
             <label>Reading Room</label>
             <item url="http://read.84000.co/section/lobby.html">
-                <label>The Lobby</label>
+                <label>The Collection</label>
             </item>
             <item url="http://read.84000.co/section/all-translated.html">
                 <label>All Translated Texts</label>
@@ -131,7 +131,7 @@
             <item url="http://84000.co/how-you-can-help/shop-n-give">
                 <label>Shop and Give</label>
             </item>
-            <item url="http://84000.co/how-you-can-help/spread-the-word">
+            <item url="http://84000.co/how-you-can-help/spread-the-word/">
                 <label>Subscribe to our Newsletter</label>
             </item>
             <item url="http://84000.co/how-you-can-help/faq">
@@ -165,15 +165,15 @@
             </item>
         </item>
         <item class="reading-room" url="#reading-room">
-            <label>雲端藏經閣</label>
+            <label>Reading Room<!-- 雲端藏經閣 --></label>
             <item url="http://read.84000.co/section/lobby.html?lang=zh">
-                <label>首頁</label>
+                <label>The Collection<!-- 經藏 --></label>
             </item>
             <item url="http://read.84000.co/section/all-translated.html?lang=zh">
-                <label>已翻譯經典</label>
+                <label>All Translated Texts<!-- 已翻譯經典 --></label>
             </item>
             <item url="http://read.84000.co/search.html?lang=zh">
-                <label>雲端藏經閣檢索</label>
+                <label>Search The Reading Room<!-- 雲端藏經閣檢索 --></label>
             </item>
         </item>
         <item class="resources" url="#ch-resources">
@@ -229,8 +229,8 @@
         </item>
     </navigation>
     <social xml:lang="en">
-        <item url="mailto:info@84000.co" icon-class="fa fa-envelope-square">
-            <label>Send us an email</label>
+        <item url="http://84000.co/how-you-can-help/spread-the-word/" icon-class="fa fa-envelope-square">
+            <label>Subscribe to our newsletter</label>
         </item>
         <item url="http://www.facebook.com/Translate84000" icon-class="fa fa-facebook-square">
             <label>Follow us on Facebook</label>
@@ -243,11 +243,11 @@
         </item>
     </social>
     <social xml:lang="zh">
-        <item url="mailto:info@84000.co" icon-class="fa fa-envelope-square">
-            <label>Send us an email (ch)</label>
+        <item url="http://84000.co/how-you-can-help/spread-the-word/" icon-class="fa fa-envelope-square">
+            <label>電子通訊訂閱</label>
         </item>
         <item url="#wechat-qcode" icon-class="fa fa-weixin">
-            <label>WeChat</label>
+            <label>微信掃碼</label>
         </item>
     </social>
 </eft-header>

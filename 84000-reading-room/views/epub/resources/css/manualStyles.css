@@ -195,7 +195,7 @@ br+*,
 }
 
 /* Add a double space */
-.rw-section-head {
+.rw-chapter-head, .rw-section-head {
     margin-top: 24pt;
 }
 

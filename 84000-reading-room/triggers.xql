@@ -158,12 +158,21 @@ declare function local:section-remove-uids($doc) {
 
 declare function local:last-updated($doc) {
     (: Set last updated note :)
-    let $datetime-str := format-dateTime(current-dateTime(), '[D01]/[M01]/[Y0001] at [H01]:[m01]:[s01]')
     let $notesStmt := $doc//tei:teiHeader/tei:fileDesc/tei:notesStmt
-    let $note := <note xmlns="http://www.tei-c.org/ns/1.0" type="lastUpdated">{ concat("Last updated at ", $datetime-str, " by ", common:user-name()) }</note>
+    let $note := 
+        element { QName('http://www.tei-c.org/ns/1.0', 'note') }{
+            attribute type {'lastUpdated'},
+            attribute date-time { current-dateTime() },
+            attribute user { common:user-name() },
+            text { format-dateTime(current-dateTime(), '[D01]/[M01]/[Y0001] [H01]:[m01]:[s01]') }
+        }
+    
     return
         if(not($notesStmt)) then 
-            update insert <notesStmt xmlns="http://www.tei-c.org/ns/1.0">{ $note }</notesStmt>
+            update insert 
+                element { QName('http://www.tei-c.org/ns/1.0', 'notesStmt') }{
+                    $note
+                }
             following $doc//tei:teiHeader/tei:fileDesc/tei:sourceDesc
         else if (not($notesStmt/tei:note[@type eq 'lastUpdated'])) then 
             update insert $note into $notesStmt

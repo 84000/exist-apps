@@ -35,25 +35,6 @@
                             <xsl:with-param name="active-tab" select="@model-type"/>
                         </xsl:call-template>
                         
-                        <xsl:if test="$environment/m:store-conf[@type eq 'master']">
-                            <div class="alert alert-danger small text-center" role="alert">
-                                <xsl:value-of select="'Due to an underlying restriction in the database platform only database administrators can generate new versions of eBooks.'"/>
-                            </div>
-                        </xsl:if>
-                        
-                        <xsl:if test="m:updated">
-                            <div class="alert alert-success" role="alert">
-                                <xsl:value-of select="m:updated"/>
-                                <xsl:value-of select="' | '"/>
-                                <xsl:if test="m:updated/@resource-id">
-                                    <a class="scroll-to-anchor alert-link">
-                                        <xsl:attribute name="href" select="concat('#', m:updated/@resource-id)"/>
-                                        <xsl:value-of select="'Go there'"/>
-                                    </a>
-                                </xsl:if>
-                            </div>
-                        </xsl:if>
-                        
                         <div class="tab-content">
                             
                             <div class="alert alert-info small text-center">
@@ -61,6 +42,25 @@
                                     <xsl:value-of select="'Lists the status of current translations and related files.'"/>
                                 </p>
                             </div>
+                            
+                            <xsl:if test="$environment/m:store-conf[@type eq 'master']">
+                                <div class="alert alert-danger small text-center" role="alert">
+                                    <xsl:value-of select="'Due to an underlying restriction in the database platform only database administrators can generate new versions of eBooks.'"/>
+                                </div>
+                            </xsl:if>
+                            
+                            <xsl:if test="m:updated">
+                                <div class="alert alert-success" role="alert">
+                                    <xsl:value-of select="m:updated"/>
+                                    <xsl:value-of select="' | '"/>
+                                    <xsl:if test="m:updated/@resource-id">
+                                        <a class="scroll-to-anchor alert-link">
+                                            <xsl:attribute name="href" select="concat('#', m:updated/@resource-id)"/>
+                                            <xsl:value-of select="'Go there'"/>
+                                        </a>
+                                    </xsl:if>
+                                </div>
+                            </xsl:if>
                             
                             <table class="table table-responsive">
                                 <thead>
@@ -79,7 +79,6 @@
                                         <xsl:variable name="text-downloads" select="m:downloads/m:download"/>
                                         <xsl:variable name="text-id" select="@id"/>
                                         <xsl:variable name="status-id" select="@status-id"/>
-                                        <xsl:variable name="translation-status" select="/m:response/m:translation-status/m:text[@text-id eq $text-id]"/>
                                         
                                         <!-- Translation title -->
                                         <tr>
@@ -93,15 +92,6 @@
                                                     <xsl:attribute name="target" select="concat($toh/@key, '.html')"/>
                                                     <xsl:value-of select="m:titles/m:title[@xml:lang eq 'en']"/>
                                                 </a>
-                                                <xsl:if test="$environment/m:store-conf[@type eq 'master']">
-                                                    <span class="small">
-                                                         <xsl:value-of select="' / '"/>
-                                                        <a target="_self">
-                                                            <xsl:attribute name="href" select="concat('/edit-text-header.html?id=', $text-id)"/>
-                                                            <xsl:value-of select="'Edit headers'"/>
-                                                        </a>
-                                                    </span>
-                                                </xsl:if>
                                             </td>
                                             <td colspan="2" class="nowrap">
                                                 
@@ -322,49 +312,6 @@
                                                 <xsl:value-of select="fn:format-number(xs:integer(@glossaryCount),'#,##0')"/>
                                             </td>
                                         </tr>
-                                        <!-- Translation notes / link to the header form, only on master -->
-                                        <xsl:if test="$environment/m:store-conf[@type eq 'master'] and ($translation-status/m:*[self::m:action-note | self::m:progress-note | self::m:text-note]/text() | $translation-status/m:task[not(@checked-off)])">
-                                            <tr class="sub">
-                                                <td colspan="1"/>
-                                                <td colspan="6">
-                                                    <div class="well well-sm no-bottom-margin">
-                                                        <xsl:if test="$translation-status/m:action-note/text() | $translation-status/m:task[not(@checked-off)]">
-                                                            <div class="top-vertical">
-                                                                <span class="collapse-one-line small italic ">
-                                                                    <xsl:value-of select="concat('Awaiting action from: ', if($translation-status/m:action-note/text()) then $translation-status/m:action-note else '[empty]')"/>
-                                                                </span>
-                                                                <span>
-                                                                    <span class="badge badge-notification">
-                                                                        <xsl:value-of select="count($translation-status/m:task[not(@checked-off)])"/>
-                                                                    </span>
-                                                                    <span class="italic visible-print-inline-block">
-                                                                        <xsl:value-of select="count($translation-status/m:task[not(@checked-off)])"/> task(s)
-                                                                    </span>
-                                                                </span>
-                                                            </div>
-                                                            <xsl:if test="$translation-status/m:*[self::m:progress-note | self::m:text-note]/text()">
-                                                                <hr class="xs-margin"/>
-                                                            </xsl:if>
-                                                        </xsl:if>
-                                                        
-                                                        <xsl:if test="$translation-status/m:progress-note/text()">
-                                                            <div class="collapse-one-line small italic">
-                                                                <xsl:value-of select="$translation-status/m:progress-note"/>
-                                                            </div>
-                                                            <xsl:if test="$translation-status/m:*[self::m:text-note]/text()">
-                                                                <hr class="xs-margin"/>
-                                                            </xsl:if>
-                                                        </xsl:if>
-                                                        
-                                                        <xsl:if test="$translation-status/m:text-note/text()">
-                                                            <div class="collapse-one-line small italic">
-                                                                <xsl:value-of select="$translation-status/m:text-note"/>
-                                                            </div>
-                                                        </xsl:if>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                        </xsl:if>
                                     </xsl:for-each>
                                 </tbody>
                                 <tfoot>
@@ -372,21 +319,20 @@
                                         <td/>
                                         <td>
                                             <small class="text-muted">
-                                                Texts:
+                                                <xsl:value-of select="'Texts: '"/>
                                             </small>
-                                            <br/>
                                             <xsl:value-of select="fn:format-number(xs:integer(count(//m:translations/m:translation)),'#,##0')"/>
                                         </td>
                                         <td>
                                             <small class="text-muted">
-                                                Total words:
+                                                <xsl:value-of select="'Total words: '"/>
                                             </small>
                                             <br/>
                                             <xsl:value-of select="fn:format-number(xs:integer(sum(//m:translations/m:translation/@wordCount)),'#,##0')"/>
                                         </td>
                                         <td>
                                             <small class="text-muted">
-                                                Total terms:
+                                                <xsl:value-of select="'Total terms: '"/>
                                             </small>
                                             <br/>
                                             <xsl:value-of select="fn:format-number(xs:integer(sum(//m:translations/m:translation/@glossaryCount)),'#,##0')"/>

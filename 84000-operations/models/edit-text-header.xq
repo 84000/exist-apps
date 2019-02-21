@@ -1,6 +1,8 @@
 xquery version "3.0" encoding "UTF-8";
 
 import module namespace local="http://operations.84000.co/local" at "../modules/local.xql";
+import module namespace update-translation="http://operations.84000.co/update-translation" at "../modules/update-translation.xql";
+import module namespace file-upload="http://operations.84000.co/file-upload" at "../modules/file-upload.xql";
 
 import module namespace common="http://read.84000.co/common" at "../../84000-reading-room/modules/common.xql";
 import module namespace tei-content="http://read.84000.co/tei-content" at "../../84000-reading-room/modules/tei-content.xql";
@@ -25,11 +27,21 @@ let $tei :=
 
 let $translation-id := tei-content:id($tei)
 
+(: Delete a submission :)
+(: The parameter delete-submission also triggers translation-status:update :)
+let $delete-submission-id := request:get-parameter('delete-submission-id', '')
+let $delete-submission := 
+    if($delete-submission-id gt '') then
+        file-upload:delete-file($translation-id, $delete-submission-id)
+    else 
+        ()
+
 (: Process input, if it's posted :)
 let $updated := 
-    if($post-id) then
+    if($post-id or $delete-submission-id) then
         (
-            translation:update($tei),
+            update-translation:update($tei),
+            file-upload:process-upload($translation-id),
             translation-status:update($translation-id)
         )
      else
@@ -42,7 +54,8 @@ return
         (
             <request 
                 xmlns="http://read.84000.co/ns/1.0" 
-                id="{ $translation-id }"/>,
+                id="{ $translation-id }"
+                delete-submission="{ $delete-submission-id }"/>,
             <updates
                 xmlns="http://read.84000.co/ns/1.0" >
                 { $updated }
@@ -74,9 +87,13 @@ return
             contributors:teams(true(), false(), false()),
             $tei-content:title-types,
             doc(concat($common:data-path, '/config/contributor-types.xml')),
+            doc(concat($common:data-path, '/config/publication-tasks.xml')),
+            doc(concat($common:data-path, '/config/submission-checklist.xml')),
             element { QName('http://read.84000.co/ns/1.0', 'translation-status') } {
                 translation-status:notes($translation-id),
-                translation-status:tasks($translation-id)
+                translation-status:tasks($translation-id),
+                translation-status:submissions($translation-id),
+                translation-status:status-updates($tei)
             }
         )
     )

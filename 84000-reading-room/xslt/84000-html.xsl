@@ -256,7 +256,9 @@
                                     </xsl:when>
                                 </xsl:choose>
                                 <xsl:attribute name="href">
-                                    <xsl:value-of select="@url"/>
+                                    <xsl:call-template name="local-url">
+                                        <xsl:with-param name="url" select="@url"/>
+                                    </xsl:call-template>
                                 </xsl:attribute>
                                 <xsl:attribute name="title">
                                     <xsl:value-of select="m:label/text()"/>

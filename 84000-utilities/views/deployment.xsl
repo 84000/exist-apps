@@ -16,13 +16,13 @@
                     <div class="panel-heading panel-heading-bold hidden-print center-vertical">
                         
                         <span class="title">
-                            84000 Utilities
+                            <xsl:value-of select="'84000 Utilities'"/>
                         </span>
                         
                         <span class="text-right">
                             <a target="reading-room">
                                 <xsl:attribute name="href" select="$reading-room-path"/>
-                                Reading Room
+                                <xsl:value-of select="'Reading Room'"/>
                             </a>
                         </span>
                         
@@ -61,7 +61,7 @@
                                                     
                                                     <div class="form-group">
                                                         <label for="message" class="col-sm-3 control-label">
-                                                            Commit message
+                                                            <xsl:value-of select="'Commit message'"/>
                                                         </label>
                                                         <div class="col-sm-9">
                                                             <input type="text" name="message" id="message" value="" required="required" maxlength="100" class="form-control" placeholder="e.g. bug fix for ebooks"/>
@@ -70,13 +70,15 @@
                                                     
                                                     <div class="form-group">
                                                         <label for="password" class="col-sm-3 control-label">
-                                                            Admin password
+                                                            <xsl:value-of select="'Admin password'"/>
                                                         </label>
                                                         <div class="col-sm-3">
                                                             <input type="password" name="password" id="password" value="" required="required" class="form-control" autocomplete="off"/>
                                                         </div>
                                                         <div class="col-sm-3">
-                                                            <button type="submit" class="btn btn-danger">Commit</button>
+                                                            <button type="submit" class="btn btn-danger">
+                                                                <xsl:value-of select="'Commit'"/>
+                                                            </button>
                                                         </div>
                                                     </div>
                                                     
@@ -112,7 +114,7 @@
                                                     
                                                     <div class="form-group">
                                                         <label for="password" class="col-sm-3 control-label">
-                                                            Admin password
+                                                            <xsl:value-of select="'Admin password'"/>
                                                         </label>
                                                         <div class="col-sm-3">
                                                             <input type="password" name="password" id="password" value="" required="required" class="form-control" autocomplete="off"/>
@@ -142,12 +144,12 @@
                                             <code class="small">
                                                 <xsl:for-each select="//execution">
                                                     <xsl:if test="commandline/text()">
-                                                        $ <xsl:value-of select="commandline/text()"/>
+                                                        <xsl:value-of select="concat('$ ', commandline/text())"/>
                                                     </xsl:if>
                                                     <br/>
                                                     <xsl:for-each select="stdout/line">
                                                         <xsl:if test="text()">
-                                                            $ <xsl:value-of select="text()"/>
+                                                            <xsl:value-of select="concat('$ ', ./text())"/>
                                                         </xsl:if>
                                                         <br/>
                                                     </xsl:for-each>

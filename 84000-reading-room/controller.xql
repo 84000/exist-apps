@@ -122,13 +122,6 @@ else if(not(common:auth-environment()) or sm:is-authenticated()) then
     
     (: Translation :)
     else if ($collection-path eq "translation") then
-        (: add something to permamently redirect UT id requests  :)
-        (:
-        if({$resource-id begins with 'ut') then
-            Try looking up the Toh key
-            If it resolves then replace the UT with the Toh key
-        else 
-        :)
         if ($resource-suffix eq 'tei') then
             local:dispatch("/models/translation-tei.xq", "",
                 <parameters xmlns="http://exist.sourceforge.net/NS/exist">

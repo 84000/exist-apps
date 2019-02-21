@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:common="http://read.84000.co/common" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" xmlns:exslt="http://exslt.org/common" version="3.0" exclude-result-prefixes="#all">
     
+    <!-- Page header -->
     <xsl:template name="operations-page">
         <xsl:param name="reading-room-path" required="yes"/>
         <xsl:param name="active-tab"/>
@@ -11,7 +12,7 @@
                 
                 <div class="panel-heading panel-heading-bold hidden-print center-vertical">
                     <span class="title">
-                        84000 Operations Reports
+                        84000 Project Management
                     </span>
                     <span class="text-right">
                         <a target="reading-room">
@@ -34,6 +35,25 @@
                 </div>
             </div>
         </div>
+    </xsl:template>
+    
+    <!-- Generic alert -->
+    <xsl:template name="alert-updated">
+        <xsl:if test="m:updates/m:updated">
+            <div class="alert alert-success alert-temporary" role="alert">
+                <xsl:value-of select="'Updated'"/>
+            </div>
+        </xsl:if>
+    </xsl:template>
+    
+    <!-- Alert if translation is locked -->
+    <xsl:template name="alert-translation-locked">
+        <xsl:if test="m:translation/@locked-by-user gt ''">
+            <div class="alert alert-danger" role="alert">
+                <xsl:value-of select="concat('File ', m:translation/@document-url, ' is currenly locked by user ', m:translation/@locked-by-user, '. ')"/>
+                <xsl:value-of select="'You cannot modify this file until the lock is released.'"/>
+            </div>
+        </xsl:if>
     </xsl:template>
     
     <xsl:template name="tabs">
@@ -151,7 +171,7 @@
                 <li role="presentation">
                     <xsl:attribute name="class" select="'active'"/>
                     <a>
-                        <xsl:attribute name="href" select="concat('/edit-text-submission.html?id=', /m:response/m:request/@id)"/>
+                        <xsl:attribute name="href" select="concat('/edit-text-submission.html?text-id=', /m:response/m:request/@text-id, '&amp;submission-id=', /m:response/m:request/@submission-id)"/>
                         <xsl:value-of select="'Edit Submission'"/>
                     </a>
                 </li>

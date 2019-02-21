@@ -1,5 +1,7 @@
 xquery version "3.0";
 
+import module namespace file-upload="http://operations.84000.co/file-upload" at "modules/file-upload.xql";
+
 declare variable $exist:path external;
 declare variable $exist:resource external;
 declare variable $exist:controller external;
@@ -26,17 +28,17 @@ else if ($exist:path = ('', '/') or $exist:resource = ('index.htm')) then
         <redirect url="index.html"/>
     </dispatch>
 
-else if (ends-with($exist:resource, ".xml")) then
+else if ($resource-suffix = ('xml')) then
     <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-        <forward url="{concat($exist:controller, '/models/', substring-before($exist:resource, '.'), '.xq')}"/>
+        <forward url="{ concat($exist:controller, '/models/', substring-before($exist:resource, '.'), '.xq') }"/>
     </dispatch>
     
-else if (ends-with($exist:resource, ".html")) then
+else if ($resource-suffix = ('html')) then
     <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-        <forward url="{concat($exist:controller, '/models/', substring-before($exist:resource, '.'), '.xq')}"/>
+        <forward url="{ concat($exist:controller, '/models/', substring-before($exist:resource, '.'), '.xq') }"/>
         <view>
             <forward servlet="XSLTServlet">
-                <set-attribute name="xslt.stylesheet" value="{concat($exist:root, $exist:controller, '/views/', substring-before($exist:resource, '.'), '.xsl')}"/>
+                <set-attribute name="xslt.stylesheet" value="{ concat($exist:root, $exist:controller, '/views/', substring-before($exist:resource, '.'), '.xsl') }"/>
             </forward>
         </view>
         <cache-control cache="no"/>
@@ -48,7 +50,21 @@ else if (ends-with($exist:resource, ".html")) then
         </error-handler>
         -->
     </dispatch>
-    
+
+else if ($collection-path eq "imported-file") then
+    <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+        <forward url="{ file-upload:download-file-path() }">
+            {
+                if($resource-suffix = ('docx')) then
+                    <set-header name="Content-Type" value="application/vnd.openxmlformats-officedocument.wordprocessingml.document"/>
+                else if($resource-suffix = ('xlsx')) then
+                    <set-header name="Content-Type" value="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"/>
+                else
+                    ()
+            }
+            <set-header name="Content-Disposition" value="attachment"/>
+        </forward>
+    </dispatch>
 else
     (: everything else is passed through :)
     <dispatch xmlns="http://exist.sourceforge.net/NS/exist">

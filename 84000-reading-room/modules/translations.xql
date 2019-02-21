@@ -254,7 +254,12 @@ declare function translations:filtered-texts($section as xs:string, $status as x
                     return $text
                 else if($sort eq 'status') then
                     for $text in $texts
-                        order by if ($text/@status = $tei-content:text-statuses/m:status/@status-id) then $text/@status else '4'
+                        order by 
+                            if ($text/@status = $tei-content:text-statuses/m:status/@status-id) then $text/@status else '4',
+                            xs:integer($text/m:toh/@number), 
+                            $text/m:toh/@letter, 
+                            if(functx:is-a-number($text/m:toh/@chapter-number)) then xs:integer($text/m:toh/@chapter-number) else 9999, 
+                            $text/m:toh/@chapter-letter
                     return $text
                 else if($sort eq 'longest') then
                     for $text in $texts

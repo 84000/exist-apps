@@ -201,7 +201,10 @@ declare function glossary:glossary-items($normalized-term as xs:string) as eleme
                             {
                                 for $editor in $translation//tei:titleStmt/tei:editor
                                 return 
-                                    <editor>{ normalize-space($editor/text()) }</editor>
+                                    element editor {
+                                        $editor/@ref,
+                                        $editor/text() ! normalize-space(.) 
+                                    }
                             }
                             </editors>
                             <edition>{ $translation//tei:editionStmt/tei:edition[1]/text() ! concat(normalize-space(.), ' ') ! normalize-space(.) }</edition>

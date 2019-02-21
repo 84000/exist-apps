@@ -13,7 +13,7 @@
                     <xsl:attribute name="class" select="'active'"/>
                 </xsl:if>
                 <a href="translations.html">
-                    Translations
+                    <xsl:value-of select="'Translations'"/>
                 </a>
             </li>
             <li role="presentation">
@@ -21,7 +21,7 @@
                     <xsl:attribute name="class" select="'active'"/>
                 </xsl:if>
                 <a href="sections.html">
-                    Sections
+                    <xsl:value-of select="'Sections'"/>
                 </a>
             </li>
             <li role="presentation">
@@ -29,7 +29,7 @@
                     <xsl:attribute name="class" select="'active'"/>
                 </xsl:if>
                 <a href="folios.html">
-                    Folios
+                    <xsl:value-of select="'Folios'"/>
                 </a>
             </li>
             <li role="presentation">
@@ -37,7 +37,7 @@
                     <xsl:attribute name="class" select="'active'"/>
                 </xsl:if>
                 <a href="tests.html">
-                    Tests
+                    <xsl:value-of select="'Tests'"/>
                 </a>
             </li>
             <li role="presentation">
@@ -45,7 +45,7 @@
                     <xsl:attribute name="class" select="'active'"/>
                 </xsl:if>
                 <a href="layout-checks.html">
-                    Layout Checks
+                    <xsl:value-of select="'Layout Checks'"/>
                 </a>
             </li>
             <li role="presentation">
@@ -53,7 +53,7 @@
                     <xsl:attribute name="class" select="'active'"/>
                 </xsl:if>
                 <a href="requests.html">
-                    Requests
+                    <xsl:value-of select="'Requests'"/>
                 </a>
             </li>
             <li role="presentation">
@@ -61,7 +61,7 @@
                     <xsl:attribute name="class" select="'active'"/>
                 </xsl:if>
                 <a href="client-errors.html">
-                    Client Errors
+                    <xsl:value-of select="'Client Errors'"/>
                 </a>
             </li>
             <xsl:if test="$environment/m:snapshot-conf">
@@ -70,7 +70,7 @@
                         <xsl:attribute name="class" select="'active'"/>
                     </xsl:if>
                     <a href="snapshot.html">
-                        Data Snapshot
+                        <xsl:value-of select="'Data Snapshot'"/>
                     </a>
                 </li>
             </xsl:if>
@@ -80,16 +80,7 @@
                         <xsl:attribute name="class" select="'active'"/>
                     </xsl:if>
                     <a href="deployment.html">
-                        Deploy Code
-                    </a>
-                </li>
-            </xsl:if>
-            <xsl:if test="$active-tab eq 'utilities/edit-text-header'">
-                <li role="presentation">
-                    <xsl:attribute name="class" select="'active'"/>
-                    <a>
-                        <xsl:attribute name="href" select="concat('/edit-text-header.html?id=', /m:response/m:request/@id)"/>
-                        Edit Text Header
+                        <xsl:value-of select="'Deploy Code'"/>
                     </a>
                 </li>
             </xsl:if>

@@ -5,12 +5,12 @@ module namespace translation="http://read.84000.co/translation";
 declare namespace m = "http://read.84000.co/ns/1.0";
 declare namespace tei="http://www.tei-c.org/ns/1.0";
 
-import module namespace functx="http://www.functx.com";
 import module namespace common="http://read.84000.co/common" at "common.xql";
 import module namespace tei-content="http://read.84000.co/tei-content" at "tei-content.xql";
 import module namespace sponsors="http://read.84000.co/sponsors" at "sponsors.xql";
 import module namespace contributors="http://read.84000.co/contributors" at "contributors.xql";
 import module namespace download="http://read.84000.co/download" at "download.xql";
+import module namespace functx="http://www.functx.com";
 
 declare function translation:titles($tei as element()) as element() {
     <titles xmlns="http://read.84000.co/ns/1.0">
@@ -181,7 +181,7 @@ declare function translation:filename($tei as element(), $resource-id as xs:stri
         replace(
             translate(
                 lower-case(
-                    tei-content:title($tei)     (: get title :)
+                    tei-content:title($tei)             (: get title :)
                 )                                       (: convert to lower case :)
             , $diacritics, $normalized)                 (: remove diacritics :)
         ,'[^a-zA-Z0-9\s]', ' ')                         (: remove non-alphanumeric, except spaces :)
@@ -743,9 +743,12 @@ declare function translation:contributors($tei as element(), $include-acknowledg
         </contributors>
 };
 
+(:
 declare function translation:update($tei as element()) as element()* {
 
     (# exist:batch-transaction #) {
+    
+        let $parameter-add-notes:= ('translation-status', 'text-version')
     
         (: The updates have to follow in the correct order e.g. input-1, input-2... :)
         for $request-parameter in common:sort-trailing-number-in-string(request:get-parameter-names(), '-')
@@ -846,10 +849,10 @@ declare function translation:update($tei as element()) as element()* {
                 (: Version :)
                 else if($request-parameter eq 'text-version') then
                     element { QName("http://www.tei-c.org/ns/1.0", "editionStmt") }{
-                        element { QName("http://www.tei-c.org/ns/1.0", "edition") }{
+                        element edition {
                             text { concat(normalize-space(request:get-parameter('text-version', '')), ' ') },
                             if(request:get-parameter('text-version-date', '')) then
-                                element { QName("http://www.tei-c.org/ns/1.0", "date") } {
+                                element date {
                                     request:get-parameter('text-version-date', '')
                                 }
                             else 
@@ -962,17 +965,35 @@ declare function translation:update($tei as element()) as element()* {
                 else
                     ()
             
-            return
-                if($existing-value or $new-value) then
-                    common:update($request-parameter, $existing-value, $new-value, $parent, $insert-following)
-                    (:element update-debug {
-                        element request-parameter { $request-parameter }, 
-                        element existing-value { $existing-value }, 
-                        element new-value { $new-value }, 
-                        element parent { $parent }, 
-                        element insert-following { $insert-following }
-                    }:)
+            let $add-note := 
+                if($request-parameter = $parameter-add-notes and not(compare($existing-value, $new-value) eq 0)) then
+                    element { QName("http://www.tei-c.org/ns/1.0", "note") }{
+                        attribute type { 'updated' },
+                        attribute update { $request-parameter },
+                        attribute value { normalize-space(request:get-parameter($request-parameter, '')) },
+                        attribute date-time { current-dateTime() },
+                        attribute user { common:user-name() },
+                        text { string(normalize-space($new-value)) }
+                    }
                 else
                     ()
+            
+            where $existing-value or $new-value
+            return
+                (
+                    common:update($request-parameter, $existing-value, $new-value, $parent, $insert-following),
+                    if($add-note) then 
+                        common:update('add-note', (), $add-note, $tei//tei:fileDesc/tei:notesStmt, ())
+                    else
+                        ()
+                )
+                (:element update-debug {
+                    element request-parameter { $request-parameter }, 
+                    element existing-value { $existing-value }, 
+                    element new-value { $new-value }, 
+                    element parent { $parent }, 
+                    element insert-following { $insert-following }
+                }:)
      }
 };
+:)
