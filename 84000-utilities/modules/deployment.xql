@@ -145,7 +145,7 @@ declare function deployment:deploy-apps($admin-password as xs:string, $commit-ms
             </sync>
             {
                 if($action eq 'push' and  $sync and $git-options) then
-                    deployment:git-push('.', $commit-msg, $git-options)
+                    deployment:git-push('--all', $commit-msg, $git-options)
                 else
                     ()
             }
