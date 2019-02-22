@@ -112,7 +112,7 @@
         <xsl:call-template name="reading-room-page">
             <xsl:with-param name="page-url" select="''"/>
             <xsl:with-param name="page-class" select="'utilities tests'"/>
-            <xsl:with-param name="page-title" select="'Validation :: 84000 Utilities'"/>
+            <xsl:with-param name="page-title" select="'Validation | 84000 Utilities'"/>
             <xsl:with-param name="page-description" select="'Validation for TEI Files'"/>
             <xsl:with-param name="content" select="$content"/>
         </xsl:call-template>

@@ -119,7 +119,7 @@
         <xsl:call-template name="reading-room-page">
             <xsl:with-param name="page-url" select="''"/>
             <xsl:with-param name="page-class" select="'utilities'"/>
-            <xsl:with-param name="page-title" select="'Translator Teams :: 84000 Operations'"/>
+            <xsl:with-param name="page-title" select="'Translator Teams | 84000 Project Management'"/>
             <xsl:with-param name="page-description" select="'Translator Teams configuration for 84000 operations team.'"/>
             <xsl:with-param name="content" select="$content"/>
         </xsl:call-template>

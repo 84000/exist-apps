@@ -240,7 +240,7 @@
         <xsl:call-template name="reading-room-page">
             <xsl:with-param name="page-url" select="''"/>
             <xsl:with-param name="page-class" select="'utilities'"/>
-            <xsl:with-param name="page-title" select="'Layout Ckecks :: 84000 Utilities'"/>
+            <xsl:with-param name="page-title" select="'Layout Ckecks | 84000 Utilities'"/>
             <xsl:with-param name="page-description" select="'Links to layout elements taht should be checked'"/>
             <xsl:with-param name="content" select="$content"/>
         </xsl:call-template>

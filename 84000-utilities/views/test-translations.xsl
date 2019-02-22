@@ -35,11 +35,11 @@
                     <xsl:choose>
                         <xsl:when test="$success">
                             <i class="fa fa-check-circle"/>
-                            Passed Test
+                            <xsl:value-of select="' Passed Test '"/>
                         </xsl:when>
                         <xsl:otherwise>
                             <i class="fa fa-times-circle"/>
-                            Failed Test
+                            <xsl:value-of select="' Failed Test '"/>
                         </xsl:otherwise>
                     </xsl:choose>
                     <span> <xsl:value-of select="$test-title"/>
@@ -101,7 +101,7 @@
                     <div class="panel-heading panel-heading-bold hidden-print center-vertical">
                         
                         <span class="title">
-                            Automated Tests on Translations
+                            <xsl:value-of select="'Automated Tests on Translations'"/>
                         </span>
                         
                     </div>
@@ -111,9 +111,24 @@
                         <form action="/test-translations.html" method="post" class="form-inline filter-form">
                             <div class="form-group">
                                 <select name="translation-id" id="translation-id" class="form-control">
-                                    <option value="all">All translations</option>
-                                    <option value="published">Published translations</option>
-                                    <option value="in-progress">In-progress translations</option>
+                                    <option value="all">
+                                        <xsl:if test="/m:response/m:request/@translation-id eq 'all'">
+                                            <xsl:attribute name="selected" select="'selected'"/>
+                                        </xsl:if>
+                                        <xsl:value-of select="'All translations'"/>
+                                    </option>
+                                    <option value="published">
+                                        <xsl:if test="/m:response/m:request/@translation-id eq 'published'">
+                                            <xsl:attribute name="selected" select="'selected'"/>
+                                        </xsl:if>
+                                        <xsl:value-of select="'Published translations'"/>
+                                    </option>
+                                    <option value="in-progress">
+                                        <xsl:if test="/m:response/m:request/@translation-id eq 'in-progress'">
+                                            <xsl:attribute name="selected" select="'selected'"/>
+                                        </xsl:if>
+                                        <xsl:value-of select="'In-progress translations'"/>
+                                    </option>
                                     <xsl:for-each select="m:translations/m:file">
                                         <xsl:sort select="@id"/>
                                         <option>
@@ -232,7 +247,7 @@
         <xsl:call-template name="reading-room-page">
             <xsl:with-param name="page-url" select="''"/>
             <xsl:with-param name="page-class" select="'utilities tests'"/>
-            <xsl:with-param name="page-title" select="'Translation Tests :: 84000 Utilities'"/>
+            <xsl:with-param name="page-title" select="'Translation Tests | 84000 Utilities'"/>
             <xsl:with-param name="page-description" select="'Automated tests for 84000 translations'"/>
             <xsl:with-param name="content" select="$content"/>
         </xsl:call-template>

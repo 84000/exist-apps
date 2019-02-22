@@ -105,7 +105,7 @@
         <xsl:call-template name="website-page">
             <xsl:with-param name="page-url" select="concat('http://read.84000.co/search.html?s=', m:search/m:request/text())"/>
             <xsl:with-param name="page-class" select="'section'"/>
-            <xsl:with-param name="page-title" select="concat('Search results for ', m:search/m:request/text())"/>
+            <xsl:with-param name="page-title" select="concat('84000 Reading Room | Search results for ', m:search/m:request/text())"/>
             <xsl:with-param name="page-description" select="''"/>
             <xsl:with-param name="content" select="$content"/>
             <xsl:with-param name="nav-tab" select="'#reading-room'"/>

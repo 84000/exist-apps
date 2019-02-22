@@ -124,7 +124,7 @@
         <xsl:call-template name="reading-room-page">
             <xsl:with-param name="page-url" select="''"/>
             <xsl:with-param name="page-class" select="concat('translation ', if(m:request/@view-mode eq 'editor') then 'editor-mode' else '')"/>
-            <xsl:with-param name="page-title" select="concat('Glossary: ', m:translation-glossary/m:title)"/>
+            <xsl:with-param name="page-title" select="concat('84000 | Glossary: ', m:translation-glossary/m:title)"/>
             <xsl:with-param name="page-description" select="''"/>
             <xsl:with-param name="content" select="$content"/>
         </xsl:call-template>

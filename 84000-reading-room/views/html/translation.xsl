@@ -460,7 +460,7 @@
         <xsl:call-template name="reading-room-page">
             <xsl:with-param name="page-url" select="m:translation/@page-url"/>
             <xsl:with-param name="page-class" select="concat('translation ', if(m:request/@view-mode eq 'editor') then 'editor-mode' else '')"/>
-            <xsl:with-param name="page-title" select="m:translation/m:titles/m:title[@xml:lang eq 'en']/text()"/>
+            <xsl:with-param name="page-title" select="concat('84000 Reading Room | ', m:translation/m:titles/m:title[@xml:lang eq 'en']/text())"/>
             <xsl:with-param name="page-description" select="normalize-space(data(m:translation/m:summary/tei:p[1]))"/>
             <xsl:with-param name="content" select="$content"/>
         </xsl:call-template>

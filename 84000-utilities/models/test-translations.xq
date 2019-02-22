@@ -6,7 +6,7 @@ import module namespace translations="http://read.84000.co/translations" at "../
 
 declare option exist:serialize "method=xml indent=no";
 
-let $translation-id := request:get-parameter('translation-id', 'all')
+let $translation-id := request:get-parameter('translation-id', 'in-progress')
 
 return 
     common:response(

@@ -119,7 +119,7 @@
         <xsl:call-template name="reading-room-page">
             <xsl:with-param name="page-url" select="''"/>
             <xsl:with-param name="page-class" select="'utilities'"/>
-            <xsl:with-param name="page-title" select="'Data Snapshot :: 84000 Utilities'"/>
+            <xsl:with-param name="page-title" select="'Data Snapshot | 84000 Utilities'"/>
             <xsl:with-param name="page-description" select="'Data snapshot utility'"/>
             <xsl:with-param name="content" select="$content"/>
         </xsl:call-template>

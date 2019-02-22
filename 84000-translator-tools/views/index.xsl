@@ -19,13 +19,13 @@
                     <div class="panel-heading panel-heading-bold hidden-print center-vertical">
                         
                         <span class="title">
-                            84000 Translator Tools
+                            <xsl:value-of select="'84000 Translator Tools'"/>
                         </span>
                         
                         <span class="text-right">
                             <a target="_self">
                                 <xsl:attribute name="href" select="$reading-room-path"/>
-                                Reading Room
+                                <xsl:value-of select="'Reading Room'"/>
                             </a>
                         </span>
                         
@@ -58,7 +58,7 @@
                                     
                                     <div class="alert alert-warning small text-center">
                                         <p>
-                                            Use the form below to search for terms, phrases, titles, and so forth in published and nearly-published 84000 translations. Search results link directly to passages in the Reading Room.
+                                            <xsl:value-of select="'Use the form below to search for terms, phrases, titles, and so forth in published and nearly-published 84000 translations. Search results link directly to passages in the Reading Room.'"/>
                                         </p>
                                     </div>
                                     
@@ -76,13 +76,12 @@
                                 <xsl:when test="/m:response/m:request/@tab eq 'tibetan-search'">
                                     
                                     <div class="alert alert-warning small text-center">
-                                        <p>
-                                            The Tibetan Search below is a convenient way to browse translation memories created from published 84000 translations. Search for a term or phrase by entering Tibetan script or Wylie into the search fields, or simply highlight a segment in the e-Kangyur display on the left. You can learn more about Translation Memories under the <a href="?tab=smartcat">CAT Tools</a> tab.
-                                        </p>
+                                        <p>The Tibetan Search below is a convenient way to browse translation memories created from published 84000 translations. Search for a term or phrase by entering Tibetan script or Wylie into the search fields, or simply highlight a segment in the e-Kangyur display on the left. You can learn more about Translation Memories under the <a href="?tab=smartcat">CAT Tools</a> tab.</p>
                                         <p>**Please be aware that this is a beta version.**</p>
                                     </div>
                                     
                                     <xsl:call-template name="tibetan-search"/>
+                                    
                                 </xsl:when>
                                 
                                 <xsl:otherwise>
@@ -112,7 +111,7 @@
         <xsl:call-template name="reading-room-page">
             <xsl:with-param name="page-url" select="''"/>
             <xsl:with-param name="page-class" select="'utilities wait'"/>
-            <xsl:with-param name="page-title" select="concat('84000 Translator Tools : ', /m:response/m:request/@tab)"/>
+            <xsl:with-param name="page-title" select="concat(m:tabs/m:tab[@id eq /m:response/m:request/@tab]/m:label, ' | 84000 Translator Tools')"/>
             <xsl:with-param name="page-description" select="'Tools for 84000 translators'"/>
             <xsl:with-param name="content" select="$content"/>
         </xsl:call-template>

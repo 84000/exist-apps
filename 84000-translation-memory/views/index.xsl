@@ -224,7 +224,7 @@
         <xsl:call-template name="reading-room-page">
             <xsl:with-param name="page-url" select="''"/>
             <xsl:with-param name="page-class" select="'utilities'"/>
-            <xsl:with-param name="page-title" select="'Translation Memory'"/>
+            <xsl:with-param name="page-title" select="'84000 | Translation Memory'"/>
             <xsl:with-param name="page-description" select="'84000 Translation Memory Generator.'"/>
             <xsl:with-param name="content" select="$content"/>
         </xsl:call-template>

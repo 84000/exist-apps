@@ -67,10 +67,7 @@ declare function tests:translations($translation-id as xs:string) as item(){
                         tests:valid-pointers($tei)
                     }
                     {
-                        let $count-main-titles := 3 (: count($tei//tei:fileDesc/tei:titleStmt/tei.title[@type eq 'main']) :)
-                        let $count-long-titles := count($tei//tei:fileDesc/tei:titleStmt/tei:title[@type eq 'longTitle'])
-                        return
-                            tests:titles($toh-html, $count-main-titles, $count-long-titles)
+                        tests:titles($toh-html, $tei)
                     }
                     {
                         tests:outline-context($tei, $toh-key)
@@ -184,7 +181,9 @@ declare function tests:sections($section-id as xs:string) as item(){
 };
 
 declare function tests:validate-schema($tei as element(), $schema as node()) as item() {
+
    let $validation-report := validation:jing-report($tei, $schema)
+   
    return
        <test xmlns="http://read.84000.co/ns/1.0" 
             id="schema-validation" 
@@ -200,11 +199,13 @@ declare function tests:validate-schema($tei as element(), $schema as node()) as 
        </test>
 };
 
-declare function tests:duplicate-ids($tei as element()) as item(){
+declare function tests:duplicate-ids($tei as element()) as item() {
+
     let $ids := $tei//@xml:id/string()
     let $count-ids := count($ids)
     let $distinct-ids := distinct-values($tei//@xml:id/string())
     let $count-distinct-ids := count($distinct-ids)
+    
     return
         <test xmlns="http://read.84000.co/ns/1.0"
             id="duplicate-ids"
@@ -224,8 +225,10 @@ declare function tests:duplicate-ids($tei as element()) as item(){
         </test>
 };
 
-declare function tests:valid-pointers($tei as element()) as item(){
+declare function tests:valid-pointers($tei as element()) as item() {
+
     let $invalid-ptrs := $tei//tei:ptr[empty(text())]/@target[not(substring-after(., '#') = ($tei//*/@xml:id))]
+    
     return
         <test xmlns="http://read.84000.co/ns/1.0"
             id="valid-pointers" 
@@ -241,31 +244,51 @@ declare function tests:valid-pointers($tei as element()) as item(){
         </test>
 };
 
-declare function tests:titles($toh-html as element(), $count-main-titles as xs:integer, $count-long-titles as xs:integer) as item(){
-    let $titles := $toh-html//*[@id eq 'titles']/*[self::xhtml:h1 | self::xhtml:h2 | self::xhtml:h3 | self::xhtml:h4]/text()
-    let $long-titles := $toh-html//*[@id eq 'long-titles']/*[self::xhtml:h1 | self::xhtml:h2 | self::xhtml:h3 | self::xhtml:h4]/text()
+declare function tests:titles($toh-html as element(), $tei as element()) as item() {
+    
+    (: Bo-Ltn can be derived from bo or vice versa :)
+    (: Max 3: 'en', 'Sa-Ltn' and either 'Bo-Ltn' or  'bo' :)
+    let $tei-main-titles := 
+        (
+            $tei//tei:fileDesc/tei:titleStmt/tei:title[@type eq 'mainTitle'][@xml:lang = ('en', 'Sa-Ltn')][text()],
+            $tei//tei:fileDesc/tei:titleStmt/tei:title[@type eq 'mainTitle'][@xml:lang = ('Bo-Ltn', 'bo')][text()][1]
+        )
+    
+    (: Max 4: 'en', 'Sa-Ltn', 'Bo-Ltn' and 'bo' if 'Bo-Ltn' or 'bo'  :)
+    let $tei-long-titles := 
+        (
+            $tei//tei:fileDesc/tei:titleStmt/tei:title[@type eq 'longTitle'][@xml:lang = ('en', 'Sa-Ltn')][text()],
+            $tei//tei:fileDesc/tei:titleStmt/tei:title[@type eq 'longTitle'][@xml:lang = ('Bo-Ltn', 'bo')][text()][1],
+            $tei//tei:fileDesc/tei:titleStmt/tei:title[@type eq 'longTitle'][@xml:lang = ('Bo-Ltn', 'bo')][text()][1]
+        )
+    
+    let $html-main-titles := $toh-html//*[@id eq 'titles']/*[self::xhtml:h1 | self::xhtml:h2 | self::xhtml:h3 | self::xhtml:h4][text()]
+    let $html-long-titles := $toh-html//*[@id eq 'long-titles']/*[self::xhtml:h1 | self::xhtml:h2 | self::xhtml:h3 | self::xhtml:h4][text()]
+    
     return
         <test xmlns="http://read.84000.co/ns/1.0"
             id="titles" 
-            pass="{ if(count($titles) eq $count-main-titles and count($long-titles) eq $count-long-titles) then 1 else 0 }">
+            pass="{ if(count($tei-main-titles) eq count($html-main-titles) and count($tei-long-titles) eq count($html-long-titles)) then 1 else 0 }">
             <title>Titles test: The html has the correct number of titles.</title>
             <details>
             { 
-                for $title in $titles
+                for $title in $tei-main-titles
                 return 
-                    <detail>Title: {$title}</detail>
+                    <detail>Main title: {$title/text()}</detail>
             }
             { 
-                for $long-title in $long-titles
+                for $title in $html-long-titles
                 return 
-                    <detail>Long title: {$long-title}</detail>
+                    <detail>Long title: {$title/text()}</detail>
             }
             </details>
         </test>
 };
 
-declare function tests:outline-context($tei as element(), $resource-id as xs:string) as item(){
+declare function tests:outline-context($tei as element(), $resource-id as xs:string) as item() {
+
     let $ancestors := tei-content:ancestors($tei, $resource-id, 1)
+    
     return
         <test xmlns="http://read.84000.co/ns/1.0"
             id="outline-context" 
@@ -282,13 +305,15 @@ declare function tests:outline-context($tei as element(), $resource-id as xs:str
         </test>
 };
 
-declare function tests:complete-source($toh-html as element()) as item(){
+declare function tests:complete-source($toh-html as element()) as item() {
+
     let $toh := $toh-html//*[@id eq 'toh']//xhtml:h4/text()
     let $location := $toh-html//*[@id eq 'location']/text()
     let $authours-summary := $toh-html//*[@id eq 'authours-summary']/text()
     let $edition := $toh-html//*[@id eq 'edition']/text()
     let $publication-statement := $toh-html//*[@id eq 'publication-statement']/text()
     let $license := $toh-html//*[@id eq 'license']
+    
     return
         <test xmlns="http://read.84000.co/ns/1.0"
             id="complete-source" 
@@ -305,10 +330,10 @@ declare function tests:complete-source($toh-html as element()) as item(){
         </test>
 };
 
-declare function tests:test-section($section-tei as element()*, $section-html as element()*, $section-name as xs:string, $required-paragraphs as xs:integer, $count-chapters as xs:boolean, $count-milestones as xs:boolean)
-{
+declare function tests:test-section($section-tei as element()*, $section-html as element()*, $section-name as xs:string, $required-paragraphs as xs:integer, $count-chapters as xs:boolean, $count-milestones as xs:boolean) {
+
     let $section-count-tei-p := 
-        count($section-tei//*[self::tei:p | self::tei:ab | self::tei:trailer | self::tei:bibl | self::tei:l[parent::tei:lg[not(ancestor::tei:note)]]])
+        count($section-tei//*[self::tei:p | self::tei:ab | self::tei:trailer | self::tei:bibl | self::tei:l[ancestor::tei:lg][not(ancestor::tei:note)]])
     let $section-count-html-p := 
         count($section-html//xhtml:p | $section-html//xhtml:div[common:contains-class(@class, 'line')]) 
     
@@ -391,8 +416,10 @@ declare function tests:test-section($section-tei as element()*, $section-html as
 };
 
 declare function tests:notes($tei as element()*, $html as element()*) as item() {
+
     let $notes-count-html := count($html//*[@id eq 'notes']/*/*[common:contains-class(@class, 'footnote')])
     let $notes-count-tei := count($tei//tei:text//tei:note)
+    
     return
         <test xmlns="http://read.84000.co/ns/1.0" 
             id="notes"
@@ -406,8 +433,10 @@ declare function tests:notes($tei as element()*, $html as element()*) as item() 
 };
 
 declare function tests:abbreviations($tei as element()*, $html as element()*) as item() {
+
     let $abbreviations-count-html := count($html//*[@id eq 'abbreviations']//xhtml:tr)
     let $abbreviations-count-tei := count($tei//tei:back//tei:list[@type='abbreviations']/tei:item/tei:abbr)
+    
     return
         <test xmlns="http://read.84000.co/ns/1.0" 
             id="abbreviations"
@@ -420,8 +449,10 @@ declare function tests:abbreviations($tei as element()*, $html as element()*) as
 };
 
 declare function tests:bibliography($tei as element()*, $html as element()*) as item() {
+
     let $biblography-count-html := count($html//*[@id eq 'bibliography']//xhtml:p)
     let $biblography-count-tei := count($tei//tei:back/tei:div[@type='listBibl']//tei:bibl)
+    
     return
         <test xmlns="http://read.84000.co/ns/1.0" 
             id="bibliography"
@@ -434,8 +465,10 @@ declare function tests:bibliography($tei as element()*, $html as element()*) as 
 };
 
 declare function tests:section-tantra-warning($tei as element()*, $html as element()*) as item() {
+
     let $tantra-warning-count-html := count($html//*[@id eq 'tantra-warning-title']//xhtml:p)
     let $tantra-warning-count-tei := count($tei//tei:front/tei:div[@type='warning']//tei:p)
+    
     return
         <test xmlns="http://read.84000.co/ns/1.0" 
             id="section-tantra-warning"
@@ -448,8 +481,10 @@ declare function tests:section-tantra-warning($tei as element()*, $html as eleme
 };
 
 declare function tests:translation-tantra-warning($tei as element()*, $html as element()*) as item() {
+
     let $tantra-warning-count-html := count($html//*[@id eq 'tantric-warning']//xhtml:p)
     let $tantra-warning-count-tei := count($tei//tei:teiHeader//tei:availability/tei:p[@type eq 'tantricRestriction'])
+    
     return
         <test xmlns="http://read.84000.co/ns/1.0" 
             id="section-tantra-warning"
@@ -462,6 +497,7 @@ declare function tests:translation-tantra-warning($tei as element()*, $html as e
 };
 
 declare function tests:glossary($tei as element()*, $html as element()*) as item() {
+    
     let $glossary-count-html := count($html//*[@id eq 'glossary']//*[common:contains-class(@class, 'glossary-item')])
     let $glossary-count-tei := count($tei//tei:back/tei:div[@type='glossary']//tei:gloss)
     let $tei-terms-raw := $tei//tei:back/tei:div[@type='glossary']//tei:gloss/tei:term[text()][not(tei:ptr)](:[not(@xml:lang and text() = preceding-sibling::tei:term[not(@xml:lang or @type)]/text())]:)

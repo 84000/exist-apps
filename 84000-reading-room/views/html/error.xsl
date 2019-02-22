@@ -39,7 +39,7 @@
         <xsl:call-template name="website-page">
             <xsl:with-param name="page-url" select="''"/>
             <xsl:with-param name="page-class" select="'error'"/>
-            <xsl:with-param name="page-title" select="'Error'"/>
+            <xsl:with-param name="page-title" select="'84000 | Error'"/>
             <xsl:with-param name="page-description" select="'Sorry, there was an error.'"/>
             <xsl:with-param name="content" select="$content"/>
             <xsl:with-param name="nav-tab" select="''"/>

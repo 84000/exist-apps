@@ -74,7 +74,7 @@
             <meta name="description" content="84000 is a non-profit global initiative to translate the words of the Buddha and make them available to everyone."/>
             
             <title>
-                84000 Reading Room | <xsl:value-of select="$page-title"/>
+                <xsl:value-of select="$page-title"/>
             </title>
             
             <link rel="stylesheet" type="text/css">
