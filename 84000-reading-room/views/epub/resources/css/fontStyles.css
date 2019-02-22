@@ -5,7 +5,7 @@
 }
 @font-face {
   font-family: "IndUni-P";
-  src: url(../fonts/IndUni-P-Regular.otf);
+  src: url(../fonts/IndUni-P-84000-Regular.otf);
 }
 @font-face {
   font-family: "IndUni-P";
@@ -22,8 +22,4 @@
   src: url(../fonts/IndUni-P-BoldItalic.otf);
   font-weight: bold;
   font-style: italic;
-}
-@font-face {
-  font-family: "Cardo-Regular";
-  src: url(../fonts/Cardo-Regular.ttf);
 }

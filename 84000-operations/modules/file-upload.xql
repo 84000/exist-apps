@@ -10,8 +10,8 @@ declare namespace m="http://read.84000.co/ns/1.0";
 
 declare variable $file-upload:app-user-group as xs:string := "operations";
 declare variable $file-upload:app-user as xs:string := "84000-import";
-declare variable $file-upload:word-converter as xs:anyURI := xs:anyURI("https://oxgarage.euryanthe.de/ege-webservice/Conversions/docx%3Aapplication%3Avnd.openxmlformats-officedocument.wordprocessingml.document/TEI%3Atext%3Axml/");
-declare variable $file-upload:xslx-converter as xs:anyURI := xs:anyURI("https://oxgarage.euryanthe.de/ege-webservice/Conversions/xlsx%3Aapplication%3Avnd.openxmlformats-officedocument.spreadsheetml.sheet/TEI%3Atext%3Axml/");
+declare variable $file-upload:word-converter as xs:anyURI := xs:anyURI("https://oxgarage2.tei-c.org/ege-webservice/Conversions/docx%3Aapplication%3Avnd.openxmlformats-officedocument.wordprocessingml.document/TEI%3Atext%3Axml/");
+declare variable $file-upload:xslx-converter as xs:anyURI := xs:anyURI("https://oxgarage2.tei-c.org/ege-webservice/Conversions/xlsx%3Aapplication%3Avnd.openxmlformats-officedocument.spreadsheetml.sheet/TEI%3Atext%3Axml/");
 declare variable $file-upload:document-stylesheet as xs:string := string-join(($common:import-data-path, 'xsl', 'oxGto84000.xsl'), '/');
 declare variable $file-upload:spreadsheet-stylesheet as xs:string := string-join(($common:import-data-path, 'xsl', 'oxGto84000-gloss.xsl'), '/');
 

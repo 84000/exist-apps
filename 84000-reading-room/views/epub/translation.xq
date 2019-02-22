@@ -47,7 +47,7 @@ let $entries := (
                 <item id="logo" href="image/logo-stacked.png" media-type="image/png"/>
                 <item id="creative-commons-logo" href="image/CC_logo.png" media-type="image/png"/>
                 <item id="tibetan-font" href="fonts/DDC_Uchen.ttf" media-type="application/x-font-truetype"/>
-                <item id="english-font-regular" href="fonts/IndUni-P-Regular.otf" media-type="application/vnd.ms-opentype"/>
+                <item id="english-font-regular" href="fonts/IndUni-P-84000-Regular.otf" media-type="application/vnd.ms-opentype"/>
                 <item id="english-font-bold" href="fonts/IndUni-P-Bold.otf" media-type="application/vnd.ms-opentype"/>
                 <item id="english-font-italic" href="fonts/IndUni-P-Italic.otf" media-type="application/vnd.ms-opentype"/>
                 <item id="english-font-bold-italic" href="fonts/IndUni-P-BoldItalic.otf" media-type="application/vnd.ms-opentype"/>
@@ -154,7 +154,7 @@ let $entries := (
     <entry name="OEBPS/image/logo-stacked.png" type="binary">{ common:epub-resource('image/logo-stacked.png') }</entry>,
     <entry name="OEBPS/image/CC_logo.png" type="binary">{ common:epub-resource('image/CC_logo.png') }</entry>,
     <entry name="OEBPS/fonts/DDC_Uchen.ttf" type="binary">{ common:epub-resource('fonts/DDC_Uchen.ttf') }</entry>,
-    <entry name="OEBPS/fonts/IndUni-P-Regular.otf" type="binary">{ common:epub-resource('fonts/IndUni-P-Regular.otf') }</entry>,
+    <entry name="OEBPS/fonts/IndUni-P-84000-Regular.otf" type="binary">{ common:epub-resource('fonts/IndUni-P-84000-Regular.otf') }</entry>,
     <entry name="OEBPS/fonts/IndUni-P-Bold.otf" type="binary">{ common:epub-resource('fonts/IndUni-P-Bold.otf') }</entry>,
     <entry name="OEBPS/fonts/IndUni-P-Italic.otf" type="binary">{ common:epub-resource('fonts/IndUni-P-Italic.otf') }</entry>,
     <entry name="OEBPS/fonts/IndUni-P-BoldItalic.otf" type="binary">{ common:epub-resource('fonts/IndUni-P-BoldItalic.otf') }</entry>,
