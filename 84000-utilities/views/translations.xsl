@@ -92,6 +92,14 @@
                                                     <xsl:attribute name="target" select="concat($toh/@key, '.html')"/>
                                                     <xsl:value-of select="m:titles/m:title[@xml:lang eq 'en']"/>
                                                 </a>
+                                                <xsl:if test="$environment/m:store-conf[@type eq 'master']">
+                                                    <xsl:value-of select="' / '"/>
+                                                    <a class="small">
+                                                        <xsl:attribute name="href" select="concat('/test-translations.html?translation-id=', $text-id)"/>
+                                                        <xsl:attribute name="target" select="concat('test-translation-', $text-id)"/>
+                                                        <xsl:value-of select="'Run tests'"/>
+                                                    </a>
+                                                </xsl:if>
                                             </td>
                                             <td colspan="2" class="nowrap">
                                                 
@@ -128,7 +136,7 @@
                                                         <div class="col-sm-2">
                                                             <a class="underline">
                                                                 <xsl:attribute name="href" select="concat($reading-room-path, '/translation/', $text-id, '.tei')"/>
-                                                                <xsl:attribute name="target" select="concat(@id, '.tei')"/>
+                                                                <xsl:attribute name="target" select="concat($text-id, '.tei')"/>
                                                                 <xsl:attribute name="title" select="@uri"/>
                                                                 TEI
                                                             </a>

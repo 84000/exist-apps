@@ -110,6 +110,10 @@ function common:normalized-chars($string as xs:string) as xs:string {
         translate(lower-case(normalize-unicode($string)), $in, $out)
 };
 
+declare function common:small-caps($string as xs:string) as xs:string {
+    translate($string, 'abcdefghijklmnopqrstuvwxyz', 'ᴀʙᴄᴅᴇꜰɢʜɪᴊᴋʟᴍɴᴏᴘǫʀsᴛᴜᴠᴡxʏᴢ')
+};
+
 declare
     %test:args('0!123/4567ṃṁṇñṅ abcde?f*ghi-') 
     %test:assertEquals('01234567 abcdefghi-')

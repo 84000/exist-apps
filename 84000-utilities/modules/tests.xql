@@ -518,7 +518,7 @@ declare function tests:glossary($tei as element()*, $html as element()*) as item
     let $empty-term-placeholders := (common:app-text('glossary.term-empty-sa-ltn'), common:app-text('glossary.term-empty-bo-ltn'))
     
     let $html-terms := 
-        for $html-term in $html-terms-untokenized/string(.) ! tokenize(., '·')
+        for $html-term in $html-terms-untokenized/string(.) ! tokenize(., '·') ! translate(., 'ᴀʙᴄᴅᴇꜰɢʜɪᴊᴋʟᴍɴᴏᴘǫʀsᴛᴜᴠᴡxʏᴢ', 'abcdefghijklmnopqrstuvwxyz')
         return 
             if(not($html-term = $empty-term-placeholders)) then
                 lower-case($html-term) ! normalize-space(.)
