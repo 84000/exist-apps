@@ -17,19 +17,19 @@
                             
                             <div class="panel-img-header thumbnail">
                                 <img data-max-horizontal-crop="50">
-                                    <xsl:attribute name="src" select="/m:response/m:header/m:img/text()"/>
+                                    <xsl:attribute name="src" select="concat($front-end-path, /m:response/m:app-text[ends-with(@key, 'header-img-src')])"/>
                                 </img>
                                 <h1>
-                                    <xsl:value-of select="/m:response/m:header/m:title/text()"/>
+                                    <xsl:value-of select="/m:response/m:app-text[ends-with(@key, 'title')]"/>
                                 </h1>
                             </div>
                             
                             <div class="panel-body">
                                 
                                 <blockquote>
-                                    <xsl:value-of select="/m:response/m:header/m:quote/m:text/text()"/>
+                                    <xsl:value-of select="/m:response/m:app-text[ends-with(@key, 'quote')]"/>
                                     <footer>
-                                        <xsl:value-of select="/m:response/m:header/m:quote/m:author/text()"/>
+                                        <xsl:value-of select="/m:response/m:app-text[ends-with(@key, 'author')]"/>
                                     </footer>
                                 </blockquote>
                                 
@@ -39,7 +39,8 @@
                             </div>
                             
                             <!-- Social sharing -->
-                            <div class="panel-footer sharing"> Share this page: 
+                            <div class="panel-footer sharing">
+                                <xsl:value-of select="'Share this page: '"/>
                                 <a href="#" target="_blank">
                                     <i class="fa fa-facebook-square" aria-hidden="true"/>
                                 </a>
@@ -99,9 +100,9 @@
         </xsl:variable>
         
         <xsl:call-template name="website-page">
-            <xsl:with-param name="page-url" select="concat('http://read.84000.co/', /m:response/m:header/@page-id, '.html')"/>
+            <xsl:with-param name="page-url" select="concat('http://read.84000.co/', /m:response/@model-type, '.html')"/>
             <xsl:with-param name="page-class" select="'about'"/>
-            <xsl:with-param name="page-title" select="concat('84000 | ',/m:response/m:header/m:title/text())"/>
+            <xsl:with-param name="page-title" select="concat('84000 | ', /m:response/m:app-text[ends-with(@key, 'title')])"/>
             <xsl:with-param name="page-description" select="''"/>
             <xsl:with-param name="content" select="$content"/>
             <xsl:with-param name="nav-tab" select="'#about'"/>

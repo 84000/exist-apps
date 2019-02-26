@@ -10,22 +10,14 @@ declare option exist:serialize "method=xml indent=no";
 
 let $lang := request:get-parameter('lang', 'en')
 
-let $header := 
-    <header xmlns="http://read.84000.co/ns/1.0" page-id="about/sponsors">
-        <img>{ concat($common:environment/m:url[@id eq 'front-end']/text(), common:app-text('about.translators.header-img-src')) }</img>
-        <title>{ common:app-text('about.translators.title') }</title>
-        <quote>
-            <text>{ common:app-text('about.translators.quote') }</text>
-            <author>{ common:app-text('about.translators.author') }</author>
-        </quote>
-    </header>
-    
+let $app-texts := common:app-texts('about.translators', <replace xmlns="http://read.84000.co/ns/1.0"/>, $lang)
+
 return
     common:response(
         "about/translators", 
         $common:app-id,
         (
-            $header,
+            $app-texts,
             contributors:teams(false(), false(), true()),
             contributors:regions(true()),
             contributors:institution-types(true()),

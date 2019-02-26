@@ -32,6 +32,7 @@ declare variable $common:ekangyur-work := 'UT4CZ5369';
 declare variable $common:ekangyur-path := concat('/db/apps/eKangyur/data/', $common:ekangyur-work);
 declare variable $common:environment-path := '/db/system/config/db/system/environment.xml';
 declare variable $common:environment := doc($common:environment-path)/m:environment;
+declare variable $common:app-text := doc(concat($common:data-path, '/config/app-text.xml'));
 
 
 declare
@@ -320,9 +321,14 @@ declare function common:auth-environment() as xs:boolean {
         false()
 };
 
-declare function common:app-text($key as xs:string) {
 
-    let $result := doc(concat($common:data-path, '/config/app-text.xml'))//m:item[@key eq $key][1]/node()
+declare function common:app-text($key as xs:string, $lang as xs:string) {
+
+    let $result := 
+        if(lower-case($lang) = ('', 'en')) then
+            $common:app-text//m:item[@key eq $key][not(@xml:lang) or @xml:lang eq 'en'][1]/node()
+        else
+            $common:app-text//m:item[@key eq $key][@xml:lang eq $lang][1]/node()
     
     return
         if ($result instance of text()) then
@@ -331,24 +337,35 @@ declare function common:app-text($key as xs:string) {
             $result
 };
 
-declare function common:app-texts($search as xs:string, $replacements as element()) {
+declare function common:app-text($key as xs:string) {
+    common:app-text($key, 'en')
+};
 
-    let $results := doc(concat($common:data-path, '/config/app-text.xml'))//m:item[contains(@key, concat($search, '.'))]
+declare function common:app-texts($search as xs:string, $replacements as element(), $lang as xs:string) as element()* {
     
-    for $result in $results
+    let $keys := distinct-values($common:app-text//m:item[contains(@key, concat($search, '.'))]/@key)
+    
+    for $key in $keys
+        let $best := 
+            (
+                $common:app-text//m:item[@key eq $key][@xml:lang eq $lang],
+                $common:app-text//m:item[@key eq $key][not(@xml:lang) or @xml:lang eq 'en']
+            )[1]
     return
         common:replace(
-            <app-text xmlns="http://read.84000.co/ns/1.0" key="{$result/@key}">
-            {
-                if (count($result/node()) eq 1 and $result/node()[1] instance of text()) then
-                    normalize-space($result/text())
+            element {QName('http://read.84000.co/ns/1.0', 'app-text')}{
+                attribute key { $key },
+                if (count($best/node()) eq 1 and $best/node()[1] instance of text()) then
+                    text { normalize-space($best/text()) }
                 else
-                    $result/node()
-            }
-            </app-text>,
+                    $best/node()
+            },
             $replacements
         )
-        
+};
+
+declare function common:app-texts($search as xs:string, $replacements as element()) as element()* {
+    common:app-texts($search, $replacements, 'en')
 };
 
 declare function common:replace($node as node(), $replacements as element()) {

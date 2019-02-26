@@ -18,15 +18,7 @@ let $tabs :=
         <tab active="{ if($tab eq 'in-translation')then 1 else 0 }" id="in-translation">Translations In Progress</tab>
     </tabs>
 
-let $header := 
-    <header xmlns="http://read.84000.co/ns/1.0" page-id="about/progress">
-        <img>{ concat($common:environment/m:url[@id eq 'front-end']/text(), common:app-text('about.progress.header-img-src')) }</img>
-        <title>{ common:app-text('about.progress.title') }</title>
-        <quote>
-            <text>{ common:app-text('about.progress.quote') }</text>
-            <author>{ common:app-text('about.progress.author') }</author>
-        </quote>
-    </header>
+let $app-texts := common:app-texts('about.progress', <replace xmlns="http://read.84000.co/ns/1.0"/>, $lang)
 
 (: 'O1JC11494' = Kangyur only :)
 let $texts := 
@@ -44,7 +36,7 @@ return
         "about/progress", 
         $common:app-id,
         (
-            $header,
+            $app-texts,
             $tabs,
             translations:summary(),
             $texts
