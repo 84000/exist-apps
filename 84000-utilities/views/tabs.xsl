@@ -74,7 +74,7 @@
                     </a>
                 </li>
             </xsl:if>
-            <xsl:if test="$environment/m:deployment-conf">
+            <xsl:if test="$environment/m:deployment-conf and /m:response/@user-name eq 'admin'">
                 <li role="presentation">
                     <xsl:if test="$active-tab eq 'utilities/deployment'">
                         <xsl:attribute name="class" select="'active'"/>

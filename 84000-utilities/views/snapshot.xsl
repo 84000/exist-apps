@@ -49,10 +49,6 @@
                                         </p>
                                     </div>
                                     
-                                    <div class="alert alert-danger small text-center" role="alert">
-                                        <xsl:value-of select="'Due to an underlying restriction in the database platform only database administrators can generate snapshots.'"/>
-                                    </div>
-                                    
                                     <form action="/snapshot.html" method="post" class="form-horizontal">
                                         
                                         <input type="hidden" name="tab" value="snapshot"/>

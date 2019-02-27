@@ -43,12 +43,6 @@
                                 </p>
                             </div>
                             
-                            <xsl:if test="$environment/m:store-conf[@type eq 'master']">
-                                <div class="alert alert-danger small text-center" role="alert">
-                                    <xsl:value-of select="'Due to an underlying restriction in the database platform only database administrators can generate new versions of eBooks.'"/>
-                                </div>
-                            </xsl:if>
-                            
                             <xsl:if test="m:updated">
                                 <div class="alert alert-success" role="alert">
                                     <xsl:value-of select="m:updated"/>

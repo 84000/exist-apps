@@ -16,11 +16,18 @@
                 <xsl:with-param name="active-tab" select="@model-type"/>
                 <xsl:with-param name="page-content">
                     
-                    <xsl:if test="$environment/m:conversion-conf">
-                        <div class="alert alert-danger small text-center" role="alert">
-                            <xsl:value-of select="'Due to an underlying restriction in the database platform only database administrators generate TEI.'"/>
-                        </div>
-                    </xsl:if>
+                    <xsl:choose>
+                        <xsl:when test="$environment/m:conversion-conf">
+                            <div class="alert alert-warning small text-center" role="alert">
+                                <xsl:value-of select="'Using local TEI stylesheets to generate TEI.'"/>
+                            </div>
+                        </xsl:when>
+                        <xsl:otherwise>
+                            <div class="alert alert-warning small text-center" role="alert">
+                                <xsl:value-of select="'Using remote TEI stylesheets to generate TEI.'"/>
+                            </div>
+                        </xsl:otherwise>
+                    </xsl:choose>
                     
                     <xsl:call-template name="alert-updated"/>
                     
