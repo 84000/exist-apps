@@ -10,6 +10,7 @@ import module namespace translation="http://read.84000.co/translation" at "../..
 import module namespace sponsors="http://read.84000.co/sponsors" at "../../84000-reading-room/modules/sponsors.xql";
 import module namespace contributors="http://read.84000.co/contributors" at "../../84000-reading-room/modules/contributors.xql";
 import module namespace translation-status="http://read.84000.co/translation-status" at "../../84000-reading-room/modules/translation-status.xql";
+import module namespace deploy="http://read.84000.co/deploy" at "../../84000-reading-room/modules/deploy.xql";
 
 declare namespace m = "http://read.84000.co/ns/1.0";
 declare namespace tei="http://www.tei-c.org/ns/1.0";
@@ -26,6 +27,8 @@ let $tei :=
         tei-content:tei($request-id, 'translation')
 
 let $text-id := tei-content:id($tei)
+let $translation-status := translation-status:text($text-id)
+let $current-version-str := string($translation-status/@version)
 
 (: Delete a submission :)
 (: The parameter delete-submission also triggers translation-status:update :)
@@ -49,17 +52,11 @@ let $updated :=
 
 (: Commit to GitHub if it's a new version :)
 let $tei-version-str := translation:version-str($tei)
-let $translation-status := translation-status:text($text-id)
-let $cached-version-str := $translation-status/@version
 let $commit-version := 
-    if(not(translation-status:is-current-version($tei-version-str, $cached-version-str))) then
-        (
-            translation-status:update($text-id),
-            
-        )
+    if(not(translation-status:is-current-version($tei-version-str, $current-version-str))) then
+        deploy:commit-data('sync', tei-content:document-url($tei), '')
     else 
         ()
-
 
 return
     common:response(

@@ -54,7 +54,7 @@ declare function deploy:commit-data($action as xs:string, $sync-resource as xs:s
             
     let $commit-msg := 
         if(not($commit-msg))then
-            concat('Sync ', $sync-resource)
+            concat('Sync ', substring-after($sync-resource, concat($common:data-path, '/')))
         else
             $commit-msg
     
