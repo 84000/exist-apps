@@ -18,8 +18,6 @@ declare namespace tei="http://www.tei-c.org/ns/1.0";
 
 declare option exist:serialize "method=xml indent=no";
 
-let $store-conf := $common:environment/m:store-conf
-
 (: Request parameters :)
 let $request-id := request:get-parameter('id', '') (: in get :)
 let $post-id := request:get-parameter('post-id', '') (: in post :)
@@ -56,13 +54,13 @@ let $updated :=
 (: If it's a new version :)
 let $tei-version-str := translation:version-str($tei)
 let $commit-version := 
-    if(not(translation-status:is-current-version($tei-version-str, $current-version-str))) then
+    if($store:conf and not(translation-status:is-current-version($tei-version-str, $current-version-str))) then
         (
             (: Commit to GitHub :)
             deploy:commit-data('sync', tei-content:document-url($tei), ''),
             
             (: Store PDF and ebooks :)
-            if($store-conf[@type eq 'master'])then
+            if(tei-content:translation-status($tei) eq '1')then
                 for $bibl in $tei//tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl
                 return
                     (   

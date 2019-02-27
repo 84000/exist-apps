@@ -453,11 +453,9 @@
                         <xsl:attribute name="value" select="m:translation/@id"/>
                     </input>
                     
-                    <xsl:if test="$environment/m:store-conf[@type eq 'master']">
-                        <div class="alert alert-warning small text-center">
-                            <xsl:value-of select="'Updating the version number will commit the new version to the Github repository and (if published) will generate new pdf and ebook files. This can take some time.'"/>
-                        </div>
-                    </xsl:if>
+                    <div class="alert alert-warning small text-center">
+                        <xsl:value-of select="'Updating the version number will commit the new version to the Github repository and (if published) will generate new pdf and ebook files. This can take some time.'"/>
+                    </div>
                     
                     <div class="row">
                         <!-- <div class="col-sm-12"> -->
