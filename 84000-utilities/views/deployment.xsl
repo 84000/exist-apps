@@ -52,11 +52,16 @@
                                                     
                                                     <div class="alert alert-danger small text-center">
                                                         <p>
-                                                            Commit new versions of the 84000 eXist apps to the 
+                                                            <xsl:value-of select="'Commit new versions of the 84000 eXist apps to the '"/>
                                                             <a target="_blank" class="alert-link">
                                                                 <xsl:attribute name="href" select="//m:view-repo-url/text()"/>
-                                                                GitHub repository</a>.
+                                                                <xsl:value-of select="'GitHub repository'"/>
+                                                            </a>
                                                         </p>
+                                                    </div>
+                                                    
+                                                    <div class="alert alert-danger small text-center" role="alert">
+                                                        <xsl:value-of select="'Only database administrators can deploy code.'"/>
                                                     </div>
                                                     
                                                     <div class="form-group">
@@ -87,16 +92,17 @@
                                                     
                                                     <div class="alert alert-success small text-center">
                                                         <p>
-                                                            Get new versions of the 84000 eXist apps from the 
+                                                            <xsl:value-of select="'Get new versions of the 84000 eXist apps from the '"/>
                                                             <a target="_blank" class="alert-link">
                                                                 <xsl:attribute name="href" select="//m:view-repo-url/text()"/>
-                                                                GitHub repository</a>.
+                                                                <xsl:value-of select="'GitHub repository'"/>
+                                                            </a>
                                                         </p>
                                                     </div>
                                                     
                                                     <div class="form-group">
                                                         <label for="app" class="col-sm-3 control-label">
-                                                            84000 app 
+                                                            <xsl:value-of select="'84000 app'"/>
                                                         </label>
                                                         <div class="col-sm-9">
                                                             <select name="app" id="app" class="form-control">

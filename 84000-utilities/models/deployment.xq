@@ -2,7 +2,7 @@ xquery version "3.0" encoding "UTF-8";
 
 import module namespace local="http://utilities.84000.co/local" at "../modules/local.xql";
 import module namespace common="http://read.84000.co/common" at "../../84000-reading-room/modules/common.xql";
-import module namespace deployment="http://read.84000.co/deployment" at "../modules/deployment.xql";
+import module namespace deployment="http://utilities.84000.co/deployment" at "../modules/deployment.xql";
 
 declare namespace m="http://read.84000.co/ns/1.0";
 

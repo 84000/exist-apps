@@ -17,13 +17,13 @@
                     <div class="panel-heading panel-heading-bold hidden-print center-vertical">
                         
                         <span class="title">
-                            84000 Utilities
+                            <xsl:value-of select="'84000 Utilities'"/>
                         </span>
                         
                         <span class="text-right">
                             <a target="reading-room">
                                 <xsl:attribute name="href" select="$reading-room-path"/>
-                                Reading Room
+                                <xsl:value-of select="'Reading Room'"/>
                             </a>
                         </span>
                         

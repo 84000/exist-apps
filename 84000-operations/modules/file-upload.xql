@@ -81,9 +81,8 @@ declare function file-upload:process-upload($text-id as xs:string) as element()?
             if (not(xmldb:collection-available($upload-directory))) then
             (
                 xmldb:create-collection($common:import-data-path, upper-case($text-id)),
-                sm:chown(xs:anyURI($upload-directory), $file-upload:app-user),
     		    sm:chgrp(xs:anyURI($upload-directory), $file-upload:app-user-group),
-    		    sm:chmod(xs:anyURI($upload-directory), 'rw-rw-r--')
+    		    sm:chmod(xs:anyURI($upload-directory), 'rwxrwxr--')
     		)
             else
                 ()
@@ -96,7 +95,6 @@ declare function file-upload:process-upload($text-id as xs:string) as element()?
                 $upload-name-unique, 
                 request:get-uploaded-file-data('submit-translation-file')
             ),
-            sm:chown(xs:anyURI(concat($upload-directory, '/', $upload-name-unique)), $file-upload:app-user),
             sm:chgrp(xs:anyURI(concat($upload-directory, '/', $upload-name-unique)), $file-upload:app-user-group),
             sm:chmod(xs:anyURI(concat($upload-directory, '/', $upload-name-unique)), 'rw-rw-r--')
         )

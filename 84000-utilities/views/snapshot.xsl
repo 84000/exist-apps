@@ -41,12 +41,18 @@
                                     
                                     <div class="alert alert-info small text-center">
                                         <p>
-                                            This function makes a snapshot of the selected resource(s) and pushes it to the public 
+                                            <xsl:value-of select="'This function makes a snapshot of the selected resource(s) and pushes it to the public '"/>
                                             <a target="_blank" class="alert-link">
                                                 <xsl:attribute name="href" select="//m:view-repo-url/text()"/>
-                                                GitHub repository</a>.
+                                                <xsl:value-of select="'GitHub repository'"/>
+                                            </a>.
                                         </p>
                                     </div>
+                                    
+                                    <div class="alert alert-danger small text-center" role="alert">
+                                        <xsl:value-of select="'Due to an underlying restriction in the database platform only database administrators can generate snapshots.'"/>
+                                    </div>
+                                    
                                     <form action="/snapshot.html" method="post" class="form-horizontal">
                                         
                                         <input type="hidden" name="tab" value="snapshot"/>
@@ -54,7 +60,7 @@
                                         
                                         <div class="form-group">
                                             <label for="resource" class="col-sm-3 control-label">
-                                                Resources
+                                                <xsl:value-of select="'Resources'"/>
                                             </label>
                                             <div class="col-sm-9">
                                                 <select name="resource" id="resource" class="form-control">

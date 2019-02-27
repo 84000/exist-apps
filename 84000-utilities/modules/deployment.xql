@@ -1,6 +1,6 @@
 xquery version "3.0";
 
-module namespace deployment="http://read.84000.co/deployment";
+module namespace deployment="http://utilities.84000.co/deployment";
 
 declare namespace m="http://read.84000.co/ns/1.0";
 declare namespace file="http://exist-db.org/xquery/file";

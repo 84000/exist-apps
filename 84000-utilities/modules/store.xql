@@ -4,6 +4,7 @@ module namespace store = "http://utilities.84000.co/store";
 
 declare namespace m = "http://read.84000.co/ns/1.0";
 declare namespace tei="http://www.tei-c.org/ns/1.0";
+declare namespace file="http://exist-db.org/xquery/file";
 
 import module namespace common = "http://read.84000.co/common" at "../../84000-reading-room/modules/common.xql";
 import module namespace tei-content="http://read.84000.co/tei-content" at "../../84000-reading-room/modules/tei-content.xql";
@@ -147,7 +148,6 @@ declare function store:store-new-pdf($file-path as xs:string, $version as xs:str
             (: let $download := store:http-download($request-url, $file-collection, $file-name):)
             return
                 if(name($download) eq 'stored') then
-                
                     let $set-file-group:= sm:chgrp(xs:anyURI($file-path), $store:file-group)
                     let $set-file-permissions:= sm:chmod(xs:anyURI($file-path), $store:file-permissions)
                     let $store-version-number := store:store-version-str($file-collection, $file-name, $version)
