@@ -11,11 +11,14 @@ import module namespace sponsors="http://read.84000.co/sponsors" at "../../84000
 import module namespace contributors="http://read.84000.co/contributors" at "../../84000-reading-room/modules/contributors.xql";
 import module namespace translation-status="http://read.84000.co/translation-status" at "../../84000-reading-room/modules/translation-status.xql";
 import module namespace deploy="http://read.84000.co/deploy" at "../../84000-reading-room/modules/deploy.xql";
+import module namespace store="http://read.84000.co/store" at "../../84000-reading-room/modules/store.xql";
 
 declare namespace m = "http://read.84000.co/ns/1.0";
 declare namespace tei="http://www.tei-c.org/ns/1.0";
 
 declare option exist:serialize "method=xml indent=no";
+
+let $store-conf := $common:environment/m:store-conf
 
 (: Request parameters :)
 let $request-id := request:get-parameter('id', '') (: in get :)
@@ -50,11 +53,28 @@ let $updated :=
      else
         ()
 
-(: Commit to GitHub if it's a new version :)
+(: If it's a new version :)
 let $tei-version-str := translation:version-str($tei)
 let $commit-version := 
     if(not(translation-status:is-current-version($tei-version-str, $current-version-str))) then
-        deploy:commit-data('sync', tei-content:document-url($tei), '')
+        (
+            (: Commit to GitHub :)
+            deploy:commit-data('sync', tei-content:document-url($tei), ''),
+            
+            (: Store PDF and ebooks :)
+            if($store-conf[@type eq 'master'])then
+                for $bibl in $tei//tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl
+                return
+                    (   
+                        (: pdf :)
+                        store:create(concat($bibl/@key, '.pdf')),
+                        (: one ebook format does both :)
+                        store:create(concat($bibl/@key, '.epub'))
+                    )
+            else
+                ()
+            
+        )
     else 
         ()
 
@@ -82,7 +102,8 @@ return
                     return
                         (
                             translation:toh($tei, $bibl/@key),
-                            translation:location($tei, $bibl/@key)
+                            translation:location($tei, $bibl/@key),
+                            translation:downloads($tei, $bibl/@key, 'any-version')
                         )
                     ,
                     element title { 

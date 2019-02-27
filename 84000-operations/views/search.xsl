@@ -177,7 +177,7 @@
                                             </div>
                                         </div>
                                         <div class="col-sm-3 hidden-print">
-                                            <input type="submit" value="Apply" class="btn btn-primary pull-right"/>
+                                            <input type="submit" value="Search" class="btn btn-primary pull-right"/>
                                         </div>
                                     </div>
                                 </div>

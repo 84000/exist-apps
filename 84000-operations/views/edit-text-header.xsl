@@ -22,24 +22,44 @@
                     <xsl:call-template name="alert-translation-locked"/>
                     
                     <!-- Title -->
-                    <div class="center-vertical full-width bottom-margin">
-                        <span class="h3 text-sa">
-                            <a target="_blank" class="text-muted">
-                                <xsl:attribute name="href" select="concat($reading-room-path, '/translation/', m:translation/@id, '.html')"/>
-                                <xsl:value-of select="concat(string-join(m:translation/m:toh/m:full, ' / '), ' : ', m:translation/m:title)"/>
-                                <xsl:if test="normalize-space(m:translation/m:translation/m:edition)">
-                                    <xsl:value-of select="' / '"/>
-                                    <span class="small">
-                                        <xsl:value-of select="m:translation/m:translation/m:edition"/>
-                                    </span>
-                                </xsl:if>
+                    <div class="h3 text-sa no-bottom-margin">
+                        <a target="_blank" class="text-muted">
+                            <xsl:attribute name="href" select="concat($reading-room-path, '/translation/', m:translation/@id, '.html')"/>
+                            <xsl:value-of select="concat(string-join(m:translation/m:toh/m:full, ' / '), ' : ', m:translation/m:title)"/>
+                        </a>
+                    </div>
+                    
+                    <div class="bottom-margin">
+                        <xsl:copy-of select="common:translation-status(m:translation/@status)"/>
+                        <xsl:if test="normalize-space(m:translation/m:translation/m:edition)">
+                            <a class="label label-info">
+                                <xsl:attribute name="href" select="concat($reading-room-path, '/translation/', m:translation/@id, '.tei')"/>
+                                <xsl:attribute name="target" select="concat(m:translation/@id, '.tei')"/>
+                                <xsl:value-of select="concat('TEI ', m:translation/m:translation/m:edition)"/>
                             </a>
-                        </span>
-                        <span>
-                            <div class="pull-right">
-                                <xsl:copy-of select="common:translation-status(m:translation/@status)"/>
-                            </div>
-                        </span>
+                        </xsl:if>
+                        <xsl:if test="m:translation/@status eq '1'">
+                            <xsl:for-each select="m:translation/m:downloads">
+                                <xsl:variable name="resource-id" select="@resource-id"/>
+                                <xsl:variable name="tei-version" select="@tei-version"/>
+                                <xsl:for-each select="m:download">
+                                    <a class="label label-danger">
+                                        <xsl:attribute name="href" select="concat($reading-room-path, '/data/', $resource-id, '.', @type)"/>
+                                        <xsl:choose>
+                                            <xsl:when test="@version eq $tei-version">
+                                                <xsl:attribute name="class" select="'label label-info'"/>
+                                                <i class="fa fa-check"/>
+                                                <xsl:value-of select="concat(' ', $resource-id, '.', @type)"/>
+                                            </xsl:when>
+                                            <xsl:otherwise>
+                                                <i class="fa fa-exclamation-circle"/>
+                                                <xsl:value-of select="concat(' ', $resource-id, '.', @type, ' ', @version)"/>
+                                            </xsl:otherwise>
+                                        </xsl:choose>
+                                    </a>
+                                </xsl:for-each>
+                            </xsl:for-each>
+                        </xsl:if>
                     </div>
                     
                     <div class="panel-group" role="tablist" aria-multiselectable="true" id="forms-accordion">

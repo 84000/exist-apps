@@ -204,7 +204,7 @@ declare function translation:downloads($tei as element(), $resource-id as xs:str
     let $tei-version := translation:version-str($tei)
     
     return
-        <downloads xmlns="http://read.84000.co/ns/1.0" tei-version="{ $tei-version }">
+        <downloads xmlns="http://read.84000.co/ns/1.0" tei-version="{ $tei-version }" resource-id="{ $resource-id }">
         {
             for $type in ('pdf', 'epub', 'azw3')
                 let $stored-version := download:stored-version-str($resource-id, $type)

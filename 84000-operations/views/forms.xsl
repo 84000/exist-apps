@@ -448,9 +448,17 @@
             <xsl:with-param name="form">
                 <form method="post" class="form-horizontal form-update" id="publication-status-form">
                     <xsl:attribute name="action" select="'edit-text-header.html'"/>
+                    
                     <input type="hidden" name="post-id">
                         <xsl:attribute name="value" select="m:translation/@id"/>
                     </input>
+                    
+                    <xsl:if test="$environment/m:store-conf[@type eq 'master']">
+                        <div class="alert alert-warning small text-center">
+                            <xsl:value-of select="'Updating the version number will commit the new version to the Github repository and (if published) will generate new pdf and ebook files. This can take some time.'"/>
+                        </div>
+                    </xsl:if>
+                    
                     <div class="row">
                         <!-- <div class="col-sm-12"> -->
                         <div class="col-sm-8">
@@ -492,15 +500,10 @@
                                 <label class="control-label col-sm-3" for="progress-notes">
                                     <xsl:value-of select="'Awaiting action from:'"/>
                                 </label>
-                                <div class="col-sm-3">
+                                <div class="col-sm-4">
                                     <input type="text" class="form-control" name="action-note" id="action-note" placeholder="e.g. Konchog">
                                         <xsl:attribute name="value" select="m:translation-status/m:action-note/text()"/>
                                     </input>
-                                </div>
-                                <div class="col-sm-6 small text-muted margin-top-sm">
-                                    <xsl:if test="m:translation-status/m:action-note/@last-edited">
-                                        <xsl:value-of select="common:date-user-string('Last updated', m:translation-status/m:action-note/@last-edited, m:translation-status/m:action-note/@last-edited-by)"/>
-                                    </xsl:if>
                                 </div>
                             </div>
                             <div class="form-group">

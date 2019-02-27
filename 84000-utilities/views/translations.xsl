@@ -123,7 +123,7 @@
                                                         
                                                         <!-- Location column -->
                                                         <div class="col-sm-2 text-muted">
-                                                            File:
+                                                            <xsl:value-of select="'File:'"/>
                                                         </div>
                                                         
                                                         <!-- TEI column -->
@@ -132,7 +132,7 @@
                                                                 <xsl:attribute name="href" select="concat($reading-room-path, '/translation/', $text-id, '.tei')"/>
                                                                 <xsl:attribute name="target" select="concat($text-id, '.tei')"/>
                                                                 <xsl:attribute name="title" select="@uri"/>
-                                                                TEI
+                                                                <xsl:value-of select="'TEI'"/>
                                                             </a>
                                                         </div>
                                                         
