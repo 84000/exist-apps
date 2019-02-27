@@ -25,14 +25,14 @@ let $tei :=
     else
         tei-content:tei($request-id, 'translation')
 
-let $translation-id := tei-content:id($tei)
+let $text-id := tei-content:id($tei)
 
 (: Delete a submission :)
 (: The parameter delete-submission also triggers translation-status:update :)
 let $delete-submission-id := request:get-parameter('delete-submission-id', '')
 let $delete-submission := 
     if($delete-submission-id gt '') then
-        file-upload:delete-file($translation-id, $delete-submission-id)
+        file-upload:delete-file($text-id, $delete-submission-id)
     else 
         ()
 
@@ -41,11 +41,25 @@ let $updated :=
     if($post-id or $delete-submission-id) then
         (
             update-translation:update($tei),
-            file-upload:process-upload($translation-id),
-            translation-status:update($translation-id)
+            file-upload:process-upload($text-id),
+            translation-status:update($text-id)
         )
      else
         ()
+
+(: Commit to GitHub if it's a new version :)
+let $tei-version-str := translation:version-str($tei)
+let $translation-status := translation-status:text($text-id)
+let $cached-version-str := $translation-status/@version
+let $commit-version := 
+    if(not(translation-status:is-current-version($tei-version-str, $cached-version-str))) then
+        (
+            translation-status:update($text-id),
+            
+        )
+    else 
+        ()
+
 
 return
     common:response(
@@ -54,7 +68,7 @@ return
         (
             <request 
                 xmlns="http://read.84000.co/ns/1.0" 
-                id="{ $translation-id }"
+                id="{ $text-id }"
                 delete-submission="{ $delete-submission-id }"/>,
             <updates
                 xmlns="http://read.84000.co/ns/1.0" >
@@ -62,7 +76,7 @@ return
             </updates>,
             <translation 
                 xmlns="http://read.84000.co/ns/1.0" 
-                id="{ $translation-id }"
+                id="{ $text-id }"
                 document-url="{ tei-content:document-url($tei) }" 
                 locked-by-user="{ tei-content:locked-by-user($tei) }"
                 status="{ tei-content:translation-status($tei) }">
@@ -90,9 +104,9 @@ return
             doc(concat($common:data-path, '/config/publication-tasks.xml')),
             doc(concat($common:data-path, '/config/submission-checklist.xml')),
             element { QName('http://read.84000.co/ns/1.0', 'translation-status') } {
-                translation-status:notes($translation-id),
-                translation-status:tasks($translation-id),
-                translation-status:submissions($translation-id),
+                translation-status:notes($text-id),
+                translation-status:tasks($text-id),
+                translation-status:submissions($text-id),
                 translation-status:status-updates($tei)
             }
         )

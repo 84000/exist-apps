@@ -183,7 +183,6 @@ declare function translation-status:glossary-count($tei as element()) as xs:inte
     let $text-id := tei-content:id($tei)
     let $tei-version-str := translation:version-str($tei)
     let $translation-status := translation-status:text($text-id)
-    
     let $cached-version-str := $translation-status/@version
     let $cached-count := $translation-status/@glossary-count
     
