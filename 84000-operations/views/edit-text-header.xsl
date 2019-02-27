@@ -43,15 +43,20 @@
                                 <xsl:variable name="resource-id" select="@resource-id"/>
                                 <xsl:variable name="tei-version" select="@tei-version"/>
                                 <xsl:for-each select="m:download">
-                                    <a class="label label-danger">
-                                        <xsl:attribute name="href" select="concat($reading-room-path, '/data/', $resource-id, '.', @type)"/>
+                                    <a href="#" class="label label-danger">
                                         <xsl:choose>
                                             <xsl:when test="@version eq $tei-version">
+                                                <xsl:attribute name="href" select="concat($reading-room-path, '/data/', $resource-id, '.', @type)"/>
                                                 <xsl:attribute name="class" select="'label label-info'"/>
                                                 <i class="fa fa-check"/>
                                                 <xsl:value-of select="concat(' ', $resource-id, '.', @type)"/>
                                             </xsl:when>
+                                            <xsl:when test="@version eq 'none'">
+                                                <i class="fa fa-exclamation-circle"/>
+                                                <xsl:value-of select="concat(' ', $resource-id, '.', @type, ' missing')"/>
+                                            </xsl:when>
                                             <xsl:otherwise>
+                                                <xsl:attribute name="href" select="concat($reading-room-path, '/data/', $resource-id, '.', @type)"/>
                                                 <i class="fa fa-exclamation-circle"/>
                                                 <xsl:value-of select="concat(' ', $resource-id, '.', @type, ' ', @version)"/>
                                             </xsl:otherwise>

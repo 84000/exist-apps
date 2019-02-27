@@ -279,26 +279,24 @@
                                                 <xsl:value-of select="m:titles/m:title[@xml:lang eq 'en']"/>
                                             </a>
                                         </td>
-                                        <td class="nowrap">
+                                        <td class="nowrap small">
                                             <xsl:value-of select="format-number(tei:bibl/tei:location/@count-pages, '#,###')"/>
                                         </td>
-                                        <td class="nowrap hidden-print">
+                                        <td class="nowrap small hidden-print">
                                             <xsl:value-of select="concat('vol. ' , tei:bibl/tei:location/tei:start/@volume, ', p. ', tei:bibl/tei:location/tei:start/@page)"/>
                                         </td>
-                                        <td class="nowrap hidden-print">
+                                        <td class="nowrap small hidden-print">
                                             <xsl:value-of select="concat('vol. ' , tei:bibl/tei:location/tei:end/@volume, ', p. ', tei:bibl/tei:location/tei:end/@page)"/>
                                         </td>
-                                        <td>
+                                        <td class="nowrap small">
                                             <xsl:choose>
                                                 <xsl:when test="m:translation/@sponsored eq 'full'">
-                                                    <div class="label label-danger">
-                                                        <xsl:value-of select="'Fully sponsored'"/>
-                                                    </div>
+                                                    <xsl:attribute name="class" select="'nowrap small text-success'"/>
+                                                    <xsl:value-of select="'Fully sponsored'"/>
                                                 </xsl:when>
                                                 <xsl:when test="m:translation/@sponsored eq 'part'">
-                                                    <div class="label label-warning">
-                                                        <xsl:value-of select="'Part sponsored'"/>
-                                                    </div>
+                                                    <xsl:attribute name="class" select="'nowrap small text-danger'"/>
+                                                    <xsl:value-of select="'Part sponsored'"/>
                                                 </xsl:when>
                                             </xsl:choose>
                                         </td>
@@ -306,20 +304,26 @@
                                     <tr class="sub">
                                         <td colspan="5">
                                             <ul class="list-inline inline-dots no-bottom-margin hidden-print">
-                                                <xsl:if test="/m:response/m:permission[@group eq 'utilities']">
-                                                    <li>
-                                                        <a class="small">
-                                                            <xsl:attribute name="href" select="concat('/edit-text-header.html?id=', $text-id)"/>
-                                                            <xsl:value-of select="'Edit headers'"/>
-                                                        </a>
-                                                    </li>
-                                                </xsl:if>
+                                                <li>
+                                                    <a class="small">
+                                                        <xsl:attribute name="href" select="concat('/edit-text-header.html?id=', $text-id)"/>
+                                                        <xsl:value-of select="'Edit headers'"/>
+                                                    </a>
+                                                </li>
                                                 <li>
                                                     <a class="small">
                                                         <xsl:attribute name="href" select="concat('/edit-text-sponsors.html?id=', $text-id)"/>
                                                         <xsl:value-of select="'Edit sponsors'"/>
                                                     </a>
                                                 </li>
+                                                <xsl:if test="@status-group eq 'published' and m:downloads[@tei-version != m:download/@version]">
+                                                    <li>
+                                                        <span class="label label-danger">
+                                                            <i class="fa fa-exclamation-circle"/>
+                                                            <xsl:value-of select="' out-of-date files'"/>
+                                                        </span>
+                                                    </li>
+                                                </xsl:if>
                                             </ul>
                                         </td>
                                     </tr>

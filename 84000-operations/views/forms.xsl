@@ -454,7 +454,14 @@
                     </input>
                     
                     <div class="alert alert-warning small text-center">
-                        <xsl:value-of select="'Updating the version number will commit the new version to the Github repository and (if published) will generate new pdf and ebook files. This can take some time.'"/>
+                        <xsl:choose>
+                            <xsl:when test="m:translation/@status eq '1'">
+                                <xsl:value-of select="'Updating the version number will commit the new version to the Github repository and will generate new pdf and ebook files. This can take some time.'"/>
+                            </xsl:when>
+                            <xsl:otherwise>
+                                <xsl:value-of select="'Updating the version number will commit the new version to the Github repository.'"/>
+                            </xsl:otherwise>
+                        </xsl:choose>
                     </div>
                     
                     <div class="row">

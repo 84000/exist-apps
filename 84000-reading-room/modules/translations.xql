@@ -139,21 +139,32 @@ declare function translations:sponsored() as element() {
 };
 
 declare function translations:filtered-text($tei as element(), $toh-key as xs:string?, $include-sponsors as xs:boolean) as element(){
-    <text xmlns="http://read.84000.co/ns/1.0" 
-        id="{ tei-content:id($tei) }" 
-        status="{ tei-content:translation-status($tei) }"
-        status-group="{ tei-content:translation-status-group($tei) }">
-        { translation:toh($tei, $toh-key) }
-        { translation:titles($tei) }
-        { tei-content:source-bibl($tei, $toh-key) }
-        { translation:translation($tei) }
-        { 
-            if($include-sponsors) then
-                translation:sponsors($tei, true())
-            else
-                ()
-         }
-    </text>
+    let $status := tei-content:translation-status($tei)
+    let $status-group := tei-content:translation-status-group($tei)
+    return
+        <text xmlns="http://read.84000.co/ns/1.0" 
+            id="{ tei-content:id($tei) }" 
+            status="{ $status }"
+            status-group="{ $status-group }">
+            { translation:toh($tei, $toh-key) }
+            { translation:titles($tei) }
+            { tei-content:source-bibl($tei, $toh-key) }
+            { translation:translation($tei) }
+            { 
+                if($include-sponsors) then
+                    translation:sponsors($tei, true())
+                else
+                    ()
+             }
+             {
+                if($status-group eq 'published') then
+                    for $bibl in $tei/tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl
+                    return
+                        translation:downloads($tei, $bibl/@key, 'all')
+                else
+                    ()
+             }
+        </text>
 };
 
 declare function translations:filtered-texts($section as xs:string, $status as xs:string*, $sort as xs:string, $range as xs:string, $sponsored as xs:string, $search-toh as xs:string, $deduplicate as xs:boolean) as element() {

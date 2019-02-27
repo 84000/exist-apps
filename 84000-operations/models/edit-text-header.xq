@@ -101,7 +101,7 @@ return
                         (
                             translation:toh($tei, $bibl/@key),
                             translation:location($tei, $bibl/@key),
-                            translation:downloads($tei, $bibl/@key, 'any-version')
+                            translation:downloads($tei, $bibl/@key, 'all')
                         )
                     ,
                     element title { 

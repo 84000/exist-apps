@@ -156,7 +156,7 @@ declare function tei-content:translation-status($tei as element()) as xs:string 
 
 declare function tei-content:translation-status-group($tei as element()) as xs:string? {
     (: Returns the status group of the text :)
-    xs:string($tei-content:text-statuses/m:status[@status-id eq tei-content:translation-status($tei)]/@group)
+    string($tei-content:text-statuses/m:status[@status-id eq tei-content:translation-status($tei)]/@group)
 };
 
 declare function tei-content:text-statuses-selected($selected-ids as xs:string*) as element() {
