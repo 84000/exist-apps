@@ -25,7 +25,7 @@
                         <span>
                             <form method="post" action="/translator-teams.html" class="form-inline filter-form pull-right">
                                 
-                                <div class="checkbox">
+                                <div class="checkbox hidden"><!-- Hide this for now -->
                                     <label class="small">
                                         <input type="checkbox" name="include-acknowledgements" value="1">
                                             <xsl:if test="m:request/@include-acknowledgements eq 'true'">

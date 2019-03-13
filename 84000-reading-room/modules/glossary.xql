@@ -13,7 +13,12 @@ import module namespace tei-content="http://read.84000.co/tei-content" at "../mo
 import module namespace translation="http://read.84000.co/translation" at "translation.xql";
 import module namespace functx="http://www.functx.com";
 
-declare variable $glossary:translations := collection($common:translations-path)//tei:TEI[tei:teiHeader/tei:fileDesc[tei:publicationStmt/@status = $tei-content:published-statuses]];
+declare variable $glossary:translations := 
+    collection($common:translations-path)//tei:TEI
+        [tei:teiHeader/tei:fileDesc
+            [tei:publicationStmt/@status = $tei-content:published-statuses]
+            (: [tei:publicationStmt/tei:idno/@xml:id = ("UT22084-031-002", "UT22084-066-018")] Restrict files for testing :)
+        ];
 declare variable $glossary:types := ('term', 'person', 'place', 'text');
 
 declare function glossary:lookup-options() as element() {
@@ -79,6 +84,13 @@ declare function glossary:valid-type($type) as xs:string {
         ''
 };
 
+declare function glossary:lang-field($valid-lang as xs:string) as xs:string {
+    if($valid-lang eq 'Sa-Ltn-x') then
+        'sa-term'
+    else
+        'full-term'
+};
+
 declare function glossary:glossary-terms($type as xs:string*, $lang as xs:string, $search as xs:string) as element() {
     
     let $valid-lang := glossary:valid-lang($lang)
@@ -88,9 +100,19 @@ declare function glossary:glossary-terms($type as xs:string*, $lang as xs:string
     
     let $terms := 
         if($type eq 'search' and $normalized-search) then
-            distinct-values($glossary:translations//tei:back//tei:gloss/tei:term[not(@type eq 'definition')][ft:query(., glossary:search-query($normalized-search), glossary:search-options())]/text() ! lower-case(.) ! normalize-space(.))
+            distinct-values(
+                $glossary:translations//tei:back//tei:gloss/tei:term
+                    [not(@type eq 'definition')]
+                    [ft:query(., glossary:search-query($normalized-search), glossary:search-options())]
+                    /text() ! lower-case(.) ! normalize-space(.) ! normalize-unicode(., 'NFC') ! replace(., '\-­'(: soft-hyphen :), '')
+            )
         else if($type = $glossary:types) then
-            distinct-values($glossary:translations//tei:back//tei:gloss[@type = $valid-type]/tei:term[@xml:lang eq $valid-lang or ($valid-lang eq 'en' and  not(@xml:lang))][not(@type = ('definition','alternative'))]/text() ! lower-case(.) ! normalize-space(.) ! normalize-unicode(., 'NFC'))
+            distinct-values(
+                $glossary:translations//tei:back//tei:gloss[@type = $valid-type]/tei:term
+                    [@xml:lang eq $valid-lang or ($valid-lang eq 'en' and  not(@xml:lang))]
+                    [not(@type = ('definition','alternative'))]
+                    /text() ! lower-case(.) ! normalize-space(.) ! normalize-unicode(., 'NFC') ! replace(., '\-­'(: soft-hyphen :), '')
+            )
         else
             ()
         
@@ -101,12 +123,18 @@ declare function glossary:glossary-terms($type as xs:string*, $lang as xs:string
             type="{ $valid-type }"
             lang="{ $valid-lang }">
         {
-            for $main-term in $terms
+            for $main-term in $terms[not(. = ('', '-'))]
                 
                 let $normalized-term := common:alphanumeric(common:normalized-chars($main-term))
                 let $start-letter := substring($normalized-term, 1, 1)
                 
-                let $matches := $glossary:translations//tei:back//tei:gloss/tei:term[not(@type eq 'definition')][ft:query-field("full-term", glossary:lookup-query($main-term), glossary:lookup-options())]
+                let $matches := 
+                    functx:distinct-nodes(
+                        $glossary:translations//tei:back//tei:gloss/tei:term
+                            [not(@type eq 'definition')]
+                            [ft:query-field(glossary:lang-field($valid-lang), glossary:lookup-query($main-term), glossary:lookup-options())]
+                                /parent::tei:gloss
+                    )
                 
             order by $normalized-term
             return
@@ -122,7 +150,12 @@ declare function glossary:glossary-terms($type as xs:string*, $lang as xs:string
 
 declare function glossary:cumulative-glossary() as element() {
     
-    let $terms := distinct-values($glossary:translations//tei:back//tei:gloss/tei:term[(@xml:lang eq 'en' or not(@xml:lang))][not(@type = ('definition','alternative'))]/text() ! normalize-space(.))     
+    let $terms := distinct-values(
+            $glossary:translations//tei:back//tei:gloss/tei:term
+                [(@xml:lang eq 'en' or not(@xml:lang))]
+                [not(@type = ('definition','alternative'))]
+                /text() ! normalize-space(.)
+        )
     
     return
         <cumulative-glossary xmlns="http://read.84000.co/ns/1.0">
@@ -151,31 +184,38 @@ declare function glossary:cumulative-glossary() as element() {
 
 declare function glossary:glossary-items($normalized-term as xs:string) as element() {
     
-    let $terms := $glossary:translations//tei:back//tei:gloss/tei:term[not(@type eq 'definition')][ft:query-field("full-term", glossary:lookup-query($normalized-term), glossary:lookup-options())]
+    let $glosses := 
+        functx:distinct-nodes(
+            $glossary:translations//tei:back//tei:gloss/tei:term
+                [not(@type eq 'definition')]
+                [ft:query-field(glossary:lang-field(glossary:valid-lang(@xml:lang)), glossary:lookup-query($normalized-term), glossary:lookup-options())]
+                    /parent::tei:gloss
+        )
     
     return
         <glossary
             xmlns="http://read.84000.co/ns/1.0"
-            model-type="glossary-items" debug="{ count($terms) }">
+            model-type="glossary-items">
             <term>{ $normalized-term }</term>
             {
-                for $term in $terms
+                for $gloss in $glosses
                     
-                    let $translation := $term/ancestor::tei:TEI
-                    let $gloss := $term/parent::tei:gloss
+                    let $translation := $gloss/ancestor::tei:TEI
                     let $translation-title := tei-content:title($translation)
                     let $translation-id := tei-content:id($translation)
                     let $glossary-id := $gloss/@xml:id/string()
                     let $uri := concat('http://read.84000.co/translation/', $translation-id, '.html#', $glossary-id)
+                    let $score := ft:score($gloss)
                     
-                    order by ft:score($term) descending
+                    order by $score descending
                     
                 return 
                     <item 
                         translation-id="{ $translation-id }"
                         uid="{ $glossary-id }"
                         uri="{ $uri }"
-                        type="{ $gloss/@type }">
+                        type="{ $gloss/@type }"
+                        score="{ $score }">
                         <translation>
                             <toh>{ $translation//tei:sourceDesc/tei:bibl[1]/tei:ref/text() }</toh>
                             <title>{ $translation-title }</title>

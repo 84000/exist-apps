@@ -456,10 +456,10 @@
                     <div class="alert alert-warning small text-center">
                         <xsl:choose>
                             <xsl:when test="m:translation/@status eq '1'">
-                                <xsl:value-of select="'Updating the version number will commit the new version to the Github repository and will generate new pdf and ebook files. This can take some time.'"/>
+                                <p>Updating the version number will commit the new version to the <a href="https://github.com/84000/data/commits/master" target="github" class="alert-link">Github repository</a> and will generate new pdf and ebook files. This can take some time.</p>
                             </xsl:when>
                             <xsl:otherwise>
-                                <xsl:value-of select="'Updating the version number will commit the new version to the Github repository.'"/>
+                                <p>Updating the version number will commit the new version to the <a href="https://github.com/84000/data/commits/master" target="github" class="alert-link">Github repository</a>.</p>
                             </xsl:otherwise>
                         </xsl:choose>
                     </div>

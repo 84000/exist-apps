@@ -6,11 +6,11 @@
     </translation>
     <translation id="placeholder-search">
         <text xml:lang="en">Search...</text>
-        <text xml:lang="zh">Search...</text>
+        <text xml:lang="zh">檢索</text>
     </translation>
     <translation id="button-search-reading-room">
         <text xml:lang="en">Search the Reading Room</text>
-        <text xml:lang="zh">Search the Reading Room</text>
+        <text xml:lang="zh">Search the Reading Room (English)</text>
     </translation>
     <translation id="button-search-comms">
         <text xml:lang="en">Search the Website</text>
@@ -24,208 +24,40 @@
         <item class="home" url="http://84000.co/">
             <label>Home</label>
         </item>
-        <item class="news" url="#news">
+        <item class="news" url="http://84000.co/news">
             <label>News</label>
-            <item url="http://84000.co/news">
-                <label>All News</label>
-            </item>
-            <item url="http://84000.co/category/announcements">
-                <label>Announcements</label>
-            </item>
-            <item url="http://84000.co/category/events">
-                <label>Events</label>
-            </item>
-            <item url="http://84000.co/category/people">
-                <label>People</label>
-            </item>
-            <item url="http://84000.co/category/in-depth">
-                <label>In Depth</label>
-            </item>
-            <item url="http://84000.co/category/newsletters">
-                <label>Newsletters</label>
-            </item>
         </item>
-        <item class="reading-room" url="#reading-room">
+        <item class="reading-room" url="http://read.84000.co/">
             <label>Reading Room</label>
-            <item url="http://read.84000.co/section/lobby.html">
-                <label>The Collection</label>
-            </item>
-            <item url="http://read.84000.co/section/all-translated.html">
-                <label>All Translated Texts</label>
-            </item>
-            <item url="http://read.84000.co/search.html">
-                <label>Search The Reading Room</label>
-            </item>
         </item>
-        <item class="resources" url="#resources">
+        <item class="resources" url="http://84000.co/resources/translator-training">
             <label>Resources</label>
-            <item url="http://84000.co/resources/translator-training">
-                <label>Translator Training</label>
-            </item>
-            <item url="http://84000.co/resources/grants">
-                <label>Grants</label>
-            </item>
-            <item url="http://84000.co/resources/tools-and-resources">
-                <label>Tools</label>
-            </item>
-            <item url="http://84000.co/resources/commentaries">
-                <label>Commentaries</label>
-            </item>
-            <item url="http://84000.co/resources/resounding">
-                <label>Resounding</label>
-            </item>
-            <item url="http://84000.co/resources/other-resources">
-                <label>Other Resources</label>
-            </item>
         </item>
-        <item class="about" url="#about">
+        <item class="about" url="http://84000.co/about/vision">
             <label>About</label>
-            <item url="http://84000.co/about/vision">
-                <label>Vision</label>
-            </item>
-            <item url="http://84000.co/about/urgency">
-                <label>Urgency</label>
-            </item>
-            <item url="http://84000.co/about/origin">
-                <label>Origin</label>
-            </item>
-            <item url="http://84000.co/about/progress">
-                <label>Progress</label>
-            </item>
-            <item url="http://84000.co/about/impact">
-                <label>Global Impact</label>
-            </item>
-            <item url="http://84000.co/about/work-flow">
-                <label>Work Flow</label>
-            </item>
-            <item url="http://84000.co/about/copyright">
-                <label>Copyright</label>
-            </item>
-            <item url="http://84000.co/about/team">
-                <label>Team</label>
-            </item>
-            <item url="http://84000.co/about/translators">
-                <label>Translators</label>
-            </item>
-            <item url="http://84000.co/about/sponsors">
-                <label>Sponsors</label>
-            </item>
-            <item url="http://84000.co/about/endorsements">
-                <label>Endorsements</label>
-            </item>
-            <item url="http://84000.co/about/quotes">
-                <label>Quotes</label>
-            </item>
-            <item url="http://84000.co/about/contact">
-                <label>Contact</label>
-            </item>
-            <item url="http://84000.co/about/privacy-policy">
-                <label>Privacy Policy</label>
-            </item>
         </item>        
-        <item class="how-to-help" url="#how-to-help">
+        <item class="how-to-help" url="http://84000.co/how-you-can-help/donate/#sap">
             <label>How You Can Help</label>
-            <item url="http://84000.co/how-you-can-help/donate">
-                <label>Donate</label>
-            </item>
-            <item url="http://84000.co/how-you-can-help/shop-n-give">
-                <label>Shop and Give</label>
-            </item>
-            <item url="http://84000.co/how-you-can-help/spread-the-word/">
-                <label>Subscribe to our Newsletter</label>
-            </item>
-            <item url="http://84000.co/how-you-can-help/faq">
-                <label>FAQ</label>
-            </item>
         </item>
     </navigation>
     <navigation xml:lang="zh">
         <item class="home" url="http://84000.co/ch">
             <label>首頁</label>
         </item>
-        <item class="news" url="#ch-news">
+        <item class="news" url="http://84000.co/ch-news">
             <label>最新訊息</label>
-            <item url="http://84000.co/ch-news">
-                <label>最新訊息</label>
-            </item>
-            <item url="http://84000.co/category/公告">
-                <label>公告</label>
-            </item>
-            <item url="http://84000.co/category/活動">
-                <label>活動</label>
-            </item>
-            <item url="http://84000.co/category/人物">
-                <label>人物</label>
-            </item>
-            <item url="http://84000.co/category/話題">
-                <label>話題</label>
-            </item>
-            <item url="http://84000.co/category/電子通訊">
-                <label>電子通訊</label>
-            </item>
         </item>
-        <item class="reading-room" url="#reading-room">
-            <label>Reading Room<!-- 雲端藏經閣 --></label>
-            <item url="http://read.84000.co/section/lobby.html?lang=zh">
-                <label>The Collection<!-- 經藏 --></label>
-            </item>
-            <item url="http://read.84000.co/section/all-translated.html?lang=zh">
-                <label>All Translated Texts<!-- 已翻譯經典 --></label>
-            </item>
-            <item url="http://read.84000.co/search.html?lang=zh">
-                <label>Search The Reading Room<!-- 雲端藏經閣檢索 --></label>
-            </item>
+        <item class="reading-room" url="http://read.84000.co/?lang=zh">
+            <label>雲端藏經閣</label>
         </item>
-        <item class="resources" url="#ch-resources">
+        <item class="resources" url="http://84000.co/ch-resources/ch-resources-training">
             <label>資源</label>
-            <item url="http://84000.co/ch-resources/ch-commentaries">
-                <label>論著</label>
-            </item>
-            <item url="http://84000.co/ch-resources/ch-resounding">
-                <label>經典迴響</label>
-            </item>
         </item>
-        <item class="about" url="#ch-about">
+        <item class="about" url="http://84000.co/ch-about/ch-about-vision">
             <label>關於我們</label>
-            <item url="http://84000.co/ch-about/ch-about-origin">
-                <label>成立緣起</label>
-            </item>
-            <item url="http://84000.co/ch-about/ch-about-progress">
-                <label>工作進度</label>
-            </item>
-            <item url="http://84000.co/ch-about/ch-about-impact">
-                <label>全球影響</label>
-            </item>
-            <item url="http://84000.co/ch-about/ch-about-workflow">
-                <label>工作流程</label>
-            </item>
-            <item url="http://84000.co/ch-about/ch-about-copyright">
-                <label>關於版權</label>
-            </item>
-            <item url="http://84000.co/ch-about/ch-about-reading-room">
-                <label>關於雲端藏經閣</label>
-            </item>
-            <item url="http://84000.co/ch-about/ch-about-team">
-                <label>我們的團隊</label>
-            </item>
-            <item url="http://84000.co/ch-about/ch-about-translators">
-                <label>翻譯人員</label>
-            </item>
-            <item url="http://84000.co/ch-about/ch-sponsors">
-                <label>贊助人</label>
-            </item>
-            <item url="http://84000.co/ch-about/ch-about-contact">
-                <label>聯繫方式</label>
-            </item>
         </item>
-        <item class="how-to-help" url="#ch-howhelp">
+        <item class="how-to-help" url="http://84000.co/ch-howhelp/ch-howhelp-sponsor-page">
             <label>如何參與</label>
-            <item url="http://84000.co/ch-howhelp/donate">
-                <label>如何護持</label>
-            </item>
-            <item url="http://84000.co/ch-howhelp/faq">
-                <label>常見問題</label>
-            </item>
         </item>
     </navigation>
     <social xml:lang="en">

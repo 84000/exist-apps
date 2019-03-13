@@ -884,6 +884,7 @@
     <xsl:template name="tantra-warning">
         <xsl:param name="id"/>
         <xsl:param name="node"/>
+        
         <a data-toggle="modal" class="warning">
             <xsl:attribute name="href" select="concat('#tantra-warning-', $id)"/>
             <xsl:attribute name="data-target" select="concat('#tantra-warning-', $id)"/>
@@ -891,7 +892,7 @@
             <xsl:value-of select="' Tantra Text Warning'"/>
         </a>
         
-        <div class="modal fade" tabindex="-1" role="dialog">
+        <div class="modal fade warning" tabindex="-1" role="dialog">
             <xsl:attribute name="id" select="concat('tantra-warning-', $id)"/>
             <xsl:attribute name="aria-labelledby" select="concat('tantra-warning-label-', $id)"/>
             <div class="modal-dialog" role="document">
@@ -904,7 +905,8 @@
                         </button>
                         <h4 class="modal-title">
                             <xsl:attribute name="id" select="concat('tantra-warning-label-', $id)"/>
-                            <xsl:value-of select="'Tantra Text Warning'"/>
+                            <i class="fa fa-exclamation-circle" aria-hidden="true"/>
+                            <xsl:value-of select="' Tantra Text Warning'"/>
                         </h4>
                     </div>
                     <div class="modal-body">

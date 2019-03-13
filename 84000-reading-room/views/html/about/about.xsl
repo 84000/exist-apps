@@ -15,7 +15,7 @@
                     <div class="col-md-9 col-md-merge-right">
                         <div class="panel panel-default panel-about main-panel foreground">
                             
-                            <div class="panel-img-header thumbnail">
+                            <div class="panel-img-header has-img thumbnail">
                                 <img data-max-horizontal-crop="50">
                                     <xsl:attribute name="src" select="concat($front-end-path, /m:response/m:app-text[ends-with(@key, 'header-img-src')])"/>
                                 </img>

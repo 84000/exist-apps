@@ -277,7 +277,7 @@ declare function common:marked-paragraph($text as xs:string, $find as xs:string*
     
     let $find-escaped := $find ! functx:escape-for-regex(.)
     let $regex := concat('(', string-join($find-escaped, '|'),')')
-    let $analyze-result := analyze-string(normalize-space($text), $regex, 'gi')
+    let $analyze-result := analyze-string(normalize-space($text), $regex, 'i')
     
     return
         element tei:p {

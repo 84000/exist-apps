@@ -512,9 +512,9 @@ declare function translation:bibliography($tei as element()) as element() {
 declare function translation:glossary($tei as element()) as element() {
     <glossary xmlns="http://read.84000.co/ns/1.0" prefix="g">
     {
-        for $gloss in $tei//tei:back//*[@type eq 'glossary']//tei:gloss
+        for $gloss in $tei//tei:back//tei:div[@type eq 'glossary']//tei:gloss
             let $main-term := $gloss/tei:term[not(@xml:lang) or @xml:lang eq 'en'][not(@type)][1]/text()
-            where $main-term
+        where $main-term
         return
             <item 
                 uid="{ $gloss/@xml:id/string() }" 

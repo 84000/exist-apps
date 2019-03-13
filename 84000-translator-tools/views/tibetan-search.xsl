@@ -176,8 +176,9 @@
                     
                 </xsl:when>
                 <xsl:otherwise>
+                    <hr class="sml-margin"/>
                     <p>
-                        No search results
+                        <xsl:value-of select="'No search results'"/>
                     </p>
                 </xsl:otherwise>
             </xsl:choose>

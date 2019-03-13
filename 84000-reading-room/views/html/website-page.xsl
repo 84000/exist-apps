@@ -21,6 +21,8 @@
     <!-- override navigation params -->
     <xsl:variable name="lang" select="if(/m:response/@lang) then /m:response/@lang else 'en'"/>
     <xsl:variable name="active-url">
+        <xsl:value-of select="common:internal-link('http://read.84000.co/', (), '', $lang)"/>
+        <!-- 
         <xsl:choose>
             <xsl:when test="/m:response/m:section/@id eq 'ALL-TRANSLATED'">
                 <xsl:value-of select="common:internal-link('http://read.84000.co/section/all-translated.html', (), '', $lang)"/>
@@ -47,6 +49,7 @@
                 <xsl:value-of select="common:internal-link('#reading-room', (), '', '')"/>
             </xsl:otherwise>
         </xsl:choose>
+         -->
     </xsl:variable>
     
     <xsl:variable name="local-comms-url" select="$communications-site-path"/>

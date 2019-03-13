@@ -25,7 +25,7 @@
                         <span>
                             <form method="post" action="/translator-institutions.html" class="form-inline filter-form pull-right">
                                 
-                                <div class="checkbox">
+                                <div class="checkbox hidden"><!-- Hide this for now -->
                                     <label class="small">
                                         <input type="checkbox" name="include-contributors" value="1">
                                             <xsl:if test="m:request/@include-contributors eq 'true'">

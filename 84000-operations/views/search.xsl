@@ -329,8 +329,9 @@
                                     </tr>
                                     <xsl:if test="m:sponsors/tei:div[@type eq 'acknowledgment']/tei:p">
                                         <tr class="sub">
-                                            <td colspan="5">
-                                                <div class="pull-quote">
+                                            <td colspan="2"/>
+                                            <td colspan="3">
+                                                <div class="pull-quote no-bottom-margin">
                                                     <xsl:apply-templates select="m:sponsors/tei:div[@type eq 'acknowledgment']/tei:p"/>
                                                 </div>
                                             </td>
