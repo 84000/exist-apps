@@ -14,7 +14,7 @@
     <xsl:template match="tei:title">
         <span>
             <xsl:attribute name="class">
-                <xsl:value-of select="concat(normalize-space(common:lang-class(@xml:lang)), ' glossarize-complete', ' title')"/>
+                <xsl:value-of select="concat('title glossarize-complete ', normalize-space(common:lang-class(@xml:lang)))"/>
             </xsl:attribute>
             <xsl:apply-templates select="node()"/>
         </span>
@@ -23,7 +23,16 @@
     <xsl:template match="tei:name">
         <span>
             <xsl:attribute name="class">
-                <xsl:value-of select="concat('name ', normalize-space(common:lang-class(@xml:lang)), ' glossarize-complete')"/>
+                <xsl:value-of select="concat('name glossarize-complete ', normalize-space(common:lang-class(@xml:lang)))"/>
+            </xsl:attribute>
+            <xsl:apply-templates select="node()"/>
+        </span>
+    </xsl:template>
+    
+    <xsl:template match="tei:mantra">
+        <span>
+            <xsl:attribute name="class">
+                <xsl:value-of select="concat('glossarize ', normalize-space(common:lang-class(@xml:lang)))"/>
             </xsl:attribute>
             <xsl:apply-templates select="node()"/>
         </span>
@@ -46,7 +55,7 @@
     <xsl:template match="tei:foreign">
         <span>
             <xsl:attribute name="class">
-                <xsl:value-of select="concat(normalize-space(common:lang-class(@xml:lang)), ' glossarize', ' foreign')"/>
+                <xsl:value-of select="concat('glossarize foreign ', normalize-space(common:lang-class(@xml:lang)))"/>
             </xsl:attribute>
             <xsl:apply-templates select="node()"/>
         </span>
@@ -55,7 +64,7 @@
     <xsl:template match="tei:emph">
         <em>
             <xsl:attribute name="class">
-                <xsl:value-of select="concat(normalize-space(common:lang-class(@xml:lang)), ' glossarize', if(@rend eq 'bold') then ' text-bold' else '')"/>
+                <xsl:value-of select="concat('glossarize ', normalize-space(common:lang-class(@xml:lang)), if(@rend eq 'bold') then ' text-bold' else '')"/>
             </xsl:attribute>
             <xsl:apply-templates select="node()"/>
         </em>
@@ -64,7 +73,7 @@
     <xsl:template match="tei:distinct">
         <em>
             <xsl:attribute name="class">
-                <xsl:value-of select="concat(normalize-space(common:lang-class(@xml:lang)), ' glossarize')"/>
+                <xsl:value-of select="concat('glossarize ', normalize-space(common:lang-class(@xml:lang)))"/>
             </xsl:attribute>
             <xsl:apply-templates select="node()"/>
         </em>
@@ -622,19 +631,19 @@
         <h4 class="term">
             <xsl:apply-templates select="$glossary-item/m:term[lower-case(@xml:lang) = 'en']"/>
         </h4>
-        <xsl:if test="$glossary-item/m:term[lower-case(@xml:lang) eq 'bo-ltn']">
+        <xsl:if test="$glossary-item/m:term[@xml:lang eq 'Bo-Ltn']">
             <p class="text-wy">
-                <xsl:value-of select="string-join($glossary-item/m:term[lower-case(@xml:lang) eq 'bo-ltn'], ' · ')"/>
+                <xsl:value-of select="string-join($glossary-item/m:term[@xml:lang eq 'Bo-Ltn'], ' · ')"/>
             </p>
         </xsl:if>
-        <xsl:if test="$glossary-item/m:term[lower-case(@xml:lang) eq 'bo']">
+        <xsl:if test="$glossary-item/m:term[@xml:lang eq 'bo']">
             <p class="text-bo">
-                <xsl:value-of select="string-join($glossary-item/m:term[lower-case(@xml:lang) eq 'bo'], ' · ')"/>
+                <xsl:value-of select="string-join($glossary-item/m:term[@xml:lang eq 'bo'], ' · ')"/>
             </p>
         </xsl:if>
-        <xsl:if test="$glossary-item/m:term[lower-case(@xml:lang) eq 'sa-ltn']">
+        <xsl:if test="$glossary-item/m:term[@xml:lang eq 'Sa-Ltn']">
             <p class="text-sa">
-                <xsl:value-of select="string-join($glossary-item/m:term[lower-case(@xml:lang) eq 'sa-ltn'], ' · ')"/>
+                <xsl:value-of select="string-join($glossary-item/m:term[@xml:lang eq 'Sa-Ltn'], ' · ')"/>
             </p>
         </xsl:if>
         <xsl:for-each select="$glossary-item/m:alternative">

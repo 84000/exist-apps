@@ -10,19 +10,19 @@
         <!-- Standardise wayward lang ids -->
         <xsl:param name="lang"/>
         <xsl:choose>
-            <xsl:when test="lower-case($lang) eq 'bo'">
+            <xsl:when test="$lang eq 'bo'">
                 <xsl:value-of select="'text-bo'"/>
             </xsl:when>
-            <xsl:when test="lower-case($lang) eq 'sa-ltn'">
+            <xsl:when test="$lang eq 'Sa-Ltn'">
                 <xsl:value-of select="'text-sa'"/>
             </xsl:when>
-            <xsl:when test="lower-case($lang) eq 'bo-ltn'">
+            <xsl:when test="$lang eq 'Bo-Ltn'">
                 <xsl:value-of select="'text-wy'"/>
             </xsl:when>
-            <xsl:when test="lower-case($lang) = ('eng', 'en')">
+            <xsl:when test="$lang = ('eng', 'en')">
                 <xsl:value-of select="'text-en'"/>
             </xsl:when>
-            <xsl:when test="lower-case($lang) = 'zh'">
+            <xsl:when test="$lang = 'zh'">
                 <xsl:value-of select="'text-zh'"/>
             </xsl:when>
             <xsl:otherwise>

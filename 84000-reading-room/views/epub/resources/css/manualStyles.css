@@ -165,7 +165,8 @@ blockquote .line-group .line {
     text-align: justify;
     text-indent: 22pt;
 }
-.text .mantra {
+.text p.mantra,
+.text div.mantra {
     text-indent: 0;
     padding: 0;
     padding-left: 22pt;
@@ -192,7 +193,8 @@ br+*,
 }
 
 /* Add a double space */
-.rw-chapter-head, .rw-section-head {
+.rw-chapter-head, 
+.rw-section-head {
     margin-top: 24pt;
 }
 
