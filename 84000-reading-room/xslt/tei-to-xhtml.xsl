@@ -631,9 +631,9 @@
         <h4 class="term">
             <xsl:apply-templates select="$glossary-item/m:term[lower-case(@xml:lang) = 'en']"/>
         </h4>
-        <xsl:if test="$glossary-item/m:term[@xml:lang eq 'Bo-Ltn']">
+        <xsl:if test="$glossary-item/m:term[@xml:lang eq 'bo-ltn']">
             <p class="text-wy">
-                <xsl:value-of select="string-join($glossary-item/m:term[@xml:lang eq 'Bo-Ltn'], ' · ')"/>
+                <xsl:value-of select="string-join($glossary-item/m:term[@xml:lang eq 'bo-ltn'], ' · ')"/>
             </p>
         </xsl:if>
         <xsl:if test="$glossary-item/m:term[@xml:lang eq 'bo']">
@@ -641,9 +641,9 @@
                 <xsl:value-of select="string-join($glossary-item/m:term[@xml:lang eq 'bo'], ' · ')"/>
             </p>
         </xsl:if>
-        <xsl:if test="$glossary-item/m:term[@xml:lang eq 'Sa-Ltn']">
+        <xsl:if test="$glossary-item/m:term[@xml:lang eq 'sa-ltn']">
             <p class="text-sa">
-                <xsl:value-of select="string-join($glossary-item/m:term[@xml:lang eq 'Sa-Ltn'], ' · ')"/>
+                <xsl:value-of select="string-join($glossary-item/m:term[@xml:lang eq 'sa-ltn'], ' · ')"/>
             </p>
         </xsl:if>
         <xsl:for-each select="$glossary-item/m:alternative">

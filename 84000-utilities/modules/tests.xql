@@ -500,15 +500,15 @@ declare function tests:glossary($tei as element()*, $html as element()*) as item
     
     let $glossary-count-html := count($html//*[@id eq 'glossary']//*[common:contains-class(@class, 'glossary-item')])
     let $glossary-count-tei := count($tei//tei:back/tei:div[@type='glossary']//tei:gloss)
-    let $tei-terms-raw := $tei//tei:back/tei:div[@type='glossary']//tei:gloss/tei:term[text()][not(tei:ptr)](:[not(@xml:lang and text() = preceding-sibling::tei:term[not(@xml:lang or @type)]/text())]:)
+    let $tei-terms-raw := $tei//tei:back/tei:div[@type='glossary']//tei:gloss/tei:term[text()][not(tei:ptr)](:[(not(@xml:lang) and not(@type)) or not(text() = preceding-sibling::tei:term[not(@xml:lang) and not(@type)]/text())]:)
     
     let $tei-terms := 
         for $tei-term in $tei-terms-raw
         return 
             if($tei-term[@xml:lang eq "Bo-Ltn"])then
-                string($tei-term) ! lower-case(.) ! normalize-space() ! common:bo-ltn(.)
+                string($tei-term) ! lower-case(.) ! normalize-space(.) ! common:bo-ltn(.)
             else
-                string($tei-term) ! lower-case(.) ! normalize-space()
+                string($tei-term) ! lower-case(.) ! normalize-space(.)
                 
     let $terms-count-tei := count($tei-terms)
     
@@ -528,7 +528,7 @@ declare function tests:glossary($tei as element()*, $html as element()*) as item
     let $terms-count-html := count($html-terms)
     
     let $anomalies := 
-        for $term in $html-terms
+        for $term in $tei-terms
         return
             let $term-count-tei := count($tei-terms[. = $term])
             let $term-count-html := count($html-terms[. = $term])
