@@ -89,7 +89,7 @@
                                         <th>
                                             <xsl:value-of select="'Title'"/>
                                         </th>
-                                        <th colspan="2">
+                                        <th>
                                             <xsl:value-of select="'Stats'"/>
                                         </th>
                                     </tr>
@@ -111,29 +111,49 @@
                                                 <xsl:value-of select="m:toh/m:base"/>
                                             </td>
                                             <td>
-                                                <a>
-                                                    <xsl:attribute name="href" select="concat($reading-room-path ,'/translation/', $toh/@key, '.html')"/>
-                                                    <xsl:attribute name="target" select="concat($toh/@key, '.html')"/>
-                                                    <xsl:value-of select="m:titles/m:title[@xml:lang eq 'en']"/>
-                                                </a>
-                                                <xsl:if test="$environment/m:store-conf[@type eq 'master']">
+                                                <div>
+                                                    <a>
+                                                        <xsl:attribute name="href" select="concat($reading-room-path ,'/translation/', $toh/@key, '.html')"/>
+                                                        <xsl:attribute name="target" select="concat($toh/@key, '.html')"/>
+                                                        <xsl:value-of select="m:titles/m:title[@xml:lang eq 'en']"/>
+                                                    </a>
                                                     <xsl:value-of select="' / '"/>
                                                     <a class="small">
                                                         <xsl:attribute name="href" select="concat('/test-translations.html?translation-id=', $text-id)"/>
                                                         <xsl:attribute name="target" select="concat('test-translation-', $text-id)"/>
                                                         <xsl:value-of select="'Run tests'"/>
                                                     </a>
-                                                </xsl:if>
+                                                </div>
+                                                <div class="small text-muted">
+                                                    <xsl:value-of select="@uri"/>
+                                                </div>
                                             </td>
-                                            <td colspan="2" class="nowrap">
+                                            <td rowspan="2" class="nowrap">
                                                 
-                                                <xsl:value-of select="$text-id"/>
-                                                
-                                                <div class="label label-warning pull-right">
-                                                    <xsl:if test="$status-id eq '1'">
-                                                        <xsl:attribute name="class" select="'label label-success pull-right'"/>
-                                                    </xsl:if>
-                                                    <xsl:value-of select="$status-id"/>
+                                                <div>
+                                                    <xsl:value-of select="$text-id"/>
+                                                    <div class="label label-warning pull-right">
+                                                        <xsl:if test="$status-id eq '1'">
+                                                            <xsl:attribute name="class" select="'label label-success pull-right'"/>
+                                                        </xsl:if>
+                                                        <xsl:value-of select="$status-id"/>
+                                                    </div>
+                                                </div>
+                                                <div class="row margin-top-sm">
+                                                    <div class="col-sm-6">                                                
+                                                        <span class="text-muted small nowrap">
+                                                            <xsl:value-of select="'Translated words:'"/>
+                                                        </span>
+                                                        <br/>
+                                                        <xsl:value-of select="fn:format-number(xs:integer(@wordCount),'#,##0')"/>
+                                                    </div>
+                                                    <div class="col-sm-6">      
+                                                        <span class="text-muted small nowrap">
+                                                            <xsl:value-of select="'Glossary items:'"/>
+                                                        </span>
+                                                        <br/>
+                                                        <xsl:value-of select="fn:format-number(xs:integer(@glossaryCount),'#,##0')"/>
+                                                    </div>
                                                 </div>
                                                 
                                             </td>
@@ -141,8 +161,7 @@
                                         
                                         <!-- Files status -->
                                         <tr class="sub">
-                                            <td>
-                                            </td>
+                                            <td/>
                                             <td>
                                                 <xsl:variable name="master-downloads" select="/m:response/m:translations-master/m:translations/m:translation/m:downloads[@resource-id eq $toh/@key]"/>
                                                 <xsl:variable name="file-formats" select="('pdf', 'epub', 'azw3')"/>
@@ -339,16 +358,6 @@
                                                 </div>
                                                 
                                             </td>
-                                            <td>                                                
-                                                <span class="text-muted small nowrap">Translated words:</span>
-                                                <br/>
-                                                <xsl:value-of select="fn:format-number(xs:integer(@wordCount),'#,##0')"/>
-                                            </td>
-                                            <td>
-                                                <span class="text-muted small nowrap">Glossary terms:</span>
-                                                <br/>
-                                                <xsl:value-of select="fn:format-number(xs:integer(@glossaryCount),'#,##0')"/>
-                                            </td>
                                         </tr>
                                     </xsl:for-each>
                                 </tbody>
@@ -362,18 +371,22 @@
                                             <xsl:value-of select="fn:format-number(xs:integer(count(m:translations/m:translation)),'#,##0')"/>
                                         </td>
                                         <td>
-                                            <small class="text-muted">
-                                                <xsl:value-of select="'Total words: '"/>
-                                            </small>
-                                            <br/>
-                                            <xsl:value-of select="fn:format-number(xs:integer(sum(m:translations/m:translation/@wordCount)),'#,##0')"/>
-                                        </td>
-                                        <td>
-                                            <small class="text-muted">
-                                                <xsl:value-of select="'Total terms: '"/>
-                                            </small>
-                                            <br/>
-                                            <xsl:value-of select="fn:format-number(xs:integer(sum(m:translations/m:translation/@glossaryCount)),'#,##0')"/>
+                                            <div class="row">
+                                                <div class="col-sm-6">
+                                                    <small class="text-muted">
+                                                        <xsl:value-of select="'Total words: '"/>
+                                                    </small>
+                                                    <br/>
+                                                    <xsl:value-of select="fn:format-number(xs:integer(sum(m:translations/m:translation/@wordCount)),'#,##0')"/>
+                                                </div>
+                                                <div class="col-sm-6">
+                                                    <small class="text-muted">
+                                                        <xsl:value-of select="'Total terms: '"/>
+                                                    </small>
+                                                    <br/>
+                                                    <xsl:value-of select="fn:format-number(xs:integer(sum(m:translations/m:translation/@glossaryCount)),'#,##0')"/>
+                                                </div>
+                                            </div>
                                         </td>
                                     </tr>
                                 </tfoot>
