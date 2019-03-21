@@ -27,7 +27,7 @@ let $xml-section := doc(concat($common:data-path, '/translator-tools/sections/',
 
 let $type := request:get-parameter('type', 'term')
 let $search := request:get-parameter('s', '')
-let $lang := request:get-parameter('lang', 'en')
+let $lang := request:get-parameter('lang', 'bo')
 let $volume := request:get-parameter('volume', 1)
 let $page := request:get-parameter('page', 1)
 
@@ -55,7 +55,7 @@ return
             (
                 search:tm-search($search, $lang, $first-record, 15),
                 source:ekangyur-page(source:ekangyur-volume-number(xs:integer($volume)), xs:integer($page), true()),
-                source:ekangyur-volumes(),
+                source:ekangyur-volumes(xs:integer($volume)),
                 contributors:persons(false())
             )
             else

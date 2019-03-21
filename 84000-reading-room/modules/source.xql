@@ -163,7 +163,7 @@ declare function source:bo-ltn($bo as xs:string) as xs:string {
     </p>
 };
 
-declare function source:ekangyur-volumes() as element() {
+declare function source:ekangyur-volumes($pages-for-volume as xs:integer?) as element() {
     <volumes xmlns="http://read.84000.co/ns/1.0">
     { 
         let $volumes := collection($common:ekangyur-path)
@@ -174,7 +174,16 @@ declare function source:ekangyur-volumes() as element() {
             let $number := source:translation-volume-number(xs:integer($number-id))
             let $page-count := count($volume//tei:p)
         return
-            <volume id="{ $long-id }" number="{ $number }" page-count="{ $page-count }" />
+            <volume id="{ $long-id }" number="{ $number }" page-count="{ $page-count }" >
+            {
+                if($pages-for-volume gt 0 and $number eq $pages-for-volume) then
+                    for $p at $index in $volume//tei:p
+                    return
+                        <page index="{ $index }" number="{ $p/@n }" folio="{ $p/@data-orig-n }"/>
+                else
+                    ()
+            }
+            </volume>
     }
     </volumes>
 };

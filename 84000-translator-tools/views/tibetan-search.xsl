@@ -23,7 +23,9 @@
                         </input>
                         
                         <div class="form-group">
-                            <label for="volume" class="sr-only">Volume</label>
+                            <label for="volume" class="sr-only">
+                                <xsl:value-of select="'Volume'"/>
+                            </label>
                             <select name="volume" class="form-control" id="volume">
                                 <xsl:for-each select="/m:response/m:volumes/m:volume">
                                     <xsl:sort select="xs:integer(@number)"/>
@@ -39,12 +41,20 @@
                         </div>
                         
                         <div class="form-group">
-                            <label for="page" class="sr-only">Page</label>
+                            <label for="page" class="sr-only">
+                                <xsl:value-of select="'Page'"/>
+                            </label>
                             <select name="page" class="form-control" id="page">
-                                <xsl:call-template name="page-options">
-                                    <xsl:with-param name="page-number" select="1"/>
-                                    <xsl:with-param name="page-count" select="/m:response/m:volumes/m:volume[xs:integer(@number) eq xs:integer($request-volume)]/@page-count/xs:integer(.)"/>
-                                </xsl:call-template>
+                                <xsl:variable name="requested-page" select="/m:response/m:request/@page" as="xs:integer"/>
+                                <xsl:for-each select="/m:response/m:volumes/m:volume[xs:integer(@number) eq xs:integer($request-volume)]/m:page">
+                                    <option>
+                                        <xsl:attribute name="value" select="@index"/>
+                                        <xsl:if test="xs:integer(@index) eq $requested-page">
+                                            <xsl:attribute name="selected" select="'selected'"/>
+                                        </xsl:if>
+                                        <xsl:value-of select="@folio"/>
+                                    </option>
+                                </xsl:for-each>
                             </select>
                         </div>
                         
@@ -86,7 +96,7 @@
                             <xsl:attribute name="value" select="/m:response/m:request/@page/xs:integer(.)"/>
                         </input>
                         <label for="search-text-bo">
-                            Select or type some Tibetan
+                            <xsl:value-of select="'Select or type some Tibetan'"/>
                         </label>
                         <div class="form-group">
                             <textarea rows="2" class="form-control text-bo" name="s" id="search-text-bo">
@@ -107,7 +117,7 @@
                             <xsl:attribute name="value" select="/m:response/m:request/@page/xs:integer(.)"/>
                         </input>
                         <label for="search-text-bo-ltn">
-                            or type some Wylie
+                            <xsl:value-of select="'or type some Wylie'"/>
                         </label>
                         <div class="form-group">
                             <textarea rows="2" class="form-control text-wy" name="s" id="search-text-bo-ltn">
@@ -124,55 +134,61 @@
             <xsl:variable name="results" select="/m:response/m:tm-search/m:results"/>
             <xsl:choose>
                 <xsl:when test="$results/m:item">
-                    <div class="search-results">
+                    <div class="search-results margin-top-sm">
                         <xsl:for-each select="$results/m:item">
                             <div class="search-result row">
-                                <div>
-                                    <div class="col-sm-6">
-                                        <p class="text-bo">
-                                            <xsl:apply-templates select="tmx:tu/tmx:tuv[@xml:lang eq 'bo']/tmx:seg"/>
-                                        </p>
-                                        <p class="translation">
-                                            <xsl:apply-templates select="tmx:tu/tmx:tuv[@xml:lang eq 'en']/tmx:seg"/>
-                                        </p>
-                                    </div>
-                                    <div>
-                                        <div class="col-sm-6">
-                                            <p class="title">
-                                                <a target="reading-room">
-                                                    <xsl:attribute name="href" select="concat($reading-room-path, '/translation/', m:source/@resource-id, '.html#', common:folio-id(tmx:tu/tmx:prop[@name eq 'folio']/text()))"/>
-                                                    <xsl:apply-templates select="m:source/m:title"/>
-                                                </a>
-                                                <br/>
-                                                <span class="translators text-muted small">
-                                                    Translated by 
-                                                    <xsl:variable name="author-ids" select="m:source/m:translation/m:contributors/m:author[@role eq 'translatorEng']/@ref ! substring-after(., 'contributors.xml#')"/>
-                                                    <xsl:value-of select="string-join(/m:response/m:contributor-persons/m:person[@xml:id = $author-ids]/m:label, ' · ')"/>
-                                                </span>
-                                                <xsl:for-each select="m:source/m:bibl">
-                                                    <br/>
-                                                    <span class="ancestors text-muted small">
-                                                        in 
-                                                        <xsl:for-each select="m:parent | m:parent//m:parent">
-                                                            <xsl:sort select="@nesting" order="descending"/>
-                                                            <xsl:value-of select="m:title[@xml:lang='en']/text()"/>
-                                                            / 
-                                                        </xsl:for-each>
-                                                        <xsl:if test="m:toh/m:full">
-                                                            <xsl:value-of select="m:toh/m:full"/>
-                                                        </xsl:if>
-                                                    </span>
-                                                </xsl:for-each>
+                                <div class="col-sm-6">
+                                    <div class="row">
+                                        <div class="col-sm-1 small text-muted margin-top-sm">
+                                            <xsl:value-of select="concat(position() + $results/@first-record - 1, '.')"/>
+                                        </div>
+                                        <div class="col-sm-11">
+                                            <p class="text-bo">
+                                                <xsl:apply-templates select="tmx:tu/tmx:tuv[@xml:lang eq 'bo']/tmx:seg"/>
+                                            </p>
+                                            <p class="translation">
+                                                <xsl:apply-templates select="tmx:tu/tmx:tuv[@xml:lang eq 'en']/tmx:seg"/>
                                             </p>
                                         </div>
                                     </div>
                                 </div>
+                                <div>
+                                    <div class="col-sm-6">
+                                        <p class="title">
+                                            <a target="reading-room">
+                                                <xsl:attribute name="href" select="concat($reading-room-path, '/translation/', m:source/@resource-id, '.html#', common:folio-id(tmx:tu/tmx:prop[@name eq 'folio']/text()))"/>
+                                                <xsl:apply-templates select="m:source/m:title"/>
+                                            </a>
+                                            <br/>
+                                            <span class="translators text-muted small">
+                                                <xsl:value-of select="'Translated by '"/>
+                                                <xsl:variable name="author-ids" select="m:source/m:translation/m:contributors/m:author[@role eq 'translatorEng']/@ref ! substring-after(., 'contributors.xml#')"/>
+                                                <xsl:value-of select="string-join(/m:response/m:contributor-persons/m:person[@xml:id = $author-ids]/m:label, ' · ')"/>
+                                            </span>
+                                            <xsl:for-each select="m:source/m:bibl">
+                                                <br/>
+                                                <span class="ancestors text-muted small">
+                                                    <xsl:value-of select="'in '"/>
+                                                    <xsl:for-each select="m:parent | m:parent//m:parent">
+                                                        <xsl:sort select="@nesting" order="descending"/>
+                                                        <xsl:value-of select="m:title[@xml:lang='en']/text()"/>
+                                                        <xsl:value-of select="' / '"/>
+                                                    </xsl:for-each>
+                                                    <xsl:if test="m:toh/m:full">
+                                                        <xsl:value-of select="m:toh/m:full"/>
+                                                    </xsl:if>
+                                                </span>
+                                            </xsl:for-each>
+                                        </p>
+                                    </div>
+                                </div>
+                                
                             </div>
                         </xsl:for-each>
                     </div>
                     
                     <!-- Pagination -->
-                    <xsl:copy-of select="common:pagination($results/@first-record, $results/@max-records, $results/@count-records, 'index.html?tab=tibetan-search', concat('&amp;s=', /m:response/m:tm-search/m:request/text()))"/>
+                    <xsl:copy-of select="                         common:pagination(                             $results/@first-record,                              $results/@max-records,                              $results/@count-records,                              'index.html?tab=tibetan-search',                              concat(                                 '&amp;s=', /m:response/m:tm-search/m:request-bo/text()/normalize-space(),                                  '&amp;volume=', /m:response/m:request/@volume,                                  '&amp;page=', /m:response/m:request/@page                             )                         )                     "/>
                     
                 </xsl:when>
                 <xsl:otherwise>
