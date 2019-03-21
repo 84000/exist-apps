@@ -32,7 +32,7 @@
                         </input>
                         <span class="input-group-btn">
                             <button type="submit" class="btn btn-primary">
-                                Search
+                                <xsl:value-of select="'Search'"/>
                             </button>
                         </span>
                     </div>
@@ -71,7 +71,7 @@
                                         <xsl:choose>
                                             <xsl:when test="$source[@tei-type = 'section']">
                                                 <span class="label label-danger">
-                                                    Section
+                                                    <xsl:value-of select="'Section'"/>
                                                 </span>
                                             </xsl:when>
                                             <xsl:otherwise>
@@ -130,10 +130,10 @@
                                                     </span>
                                                     <xsl:choose>
                                                         <xsl:when test="$count-matches eq 1">
-                                                            match
+                                                            <xsl:value-of select="'match'"/>
                                                         </xsl:when>
                                                         <xsl:otherwise>
-                                                            matches
+                                                            <xsl:value-of select="'matches'"/>
                                                         </xsl:otherwise>
                                                     </xsl:choose>
                                                     
@@ -171,7 +171,7 @@
                     <xsl:otherwise>
                         <br/>
                         <p class="text-center text-muted italic">
-                            - No search results -
+                            <xsl:value-of select="'- No search results -'"/>
                         </p>
                     </xsl:otherwise>
                 </xsl:choose>
@@ -325,7 +325,7 @@
                         <div class="col-sm-12">
                             <a class="small">
                                 <xsl:attribute name="href" select="common:match-url(., /m:response/@lang)"/>
-                                read...
+                                <xsl:value-of select="'read...'"/>
                             </a>
                         </div>
                     </div>

@@ -14,15 +14,8 @@ declare option exist:serialize "method=xml indent=no";
 (: Get config :)
 let $store-conf := $common:environment/m:store-conf
 
-(: Which translations? :)
-let $text-status-ids := 
-    if($store-conf[@type eq 'master']) then
-        ('1', '2.a')
-    else
-        ('1')
-
-(: Status ids in post (Unused) :)
-let $text-statuses := request:get-parameter('text-statuses[]', $text-status-ids)
+(: Status ids in post :)
+let $texts-status := request:get-parameter('texts-status', '1')
 
 (: Request includes file to store :)
 let $store-file-name := request:get-parameter('store', '')
@@ -38,16 +31,19 @@ let $store-file :=
         ()
 
 (: Translations in this database :)
-let $translations-local := translations:translations($text-statuses, true(), 'all', false())
+let $translations-local := translations:translations($texts-status, true(), 'all', false())
 
-(: If this is a client get translations in master database (Status = 1 only) :)
+(: If this is a client get translations in master database :)
 let $translations-master := 
     if($store-conf[@type eq 'client']) then
-        let $request := <hc:request href="{$store-conf/m:translations-master-host}/section/all-translated.xml" method="GET"/>
+        let $resource-ids-str := string-join($translations-local/m:translation/m:toh/@key, ',')
+        let $translations-master-request := concat($store-conf/m:translations-master-host, '/downloads.xml?resource-ids=', $resource-ids-str)
+        let $request := <hc:request href="{ $translations-master-request }" method="GET"/>
         let $response := hc:send-request($request)
         return
             element {  QName('http://read.84000.co/ns/1.0', 'translations-master') } {
-                $response[2]/m:response/m:section/m:texts
+                (: attribute url { $translations-master-request }, :)
+                $response[2]/m:response/m:translations
             }
     else
         ()

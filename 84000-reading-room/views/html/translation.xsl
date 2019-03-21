@@ -19,7 +19,7 @@
                     
                     <xsl:if test="not(m:translation/@status eq '1')">
                         <div class="panel-heading panel-heading-bold panel-heading-danger">
-                            This text is not yet ready for publication!
+                            <xsl:text>This text is not yet ready for publication!</xsl:text>
                         </div>
                     </xsl:if>
                     
@@ -724,9 +724,12 @@
                 <td>
                     <xsl:choose>
                         <xsl:when test="@prefix">
-                            <xsl:apply-templates select="@prefix"/>.
+                            <xsl:apply-templates select="@prefix"/>
+                            <xsl:value-of select="'.'"/>
                         </xsl:when>
-                        <xsl:otherwise>·</xsl:otherwise>
+                        <xsl:otherwise>
+                            <xsl:value-of select="'·'"/>
+                        </xsl:otherwise>
                     </xsl:choose>
                 </td>
                 <td>
@@ -770,10 +773,16 @@
                         <xsl:attribute name="href" select="concat('#', $expand-id)"/>
                         <xsl:attribute name="aria-controls" select="$expand-id"/>
                         <span class="collapsed-show">
-                            <span class="monospace">+</span> sub-sections
+                            <span class="monospace">
+                                <xsl:value-of select="'+'"/>
+                            </span>
+                            <xsl:value-of select="' sub-sections'"/>
                         </span>
                         <span class="collapsed-hide">
-                            <span class="monospace">-</span> sub-sections
+                            <span class="monospace">
+                                <xsl:value-of select="'-'"/>
+                            </span>
+                            <xsl:value-of select="' sub-sections'"/>
                         </span>
                     </a>
                 </xsl:if>

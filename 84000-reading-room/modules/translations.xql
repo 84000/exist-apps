@@ -293,6 +293,11 @@ declare function translations:translations($text-statuses as xs:string*, $includ
     return
         <translations xmlns="http://read.84000.co/ns/1.0">
         {
+            for $text-status-id in $text-statuses
+            return
+                <text-status id="{ $text-status-id }"/>
+        }
+        {
          for $toh-key in $translations//tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl/@key
          
             let $tei := $translations[tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl/@key eq lower-case($toh-key)]
@@ -323,5 +328,27 @@ declare function translations:translations($text-statuses as xs:string*, $includ
             </translation>
         }
         </translations>
+    
+};
+
+declare function translations:downloads($resource-ids as xs:string*) as element() {
+
+    <translations xmlns="http://read.84000.co/ns/1.0">
+    {
+     for $tei in collection($common:translations-path)//tei:TEI[tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl/@key = $resource-ids]
+     
+     return
+        <translation 
+            uri="{ base-uri($tei) }"
+            fileName="{ util:unescape-uri(replace(base-uri($tei), ".+/(.+)$", "$1"), 'UTF-8') }"
+            id="{ tei-content:id($tei) }">
+            { 
+                for $resource-id in $tei/tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl[@key = $resource-ids]/@key
+                return
+                    translation:downloads($tei, $resource-id, 'all')
+            }
+        </translation>
+    }
+    </translations>
     
 };

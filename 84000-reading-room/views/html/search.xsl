@@ -17,7 +17,7 @@
                                 <li>
                                     <a>
                                         <xsl:attribute name="href" select="common:internal-link('/section/lobby.html', (), '', /m:response/@lang)"/>
-                                        The Lobby
+                                        <xsl:value-of select="'The Lobby'"/>
                                     </a>
                                 </li>
                             </ul>
@@ -32,7 +32,7 @@
                                         </span>
                                     </span>
                                     <span class="btn-round-text">
-                                        View Translated Texts
+                                        <xsl:value-of select="'View Translated Texts'"/>
                                     </span>
                                 </a>
                                 <span>
@@ -45,7 +45,7 @@
                                                 </span>
                                             </span>
                                             <span class="btn-round-text">
-                                                Bookmarks
+                                                <xsl:value-of select="'Bookmarks'"/>
                                             </span>
                                         </a>
                                     </div>

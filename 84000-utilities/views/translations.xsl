@@ -9,6 +9,7 @@
         
         <xsl:variable name="environment" select="doc(/m:response/@environment-path)/m:environment"/>
         <xsl:variable name="reading-room-path" select="$environment/m:url[@id eq 'reading-room']/text()"/>
+        <xsl:variable name="texts-status" select="/m:response/m:translations/m:text-status[1]/@id"/>
         
         <xsl:variable name="content">
             
@@ -37,20 +38,43 @@
                         
                         <div class="tab-content">
                             
-                            <div class="alert alert-info small text-center">
-                                <p>
-                                    <xsl:value-of select="'Lists the status of current translations and related files.'"/>
-                                </p>
+                            <div class="row">
+                                
+                                <div class="col-sm-7">
+                                    <form action="translations.html" method="post" class="form-horizontal filter-form margin-top-sm">
+                                        <select name="texts-status" id="texts-status" class="form-control">
+                                            <xsl:for-each select="m:text-statuses/m:status">
+                                                <option>
+                                                    <xsl:attribute name="value" select="@status-id"/>
+                                                    <xsl:if test="@status-id eq $texts-status">
+                                                        <xsl:attribute name="selected" select="'selected'"/>
+                                                    </xsl:if>
+                                                    <xsl:value-of select="concat(@status-id, ' / ', text())"/>
+                                                </option>
+                                            </xsl:for-each>
+                                        </select>
+                                    </form>
+                                </div>
+                                <div class="col-sm-5">
+                                    <div class="alert alert-info">
+                                        <p class="small">
+                                            <xsl:value-of select="'Lists the status of current translations and related files.'"/>
+                                        </p>
+                                    </div>
+                                </div>
                             </div>
                             
                             <xsl:if test="m:updated">
                                 <div class="alert alert-success" role="alert">
-                                    <xsl:value-of select="m:updated"/>
-                                    <xsl:value-of select="' | '"/>
+                                    <xsl:if test="m:updated//m:error">
+                                        <xsl:attribute name="class" select="'alert alert-danger'"/>
+                                    </xsl:if>
+                                    <xsl:value-of select="concat('Updated: ', m:updated)"/>
                                     <xsl:if test="m:updated/@resource-id">
+                                        <xsl:value-of select="' | '"/>
                                         <a class="scroll-to-anchor alert-link">
                                             <xsl:attribute name="href" select="concat('#', m:updated/@resource-id)"/>
-                                            <xsl:value-of select="'Go there'"/>
+                                            <xsl:value-of select="'Go to this row'"/>
                                         </a>
                                     </xsl:if>
                                 </div>
@@ -59,13 +83,19 @@
                             <table class="table table-responsive">
                                 <thead>
                                     <tr>
-                                        <th>Toh.</th>
-                                        <th>Title</th>
-                                        <th colspan="2">Stats</th>
+                                        <th>
+                                            <xsl:value-of select="'Toh.'"/>
+                                        </th>
+                                        <th>
+                                            <xsl:value-of select="'Title'"/>
+                                        </th>
+                                        <th colspan="2">
+                                            <xsl:value-of select="'Stats'"/>
+                                        </th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <xsl:for-each select="//m:translations/m:translation">
+                                    <xsl:for-each select="m:translations/m:translation">
                                         <xsl:sort select="number(m:toh/@number)"/>
                                         <xsl:sort select="m:toh/m:base"/>
                                         <xsl:variable name="toh" select="m:toh"/>
@@ -81,7 +111,7 @@
                                                 <xsl:value-of select="m:toh/m:base"/>
                                             </td>
                                             <td>
-                                                <a class="text-color">
+                                                <a>
                                                     <xsl:attribute name="href" select="concat($reading-room-path ,'/translation/', $toh/@key, '.html')"/>
                                                     <xsl:attribute name="target" select="concat($toh/@key, '.html')"/>
                                                     <xsl:value-of select="m:titles/m:title[@xml:lang eq 'en']"/>
@@ -114,9 +144,7 @@
                                             <td>
                                             </td>
                                             <td>
-                                                <xsl:variable name="master-text" select="/m:response/m:translations-master/m:texts/m:text[@resource-id eq $toh/@key]"/>
-                                                <xsl:variable name="master-tei-version" select="$master-text/m:downloads/@tei-version"/>
-                                                <xsl:variable name="master-downloads" select="$master-text/m:downloads/m:download"/>
+                                                <xsl:variable name="master-downloads" select="/m:response/m:translations-master/m:translations/m:translation/m:downloads[@resource-id eq $toh/@key]"/>
                                                 <xsl:variable name="file-formats" select="('pdf', 'epub', 'azw3')"/>
                                                 <div class="small">
                                                     <div class="row">
@@ -158,7 +186,7 @@
                                                         
                                                         <!-- Location column -->
                                                         <div class="col-sm-2 text-muted">
-                                                            Version:
+                                                            <xsl:value-of select="'Version:'"/>
                                                         </div>
                                                         
                                                         
@@ -183,19 +211,19 @@
                                                             
                                                             <!-- Location column -->
                                                             <div class="col-sm-2 text-muted">
-                                                                Collaboration:
+                                                                <xsl:value-of select="'Collaboration:'"/>
                                                             </div>
                                                             
                                                             <!-- TEI column -->
                                                             <div class="col-sm-2">
-                                                                <xsl:value-of select="$master-tei-version"/>
+                                                                <xsl:value-of select="$master-downloads/@tei-version"/>
                                                             </div>
                                                             
                                                             <!-- File format columns -->
                                                             <xsl:for-each select="$file-formats">
                                                                 <xsl:variable name="file-format" select="."/>
                                                                 <div class="col-sm-2">
-                                                                    <xsl:value-of select="$master-downloads[@type eq $file-format]/@version"/>
+                                                                    <xsl:value-of select="$master-downloads/m:download[@type eq $file-format]/@version"/>
                                                                 </div>
                                                             </xsl:for-each>
                                                         </div>
@@ -204,104 +232,112 @@
                                                     <!-- Action row -->
                                                     <div class="row">
                                                         
-                                                        <!-- Location column -->
-                                                        <div class="col-sm-2"/>
-                                                        
-                                                        <!-- TEI column -->
-                                                        <div class="col-sm-2">
-                                                            <xsl:choose>
+                                                        <xsl:choose>
+                                                            <xsl:when test="$environment/m:store-conf[@type eq 'master']">
                                                                 
-                                                                <!-- Client actions -->
-                                                                <xsl:when test="$environment/m:store-conf[@type eq 'client']">
+                                                                <!-- Location column -->
+                                                                <div class="col-sm-2"/>
+                                                                
+                                                                <!-- TEI column -->
+                                                                <div class="col-sm-2"/>
+                                                                
+                                                                <!-- File format columns -->
+                                                                <xsl:for-each select="$file-formats">
+                                                                    
+                                                                    <xsl:variable name="file-format" select="."/>
+                                                                    <xsl:variable name="file-version" select="$text-downloads[@type eq $file-format]/@version"/>
+                                                                    
+                                                                    <div class="col-sm-2">
+                                                                        
+                                                                        <!-- Versions don't match so offer create option -->
+                                                                        <xsl:if test="compare($file-version, $tei-version) ne 0 and $tei-version gt ''">
+                                                                            <a>
+                                                                                <xsl:attribute name="href" select="concat('/translations.html?store=', $toh/@key, '.', $file-format, '&amp;texts-status=', $texts-status)"/>
+                                                                                <xsl:attribute name="title" select="'Create this file'"/>
+                                                                                <span class="label label-warning">
+                                                                                    <xsl:value-of select="concat('Create ', upper-case($file-format))"/>
+                                                                                </span>
+                                                                            </a>
+                                                                        </xsl:if>
+                                                                        
+                                                                    </div>
+                                                                </xsl:for-each>
+                                                                
+                                                            </xsl:when>
+                                                            
+                                                            <xsl:when test="$environment/m:store-conf[@type eq 'client']">
+                                                                
+                                                                <!-- Location column -->
+                                                                <div class="col-sm-2"/>
+                                                                
+                                                                <!-- TEI column -->
+                                                                <div class="col-sm-2">
                                                                     <xsl:choose>
                                                                         
                                                                         <!-- If outdated then offer to get from master -->
-                                                                        <xsl:when test="compare($master-tei-version, $tei-version) ne 0">
+                                                                        <xsl:when test="compare($master-downloads/@tei-version, $tei-version) ne 0">
                                                                             <a>
-                                                                                <xsl:attribute name="href" select="concat('/translations.html?store=', $toh/@key, '.tei')"/>
-                                                                                <span class="label label-success">
-                                                                                    <xsl:value-of select="concat('Get ', $master-tei-version)"/>
+                                                                                <xsl:attribute name="href" select="concat('/translations.html?store=', $toh/@key, '.tei', '&amp;texts-status=', $texts-status)"/>
+                                                                                <span class="label label-danger">
+                                                                                    <xsl:value-of select="concat('Get ', $master-downloads/@tei-version)"/>
                                                                                 </span>
                                                                             </a>
                                                                         </xsl:when>
                                                                         
                                                                         <!-- Up to date -->
                                                                         <xsl:otherwise>
-                                                                            <span class="label label-default">up-to-date</span>
+                                                                            <span class="label label-default">
+                                                                                <xsl:value-of select="'up-to-date'"/>
+                                                                            </span>
                                                                         </xsl:otherwise>
                                                                         
                                                                     </xsl:choose>
-                                                                </xsl:when>
+                                                                </div>
                                                                 
-                                                            </xsl:choose>
-                                                        </div>
-                                                        
-                                                        <!-- File format columns -->
-                                                        <xsl:for-each select="$file-formats">
-                                                            <xsl:variable name="file-format" select="."/>
-                                                            <xsl:variable name="file-version" select="$text-downloads[@type eq $file-format]/@version"/>
-                                                            <xsl:variable name="master-file-version" select="$master-downloads[@type eq $file-format]/@version"/>
-                                                            <div class="col-sm-2">
-                                                                <xsl:choose>
+                                                                <!-- File format columns -->
+                                                                <xsl:for-each select="$file-formats">
                                                                     
-                                                                    <!-- Client actions -->
-                                                                    <xsl:when test="$environment/m:store-conf[@type eq 'client']">
+                                                                    <xsl:variable name="file-format" select="."/>
+                                                                    <xsl:variable name="file-version" select="$text-downloads[@type eq $file-format]/@version"/>
+                                                                    <xsl:variable name="master-file-version" select="$master-downloads/m:download[@type eq $file-format]/@version"/>
+                                                                    
+                                                                    <div class="col-sm-2">
                                                                         <xsl:choose>
                                                                             
                                                                             <!-- If master is outdated then just warn -->
-                                                                            <xsl:when test="compare($master-file-version, $master-tei-version) ne 0">
-                                                                                <span class="label label-info">Update collaboration</span>
+                                                                            <xsl:when test="compare($master-file-version, $master-downloads/@tei-version) ne 0">
+                                                                                <span class="label label-info">
+                                                                                    <xsl:value-of select="'Update collaboration'"/>
+                                                                                </span>
                                                                             </xsl:when>
                                                                             
                                                                             <!-- If outdated then offer to get from master -->
-                                                                            <xsl:when test="compare($file-version, $master-file-version) ne 0">
+                                                                            <xsl:when test="compare($file-version, $master-downloads/@tei-version) ne 0">
                                                                                 <a>
-                                                                                    <xsl:attribute name="href" select="concat('/translations.html?store=', $toh/@key, '.', $file-format)"/>
+                                                                                    <xsl:attribute name="href" select="concat('/translations.html?store=', $toh/@key, '.', $file-format, '&amp;texts-status=', $texts-status)"/>
                                                                                     <xsl:attribute name="title" select="'Update this file'"/>
-                                                                                    <span class="label label-warning">
-                                                                                        <xsl:if test="$status-id eq '1'">
-                                                                                            <xsl:attribute name="class" select="'label label-success'"/>
-                                                                                        </xsl:if>
-                                                                                        <xsl:value-of select="concat('Get ', $master-file-version)"/>
+                                                                                    <span class="label label-danger">
+                                                                                        <xsl:value-of select="concat('Get ', $master-downloads/@tei-version)"/>
                                                                                     </span>
                                                                                 </a>
                                                                             </xsl:when>
                                                                             
                                                                             <!-- Up to date -->
                                                                             <xsl:otherwise>
-                                                                                <span class="label label-default">up-to-date</span>
+                                                                                <span class="label label-default">
+                                                                                    <xsl:value-of select="'up-to-date'"/>
+                                                                                </span>
                                                                             </xsl:otherwise>
                                                                             
                                                                         </xsl:choose>
-                                                                    </xsl:when>
-                                                                    
-                                                                    <!-- Master actions -->
-                                                                    <xsl:when test="$environment/m:store-conf[@type eq 'master']">
-                                                                        <xsl:choose>
-                                                                            
-                                                                            <!-- Versions don't match so offer create option -->
-                                                                            <xsl:when test="compare($file-version, $tei-version) ne 0">
-                                                                                <a>
-                                                                                    <xsl:attribute name="href" select="concat('/translations.html?store=', $toh/@key, '.', $file-format)"/>
-                                                                                    <xsl:attribute name="title" select="'Create this file'"/>
-                                                                                    <span class="label label-warning">
-                                                                                        <xsl:if test="$status-id eq '1'">
-                                                                                            <xsl:attribute name="class" select="'label label-success'"/>
-                                                                                        </xsl:if>
-                                                                                        <xsl:value-of select="concat('Create ', upper-case($file-format))"/>
-                                                                                    </span>
-                                                                                </a>
-                                                                            </xsl:when>
-                                                                            
-                                                                        </xsl:choose>
-                                                                    </xsl:when>
-                                                                    
-                                                                </xsl:choose>
-                                                            </div>
-                                                        </xsl:for-each>
-                                                        
+                                                                    </div>
+                                                                </xsl:for-each>
+                                                                
+                                                            </xsl:when>
+                                                        </xsl:choose>
                                                     </div>
                                                 </div>
+                                                
                                             </td>
                                             <td>                                                
                                                 <span class="text-muted small nowrap">Translated words:</span>
@@ -323,21 +359,21 @@
                                             <small class="text-muted">
                                                 <xsl:value-of select="'Texts: '"/>
                                             </small>
-                                            <xsl:value-of select="fn:format-number(xs:integer(count(//m:translations/m:translation)),'#,##0')"/>
+                                            <xsl:value-of select="fn:format-number(xs:integer(count(m:translations/m:translation)),'#,##0')"/>
                                         </td>
                                         <td>
                                             <small class="text-muted">
                                                 <xsl:value-of select="'Total words: '"/>
                                             </small>
                                             <br/>
-                                            <xsl:value-of select="fn:format-number(xs:integer(sum(//m:translations/m:translation/@wordCount)),'#,##0')"/>
+                                            <xsl:value-of select="fn:format-number(xs:integer(sum(m:translations/m:translation/@wordCount)),'#,##0')"/>
                                         </td>
                                         <td>
                                             <small class="text-muted">
                                                 <xsl:value-of select="'Total terms: '"/>
                                             </small>
                                             <br/>
-                                            <xsl:value-of select="fn:format-number(xs:integer(sum(//m:translations/m:translation/@glossaryCount)),'#,##0')"/>
+                                            <xsl:value-of select="fn:format-number(xs:integer(sum(m:translations/m:translation/@glossaryCount)),'#,##0')"/>
                                         </td>
                                     </tr>
                                 </tfoot>

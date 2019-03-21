@@ -252,6 +252,13 @@ else if(not(common:auth-environment()) or sm:is-authenticated()) then
             local:dispatch(concat("/models/about/",  $resource-id, ".xq"), "", 
                 <parameters xmlns="http://exist.sourceforge.net/NS/exist"/>
             )
+    
+    (: Downloads :)
+    else if ($resource-id eq "downloads") then
+        (: return the xml :)
+        local:dispatch("/models/downloads.xq", "", 
+            <parameters xmlns="http://exist.sourceforge.net/NS/exist"/>
+        )
         
     else
         (: It's data :)

@@ -11,7 +11,11 @@
         <xsl:value-of select="translate(normalize-space(concat('', translate(., '&#xA;', ''), '')), '', '')"/>
     </xsl:template>
     
-    <xsl:template match="tei:title">
+    <xsl:template match="text()[not(normalize-space()) and position() = (1,last())]">
+        <xsl:value-of select="normalize-space()"/>
+    </xsl:template>
+    
+    <xsl:template match="tei:title" xml:space="default">
         <span>
             <xsl:attribute name="class">
                 <xsl:value-of select="concat('title glossarize-complete ', normalize-space(common:lang-class(@xml:lang)))"/>
@@ -123,11 +127,18 @@
                                 <xsl:attribute name="id" select="$anchor"/>
                                 <xsl:attribute name="href" select="concat('/source/', /m:response/m:translation/m:source/@key, '.html?folio=', $folio, '&amp;anchor=', $anchor)"/>
                                 <xsl:attribute name="data-ajax-target" select="'#popup-footer-source .data-container'"/>
-                                [<xsl:apply-templates select="@cRef"/>]</a>
+                                <xsl:value-of select="'['"/>
+                                <xsl:apply-templates select="@cRef"/>
+                                <xsl:value-of select="']'"/>
+                            </a>
                         </xsl:when>
                         <!-- ...or just output the text. -->
                         <xsl:otherwise>
-                            <span class="ref">[<xsl:apply-templates select="@cRef"/>]</span>
+                            <span class="ref">
+                                <xsl:value-of select="'['"/>
+                                <xsl:apply-templates select="@cRef"/>
+                                <xsl:value-of select="']'"/>
+                            </span>
                         </xsl:otherwise>
                     </xsl:choose>
                 </xsl:when>

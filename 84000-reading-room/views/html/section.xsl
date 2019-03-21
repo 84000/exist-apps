@@ -20,7 +20,9 @@
                     <div class="panel-heading panel-heading-bold center-vertical">
                         
                         <xsl:if test="$section-id eq 'lobby'">
-                            <span class="title">The Lobby</span>
+                            <span class="title">
+                                <xsl:value-of select="'The Lobby'"/>
+                            </span>
                         </xsl:if>
                         
                         <span>
@@ -546,7 +548,7 @@
                                 <!-- Location -->
                                 <xsl:if test="lower-case($section/@id) = 'all-translated'">
                                     <hr/>
-                                    in
+                                    <xsl:value-of select="'in'"/>
                                     <ul class="breadcrumb">
                                         <xsl:copy-of select="common:breadcrumb-items(m:parent | m:parent//m:parent, /m:response/@lang)"/>
                                     </ul>
