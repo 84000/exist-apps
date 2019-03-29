@@ -325,6 +325,18 @@ declare function common:auth-environment() as xs:boolean {
         false()
 };
 
+declare function common:valid-lang($lang) as xs:string {
+    if(lower-case($lang) eq 'bo-ltn') then
+        'Bo-Ltn'
+    else if(lower-case($lang) eq 'sa-ltn') then
+        'Sa-Ltn'
+    else if(lower-case($lang) eq 'bo') then
+        'bo'
+    else if(lower-case($lang) eq 'en') then
+        'en'
+    else
+        ''
+};
 
 declare function common:app-text($key as xs:string, $lang as xs:string) {
 

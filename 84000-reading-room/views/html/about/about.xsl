@@ -15,23 +15,39 @@
                     <div class="col-md-9 col-md-merge-right">
                         <div class="panel panel-default panel-about main-panel foreground">
                             
-                            <div class="panel-img-header has-img thumbnail">
-                                <img data-max-horizontal-crop="50">
-                                    <xsl:attribute name="src" select="concat($front-end-path, /m:response/m:app-text[ends-with(@key, 'header-img-src')])"/>
-                                </img>
+                            <div class="panel-img-header thumbnail">
+                                
+                                <xsl:if test="/m:response/m:app-text[ends-with(@key, 'header-img-src')]">
+                                    <xsl:attribute name="class" select="'panel-img-header has-img thumbnail'"/>
+                                    <img data-max-horizontal-crop="50">
+                                        <xsl:attribute name="src" select="concat($front-end-path, /m:response/m:app-text[ends-with(@key, 'header-img-src')])"/>
+                                    </img>
+                                </xsl:if>
+                                
                                 <h1>
-                                    <xsl:value-of select="/m:response/m:app-text[ends-with(@key, 'title')]"/>
+                                    <xsl:choose>
+                                        <xsl:when test="/m:response/m:app-text[ends-with(@key, 'title')]">
+                                            <xsl:value-of select="/m:response/m:app-text[ends-with(@key, 'title')]"/>
+                                        </xsl:when>
+                                        <xsl:otherwise>
+                                            <xsl:value-of select="'[Error: missing title]'"/>
+                                        </xsl:otherwise>
+                                    </xsl:choose>
                                 </h1>
                             </div>
                             
                             <div class="panel-body">
                                 
-                                <blockquote>
-                                    <xsl:value-of select="/m:response/m:app-text[ends-with(@key, 'quote')]"/>
-                                    <footer>
-                                        <xsl:value-of select="/m:response/m:app-text[ends-with(@key, 'author')]"/>
-                                    </footer>
-                                </blockquote>
+                                <xsl:if test="/m:response/m:app-text[ends-with(@key, 'quote')]">
+                                    <blockquote>
+                                        <xsl:value-of select="/m:response/m:app-text[ends-with(@key, 'quote')]"/>
+                                        <xsl:if test="/m:response/m:app-text[ends-with(@key, 'author')]">
+                                            <footer>
+                                                <xsl:value-of select="/m:response/m:app-text[ends-with(@key, 'author')]"/>
+                                            </footer>
+                                        </xsl:if>
+                                    </blockquote>
+                                </xsl:if>
                                 
                                 <!-- Passed content -->
                                 <xsl:copy-of select="$sub-content"/>

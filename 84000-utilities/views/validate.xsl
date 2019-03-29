@@ -9,10 +9,10 @@
             
             <div class="container">
                 <div class="panel panel-default">
-                    <div class="panel-heading panel-heading-bold hidden-print center-vertical">
+                    <div class="panel-heading bold hidden-print center-vertical">
                         
                         <span class="title">
-                            TEI File Validation
+                            <xsl:value-of select="'TEI File Validation'"/>
                         </span>
                         
                     </div>

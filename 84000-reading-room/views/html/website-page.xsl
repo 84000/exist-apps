@@ -307,7 +307,7 @@
                 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=0"/>
                 
                 <title>
-                    84000 Reading Room | <xsl:value-of select="$page-title"/>
+                    <xsl:value-of select="concat('84000 Reading Room | ', $page-title)"/>
                 </title>
                 
                 <!-- Styles -->

@@ -11,7 +11,7 @@
             
             <div class="container">
                 <div class="panel panel-default">
-                    <div class="panel-heading panel-heading-bold center-vertical">
+                    <div class="panel-heading bold center-vertical">
                         <span>
                             <ul class="breadcrumb">
                                 <li>

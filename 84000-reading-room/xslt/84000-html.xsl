@@ -74,7 +74,12 @@
                                             </xsl:choose>
                                         </xsl:attribute>
                                         <!-- Main nav -->
-                                        <a class="dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">
+                                        <a class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
+                                            <xsl:attribute name="href">
+                                                <xsl:call-template name="local-url">
+                                                    <xsl:with-param name="url" select="@url"/>
+                                                </xsl:call-template>
+                                            </xsl:attribute>
                                             <xsl:value-of select="m:label"/>
                                             <span>
                                                 <i class="fa fa-plus"/>
@@ -387,7 +392,7 @@
         <!-- Link to top of page -->
         <div class="hidden-print">
             <div id="link-to-top-container" class="fixed-btn-container">
-                <a href="#top" id="link-to-top" class="btn-round scroll-to-anchor">
+                <a href="#top" class="btn-round scroll-to-anchor link-to-top">
                     <xsl:attribute name="title">
                         <xsl:call-template name="translation">
                             <xsl:with-param name="translation-id" select="'top-link-title'"/>
@@ -435,7 +440,17 @@
         <xsl:param name="translation-id"/>
         <xsl:param name="lang" select="'en'"/>
         <xsl:param name="text-node" select="true()"/>
-        <xsl:variable name="text" select="m:translation[@id = $translation-id]/m:text[@xml:lang = $lang]/text()"/>
+        <xsl:variable name="translation" select="m:translation[@id = $translation-id]"/>
+        <xsl:variable name="text">
+            <xsl:choose>
+                <xsl:when test="$translation/m:text[@xml:lang = $lang]">
+                    <xsl:value-of select="$translation/m:text[@xml:lang = $lang]/text()"/>
+                </xsl:when>
+                <xsl:otherwise>
+                    <xsl:value-of select="$translation/m:text[@xml:lang = 'en']/text()"/>
+                </xsl:otherwise>
+            </xsl:choose>
+        </xsl:variable>
         <xsl:if test="$text">
             <xsl:choose>
                 <xsl:when test="$text-node">

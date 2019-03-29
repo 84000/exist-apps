@@ -64,19 +64,6 @@ declare function glossary:search-query($string as xs:string) as element() {
     }
 };
 
-declare function glossary:valid-lang($lang) as xs:string {
-    if(lower-case($lang) eq 'bo-ltn') then
-        'Bo-Ltn'
-    else if(lower-case($lang) eq 'sa-ltn') then
-        'Sa-Ltn'
-    else if(lower-case($lang) eq 'bo') then
-        'bo'
-    else if(lower-case($lang) eq 'en') then
-        'en'
-    else
-        ''
-};
-
 declare function glossary:valid-type($type) as xs:string {
     if(lower-case($type) = $glossary:types) then
         lower-case($type)
@@ -93,7 +80,7 @@ declare function glossary:lang-field($valid-lang as xs:string) as xs:string {
 
 declare function glossary:glossary-terms($type as xs:string*, $lang as xs:string, $search as xs:string) as element() {
     
-    let $valid-lang := glossary:valid-lang($lang)
+    let $valid-lang := common:valid-lang($lang)
     let $valid-type := glossary:valid-type($type)
     
     let $normalized-search := common:alphanumeric(common:normalized-chars($search))
@@ -188,7 +175,7 @@ declare function glossary:glossary-items($normalized-term as xs:string) as eleme
         functx:distinct-nodes(
             $glossary:translations//tei:back//tei:gloss/tei:term
                 [not(@type eq 'definition')]
-                [ft:query-field(glossary:lang-field(glossary:valid-lang(@xml:lang)), glossary:lookup-query($normalized-term), glossary:lookup-options())]
+                [ft:query-field(glossary:lang-field(common:valid-lang(@xml:lang)), glossary:lookup-query($normalized-term), glossary:lookup-options())]
                     /parent::tei:gloss
         )
     

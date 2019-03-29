@@ -27,7 +27,7 @@ let $xml-section := doc(concat($common:data-path, '/translator-tools/sections/',
 
 let $type := request:get-parameter('type', 'term')
 let $search := request:get-parameter('s', '')
-let $lang := request:get-parameter('lang', 'bo')
+let $lang := request:get-parameter('lang', if($tab eq 'tibetan-search') then 'bo' else 'en')
 let $volume := request:get-parameter('volume', 1)
 let $page := request:get-parameter('page', 1)
 

@@ -13,6 +13,10 @@ declare namespace tei="http://www.tei-c.org/ns/1.0";
 declare namespace xhtml="http://www.w3.org/1999/xhtml";
 declare namespace m="http://read.84000.co/ns/1.0";
 
+declare variable $tests:tests-collection := concat($common:data-path, '/config');
+declare variable $tests:tests-file := 'lucene-tests.xml';
+declare variable $tests:lucene-tests := doc(concat($tests:tests-collection, '/', $tests:tests-file))/m:lucene-tests;
+
 declare function tests:translations($translation-id as xs:string) as item(){
     
     (:let $translation-id := 'UT22084-062-012':)
@@ -671,3 +675,171 @@ declare function tests:match-text-count($sections-structure) as element()* {
             ()
     )
 };
+
+declare function tests:lucene-test-languages() as element()* {
+    <langs xmlns="http://read.84000.co/ns/1.0">
+    {
+        for $lang in $tests:lucene-tests/m:lang
+        return
+            <lang xmlns="http://read.84000.co/ns/1.0">
+            {
+                $lang/@xml:lang,
+                $lang/m:label
+            }
+            </lang>
+    }
+    </langs>
+};
+
+declare function tests:lucene-lang-data($lang as xs:string) as element()* {
+    <datas xmlns="http://read.84000.co/ns/1.0">
+    {
+        $tests:lucene-tests/m:lang[lower-case(@xml:lang) eq $lang]/m:data
+    }
+    </datas>
+};
+
+declare function tests:lucene-tests($lang as xs:string) as element() {
+    
+    <tests xmlns="http://read.84000.co/ns/1.0">
+    {
+        for $test in $tests:lucene-tests/m:lang[lower-case(@xml:lang) eq $lang]/m:test
+        return
+            element test {
+                $test/@*,
+                $test/m:query,
+                element sort {
+                    common:normalized-chars($test/m:query)
+                },
+                tests:lucene-test($lang, $test/@xml:id)
+            }
+    }
+    </tests>
+};
+
+declare function tests:search-options() as element() {
+    <options>
+        <default-operator>and</default-operator>
+        <phrase-slop>0</phrase-slop>
+        <leading-wildcard>no</leading-wildcard>
+        <filter-rewrite>yes</filter-rewrite>
+    </options>
+};
+
+declare function tests:search-query($string as xs:string) as element() {
+    <query>
+        <phrase>
+        {
+            normalize-unicode(lower-case($string))
+        }
+        </phrase>
+    </query>
+};
+
+declare function tests:lucene-test($lang as xs:string, $test-id as xs:string) as element()* {
+    
+    let $lang-tests := $tests:lucene-tests/m:lang[@xml:lang = common:valid-lang($lang)]
+    let $test := $lang-tests/m:test[@xml:id eq $test-id]
+    let $matches := 
+        if(lower-case($test-id) eq 'all') then
+            $lang-tests/m:data
+        else if($test/m:query/text() gt '') then
+            $lang-tests/m:data[ft:query(., normalize-unicode(lower-case($test/m:query)), tests:search-options())]
+        else
+            ()
+    
+    return
+    (
+        for $match in $matches
+        return
+            <result xmlns="http://read.84000.co/ns/1.0">
+            {
+                if(not($test/m:match[@data-id eq $match/@xml:id])) then
+                    attribute invalid { 'should-not' }
+                else
+                    (),
+                util:expand($match, "expand-xincludes=no")
+            }
+            </result>,
+        for $match in $test/m:match[not(@data-id = $matches/@xml:id)]
+        return
+            <result xmlns="http://read.84000.co/ns/1.0">
+            {
+                attribute invalid { 'should' },
+                $lang-tests/m:data[@xml:id = $match/@data-id]
+            }
+            </result>
+    )
+};
+
+declare function tests:next-xmlid($siblings as item()*) as xs:string {
+    
+    (: Assumes there is already at least one sibling :)
+    
+    let $node-name := local-name($siblings[1])
+    let $next-int := max($siblings/@xml:id ! substring-after(., concat($node-name, '-')) ! xs:integer(concat('0', .))) + 1
+    return
+        concat($node-name, '-', $next-int)
+    
+};
+
+declare function tests:add-lucene-test($lang as xs:string, $query as xs:string) as element()? {
+    
+    let $parent := $tests:lucene-tests/m:lang[@xml:lang eq common:valid-lang($lang)]
+    
+    let $new-value := 
+        <test xmlns="http://read.84000.co/ns/1.0">
+        {
+            attribute xml:id { tests:next-xmlid($tests:lucene-tests//m:test) },
+            element query {
+                text { $query }
+            }
+        }
+        </test>
+    
+    return
+        common:update('lucene-test', (), $new-value, $parent, $parent/m:test[last()])
+    
+};
+
+declare function tests:add-lucene-data($lang as xs:string, $index-string as xs:string) as element()? {
+    
+    let $parent := $tests:lucene-tests/m:lang[@xml:lang eq common:valid-lang($lang)]
+    
+    let $new-value := 
+        <data xmlns="http://read.84000.co/ns/1.0">
+        {
+            attribute xml:id { tests:next-xmlid($tests:lucene-tests//m:data) },
+            text { $index-string }
+        }
+        </data>
+    
+    let $update := common:update('lucene-data', (), $new-value, $parent, $parent/m:data[last()])
+    let $reindex := tests:reindex()
+    
+    return
+        $update
+    
+};
+
+declare function tests:add-test-match($should-match as xs:boolean, $test-id as xs:string, $data-id as xs:string) as element()? {
+    
+    let $test := $tests:lucene-tests/m:lang/m:test[@xml:id eq $test-id]
+    
+    let $existing-value := $test/m:match[@data-id eq $data-id]
+    
+    let $new-value := 
+        if($should-match and $data-id gt '') then
+            <match xmlns="http://read.84000.co/ns/1.0" data-id="{ $data-id }"/>
+        else
+            ()
+    
+    return
+        common:update('test-match', $existing-value, $new-value, $test, $test/m:match[last()])
+    
+};
+
+declare function tests:reindex(){
+    xmldb:reindex($tests:tests-collection, $tests:tests-file)
+};
+

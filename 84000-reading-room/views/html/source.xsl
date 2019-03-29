@@ -8,7 +8,7 @@
         <xsl:variable name="content">
             <div id="popup-footer-source" class="container">
                 <div class="panel panel-default">
-                    <div class="panel-heading panel-heading-bold">
+                    <div class="panel-heading bold">
                         <span class="title">
                             <xsl:value-of select="m:back-link/m:title"/>
                         </span>

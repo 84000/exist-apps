@@ -18,12 +18,12 @@
                 <div class="panel panel-default">
                     
                     <xsl:if test="not(m:translation/@status eq '1')">
-                        <div class="panel-heading panel-heading-bold panel-heading-danger">
-                            <xsl:text>This text is not yet ready for publication!</xsl:text>
+                        <div class="panel-heading bold danger">
+                            <xsl:value-of select="'This text is not yet ready for publication!'"/>
                         </div>
                     </xsl:if>
                     
-                    <div class="panel-heading panel-heading-bold hidden-print">
+                    <div class="panel-heading bold hidden-print">
                         <ul id="outline" class="breadcrumb">
                             <xsl:copy-of select="common:breadcrumb-items(m:translation/m:parent | m:translation/m:parent//m:parent, /m:response/@lang)"/>
                         </ul>
@@ -315,7 +315,7 @@
                 </div>
             </article>
             
-            <div class="nav-controls hidden-print">
+            <div class="nav-controls show-on-scroll hidden-print">
                 
                 <div id="navigation-btn-container" class="fixed-btn-container">
                     <a href="#contents-sidebar" class="btn-round show-sidebar">
@@ -350,6 +350,12 @@
                     <button class="btn-round" title="Return to the last location">
                         <i class="fa fa-undo" aria-hidden="true"/>
                     </button>
+                </div>
+                
+                <div id="link-to-trans-top-container" class="fixed-btn-container">
+                    <a href="#top" class="btn-round scroll-to-anchor" title="top">
+                        <i class="fa fa-arrow-up" aria-hidden="true"/>
+                    </a>
                 </div>
                 
             </div>
@@ -416,7 +422,9 @@
                 
                 <div class="container">
                     <div class="fix-width">
-                        <h4>Bookmarks</h4>
+                        <h4>
+                            <xsl:value-of select="'Bookmarks'"/>
+                        </h4>
                         <table id="bookmarks-list" class="contents-table">
                             <tbody/>
                             <tfoot/>

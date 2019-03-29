@@ -10,14 +10,14 @@
         <div class="container">
             <div class="panel panel-default">
                 
-                <div class="panel-heading panel-heading-bold hidden-print center-vertical">
+                <div class="panel-heading bold hidden-print center-vertical">
                     <span class="title">
-                        84000 Project Management
+                        <xsl:value-of select="'84000 Project Management'"/>
                     </span>
                     <span class="text-right">
                         <a target="reading-room">
                             <xsl:attribute name="href" select="$reading-room-path"/>
-                            Reading Room
+                            <xsl:value-of select="'Reading Room'"/>
                         </a>
                     </span>
                 </div>

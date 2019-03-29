@@ -15,7 +15,7 @@
                             </xsl:if>
                             <a>
                                 <xsl:attribute name="href" select="concat('?tab=glossary&amp;type=term&amp;lang=', if(m:glossary/@lang gt '') then m:glossary/@lang else 'en')"/>
-                                Terms
+                                <xsl:value-of select="'Terms'"/>
                             </a>
                         </li>
                         <li role="presentation">
@@ -24,7 +24,7 @@
                             </xsl:if>
                             <a>
                                 <xsl:attribute name="href" select="concat('?tab=glossary&amp;type=person&amp;lang=', if(m:glossary/@lang gt '') then m:glossary/@lang else 'en')"/>
-                                Persons
+                                <xsl:value-of select="'Persons'"/>
                             </a>
                         </li>
                         <li role="presentation">
@@ -33,7 +33,7 @@
                             </xsl:if>
                             <a>
                                 <xsl:attribute name="href" select="concat('?tab=glossary&amp;type=place&amp;lang=', if(m:glossary/@lang gt '') then m:glossary/@lang else 'en')"/>
-                                Places
+                                <xsl:value-of select="'Places'"/>
                             </a>
                         </li>
                         <li role="presentation">
@@ -42,7 +42,7 @@
                             </xsl:if>
                             <a>
                                 <xsl:attribute name="href" select="concat('?tab=glossary&amp;type=text&amp;lang=', if(m:glossary/@lang gt '') then m:glossary/@lang else 'en')"/>
-                                Texts
+                                <xsl:value-of select="'Texts'"/>
                             </a>
                         </li>
                     </ul>
@@ -55,7 +55,7 @@
                             </xsl:if>
                             <a>
                                 <xsl:attribute name="href" select="concat('?tab=glossary&amp;type=', if(m:glossary/@type gt '') then m:glossary/@type else 'term','&amp;lang=en')"/>
-                                Translation
+                                <xsl:value-of select="'Translation'"/>
                             </a>
                         </li>
                         <li role="presentation">
@@ -64,7 +64,7 @@
                             </xsl:if>
                             <a>
                                 <xsl:attribute name="href" select="concat('?tab=glossary&amp;type=', if(m:glossary/@type gt '') then m:glossary/@type else 'term','&amp;lang=Sa-Ltn')"/>
-                                Sanskrit
+                                <xsl:value-of select="'Sanskrit'"/>
                             </a>
                         </li>
                         <li role="presentation">
@@ -73,7 +73,7 @@
                             </xsl:if>
                             <a>
                                 <xsl:attribute name="href" select="concat('?tab=glossary&amp;type=', if(m:glossary/@type gt '') then m:glossary/@type else 'term','&amp;lang=Bo-Ltn')"/>
-                                Wylie
+                                <xsl:value-of select="'Wylie'"/>
                             </a>
                         </li>
                     </ul>
@@ -102,7 +102,9 @@
                             <span>
                                 <i class="fa fa-cloud-download"/>
                             </span>
-                            <span>Download All (.xml)</span>
+                            <span>
+                                <xsl:value-of select="'Download All (.xml)'"/>
+                            </span>
                         </a>
                     </div>
                 </span>
@@ -134,10 +136,10 @@
                                                 <xsl:attribute name="data-ajax-target" select="concat('#occurrences-', position())"/>
                                                 <xsl:choose>
                                                     <xsl:when test="@count-items &gt; 1">
-                                                        <xsl:value-of select="@count-items"/> matches
+                                                        <xsl:value-of select="concat(@count-items, ' matches')"/>
                                                     </xsl:when>
                                                     <xsl:otherwise>
-                                                        <xsl:value-of select="@count-items"/> match
+                                                        <xsl:value-of select="concat(@count-items, ' match')"/>
                                                     </xsl:otherwise>
                                                 </xsl:choose>
                                                 
@@ -157,12 +159,11 @@
                     <xsl:otherwise>
                         <div class="col-sm-12 div-list">
                             <div class="item item-first text-muted italic">
-                                No search results
+                                <xsl:value-of select="'No search results'"/>
                             </div>
                         </div>
                     </xsl:otherwise>
                 </xsl:choose>
-                
                 
                 <div id="letters-nav" class="col-nav">
                     <xsl:copy-of select="common:marker-nav(m:glossary/m:term)"/>

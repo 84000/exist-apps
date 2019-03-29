@@ -98,10 +98,10 @@
             <div class="container">
                 <div class="panel panel-default">
                     
-                    <div class="panel-heading panel-heading-bold hidden-print center-vertical">
+                    <div class="panel-heading bold hidden-print center-vertical">
                         
                         <span class="title">
-                            Automated Tests on Sections
+                            <xsl:value-of select="'Automated Tests on Sections'"/>
                         </span>
                         
                     </div>

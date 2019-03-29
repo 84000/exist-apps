@@ -17,7 +17,7 @@
             
             <div class="container">
                 <div class="panel panel-default">
-                    <div class="panel-heading panel-heading-bold center-vertical">
+                    <div class="panel-heading bold center-vertical">
                         
                         <xsl:if test="$section-id eq 'lobby'">
                             <span class="title">
@@ -548,10 +548,13 @@
                                 <!-- Location -->
                                 <xsl:if test="lower-case($section/@id) = 'all-translated'">
                                     <hr/>
-                                    <xsl:value-of select="'in'"/>
-                                    <ul class="breadcrumb">
-                                        <xsl:copy-of select="common:breadcrumb-items(m:parent | m:parent//m:parent, /m:response/@lang)"/>
-                                    </ul>
+                                    <div class="text-muted small">
+                                        <xsl:value-of select="'in'"/>
+                                        <ul class="breadcrumb">
+                                            <xsl:copy-of select="common:breadcrumb-items(m:parent | m:parent//m:parent, /m:response/@lang)"/>
+                                        </ul>
+                                    </div>
+                                    
                                 </xsl:if>
                                 
                                 <!-- Tibetan title -->

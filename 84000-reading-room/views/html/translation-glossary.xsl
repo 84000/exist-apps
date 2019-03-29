@@ -21,8 +21,9 @@
                 <div class="panel panel-default">
                     
                     <xsl:if test="m:translation-glossary/@status != 'available'">
-                        <div class="panel-heading panel-heading-bold panel-heading-danger">
-                            This text is not yet ready for publication!
+                        <div class="panel-heading bold danger">
+                            <xsl:value-of select="'This text is not yet ready for publication!'"/>
+                            
                         </div>
                     </xsl:if>
                     
@@ -33,7 +34,9 @@
                                 <section id="title" class="indent">
                                     <div class="page page-first">
                                         <div id="titles" class="section-panel">
-                                            <h3>Glossary</h3>
+                                            <h3>
+                                                <xsl:value-of select="'Glossary'"/>
+                                            </h3>
                                             <h1>
                                                 <xsl:value-of select="m:translation-glossary/m:title"/>
                                             </h1>
