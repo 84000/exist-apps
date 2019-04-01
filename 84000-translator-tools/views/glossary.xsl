@@ -165,7 +165,7 @@
                     </xsl:otherwise>
                 </xsl:choose>
                 
-                <div id="letters-nav" class="col-nav">
+                <div id="affix-nav" class="col-nav">
                     <xsl:copy-of select="common:marker-nav(m:glossary/m:term)"/>
                 </div>
                 

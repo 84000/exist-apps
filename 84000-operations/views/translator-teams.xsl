@@ -106,7 +106,7 @@
                             
                         </div>
                         
-                        <div id="letters-nav" class="col-nav">
+                        <div id="affix-nav" class="col-nav">
                             <xsl:copy-of select="common:marker-nav(m:contributor-teams/m:team)"/>
                         </div>
                         

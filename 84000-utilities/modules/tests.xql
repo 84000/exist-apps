@@ -736,6 +736,17 @@ declare function tests:search-query($string as xs:string) as element() {
     </query>
 };
 
+declare function tests:lang-field($valid-lang as xs:string) as xs:string {
+    if($valid-lang eq 'Sa-Ltn') then
+        'sa-ltn-data'
+    else if($valid-lang eq 'Bo-Ltn') then
+        'bo-ltn-data'
+    else if($valid-lang eq 'bo') then
+        'bo-data'
+    else
+        'en-data'
+};
+
 declare function tests:lucene-test($lang as xs:string, $test-id as xs:string) as element()* {
     
     let $lang-tests := $tests:lucene-tests/m:lang[@xml:lang = common:valid-lang($lang)]
@@ -744,7 +755,7 @@ declare function tests:lucene-test($lang as xs:string, $test-id as xs:string) as
         if(lower-case($test-id) eq 'all') then
             $lang-tests/m:data
         else if($test/m:query/text() gt '') then
-            $lang-tests/m:data[ft:query(., normalize-unicode(lower-case($test/m:query)), tests:search-options())]
+            $lang-tests/m:data[ft:query-field(tests:lang-field(common:valid-lang($lang)), normalize-unicode(lower-case($test/m:query)), tests:search-options())]
         else
             ()
     
