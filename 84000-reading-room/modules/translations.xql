@@ -145,7 +145,8 @@ declare function translations:filtered-text($tei as element(), $toh-key as xs:st
         <text xmlns="http://read.84000.co/ns/1.0" 
             id="{ tei-content:id($tei) }" 
             status="{ $status }"
-            status-group="{ $status-group }">
+            status-group="{ $status-group }"
+            word-count="{ translation-status:word-count($tei) }">
             { translation:toh($tei, $toh-key) }
             { translation:titles($tei) }
             { tei-content:source-bibl($tei, $toh-key) }
@@ -234,6 +235,8 @@ declare function translations:filtered-texts($section as xs:string, $status as x
     let $texts-count := count($texts)
     let $texts-pages-count := sum($texts/tei:bibl/tei:location[functx:is-a-number(@count-pages)]/@count-pages)
     
+    let $texts-words-count := sum($texts/@word-count)
+    
     let $texts :=
         if($texts-count gt 1024) then
             subsequence($texts, 1, 1024)
@@ -244,6 +247,7 @@ declare function translations:filtered-texts($section as xs:string, $status as x
         <texts xmlns="http://read.84000.co/ns/1.0"
             count="{ $texts-count }" 
             count-pages="{ $texts-pages-count }"  
+            count-words="{ $texts-words-count }"  
             section="{ $section }" 
             status="{ $status }" 
             sort="{ $sort }" 

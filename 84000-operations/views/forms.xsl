@@ -220,9 +220,9 @@
                     <input type="hidden" name="post-id">
                         <xsl:attribute name="value" select="m:translation/@id"/>
                     </input>
+                    
                     <div class="row">
                         <div class="col-sm-8">
-                            <xsl:copy-of select="m:select-input('Translation Status', 'translation-status', 9, 1, m:text-statuses/m:status)"/>
                             <xsl:variable name="translator-team-id" select="substring-after(m:translation/m:translation/m:contributors/m:summary[1]/@ref, 'contributors.xml#')"/>
                             <div class="form-group">
                                 <label class="control-label col-sm-3">
@@ -244,21 +244,7 @@
                                     </select>
                                 </div>
                             </div>
-                        </div>
-                        <div class="col-sm-4">
-                            <xsl:if test="m:translation/m:translation/m:contributors/m:summary">
-                                <div class="text-bold">Attribution</div>
-                                <xsl:for-each select="m:translation/m:translation/m:contributors/m:summary">
-                                    <p>
-                                        <xsl:apply-templates select="node()"/>
-                                    </p>
-                                </xsl:for-each>
-                            </xsl:if>
-                        </div>
-                    </div>
-                    <hr class="sml-margin"/>
-                    <div class="row">
-                        <div class="col-sm-8">
+                            <hr class="sml-margin"/>
                             <div class="add-nodes-container">
                                 <xsl:call-template name="contributors-controls">
                                     <xsl:with-param name="text-contributors" select="m:translation/m:translation/m:contributors/m:*[self::m:author | self::m:editor | self::m:consultant]"/>
@@ -271,6 +257,15 @@
                             </div>
                         </div>
                         <div class="col-sm-4">
+                            <xsl:if test="m:translation/m:translation/m:contributors/m:summary">
+                                <div class="text-bold">Attribution</div>
+                                <xsl:for-each select="m:translation/m:translation/m:contributors/m:summary">
+                                    <p>
+                                        <xsl:apply-templates select="node()"/>
+                                    </p>
+                                </xsl:for-each>
+                            </xsl:if>
+                            <hr class="sml-margin"/>
                             <xsl:if test="m:translation/m:contributors/tei:div[@type eq 'acknowledgment']/tei:p">
                                 <div class="text-bold">
                                     <xsl:value-of select="'Acknowledgments'"/>

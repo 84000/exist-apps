@@ -130,10 +130,10 @@
                                                     </span>
                                                     <xsl:choose>
                                                         <xsl:when test="$count-matches eq 1">
-                                                            <xsl:value-of select="'match'"/>
+                                                            <xsl:value-of select="' match'"/>
                                                         </xsl:when>
                                                         <xsl:otherwise>
-                                                            <xsl:value-of select="'matches'"/>
+                                                            <xsl:value-of select="' matches'"/>
                                                         </xsl:otherwise>
                                                     </xsl:choose>
                                                     

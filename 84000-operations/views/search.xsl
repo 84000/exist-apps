@@ -186,11 +186,15 @@
                                     <strong>
                                         <xsl:value-of select="format-number(m:texts/@count, '#,###')"/>
                                     </strong>
-                                    <xsl:value-of select="' texts, '"/>
+                                    <xsl:value-of select="' texts / '"/>
                                     <strong>
                                         <xsl:value-of select="format-number(m:texts/@count-pages, '#,###')"/>
                                     </strong>
-                                    <xsl:value-of select="' pages.'"/>
+                                    <xsl:value-of select="' pages / '"/>
+                                    <strong>
+                                        <xsl:value-of select="format-number(m:texts/@count-words, '#,###')"/>
+                                    </strong>
+                                    <xsl:value-of select="' words'"/>
                                 </div>
                                 
                             </div>
@@ -302,7 +306,7 @@
                                         </td>
                                     </tr>
                                     <tr class="sub">
-                                        <td colspan="5">
+                                        <td>
                                             <ul class="list-inline inline-dots no-bottom-margin hidden-print">
                                                 <li>
                                                     <a class="small">
@@ -325,6 +329,13 @@
                                                     </li>
                                                 </xsl:if>
                                             </ul>
+                                        </td>
+                                        <td colspan="4">
+                                            <xsl:if test="xs:integer(@word-count) gt 0">
+                                                <span class="small text-muted hidden-print">
+                                                    <xsl:value-of select="concat(format-number(@word-count, '#,###'), ' words in the translation')"/>
+                                                </span>
+                                            </xsl:if>
                                         </td>
                                     </tr>
                                     <xsl:if test="m:sponsors/tei:div[@type eq 'acknowledgment']/tei:p">
