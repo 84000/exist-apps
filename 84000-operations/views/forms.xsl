@@ -515,7 +515,7 @@
                                         <xsl:copy-of select="m:translation-status/m:progress-note/text()"/>
                                     </textarea>
                                     <xsl:if test="m:translation-status/m:progress-note/@last-edited">
-                                        <div class="small text-muted margin-top-sm">
+                                        <div class="small text-muted sml-margin top">
                                             <xsl:value-of select="common:date-user-string('Last updated', m:translation-status/m:progress-note/@last-edited, m:translation-status/m:progress-note/@last-edited-by)"/>
                                         </div>
                                     </xsl:if>
@@ -530,7 +530,7 @@
                                         <xsl:copy-of select="m:translation-status/m:text-note/text()"/>
                                     </textarea>
                                     <xsl:if test="m:translation-status/m:text-note/@last-edited">
-                                        <div class="small text-muted margin-top-sm">
+                                        <div class="small text-muted sml-margin top">
                                             <xsl:value-of select="common:date-user-string('Last updated', m:translation-status/m:text-note/@last-edited, m:translation-status/m:text-note/@last-edited-by)"/>
                                         </div>
                                     </xsl:if>
@@ -564,7 +564,7 @@
                                         <xsl:choose>
                                             <xsl:when test="@added and @xml:id">
                                                 <div class="row">
-                                                    <div class="col-sm-9 margin-top-sm">
+                                                    <div class="col-sm-9 sml-margin top">
                                                         <xsl:value-of select="text()"/>
                                                     </div>
                                                     <div class="col-sm-3">

@@ -134,12 +134,12 @@
             <xsl:variable name="results" select="/m:response/m:tm-search/m:results"/>
             <xsl:choose>
                 <xsl:when test="$results/m:item">
-                    <div class="search-results margin-top-sm">
+                    <div class="search-results sml-margin top">
                         <xsl:for-each select="$results/m:item">
                             <div class="search-result row">
                                 <div class="col-sm-6">
                                     <div class="row">
-                                        <div class="col-sm-1 small text-muted margin-top-sm">
+                                        <div class="col-sm-1 small text-muted sml-margin top">
                                             <xsl:value-of select="concat(position() + $results/@first-record - 1, '.')"/>
                                         </div>
                                         <div class="col-sm-11">

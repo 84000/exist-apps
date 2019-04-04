@@ -41,7 +41,7 @@
                             <div class="row">
                                 
                                 <div class="col-sm-7">
-                                    <form action="translations.html" method="post" class="form-horizontal filter-form margin-top-sm">
+                                    <form action="translations.html" method="post" class="form-horizontal filter-form sml-margin top">
                                         <select name="texts-status" id="texts-status" class="form-control">
                                             <xsl:for-each select="m:text-statuses/m:status">
                                                 <option>
@@ -139,7 +139,7 @@
                                                         <xsl:value-of select="$status-id"/>
                                                     </div>
                                                 </div>
-                                                <div class="row margin-top-sm">
+                                                <div class="row sml-margin top">
                                                     <div class="col-sm-6">                                                
                                                         <span class="text-muted small nowrap">
                                                             <xsl:value-of select="'Translated words:'"/>

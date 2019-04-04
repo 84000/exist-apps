@@ -148,46 +148,6 @@
                                 <!-- List of results -->
                                 <div id="results-panel" class="replace">
                                     
-                                    <!-- 
-                                    <div class="margin-top-sm collapse fade" aria-expanded="false" id="test-results-all">
-                                        <h3>
-                                            <xsl:value-of select="'Add a match'"/>
-                                        </h3>
-                                        <form action="test-searches.html" method="post">
-                                            <input type="hidden" name="action" value="should-match"/>
-                                            <input type="hidden" name="lang">
-                                                <xsl:attribute name="value" select="m:request/@lang"/>
-                                            </input>
-                                            <div class="input-group">
-                                                <select name="test-id" class="form-control">
-                                                    <xsl:for-each select="m:tests/m:test">
-                                                        <option>
-                                                            <xsl:attribute name="value" select="@xml:id"/>
-                                                            <xsl:value-of select="m:query"/>
-                                                        </option>
-                                                    </xsl:for-each>
-                                                </select>
-                                                <span class="input-group-addon">
-                                                    <xsl:value-of select="' should match '"/>
-                                                </span>
-                                                <select name="data-id" class="form-control">
-                                                    <xsl:for-each select="m:datas/m:data">
-                                                        <xsl:sort select="."/>
-                                                        <option>
-                                                            <xsl:attribute name="value" select="@xml:id"/>
-                                                            <xsl:value-of select="."/>
-                                                        </option>
-                                                    </xsl:for-each>
-                                                </select>
-                                                <span class="input-group-btn">
-                                                    <button class="btn btn-primary" type="submit">
-                                                        <xsl:value-of select="'Add'"/>
-                                                    </button>
-                                                </span>
-                                            </div>
-                                        </form>
-                                    </div>
-                                     -->
                                     <xsl:for-each select="m:tests/m:test">
                                         <xsl:call-template name="result-set">
                                             <xsl:with-param name="test-id" select="@xml:id"/>
@@ -224,16 +184,16 @@
         <xsl:param name="query-string" required="yes" as="xs:string"/>
         <xsl:param name="results" required="yes"/>
         
-        <div class="margin-top-sm collapse fade" aria-expanded="false">
+        <div class="sml-margin top collapse fade" aria-expanded="false">
             
             <xsl:attribute name="id" select="concat('test-results-', $test-id)"/>
             <xsl:choose>
                 <xsl:when test="/m:response/m:request/@test-id eq $test-id">
-                    <xsl:attribute name="class" select="'margin-top-sm collapse fade in'"/>
+                    <xsl:attribute name="class" select="'sml-margin top collapse fade in'"/>
                     <xsl:attribute name="aria-expanded" select="'true'"/>
                 </xsl:when>
                 <xsl:otherwise>
-                    <xsl:attribute name="class" select="'margin-top-sm collapse fade'"/>
+                    <xsl:attribute name="class" select="'sml-margin top collapse fade'"/>
                     <xsl:attribute name="aria-expanded" select="'false'"/>
                 </xsl:otherwise>
             </xsl:choose>

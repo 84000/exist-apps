@@ -825,7 +825,7 @@
                     <xsl:apply-templates select="$translation/m:titles/m:title[@xml:lang eq 'en']"/>
                 </h1>
                 <xsl:if test="$translation/m:titles/m:title[@xml:lang eq 'sa-ltn']/text()">
-                    <h2 class="text-sa italic">
+                    <h2 class="text-sa">
                         <xsl:apply-templates select="$translation/m:titles/m:title[@xml:lang eq 'sa-ltn']"/>
                     </h2>
                 </xsl:if>
@@ -833,7 +833,7 @@
             
             <xsl:if test="count($translation/m:long-titles/m:title/text()) eq 1 and $translation/m:long-titles/m:title[@xml:lang eq 'bo-ltn']/text()">
                 <div id="long-titles">
-                    <h4 class="text-wy italic">
+                    <h4 class="text-wy">
                         <xsl:apply-templates select="$translation/m:long-titles/m:title[@xml:lang eq 'bo-ltn']/text()"/>
                     </h4>
                 </div>
@@ -851,7 +851,7 @@
                         </h4>
                     </xsl:if>
                     <xsl:if test="$translation/m:long-titles/m:title[@xml:lang eq 'bo-ltn']/text()">
-                        <h4 class="text-wy italic">
+                        <h4 class="text-wy">
                             <xsl:apply-templates select="$translation/m:long-titles/m:title[@xml:lang eq 'bo-ltn']"/>
                         </h4>
                     </xsl:if>
@@ -861,7 +861,7 @@
                         </h4>
                     </xsl:if>
                     <xsl:if test="$translation/m:long-titles/m:title[@xml:lang eq 'sa-ltn']/text()">
-                        <h4 class="text-sa italic">
+                        <h4 class="text-sa">
                             <xsl:apply-templates select="$translation/m:long-titles/m:title[@xml:lang eq 'sa-ltn']"/>
                         </h4>
                     </xsl:if>
@@ -1007,7 +1007,9 @@
                         <xsl:attribute name="data-match-height" select="concat('g-', position())"/>
                         <xsl:attribute name="data-match-height-media" select="'.md,.lg'"/>
                         <hr class="visible-xs-block visible-sm-block"/>
-                        <h6>Finding passages containing this term...</h6>
+                        <h6>
+                            <xsl:value-of select="'Finding passages containing this term...'"/>
+                        </h6>
                     </div>
                     
                 </div>
@@ -1022,7 +1024,9 @@
             <xsl:apply-templates select="$translation/m:titles/m:title[@xml:lang eq 'en']"/>
         </h4>
         <div class="data-container bottom-margin"/>
-        <h4>Download Options</h4>
+        <h4>
+            <xsl:value-of select="'Download Options'"/>
+        </h4>
         <table class="contents-table bottom-margin">
             <tbody>
                 <tr>
@@ -1035,7 +1039,7 @@
                     </td>
                     <td>
                         <a href="#" title="Print" class="print-preview">
-                            Print
+                            <xsl:value-of select="'Print'"/>
                         </a>
                     </td>
                 </tr>
@@ -1065,7 +1069,9 @@
                 </xsl:for-each>
             </tbody>
         </table>
-        <h4>Other Links</h4>
+        <h4>
+            <xsl:value-of select="'Other Links'"/>
+        </h4>
         <table class="contents-table bottom-margin">
             <tbody>
                 <tr>

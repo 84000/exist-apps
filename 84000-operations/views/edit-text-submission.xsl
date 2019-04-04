@@ -63,7 +63,7 @@
                             <xsl:attribute name="value" select="m:request/@submission-id"/>
                         </input>
                         <div class="row">
-                            <div class="col-sm-8 margin-top-sm">
+                            <div class="col-sm-8 sml-margin top">
                                 <div class="form-group">
                                     <label for="submission-date">
                                         <xsl:value-of select="'Submitted'"/>
