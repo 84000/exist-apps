@@ -205,7 +205,15 @@
                                                         
                                                         <!-- Location column -->
                                                         <div class="col-sm-2 text-muted">
-                                                            <xsl:value-of select="'Version:'"/>
+                                                            <xsl:choose>
+                                                                <xsl:when test="$environment/m:store-conf[@type eq 'client']">
+                                                                    <xsl:value-of select="'Local version:'"/>
+                                                                </xsl:when>
+                                                                <xsl:otherwise>
+                                                                    <xsl:value-of select="'File version:'"/>
+                                                                </xsl:otherwise>
+                                                            </xsl:choose>
+                                                            
                                                         </div>
                                                         
                                                         

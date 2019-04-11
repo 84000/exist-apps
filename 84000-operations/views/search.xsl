@@ -160,7 +160,7 @@
                                 <div class="form-group print-no-margin">
                                     <div class="row">
                                         <div class="col-sm-5 hidden-print">
-                                            <input type="text" name="search-toh" value="" class="form-control" placeholder="Filter Tohs">
+                                            <input type="text" name="search-toh" value="" class="form-control" placeholder="Search for Toh">
                                                 <xsl:attribute name="value" select="m:texts/@search-toh"/>
                                             </input>
                                         </div>

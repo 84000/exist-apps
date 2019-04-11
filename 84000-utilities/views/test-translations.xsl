@@ -123,11 +123,11 @@
                                         </xsl:if>
                                         <xsl:value-of select="'Published translations'"/>
                                     </option>
-                                    <option value="in-progress">
-                                        <xsl:if test="/m:response/m:request/@translation-id eq 'in-progress'">
+                                    <option value="in-markup">
+                                        <xsl:if test="/m:response/m:request/@translation-id eq 'in-markup'">
                                             <xsl:attribute name="selected" select="'selected'"/>
                                         </xsl:if>
-                                        <xsl:value-of select="'In-progress translations'"/>
+                                        <xsl:value-of select="'Translations in markup'"/>
                                     </option>
                                     <xsl:for-each select="m:translations/m:file">
                                         <xsl:sort select="@id"/>

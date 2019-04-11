@@ -25,11 +25,11 @@ declare function tests:translations($translation-id as xs:string) as item(){
     
     let $selected-translations := 
         if ($translation-id eq 'all') then 
-            $section:texts//tei:TEI[tei:teiHeader/tei:fileDesc/tei:publicationStmt/@status = ('1', '2.a')]
+            $section:texts//tei:TEI[tei:teiHeader/tei:fileDesc/tei:publicationStmt/@status = $tei-content:text-statuses/m:status[@marked-up = ('true')]/@status-id]
         else if ($translation-id eq 'published') then 
-            $section:texts//tei:TEI[tei:teiHeader/tei:fileDesc/tei:publicationStmt/@status = ('1')]
-            else if ($translation-id eq 'in-progress') then 
-            $section:texts//tei:TEI[tei:teiHeader/tei:fileDesc/tei:publicationStmt/@status = ('2.a')]
+            $section:texts//tei:TEI[tei:teiHeader/tei:fileDesc/tei:publicationStmt/@status = $tei-content:text-statuses/m:status[@group = ('published')]/@status-id]
+            else if ($translation-id eq 'in-markup') then 
+            $section:texts//tei:TEI[tei:teiHeader/tei:fileDesc/tei:publicationStmt/@status = $tei-content:text-statuses/m:status[@marked-up = ('true')][not(@group = ('published'))]/@status-id]
         else
             tei-content:tei(lower-case($translation-id), 'translation')
     
