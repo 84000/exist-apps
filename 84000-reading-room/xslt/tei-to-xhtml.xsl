@@ -247,6 +247,56 @@
         </xsl:call-template>
     </xsl:template>
     
+    <xsl:template match="tei:table">
+        <xsl:call-template name="milestone">
+            <xsl:with-param name="content">
+                <xsl:apply-templates select="tei:head"/>
+                <div class="table-responsive">
+                    <table class="table">
+                        <tbody>
+                            <xsl:for-each select="tei:row">
+                                <tr>
+                                    <xsl:for-each select="tei:cell">
+                                        <xsl:choose>
+                                            <xsl:when test="@role='label' or parent::tei:row[@role = 'label']">
+                                                <th>
+                                                    <xsl:apply-templates select="."/>
+                                                </th>
+                                            </xsl:when>
+                                            <xsl:otherwise>
+                                                <td>
+                                                    <xsl:apply-templates select="."/>
+                                                </td>
+                                            </xsl:otherwise>
+                                        </xsl:choose>
+                                    </xsl:for-each>
+                                </tr>
+                            </xsl:for-each>
+                        </tbody>
+                    </table>
+                </div>
+                <xsl:apply-templates select="tei:note"/>
+            </xsl:with-param>
+            <xsl:with-param name="row-type" select="'table'"/>
+        </xsl:call-template>
+    </xsl:template>
+    
+    <xsl:template match="tei:cell">
+        <xsl:if test="@rows">
+            <xsl:attribute name="rowspan" select="@rows"/>
+        </xsl:if>
+        <xsl:if test="@cols">
+            <xsl:attribute name="colspan" select="@cols"/>
+        </xsl:if>
+        <xsl:apply-templates select="node()"/>
+    </xsl:template>
+    
+    <xsl:template match="tei:note[parent::tei:table]">
+        <p>
+            <xsl:apply-templates select="node()"/>
+        </p>
+    </xsl:template>
+    
     <xsl:template match="tei:label[parent::tei:p]">
         <strong>
             <xsl:apply-templates select="node()"/>
@@ -358,7 +408,7 @@
     <xsl:template match="tei:head">
         <xsl:choose>
             
-            <!-- A list headers -->
+            <!-- A list header -->
             <xsl:when test="parent::tei:list">
                 <xsl:call-template name="milestone">
                     <xsl:with-param name="content">
@@ -371,6 +421,16 @@
                     </xsl:with-param>
                     <xsl:with-param name="row-type" select="'list-head'"/>
                 </xsl:call-template>
+            </xsl:when>
+            
+            <!-- A table header -->
+            <xsl:when test="parent::tei:table">
+                <h5 class="table-label">
+                    <xsl:call-template name="tid">
+                        <xsl:with-param name="node" select="."/>
+                    </xsl:call-template>
+                    <xsl:apply-templates select="node()"/>
+                </h5>
             </xsl:when>
             
             <!-- An about section header -->

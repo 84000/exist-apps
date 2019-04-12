@@ -175,6 +175,32 @@ blockquote .line-group .line {
     display: block;
 }
 
+/* Data table */
+.table {
+    border-collapse: collapse;
+    border-spacing: 0;
+    width: 100%;
+    max-width: 100%;
+    margin-bottom: 0px;
+    page-break-inside: avoid;
+}
+.table tr th, 
+.table tr td {
+    text-align: left;
+    border-top: 1px solid #ddd;
+    padding: 3pt 6pt 3pt 0pt;
+    page-break-inside: avoid;
+}
+.table-responsive {
+    margin-bottom: 12pt;
+    border-bottom: 1px solid #eee;
+    overflow-x: scroll;
+}
+.table-label {
+    margin-top: 0px;
+    margin-bottom: 5pt;
+}
+
 /* Add a space */
 br+*,
 .rw-chapter-title+.rw,
@@ -188,6 +214,8 @@ br+*,
 .rw-blockquote+.rw,
 .rw-mantra,
 .rw-mantra+.rw,
+.rw-table,
+.rw-table+.rw,
 .rw-trailer {
     margin-top: 12pt;
 }

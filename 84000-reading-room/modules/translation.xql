@@ -282,6 +282,7 @@ declare function translation:nested-section($section as element()?, $nesting as 
             | self::tei:trailer
             | self::tei:label
             | self::tei:seg
+            | self::tei:table
         ],
         for $sub-section at $position in $section/tei:div[@type = ('section', 'chapter')]
             let $section-id := concat($parent-id, '-', $position)
