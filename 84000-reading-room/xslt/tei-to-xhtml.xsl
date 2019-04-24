@@ -83,7 +83,7 @@
         </em>
     </xsl:template>
     
-    <xsl:template match="tei:note">
+    <xsl:template match="tei:note[not(parent::tei:table)]">
         <a class="footnote-link">
             <xsl:attribute name="id" select="concat('link-to-', @xml:id)"/>
             <xsl:choose>
@@ -251,30 +251,67 @@
         <xsl:call-template name="milestone">
             <xsl:with-param name="content">
                 <xsl:apply-templates select="tei:head"/>
-                <div class="table-responsive">
-                    <table class="table">
-                        <tbody>
-                            <xsl:for-each select="tei:row">
-                                <tr>
-                                    <xsl:for-each select="tei:cell">
-                                        <xsl:choose>
-                                            <xsl:when test="@role='label' or parent::tei:row[@role = 'label']">
-                                                <th>
-                                                    <xsl:apply-templates select="."/>
-                                                </th>
-                                            </xsl:when>
-                                            <xsl:otherwise>
-                                                <td>
-                                                    <xsl:apply-templates select="."/>
-                                                </td>
-                                            </xsl:otherwise>
-                                        </xsl:choose>
+                <xsl:choose>
+                    
+                    <xsl:when test="/m:response/m:request/@doc-type eq 'epub' or /m:response/m:request/@view-mode eq 'epub'">
+                        <!-- Don't use tables in epubs -->
+                        <xsl:variable name="rows" select="tei:row"/>
+                        <xsl:variable name="label-row" select="($rows[@role eq 'label'][1], $rows[1])[1]"/>
+                        <xsl:variable name="data-rows" select="$rows[not(. = $label-row)]"/>
+                        <xsl:choose>
+                            <xsl:when test="$data-rows/tei:cell[common:is-a-number(@rows)]">
+                                <!-- Group items by cells with rowspan -->
+                                <ul class="table-as-list">
+                                    <xsl:for-each select="$data-rows/tei:cell[common:is-a-number(@rows)]">
+                                        <li>
+                                            <xsl:apply-templates select="."/>
+                                            <xsl:call-template name="list-cells">
+                                                <xsl:with-param name="data-rows" select="subsequence($data-rows, position(), @rows)"/>
+                                                <xsl:with-param name="label-row" select="$label-row"/>
+                                            </xsl:call-template>
+                                        </li>
                                     </xsl:for-each>
-                                </tr>
-                            </xsl:for-each>
-                        </tbody>
-                    </table>
-                </div>
+                                </ul>
+                            </xsl:when>
+                            <xsl:otherwise>
+                                <!-- Just output the table as a list -->
+                                <xsl:call-template name="list-cells">
+                                    <xsl:with-param name="data-rows" select="$data-rows"/>
+                                    <xsl:with-param name="label-row" select="$label-row"/>
+                                </xsl:call-template>
+                            </xsl:otherwise>
+                        </xsl:choose>
+                    </xsl:when>
+                    
+                    <xsl:otherwise>
+                        <!-- show a table -->
+                        <div class="table-responsive">
+                            <table class="table">
+                                <tbody>
+                                    <xsl:for-each select="tei:row">
+                                        <tr>
+                                            <xsl:for-each select="tei:cell">
+                                                <xsl:choose>
+                                                    <xsl:when test="@role='label' or parent::tei:row[@role = 'label']">
+                                                        <th>
+                                                            <xsl:apply-templates select="."/>
+                                                        </th>
+                                                    </xsl:when>
+                                                    <xsl:otherwise>
+                                                        <td>
+                                                            <xsl:apply-templates select="."/>
+                                                        </td>
+                                                    </xsl:otherwise>
+                                                </xsl:choose>
+                                            </xsl:for-each>
+                                        </tr>
+                                    </xsl:for-each>
+                                </tbody>
+                            </table>
+                        </div>
+                    </xsl:otherwise>
+                    
+                </xsl:choose>
                 <xsl:apply-templates select="tei:note"/>
             </xsl:with-param>
             <xsl:with-param name="row-type" select="'table'"/>
@@ -282,13 +319,45 @@
     </xsl:template>
     
     <xsl:template match="tei:cell">
-        <xsl:if test="@rows">
-            <xsl:attribute name="rowspan" select="@rows"/>
-        </xsl:if>
-        <xsl:if test="@cols">
-            <xsl:attribute name="colspan" select="@cols"/>
+        <xsl:if test="/m:response/m:request/@doc-type ne 'epub'">
+            <xsl:if test="@rows">
+                <xsl:attribute name="rowspan" select="@rows"/>
+            </xsl:if>
+            <xsl:if test="@cols">
+                <xsl:attribute name="colspan" select="@cols"/>
+            </xsl:if>
         </xsl:if>
         <xsl:apply-templates select="node()"/>
+    </xsl:template>
+    
+    <xsl:template name="list-cells">
+        <xsl:param name="data-rows" as="node()*" required="yes"/>
+        <xsl:param name="label-row" as="node()?" required="yes"/>
+        <xsl:if test="$data-rows">
+            <ul class="table-as-list">
+                <xsl:for-each select="$data-rows">
+                    <xsl:variable name="label-cell" select="(tei:cell[@role eq 'label'], tei:cell[1])[1]"/>
+                    <li>
+                        <xsl:value-of select="$label-cell"/>
+                        <ul>
+                            <xsl:for-each select="tei:cell[not(@rows)]">
+                                <xsl:variable name="cell" select="."/>
+                                <xsl:variable name="col-num" select="position()"/>
+                                <xsl:variable name="cell-label" select="$label-row/tei:cell[$col-num]/text()"/>
+                                <xsl:if test="not($cell = $label-cell)">
+                                    <li>
+                                        <xsl:if test="$cell-label">
+                                            <xsl:value-of select="concat($cell-label, ': ')"/>
+                                        </xsl:if>
+                                        <xsl:apply-templates select="$cell"/>
+                                    </li>
+                                </xsl:if>
+                            </xsl:for-each>
+                        </ul>
+                    </li>
+                </xsl:for-each>
+            </ul>
+        </xsl:if>
     </xsl:template>
     
     <xsl:template match="tei:note[parent::tei:table]">

@@ -233,6 +233,28 @@
                                                 <xsl:value-of select="'Small caps'"/>
                                             </a>
                                         </li>
+                                        <li>
+                                            <xsl:value-of select="'Tables: '"/>
+                                            <a target="test-layout">
+                                                <xsl:attribute name="href" select="concat($reading-room-path, '/translation/toh361.html#UT22084-077-002-602')"/>
+                                                <xsl:value-of select="'1'"/>
+                                            </a>
+                                            <xsl:value-of select="', '"/>
+                                            <a target="test-layout">
+                                                <xsl:attribute name="href" select="concat($reading-room-path, '/translation/toh361.html?view-mode=epub#UT22084-077-002-602')"/>
+                                                <xsl:value-of select="'2 (epub)'"/>
+                                            </a>
+                                            <xsl:value-of select="', '"/>
+                                            <a target="test-layout">
+                                                <xsl:attribute name="href" select="concat($reading-room-path, '/translation/toh361.html?#UT22084-077-002-50')"/>
+                                                <xsl:value-of select="'3'"/>
+                                            </a>
+                                            <xsl:value-of select="', '"/>
+                                            <a target="test-layout">
+                                                <xsl:attribute name="href" select="concat($reading-room-path, '/translation/toh361.html?view-mode=epub#UT22084-077-002-50')"/>
+                                                <xsl:value-of select="'4 (epub)'"/>
+                                            </a>
+                                        </li>
                                     </ul>
                                 </div>
                             </div>

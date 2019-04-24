@@ -200,6 +200,17 @@ blockquote .line-group .line {
     margin-top: 0px;
     margin-bottom: 5pt;
 }
+ul.table-as-list {
+    padding-left: 0;
+    list-style: none;
+}
+ul.table-as-list li {
+    line-height: 1.5;
+}
+ul.table-as-list ul.table-as-list {
+    padding-left: 22pt;
+    list-style: disc;
+}
 
 /* Add a space */
 br+*,

@@ -46,6 +46,11 @@
         <xsl:sequence select="for $seq in (1 to count($nodes)) return $seq[$nodes[$seq] is $nodeToFind]"/>
     </xsl:function>
     
+    <xsl:function name="common:is-a-number" as="xs:boolean">
+        <xsl:param name="value"/>
+        <xsl:value-of select="string(number(concat('', $value))) != 'NaN'"/>
+    </xsl:function>
+    
     <xsl:function name="common:standardized-sa" as="xs:string*">
         <xsl:param name="sa-string" as="xs:string"/>
         <xsl:variable name="in" select="'āḍḥīḷḹṃṇñṅṛṝṣśṭūṁ'"/>

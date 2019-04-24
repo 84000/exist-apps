@@ -13,5 +13,7 @@ return
     common:response(
         "about/prototype", 
         $common:app-id,
-        ()
+        (
+            common:app-texts('about.prototype', <replace xmlns="http://read.84000.co/ns/1.0"/>, $lang)
+        )
     )
