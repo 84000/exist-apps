@@ -106,6 +106,9 @@ h5.section-label {
 .trailer .footnote-link {
     font-style: normal;
 }
+.hidden-ebook {
+    display: none;
+}
 
 /* other scripts */
 .text-bo {
@@ -200,16 +203,23 @@ blockquote .line-group .line {
     margin-top: 0px;
     margin-bottom: 5pt;
 }
-ul.table-as-list {
-    padding-left: 0;
-    list-style: none;
+
+.table-as-list .section-label {
+    margin-top: 0px;
+    margin-bottom: 0px;
 }
-ul.table-as-list li {
-    line-height: 1.5;
+.table-as-list .row-label {
+    font-style: italic;
 }
-ul.table-as-list ul.table-as-list {
-    padding-left: 22pt;
-    list-style: disc;
+.table-as-list .section-label .row-label {
+    font-style: normal;
+}
+.table-as-list p {
+    text-indent: 0;
+    margin-bottom: 12pt;
+}
+.table-notes {
+    font-style: italic;
 }
 
 /* Add a space */
@@ -330,6 +340,7 @@ br+.rw > p,
 /* Footnotes */
 .footnote {
     margin-bottom: 12pt;
+    line-height: 1.5;
 }
 
 /* footnote links */
