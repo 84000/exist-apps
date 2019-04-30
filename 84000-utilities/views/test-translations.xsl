@@ -136,7 +136,7 @@
                                             <xsl:if test="@id eq /m:response/m:request/@translation-id">
                                                 <xsl:attribute name="selected" select="'selected'"/>
                                             </xsl:if>
-                                            <xsl:value-of select="concat(@id, ' / ', common:limit-str(data(.), 100))"/>
+                                            <xsl:value-of select="common:limit-str(concat(@fileName, ' / ', data(.)), 140)"/>
                                         </option>
                                     </xsl:for-each>
                                 </select>

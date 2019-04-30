@@ -352,9 +352,6 @@
                             </p>
                         </xsl:for-each>
                     </div>
-                    <xsl:if test="tei:note">
-                        <br/>
-                    </xsl:if>
                 </div>
                 
                 <div class="table-notes">

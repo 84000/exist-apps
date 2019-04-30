@@ -415,6 +415,9 @@ declare function tests:test-section($section-tei as element()*, $section-html as
                     else
                         ()
                 }
+                <!--
+                <detail>{string-join($section-tei//tei:milestone[not(@xml:id = $section-html//xhtml:a[common:contains-class(@class, 'milestone from-tei')]/@id)]/@xml:id , ' / ')}</detail>
+                -->
             </details>
         </test>
 };
@@ -504,60 +507,50 @@ declare function tests:glossary($tei as element()*, $html as element()*) as item
     
     let $glossary-count-html := count($html//*[@id eq 'glossary']//*[common:contains-class(@class, 'glossary-item')])
     let $glossary-count-tei := count($tei//tei:back/tei:div[@type='glossary']//tei:gloss)
-    let $tei-terms-raw := $tei//tei:back/tei:div[@type='glossary']//tei:gloss/tei:term[text()][not(tei:ptr)](:[(not(@xml:lang) and not(@type)) or not(text() = preceding-sibling::tei:term[not(@xml:lang) and not(@type)]/text())]:)
-    
-    let $tei-terms := 
-        for $tei-term in $tei-terms-raw
-        return 
-            if($tei-term[@xml:lang eq "Bo-Ltn"])then
-                string($tei-term) ! lower-case(.) ! normalize-space(.) ! common:bo-ltn(.)
-            else
-                string($tei-term) ! lower-case(.) ! normalize-space(.)
-                
-    let $terms-count-tei := count($tei-terms)
-    
-    let $html-terms-untokenized := 
-        $html//*[@id eq 'glossary']//*[common:contains-class(@class, 'glossary-item')]//*[self::xhtml:h4 | self::xhtml:p[not(xhtml:a/@class[common:contains-class(., 'internal-ref')])]]
-    
+    let $tei-terms-raw := $tei//tei:back/tei:div[@type='glossary']//tei:gloss/tei:term[text()][not(tei:ptr)][not(@xml:lang) or @xml:lang = ('Sa-Ltn', 'bo', 'Bo-Ltn', 'en')](:[(not(@xml:lang) and not(@type)) or not(text() = preceding-sibling::tei:term[not(@xml:lang) and not(@type)]/text())]:)
     let $empty-term-placeholders := (common:app-text('glossary.term-empty-sa-ltn'), common:app-text('glossary.term-empty-bo-ltn'))
     
-    let $html-terms := 
-        for $html-term in $html-terms-untokenized/string(.) ! tokenize(., '·') ! translate(., 'ᴀʙᴄᴅᴇꜰɢʜɪᴊᴋʟᴍɴᴏᴘǫʀsᴛᴜᴠᴡxʏᴢ', 'abcdefghijklmnopqrstuvwxyz')
-        return 
-            if(not($html-term = $empty-term-placeholders)) then
-                lower-case($html-term) ! normalize-space(.)
-            else
-                ()
-            
-    let $terms-count-html := count($html-terms)
+    let $tei-terms := 
+        (
+            $tei-terms-raw[@xml:lang eq "Bo-Ltn"] ! data(.) ! lower-case(.) ! tests:normalize-whitespace(.) ! common:bo-ltn(.),
+            $tei-terms-raw[not(@xml:lang eq "Bo-Ltn")] ! data(.) ! lower-case(.) ! tests:normalize-whitespace(.)
+        )
     
-    let $anomalies := 
-        for $term in $tei-terms
-        return
-            let $term-count-tei := count($tei-terms[. = $term])
-            let $term-count-html := count($html-terms[. = $term])
-            return 
-                if(not($term-count-tei = $term-count-html)) then
-                    concat($term, ' (', xs:string($term-count-tei), ' occurrence(s) in the TEI and ', xs:string($term-count-html), ' occurrence(s) in the HTML)')
-                else
-                    ()
+    let $html-terms-untokenized := 
+        $html//*[@id eq 'glossary']//*[common:contains-class(@class, 'glossary-item')]//*[self::xhtml:h4 | self::xhtml:p[not(xhtml:a[common:contains-class(@class, 'internal-ref')])]]
+    
+    let $html-terms := 
+        $html-terms-untokenized[not(. = $empty-term-placeholders)] ! data(.) ! tokenize(., '·') ! translate(., 'ᴀʙᴄᴅᴇꜰɢʜɪᴊᴋʟᴍɴᴏᴘǫʀsᴛᴜᴠᴡxʏᴢ', 'abcdefghijklmnopqrstuvwxyz') ! lower-case(.) ! tests:normalize-whitespace(.)
+    
+    let $tei-terms-not-found := $tei-terms[not(. = $html-terms)]
+    let $html-terms-not-found := $html-terms[not(. = $tei-terms)]
+
     return
         <test xmlns="http://read.84000.co/ns/1.0" 
             id="glossary"
-            pass="{ if($glossary-count-html > 0 and $glossary-count-html = $glossary-count-tei and $terms-count-html = $terms-count-tei and count($anomalies) = 0) then 1 else 0 }">
+            pass="{ if($glossary-count-html > 0 and $glossary-count-html = $glossary-count-tei and count($html-terms) = count($tei-terms) and (count($tei-terms-not-found) + count($html-terms-not-found)) = 0) then 1 else 0 }">
             <title>Glossary: The text has at least 1 glossary item and there are the same number in the HTML as in the TEI with no anomalies in the counts of each term.</title>
             <details>
-                <detail>{$glossary-count-tei} glossary item(s) in the TEI, {$glossary-count-html} glossary item(s) in the HTML.</detail>
-                <detail>{$terms-count-tei} glossary term(s) in the TEI, {$terms-count-html} glossary term(s) in the HTML.</detail>
-                <detail>{ count($anomalies) } anomalies detected.</detail>
+                <detail>{ $glossary-count-tei } glossary item(s) in the TEI, { $glossary-count-html } glossary item(s) in the HTML.</detail>
+                <detail>{ count($tei-terms) } glossary term(s) in the TEI, { count($html-terms) } glossary term(s) in the HTML.</detail>
+                <detail>{ (count($tei-terms-not-found) + count($html-terms-not-found)) } anomalies detected.</detail>
                 {
-                    for $anomaly in $anomalies
+                    for $term-not-found in $tei-terms-not-found
                     return 
-                        <detail type="debug">{ $anomaly }</detail>
-
+                        <detail type="debug">{ concat('"', $term-not-found, '" TEI not found in HTML.') }</detail>
+                }
+                {
+                    for $term-not-found in $html-terms-not-found
+                    return 
+                        <detail type="debug">{ concat('"', $term-not-found, '" HTML not found in TEI.') }</detail>
                 }
             </details>
         </test>
+};
+
+
+declare function tests:normalize-whitespace($string as xs:string) as xs:string {
+    fn:replace(fn:replace(normalize-space($string),'\s+(,|\.|\))', '$1'),'(\()\s+', '$1')
 };
 
 declare function tests:structure() as element() {
