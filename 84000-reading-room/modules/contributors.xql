@@ -133,6 +133,7 @@ declare function contributors:teams($include-hidden as xs:boolean, $include-ackn
 declare function contributors:team($id as xs:string, $include-acknowledgements as xs:boolean, $include-persons as xs:boolean) as element() {
     
     let $team := $contributors:contributors/m:contributors/m:team[@xml:id eq $id]
+    let $team-id := concat('contributors.xml#', $team/@xml:id)
     
     return
         element { node-name($team) } {
@@ -141,7 +142,7 @@ declare function contributors:team($id as xs:string, $include-acknowledgements a
             $team/* ,
             element sort-name { replace($team/m:label, concat($contributors:team-prefixes, '\s(.*)'), '$2, $1') },
             if($include-acknowledgements) then
-                for $tei in $contributors:texts//tei:TEI[tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:*[@ref eq concat('contributors.xml#', $team/@xml:id)]]
+                for $tei in $contributors:texts//tei:TEI[tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:author[@ref eq $team-id]]
                     let $acknowledgement := $tei/tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:*[@ref eq concat('contributors.xml#', $team/@xml:id)]
                 return
                     contributors:acknowledgement($tei, element tei:p { $acknowledgement })

@@ -8,7 +8,7 @@ declare namespace m="http://read.84000.co/ns/1.0";
 
 declare option exist:serialize "method=xml indent=no";
 
-let $include-acknowledgements := (request:get-parameter('include-acknowledgements', '') gt '0')
+let $include-acknowledgements := (request:get-parameter('include-acknowledgements', '1') gt '0')
 
 let $delete-team-id := request:get-parameter('delete', '')
 

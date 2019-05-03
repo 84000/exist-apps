@@ -92,14 +92,13 @@
                                             <xsl:if test="/m:response/m:request/@include-acknowledgements eq 'true'">
                                                 <xsl:call-template name="acknowledgements">
                                                     <xsl:with-param name="acknowledgements" select="m:acknowledgement"/>
-                                                    <xsl:with-param name="group" select="$team-id"/>
+                                                    <xsl:with-param name="group" select="''"/>
                                                     <xsl:with-param name="css-class" select="'col-sm-12'"/>
-                                                    <xsl:with-param name="link-href" select="concat($reading-room-path, '/translation/@translation-id.html')"/>
+                                                    <xsl:with-param name="link-href" select="'/edit-text-header.html?id=@translation-id'"/>
                                                 </xsl:call-template>
                                             </xsl:if>
                                         </div>
                                     </div>
-                                    
                                     
                                 </div>
                             </xsl:for-each>
