@@ -132,7 +132,7 @@
                                         <xsl:with-param name="acknowledgements" select="m:team/m:acknowledgement"/>
                                         <xsl:with-param name="css-class" select="''"/>
                                         <xsl:with-param name="group" select="''"/>
-                                        <xsl:with-param name="link-href" select="concat($reading-room-path, '/translation/@translation-id.html')"/>
+                                        <xsl:with-param name="link-href" select="'/edit-text-header.html?id=@translation-id'"/>
                                     </xsl:call-template>
                                 </div>
                             </div>
