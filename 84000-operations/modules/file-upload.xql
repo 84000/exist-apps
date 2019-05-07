@@ -119,7 +119,7 @@ declare function file-upload:delete-file($text-id as xs:string, $submission-id a
         
         (: Delete the TEI :)
         let $remove-tei := 
-            if($submission/m:tei-file/@file-name gt '' and $submission/m:tei-file/@file-exists eq 'false') then
+            if($submission/m:tei-file/@file-name gt '' and $submission/m:tei-file/@file-exists eq 'true') then
                 xmldb:remove($submission/@file-collection, xmldb:encode($submission/m:tei-file/@file-name))
             else
                 ()
