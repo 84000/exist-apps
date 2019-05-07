@@ -51,7 +51,7 @@
                                     <a class="center-vertical together">
                                         <xsl:attribute name="href" select="common:internal-link('/section/all-translated.html', (), '', /m:response/@lang)"/>
                                         <span>
-                                            <span class="btn-round white-red sml">
+                                            <span class="btn-round sml">
                                                 <i class="fa fa-list"/>
                                             </span>
                                         </span>
@@ -67,7 +67,7 @@
                                     <div aria-haspopup="true" aria-expanded="false">
                                         <a href="#bookmarks-sidebar" id="bookmarks-btn" class="show-sidebar center-vertical together">
                                             <span>
-                                                <span class="btn-round white-red sml">
+                                                <span class="btn-round sml">
                                                     <i class="fa fa-bookmark"/>
                                                     <span class="badge badge-notification">0</span>
                                                 </span>

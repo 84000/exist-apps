@@ -22,10 +22,14 @@
                             <xsl:value-of select="'84000 Translator Tools'"/>
                         </span>
                         
-                        <span class="text-right">
-                            <a target="reading-room">
-                                <xsl:attribute name="href" select="$reading-room-path"/>
-                                <xsl:value-of select="'Reading Room'"/>
+                        <span class="pull-right center-vertical">
+                            <a href="#navigation-sidebar" class="center-vertical together show-sidebar">
+                                <span class="btn-round sml">
+                                    <i class="fa fa-bars" aria-hidden="true"/>
+                                </span>
+                                <span class="btn-round-text">
+                                    <xsl:value-of select="'Navigation'"/>
+                                </span>
                             </a>
                         </span>
                         
@@ -33,20 +37,54 @@
                     
                     <div class="panel-body">
                         
-                        <!-- Tabs -->
-                        <ul class="nav nav-tabs nav-justified" role="tablist">
-                            <xsl:for-each select="m:tabs/m:tab">
-                                <li role="presentation">
-                                    <xsl:if test="/m:response/m:request/@tab eq @id">
-                                        <xsl:attribute name="class" select="'active'"/>
-                                    </xsl:if>
-                                    <a>
-                                        <xsl:attribute name="href" select="concat('?tab=', @id)"/>
-                                        <xsl:value-of select="m:label"/>
+                        <div id="navigation-sidebar" class="fixed-sidebar collapse width hidden-print">
+                            
+                            <div class="container">
+                                <div class="fix-width">
+                                    <h4>
+                                        <xsl:value-of select="'84000 Translator Tools'"/>
+                                    </h4>
+                                    <hr class="sml-margin"/>
+                                    <ul class="list-unstyled">
+                                        <xsl:for-each select="m:tabs/m:tab">
+                                            <li role="presentation">
+                                                <xsl:if test="/m:response/m:request/@tab eq @id">
+                                                    <xsl:attribute name="class" select="'active'"/>
+                                                </xsl:if>
+                                                <a class="center-vertical full-width h5">
+                                                    <xsl:attribute name="href" select="concat('?tab=', @id)"/>
+                                                    <span>
+                                                        <xsl:value-of select="m:label"/>
+                                                    </span>
+                                                    <span class="text-right">
+                                                        <i class="fa fa-chevron-right"/>
+                                                    </span>
+                                                </a>
+                                            </li>
+                                        </xsl:for-each>
+                                    </ul>
+                                    <hr class="sml-margin"/>
+                                    <a target="reading-room" class="center-vertical full-width h5">
+                                        <xsl:attribute name="href" select="$reading-room-path"/>
+                                        <span>
+                                            <xsl:value-of select="'Reading Room'"/>
+                                        </span>
+                                        <span class="text-right">
+                                            <i class="fa fa-chevron-right"/>
+                                        </span>
                                     </a>
-                                </li>
-                            </xsl:for-each>
-                        </ul>
+                                </div>
+                            </div>
+                            
+                            <div class="fixed-btn-container close-btn-container right">
+                                <button type="button" class="btn-round close" aria-label="Close">
+                                    <span aria-hidden="true">
+                                        <i class="fa fa-times"/>
+                                    </span>
+                                </button>
+                            </div>
+                            
+                        </div>
                         
                         <!-- Content -->
                         <div class="tab-content">

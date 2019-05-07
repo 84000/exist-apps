@@ -931,7 +931,9 @@
     
     <xsl:template name="download-options">
         <xsl:param name="translation" required="yes"/>
-        <h5 class="sr-only">Download Options</h5>
+        <h5 class="sr-only">
+            <xsl:value-of select="'Download Options'"/>
+        </h5>
         <a href="#top" class="milestone btn-round" title="Bookmark this page">
             <i class="fa fa-bookmark"/>
         </a>
