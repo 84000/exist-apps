@@ -52,14 +52,14 @@ declare function tei-content:tei($resource-id as xs:string, $resource-type as xs
     (: based on Tohoku number :)
     let $tei := 
         if($resource-type eq 'translation')then
-            $collection//tei:TEI[tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl/@key eq lower-case($resource-id)][1]
+            $collection//tei:TEI[tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl[@key eq lower-case($resource-id)]][1]
         else
             ()
     
     return
         if(not($tei)) then
             (: Fallback to UT number :)
-            $collection//tei:TEI[tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:idno/@xml:id eq upper-case($resource-id)]
+            $collection//tei:TEI[tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:idno[@xml:id eq upper-case($resource-id)]]
         else
             $tei
     
