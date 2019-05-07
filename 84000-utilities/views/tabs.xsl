@@ -84,6 +84,16 @@
                     </a>
                 </li>
             </xsl:if>
+            <xsl:if test="/m:response/@user-name eq 'admin'">
+                <li role="presentation">
+                    <xsl:if test="$active-tab eq 'utilities/reindex'">
+                        <xsl:attribute name="class" select="'active'"/>
+                    </xsl:if>
+                    <a href="reindex.html">
+                        <xsl:value-of select="'Re-index'"/>
+                    </a>
+                </li>
+            </xsl:if>
         </ul>
         
     </xsl:template>
