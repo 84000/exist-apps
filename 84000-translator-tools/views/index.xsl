@@ -24,11 +24,13 @@
                         
                         <span class="pull-right center-vertical">
                             <a href="#navigation-sidebar" class="center-vertical together show-sidebar">
-                                <span class="btn-round sml">
-                                    <i class="fa fa-bars" aria-hidden="true"/>
-                                </span>
                                 <span class="btn-round-text">
                                     <xsl:value-of select="'Navigation'"/>
+                                </span>
+                                <span>
+                                    <span class="btn-round sml">
+                                        <i class="fa fa-bars"/>
+                                    </span>
                                 </span>
                             </a>
                         </span>
@@ -41,38 +43,37 @@
                             
                             <div class="container">
                                 <div class="fix-width">
-                                    <h4>
+                                    <h4 class="uppercase">
                                         <xsl:value-of select="'84000 Translator Tools'"/>
                                     </h4>
-                                    <hr class="sml-margin"/>
-                                    <ul class="list-unstyled">
-                                        <xsl:for-each select="m:tabs/m:tab">
-                                            <li role="presentation">
-                                                <xsl:if test="/m:response/m:request/@tab eq @id">
-                                                    <xsl:attribute name="class" select="'active'"/>
-                                                </xsl:if>
-                                                <a class="center-vertical full-width h5">
-                                                    <xsl:attribute name="href" select="concat('?tab=', @id)"/>
-                                                    <span>
-                                                        <xsl:value-of select="m:label"/>
-                                                    </span>
-                                                    <span class="text-right">
-                                                        <i class="fa fa-chevron-right"/>
-                                                    </span>
-                                                </a>
-                                            </li>
-                                        </xsl:for-each>
-                                    </ul>
-                                    <hr class="sml-margin"/>
-                                    <a target="reading-room" class="center-vertical full-width h5">
-                                        <xsl:attribute name="href" select="$reading-room-path"/>
-                                        <span>
-                                            <xsl:value-of select="'Reading Room'"/>
-                                        </span>
-                                        <span class="text-right">
-                                            <i class="fa fa-chevron-right"/>
-                                        </span>
-                                    </a>
+                                    <table class="table table-hover">
+                                        <tbody>
+                                            <xsl:for-each select="m:tabs/m:tab">
+                                                <tr>
+                                                    <xsl:if test="/m:response/m:request/@tab eq @id">
+                                                        <xsl:attribute name="class" select="'active'"/>
+                                                    </xsl:if>
+                                                    <td>
+                                                        <a>
+                                                            <xsl:attribute name="href" select="concat('?tab=', @id)"/>
+                                                            <xsl:value-of select="m:label"/>
+                                                        </a>
+                                                    </td>
+                                                </tr>
+                                            </xsl:for-each>
+                                        </tbody>
+                                        <tfoot>
+                                            <tr>
+                                                <td>
+                                                    <a target="reading-room">
+                                                        <xsl:attribute name="href" select="$reading-room-path"/>
+                                                        <xsl:value-of select="'Go to the 84000 Reading Room'"/>
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                    
                                 </div>
                             </div>
                             
