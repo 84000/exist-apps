@@ -13,9 +13,9 @@ declare namespace tei="http://www.tei-c.org/ns/1.0";
 declare namespace xhtml="http://www.w3.org/1999/xhtml";
 declare namespace m="http://read.84000.co/ns/1.0";
 
-declare variable $tests:tests-collection := concat($common:data-path, '/config');
+declare variable $tests:utilities-data-collection := concat($common:data-path, '/utilities');
 declare variable $tests:tests-file := 'lucene-tests.xml';
-declare variable $tests:lucene-tests := doc(concat($tests:tests-collection, '/', $tests:tests-file))/m:lucene-tests;
+declare variable $tests:lucene-tests := doc(concat($tests:utilities-data-collection, '/', $tests:tests-file))/m:lucene-tests;
 
 declare function tests:translations($translation-id as xs:string) as item(){
     
@@ -844,6 +844,6 @@ declare function tests:add-test-match($should-match as xs:boolean, $test-id as x
 };
 
 declare function tests:reindex(){
-    xmldb:reindex($tests:tests-collection, $tests:tests-file)
+    xmldb:reindex($tests:utilities-data-collection, $tests:tests-file)
 };
 
