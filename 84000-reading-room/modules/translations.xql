@@ -185,13 +185,7 @@ declare function translations:filtered-texts($section as xs:string, $status as x
             $tei[tei:teiHeader/tei:fileDesc/tei:publicationStmt[@status = $status]]
         )
     
-    let $page-size-ranges :=
-        <page-size-ranges xmlns="http://read.84000.co/ns/1.0">
-            <range id="1" min="0" max="99"/>
-            <range id="2" min="100" max="149"/>
-            <range id="3" min="150" max="199"/>
-            <range id="4" min="200" max="10000"/>
-        </page-size-ranges>
+    let $page-size-ranges := doc(concat($common:data-path, '/config/page-size-ranges.xml'))
     
     let $selected-range := $page-size-ranges//m:range[xs:string(@id) eq $range]
     
