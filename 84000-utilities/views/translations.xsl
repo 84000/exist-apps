@@ -9,6 +9,7 @@
         
         <xsl:variable name="environment" select="doc(/m:response/@environment-path)/m:environment"/>
         <xsl:variable name="reading-room-path" select="$environment/m:url[@id eq 'reading-room']/text()"/>
+        <xsl:variable name="reading-room-no-cache-path" select="$environment/m:url[@id eq 'reading-room-no-cache']/text()"/>
         <xsl:variable name="texts-status" select="/m:response/m:translations/m:text-status[1]/@id"/>
         
         <xsl:variable name="content">
@@ -117,11 +118,19 @@
                                                         <xsl:attribute name="target" select="concat($toh/@key, '.html')"/>
                                                         <xsl:value-of select="m:titles/m:title[@xml:lang eq 'en']"/>
                                                     </a>
+                                                    <xsl:if test="$reading-room-no-cache-path">
+                                                        <xsl:value-of select="' / '"/>
+                                                        <a class="small">
+                                                            <xsl:attribute name="href" select="concat($reading-room-no-cache-path ,'/translation/', $toh/@key, '.html')"/>
+                                                            <xsl:attribute name="target" select="concat($toh/@key, '.html')"/>
+                                                            <xsl:value-of select="'bypass cache'"/>
+                                                        </a>
+                                                    </xsl:if>
                                                     <xsl:value-of select="' / '"/>
                                                     <a class="small">
                                                         <xsl:attribute name="href" select="concat('/test-translations.html?translation-id=', $text-id)"/>
                                                         <xsl:attribute name="target" select="concat('test-translation-', $text-id)"/>
-                                                        <xsl:value-of select="'Run tests'"/>
+                                                        <xsl:value-of select="'run tests'"/>
                                                     </a>
                                                 </div>
                                                 <div class="small text-muted">

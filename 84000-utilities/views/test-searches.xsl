@@ -339,4 +339,8 @@
         </mark>
     </xsl:template>
     
+    <xsl:template match="text()">
+        <xsl:value-of select="replace(., '­', '-')"/>
+    </xsl:template>
+    
 </xsl:stylesheet>
