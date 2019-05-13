@@ -10,6 +10,7 @@
         
         <xsl:variable name="environment" select="doc(/m:response/@environment-path)/m:environment"/>
         <xsl:variable name="reading-room-path" select="$environment/m:url[@id eq 'reading-room']/text()"/>
+        <xsl:variable name="tab-label" select="m:tabs/m:tab[@id eq /m:response/m:request/@tab]/m:label"/>
         
         <xsl:variable name="content">
             
@@ -19,7 +20,7 @@
                     <div class="panel-heading bold hidden-print center-vertical">
                         
                         <span class="title">
-                            <xsl:value-of select="'84000 Translator Tools'"/>
+                            <xsl:value-of select="concat('84000 Translator Tools &gt; ', $tab-label)"/>
                         </span>
                         
                         <span class="pull-right center-vertical">
@@ -150,7 +151,7 @@
         <xsl:call-template name="reading-room-page">
             <xsl:with-param name="page-url" select="''"/>
             <xsl:with-param name="page-class" select="'utilities wait'"/>
-            <xsl:with-param name="page-title" select="concat(m:tabs/m:tab[@id eq /m:response/m:request/@tab]/m:label, ' | 84000 Translator Tools')"/>
+            <xsl:with-param name="page-title" select="concat($tab-label, ' | 84000 Translator Tools')"/>
             <xsl:with-param name="page-description" select="'Tools for 84000 translators'"/>
             <xsl:with-param name="content" select="$content"/>
         </xsl:call-template>

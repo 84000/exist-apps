@@ -144,11 +144,16 @@
                                         </div>
                                         <div class="col-sm-11">
                                             <p class="text-bo">
-                                                <xsl:apply-templates select="tmx:tu/tmx:tuv[@xml:lang eq 'bo']/tmx:seg"/>
+                                                <xsl:apply-templates select="m:match/m:tibetan"/>
                                             </p>
                                             <p class="translation">
-                                                <xsl:apply-templates select="tmx:tu/tmx:tuv[@xml:lang eq 'en']/tmx:seg"/>
+                                                <xsl:apply-templates select="m:match/m:translation"/>
                                             </p>
+                                            <xsl:if test="string(m:match/m:sanskrit)">
+                                                <p class="text-sa">
+                                                    <xsl:apply-templates select="m:match/m:sanskrit"/>
+                                                </p>
+                                            </xsl:if>
                                         </div>
                                     </div>
                                 </div>
@@ -156,7 +161,14 @@
                                     <div class="col-sm-6">
                                         <p class="title">
                                             <a target="reading-room">
-                                                <xsl:attribute name="href" select="concat($reading-room-path, '/translation/', m:source/@resource-id, '.html#', common:folio-id(tmx:tu/tmx:prop[@name eq 'folio']/text()))"/>
+                                                <xsl:choose>
+                                                    <xsl:when test="m:match/@type eq 'glossary-term'">
+                                                        <xsl:attribute name="href" select="concat($reading-room-path, '/translation/', m:source/@resource-id, '.html#', m:match/@id)"/>
+                                                    </xsl:when>
+                                                    <xsl:when test="m:match/@type eq 'tm-unit'">
+                                                        <xsl:attribute name="href" select="concat($reading-room-path, '/translation/', m:source/@resource-id, '.html#', common:folio-id(m:match/@id))"/>
+                                                    </xsl:when>
+                                                </xsl:choose>
                                                 <xsl:apply-templates select="m:source/m:title"/>
                                             </a>
                                             <br/>

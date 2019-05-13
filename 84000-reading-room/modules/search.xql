@@ -10,6 +10,7 @@ declare namespace tei="http://www.tei-c.org/ns/1.0";
 declare namespace xhtml="http://www.w3.org/1999/xhtml";
 declare namespace m="http://read.84000.co/ns/1.0";
 declare namespace tmx="http://www.lisa.org/tmx14";
+declare namespace exist="http://exist.sourceforge.net/NS/exist";
 
 import module namespace common="http://read.84000.co/common" at "common.xql";
 import module namespace tei-content="http://read.84000.co/tei-content" at "tei-content.xql";
@@ -211,11 +212,17 @@ declare function search:tm-search($request as xs:string, $lang as xs:string, $fi
     
     let $translation-memory := collection(concat($common:data-path, '/translation-memory'))
     
+    let $translations := collection($common:translations-path)
+    
     let $results :=
         if ($request-bo) then
-            for $tu in $translation-memory//tmx:tu[ft:query(tmx:tuv[@xml:lang eq 'bo']/tmx:seg, $query, $options)]
-                order by ft:score($tu) descending
-            return $tu
+            for $result in 
+                (
+                    $translation-memory//tmx:tu[ft:query(tmx:tuv[@xml:lang eq 'bo']/tmx:seg, $query, $options)],
+                    $translations//tei:back//tei:gloss[ft:query(tei:term[@xml:lang eq 'bo'], $query, $options)]
+                )
+                order by ft:score($result) descending
+            return $result
         else
             ()
     
@@ -229,19 +236,40 @@ declare function search:tm-search($request as xs:string, $lang as xs:string, $fi
                 max-records="{ $max-records }"
                 count-records="{ count($results) }">
             {
-                for $tu in subsequence($results, $first-record, $max-records)
+                for $result in subsequence($results[local-name() = ('tu', 'gloss')], $first-record, $max-records)
                     
-                    let $document-uri := base-uri($tu)
+                    let $document-uri := base-uri($result)
                     let $document-uri-tokenized := tokenize($document-uri, '/')
                     let $file-name := $document-uri-tokenized[last()]
-                    let $translation-id := substring-before($file-name, '.xml')
-                    let $tei := tei-content:tei($translation-id, 'translation')
+                    let $tei := 
+                        if(local-name($result) eq 'tu') then
+                            tei-content:tei(substring-before($file-name, '.xml'), 'translation')
+                        else
+                            doc($document-uri)/tei:TEI
+                    let $expanded := util:expand($result, "expand-xincludes=no")
                     
                 return
                     if($tei) then
                         <item>
                             { search:source('translation', $tei) }
-                            { util:expand($tu, "expand-xincludes=no") }
+                            { 
+                                if(local-name($result) eq 'tu') then
+                                    element match {
+                                        attribute type { 'tm-unit' },
+                                        attribute id { $result/tmx:prop[@name eq 'folio'] },
+                                        element tibetan { $expanded/tmx:tuv[@xml:lang eq "bo"]/tmx:seg/node() },
+                                        element translation { $result/tmx:tuv[@xml:lang eq "en"]/tmx:seg/node() }
+                                    }
+                                else
+                                    element match {
+                                        attribute type { 'glossary-term' },
+                                        attribute id { $result/@xml:id },
+                                        element tibetan { $expanded/tei:term[not(@type)][@xml:lang eq "bo"][exist:match] },
+                                        element translation { $result/tei:term[not(@type)][not(@xml:lang) or @xml:lang eq "en"][1] },
+                                        element sanskrit { $result/tei:term[not(@type)][@xml:lang eq "Sa-Ltn"][1] }
+                                    }
+                                     
+                            }
                         </item>
                     else
                         ()

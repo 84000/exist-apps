@@ -64,23 +64,11 @@
                                     <tbody>
                                         <xsl:for-each select="m:tests/m:test">
                                             <xsl:sort select="m:sort"/>
-                                            <tr>
+                                            <tr data-toggle="collapse" class="collapsed">
+                                                <xsl:attribute name="data-target" select="concat('#test-results-', @xml:id)"/>
                                                 <td>
-                                                    <a role="button" data-toggle="collapse">
-                                                        <xsl:attribute name="href" select="concat('#test-results-', @xml:id)"/>
-                                                        <xsl:attribute name="aria-controls" select="concat('test-results-', @xml:id)"/>
-                                                        <xsl:choose>
-                                                            <xsl:when test="/m:response/m:request/@test-id eq @xml:id">
-                                                                <xsl:attribute name="class" select="concat('underline ', common:lang-class(m:request/@lang))"/>
-                                                                <xsl:attribute name="aria-expanded" select="'true'"/>
-                                                            </xsl:when>
-                                                            <xsl:otherwise>
-                                                                <xsl:attribute name="class" select="concat('collapsed underline ', common:lang-class(m:request/@lang))"/>
-                                                                <xsl:attribute name="aria-expanded" select="'false'"/>
-                                                            </xsl:otherwise>
-                                                        </xsl:choose>
-                                                        <xsl:value-of select="m:query"/>
-                                                    </a>
+                                                    <xsl:attribute name="class" select="common:lang-class(m:request/@lang)"/>
+                                                    <xsl:value-of select="m:query"/>
                                                 </td>
                                                 <td class="icon">
                                                     <xsl:choose>
