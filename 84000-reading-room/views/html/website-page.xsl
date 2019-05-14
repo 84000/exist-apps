@@ -68,6 +68,7 @@
         <xsl:param name="page-title" required="yes"/>
         <xsl:param name="page-description" required="yes"/>
         <xsl:param name="page-type" required="yes"/>
+        <xsl:param name="alternatives" required="no"/>
         
         <head>
             
@@ -115,6 +116,7 @@
             <link rel="shortcut icon">
                 <xsl:attribute name="href" select="concat($front-end-path, '/favicon/favicon.ico')"/>
             </link>
+            <xsl:copy-of select="$alternatives"/>
             <meta name="msapplication-config">
                 <xsl:attribute name="content" select="concat($front-end-path, '/favicon/browserconfig.xml')"/>
             </meta>
@@ -181,10 +183,10 @@
     <!-- Website page -->
     <xsl:template name="website-page">
         
-        <xsl:param name="page-url"/>
-        <xsl:param name="page-class"/>
-        <xsl:param name="page-title"/>
-        <xsl:param name="page-description"/>
+        <xsl:param name="page-url" required="yes"/>
+        <xsl:param name="page-class" required="yes"/>
+        <xsl:param name="page-title" required="yes"/>
+        <xsl:param name="page-description" required="yes"/>
         <xsl:param name="content"/>
         <xsl:param name="nav-tab"/>
         
@@ -237,11 +239,12 @@
     <!-- Reading Room page -->
     <xsl:template name="reading-room-page">
         
-        <xsl:param name="page-url"/>
-        <xsl:param name="page-class"/>
-        <xsl:param name="page-title"/>
-        <xsl:param name="page-description"/>
+        <xsl:param name="page-url" required="yes"/>
+        <xsl:param name="page-class" required="yes"/>
+        <xsl:param name="page-title" required="yes"/>
+        <xsl:param name="page-description" required="yes"/>
         <xsl:param name="content"/>
+        <xsl:param name="alternatives"/>
         
         <html>
             
@@ -253,6 +256,7 @@
                 <xsl:with-param name="page-title" select="$page-title"/>
                 <xsl:with-param name="page-description" select="$page-description"/>
                 <xsl:with-param name="page-type" select="'reading-room'"/>
+                <xsl:with-param name="alternatives" select="$alternatives"/>
             </xsl:call-template>
             
             <body id="top">

@@ -471,6 +471,24 @@
             <xsl:with-param name="page-title" select="concat('84000 Reading Room | ', m:translation/m:titles/m:title[@xml:lang eq 'en']/text())"/>
             <xsl:with-param name="page-description" select="normalize-space(data(m:translation/m:summary/tei:p[1]))"/>
             <xsl:with-param name="content" select="$content"/>
+            <xsl:with-param name="alternatives">
+                <xsl:for-each select="m:translation/m:downloads/m:download[@type = ('epub', 'azw3', 'pdf')]">
+                    <link rel="alternative">
+                        <xsl:attribute name="href" select="@url"/>
+                        <xsl:choose>
+                            <xsl:when test="@type eq 'epub'">
+                                <xsl:attribute name="type" select="'application/epub+zip'"/>
+                            </xsl:when>
+                            <xsl:when test="@type eq 'azw3'">
+                                <xsl:attribute name="type" select="'application/vnd.amazon.ebook'"/>
+                            </xsl:when>
+                            <xsl:when test="@type eq 'pdf'">
+                                <xsl:attribute name="type" select="'application/pdf'"/>
+                            </xsl:when>
+                        </xsl:choose>
+                    </link>
+                </xsl:for-each>
+            </xsl:with-param>
         </xsl:call-template>
         
     </xsl:template>
@@ -484,7 +502,9 @@
                 </a>
             </div>
             <div class="rw-heading">
-                <h3>The Translation</h3>
+                <h3>
+                    <xsl:value-of select="'The Translation'"/>
+                </h3>
                 <xsl:if test="$translation/m:body/m:honoration/text()">
                     <h2>
                         <xsl:apply-templates select="$translation/m:body/m:honoration"/>
