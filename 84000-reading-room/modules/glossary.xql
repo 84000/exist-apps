@@ -191,7 +191,7 @@ declare function glossary:glossary-items($normalized-term as xs:string) as eleme
                     let $translation-title := tei-content:title($translation)
                     let $translation-id := tei-content:id($translation)
                     let $glossary-id := $gloss/@xml:id/string()
-                    let $uri := concat('http://read.84000.co/translation/', $translation-id, '.html#', $glossary-id)
+                    let $uri := concat($common:environment/m:url[@id eq 'reading-room'], '/translation/', $translation-id, '.html#', $glossary-id)
                     let $score := ft:score($gloss)
                     
                     order by $score descending

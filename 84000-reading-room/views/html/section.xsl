@@ -300,6 +300,37 @@
             <xsl:with-param name="page-description" select="normalize-space(m:section/m:abstract/tei:p[1]/text())"/>
             <xsl:with-param name="content" select="$content"/>
             <xsl:with-param name="nav-tab" select="'#reading-room'"/>
+            <xsl:with-param name="additional-links">
+                
+                <!-- Add a navigation link to start (Lobby) -->
+                <!-- Don't add related link if it's this id -->
+                <xsl:if test="not(lower-case(m:section/@id) eq 'lobby')">
+                    <link rel="related" type="application/atom+xml;profile=opds-catalog;kind=navigation" href="/section/lobby.navigation.atom" title="The 84000 Reading Room"/>
+                </xsl:if>
+                
+                <!-- Add a navigation link to All Translated -->
+                <!-- Don't add related link if it's this id -->
+                <xsl:if test="not(lower-case(m:section/@id) eq 'all-translated')">
+                    <link rel="related" type="application/atom+xml;profile=opds-catalog;kind=acquisition" href="/section/all-translated.acquisition.atom" title="84000: All Translated Texts"/>
+                </xsl:if>
+                
+                <!-- If there are texts add an acquisition entry -->
+                <xsl:if test="m:section/m:text-stats/m:stat[@type eq 'count-published-children']/@value gt '0' or lower-case(m:section/@id) eq 'all-translated'">
+                    <link rel="alternate" type="application/atom+xml;profile=opds-catalog;kind=acquisition">
+                        <xsl:attribute name="href" select="concat('/section/', m:section/@id, '.acquisition.atom')"/>
+                        <xsl:attribute name="title" select="concat('84000 : ', m:section/m:titles/m:title[@xml:lang = 'en'], ' - OPDS Catalog')"/>
+                    </link>
+                </xsl:if>
+                
+                <!-- If there are more descedant texts then add a navigation entry too -->
+                <xsl:if test="m:section/m:text-stats/m:stat[@type eq 'count-published-descendants']/@value gt m:section/m:text-stats/m:stat[@type eq 'count-published-children']/@value">
+                    <link rel="alternate" type="application/atom+xml;profile=opds-catalog;kind=navigation">
+                        <xsl:attribute name="href" select="concat('/section/', m:section/@id, '.navigation.atom')"/>
+                        <xsl:attribute name="title" select="concat('84000 : ', m:section/m:titles/m:title[@xml:lang = 'en'], ' - OPDS Catalog')"/>
+                    </link>
+                </xsl:if>
+                
+            </xsl:with-param>
         </xsl:call-template>
         
     </xsl:template>
@@ -394,9 +425,9 @@
                         </xsl:when>
                         
                         <xsl:otherwise>
-                            <xsl:variable name="count-texts" select="$section/m:text-stats/m:stat[@type eq 'count-text-descendants']/number()"/>
-                            <xsl:variable name="count-published" select="$section/m:text-stats/m:stat[@type eq 'count-published-descendants']/number()"/>
-                            <xsl:variable name="count-in-progress" select="$section/m:text-stats/m:stat[@type eq 'count-in-progress-descendants']/number()"/>
+                            <xsl:variable name="count-texts" select="$section/m:text-stats/m:stat[@type eq 'count-text-descendants']/@value/number()"/>
+                            <xsl:variable name="count-published" select="$section/m:text-stats/m:stat[@type eq 'count-published-descendants']/@value/number()"/>
+                            <xsl:variable name="count-in-progress" select="$section/m:text-stats/m:stat[@type eq 'count-in-progress-descendants']/@value/number()"/>
                             <table class="table table-stats">
                                 <tbody>
                                     <tr>
@@ -847,31 +878,39 @@
                     </div>
                     
                     <div class="footer">
-                        <xsl:variable name="count-texts" select="$section/m:descendants[@id eq $sub-section-id]/m:text-stats/m:stat[@type eq 'count-text-descendants']/number()"/>
-                        <xsl:variable name="count-published" select="$section/m:descendants[@id eq $sub-section-id]/m:text-stats/m:stat[@type eq 'count-published-descendants']/number()"/>
-                        <xsl:variable name="count-in-progress" select="$section/m:descendants[@id eq $sub-section-id]/m:text-stats/m:stat[@type eq 'count-in-progress-descendants']/number()"/>
+                        <xsl:variable name="count-texts" select="$section/m:descendants[@id eq $sub-section-id]/m:text-stats/m:stat[@type eq 'count-text-descendants']/@value/number()"/>
+                        <xsl:variable name="count-published" select="$section/m:descendants[@id eq $sub-section-id]/m:text-stats/m:stat[@type eq 'count-published-descendants']/@value/number()"/>
+                        <xsl:variable name="count-in-progress" select="$section/m:descendants[@id eq $sub-section-id]/m:text-stats/m:stat[@type eq 'count-in-progress-descendants']/@value/number()"/>
                         <table class="table">
                             <tbody>
                                 <tr>
-                                    <th>Texts</th>
+                                    <th>
+                                        <xsl:value-of select="'Texts'"/>
+                                    </th>
                                     <td>
                                         <xsl:value-of select="format-number($count-texts, '#,###')"/>
                                     </td>
                                 </tr>
                                 <tr>
-                                    <th>Translated</th>
+                                    <th>
+                                        <xsl:value-of select="'Translated'"/>
+                                    </th>
                                     <td>
                                         <xsl:value-of select="format-number($count-published, '#,###')"/>
                                     </td>
                                 </tr>
                                 <tr>
-                                    <th>In Progress</th>
+                                    <th>
+                                        <xsl:value-of select="'In Progress'"/>
+                                    </th>
                                     <td>
                                         <xsl:value-of select="format-number($count-in-progress, '#,###')"/>
                                     </td>
                                 </tr>
                                 <tr>
-                                    <th>Not begun</th>
+                                    <th>
+                                        <xsl:value-of select="'Not begun'"/>
+                                    </th>
                                     <td>
                                         <xsl:value-of select="format-number($count-texts - ($count-published + $count-in-progress), '#,###')"/>
                                     </td>

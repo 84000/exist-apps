@@ -19,7 +19,7 @@
                                 
                                 <xsl:if test="/m:response/m:app-text[ends-with(@key, 'header-img-src')]">
                                     <xsl:attribute name="class" select="'panel-img-header has-img thumbnail'"/>
-                                    <img data-max-horizontal-crop="50">
+                                    <img class="stretch">
                                         <xsl:attribute name="src" select="concat($front-end-path, /m:response/m:app-text[ends-with(@key, 'header-img-src')])"/>
                                     </img>
                                 </xsl:if>

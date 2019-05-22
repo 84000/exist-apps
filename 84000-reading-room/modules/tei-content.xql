@@ -264,3 +264,7 @@ declare function tei-content:document-url($tei as element()) as xs:string {
 
 };
 
+declare function tei-content:last-updated($fileDesc as element()) as xs:dateTime? {
+    xs:dateTime(($fileDesc/tei:notesStmt/tei:note[@type eq "lastUpdated"][@date-time gt ''][1]/@date-time, '2010-01-01T00:00:00')[1])
+};
+

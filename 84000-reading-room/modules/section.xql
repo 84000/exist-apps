@@ -26,7 +26,7 @@ declare function section:abstract($tei as element()) as element() {
 
     <abstract xmlns="http://read.84000.co/ns/1.0">
     { 
-        $tei/tei:text/tei:front/tei:div[@type eq "abstract"]/*
+        common:normalize-space($tei/tei:text/tei:front/tei:div[@type eq "abstract"]/node())
     }
     </abstract>
     
@@ -36,7 +36,7 @@ declare function section:warning($tei as element()) as element() {
 
     <warning xmlns="http://read.84000.co/ns/1.0">
     { 
-        $tei/tei:text/tei:front/tei:div[@type eq "warning"]/*
+        common:normalize-space($tei/tei:text/tei:front/tei:div[@type eq "warning"]/node())
     }
     </warning>
     
@@ -46,7 +46,7 @@ declare function section:about($tei as element()) as element() {
 
     <about xmlns="http://read.84000.co/ns/1.0">
     { 
-        $tei/tei:text/tei:body/tei:div[@type eq "about"]/*
+        common:normalize-space($tei/tei:text/tei:body/tei:div[@type eq "about"]/node())
     }
     </about>
     
@@ -71,64 +71,56 @@ declare function section:descendants($tei as element(), $include-text-stats as x
     
     let $descendants :=
         for $child-section in $section:sections//tei:TEI[tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl[tei:idno/@parent-id eq $id]]
-        order by xs:integer($child-section/tei:teiHeader/tei:fileDesc/tei:sourceDesc/@sort-index) ascending
+            order by xs:integer($child-section/tei:teiHeader/tei:fileDesc/tei:sourceDesc/@sort-index) ascending
         return
             section:descendants($child-section, $include-text-stats, $nest + 1)
     
-    return 
-        <descendants xmlns="http://read.84000.co/ns/1.0" 
-            id="{ $id }" 
-            nesting="{ $nest }" 
-            uri="{ base-uri($tei) }" 
-            sort-index="{ $tei/tei:teiHeader/tei:fileDesc/tei:sourceDesc/@sort-index }">
-            <title xml:lang="en">{ tei-content:title($tei) }</title>
-            {
-                if($include-text-stats) then
+    let $text-fileDesc := $section:texts//tei:fileDesc[tei:sourceDesc/tei:bibl/tei:idno[@parent-id eq $id]]
+    
+    let $text-stats := 
+        if($include-text-stats) then
         
-                    let $children-fileDesc := $section:texts//tei:fileDesc[tei:sourceDesc/tei:bibl/tei:idno[@parent-id eq $id]]
-                    let $count-text-children := count($children-fileDesc/tei:sourceDesc/tei:bibl/tei:idno[@parent-id eq $id]) 
-                    let $count-published-children := count($children-fileDesc[tei:publicationStmt/@status = $tei-content:published-statuses]/tei:sourceDesc/tei:bibl[tei:idno/@parent-id eq $id])
-                    let $count-in-progress-children := count($children-fileDesc[tei:publicationStmt/@status = $tei-content:in-progress-statuses]/tei:sourceDesc/tei:bibl[tei:idno/@parent-id eq $id])
-                    
-                    return
-                        <text-stats xmlns="http://read.84000.co/ns/1.0">
-                            <stat type="count-text-children">
-                            { 
-                                $count-text-children
-                            }
-                            </stat>
-                            <stat type="count-published-children">
-                            { 
-                                $count-published-children
-                            }
-                            </stat>
-                            <stat type="count-in-progress-children">
-                            { 
-                                $count-in-progress-children
-                            }
-                            </stat>
-                            <stat type="count-text-descendants">
-                            { 
-                                $count-text-children + sum($descendants//m:stat[@type = 'count-text-children'] ! xs:integer(.))
-                            }
-                            </stat>
-                            <stat type="count-published-descendants">
-                            { 
-                                $count-published-children + sum($descendants//m:stat[@type = 'count-published-children'] ! xs:integer(.))
-                            }
-                            </stat>
-                            <stat type="count-in-progress-descendants">
-                            { 
-                                $count-in-progress-children + sum($descendants//m:stat[@type = 'count-in-progress-children'] ! xs:integer(.))
-                            }
-                            </stat>
-                        </text-stats>
-                else
-                    ()
-            }
-            {
-                $descendants
-            }
+            let $count-text-children := count($text-fileDesc/tei:sourceDesc/tei:bibl/tei:idno[@parent-id eq $id]) 
+            let $count-published-children := count($text-fileDesc[tei:publicationStmt/@status = $tei-content:published-statuses]/tei:sourceDesc/tei:bibl[tei:idno/@parent-id eq $id])
+            let $count-in-progress-children := count($text-fileDesc[tei:publicationStmt/@status = $tei-content:in-progress-statuses]/tei:sourceDesc/tei:bibl[tei:idno/@parent-id eq $id])
+            
+            return
+                <text-stats xmlns="http://read.84000.co/ns/1.0">
+                    <stat type="count-text-children" value="{ $count-text-children }"/>
+                    <stat type="count-published-children" value="{ $count-published-children }"/>
+                    <stat type="count-in-progress-children" value="{ $count-in-progress-children }"/>
+                    <stat type="count-text-descendants" value="{ $count-text-children + sum($descendants//m:stat[@type = 'count-text-children']/@value ! xs:integer(.)) }"/>
+                    <stat type="count-published-descendants" value="{ $count-published-children + sum($descendants//m:stat[@type = 'count-published-children']/@value ! xs:integer(.)) }"/>
+                    <stat type="count-in-progress-descendants" value="{ $count-in-progress-children + sum($descendants//m:stat[@type = 'count-in-progress-children']/@value ! xs:integer(.)) }"/>
+                </text-stats>
+            else
+                ()
+    
+    let $last-updated := 
+        max((
+            (: child texts :)
+            $text-fileDesc ! tei-content:last-updated(.), 
+            
+            (: sub sections :)
+            $descendants/@last-updated ! xs:dateTime(.), 
+            
+            (: default date :)
+            tei-content:last-updated(<empty/>)
+        ))
+    
+    return 
+        <descendants xmlns="http://read.84000.co/ns/1.0">
+            { attribute id { $id } }
+            { attribute nesting { $nest } }
+            { attribute uri { base-uri($tei) } }
+            { attribute sort-index { $tei/tei:teiHeader/tei:fileDesc/tei:sourceDesc/@sort-index } }
+            { attribute last-updated { $last-updated } }
+            { element title {
+                attribute xml:lang { 'en' },
+                tei-content:title($tei)
+            } }
+            { $text-stats }
+            { $descendants }
         </descendants>
         
 };
@@ -164,15 +156,7 @@ declare function section:texts($section-id as xs:string, $published-only as xs:b
         for $tei in $published-texts
             for $resource-id in $tei//tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl[tei:idno/@parent-id = $section-ids]/@key
             return
-                <text xmlns="http://read.84000.co/ns/1.0" resource-id="{ $resource-id }" status="{ tei-content:translation-status($tei) }" uri="{ base-uri($tei) }">
-                    { tei-content:source($tei, $resource-id) }
-                    { translation:toh($tei, $resource-id) }
-                    { translation:titles($tei) }
-                    { translation:title-variants($tei) }
-                    { translation:translation($tei) }
-                    { translation:downloads($tei, $resource-id, 'any-version') }
-                    { translation:summary($tei) }
-                </text>
+                section:text($tei, $resource-id, false())
     
     return
         <texts xmlns="http://read.84000.co/ns/1.0" section-id="{ $section-id }" published-only="{ if($published-only) then '1' else '0' }">
@@ -191,74 +175,93 @@ declare function section:texts($section-id as xs:string, $published-only as xs:b
 };
 
 declare function section:all-translated-texts() as element() {
-    
     <texts xmlns="http://read.84000.co/ns/1.0">
     {
         for $tei in collection($common:translations-path)//tei:TEI[tei:teiHeader/tei:fileDesc/tei:publicationStmt/@status = $tei-content:published-statuses]
             for $resource-id in $tei//tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl/@key
         return
-            <text resource-id="{ $resource-id }" status="{ tei-content:translation-status($tei) }">
-                { tei-content:source($tei, $resource-id) }
-                { translation:toh($tei, $resource-id) }
-                { translation:titles($tei) }
-                { translation:title-variants($tei) }
-                { translation:translation($tei) }
-                { tei-content:ancestors($tei, $resource-id, 1) }
-                { translation:downloads($tei, $resource-id, 'any-version') }
-                { translation:summary($tei) }
-            </text>
-        
+            section:text($tei, $resource-id, true())
     }
     </texts>
-        
+};
+
+declare function section:text($tei as node(), $resource-id as xs:string, $include-ancestors as xs:boolean) as element() {
+    <text xmlns="http://read.84000.co/ns/1.0">
+        { attribute resource-id { $resource-id } }
+        { attribute status { tei-content:translation-status($tei) } }
+        { attribute uri { base-uri($tei) } }
+        { attribute last-updated { tei-content:last-updated($tei//tei:fileDesc) } }
+        { tei-content:source($tei, $resource-id) }
+        { if($include-ancestors) then tei-content:ancestors($tei, $resource-id, 1) else () }
+        { translation:toh($tei, $resource-id) }
+        { translation:titles($tei) }
+        { translation:title-variants($tei) }
+        { translation:translation($tei) }
+        { translation:downloads($tei, $resource-id, 'any-version') }
+        { translation:summary($tei) }
+    </text>
 };
 
 declare function section:base-section($tei as node(), $published-only as xs:boolean, $include-text-stats as xs:boolean) as element() {
     
     let $id := tei-content:id($tei)
     
+    let $stats := 
+        if($include-text-stats) then
+            section:text-stats($tei)
+        else
+            ()
+    
+    let $texts := 
+        if(lower-case($id) eq 'all-translated') then
+            section:all-translated-texts()
+        else
+            section:texts($id, $published-only, false())
+    
+    let $subsections := 
+        for $sub-section in $section:sections//tei:TEI[tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl/tei:idno/@parent-id eq upper-case($id)]
+            order by 
+                xs:integer($sub-section//tei:teiHeader/tei:fileDesc/tei:sourceDesc/@sort-index),
+                $sub-section//tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:title[@type eq "mainTitle"][@xml:lang eq "en"][1]
+        return
+            section:sub-section($sub-section, $published-only)
+            
+    let $last-updated := max((
+        
+        (: Last time a child text was updated :)
+        $texts/m:text[@last-updated gt '']/@last-updated ! xs:dateTime(.),
+        
+        (: Last time a descendant was updated :)
+        $stats[@last-updated gt '']/@last-updated ! xs:dateTime(.)
+        
+    ))
+    
     return
-        <section xmlns="http://read.84000.co/ns/1.0" 
-            id="{ $id }" >
+        <section xmlns="http://read.84000.co/ns/1.0">
+            { attribute id { $id } }
+            { attribute last-updated { $last-updated } }
             { section:titles($tei) }
             { section:abstract($tei) }
             { section:warning($tei) }
             { section:about($tei) }
             { tei-content:ancestors($tei, '', 1) }
-            { 
-                if($include-text-stats) then
-                    section:text-stats($tei)
-                else
-                    ()
-            }
-            { 
-                if(lower-case($id) eq 'all-translated') then
-                    section:all-translated-texts()
-                else
-                    section:texts($id, $published-only, false())
-            }
-            { 
-                for $sub-section in $section:sections//tei:TEI[tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl/tei:idno/@parent-id eq upper-case($id)]
-                    order by 
-                        xs:integer($sub-section//tei:teiHeader/tei:fileDesc/tei:sourceDesc/@sort-index),
-                        $sub-section//tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:title[@type eq "mainTitle"][@xml:lang eq "en"][1]
-                return
-                    section:sub-section($sub-section, $published-only)
-            }
+            { $stats }
+            { $texts }
+            { $subsections }
         </section>
+        
 };
 
 declare function section:sub-section($tei as node(), $published-only as xs:boolean) as element() {
-
+    
     let $id := tei-content:id($tei)
     let $type := $tei//tei:teiHeader/tei:fileDesc/@type
-    let $sort-index := $tei//tei:teiHeader/tei:fileDesc/tei:sourceDesc/@sort-index
     
     return
-        <sub-section xmlns="http://read.84000.co/ns/1.0" 
-            id="{ $id }" 
-            type="{ $type }" 
-            sort-index="{ $sort-index }">
+        <sub-section xmlns="http://read.84000.co/ns/1.0">
+            { attribute id { $id } }
+            { attribute type { $type } }
+            { attribute sort-index { $tei//tei:teiHeader/tei:fileDesc/tei:sourceDesc/@sort-index } }
             { section:titles($tei) }
             { section:abstract($tei) }
             { section:warning($tei) }

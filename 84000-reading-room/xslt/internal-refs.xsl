@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://read.84000.co/ns/1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" exclude-result-prefixes="#all" version="3.0">
+<xsl:stylesheet xmlns="http://read.84000.co/ns/1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" exclude-result-prefixes="#all" version="3.0">
     
     <xsl:template match="node()|@*">
         <xsl:copy>
@@ -37,6 +37,12 @@
                 <xsl:when test="$target-id = ('summary', 'acknowledgements', 'introduction', 'prologue', 'colophon', 'appendix', 'abbreviations', 'bibliography')">
                     <xsl:attribute name="location" select="$target-id"/>
                     <xsl:value-of select="text()[normalize-space(.)]"/>
+                </xsl:when>
+                <xsl:when test="ancestor::m:item[parent::m:glossary]">
+                    <xsl:attribute name="target">
+                        <xsl:value-of select="concat(substring-before(ancestor::m:item[parent::m:glossary]/@uri, '#'), @target)"/>
+                    </xsl:attribute>
+                    <xsl:value-of select="@target"/>
                 </xsl:when>
                 <xsl:when test="text()[normalize-space(.)]">
                     <xsl:value-of select="text()[normalize-space(.)]"/>

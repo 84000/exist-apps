@@ -26,7 +26,14 @@ declare function local:dispatch($model as xs:string, $view as xs:string, $parame
         {
             if($view)then
                 <view>
-                    <forward url="{concat($exist:controller, $view)}"/>
+                {
+                    if(ends-with($view, '.xsl')) then
+                        <forward servlet="XSLTServlet">
+                            <set-attribute name="xslt.stylesheet" value="{concat($exist:root, $exist:controller, $view)}"/>
+                        </forward>
+                    else
+                        <forward url="{concat($exist:controller, $view)}"/>
+                }
                 </view>
             else
                 ()
@@ -195,6 +202,14 @@ else if(not(common:auth-environment()) or sm:is-authenticated()) then
                     <add-parameter name="resource-suffix" value="json"/>
                 </parameters>
             )
+        else if ($resource-suffix = ('navigation.atom', 'acquisition.atom')) then
+            local:dispatch("/models/section.xq", "/views/atom/section.xsl", 
+                <parameters xmlns="http://exist.sourceforge.net/NS/exist">
+                    <add-parameter name="resource-id" value="{ $resource-id }"/>
+                    <add-parameter name="resource-suffix" value="{ $resource-suffix }"/>
+                    <add-parameter name="published-only" value="1"/>
+                </parameters>
+            )
         else
             (: return the xml :)
             local:dispatch("/models/section.xq", "", 
@@ -280,7 +295,7 @@ else if(not(common:auth-environment()) or sm:is-authenticated()) then
         else if ($resource-suffix eq 'azw3') then
              <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
                 <forward url="{ download:file-path($exist:resource) }">
-                    <set-header name="Content-Type" value="application/x-mobi8-ebook"/>
+                    <set-header name="Content-Type" value="application/vnd.amazon.mobi8-ebook"/>
                     <set-header name="Content-Disposition" value="attachment"/>
                 </forward>
             </dispatch>

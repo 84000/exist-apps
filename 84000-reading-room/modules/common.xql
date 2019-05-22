@@ -110,6 +110,20 @@ function common:normalized-chars($string as xs:string) as xs:string {
         translate(lower-case(normalize-unicode($string)), $in, $out)
 };
 
+declare function common:normalize-space($nodes as node()*) as node()*{
+    for $node in $nodes
+    return
+        if ($node instance of text()) then
+            text { normalize-space($node) }
+        else if ($node instance of element()) then
+            element { node-name($node) }{
+                $node/@*,
+                common:normalize-space($node/node())
+           }
+        else
+            ()
+};
+
 declare function common:small-caps($string as xs:string) as xs:string {
     translate($string, 'abcdefghijklmnopqrstuvwxyz', 'ᴀʙᴄᴅᴇꜰɢʜɪᴊᴋʟᴍɴᴏᴘǫʀsᴛᴜᴠᴡxʏᴢ')
 };
@@ -371,10 +385,7 @@ declare function common:app-texts($search as xs:string, $replacements as element
         common:replace(
             element {QName('http://read.84000.co/ns/1.0', 'app-text')}{
                 attribute key { $key },
-                if (count($best/node()) eq 1 and $best/node()[1] instance of text()) then
-                    text { normalize-space($best/text()) }
-                else
-                    $best/node()
+                common:normalize-space($best/node())
             },
             $replacements
         )

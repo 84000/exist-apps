@@ -68,7 +68,7 @@
         <xsl:param name="page-title" required="yes"/>
         <xsl:param name="page-description" required="yes"/>
         <xsl:param name="page-type" required="yes"/>
-        <xsl:param name="alternatives" required="no"/>
+        <xsl:param name="additional-links" required="no"/>
         
         <head>
             
@@ -116,7 +116,7 @@
             <link rel="shortcut icon">
                 <xsl:attribute name="href" select="concat($front-end-path, '/favicon/favicon.ico')"/>
             </link>
-            <xsl:copy-of select="$alternatives"/>
+            <xsl:copy-of select="$additional-links"/>
             <meta name="msapplication-config">
                 <xsl:attribute name="content" select="concat($front-end-path, '/favicon/browserconfig.xml')"/>
             </meta>
@@ -189,6 +189,7 @@
         <xsl:param name="page-description" required="yes"/>
         <xsl:param name="content"/>
         <xsl:param name="nav-tab"/>
+        <xsl:param name="additional-links"/>
         
         <html>
             
@@ -200,6 +201,7 @@
                 <xsl:with-param name="page-title" select="$page-title"/>
                 <xsl:with-param name="page-description" select="$page-description"/>
                 <xsl:with-param name="page-type" select="'communications'"/>
+                <xsl:with-param name="additional-links" select="$additional-links"/>
             </xsl:call-template>
             
             <body id="top">
@@ -244,7 +246,7 @@
         <xsl:param name="page-title" required="yes"/>
         <xsl:param name="page-description" required="yes"/>
         <xsl:param name="content"/>
-        <xsl:param name="alternatives"/>
+        <xsl:param name="additional-links"/>
         
         <html>
             
@@ -256,7 +258,7 @@
                 <xsl:with-param name="page-title" select="$page-title"/>
                 <xsl:with-param name="page-description" select="$page-description"/>
                 <xsl:with-param name="page-type" select="'reading-room'"/>
-                <xsl:with-param name="alternatives" select="$alternatives"/>
+                <xsl:with-param name="additional-links" select="$additional-links"/>
             </xsl:call-template>
             
             <body id="top">

@@ -14,6 +14,7 @@ import module namespace section="http://read.84000.co/section" at "../modules/se
 declare option exist:serialize "method=xml indent=no";
 
 let $resource-id := upper-case(request:get-parameter('resource-id', 'lobby'))
+let $resource-suffix := request:get-parameter('resource-suffix', '')
 let $published-only := request:get-parameter('published-only', false())
 let $translations-order := request:get-parameter('translations-order', 'toh')
 let $tei := tei-content:tei($resource-id, 'section')
@@ -23,14 +24,25 @@ return
         "section", 
         $common:app-id,
         (
+           (: Include request parameters :)
             <request 
                 xmlns="http://read.84000.co/ns/1.0" 
+                resource-id="{ $resource-id }"
+                resource-suffix="{ $resource-suffix }"
                 published-only="{ $published-only }"
                 translations-order="{ $translations-order }" />,
+                
+            (: Include section data :)
             section:base-section($tei, $published-only, true()),
-            common:app-texts(
-                'section',
-                <replace xmlns="http://read.84000.co/ns/1.0"/>
-            )
+            
+            (: If it's html include app texts :)
+            if($resource-suffix eq 'html') then
+                common:app-texts(
+                    'section',
+                    <replace xmlns="http://read.84000.co/ns/1.0"/>
+                )
+            else
+                ()
+            
         )
     )

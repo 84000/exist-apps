@@ -39,16 +39,26 @@ return
         "source/folio", 
         $common:app-id,
         (
+            (: Include request parameters :)
             <request 
                 xmlns="http://read.84000.co/ns/1.0" 
                 resource-id="{ $resource-id }" 
                 folio="{ $folio }"/>,
+                
+            (: Include back link to the text :)
             <back-link 
                 xmlns="http://read.84000.co/ns/1.0"
                 url="{ concat($reading-room-path, '/translation/', $resource-id, '.html#', $anchor) }">
                 <title>{ tei-content:title($tei) }</title>
             </back-link>,
+            
+            (: Include the source data :)
             source:ekangyur-page($ekangyur-volume-number, $ekangyur-page-number, false()),
-            common:app-texts('source', <replace xmlns="http://read.84000.co/ns/1.0"/>)
+            
+            (: If it's html include app texts :)
+            if(request:get-parameter('resource-suffix', '') eq 'html') then
+                common:app-texts('source', <replace xmlns="http://read.84000.co/ns/1.0"/>)
+            else
+                ()
         )
     )
