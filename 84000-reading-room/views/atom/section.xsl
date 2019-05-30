@@ -165,7 +165,6 @@
                 </xsl:otherwise>
             </xsl:choose>
             
-            
         </feed>
     </xsl:template>
     

@@ -102,11 +102,23 @@
                                             </xsl:if>
                                             <xsl:value-of select="'Part sponsored texts'"/>
                                         </option>
-                                        <option value="not-sponsored">
-                                            <xsl:if test="m:texts/@sponsored eq 'not-sponsored'">
+                                        <option value="available">
+                                            <xsl:if test="m:texts/@sponsored eq 'available'">
                                                 <xsl:attribute name="selected" select="'selected'"/>
                                             </xsl:if>
-                                            <xsl:value-of select="'Not sponsored texts'"/>
+                                            <xsl:value-of select="'Texts available for sponsorship'"/>
+                                        </option>
+                                        <option value="priority">
+                                            <xsl:if test="m:texts/@sponsored eq 'priority'">
+                                                <xsl:attribute name="selected" select="'selected'"/>
+                                            </xsl:if>
+                                            <xsl:value-of select="'Texts prioritised for sponsorship'"/>
+                                        </option>
+                                        <option value="no-status">
+                                            <xsl:if test="m:texts/@sponsored eq 'no-status'">
+                                                <xsl:attribute name="selected" select="'selected'"/>
+                                            </xsl:if>
+                                            <xsl:value-of select="'No sponsorship status'"/>
                                         </option>
                                     </select>
                                 </div>
@@ -129,52 +141,67 @@
                                 </div>
                                 
                                 <div class="form-group print-no-margin">
-                                    <select name="sort" class="form-control">
-                                        <option value="toh">
-                                            <xsl:if test="m:texts/@sort eq 'toh'">
-                                                <xsl:attribute name="selected" select="'selected'"/>
-                                            </xsl:if>
-                                            <xsl:value-of select="'Sort by Tohoku'"/>
-                                        </option>
-                                        <option value="status">
-                                            <xsl:if test="m:texts/@sort eq 'status'">
-                                                <xsl:attribute name="selected" select="'selected'"/>
-                                            </xsl:if>
-                                            <xsl:value-of select="'Sort by Status'"/>
-                                        </option>
-                                        <option value="longest">
-                                            <xsl:if test="m:texts/@sort eq 'longest'">
-                                                <xsl:attribute name="selected" select="'selected'"/>
-                                            </xsl:if>
-                                            <xsl:value-of select="'Longest first'"/>
-                                        </option>
-                                        <option value="shortest">
-                                            <xsl:if test="m:texts/@sort eq 'shortest'">
-                                                <xsl:attribute name="selected" select="'selected'"/>
-                                            </xsl:if>
-                                            <xsl:value-of select="'Shortest first'"/>
-                                        </option>
-                                    </select>
+                                    <div class="row">
+                                        <div class="col-sm-6 print-width-override">
+                                            <select name="sort" class="form-control">
+                                                <option value="toh">
+                                                    <xsl:if test="m:texts/@sort eq 'toh'">
+                                                        <xsl:attribute name="selected" select="'selected'"/>
+                                                    </xsl:if>
+                                                    <xsl:value-of select="'Sort by Tohoku'"/>
+                                                </option>
+                                                <option value="status">
+                                                    <xsl:if test="m:texts/@sort eq 'status'">
+                                                        <xsl:attribute name="selected" select="'selected'"/>
+                                                    </xsl:if>
+                                                    <xsl:value-of select="'Sort by Status'"/>
+                                                </option>
+                                                <option value="longest">
+                                                    <xsl:if test="m:texts/@sort eq 'longest'">
+                                                        <xsl:attribute name="selected" select="'selected'"/>
+                                                    </xsl:if>
+                                                    <xsl:value-of select="'Longest first'"/>
+                                                </option>
+                                                <option value="shortest">
+                                                    <xsl:if test="m:texts/@sort eq 'shortest'">
+                                                        <xsl:attribute name="selected" select="'selected'"/>
+                                                    </xsl:if>
+                                                    <xsl:value-of select="'Shortest first'"/>
+                                                </option>
+                                            </select>
+                                        </div>
+                                        <div class="col-sm-6 print-width-override">
+                                            <select name="deduplicate" class="form-control">
+                                                <option value="toh">
+                                                    <xsl:if test="m:texts/@deduplicate eq 'toh'">
+                                                        <xsl:attribute name="selected" select="'selected'"/>
+                                                    </xsl:if>
+                                                    <xsl:value-of select="'List all Tohs'"/>
+                                                </option>
+                                                <option value="text">
+                                                    <xsl:if test="m:texts/@deduplicate eq 'text'">
+                                                        <xsl:attribute name="selected" select="'selected'"/>
+                                                    </xsl:if>
+                                                    <xsl:value-of select="'Group by text'"/>
+                                                </option>
+                                                <option value="project">
+                                                    <xsl:if test="m:texts/@deduplicate eq 'project'">
+                                                        <xsl:attribute name="selected" select="'selected'"/>
+                                                    </xsl:if>
+                                                    <xsl:value-of select="'Group by project'"/>
+                                                </option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    
                                 </div>
                                 
                                 <div class="form-group print-no-margin">
                                     <div class="row">
-                                        <div class="col-sm-5 hidden-print">
-                                            <input type="text" name="search-toh" value="" class="form-control" placeholder="Search for Toh">
+                                        <div class="col-sm-9 hidden-print">
+                                            <input type="text" name="search-toh" value="" class="form-control" placeholder="Search for Tohoku">
                                                 <xsl:attribute name="value" select="m:texts/@search-toh"/>
                                             </input>
-                                        </div>
-                                        <div class="col-sm-4 print-width-override">
-                                            <div class="checkbox">
-                                                <label>
-                                                    <input type="checkbox" name="deduplicate" value="true">
-                                                        <xsl:if test="m:texts/@deduplicate eq 'true'">
-                                                            <xsl:attribute name="checked" select="'checked'"/>
-                                                        </xsl:if>
-                                                    </input>
-                                                    <xsl:value-of select="'Deduplicate'"/>
-                                                </label>
-                                            </div>
                                         </div>
                                         <div class="col-sm-3 hidden-print">
                                             <input type="submit" value="Search" class="btn btn-primary pull-right"/>
@@ -225,6 +252,7 @@
                             <tbody>
                                 <xsl:for-each select="m:texts/m:text">
                                     <xsl:variable name="text-id" select="@id"/>
+                                    <xsl:variable name="project-id" select="@project-id"/>
                                     <xsl:variable name="status-id" select="xs:string(@status)"/>
                                     <xsl:variable name="status" select="/m:response/m:text-statuses/m:status[@status-id eq $status-id]"/>
                                     <xsl:if test="/m:response/m:texts[@sort eq 'status'] and not(preceding-sibling::m:text[@status eq $status-id])">
@@ -238,7 +266,7 @@
                                     <tr>
                                         <td rowspan="2">
                                             <xsl:choose>
-                                                <xsl:when test="/m:response/m:texts/@deduplicate eq 'true' and m:toh/m:duplicates">
+                                                <xsl:when test="/m:response/m:texts/@deduplicate eq 'text' and m:toh/m:duplicates">
                                                     <xsl:value-of select="m:toh/m:full/text()"/>
                                                     <xsl:for-each select="m:toh/m:duplicates/m:duplicate">
                                                         <br/>
@@ -283,8 +311,38 @@
                                                 <xsl:value-of select="m:titles/m:title[@xml:lang eq 'en']"/>
                                             </a>
                                         </td>
-                                        <td class="nowrap small">
-                                            <xsl:value-of select="format-number(tei:bibl/tei:location/@count-pages, '#,###')"/>
+                                        <td rowspan="2" class="nowrap small">
+                                            <xsl:choose>
+                                                <xsl:when test="m:project/@count-texts/number() gt 1">
+                                                    <table class="table table-condensed table-bordered no-bottom-margin">
+                                                        <thead>
+                                                            <tr>
+                                                                <th>
+                                                                    <xsl:value-of select="'Project'"/>
+                                                                </th>
+                                                                <th>
+                                                                    <xsl:value-of select="format-number(m:project/@count-pages, '#,###')"/>
+                                                                </th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            <xsl:for-each select="m:project/tei:bibl">
+                                                                <tr>
+                                                                    <td>
+                                                                        <xsl:value-of select="normalize-space(tei:ref)"/>
+                                                                    </td>
+                                                                    <td>
+                                                                        <xsl:value-of select="format-number(tei:location/@count-pages, '#,###')"/>
+                                                                    </td>
+                                                                </tr>
+                                                            </xsl:for-each>
+                                                        </tbody>
+                                                    </table>
+                                                </xsl:when>
+                                                <xsl:otherwise>
+                                                    <xsl:value-of select="format-number(tei:bibl/tei:location/@count-pages, '#,###')"/>
+                                                </xsl:otherwise>
+                                            </xsl:choose>
                                         </td>
                                         <td class="nowrap small hidden-print">
                                             <xsl:value-of select="concat('vol. ' , tei:bibl/tei:location/tei:start/@volume, ', p. ', tei:bibl/tei:location/tei:start/@page)"/>
@@ -292,17 +350,33 @@
                                         <td class="nowrap small hidden-print">
                                             <xsl:value-of select="concat('vol. ' , tei:bibl/tei:location/tei:end/@volume, ', p. ', tei:bibl/tei:location/tei:end/@page)"/>
                                         </td>
-                                        <td class="nowrap small">
-                                            <xsl:choose>
-                                                <xsl:when test="m:translation/@sponsored eq 'full'">
-                                                    <xsl:attribute name="class" select="'nowrap small text-success'"/>
-                                                    <xsl:value-of select="'Fully sponsored'"/>
-                                                </xsl:when>
-                                                <xsl:when test="m:translation/@sponsored eq 'part'">
-                                                    <xsl:attribute name="class" select="'nowrap small text-danger'"/>
-                                                    <xsl:value-of select="'Part sponsored'"/>
-                                                </xsl:when>
-                                            </xsl:choose>
+                                        <td rowspan="2">
+                                            <xsl:variable name="sponsor-status" select="m:translation/@sponsored"/>
+                                            <span>
+                                                <xsl:choose>
+                                                    <xsl:when test="$sponsor-status eq 'full'">
+                                                        <xsl:attribute name="class" select="'nowrap small text-success'"/>
+                                                    </xsl:when>
+                                                    <xsl:when test="$sponsor-status = ('part', 'reserved')">
+                                                        <xsl:attribute name="class" select="'nowrap small text-warning'"/>
+                                                    </xsl:when>
+                                                    <xsl:when test="$sponsor-status = ('available', 'priority')">
+                                                        <xsl:attribute name="class" select="'nowrap small text-danger'"/>
+                                                    </xsl:when>
+                                                    <xsl:otherwise>
+                                                        <xsl:attribute name="class" select="'nowrap small'"/>
+                                                    </xsl:otherwise>
+                                                </xsl:choose>
+                                                <xsl:if test="$sponsor-status gt ''">
+                                                    <xsl:value-of select="/m:response/m:sponsorship-statuses/m:status[@value eq $sponsor-status]"/>
+                                                </xsl:if>
+                                            </span>
+                                            <xsl:if test="@project-id ne @id">
+                                                <br/>
+                                                <span class="label label-danger">
+                                                    <xsl:value-of select="'project'"/>
+                                                </span>
+                                            </xsl:if>
                                         </td>
                                     </tr>
                                     <tr class="sub">
@@ -330,10 +404,10 @@
                                                 </xsl:if>
                                             </ul>
                                         </td>
-                                        <td colspan="4">
+                                        <td colspan="2">
                                             <xsl:if test="xs:integer(@word-count) gt 0">
                                                 <span class="small text-muted hidden-print">
-                                                    <xsl:value-of select="concat(format-number(@word-count, '#,###'), ' words in the translation')"/>
+                                                    <xsl:value-of select="concat(format-number(@word-count, '#,###'), ' words translated')"/>
                                                 </span>
                                             </xsl:if>
                                         </td>

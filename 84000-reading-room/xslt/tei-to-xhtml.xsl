@@ -176,8 +176,11 @@
                             <xsl:when test="@location eq 'chapter'">
                                 <xsl:value-of select="concat('chapter-', @chapter-index, '.xhtml', @target)"/>
                             </xsl:when>
-                            <xsl:otherwise>
+                            <xsl:when test="@location gt '' and @target gt '' and not(@location = ('missing'))">
                                 <xsl:value-of select="concat(@location, '.xhtml', @target)"/>
+                            </xsl:when>
+                            <xsl:otherwise>
+                                <xsl:value-of select="@target"/>
                             </xsl:otherwise>
                         </xsl:choose>
                     </xsl:attribute>

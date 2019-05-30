@@ -36,7 +36,7 @@ let $entries := (
                 <dc:language>en-GB</dc:language>
                 <dc:publisher>84000 – Translating the Words of the Buddha</dc:publisher>
                 <dc:date>{ $data/m:response/m:translation/m:translation/m:publication-date/text() }</dc:date>
-                <meta property="dcterms:modified">{ current-dateTime() }</meta><!-- Published now? -->
+                <meta property="dcterms:modified">{ format-dateTime(current-dateTime(), "[Y0001]-[M01]-[D01]T[H01]:[m01]:[s01]Z") }</meta><!-- Published now? -->
                 <meta property="belongs-to-collection" id="collection">84000 Translations from the Kangyur</meta>
                 <meta refines="#collection" property="collection-type">series</meta>
                 <meta refines="#collection" property="group-position">{ replace(lower-case($data/m:response/m:translation/m:source/@key), '^toh', '') }</meta>

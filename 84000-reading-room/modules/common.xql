@@ -71,7 +71,8 @@ function common:response($model-type as xs:string, $app-id as xs:string, $data a
         app-version="{ $common:app-version }"
         environment-path="{ $common:environment-path }"
         user-name="{ common:user-name() }" 
-        lang="{ request:get-parameter('lang', 'en') }">
+        lang="{ request:get-parameter('lang', 'en') }"
+        exist-version="{ system:get-version() }">
         {
             $data
         }
@@ -317,6 +318,17 @@ function common:limit-str($str as xs:string, $limit as xs:integer) as xs:string 
         concat(substring($str, 1, $limit), '...')
     else
         $str
+};
+
+declare function common:add-selected($element as element(), $selected-value as xs:string?) as element() {
+    if(not($selected-value) and $element/@value eq '' or $element/@value eq $selected-value) then
+        element { node-name($element) } {
+            $element/@*,
+            attribute selected { 'selected' },
+            $element/node()
+        }
+    else
+        $element
 };
 
 declare function common:epub-resource($file as xs:string) as xs:base64Binary {

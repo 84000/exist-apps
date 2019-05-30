@@ -90,8 +90,10 @@ declare function local:auth($redirect){
 
 (: Log the request :)
 import module namespace log = "http://read.84000.co/log" at "modules/log.xql";
-log:log-request(concat($exist:controller, $exist:path), $controller-root, $collection-path, $resource-id, $resource-suffix),
+let $log-request := log:log-request(concat($exist:controller, $exist:path), $controller-root, $collection-path, $resource-id, $resource-suffix)
 
+(: Process the request :)
+return
 (: Robots :)
 if (lower-case($exist:resource) = ('robots.txt')) then
     <dispatch xmlns="http://exist.sourceforge.net/NS/exist">

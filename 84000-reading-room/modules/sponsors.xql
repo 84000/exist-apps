@@ -9,14 +9,18 @@ import module namespace translation="http://read.84000.co/translation" at "trans
 declare namespace m="http://read.84000.co/ns/1.0";
 declare namespace tei="http://www.tei-c.org/ns/1.0";
 
-declare variable $sponsors:sponsors := doc(concat($common:data-path, '/entities/sponsors.xml'));
+declare variable $sponsors:sponsors := doc(concat($common:data-path, '/operations/sponsors.xml'));
 declare variable $sponsors:texts := collection($common:translations-path);
 declare variable $sponsors:prefixes := '(Dr\.|Prof\.)';
 
 declare function sponsors:sponsors($sponsor-ids as xs:string*, $include-acknowledgements as xs:boolean, $include-internal-names as xs:boolean) as element() {
 
     let $sponsors-ordered := 
-        for $sponsor in $sponsors:sponsors/m:sponsors/m:sponsor[@xml:id = (if($sponsor-ids = 'all') then @xml:id else $sponsor-ids)]
+        for $sponsor in 
+            if(not($sponsor-ids = 'all')) then
+                $sponsors:sponsors/m:sponsors/m:sponsor[@xml:id = $sponsor-ids]
+            else
+                $sponsors:sponsors/m:sponsors/m:sponsor
         order by normalize-space(replace(concat($sponsor/m:label, ' ', $sponsor/m:internal-name), $sponsors:prefixes, ''))
         return $sponsor
     
@@ -92,28 +96,34 @@ declare function sponsors:acknowledgements($uri as xs:string) as element()* {
 };
 
 declare function sponsors:sponsorship-statuses($selected-status as xs:string?) as element()  {
-    <sponsorhip-statuses xmlns="http://read.84000.co/ns/1.0">
+    <sponsorship-statuses xmlns="http://read.84000.co/ns/1.0">
     {(
-        element status 
-        { 
-            attribute value { '' },
-            if (not($selected-status) or $selected-status eq '') then attribute selected { 'selected' } else '',
-            text { 'Not sponsored' }
-        },
-        element status 
-        { 
-            attribute value { 'full' },
-            if ($selected-status eq 'full') then attribute selected { 'selected' } else '',
-            text { 'Fully sponsored' }
-        },
-        element status 
-        { 
-            attribute value { 'part' },
-            if ($selected-status eq 'part') then attribute selected { 'selected' } else '',
-            text { 'Partly sponsored' }
-        }
+        common:add-selected(
+            <status value="">No sponsorship status</status>, 
+            $selected-status
+        ),
+        common:add-selected(
+            <status value="full">Fully sponsored</status>, 
+            $selected-status
+        ),
+        common:add-selected(
+           <status value="part">Partly sponsored</status>, 
+           $selected-status
+        ),
+        common:add-selected(
+            <status value="available">Available for sponsorship</status>, 
+            $selected-status
+        ),
+        common:add-selected(
+            <status value="priority">Priority for sponsorship</status>, 
+            $selected-status
+        ),
+        common:add-selected(
+            <status value="reserved">Reserved for sponsorship</status>, 
+            $selected-status
+        )
     )}
-    </sponsorhip-statuses>
+    </sponsorship-statuses>
 };
 
 declare function sponsors:next-id() as xs:integer {

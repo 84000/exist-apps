@@ -178,12 +178,12 @@
                         <br/>
                         <a href="#" target="_self">
                             <xsl:choose>
-                                <xsl:when test="xs:integer(m:text-stats/m:stat[@type eq 'count-text-children']/text()) gt 0">
+                                <xsl:when test="xs:integer(m:text-stats/m:stat[@type eq 'count-text-children']/@value) gt 0">
                                     <xsl:attribute name="href" select="concat('section-texts.html?section-id=', fn:encode-for-uri(@id))"/>
                                     <xsl:attribute name="data-ajax-target" select="concat('#', $section-texts-id)"/>
                                     <xsl:attribute name="aria-controls" select="$section-texts-id"/>
                                     <xsl:attribute name="class" select="'underline'"/>
-                                    <xsl:value-of select="fn:format-number(xs:integer(m:text-stats/m:stat[@type eq 'count-text-children']),'#,##0')"/>
+                                    <xsl:value-of select="fn:format-number(xs:integer(m:text-stats/m:stat[@type eq 'count-text-children']/@value),'#,##0')"/>
                                 </xsl:when>
                                 <xsl:otherwise>-</xsl:otherwise>
                             </xsl:choose>
@@ -202,8 +202,8 @@
                         <span class="small text-muted nowrap">Published: </span>
                         <br/>
                         <xsl:choose>
-                            <xsl:when test="xs:integer(m:text-stats/m:stat[@type eq 'count-text-children']/text()) gt 0">
-                                <xsl:value-of select="fn:format-number(xs:integer(m:text-stats/m:stat[@type eq 'count-published-children']),'#,##0')"/>
+                            <xsl:when test="xs:integer(m:text-stats/m:stat[@type eq 'count-text-children']/@value) gt 0">
+                                <xsl:value-of select="fn:format-number(xs:integer(m:text-stats/m:stat[@type eq 'count-published-children']/@value),'#,##0')"/>
                             </xsl:when>
                             <xsl:otherwise>-</xsl:otherwise>
                         </xsl:choose>
@@ -212,8 +212,8 @@
                         <span class="small text-muted nowrap">In-progress: </span>
                         <br/>
                         <xsl:choose>
-                            <xsl:when test="xs:integer(m:text-stats/m:stat[@type eq 'count-text-children']/text()) gt 0">
-                                <xsl:value-of select="fn:format-number(xs:integer(m:text-stats/m:stat[@type eq 'count-in-progress-children']),'#,##0')"/>
+                            <xsl:when test="xs:integer(m:text-stats/m:stat[@type eq 'count-text-children']/@value) gt 0">
+                                <xsl:value-of select="fn:format-number(xs:integer(m:text-stats/m:stat[@type eq 'count-in-progress-children']/@value),'#,##0')"/>
                             </xsl:when>
                             <xsl:otherwise>-</xsl:otherwise>
                         </xsl:choose>
@@ -221,17 +221,17 @@
                     <div class="col-sm-4">
                         <span class="small text-muted nowrap">Under this section: </span>
                         <br/>
-                        <xsl:value-of select="fn:format-number(xs:integer(m:text-stats/m:stat[@type eq 'count-text-descendants']),'#,##0')"/>
+                        <xsl:value-of select="fn:format-number(xs:integer(m:text-stats/m:stat[@type eq 'count-text-descendants']/@value),'#,##0')"/>
                     </div>
                     <div class="col-sm-4">
                         <span class="small text-muted nowrap">Published: </span>
                         <br/>
-                        <xsl:value-of select="fn:format-number(xs:integer(m:text-stats/m:stat[@type eq 'count-published-descendants']),'#,##0')"/>
+                        <xsl:value-of select="fn:format-number(xs:integer(m:text-stats/m:stat[@type eq 'count-published-descendants']/@value),'#,##0')"/>
                     </div>
                     <div class="col-sm-4">
                         <span class="small text-muted nowrap">In-progress: </span>
                         <br/>
-                        <xsl:value-of select="fn:format-number(xs:integer(m:text-stats/m:stat[@type eq 'count-in-progress-descendants']),'#,##0')"/>
+                        <xsl:value-of select="fn:format-number(xs:integer(m:text-stats/m:stat[@type eq 'count-in-progress-descendants']/@value),'#,##0')"/>
                     </div>
                 </div>
             </td>

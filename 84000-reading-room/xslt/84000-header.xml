@@ -110,9 +110,9 @@
             <item url="http://84000.co/about/sponsors">
                 <label>Sponsors</label>
             </item>
-            <item url="http://84000.co/about/partnerships">
+            <!-- <item url="http://84000.co/about/partnerships">
                 <label>Partnerships</label>
-            </item>
+            </item> -->
             <item url="http://84000.co/about/endorsements">
                 <label>Endorsements</label>
             </item>
@@ -223,9 +223,9 @@
             <item url="http://84000.co/ch-about/ch-sponsors">
                 <label>贊助人</label>
             </item>
-            <item url="http://84000.co/ch-about/ch-partnerships">
+            <!-- <item url="http://84000.co/ch-about/ch-partnerships">
                 <label>Partnerships</label>
-            </item>
+            </item> -->
             <item url="http://84000.co/ch-about/ch-about-contact">
                 <label>聯繫方式</label>
             </item>

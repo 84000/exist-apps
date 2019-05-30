@@ -162,7 +162,7 @@
     </xsl:template>
     
     <xsl:template match="tei:ptr">
-        <a class="internal-ref">
+        <a class="internal-ref" target="_blank">
             <xsl:attribute name="href" select="@target"/>
             <xsl:choose>
                 <xsl:when test="text()">

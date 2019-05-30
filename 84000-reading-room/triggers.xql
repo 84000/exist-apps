@@ -246,26 +246,24 @@ declare function local:glossary-overlaps($doc, $term) as xs:boolean {
 };
 
 declare function local:log-event($type as xs:string, $event as xs:string, $object-type as xs:string, $uri as xs:string) {
-
-    let $log-collection := $common:log-path
+    
+    (: 
+        Note: this only logs if the log file is present (available)
+        To inhibit logging remove the log file.    
+    :)
+    
     let $log := "triggers.xml"
-    let $log-uri := concat($log-collection, "/", $log)
+    let $log-uri := concat($common:log-path, "/", $log)
+    
+    where doc-available($log-uri)
     return
-    (
-        (: create the log file if it does not exist :)
-        if (not(doc-available($log-uri))) then
-            xmldb:store($log-collection, $log, <log xmlns="http://read.84000.co/ns/1.0"/>)
-        else ()
-    ,
-        (: log the trigger details to the log file :)
-        update insert <trigger 
-            xmlns="http://read.84000.co/ns/1.0" 
-            event="{string-join(($type, $event, $object-type), "-")}" 
-            uri="{$uri}" 
-            timestamp="{current-dateTime()}" 
-            user="{ common:user-name() }"/> 
+        update insert 
+            <trigger xmlns="http://read.84000.co/ns/1.0" 
+                event="{string-join(($type, $event, $object-type), "-")}" 
+                uri="{$uri}" 
+                timestamp="{current-dateTime()}" 
+                user="{ common:user-name() }"/>
         into doc($log-uri)/m:log
-    )
 };
 
 

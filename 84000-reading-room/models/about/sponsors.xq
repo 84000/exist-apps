@@ -19,6 +19,7 @@ let $tabs :=
     </tabs>
     
 let $app-texts := common:app-texts('about.sponsors', <replace xmlns="http://read.84000.co/ns/1.0"/>, $lang)
+let $sponsor-ids := $sponsors:sponsors/m:sponsors/m:sponsor[m:type/@id = ('founding', 'matching-funds')]/@xml:id
 
 return
     common:response(
@@ -28,7 +29,7 @@ return
             $app-texts,
             $tabs,
             translations:summary(),
-            sponsors:sponsors($sponsors:sponsors/m:sponsors/m:sponsor[m:type/@id = ('founding', 'matching-funds')]/@xml:id, false(), false()),
+            sponsors:sponsors($sponsor-ids, false(), false()),
             translations:sponsored()
         )
     )

@@ -9,7 +9,7 @@ import module namespace translation="http://read.84000.co/translation" at "trans
 declare namespace m="http://read.84000.co/ns/1.0";
 declare namespace tei="http://www.tei-c.org/ns/1.0";
 
-declare variable $contributors:contributors := doc(concat($common:data-path, '/entities/contributors.xml'));
+declare variable $contributors:contributors := doc(concat($common:data-path, '/operations/contributors.xml'));
 declare variable $contributors:texts := collection($common:translations-path);
 declare variable $contributors:person-prefixes := '(Dr\.|Prof\.|Ven\.)';
 declare variable $contributors:team-prefixes := '(Dr\.|The|Prof\.)';

@@ -119,12 +119,14 @@ return
             doc(concat($common:data-path, '/config/contributor-types.xml')),
             doc(concat($common:data-path, '/config/publication-tasks.xml')),
             doc(concat($common:data-path, '/config/submission-checklist.xml')),
-            element { QName('http://read.84000.co/ns/1.0', 'translation-status') } {
+            <translation-status xmlns="http://read.84000.co/ns/1.0" >
+            {
                 translation-status:notes($text-id),
                 translation-status:tasks($text-id),
                 translation-status:submissions($text-id),
                 translation-status:status-updates($tei)
             }
+            </translation-status>
         )
     )
     

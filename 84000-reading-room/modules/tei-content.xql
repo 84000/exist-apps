@@ -65,6 +65,26 @@ declare function tei-content:tei($resource-id as xs:string, $resource-type as xs
     
 };
 
+declare function tei-content:project-id($tei as element()) as xs:string {
+    (: Returns the idno in a given tei doc :)
+    if($tei//tei:publicationStmt/tei:idno/@project-id gt '') then
+        $tei//tei:publicationStmt/tei:idno/@project-id
+    else
+        $tei//tei:publicationStmt/tei:idno/@xml:id
+};
+
+declare function tei-content:project-teis($tei as element()) as element()* {
+    
+    let $project-id := tei-content:project-id($tei)
+    let $id := tei-content:id($tei)
+    
+    return
+        if($project-id ne $id) then
+            collection($common:translations-path)//tei:TEI[tei:teiHeader/tei:fileDesc/tei:publicationStmt[tei:idno/@project-id eq $project-id]]
+        else
+            $tei
+};
+
 declare function tei-content:title($tei as element()) as xs:string {
     (: Returns a standardised title in a given tei doc :)
     

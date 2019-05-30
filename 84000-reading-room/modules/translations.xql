@@ -15,11 +15,13 @@ import module namespace translation-status="http://read.84000.co/translation-sta
 import module namespace functx="http://www.functx.com";
 
 declare function translations:section-tei($section-id as xs:string) as element()* {
+
     let $root := tei-content:tei($section-id, 'section')
     let $descendants := section:descendants($root, false())
     let $descendants-ids := $descendants//@id
     return
-        collection($common:translations-path)//tei:TEI[tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl/tei:idno/@parent-id = $descendants-ids]
+        collection($common:translations-path)//tei:TEI[tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl/tei:idno[@parent-id = $descendants-ids]]
+    
 };
 
 declare function translations:file($translation as element()) as element() {
@@ -139,11 +141,14 @@ declare function translations:sponsored() as element() {
 };
 
 declare function translations:filtered-text($tei as element(), $toh-key as xs:string?, $include-sponsors as xs:boolean) as element(){
+
     let $status := tei-content:translation-status($tei)
     let $status-group := tei-content:translation-status-group($tei)
+    
     return
         <text xmlns="http://read.84000.co/ns/1.0" 
             id="{ tei-content:id($tei) }" 
+            project-id="{ tei-content:project-id($tei) }" 
             status="{ $status }"
             status-group="{ $status-group }"
             word-count="{ translation-status:word-count($tei) }">
@@ -151,6 +156,7 @@ declare function translations:filtered-text($tei as element(), $toh-key as xs:st
             { translation:titles($tei) }
             { tei-content:source-bibl($tei, $toh-key) }
             { translation:translation($tei) }
+            { translation:summary($tei) }
             { 
                 if($include-sponsors) then
                     translation:sponsors($tei, true())
@@ -165,35 +171,60 @@ declare function translations:filtered-text($tei as element(), $toh-key as xs:st
                 else
                     ()
              }
+             { $tei/m:project }
         </text>
 };
 
-declare function translations:filtered-texts($section as xs:string, $status as xs:string*, $sort as xs:string, $range as xs:string, $sponsored as xs:string, $search-toh as xs:string, $deduplicate as xs:boolean) as element() {
+declare function translations:filtered-texts($section as xs:string, $status as xs:string*, $sort as xs:string, $range as xs:string, $sponsored as xs:string, $search-toh as xs:string, $deduplicate as xs:string) as element() {
     
-    let $tei := translations:section-tei($section)
+    let $teis := translations:section-tei($section)
     
-    let $status-tei := 
+    let $status-teis := 
         if(count($status) eq 0 or (count($status) eq 1 and $status[1] eq '')) then
-            $tei
+            $teis
         else
         (
             if(functx:is-value-in-sequence('0', $status)) then
-                $tei[tei:teiHeader/tei:fileDesc/tei:publicationStmt[@status = ('', '0') or not(@status)]]
+                $teis[tei:teiHeader/tei:fileDesc/tei:publicationStmt[@status = ('', '0') or not(@status)]]
             else
                 ()
         ,
-            $tei[tei:teiHeader/tei:fileDesc/tei:publicationStmt[@status = $status]]
+            $teis[tei:teiHeader/tei:fileDesc/tei:publicationStmt[@status = $status]]
         )
     
     let $page-size-ranges := doc(concat($common:data-path, '/config/page-size-ranges.xml'))
     
     let $selected-range := $page-size-ranges//m:range[xs:string(@id) eq $range]
     
-    let $page-size-tei :=
+    let $project-teis :=
+        for $status-tei in $status-teis
+            let $project-teis := tei-content:project-teis($status-tei)
+            let $project-count-pages := sum($project-teis//tei:sourceDesc/tei:bibl/tei:location/@count-pages/number())
+        return
+            element { node-name($status-tei) } {
+                $status-tei/@*,
+                $status-tei/node(),
+                element { QName('http://read.84000.co/ns/1.0', 'project') } {
+                    attribute id { tei-content:project-id($status-tei) },
+                    attribute count-texts { count($project-teis) },
+                    attribute count-pages { $project-count-pages },
+                    $project-teis//tei:sourceDesc/tei:bibl
+                }
+            }
+    
+    let $page-size-teis :=
         if($selected-range) then
-            $status-tei[tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl[tei:location/@count-pages gt '0']/tei:location/@count-pages[. >= xs:integer($selected-range/@min)][. <= xs:integer($selected-range/@max)]]
+            if($deduplicate eq 'project') then
+                $project-teis[
+                    m:project[@count-pages gt '0'][@count-pages >= xs:integer($selected-range/@min)][@count-pages <= xs:integer($selected-range/@max)]
+                ]
+            else
+                $project-teis[
+                    tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl
+                        [tei:location/@count-pages gt '0']/tei:location[@count-pages >= xs:integer($selected-range/@min)][@count-pages <= xs:integer($selected-range/@max)]
+                ]
         else
-            $status-tei
+            $project-teis
     
     let $sponsor-types :=
         if($sponsored eq 'sponsored')then
@@ -202,26 +233,30 @@ declare function translations:filtered-texts($section as xs:string, $status as x
             ('full')
         else if($sponsored eq 'part-sponsored')then
             ('part')
+        else if($sponsored eq 'available')then
+            ('part', 'available', 'priority', 'reserved')
+        else if($sponsored eq 'priority')then
+            ('priority')
         else
             ()
     
     let $include-sponsors := ($sponsored = ('sponsored', 'fully-sponsored', 'part-sponsored'))
     
-    let $sponsor-types-tei := 
+    let $sponsor-types-teis := 
         if(count($sponsor-types) gt 0) then
-            $page-size-tei[tei:teiHeader/tei:fileDesc/tei:titleStmt/@sponsored = $sponsor-types]
-        else if($sponsored eq 'not-sponsored')then
-            $page-size-tei[tei:teiHeader/tei:fileDesc/tei:titleStmt[not(@sponsored) or @sponsored eq '']]
+            $page-size-teis[tei:teiHeader/tei:fileDesc/tei:titleStmt/@sponsored = $sponsor-types]
+        else if($sponsored eq 'no-status')then
+            $page-size-teis[tei:teiHeader/tei:fileDesc/tei:titleStmt[not(@sponsored) or @sponsored eq '']]
         else
-            $page-size-tei
+            $page-size-teis
     
     let $texts :=
-        if($deduplicate and $search-toh eq '') then
-            for $tei in $sponsor-types-tei
+        if($deduplicate = ('text', 'project') and $search-toh eq '') then
+            for $tei in $sponsor-types-teis
             return
                 translations:filtered-text($tei, '', $include-sponsors)
          else
-            for $bibl in $sponsor-types-tei/tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl[contains(@key, $search-toh)]
+            for $bibl in $sponsor-types-teis/tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl[contains(@key, $search-toh)]
                 let $tei := $bibl/ancestor::tei:TEI
             return
                 translations:filtered-text($tei, $bibl/@key, $include-sponsors)

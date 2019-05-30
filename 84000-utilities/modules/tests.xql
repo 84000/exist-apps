@@ -594,6 +594,14 @@ declare function tests:structure() as element() {
     
     let $unmatched-section-texts := tests:match-text-count($sections-structure/m:sections-structure)
     
+    let $text-tei-duplicated := 
+        for $text-id in $texts//tei:idno/@xml:id
+        return
+            if(count($texts//tei:idno[@xml:id  eq $text-id]) gt 1) then
+                <detail xmlns="http://read.84000.co/ns/1.0">Text { data($text-id) } is duplicated.</detail>
+            else
+                ()
+    
     return
         <results xmlns="http://read.84000.co/ns/1.0">
             <structure>
@@ -636,6 +644,19 @@ declare function tests:structure() as element() {
                             <details>
                             {
                                 $unmatched-section-texts
+                            }
+                            </details>
+                        else
+                            ()
+                    }
+                </test>
+                <test id="text-tei-duplicated" pass="{ if (count($text-tei-duplicated) eq 0) then 1 else 0 }">
+                    <title>There should be no duplicate text ids.</title>
+                    {
+                        if ($text-tei-duplicated) then
+                            <details>
+                            {
+                                $text-tei-duplicated
                             }
                             </details>
                         else

@@ -502,7 +502,7 @@
                                 </label>
                                 <div class="col-sm-4">
                                     <input type="text" class="form-control" name="action-note" id="action-note" placeholder="e.g. Konchog">
-                                        <xsl:attribute name="value" select="m:translation-status/m:action-note/text()"/>
+                                        <xsl:attribute name="value" select="normalize-space(m:translation-status/m:action-note)"/>
                                     </input>
                                 </div>
                             </div>
@@ -512,7 +512,7 @@
                                 </label>
                                 <div class="col-sm-9">
                                     <textarea class="form-control" rows="5" name="progress-note" id="progress-note" placeholder="Notes about the status of the translation...">
-                                        <xsl:copy-of select="m:translation-status/m:progress-note/text()"/>
+                                        <xsl:copy-of select="normalize-space(m:translation-status/m:progress-note)"/>
                                     </textarea>
                                     <xsl:if test="m:translation-status/m:progress-note/@last-edited">
                                         <div class="small text-muted sml-margin top">
@@ -527,7 +527,7 @@
                                 </label>
                                 <div class="col-sm-9">
                                     <textarea class="form-control" rows="5" name="text-note" id="text-note" placeholder="Notes about the text itself...">
-                                        <xsl:copy-of select="m:translation-status/m:text-note/text()"/>
+                                        <xsl:copy-of select="normalize-space(m:translation-status/m:text-note)"/>
                                     </textarea>
                                     <xsl:if test="m:translation-status/m:text-note/@last-edited">
                                         <div class="small text-muted sml-margin top">
@@ -701,7 +701,7 @@
             </input>
             <div class="row">
                 <div class="col-sm-8">
-                    <xsl:copy-of select="m:select-input('Sponsorship Status', 'sponsorship-status', 9, 1, m:sponsorhip-statuses/m:status)"/>
+                    <xsl:copy-of select="m:select-input('Sponsorship Status', 'sponsorship-status', 9, 1, m:sponsorship-statuses/m:status)"/>
                     <fieldset class="add-nodes-container">
                         <legend>
                             <xsl:value-of select="'Sponsors'"/>
@@ -753,8 +753,30 @@
                                     <xsl:if test="not(/m:response/@model-type eq 'operations/edit-text-sponsors')">
                                         <xsl:attribute name="target" select="'operations'"/>
                                     </xsl:if>
-                                    <xsl:attribute name="href" select="concat($operations-path, '/search.html?sponsored=sponsored')"/>
-                                    <xsl:value-of select="'List of sponsored texts'"/>
+                                    <xsl:variable name="sponsorship-status" select="m:sponsorship-statuses/m:status[@selected eq 'selected']"/>
+                                    <xsl:choose>
+                                        <xsl:when test="$sponsorship-status/@value eq 'full'">
+                                            <xsl:attribute name="href" select="concat($operations-path, '/search.html?sponsored=fully-sponsored')"/>
+                                            <xsl:value-of select="'Back to search: Fully sponsored texts'"/>
+                                        </xsl:when>
+                                        <xsl:when test="$sponsorship-status/@value eq 'part'">
+                                            <xsl:attribute name="href" select="concat($operations-path, '/search.html?sponsored=part-sponsored')"/>
+                                            <xsl:value-of select="'Back to search: Part sponsored texts'"/>
+                                        </xsl:when>
+                                        <xsl:when test="$sponsorship-status/@value eq 'available'">
+                                            <xsl:attribute name="href" select="concat($operations-path, '/search.html?sponsored=available')"/>
+                                            <xsl:value-of select="'Back to search: Texts available for sponsorship'"/>
+                                        </xsl:when>
+                                        <xsl:when test="$sponsorship-status/@value eq'priority'">
+                                            <xsl:attribute name="href" select="concat($operations-path, '/search.html?sponsored=priority')"/>
+                                            <xsl:value-of select="'Back to search: Texts prioritised for sponsorship'"/>
+                                        </xsl:when>
+                                        <xsl:otherwise>
+                                            <xsl:attribute name="href" select="concat($operations-path, '/search.html?sponsored=sponsored')"/>
+                                            <xsl:value-of select="'Back to search: All sponsored texts'"/>
+                                        </xsl:otherwise>
+                                    </xsl:choose>
+                                    
                                 </a>
                             </span>
                             <span>|</span>

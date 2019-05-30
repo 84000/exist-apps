@@ -249,6 +249,9 @@
                             Sponsors <a href="{ $reading-room-path }/about/sponsors.html" target="sponsors">en</a> | <a href="{ $reading-room-path }/about/sponsors.html?lang=zh" target="sponsors">zh</a>
                         </li>
                         <li>
+                            Sponsor a Sutra <a href="{ $reading-room-path }/about/sponsor-a-sutra.html" target="sponsor-a-sutra">en</a> | <a href="{ $reading-room-path }/about/sponsor-a-sutra.html?lang=zh" target="sponsor-a-sutra">zh</a>
+                        </li>
+                        <li>
                             Translators <a href="{ $reading-room-path }/about/translators.html" target="translators">en</a> | <a href="{ $reading-room-path }/about/translators.html?lang=zh" target="translators">zh</a>
                         </li>
                     </ul>

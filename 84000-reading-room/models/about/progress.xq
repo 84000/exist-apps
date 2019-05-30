@@ -23,11 +23,11 @@ let $app-texts := common:app-texts('about.progress', <replace xmlns="http://read
 (: 'O1JC11494' = Kangyur only :)
 let $texts := 
     if($tab eq 'published') then
-        translations:filtered-texts('O1JC11494', $tei-content:published-statuses, 'toh', '0', '', '', false())
+        translations:filtered-texts('O1JC11494', $tei-content:published-statuses, 'toh', '0', '', '', 'toh')
     else if ($tab eq 'translated') then
-        translations:filtered-texts('O1JC11494', $tei-content:text-statuses/m:status[@group = ('translated')]/@status-id, 'toh', '0', '', '', false())
+        translations:filtered-texts('O1JC11494', $tei-content:text-statuses/m:status[@group = ('translated')]/@status-id, 'toh', '0', '', '', 'toh')
     else if ($tab eq 'in-translation') then
-        translations:filtered-texts('O1JC11494', $tei-content:text-statuses/m:status[@group = ('in-translation')]/@status-id, 'toh', '0', '', '', false())
+        translations:filtered-texts('O1JC11494', $tei-content:text-statuses/m:status[@group = ('in-translation')]/@status-id, 'toh', '0', '', '', 'toh')
     else
         ()
 
