@@ -701,6 +701,7 @@
             </input>
             <div class="row">
                 <div class="col-sm-8">
+                    <xsl:copy-of select="m:select-input('Sponsorship Status', 'sponsorship-status', 9, 1, m:sponsorship-statuses/m:status)"/>
                     <fieldset class="add-nodes-container">
                         <legend>
                             <xsl:value-of select="'Sponsors'"/>

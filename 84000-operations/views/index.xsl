@@ -25,9 +25,7 @@
                                     <xsl:variable name="total-pages" select="m:outline-summary/m:texts/m:pages/@count"/>
                                     <tr class="total">
                                         <td>
-                                            <a href="search.html">
-                                                Total
-                                            </a>
+                                            <a href="search.html?status=none">Total</a>
                                         </td>
                                         <td>
                                             <xsl:value-of select="format-number(m:outline-summary/m:texts/@count, '#,###')"/> 

@@ -188,7 +188,7 @@ declare function translations:filtered-texts($section as xs:string, $status as x
                 $teis[tei:teiHeader/tei:fileDesc/tei:publicationStmt[@status = ('', '0') or not(@status)]]
             else
                 ()
-        ,
+            ,
             $teis[tei:teiHeader/tei:fileDesc/tei:publicationStmt[@status = $status]]
         )
     
