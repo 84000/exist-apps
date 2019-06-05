@@ -7,6 +7,7 @@ import module namespace common="http://read.84000.co/common" at "../../84000-rea
 import module namespace tei-content="http://read.84000.co/tei-content" at "../../84000-reading-room/modules/tei-content.xql";
 import module namespace translation="http://read.84000.co/translation" at "../../84000-reading-room/modules/translation.xql";
 import module namespace sponsors="http://read.84000.co/sponsors" at "../../84000-reading-room/modules/sponsors.xql";
+import module namespace sponsorship="http://read.84000.co/sponsorship" at "../../84000-reading-room/modules/sponsorship.xql";
 
 declare namespace m = "http://read.84000.co/ns/1.0";
 declare namespace tei="http://www.tei-c.org/ns/1.0";
@@ -64,7 +65,7 @@ return
                 { translation:translation($tei) }
                 { translation:toh($tei, '') }
             </translation>,
-            sponsors:sponsorship-statuses($tei//tei:teiHeader/tei:fileDesc/tei:titleStmt/@sponsored),
+            sponsorship:statuses($tei//tei:teiHeader/tei:fileDesc/tei:titleStmt/@sponsored),
             sponsors:sponsors('all', false(), false())
         )
     )

@@ -34,7 +34,7 @@ return
                 translation-status:texts($filtered-texts-ids)
             },
             tei-content:text-statuses-selected($status),
-            sponsors:sponsorship-statuses(''),
+            sponsorship:statuses(''),
             if('utilities' = $users-groups) then
                 element { QName('http://read.84000.co/ns/1.0', 'permission') } {
                     attribute group { 'utilities' }

@@ -95,37 +95,6 @@ declare function sponsors:acknowledgements($uri as xs:string) as element()* {
                 }
 };
 
-declare function sponsors:sponsorship-statuses($selected-status as xs:string?) as element()  {
-    <sponsorship-statuses xmlns="http://read.84000.co/ns/1.0">
-    {(
-        common:add-selected(
-            <status value="">No sponsorship status</status>, 
-            $selected-status
-        ),
-        common:add-selected(
-            <status value="full">Fully sponsored</status>, 
-            $selected-status
-        ),
-        common:add-selected(
-           <status value="part">Partly sponsored</status>, 
-           $selected-status
-        ),
-        common:add-selected(
-            <status value="available">Available for sponsorship</status>, 
-            $selected-status
-        ),
-        common:add-selected(
-            <status value="priority">Priority for sponsorship</status>, 
-            $selected-status
-        ),
-        common:add-selected(
-            <status value="reserved">Reserved for sponsorship</status>, 
-            $selected-status
-        )
-    )}
-    </sponsorship-statuses>
-};
-
 declare function sponsors:next-id() as xs:integer {
     max($sponsors:sponsors/m:sponsors/m:sponsor/@xml:id ! substring-after(., 'sponsor-') ! xs:integer(concat('0', .))) + 1
 };

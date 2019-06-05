@@ -48,7 +48,7 @@
                         <!-- The target is a gloss -->
                         <xsl:when test="$target[self::gloss]">
                             <xsl:attribute name="location" select="'glossary'"/>
-                            <xsl:value-of select="normalize-space($target/tei:term[not(@xml:lang)][not(@type)][1]/text())"/>
+                            <xsl:value-of select="normalize-space($target/tei:term[not(@xml:lang)][not(@type)][1])"/>
                         </xsl:when>
                         
                         <!-- The target is a milestone -->
@@ -73,7 +73,8 @@
                         </xsl:when>
                         
                         <!-- @target not found in this file! Leave @target as it is and show whatever text there is -->
-                        <xsl:when test="text()[normalize-space(.)]">
+                        <!-- This allows use as a standard link -->
+                        <xsl:when test="@target and text()[normalize-space(.)]">
                             <xsl:value-of select="text()[normalize-space(.)]"/>
                         </xsl:when>
                         

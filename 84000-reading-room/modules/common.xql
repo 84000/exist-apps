@@ -457,8 +457,9 @@ declare function common:update($request-parameter as xs:string, $existing-value 
         () (: No data, do nothing :)
         
     else
-        <updated xmlns="http://read.84000.co/ns/1.0" node="{ $request-parameter }">
+        element { QName('http://read.84000.co/ns/1.0', 'updated') }
         {
+            attribute node { $request-parameter },
             if(not($existing-value) and $new-value) then        (: Insert :)
             
                 if($insert-following) then                      (: Insert following :)
@@ -474,7 +475,7 @@ declare function common:update($request-parameter as xs:string, $existing-value 
                 update replace $existing-value 
                     with $new-value
 
-        }</updated>
+        }
 };
 
 

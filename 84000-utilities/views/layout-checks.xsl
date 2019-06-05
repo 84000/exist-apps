@@ -216,9 +216,20 @@
                                             </a>
                                         </li>
                                         <li>
+                                            <xsl:value-of select="'Pointers: '"/>
                                             <a target="test-layout">
                                                 <xsl:attribute name="href" select="concat($reading-room-path, '/translation/UT22084-031-002.html#UT22084-031-002-4437')"/>
-                                                <xsl:value-of select="'Internal pointer'"/>
+                                                <xsl:value-of select="'From glossary (to milestone and footnote)'"/>
+                                            </a>
+                                            <xsl:value-of select="', '"/>
+                                            <a target="test-layout">
+                                                <xsl:attribute name="href" select="concat($reading-room-path, '/translation/toh1-1.html#UT22084-001-001-2806')"/>
+                                                <xsl:value-of select="'from footnote'"/>
+                                            </a>
+                                            <xsl:value-of select="', '"/>
+                                            <a target="test-layout">
+                                                <xsl:attribute name="href" select="concat($reading-room-path, '/translation/toh260.html#UT22084-066-018-18')"/>
+                                                <xsl:value-of select="'to section'"/>
                                             </a>
                                         </li>
                                         <li>
