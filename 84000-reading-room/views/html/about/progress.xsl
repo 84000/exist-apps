@@ -156,9 +156,19 @@
                         <div class="list-section">
                             <xsl:for-each select="$texts">
                                 <xsl:sort select="number(m:toh/@number)"/>
+                                <xsl:sort select="m:toh/@letter"/>
+                                <xsl:sort select="number(m:toh/@chapter-number)"/>
+                                <xsl:sort select="m:toh/@chapter-letter"/>
+                                
                                 <div class="row list-item">
                                     <div class="col-sm-2">
+                                        
                                         <xsl:value-of select="m:toh/m:full"/>
+                                        
+                                        <xsl:call-template name="status-label">
+                                            <xsl:with-param name="status-group" select="@status-group"/>
+                                        </xsl:call-template>
+                                        
                                     </div>
                                     <div class="col-sm-8">
                                         
@@ -175,8 +185,11 @@
                                         </xsl:call-template>
                                         
                                     </div>
+                                    
                                     <div class="col-sm-2">
+                                        
                                         <xsl:value-of select="format-number(tei:bibl/tei:location/@count-pages/number(), '#,###')"/>
+                                        
                                     </div>
                                 </div>
                             </xsl:for-each>

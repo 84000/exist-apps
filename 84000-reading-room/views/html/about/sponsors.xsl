@@ -2,7 +2,6 @@
 <xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" version="2.0" exclude-result-prefixes="#all">
     
     <xsl:import href="about.xsl"/>
-    <xsl:import href="../../../xslt/tei-to-xhtml.xsl"/>
     
     <xsl:template match="/m:response">
         <xsl:variable name="content">
@@ -68,20 +67,9 @@
                                     
                                     <div class="col-sm-2">
                                         <xsl:value-of select="m:toh/m:full"/>
-                                        <xsl:choose>
-                                            <xsl:when test="@status-group eq 'published'">
-                                                <br/>
-                                                <label class="label label-success">
-                                                    <xsl:value-of select="'Published'"/>
-                                                </label>
-                                            </xsl:when>
-                                            <xsl:when test="@status-group = ('translated', 'in-translation')">
-                                                <br/>
-                                                <label class="label label-warning">
-                                                    <xsl:value-of select="'In-progress'"/>
-                                                </label>
-                                            </xsl:when>
-                                        </xsl:choose>
+                                        <xsl:call-template name="status-label">
+                                            <xsl:with-param name="status-group" select="@status-group"/>
+                                        </xsl:call-template>
                                     </div>
                                     
                                     <div class="col-sm-10">

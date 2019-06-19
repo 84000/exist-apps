@@ -186,12 +186,18 @@
                                     
                                         <div class="row list-item">
                                             <div class="col-sm-2 nowrap">
+                                                
                                                 <xsl:for-each select="current-group()">
                                                     <xsl:if test="position() ne 1">
                                                         <br/>+
                                                     </xsl:if>
                                                     <xsl:value-of select="m:toh/m:full"/>
                                                 </xsl:for-each>
+                                                
+                                                <xsl:call-template name="status-label">
+                                                    <xsl:with-param name="status-group" select="@status-group"/>
+                                                </xsl:call-template>
+                                                
                                             </div>
                                             <div class="col-sm-8">
                                                 

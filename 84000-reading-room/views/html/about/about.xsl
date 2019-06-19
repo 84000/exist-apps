@@ -291,6 +291,24 @@
         
     </xsl:template>
     
+    <xsl:template name="status-label">
+        <xsl:param name="status-group" as="xs:string" required="yes"/>
+        <xsl:choose>
+            <xsl:when test="$status-group eq 'published'">
+                <br/>
+                <label class="label label-success">
+                    <xsl:value-of select="'Published'"/>
+                </label>
+            </xsl:when>
+            <xsl:when test="$status-group = ('translated', 'in-translation')">
+                <br/>
+                <label class="label label-warning">
+                    <xsl:value-of select="'In-progress'"/>
+                </label>
+            </xsl:when>
+        </xsl:choose>
+    </xsl:template>
+    
     <xsl:template name="expandable-summary">
         
         <xsl:param name="text"/>
