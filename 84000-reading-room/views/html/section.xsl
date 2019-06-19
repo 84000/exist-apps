@@ -419,9 +419,9 @@
                         </xsl:when>
                         
                         <xsl:otherwise>
-                            <xsl:variable name="count-texts" select="$section/m:text-stats/m:stat[@type eq 'count-text-descendants']/@value/number()"/>
-                            <xsl:variable name="count-published" select="$section/m:text-stats/m:stat[@type eq 'count-published-descendants']/@value/number()"/>
-                            <xsl:variable name="count-in-progress" select="$section/m:text-stats/m:stat[@type eq 'count-in-progress-descendants']/@value/number()"/>
+                            <xsl:variable name="count-texts" as="xs:integer" select="$section/m:text-stats/m:stat[@type eq 'count-text-descendants']/@value"/>
+                            <xsl:variable name="count-published" as="xs:integer" select="$section/m:text-stats/m:stat[@type eq 'count-published-descendants']/@value"/>
+                            <xsl:variable name="count-in-progress" as="xs:integer" select="$section/m:text-stats/m:stat[@type eq 'count-in-progress-descendants']/@value"/>
                             <table class="table table-stats">
                                 <tbody>
                                     <tr>
@@ -872,9 +872,9 @@
                     </div>
                     
                     <div class="footer">
-                        <xsl:variable name="count-texts" select="$section/m:descendants[@id eq $sub-section-id]/m:text-stats/m:stat[@type eq 'count-text-descendants']/@value/number()"/>
-                        <xsl:variable name="count-published" select="$section/m:descendants[@id eq $sub-section-id]/m:text-stats/m:stat[@type eq 'count-published-descendants']/@value/number()"/>
-                        <xsl:variable name="count-in-progress" select="$section/m:descendants[@id eq $sub-section-id]/m:text-stats/m:stat[@type eq 'count-in-progress-descendants']/@value/number()"/>
+                        <xsl:variable name="count-texts" as="xs:integer" select="$section/m:descendants[@id eq $sub-section-id]/m:text-stats/m:stat[@type eq 'count-text-descendants']/@value"/>
+                        <xsl:variable name="count-published" as="xs:integer" select="$section/m:descendants[@id eq $sub-section-id]/m:text-stats/m:stat[@type eq 'count-published-descendants']/@value"/>
+                        <xsl:variable name="count-in-progress" as="xs:integer" select="$section/m:descendants[@id eq $sub-section-id]/m:text-stats/m:stat[@type eq 'count-in-progress-descendants']/@value"/>
                         <table class="table">
                             <tbody>
                                 <tr>

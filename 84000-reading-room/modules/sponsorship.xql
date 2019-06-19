@@ -156,7 +156,7 @@ declare function sponsorship:cost-estimate($teis as element()*) as element()* {
         for $tei in $teis
         return
             tei-content:source-bibl($tei, '')
-    let $count-pages := sum($bibls/tei:location/@count-pages/number())
+    let $count-pages := sum($bibls/tei:location/@count-pages ! common:integer(.))
     
     let $cost-per-page := $sponsorship:cost-groups/m:cost-groups/@cost-per-page
     let $basic-cost := $count-pages * $cost-per-page
@@ -199,17 +199,17 @@ declare function sponsorship:project-posted($project-id as xs:string) as element
         else
             $project-id
     
-    let $count-pages := number(concat('0', request:get-parameter('sponsorship-pages', '0')))
+    let $count-pages := common:integer(request:get-parameter('sponsorship-pages', '0'))
     let $cost-per-page := $sponsorship:cost-groups/m:cost-groups/@cost-per-page
     let $basic-cost := $count-pages * $cost-per-page
     let $estimated-rounded-cost := ceiling($basic-cost div 1000) * 1000
-    let $rounded-cost := number(concat('0', request:get-parameter('rounded-cost', $estimated-rounded-cost)))
+    let $rounded-cost := common:integer(request:get-parameter('rounded-cost', $estimated-rounded-cost))
     let $cost-group := $sponsorship:cost-groups//m:cost-group[xs:integer(@page-upper) ge $count-pages][1]
     
     let $texts := 
         for $parameter-name in request:get-parameter-names()
             where contains($parameter-name, 'sponsorship-text-')
-            let $index := number(tokenize($parameter-name, '-')[last()])
+            let $index := common:integer(tokenize($parameter-name, '-')[last()])
             order by $index
         return
             let $text-id := request:get-parameter(concat('sponsorship-text-', $index), '')
@@ -222,10 +222,10 @@ declare function sponsorship:project-posted($project-id as xs:string) as element
     let $cost-parts := 
         for $parameter-name in request:get-parameter-names()
             where contains($parameter-name, 'cost-part-amount-')
-            let $index := number(tokenize($parameter-name, '-')[last()])
+            let $index := common:integer(tokenize($parameter-name, '-')[last()])
             order by $index
         return
-            let $cost-part-amount := number(concat('0', request:get-parameter(concat('cost-part-amount-', $index), '')))
+            let $cost-part-amount := common:integer(request:get-parameter(concat('cost-part-amount-', $index), ''))
             let $cost-part-status := request:get-parameter(concat('cost-part-status-', $index), '')
             where $cost-part-amount gt 0 and $cost-part-status = ('available', 'priority', 'reserved', 'sponsored')
             return

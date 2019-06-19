@@ -96,7 +96,7 @@ declare function sponsors:acknowledgements($uri as xs:string) as element()* {
 };
 
 declare function sponsors:next-id() as xs:integer {
-    max($sponsors:sponsors/m:sponsors/m:sponsor/@xml:id ! substring-after(., 'sponsor-') ! xs:integer(concat('0', .))) + 1
+    max($sponsors:sponsors/m:sponsors/m:sponsor/@xml:id ! substring-after(., 'sponsor-') ! common:integer(.)) + 1
 };
 
 declare function sponsors:update($sponsor as node()?) as xs:string {

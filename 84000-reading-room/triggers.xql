@@ -33,7 +33,7 @@ declare function local:footnote-indexes($doc) {
     (: Add indexes to footnotes :)
     (: This supports stable numbering accross all sections :)
     let $count-notes := count($doc/tei:TEI/tei:text//tei:note)
-    let $max-note-index := max($doc/tei:TEI/tei:text//tei:note/@index ! xs:integer(concat('0', .)))
+    let $max-note-index := max($doc/tei:TEI/tei:text//tei:note/@index ! common:integer(.))
     let $count-distinct-note-indexes := count(distinct-values($doc/tei:TEI/tei:text//tei:note/@index))
     let $count-notes-missing-index := count($doc/tei:TEI/tei:text//tei:note[not(@index) or @index eq ''])
     
@@ -64,7 +64,7 @@ declare function local:permanent-ids($doc) {
     (: Add ids to linkable nodes :)
     (: This enables persistent bookmarks :)
     let $translation-id := tei-content:id($doc//tei:TEI)
-    let $max-id := max($doc//@xml:id ! substring-after(., $translation-id) ! substring(., 2) ! xs:integer(concat('0', .)))
+    let $max-id := max($doc//@xml:id ! substring-after(., $translation-id) ! substring(., 2) ! common:integer(.))
     for $element at $index in 
         $doc//tei:milestone[(not(@xml:id) or @xml:id='')]
         | $doc//tei:text//tei:note[not(@xml:id) or @xml:id eq '']
@@ -81,7 +81,7 @@ declare function local:temporary-ids($doc) {
     (: Add temporary ids to searchable nodes with no id :)
     (: This allows the search to link through to this block of text :)
     (: These only need to persist for a search/find operation :)
-    let $max-id := max($doc//@tid ! xs:integer(concat('0', .)))
+    let $max-id := max($doc//@tid ! common:integer(.))
     for $element at $index in 
         $doc//tei:text//tei:p[(not(@tid) or @tid='')]
         | $doc//tei:text//tei:head[(not(@tid) or @tid='')]

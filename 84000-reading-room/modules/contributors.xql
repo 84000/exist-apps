@@ -252,7 +252,7 @@ declare function contributors:institution-types($include-stats as xs:boolean) as
 };
 
 declare function contributors:next-id() as xs:integer {
-    max($contributors:contributors/m:contributors/m:person/@xml:id ! substring-after(., 'person-') ! xs:integer(concat('0', .))) + 1
+    max($contributors:contributors/m:contributors/m:person/@xml:id ! substring-after(., 'person-') ! common:integer(.)) + 1
 };
 
 declare function contributors:update-person($person as node()?) as xs:string {
@@ -300,7 +300,7 @@ declare function contributors:delete($person as node()) as element()? {
 };
 
 declare function contributors:next-team-id() as xs:integer {
-    max($contributors:contributors/m:contributors/m:team/@xml:id ! substring-after(., 'team-') ! xs:integer(concat('0', .))) + 1
+    max($contributors:contributors/m:contributors/m:team/@xml:id ! substring-after(., 'team-') ! common:integer(.)) + 1
 };
 
 declare function contributors:update-team($team as node()?) as xs:string {
@@ -333,7 +333,7 @@ declare function contributors:update-team($team as node()?) as xs:string {
 };
 
 declare function contributors:next-institution-id() as xs:integer {
-    max($contributors:contributors/m:contributors/m:institution/@xml:id ! substring-after(., 'institution-') ! xs:integer(concat('0', .))) + 1
+    max($contributors:contributors/m:contributors/m:institution/@xml:id ! substring-after(., 'institution-') ! common:integer(.)) + 1
 };
 
 declare function contributors:update-institution($institution as node()?) as xs:string {

@@ -126,6 +126,10 @@ declare function common:normalize-space($nodes as node()*) as node()*{
             ()
 };
 
+declare function common:integer($node as xs:anyAtomicType?) as xs:integer {
+    replace(concat('0',$node), '\D', '')
+};
+
 declare function common:small-caps($string as xs:string) as xs:string {
     translate($string, 'abcdefghijklmnopqrstuvwxyz', 'ᴀʙᴄᴅᴇꜰɢʜɪᴊᴋʟᴍɴᴏᴘǫʀsᴛᴜᴠᴡxʏᴢ')
 };
