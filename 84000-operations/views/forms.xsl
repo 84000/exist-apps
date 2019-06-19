@@ -25,10 +25,10 @@
                     </xsl:if>
                     <div class="center-vertical full-width">
                         <span>
-                            <h3 class="panel-title">
+                            <span class="h3 panel-title">
                                 <xsl:value-of select="concat($type, ' ')"/>
                                 <xsl:copy-of select="$flag"/>
-                            </h3>
+                            </span>
                         </span>
                         <span class="text-right">
                             <i class="fa fa-plus collapsed-show"/>
@@ -699,9 +699,177 @@
             <input type="hidden" name="post-id">
                 <xsl:attribute name="value" select="m:translation/@id"/>
             </input>
+            <input type="hidden" name="sponsorship-project-id">
+                <xsl:attribute name="value" select="m:sponsorship-status/@project-id"/>
+            </input>
             <div class="row">
                 <div class="col-sm-8">
-                    <xsl:copy-of select="m:select-input('Sponsorship Status', 'sponsorship-status', 9, 1, m:sponsorship-statuses/m:status)"/>
+                    <fieldset>
+                        <legend>
+                            <xsl:value-of select="'Project'"/>
+                        </legend>
+                        <div class="row">
+                            <div class="col-sm-6">
+                                <div class="add-nodes-container">
+                                    <xsl:choose>
+                                        <xsl:when test="m:sponsorship-status/m:text">
+                                            <xsl:for-each select="m:sponsorship-status/m:text">
+                                                <div class="form-group add-nodes-group">
+                                                    <label class="control-label col-sm-4">
+                                                        <xsl:value-of select="'Text:'"/>
+                                                    </label>
+                                                    <div class="col-sm-8">
+                                                        <input type="text" class="form-control">
+                                                            <xsl:attribute name="name" select="concat('sponsorship-text-', position())"/>
+                                                            <xsl:attribute name="value" select="@text-id"/>
+                                                        </input>
+                                                    </div>
+                                                </div>
+                                            </xsl:for-each>
+                                        </xsl:when>
+                                        <xsl:otherwise>
+                                            <div class="form-group add-nodes-group">
+                                                <label class="control-label col-sm-4">
+                                                    <xsl:value-of select="'Text:'"/>
+                                                </label>
+                                                <div class="col-sm-8">
+                                                    <input type="text" name="sponsorship-text-1" class="form-control">
+                                                        <xsl:attribute name="value" select="m:translation/@id"/>
+                                                    </input>
+                                                </div>
+                                            </div>
+                                        </xsl:otherwise>
+                                    </xsl:choose>
+                                    
+                                    <div>
+                                        <a href="#add-text" class="add-nodes">
+                                            <span class="monospace">+</span>
+                                            <xsl:value-of select="'add a text'"/>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-sm-6">
+                                <p class="small text-muted">Enter multiple text ids to combine several texts into the same sponsorship project.</p>
+                            </div>
+                        </div>
+                    </fieldset>
+                    <fieldset class="tests">
+                        
+                        <legend>
+                            <xsl:value-of select="'Money'"/>
+                        </legend>
+                        <xsl:variable name="configured-cost" select="m:sponsorship-status/m:cost"/>
+                        <xsl:variable name="estimated-cost" select="m:sponsorship-status/m:estimate/m:cost"/>
+                        <xsl:variable name="sum-cost-parts" select="sum($configured-cost/m:part/@amount)"/>
+                        
+                        <!-- Pages -->
+                        <div class="form-group">
+                            <label class="control-label col-sm-3">
+                                <xsl:value-of select="'Sponsorship pages:'"/>
+                            </label>
+                            <div class="col-sm-2">
+                                <input type="text" name="sponsorship-pages" class="form-control">
+                                    <xsl:attribute name="value" select="$configured-cost/@pages"/>
+                                </input>
+                            </div>
+                            <div class="col-sm-7">
+                                <div class="center-vertical">
+                                    <span class="large-icons">
+                                        <xsl:choose>
+                                            <xsl:when test="xs:integer($configured-cost/@pages) eq xs:integer($estimated-cost/@pages)">
+                                                <i class="fa fa-check-circle"/>
+                                            </xsl:when>
+                                            <xsl:otherwise>
+                                                <i class="fa fa-times-circle"/>
+                                            </xsl:otherwise>
+                                        </xsl:choose>
+                                    </span>
+                                    <span class="small text-muted">
+                                        <xsl:value-of select="concat('This project has ', $estimated-cost/@pages, ' pages')"/>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Rounded cost -->
+                        <div class="form-group">
+                            <label class="control-label col-sm-3">
+                                <xsl:value-of select="'Cost (rounded):'"/>
+                            </label>
+                            <div class="col-sm-2">
+                                <input type="text" name="rounded-cost" class="form-control">
+                                    <xsl:attribute name="value" select="$configured-cost/@rounded-cost"/>
+                                </input>
+                            </div>
+                            <xsl:variable name="use-cost" select="if($configured-cost/@rounded-cost) then $configured-cost else $estimated-cost"/>
+                            <xsl:variable name="use-cost-rounded" select="ceiling(xs:integer($use-cost/@pages) * xs:integer($use-cost/@per-page-price) div 1000) * 1000"/>
+                            <div class="col-sm-7">
+                                <div class="center-vertical">
+                                    <span class="large-icons">
+                                        <xsl:choose>
+                                            <xsl:when test="$use-cost-rounded eq xs:integer($use-cost/@rounded-cost)">
+                                                <i class="fa fa-check-circle"/>
+                                            </xsl:when>
+                                            <xsl:otherwise>
+                                                <i class="fa fa-times-circle"/>
+                                            </xsl:otherwise>
+                                        </xsl:choose>
+                                    </span>
+                                    <span class="small text-muted">
+                                        <xsl:value-of select="concat(format-number($use-cost/@pages, '#,###'), ' pages x ', $use-cost/@per-page-price, ' = ', format-number($use-cost/@basic-cost, '#,###'))"/>
+                                        <xsl:value-of select="concat(' ≅ ', format-number($use-cost-rounded, '#,###'))"/>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Cost parts -->
+                        <div class="add-nodes-container">
+                            
+                            <xsl:if test="$configured-cost/m:part">
+                                
+                                <!-- List the parts -->
+                                <xsl:for-each select="$configured-cost/m:part">
+                                    <xsl:call-template name="sponsorship-cost-part">
+                                        <xsl:with-param name="index" select="position()"/>
+                                        <xsl:with-param name="amount" select="@amount"/>
+                                        <xsl:with-param name="status" select="@status"/>
+                                    </xsl:call-template>
+                                </xsl:for-each>
+                                
+                                <!-- Validation of the costs -->
+                                <div class="row">
+                                    <div class="col-sm-offset-3 col-sm-9">
+                                        <div class="center-vertical">
+                                            <span class="large-icons">
+                                                <xsl:choose>
+                                                    <xsl:when test="xs:integer($configured-cost/@rounded-cost) eq xs:integer($sum-cost-parts)">
+                                                        <i class="fa fa-check-circle"/>
+                                                    </xsl:when>
+                                                    <xsl:otherwise>
+                                                        <i class="fa fa-times-circle"/>
+                                                    </xsl:otherwise>
+                                                </xsl:choose>
+                                            </span>
+                                            <span class="small text-muted">
+                                                <xsl:value-of select="concat('Sum of cost parts = ', format-number($sum-cost-parts, '#,###'))"/>
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Add a new part -->
+                                <div>
+                                    <a href="#add-cost-part" class="add-nodes">
+                                        <span class="monospace">+</span>
+                                        <xsl:value-of select="'add a cost part'"/>
+                                    </a>
+                                </div>
+                            </xsl:if>
+                            
+                        </div>
+                    </fieldset>
                     <fieldset class="add-nodes-container">
                         <legend>
                             <xsl:value-of select="'Sponsors'"/>
@@ -723,7 +891,7 @@
                             </xsl:otherwise>
                         </xsl:choose>
                         <div>
-                            <a href="#add-nodes" class="add-nodes">
+                            <a href="#add-sponsor" class="add-nodes">
                                 <span class="monospace">+</span>
                                 <xsl:value-of select="'add a sponsor'"/>
                             </a>
@@ -753,21 +921,20 @@
                                     <xsl:if test="not(/m:response/@model-type eq 'operations/edit-text-sponsors')">
                                         <xsl:attribute name="target" select="'operations'"/>
                                     </xsl:if>
-                                    <xsl:variable name="sponsorship-status" select="m:sponsorship-statuses/m:status[@selected eq 'selected']"/>
                                     <xsl:choose>
-                                        <xsl:when test="$sponsorship-status/@value eq 'full'">
+                                        <xsl:when test="m:sponsorship-status/m:status[@id = 'full']">
                                             <xsl:attribute name="href" select="concat($operations-path, '/search.html?sponsored=fully-sponsored')"/>
                                             <xsl:value-of select="'Back to search: Fully sponsored texts'"/>
                                         </xsl:when>
-                                        <xsl:when test="$sponsorship-status/@value eq 'part'">
+                                        <xsl:when test="m:sponsorship-status/m:status[@id = 'part']">
                                             <xsl:attribute name="href" select="concat($operations-path, '/search.html?sponsored=part-sponsored')"/>
                                             <xsl:value-of select="'Back to search: Part sponsored texts'"/>
                                         </xsl:when>
-                                        <xsl:when test="$sponsorship-status/@value eq 'available'">
+                                        <xsl:when test="m:sponsorship-status/m:status[@id = 'available']">
                                             <xsl:attribute name="href" select="concat($operations-path, '/search.html?sponsored=available')"/>
                                             <xsl:value-of select="'Back to search: Texts available for sponsorship'"/>
                                         </xsl:when>
-                                        <xsl:when test="$sponsorship-status/@value eq'priority'">
+                                        <xsl:when test="m:sponsorship-status/m:status[@id = 'priority']">
                                             <xsl:attribute name="href" select="concat($operations-path, '/search.html?sponsored=priority')"/>
                                             <xsl:value-of select="'Back to search: Texts prioritised for sponsorship'"/>
                                         </xsl:when>
@@ -776,7 +943,6 @@
                                             <xsl:value-of select="'Back to search: All sponsored texts'"/>
                                         </xsl:otherwise>
                                     </xsl:choose>
-                                    
                                 </a>
                             </span>
                             <span>|</span>
@@ -835,13 +1001,64 @@
                     <xsl:value-of select="'expressed as:'"/>
                 </label>
                 <div class="col-sm-5">
-                    <input class="form-control" placeholder="same">
+                    <input type="text" class="form-control" placeholder="same">
                         <xsl:attribute name="name" select="concat('sponsor-expression-', position())"/>
                         <xsl:attribute name="value" select="text()"/>
                     </input>
                 </div>
             </div>
         </xsl:for-each>
+    </xsl:template>
+    
+    <xsl:template name="sponsorship-cost-part">
+        
+        <xsl:param name="index" required="yes" as="xs:integer"/>
+        <xsl:param name="amount" required="yes" as="xs:integer"/>
+        <xsl:param name="status" required="no" as="xs:string?"/>
+        
+        <div class="form-group add-nodes-group">
+            <label class="control-label col-sm-3">
+                <xsl:value-of select="concat('Cost part ', if($index gt 1) then $index else '', ':')"/>
+            </label>
+            <div class="col-sm-2">
+                <input type="text" class="form-control">
+                    <xsl:attribute name="name" select="concat('cost-part-amount-', $index)"/>
+                    <xsl:attribute name="value" select="$amount"/>
+                </input>
+            </div>
+            <div class="col-sm-4">
+                <select class="form-control">
+                    <xsl:attribute name="name" select="concat('cost-part-status-', $index)"/>
+                    <option value="available">
+                        <xsl:if test="not($status)">
+                            <xsl:attribute name="selected" select="'selected'"/>
+                        </xsl:if>
+                        <xsl:value-of select="'Available'"/>
+                    </option>
+                    <option value="priority">
+                        <xsl:if test="$status eq 'priority'">
+                            <xsl:attribute name="selected" select="'selected'"/>
+                        </xsl:if>
+                        <xsl:value-of select="'Priority'"/>
+                    </option>
+                    <option value="reserved">
+                        <xsl:if test="$status eq 'reserved'">
+                            <xsl:attribute name="selected" select="'selected'"/>
+                        </xsl:if>
+                        <xsl:value-of select="'Reserved'"/>
+                    </option>
+                    <option value="sponsored">
+                        <xsl:if test="$status eq 'sponsored'">
+                            <xsl:attribute name="selected" select="'selected'"/>
+                        </xsl:if>
+                        <xsl:value-of select="'Sponsored'"/>
+                    </option>
+                    <option value="remove">
+                        <xsl:value-of select="'Remove'"/>
+                    </option>
+                </select>
+            </div>
+        </div>
     </xsl:template>
     
     <!-- <input type="text"/> -->
@@ -992,6 +1209,7 @@
                                     <xsl:value-of select="m:toh/m:full"/> / <xsl:value-of select="m:title"/>
                                 </a>
                                 <span>
+                                    <xsl:copy-of select="common:sponsorship-status(m:sponsorship-status/m:status)"/>
                                     <xsl:copy-of select="common:translation-status(@translation-status)"/>
                                 </span>
                             </div>

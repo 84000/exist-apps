@@ -5,6 +5,7 @@ module namespace sponsors="http://read.84000.co/sponsors";
 import module namespace common="http://read.84000.co/common" at "common.xql";
 import module namespace tei-content="http://read.84000.co/tei-content" at "tei-content.xql";
 import module namespace translation="http://read.84000.co/translation" at "translation.xql";
+import module namespace sponsorship="http://read.84000.co/sponsorship" at "sponsorship.xql";
 
 declare namespace m="http://read.84000.co/ns/1.0";
 declare namespace tei="http://www.tei-c.org/ns/1.0";
@@ -77,7 +78,6 @@ declare function sponsors:acknowledgements($uri as xs:string) as element()* {
             let $title := tei-content:title($tei)
             let $translation-id := tei-content:id($tei)
             let $translation-status := $tei//tei:teiHeader/tei:fileDesc/tei:publicationStmt/@status
-            let $sponsorship-status := $tei//tei:teiHeader/tei:fileDesc/tei:titleStmt/@sponsored
             
             for $toh-key in $tei//tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl/@key
                 let $toh := translation:toh($tei, $toh-key)
@@ -85,13 +85,13 @@ declare function sponsors:acknowledgements($uri as xs:string) as element()* {
                 element m:acknowledgement {
                     attribute translation-id { $translation-id },
                     attribute translation-status {$translation-status},
-                    attribute sponsorship-status {$sponsorship-status},
                     element m:title { text { $title } },
                     $toh,
                     element tei:div {
                         attribute type {'acknowledgment'},
                         $marked-acknowledgement
-                    }
+                    },
+                    sponsorship:text-status($translation-id, false())
                 }
 };
 

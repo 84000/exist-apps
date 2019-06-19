@@ -43,7 +43,7 @@ declare function translation:title-variants($tei as element()) as element() {
 };
 
 declare function translation:translation($tei as element()) as element() {
-    <translation xmlns="http://read.84000.co/ns/1.0" sponsored="{ $tei//tei:titleStmt/@sponsored }">
+    <translation xmlns="http://read.84000.co/ns/1.0">
         <contributors>
             {
                 for $contributor in $tei//tei:titleStmt/tei:author[@role eq 'translatorMain']

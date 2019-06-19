@@ -22,7 +22,7 @@
                             <xsl:value-of select="concat('Listing ', fn:format-number(xs:integer(count(m:contributor-persons/m:person)),'#,##0'), ' translators')"/>
                         </span>
                         
-                        <span>
+                        <div>
                             <form method="post" action="/translators.html" class="form-inline filter-form pull-right">
                                 
                                 <div class="checkbox hidden"><!-- Hide this for now -->
@@ -43,7 +43,7 @@
                                 </a>
                                 
                             </form>
-                        </span>
+                        </div>
                         
                     </div>
                     

@@ -31,12 +31,12 @@ let $store-file :=
         ()
 
 (: Translations in this database :)
-let $translations-local := translations:translations($texts-status, true(), 'all', false())
+let $translations-local := translations:translations($texts-status, 'all', false())
 
 (: If this is a client get translations in master database :)
 let $translations-master := 
     if($store-conf[@type eq 'client']) then
-        let $resource-ids-str := string-join($translations-local/m:translation/m:toh/@key, ',')
+        let $resource-ids-str := string-join($translations-local/m:text/m:toh/@key, ',')
         let $translations-master-request := concat($store-conf/m:translations-master-host, '/downloads.xml?resource-ids=', $resource-ids-str)
         let $request := <hc:request href="{ $translations-master-request }" method="GET"/>
         let $response := hc:send-request($request)

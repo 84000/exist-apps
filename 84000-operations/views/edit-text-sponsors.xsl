@@ -28,14 +28,14 @@
                                 <xsl:value-of select="concat(string-join(m:translation/m:toh/m:full, ' / '), ' : ', m:translation/m:titles/m:title[@xml:lang eq 'en'])"/>
                             </a>
                         </span>
-                        <span>
-                            <div class="pull-right">
-                                <xsl:copy-of select="common:translation-status(m:translation/@status)"/>
-                            </div>
+                        <span class="text-right">
+                            <xsl:copy-of select="common:sponsorship-status(m:sponsorship-status/m:status)"/>
+                            <xsl:copy-of select="common:translation-status(m:translation/@status)"/>
                         </span>
                     </div>
                     
                     <xsl:call-template name="text-sponsors-form"/>
+                    
                 </xsl:with-param>
             </xsl:call-template>
             

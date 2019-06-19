@@ -262,7 +262,9 @@ else if(not(common:auth-environment()) or sm:is-authenticated()) then
     else if ($collection-path eq "about") then
         if ($resource-suffix eq 'html') then
             local:dispatch-html(concat("/models/about/",  $resource-id, ".xq"), concat("/views/html/about/",  $resource-id, ".xsl"), 
-                <parameters xmlns="http://exist.sourceforge.net/NS/exist"/>
+                <parameters xmlns="http://exist.sourceforge.net/NS/exist">
+                    <add-parameter name="resource-suffix" value="html"/>
+                </parameters>
             )
         else
             (: return the xml :)
@@ -270,7 +272,7 @@ else if(not(common:auth-environment()) or sm:is-authenticated()) then
                 <parameters xmlns="http://exist.sourceforge.net/NS/exist"/>
             )
     
-    (: Downloads :)
+    (: Downloads - used on Dist to get Collab files :)
     else if ($resource-id eq "downloads") then
         (: return the xml :)
         local:dispatch("/models/downloads.xq", "", 

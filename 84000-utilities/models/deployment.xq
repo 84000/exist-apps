@@ -19,7 +19,10 @@ return
         (
             $deploy:deployment-conf/m:view-repo-url,
             $deploy:deployment-conf/m:apps,
-            deploy:deploy-apps($admin-password, $commit-msg, $get-app)
+            if($admin-password gt '') then
+                deploy:deploy-apps($admin-password, $commit-msg, $get-app)
+            else
+                ()
         )
     )
 

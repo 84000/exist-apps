@@ -9,6 +9,8 @@ declare namespace tei="http://www.tei-c.org/ns/1.0";
 import module namespace functx="http://www.functx.com";
 import module namespace common="http://read.84000.co/common" at "common.xql";
 
+declare variable $tei-content:translations-collection := collection($common:translations-path);
+declare variable $tei-content:sections-collection := collection($common:sections-path);
 declare variable $tei-content:text-statuses := doc(concat($common:data-path, '/config/text-statuses.xml'))/m:text-statuses;
 declare variable $tei-content:published-statuses := $tei-content:text-statuses/m:status[@group = ('published')]/@status-id;
 declare variable $tei-content:in-progress-statuses := $tei-content:text-statuses/m:status[@group = ('translated', 'in-translation')]/@status-id;
@@ -43,9 +45,9 @@ declare function tei-content:tei($resource-id as xs:string, $resource-type as xs
     
     let $collection := 
         if($resource-type eq 'translation')then
-            collection($common:translations-path)
+            $tei-content:translations-collection
         else if($resource-type = ('section', 'pseudo-section')) then
-            collection($common:sections-path)
+            $tei-content:sections-collection
         else
             ()
     
@@ -63,26 +65,6 @@ declare function tei-content:tei($resource-id as xs:string, $resource-type as xs
         else
             $tei
     
-};
-
-declare function tei-content:project-id($tei as element()) as xs:string {
-    (: Returns the idno in a given tei doc :)
-    if($tei//tei:publicationStmt/tei:idno/@project-id gt '') then
-        $tei//tei:publicationStmt/tei:idno/@project-id
-    else
-        $tei//tei:publicationStmt/tei:idno/@xml:id
-};
-
-declare function tei-content:project-teis($tei as element()) as element()* {
-    
-    let $project-id := tei-content:project-id($tei)
-    let $id := tei-content:id($tei)
-    
-    return
-        if($project-id ne $id) then
-            collection($common:translations-path)//tei:TEI[tei:teiHeader/tei:fileDesc/tei:publicationStmt[tei:idno/@project-id eq $project-id]]
-        else
-            $tei
 };
 
 declare function tei-content:title($tei as element()) as xs:string {

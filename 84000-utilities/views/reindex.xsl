@@ -40,14 +40,14 @@
                                 <div class="col-sm-6 col-sm-offset-3">
                             
                                     <xsl:if test="m:request/@collection gt ''">
-                                        <div class="alert alert-success" role="alert">
+                                        <div role="alert">
                                             <xsl:choose>
                                                 <xsl:when test="m:result/@reindexed eq 'true'">
-                                                    <xsl:attribute name="class" select="'alert alert-success'"/>
+                                                    <xsl:attribute name="class" select="'alert alert-success small text-center'"/>
                                                     <xsl:value-of select="concat('Re-indexed: ', m:result/@collection)"/>
                                                 </xsl:when>
                                                 <xsl:otherwise>
-                                                    <xsl:attribute name="class" select="'alert alert-danger'"/>
+                                                    <xsl:attribute name="class" select="'alert alert-danger small text-center'"/>
                                                     <xsl:value-of select="concat('Re-index failed: ', m:result/@collection)"/>
                                                 </xsl:otherwise>
                                             </xsl:choose>
@@ -67,6 +67,9 @@
                                         </li>
                                         <li>
                                             <a href="?collection=translation-memory">Translation memory collection</a>
+                                        </li>
+                                        <li>
+                                            <a href="?collection=config">Config collection</a>
                                         </li>
                                     </ul>
                                     

@@ -1,7 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" version="2.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" version="2.0" exclude-result-prefixes="#all">
     
     <xsl:import href="../website-page.xsl"/>
+    <xsl:import href="../../../xslt/tei-to-xhtml.xsl"/>
+    
+    <xsl:variable name="response-lang" select="/m:response/@lang"/>
+    <xsl:variable name="app-text-items" select="doc(concat(/m:response/@data-path, '/config/app-text.xml'))//m:item[not(@xml:lang) or (@xml:lang eq $response-lang)]"/>
     
     <!-- Template -->
     <xsl:template name="about">
@@ -17,17 +21,29 @@
                             
                             <div class="panel-img-header thumbnail">
                                 
-                                <xsl:if test="/m:response/m:app-text[ends-with(@key, 'header-img-src')]">
+                                <xsl:variable name="header-img-src">
+                                    <xsl:call-template name="local-app-text-img-src">
+                                        <xsl:with-param name="local-key" select="'header-img-src'"/>
+                                    </xsl:call-template>
+                                </xsl:variable>
+                                
+                                <xsl:if test="$header-img-src">
                                     <xsl:attribute name="class" select="'panel-img-header has-img thumbnail'"/>
                                     <img class="stretch">
-                                        <xsl:attribute name="src" select="concat($front-end-path, /m:response/m:app-text[ends-with(@key, 'header-img-src')])"/>
+                                        <xsl:attribute name="src" select="$header-img-src"/>
                                     </img>
                                 </xsl:if>
                                 
+                                <xsl:variable name="page-title">
+                                    <xsl:call-template name="local-app-text">
+                                        <xsl:with-param name="local-key" select="'page-title'"/>
+                                    </xsl:call-template>
+                                </xsl:variable>
+                                
                                 <h1>
                                     <xsl:choose>
-                                        <xsl:when test="/m:response/m:app-text[ends-with(@key, 'title')]">
-                                            <xsl:value-of select="/m:response/m:app-text[ends-with(@key, 'title')]"/>
+                                        <xsl:when test="$page-title">
+                                            <xsl:value-of select="$page-title"/>
                                         </xsl:when>
                                         <xsl:otherwise>
                                             <xsl:value-of select="'[Error: missing title]'"/>
@@ -38,12 +54,23 @@
                             
                             <div class="panel-body">
                                 
-                                <xsl:if test="/m:response/m:app-text[ends-with(@key, 'quote')]">
+                                <xsl:variable name="page-quote">
+                                    <xsl:call-template name="local-app-text">
+                                        <xsl:with-param name="local-key" select="'page-quote'"/>
+                                    </xsl:call-template>
+                                </xsl:variable>
+                                <xsl:variable name="page-quote-author">
+                                    <xsl:call-template name="local-app-text">
+                                        <xsl:with-param name="local-key" select="'page-quote-author'"/>
+                                    </xsl:call-template>
+                                </xsl:variable>
+                                
+                                <xsl:if test="$page-quote">
                                     <blockquote>
-                                        <xsl:value-of select="/m:response/m:app-text[ends-with(@key, 'quote')]"/>
-                                        <xsl:if test="/m:response/m:app-text[ends-with(@key, 'author')]">
+                                        <xsl:value-of select="$page-quote"/>
+                                        <xsl:if test="$page-quote-author">
                                             <footer>
-                                                <xsl:value-of select="/m:response/m:app-text[ends-with(@key, 'author')]"/>
+                                                <xsl:value-of select="$page-quote-author"/>
                                             </footer>
                                         </xsl:if>
                                     </blockquote>
@@ -55,8 +82,11 @@
                             </div>
                             
                             <!-- Social sharing -->
+                            <!-- TO DO: add these urls! -->
                             <div class="panel-footer sharing">
-                                <xsl:value-of select="'Share this page: '"/>
+                                <xsl:call-template name="local-app-text">
+                                    <xsl:with-param name="local-key" select="'sharing-label'"/>
+                                </xsl:call-template>
                                 <a href="#" target="_blank">
                                     <i class="fa fa-facebook-square" aria-hidden="true"/>
                                 </a>
@@ -75,36 +105,92 @@
                         <!-- Summary -->
                         <div class="panel panel-default">
                             <div class="panel-heading">
-                                <h3 class="panel-title">Join Us</h3>
+                                <h3 class="panel-title">
+                                    <xsl:call-template name="local-app-text">
+                                        <xsl:with-param name="local-key" select="'support-label'"/>
+                                    </xsl:call-template>
+                                </h3>
                             </div>
                             <div class="panel-body">
-                                <p>With the help of our 108 <a href="http://84000.co/about/sponsors/">founding sponsors</a> and thousands of individual donors,
-                                    we provide funding to the translators who are working to safeguard these important teachings
-                                    for future generations.</p>
+                                <xsl:call-template name="local-app-text">
+                                    <xsl:with-param name="local-key" select="'support-description'"/>
+                                </xsl:call-template>
                                 <table id="translation-stats">
                                     <tbody>
                                         <tr>
+                                            <xsl:call-template name="app-text-if-exists">
+                                                <xsl:with-param name="local-key" select="'kangyur-count-before-label'"/>
+                                                <xsl:with-param name="node-name" select="'th'"/>
+                                            </xsl:call-template>
                                             <td>
                                                 <xsl:value-of select="format-number(/m:response/m:outline-summary/m:tohs/m:pages/@count, '#,###')"/>
                                             </td>
-                                            <th>Total Kangyur Pages</th>
+                                            <xsl:call-template name="app-text-if-exists">
+                                                <xsl:with-param name="local-key" select="'kangyur-count-after-label'"/>
+                                                <xsl:with-param name="node-name" select="'th'"/>
+                                            </xsl:call-template>
                                         </tr>
                                         <tr>
+                                            <xsl:call-template name="app-text-if-exists">
+                                                <xsl:with-param name="local-key" select="'translation-count-before-label'"/>
+                                                <xsl:with-param name="node-name" select="'th'"/>
+                                            </xsl:call-template>
                                             <td>
                                                 <xsl:value-of select="format-number(/m:response/m:outline-summary/m:tohs/m:pages/@in-translation, '#,###')"/>
                                             </td>
-                                            <th>Pages in Translation</th>
+                                            <xsl:call-template name="app-text-if-exists">
+                                                <xsl:with-param name="local-key" select="'translation-count-after-label'"/>
+                                                <xsl:with-param name="node-name" select="'th'"/>
+                                            </xsl:call-template>
                                         </tr>
                                         <tr>
+                                            <xsl:call-template name="app-text-if-exists">
+                                                <xsl:with-param name="local-key" select="'published-count-before-label'"/>
+                                                <xsl:with-param name="node-name" select="'th'"/>
+                                            </xsl:call-template>
                                             <td>
                                                 <xsl:value-of select="format-number(/m:response/m:outline-summary/m:tohs/m:pages/@published, '#,###')"/>
                                             </td>
-                                            <th>Pages Published</th>
+                                            <xsl:call-template name="app-text-if-exists">
+                                                <xsl:with-param name="local-key" select="'published-count-after-label'"/>
+                                                <xsl:with-param name="node-name" select="'th'"/>
+                                            </xsl:call-template>
                                         </tr>
                                     </tbody>
                                 </table>
                                 <div class="text-center">
-                                    <a href="http://84000.co/page-onetime" class="btn btn-primary">Sponsor a page now</a>
+                                    <div>
+                                        <a href="http://84000.co/page-onetime" class="btn btn-primary">
+                                            <xsl:attribute name="href">
+                                                <xsl:call-template name="local-app-text">
+                                                    <xsl:with-param name="local-key" select="'sponsor-button-link'"/>
+                                                </xsl:call-template>
+                                            </xsl:attribute>
+                                            <xsl:call-template name="local-app-text">
+                                                <xsl:with-param name="local-key" select="'sponsor-button-label'"/>
+                                            </xsl:call-template>
+                                        </a>
+                                    </div>
+                                    <xsl:variable name="donate-instructions-link">
+                                        <xsl:call-template name="local-app-text">
+                                            <xsl:with-param name="local-key" select="'donate-instructions-link'"/>
+                                        </xsl:call-template>
+                                    </xsl:variable>
+                                    <xsl:if test="$donate-instructions-link">
+                                        <div class="sml-margin top">
+                                            <a target="_blank">
+                                                <xsl:attribute name="href" select="$donate-instructions-link"/>
+                                                <xsl:attribute name="title">
+                                                    <xsl:call-template name="local-app-text">
+                                                        <xsl:with-param name="local-key" select="'donate-instructions-link-title'"/>
+                                                    </xsl:call-template>
+                                                </xsl:attribute>
+                                                <xsl:call-template name="local-app-text">
+                                                    <xsl:with-param name="local-key" select="'donate-instructions-label'"/>
+                                                </xsl:call-template>
+                                            </a>
+                                        </div>
+                                    </xsl:if>
                                 </div>
                             </div>
                         </div>
@@ -115,10 +201,17 @@
             
         </xsl:variable>
         
+        <xsl:variable name="page-title" as="xs:string">
+            <xsl:call-template name="local-app-text">
+                <xsl:with-param name="local-key" select="'page-title'"/>
+            </xsl:call-template>
+        </xsl:variable>
+        
+        
         <xsl:call-template name="website-page">
             <xsl:with-param name="page-url" select="concat('http://read.84000.co/', /m:response/@model-type, '.html')"/>
             <xsl:with-param name="page-class" select="'about'"/>
-            <xsl:with-param name="page-title" select="concat('84000 | ', /m:response/m:app-text[ends-with(@key, 'title')])"/>
+            <xsl:with-param name="page-title" select="concat('84000 | ', $page-title)"/>
             <xsl:with-param name="page-description" select="''"/>
             <xsl:with-param name="content" select="$content"/>
             <xsl:with-param name="nav-tab" select="'#about'"/>
@@ -165,7 +258,7 @@
         <xsl:if test="$text/m:titles/m:title[@xml:lang='bo-ltn']/text()">
             <xsl:choose>
                 <xsl:when test="$text/m:titles/m:title[@xml:lang='bo']/text()">
-                    · 
+                    <xsl:value-of select="' · '"/>
                 </xsl:when>
                 <xsl:otherwise>
                     <hr/>
@@ -185,11 +278,93 @@
         
         <xsl:if test="$text/m:title-variants/m:title[@xml:lang='zh']/text()">
             <hr/>
-            <span class="text-zh">
-                <xsl:value-of select="$text/m:title-variants/m:title[@xml:lang='zh']/text()"/> 
-            </span>
+            <xsl:for-each select="$text/m:title-variants/m:title[@xml:lang='zh']">
+                <xsl:if test="position() gt 1">
+                    <xsl:value-of select="' · '"/>
+                </xsl:if>
+                <span class="text-zh">
+                    <xsl:value-of select="text()"/> 
+                </span>
+            </xsl:for-each>
+            
         </xsl:if>
         
+    </xsl:template>
+    
+    <xsl:template name="expandable-summary">
+        
+        <xsl:param name="text"/>
+        
+        <xsl:if test="$text/m:summary/tei:p">
+            <hr/>
+            <a class="summary-link collapsed" role="button" data-toggle="collapse" aria-expanded="false" aria-controls="collapseExample">
+                <xsl:attribute name="href" select="concat('#summary-detail-', $text/m:toh/@key)"/>
+                <i class="fa fa-chevron-down"/>
+                <xsl:value-of select="' '"/>
+                <xsl:call-template name="local-app-text">
+                    <xsl:with-param name="local-key" select="'summary-label'"/>
+                </xsl:call-template>
+            </a>
+            
+            <div class="collapse summary-detail">
+                
+                <xsl:attribute name="id" select="concat('summary-detail-', $text/m:toh/@key)"/>
+                
+                <div class="well well-sm">
+                    
+                    <xsl:if test="$text/m:summary/tei:p">
+                        <xsl:apply-templates select="$text/m:summary/tei:p"/>
+                    </xsl:if>
+                    
+                </div>
+            </div>
+            
+        </xsl:if>
+    </xsl:template>
+    
+    <xsl:template name="local-app-text">
+        <xsl:param name="local-key" as="xs:string" required="yes"/>
+        <xsl:variable name="common-key" select="string-join(('about', 'common', $local-key), '.')"/>
+        <xsl:variable name="global-key" select="string-join((tokenize(/m:response/@model-type, '/'), $local-key), '.')"/>
+        <xsl:variable name="app-text-item" select="$app-text-items[@key = ($global-key, $common-key)][1]/node()"/>
+        <xsl:for-each select="$app-text-item">
+            <xsl:choose>
+                <xsl:when test=". instance of text()">
+                    <xsl:value-of select="normalize-space(.)"/>
+                </xsl:when>
+                <xsl:otherwise>
+                    <xsl:copy-of select="."/>
+                </xsl:otherwise>
+            </xsl:choose>
+        </xsl:for-each>
+        
+    </xsl:template>
+    
+    <xsl:template name="app-text-if-exists">
+        <xsl:param name="local-key" as="xs:string" required="yes"/>
+        <xsl:param name="node-name" as="xs:string" required="no"/>
+        <xsl:variable name="app-text">
+            <xsl:call-template name="local-app-text">
+                <xsl:with-param name="local-key" select="$local-key"/>
+            </xsl:call-template>
+        </xsl:variable>
+        <xsl:if test="$app-text gt ''">
+            <xsl:element name="{ $node-name }">
+                <xsl:value-of select="$app-text"/>
+            </xsl:element>
+        </xsl:if>
+    </xsl:template>
+    
+    <xsl:template name="local-app-text-img-src">
+        <xsl:param name="local-key" as="xs:string" required="yes"/>
+        <xsl:variable name="app-text">
+            <xsl:call-template name="local-app-text">
+                <xsl:with-param name="local-key" select="$local-key"/>
+            </xsl:call-template>
+        </xsl:variable>
+        <xsl:if test="$app-text gt ''">
+            <xsl:value-of select="concat($front-end-path, $app-text)"/>
+        </xsl:if>
     </xsl:template>
     
 </xsl:stylesheet>

@@ -63,10 +63,10 @@
                                                     <option value="all">All data (translations, schemas and outlines)</option>
                                                     <option value="translation-memory">Translation memory files</option>
                                                     <xsl:for-each select="m:translations/m:file">
-                                                        <xsl:sort select="@fileName"/>
+                                                        <xsl:sort select="@file-name"/>
                                                         <option>
                                                             <xsl:attribute name="value" select="@uri"/>
-                                                            <xsl:value-of select="@fileName"/>
+                                                            <xsl:value-of select="@file-name"/>
                                                         </option>
                                                     </xsl:for-each>
                                                 </select>

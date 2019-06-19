@@ -155,7 +155,7 @@ declare function translation-status:next-task-id($text-id as xs:string, $positio
 };
 
 declare function translation-status:is-current-version($tei-version-str as xs:string?, $cached-version-str as xs:string?) as xs:boolean {
-    ($cached-version-str and compare($tei-version-str, $cached-version-str) eq 0)
+    compare($tei-version-str, $cached-version-str) eq 0
 };
 
 declare function translation-status:word-count($tei as element()) as xs:integer {
@@ -224,6 +224,7 @@ declare function translation-status:update($text-id as xs:string) as element()? 
     let $new-value := 
         element { QName('http://read.84000.co/ns/1.0', 'text') }{
             attribute text-id { $text-id },
+            attribute updated { current-dateTime() },
             attribute version { $tei-version-str },
             attribute word-count { $word-count },
             attribute glossary-count { $glossary-count },

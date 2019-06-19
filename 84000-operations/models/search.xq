@@ -29,12 +29,22 @@ return
         'operations/search', 
         'operations', 
         (
+            <request 
+                xmlns="http://read.84000.co/ns/1.0" 
+                status="{ $status }"
+                section="{ $section }"
+                sort="{ $sort }"
+                range="{ $range }"
+                sponsored="{ $sponsored }"
+                deduplicate="{ $deduplicate }">
+                <search-toh>{ $search-toh }</search-toh>    
+            </request>,
             $filtered-texts,
             element { QName('http://read.84000.co/ns/1.0', 'translation-status') } {
                 translation-status:texts($filtered-texts-ids)
             },
             tei-content:text-statuses-selected($status),
-            sponsorship:statuses(''),
+            $sponsorship:sponsorship-groups,
             if('utilities' = $users-groups) then
                 element { QName('http://read.84000.co/ns/1.0', 'permission') } {
                     attribute group { 'utilities' }

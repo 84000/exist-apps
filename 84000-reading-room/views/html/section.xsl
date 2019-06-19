@@ -25,7 +25,7 @@
                             </span>
                         </xsl:if>
                         
-                        <span>
+                        <div>
                             <ul class="breadcrumb">
                                 
                                 <xsl:if test="$section-id eq 'all-translated'">
@@ -40,14 +40,12 @@
                                 <xsl:copy-of select="common:breadcrumb-items(m:section/m:parent | m:section/m:parent//m:parent, /m:response/@lang)"/>
                                 
                             </ul>
-                        </span>
+                        </div>
                         
-                        <span>
-                            
+                        <div>
                             <div class="pull-right center-vertical">
                                 
                                 <xsl:if test="not($section-id eq 'all-translated')">
-                                    
                                     <a class="center-vertical together">
                                         <xsl:attribute name="href" select="common:internal-link('/section/all-translated.html', (), '', /m:response/@lang)"/>
                                         <span>
@@ -59,11 +57,9 @@
                                             <xsl:value-of select="'View Translated Texts'"/>
                                         </span>
                                     </a>
-                                    
                                 </xsl:if>
                                 
-                                <span>
-                                        
+                                <div>
                                     <div aria-haspopup="true" aria-expanded="false">
                                         <a href="#bookmarks-sidebar" id="bookmarks-btn" class="show-sidebar center-vertical together">
                                             <span>
@@ -77,12 +73,10 @@
                                             </span>
                                         </a>
                                     </div>
-                                    
-                                </span>
+                                </div>
                                 
                             </div>
-                            
-                        </span>
+                        </div>
                         
                     </div>
                     

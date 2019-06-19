@@ -7,7 +7,7 @@
         
         <div id="cumulative-glossary">
             <div class="center-vertical full-width">
-                <span>
+                <div>
                     <ul class="nav nav-pills">
                         <li role="presentation">
                             <xsl:if test="m:glossary/@type eq 'term'">
@@ -46,8 +46,8 @@
                             </a>
                         </li>
                     </ul>
-                </span>
-                <span>
+                </div>
+                <div>
                     <ul class="nav nav-pills">
                         <li role="presentation">
                             <xsl:if test="lower-case(m:glossary/@lang) eq 'en'">
@@ -77,8 +77,8 @@
                             </a>
                         </li>
                     </ul>
-                </span>
-                <span>
+                </div>
+                <div>
                     <form method="post" role="search" class="form-inline">
                         <xsl:attribute name="action" select="'/index.html'"/>
                         <input type="hidden" name="tab" value="glossary"/>
@@ -95,8 +95,8 @@
                             </span>
                         </div>
                     </form>
-                </span>
-                <span>
+                </div>
+                <div>
                     <div class="pull-right">
                         <a href="cumulative-glossary.zip" class="download-link center-vertical">
                             <span>
@@ -107,7 +107,7 @@
                             </span>
                         </a>
                     </div>
-                </span>
+                </div>
             </div>
             
             <div class="row">

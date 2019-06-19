@@ -253,6 +253,32 @@
         </xsl:choose>
     </xsl:function>
     
+    <!-- Translation status -->
+    <xsl:function name="common:sponsorship-status">
+        <xsl:param name="sponsorship-statuses"/>
+        <xsl:for-each select="$sponsorship-statuses">
+            <xsl:if test="not(@id eq 'no-sponsorship')">
+                <span>
+                    <xsl:choose>
+                        <xsl:when test="@id = 'available'">
+                            <xsl:attribute name="class" select="'nowrap label label-success'"/>
+                        </xsl:when>
+                        <xsl:when test="@id = 'full'">
+                            <xsl:attribute name="class" select="'nowrap label label-info'"/>
+                        </xsl:when>
+                        <xsl:when test="@id = ('part', 'reserved', 'priority')">
+                            <xsl:attribute name="class" select="'nowrap label label-warning'"/>
+                        </xsl:when>
+                        <xsl:otherwise>
+                            <xsl:attribute name="class" select="'nowrap label label-default'"/>
+                        </xsl:otherwise>
+                    </xsl:choose>
+                    <xsl:value-of select="m:label"/>
+                </span>
+            </xsl:if>
+        </xsl:for-each>
+    </xsl:function>
+    
     <xsl:function name="common:folio-id" as="xs:string">
         <xsl:param name="folio-str" as="xs:string"/>
         <xsl:value-of select="concat('ref-', lower-case(replace($folio-str, '\.', '-')))"/>

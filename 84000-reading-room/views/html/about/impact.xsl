@@ -62,14 +62,15 @@
             </div>
             
             <h2>Countries where our readers come from</h2>
-            <!-- A map would be great here -->
-            <div class="row">
-                <xsl:for-each select="//m:list[@name = 'user-countries']/m:item">
-                    <xsl:sort select="text()"/>
-                    <div class="col-sm-3">
-                        <xsl:value-of select="text()"/>
-                    </div>
-                </xsl:for-each>
+            
+            <div>
+                <img class="aligncenter img-responsive">
+                    <xsl:attribute name="src">
+                        <xsl:call-template name="local-app-text-img-src">
+                            <xsl:with-param name="local-key" select="'map-img-src'"/>
+                        </xsl:call-template>
+                    </xsl:attribute>
+                </img>
             </div>
         </xsl:variable>
         

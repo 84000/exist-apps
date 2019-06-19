@@ -70,7 +70,7 @@ declare function section:descendants($tei as element(), $include-text-stats as x
     let $id := upper-case(tei-content:id($tei))
     
     let $descendants :=
-        for $child-section in $section:sections//tei:TEI[tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl[tei:idno/@parent-id eq $id]]
+        for $child-section in $section:sections//tei:TEI[tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl/tei:idno[@parent-id eq $id]]
             order by xs:integer($child-section/tei:teiHeader/tei:fileDesc/tei:sourceDesc/@sort-index) ascending
         return
             section:descendants($child-section, $include-text-stats, $nest + 1)
@@ -81,8 +81,8 @@ declare function section:descendants($tei as element(), $include-text-stats as x
         if($include-text-stats) then
         
             let $count-text-children := count($text-fileDesc/tei:sourceDesc/tei:bibl/tei:idno[@parent-id eq $id]) 
-            let $count-published-children := count($text-fileDesc[tei:publicationStmt/@status = $tei-content:published-statuses]/tei:sourceDesc/tei:bibl[tei:idno/@parent-id eq $id])
-            let $count-in-progress-children := count($text-fileDesc[tei:publicationStmt/@status = $tei-content:in-progress-statuses]/tei:sourceDesc/tei:bibl[tei:idno/@parent-id eq $id])
+            let $count-published-children := count($text-fileDesc[tei:publicationStmt/@status = $tei-content:published-statuses]/tei:sourceDesc/tei:bibl/tei:idno[@parent-id eq $id])
+            let $count-in-progress-children := count($text-fileDesc[tei:publicationStmt/@status = $tei-content:in-progress-statuses]/tei:sourceDesc/tei:bibl/tei:idno[@parent-id eq $id])
             
             return
                 <text-stats xmlns="http://read.84000.co/ns/1.0">

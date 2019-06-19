@@ -82,7 +82,11 @@ declare function deploy:deploy-apps($admin-password as xs:string, $commit-msg as
     let $action := $deploy:deployment-conf/m:apps/@role
     let $pull-collection := $deploy:deployment-conf/m:apps/m:app[@collection eq $get-app]/@collection
     
-    let $admin-password-correct := xmldb:authenticate('/db', 'admin', $admin-password)
+    let $admin-password-correct := 
+        if($admin-password gt '') then
+            xmldb:authenticate('/db', 'admin', $admin-password)
+        else
+            ()
     
     let $git-options := deploy:execute-options($repo-path)
     let $exist-options := deploy:execute-options($exist-path)

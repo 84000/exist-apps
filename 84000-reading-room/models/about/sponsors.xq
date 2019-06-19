@@ -9,7 +9,6 @@ declare namespace m="http://read.84000.co/ns/1.0";
 declare option exist:serialize "method=xml indent=no";
 
 let $tab := request:get-parameter('tab', 'matching-funds')
-let $lang := request:get-parameter('lang', 'en')
 
 let $tabs := 
     <tabs xmlns="http://read.84000.co/ns/1.0">
@@ -18,7 +17,6 @@ let $tabs :=
         <tab active="{ if($tab eq 'founding')then 1 else 0 }" id="founding">Founding Sponsors</tab>
     </tabs>
     
-let $app-texts := common:app-texts('about.sponsors', <replace xmlns="http://read.84000.co/ns/1.0"/>, $lang)
 let $sponsor-ids := $sponsors:sponsors/m:sponsors/m:sponsor[m:type/@id = ('founding', 'matching-funds')]/@xml:id
 
 return
@@ -26,10 +24,9 @@ return
         "about/sponsors", 
         $common:app-id,
         (
-            $app-texts,
             $tabs,
             translations:summary(),
             sponsors:sponsors($sponsor-ids, false(), false()),
-            translations:sponsored()
+            translations:sponsored-texts()
         )
     )

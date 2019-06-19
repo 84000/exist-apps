@@ -127,9 +127,14 @@
                                         </xsl:when>
                                     </xsl:choose>
                                     <xsl:attribute name="href" select="@url"/>
-                                    <xsl:attribute name="rel" select="'http://opds-spec.org/acquisition'"/>
+                                    <xsl:attribute name="rel" select="'http://opds-spec.org/acquisition/open-access'"/>
                                 </link>
                             </xsl:for-each>
+                            <link>
+                                <xsl:attribute name="type" select="'text/html'"/>
+                                <xsl:attribute name="href" select="concat('/translation/', lower-case(@resource-id), '.html')"/>
+                                <xsl:attribute name="rel" select="'http://opds-spec.org/acquisition/open-access'"/>
+                            </link>
                         </entry>
                     </xsl:for-each>
                     

@@ -36,7 +36,7 @@ return
             section:base-section($tei, $published-only, true()),
             
             (: If it's html include app texts :)
-            if($resource-suffix eq 'html') then
+            if($resource-suffix  = ('html', 'epub', 'azw3')) then
                 common:app-texts(
                     'section',
                     <replace xmlns="http://read.84000.co/ns/1.0"/>

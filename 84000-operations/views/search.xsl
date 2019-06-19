@@ -84,36 +84,16 @@
                                             </xsl:if>
                                             <xsl:value-of select="'No sponsor filter'"/>
                                         </option>
-                                        <option value="sponsored">
-                                            <xsl:if test="m:texts/@sponsored eq 'sponsored'">
-                                                <xsl:attribute name="selected" select="'selected'"/>
-                                            </xsl:if>
-                                            <xsl:value-of select="'All sponsored texts'"/>
-                                        </option>
-                                        <option value="fully-sponsored">
-                                            <xsl:if test="m:texts/@sponsored eq 'fully-sponsored'">
-                                                <xsl:attribute name="selected" select="'selected'"/>
-                                            </xsl:if>
-                                            <xsl:value-of select="'Fully sponsored texts'"/>
-                                        </option>
-                                        <option value="part-sponsored">
-                                            <xsl:if test="m:texts/@sponsored eq 'part-sponsored'">
-                                                <xsl:attribute name="selected" select="'selected'"/>
-                                            </xsl:if>
-                                            <xsl:value-of select="'Part sponsored texts'"/>
-                                        </option>
-                                        <option value="available">
-                                            <xsl:if test="m:texts/@sponsored eq 'available'">
-                                                <xsl:attribute name="selected" select="'selected'"/>
-                                            </xsl:if>
-                                            <xsl:value-of select="'Texts available for sponsorship'"/>
-                                        </option>
-                                        <option value="priority">
-                                            <xsl:if test="m:texts/@sponsored eq 'priority'">
-                                                <xsl:attribute name="selected" select="'selected'"/>
-                                            </xsl:if>
-                                            <xsl:value-of select="'Texts prioritised for sponsorship'"/>
-                                        </option>
+                                        <xsl:for-each select="m:sponsorship-groups/m:group">
+                                            <xsl:variable name="group-id" select="@id"/>
+                                            <option>
+                                                <xsl:attribute name="value" select="$group-id"/>
+                                                <xsl:if test="/m:response/m:texts/@sponsored eq $group-id">
+                                                    <xsl:attribute name="selected" select="'selected'"/>
+                                                </xsl:if>
+                                                <xsl:value-of select="m:label"/>
+                                            </option>
+                                        </xsl:for-each>
                                         <option value="no-status">
                                             <xsl:if test="m:texts/@sponsored eq 'no-status'">
                                                 <xsl:attribute name="selected" select="'selected'"/>
@@ -184,11 +164,11 @@
                                                     </xsl:if>
                                                     <xsl:value-of select="'Group by text'"/>
                                                 </option>
-                                                <option value="project">
-                                                    <xsl:if test="m:texts/@deduplicate eq 'project'">
+                                                <option value="sponsorship">
+                                                    <xsl:if test="m:texts/@deduplicate eq 'sponsorship'">
                                                         <xsl:attribute name="selected" select="'selected'"/>
                                                     </xsl:if>
-                                                    <xsl:value-of select="'Group by project'"/>
+                                                    <xsl:value-of select="'Group by sponsorship'"/>
                                                 </option>
                                             </select>
                                         </div>
@@ -252,7 +232,6 @@
                             <tbody>
                                 <xsl:for-each select="m:texts/m:text">
                                     <xsl:variable name="text-id" select="@id"/>
-                                    <xsl:variable name="project-id" select="@project-id"/>
                                     <xsl:variable name="status-id" select="xs:string(@status)"/>
                                     <xsl:variable name="status" select="/m:response/m:text-statuses/m:status[@status-id eq $status-id]"/>
                                     <xsl:if test="/m:response/m:texts[@sort eq 'status'] and not(preceding-sibling::m:text[@status eq $status-id])">
@@ -284,7 +263,6 @@
                                         </td>
                                         <xsl:if test="not(/m:response/m:texts[@sort eq 'status'])">
                                             <td rowspan="2">
-                                                
                                                 <span>
                                                     <xsl:choose>
                                                         <xsl:when test="@status-group eq 'published'">
@@ -312,37 +290,7 @@
                                             </a>
                                         </td>
                                         <td rowspan="2" class="nowrap small">
-                                            <xsl:choose>
-                                                <xsl:when test="m:project/@count-texts/number() gt 1">
-                                                    <table class="table table-condensed table-bordered no-bottom-margin">
-                                                        <thead>
-                                                            <tr>
-                                                                <th>
-                                                                    <xsl:value-of select="'Project'"/>
-                                                                </th>
-                                                                <th>
-                                                                    <xsl:value-of select="format-number(m:project/@count-pages, '#,###')"/>
-                                                                </th>
-                                                            </tr>
-                                                        </thead>
-                                                        <tbody>
-                                                            <xsl:for-each select="m:project/tei:bibl">
-                                                                <tr>
-                                                                    <td>
-                                                                        <xsl:value-of select="normalize-space(tei:ref)"/>
-                                                                    </td>
-                                                                    <td>
-                                                                        <xsl:value-of select="format-number(tei:location/@count-pages, '#,###')"/>
-                                                                    </td>
-                                                                </tr>
-                                                            </xsl:for-each>
-                                                        </tbody>
-                                                    </table>
-                                                </xsl:when>
-                                                <xsl:otherwise>
-                                                    <xsl:value-of select="format-number(tei:bibl/tei:location/@count-pages, '#,###')"/>
-                                                </xsl:otherwise>
-                                            </xsl:choose>
+                                            <xsl:value-of select="format-number(tei:bibl/tei:location/@count-pages, '#,###')"/>
                                         </td>
                                         <td class="nowrap small hidden-print">
                                             <xsl:value-of select="concat('vol. ' , tei:bibl/tei:location/tei:start/@volume, ', p. ', tei:bibl/tei:location/tei:start/@page)"/>
@@ -351,32 +299,32 @@
                                             <xsl:value-of select="concat('vol. ' , tei:bibl/tei:location/tei:end/@volume, ', p. ', tei:bibl/tei:location/tei:end/@page)"/>
                                         </td>
                                         <td rowspan="2">
-                                            <xsl:variable name="sponsor-status" select="m:translation/@sponsored"/>
-                                            <span>
-                                                <xsl:choose>
-                                                    <xsl:when test="$sponsor-status eq 'full'">
-                                                        <xsl:attribute name="class" select="'nowrap small text-success'"/>
-                                                    </xsl:when>
-                                                    <xsl:when test="$sponsor-status = ('part', 'reserved')">
-                                                        <xsl:attribute name="class" select="'nowrap small text-warning'"/>
-                                                    </xsl:when>
-                                                    <xsl:when test="$sponsor-status = ('available', 'priority')">
-                                                        <xsl:attribute name="class" select="'nowrap small text-danger'"/>
-                                                    </xsl:when>
-                                                    <xsl:otherwise>
-                                                        <xsl:attribute name="class" select="'nowrap small'"/>
-                                                    </xsl:otherwise>
-                                                </xsl:choose>
-                                                <xsl:if test="$sponsor-status gt ''">
-                                                    <xsl:value-of select="/m:response/m:sponsorship-statuses/m:status[@value eq $sponsor-status]"/>
-                                                </xsl:if>
-                                            </span>
-                                            <xsl:if test="@project-id ne @id">
+                                            
+                                            <xsl:copy-of select="common:sponsorship-status(m:sponsorship-status/m:status)"/>
+                                            
+                                            <xsl:if test="count(m:sponsorship-status/m:text) gt 1">
                                                 <br/>
-                                                <span class="label label-danger">
-                                                    <xsl:value-of select="'project'"/>
+                                                <span class="label label-info">
+                                                    <xsl:value-of select="concat(count(m:sponsorship-status/m:text), ' texts combined')"/>
                                                 </span>
                                             </xsl:if>
+                                            
+                                            <xsl:if test="m:sponsorship-status/m:cost and not(m:sponsorship-status/m:cost/@pages/number() eq tei:bibl/tei:location/@count-pages/number())">
+                                                <br/>
+                                                <span class="label label-warning">
+                                                    <xsl:value-of select="concat('Sponsorship is for ', m:sponsorship-status/m:cost/@pages/number(),' pages')"/>
+                                                </span>
+                                            </xsl:if>
+                                            
+                                            <xsl:variable name="calculated-rounded-cost" select="ceiling(m:sponsorship-status/m:cost/@basic-cost/number() div 1000) * 1000"/>
+                                            <xsl:variable name="cost-of-parts" select="sum(m:sponsorship-status/m:cost/m:part/@amount/number())"/>
+                                            <xsl:if test="m:sponsorship-status/m:cost and abs($cost-of-parts - $calculated-rounded-cost) gt 1000">
+                                                <br/>
+                                                <span class="label label-warning">
+                                                    <xsl:value-of select="concat(format-number($cost-of-parts, '#,###'), ' cost varies from expected ', format-number($calculated-rounded-cost, '#,###'))"/>
+                                                </span>
+                                            </xsl:if>
+                                            
                                         </td>
                                     </tr>
                                     <tr class="sub">
@@ -391,7 +339,7 @@
                                                 <li>
                                                     <a class="small">
                                                         <xsl:attribute name="href" select="concat('/edit-text-sponsors.html?id=', $text-id)"/>
-                                                        <xsl:value-of select="'Edit sponsors'"/>
+                                                        <xsl:value-of select="'Edit sponsorship'"/>
                                                     </a>
                                                 </li>
                                                 <xsl:if test="@status-group eq 'published' and m:downloads[@tei-version != m:download/@version]">
@@ -414,8 +362,12 @@
                                     </tr>
                                     <xsl:if test="m:sponsors/tei:div[@type eq 'acknowledgment']/tei:p">
                                         <tr class="sub">
-                                            <td colspan="2"/>
-                                            <td colspan="3">
+                                            <td colspan="2">
+                                                <xsl:if test="/m:response/m:texts[@sort eq 'status']">
+                                                    <xsl:attribute name="colspan" select="'1'"/>
+                                                </xsl:if>
+                                            </td>
+                                            <td colspan="5">
                                                 <div class="pull-quote no-bottom-margin">
                                                     <xsl:apply-templates select="m:sponsors/tei:div[@type eq 'acknowledgment']/tei:p"/>
                                                 </div>

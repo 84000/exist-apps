@@ -12,7 +12,7 @@
             <div class="container">
                 <div class="panel panel-default">
                     <div class="panel-heading bold center-vertical">
-                        <span>
+                        <div>
                             <ul class="breadcrumb">
                                 <li>
                                     <a>
@@ -21,8 +21,8 @@
                                     </a>
                                 </li>
                             </ul>
-                        </span>
-                        <span>
+                        </div>
+                        <div>
                             <div class="pull-right center-vertical">
                                 <a class="center-vertical together">
                                     <xsl:attribute name="href" select="common:internal-link('/section/all-translated.html', (), '', /m:response/@lang)"/>
@@ -35,7 +35,7 @@
                                         <xsl:value-of select="'View Translated Texts'"/>
                                     </span>
                                 </a>
-                                <span>
+                                <div>
                                     <div aria-haspopup="true" aria-expanded="false">
                                         <a href="#bookmarks-sidebar" id="bookmarks-btn" class="show-sidebar center-vertical together">
                                             <span>
@@ -49,9 +49,9 @@
                                             </span>
                                         </a>
                                     </div>
-                                </span>
+                                </div>
                             </div>
-                        </span>
+                        </div>
                     </div>
                     
                     <div class="panel-body">

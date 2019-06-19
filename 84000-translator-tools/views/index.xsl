@@ -23,8 +23,8 @@
                             <xsl:value-of select="concat('84000 Translator Tools &gt; ', $tab-label)"/>
                         </span>
                         
-                        <span class="pull-right center-vertical">
-                            <a href="#navigation-sidebar" class="center-vertical together show-sidebar">
+                        <span>
+                            <a href="#navigation-sidebar" class="center-vertical together pull-right show-sidebar">
                                 <span class="btn-round-text">
                                     <xsl:value-of select="'Navigation'"/>
                                 </span>

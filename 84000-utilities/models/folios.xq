@@ -10,5 +10,5 @@ declare option exist:serialize "method=xml indent=no";
 common:response(
     'utilities/folios',
     'utilities',
-    translations:translations($tei-content:published-statuses, false(), '', true())
+    translations:translations($tei-content:published-statuses, '', true())
 )

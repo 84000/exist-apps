@@ -92,70 +92,40 @@
             </div>
             
             <ul class="nav nav-tabs" role="tablist" id="progress-tabs">
-                <xsl:for-each select="m:tabs/m:tab">
-                    <li role="presentation">
-                        <xsl:if test="@active eq '1'">
-                            <xsl:attribute name="class" select="'active'"/>
-                        </xsl:if>
-                        <a>
-                            <xsl:attribute name="href" select="concat('?tab=', @id, '#progress-tabs')"/>
-                            <xsl:value-of select="text()"/>
-                        </a>
-                    </li>
-                </xsl:for-each>
+                <li role="presentation" class="active">
+                    <a href="#translations-published" role="tab" data-toggle="tab" aria-controls="translations-published">
+                        <xsl:value-of select="'Published Translations'"/>
+                    </a>
+                </li>
+                <li role="presentation">
+                    <a href="#translations-translated" role="tab" data-toggle="tab" aria-controls="translations-translated">
+                        <xsl:value-of select="'Translations Awaiting Publication'"/>
+                    </a>
+                </li>
+                <li role="presentation">
+                    <a href="#translations-in-translation" role="tab" data-toggle="tab" aria-controls="translations-in-translation">
+                        <xsl:value-of select="'Translations In Progress'"/>
+                    </a>
+                </li>
             </ul>
             
             <div class="tab-content">
                 
-                <div class="text-list">
-                    <div class="row table-headers">
-                        <div class="col-sm-2 hidden-xs">Toh</div>
-                        <div class="col-sm-8">Title</div>
-                        <div class="col-sm-2">Pages</div>
-                    </div>
-                    <div class="list-section">
-                        <xsl:for-each select="m:texts/m:text">
-                            <div class="row list-item">
-                                <div class="col-sm-2">
-                                    <xsl:value-of select="m:toh/m:full"/>
-                                </div>
-                                <div class="col-sm-8">
-                                    
-                                    <xsl:call-template name="text-list-title">
-                                        <xsl:with-param name="text" select="."/>
-                                    </xsl:call-template>
-                                    
-                                    <xsl:call-template name="text-list-subtitles">
-                                        <xsl:with-param name="text" select="."/>
-                                    </xsl:call-template>
-                                    
-                                    <xsl:if test="m:translation/m:contributors/m:summary">
-                                        <hr/>
-                                        <xsl:for-each select="m:translation/m:contributors/m:summary">
-                                            <p>
-                                                <xsl:value-of select="node()"/>
-                                            </p>
-                                        </xsl:for-each>
-                                    </xsl:if>
-                                    
-                                </div>
-                                <div class="col-sm-2">
-                                    <xsl:value-of select="format-number(tei:bibl/tei:location/@count-pages, '#,###')"/>
-                                </div>
-                            </div>
-                        </xsl:for-each>
-                    </div>
-                    <div class="row table-footer">
-                        <div class="col-sm-10 text-right">
-                            Total pages:
-                        </div>
-                        <div class="col-sm-2">
-                            <strong>
-                                <xsl:value-of select="format-number(sum(m:texts/m:text/tei:bibl/tei:location/@count-pages), '#,###')"/>
-                            </strong>
-                        </div>
-                    </div>
-                </div>
+                <xsl:call-template name="tab-list">
+                    <xsl:with-param name="id" select="'translations-published'"/>
+                    <xsl:with-param name="texts" select="m:translations-published/m:translation-status-texts/m:text"/>
+                    <xsl:with-param name="active" select="true()"/>
+                </xsl:call-template>
+                
+                <xsl:call-template name="tab-list">
+                    <xsl:with-param name="id" select="'translations-translated'"/>
+                    <xsl:with-param name="texts" select="m:translations-translated/m:translation-status-texts/m:text"/>
+                </xsl:call-template>
+                
+                <xsl:call-template name="tab-list">
+                    <xsl:with-param name="id" select="'translations-in-translation'"/>
+                    <xsl:with-param name="texts" select="m:translations-in-translation/m:translation-status-texts/m:text"/>
+                </xsl:call-template>
                 
             </div>
         </xsl:variable>
@@ -164,6 +134,74 @@
             <xsl:with-param name="sub-content" select="$content"/>
         </xsl:call-template>
         
+    </xsl:template>
+    
+    <xsl:template name="tab-list">
+        <xsl:param name="id" required="yes" as="xs:string"/>
+        <xsl:param name="texts" required="yes" as="element()*"/>
+        <xsl:param name="active" required="no" as="xs:boolean?"/>
+        <div role="tabpanel" class="tab-pane fade">
+            <xsl:attribute name="id" select="$id"/>
+            <xsl:if test="$active">
+                <xsl:attribute name="class" select="'tab-pane fade in active'"/>
+            </xsl:if>
+            <xsl:choose>
+                <xsl:when test="$texts">
+                    
+                    <div class="text-list">
+                        <div class="row table-headers">
+                            <div class="col-sm-2 hidden-xs">Toh</div>
+                            <div class="col-sm-10">Title</div>
+                        </div>
+                        <div class="list-section">
+                            <xsl:for-each select="$texts">
+                                <xsl:sort select="number(m:toh/@number)"/>
+                                <div class="row list-item">
+                                    <div class="col-sm-2">
+                                        <xsl:value-of select="m:toh/m:full"/>
+                                    </div>
+                                    <div class="col-sm-8">
+                                        
+                                        <xsl:call-template name="text-list-title">
+                                            <xsl:with-param name="text" select="."/>
+                                        </xsl:call-template>
+                                        
+                                        <xsl:call-template name="text-list-subtitles">
+                                            <xsl:with-param name="text" select="."/>
+                                        </xsl:call-template>
+                                        
+                                        <xsl:call-template name="expandable-summary">
+                                            <xsl:with-param name="text" select="."/>
+                                        </xsl:call-template>
+                                        
+                                    </div>
+                                    <div class="col-sm-2">
+                                        <xsl:value-of select="format-number(tei:bibl/tei:location/@count-pages, '#,###')"/>
+                                    </div>
+                                </div>
+                            </xsl:for-each>
+                        </div>
+                        
+                        <div class="row table-footer">
+                            <div class="col-sm-10 text-right">
+                                <xsl:value-of select="'Total pages:'"/>
+                            </div>
+                            <div class="col-sm-2">
+                                <strong>
+                                    <xsl:value-of select="format-number(sum($texts/tei:bibl/tei:location/@count-pages), '#,###')"/>
+                                </strong>
+                            </div>
+                        </div>
+                        
+                    </div>
+                </xsl:when>
+                <xsl:otherwise>
+                    <p class="text-muted italic">
+                        <xsl:value-of select="'There are currently not texts in this list.'"/>
+                    </p>
+                </xsl:otherwise>
+            </xsl:choose>
+        </div>
     </xsl:template>
     
 </xsl:stylesheet>

@@ -8,19 +8,13 @@ declare namespace m="http://read.84000.co/ns/1.0";
 
 declare option exist:serialize "method=xml indent=no";
 
-let $lang := request:get-parameter('lang', 'en')
-
-let $app-texts := common:app-texts('about.translators', <replace xmlns="http://read.84000.co/ns/1.0"/>, $lang)
-
-return
-    common:response(
-        "about/translators", 
-        $common:app-id,
-        (
-            $app-texts,
-            contributors:teams(false(), false(), true()),
-            contributors:regions(true()),
-            contributors:institution-types(true()),
-            translations:summary()
-        )
+common:response(
+    "about/translators", 
+    $common:app-id,
+    (
+        contributors:teams(false(), false(), true()),
+        contributors:regions(true()),
+        contributors:institution-types(true()),
+        translations:summary()
     )
+)

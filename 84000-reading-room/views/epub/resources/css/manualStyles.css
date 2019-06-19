@@ -410,7 +410,7 @@ img.logo-84000 {
 .imprint {
     padding-top: 20%;
 }
-.imprint h5 {
+.imprint > div {
     margin-bottom: 11pt;
 }
 .imprint .logo {

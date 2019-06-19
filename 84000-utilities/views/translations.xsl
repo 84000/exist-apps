@@ -96,14 +96,14 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <xsl:for-each select="m:translations/m:translation">
+                                    <xsl:for-each select="m:translations/m:text">
                                         <xsl:sort select="number(m:toh/@number)"/>
                                         <xsl:sort select="m:toh/m:base"/>
                                         <xsl:variable name="toh" select="m:toh"/>
                                         <xsl:variable name="tei-version" select="m:downloads/@tei-version"/>
                                         <xsl:variable name="text-downloads" select="m:downloads/m:download"/>
                                         <xsl:variable name="text-id" select="@id"/>
-                                        <xsl:variable name="status-id" select="@status-id"/>
+                                        <xsl:variable name="status-id" select="@status"/>
                                         
                                         <!-- Translation title -->
                                         <tr>
@@ -154,14 +154,14 @@
                                                             <xsl:value-of select="'Translated words:'"/>
                                                         </span>
                                                         <br/>
-                                                        <xsl:value-of select="fn:format-number(xs:integer(@wordCount),'#,##0')"/>
+                                                        <xsl:value-of select="fn:format-number(xs:integer(@word-count),'#,##0')"/>
                                                     </div>
                                                     <div class="col-sm-6">      
                                                         <span class="text-muted small nowrap">
                                                             <xsl:value-of select="'Glossary items:'"/>
                                                         </span>
                                                         <br/>
-                                                        <xsl:value-of select="fn:format-number(xs:integer(@glossaryCount),'#,##0')"/>
+                                                        <xsl:value-of select="fn:format-number(xs:integer(@glossary-count),'#,##0')"/>
                                                     </div>
                                                 </div>
                                                 
@@ -172,7 +172,10 @@
                                         <tr class="sub">
                                             <td/>
                                             <td>
-                                                <xsl:variable name="master-downloads" select="/m:response/m:translations-master/m:translations/m:translation/m:downloads[@resource-id eq $toh/@key]"/>
+                                                <!-- update to m:text after deployment of 1.22 collab -->
+                                                <xsl:variable name="master-downloads" select="/m:response/m:translations-master/m:translations/m:*/m:downloads[@resource-id eq $toh/@key]"/>
+                                                <!-- <xsl:variable name="master-downloads" select="/m:response/m:translations-master/m:translations/m:text/m:downloads[@resource-id eq $toh/@key]"/> -->
+                                                
                                                 <xsl:variable name="file-formats" select="('pdf', 'epub', 'azw3')"/>
                                                 <div class="small">
                                                     <div class="row">
@@ -385,7 +388,7 @@
                                             <small class="text-muted">
                                                 <xsl:value-of select="'Texts: '"/>
                                             </small>
-                                            <xsl:value-of select="fn:format-number(xs:integer(count(m:translations/m:translation)),'#,##0')"/>
+                                            <xsl:value-of select="fn:format-number(xs:integer(count(m:translations/m:text)),'#,##0')"/>
                                         </td>
                                         <td>
                                             <div class="row">
@@ -394,14 +397,14 @@
                                                         <xsl:value-of select="'Total words: '"/>
                                                     </small>
                                                     <br/>
-                                                    <xsl:value-of select="fn:format-number(xs:integer(sum(m:translations/m:translation/@wordCount)),'#,##0')"/>
+                                                    <xsl:value-of select="fn:format-number(xs:integer(sum(m:translations/m:text/@word-count)),'#,##0')"/>
                                                 </div>
                                                 <div class="col-sm-6">
                                                     <small class="text-muted">
                                                         <xsl:value-of select="'Total terms: '"/>
                                                     </small>
                                                     <br/>
-                                                    <xsl:value-of select="fn:format-number(xs:integer(sum(m:translations/m:translation/@glossaryCount)),'#,##0')"/>
+                                                    <xsl:value-of select="fn:format-number(xs:integer(sum(m:translations/m:text/@glossary-count)),'#,##0')"/>
                                                 </div>
                                             </div>
                                         </td>

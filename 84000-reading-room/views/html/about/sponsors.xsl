@@ -72,13 +72,13 @@
                                             <xsl:when test="@status-group eq 'published'">
                                                 <br/>
                                                 <label class="label label-success">
-                                                    Published
+                                                    <xsl:value-of select="'Published'"/>
                                                 </label>
                                             </xsl:when>
                                             <xsl:when test="@status-group = ('translated', 'in-translation')">
                                                 <br/>
                                                 <label class="label label-warning">
-                                                    In-progress
+                                                    <xsl:value-of select="'In-progress'"/>
                                                 </label>
                                             </xsl:when>
                                         </xsl:choose>
@@ -102,10 +102,10 @@
                                                         <xsl:value-of select="data(.)"/>
                                                     </p>
                                                 </xsl:for-each>
-                                                <xsl:if test="m:translation/@sponsored eq 'part'">
+                                                <xsl:if test="m:sponsorship-status/m:status[@id eq 'part']">
                                                     <p class="text-muted">
                                                         <a href="http://84000.co/sutra" class="italic">
-                                                            There are further sponsorship opportunities for this translation.
+                                                            <xsl:value-of select="'There are further sponsorship opportunities for this translation.'"/>
                                                         </a>
                                                     </p>
                                                 </xsl:if>
@@ -113,28 +113,9 @@
                                             
                                         </xsl:if>
                                         
-                                        <xsl:if test="m:summary/tei:p">
-                                            <hr/>
-                                            <a class="summary-link collapsed" role="button" data-toggle="collapse" aria-expanded="false" aria-controls="collapseExample">
-                                                <xsl:attribute name="href" select="concat('#summary-detail-', m:toh/@key)"/>
-                                                <i class="fa fa-chevron-down"/> Summary
-                                            </a>
-                                            
-                                            <div class="collapse summary-detail">
-                                                
-                                                <xsl:attribute name="id" select="concat('summary-detail-', m:toh/@key)"/>
-                                                
-                                                <div class="well well-sm">
-                                                    
-                                                    <xsl:if test="m:summary/tei:p">
-                                                        <h4>Summary</h4>
-                                                        <xsl:apply-templates select="m:summary/tei:p"/>
-                                                    </xsl:if>
-                                                    
-                                                </div>
-                                            </div>
-                                            
-                                        </xsl:if>
+                                        <xsl:call-template name="expandable-summary">
+                                            <xsl:with-param name="text" select="."/>
+                                        </xsl:call-template>
                                         
                                     </div>
                                 </div>

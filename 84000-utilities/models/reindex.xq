@@ -12,6 +12,8 @@ let $reindex-collection as xs:string :=
         concat($common:data-path, '/operations')
     else if(request:get-parameter('collection', '') eq 'translation-memory') then
         concat($common:data-path, '/translation-memory')
+    else if(request:get-parameter('collection', '') eq 'config') then
+        concat($common:data-path, '/config')
     else 
         ''
 

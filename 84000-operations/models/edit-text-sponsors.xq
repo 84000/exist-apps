@@ -23,7 +23,7 @@ let $tei :=
     else
         tei-content:tei($request-id, 'translation')
 
-let $translation-id := tei-content:id($tei)
+let $text-id := tei-content:id($tei)
 let $tei-translation := translation:translation($tei)
 
 let $document-uri := base-uri($tei)
@@ -41,7 +41,6 @@ let $updated :=
 
 (: Return output :)
 let $acknowledgment := translation:acknowledgment($tei)
-
 return
     common:response(
         'operations/edit-text-sponsors', 
@@ -49,14 +48,14 @@ return
         (
             <request 
                 xmlns="http://read.84000.co/ns/1.0" 
-                id="{ $translation-id }"/>,
+                id="{ $text-id }"/>,
             <updates
                 xmlns="http://read.84000.co/ns/1.0" >
                 { $updated }
             </updates>,
             <translation 
                 xmlns="http://read.84000.co/ns/1.0" 
-                id="{ $translation-id }"
+                id="{ $text-id }"
                 document-url="{ concat($document-path, $document-filename) }" 
                 locked-by-user="{ $tei-locked-by-user }"
                 status="{ tei-content:translation-status($tei) }">
@@ -65,8 +64,8 @@ return
                 { translation:translation($tei) }
                 { translation:toh($tei, '') }
             </translation>,
-            sponsorship:statuses($tei//tei:teiHeader/tei:fileDesc/tei:titleStmt/@sponsored),
-            sponsors:sponsors('all', false(), false())
+            sponsors:sponsors('all', false(), false()),
+            sponsorship:text-status($text-id, true())
         )
     )
     

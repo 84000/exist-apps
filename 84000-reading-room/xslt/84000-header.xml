@@ -89,10 +89,10 @@
             <item url="http://84000.co/about/origin">
                 <label>Origin</label>
             </item>
-            <item url="http://84000.co/about/progress">
+            <item url="http://read.84000.co/about/progress.html">
                 <label>Progress</label>
             </item>
-            <item url="http://84000.co/about/impact">
+            <item url="http://read.84000.co/about/impact.html">
                 <label>Global Impact</label>
             </item>
             <item url="http://84000.co/about/work-flow">
@@ -104,10 +104,10 @@
             <item url="http://84000.co/about/team">
                 <label>Team</label>
             </item>
-            <item url="http://84000.co/about/translators">
+            <item url="http://read.84000.co/about/translators.html">
                 <label>Translators</label>
             </item>
-            <item url="http://84000.co/about/sponsors">
+            <item url="http://read.84000.co/about/sponsors.html">
                 <label>Sponsors</label>
             </item>
             <item url="http://84000.co/about/partnerships">
@@ -131,7 +131,7 @@
             <item url="http://84000.co/how-you-can-help/sponsor-a-page">
                 <label>Sponsor a Page</label>
             </item>
-            <item url="http://84000.co/how-you-can-help/sponsor-a-sutra">
+            <item url="http://read.84000.co/about/sponsor-a-sutra.html">
                 <label>Sponsor a Sūtra</label>
             </item>
             <item url="http://84000.co/how-you-can-help/become-a-donor">
@@ -202,7 +202,7 @@
             <item url="http://84000.co/ch-about/ch-about-progress">
                 <label>工作進度</label>
             </item>
-            <item url="http://84000.co/ch-about/ch-about-impact">
+            <item url="http://read.84000.co/about/impact.html?lang=zh">
                 <label>全球影響</label>
             </item>
             <item url="http://84000.co/ch-about/ch-about-workflow">
@@ -217,10 +217,10 @@
             <item url="http://84000.co/ch-about/ch-about-team">
                 <label>我們的團隊</label>
             </item>
-            <item url="http://84000.co/ch-about/ch-about-translators">
+            <item url="http://read.84000.co/about/translators.html?lang=zh">
                 <label>翻譯人員</label>
             </item>
-            <item url="http://84000.co/ch-about/ch-sponsors">
+            <item url="http://read.84000.co/about/sponsors.html?lang=zh">
                 <label>贊助人</label>
             </item>
             <!-- <item url="http://84000.co/ch-about/ch-partnerships">
@@ -235,7 +235,7 @@
             <item url="http://84000.co/ch-how-you-can-help/ch-sponsor-a-page">
                 <label>贊助一頁佛經</label>
             </item>
-            <item url="http://84000.co/ch-how-you-can-help/ch-sponsor-a-sutra">
+            <item url="http://read.84000.co/about/sponsor-a-sutra.html?lang=zh">
                 <label>贊助一部佛典</label>
             </item>
             <item url="http://84000.co/ch-how-you-can-help/ch-become-a-donor">

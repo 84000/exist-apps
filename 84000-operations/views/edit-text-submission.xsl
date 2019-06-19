@@ -46,10 +46,8 @@
                                 <i class="fa fa-cloud-download"/>
                             </a>
                         </span>
-                        <span>
-                            <div class="pull-right">
-                                <xsl:copy-of select="common:translation-status(m:translation/@status)"/>
-                            </div>
+                        <span class="text-right">
+                            <xsl:copy-of select="common:translation-status(m:translation/@status)"/>
                         </span>
                     </div>
                     <hr/>

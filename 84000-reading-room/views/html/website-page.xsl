@@ -3,7 +3,6 @@
     
     <!-- include navigation stylesheet -->
     <xsl:import href="../../xslt/84000-html.xsl"/>
-    <xsl:import href="../../xslt/functions.xsl"/>
     
     <!-- Look up environment variables -->
     <xsl:variable name="environment-path" select="if(/m:response/@environment-path)then /m:response/@environment-path else '/db/system/config/db/system/environment.xml'"/>
@@ -21,8 +20,7 @@
     <!-- override navigation params -->
     <xsl:variable name="lang" select="if(/m:response/@lang) then /m:response/@lang else 'en'"/>
     <xsl:variable name="active-url">
-        <xsl:value-of select="common:internal-link('http://read.84000.co/', (), '', $lang)"/>
-        <!-- 
+        <!-- <xsl:value-of select="common:internal-link('http://read.84000.co/', (), '', $lang)"/> -->
         <xsl:choose>
             <xsl:when test="/m:response/m:section/@id eq 'ALL-TRANSLATED'">
                 <xsl:value-of select="common:internal-link('http://read.84000.co/section/all-translated.html', (), '', $lang)"/>
@@ -34,22 +32,24 @@
                 <xsl:value-of select="common:internal-link('http://read.84000.co/search.html', (), '', $lang)"/>
             </xsl:when>
             <xsl:when test="/m:response/@model-type eq 'about/sponsors'">
-                <xsl:value-of select="common:internal-link('http://84000.co/about/sponsors', (), '', $lang)"/>
+                <xsl:value-of select="common:internal-link('http://read.84000.co/about/sponsors', (), '', $lang)"/>
             </xsl:when>
             <xsl:when test="/m:response/@model-type eq 'about/impact'">
-                <xsl:value-of select="common:internal-link('http://84000.co/about/impact', (), '', $lang)"/>
+                <xsl:value-of select="common:internal-link('http://read.84000.co/about/impact', (), '', $lang)"/>
             </xsl:when>
             <xsl:when test="/m:response/@model-type eq 'about/progress'">
-                <xsl:value-of select="common:internal-link('http://84000.co/about/progress', (), '', $lang)"/>
+                <xsl:value-of select="common:internal-link('http://read.84000.co/about/progress', (), '', $lang)"/>
             </xsl:when>
             <xsl:when test="/m:response/@model-type eq 'about/translators'">
-                <xsl:value-of select="common:internal-link('http://84000.co/about/translators', (), '', $lang)"/>
+                <xsl:value-of select="common:internal-link('http://read.84000.co/about/translators', (), '', $lang)"/>
+            </xsl:when>
+            <xsl:when test="/m:response/@model-type eq 'about/sponsor-a-sutra'">
+                <xsl:value-of select="common:internal-link('http://read.84000.co/about/sponsor-a-sutra', (), '', $lang)"/>
             </xsl:when>
             <xsl:otherwise>
                 <xsl:value-of select="common:internal-link('#reading-room', (), '', '')"/>
             </xsl:otherwise>
         </xsl:choose>
-         -->
     </xsl:variable>
     
     <xsl:variable name="local-comms-url" select="$communications-site-path"/>
@@ -153,7 +153,7 @@
         <!-- Shared footer -->
         <xsl:apply-templates select="$eft-footer"/>
         
-        <script type="text/javascript">
+        <script>
             function downloadJSAtOnload() {
             var element = document.createElement("script");
             element.src = "<xsl:value-of select="concat($front-end-path, '/js/84000-fe.min.js', '?v=', $app-version)"/>";
@@ -250,6 +250,8 @@
         
         <html>
             
+            <xsl:attribute name="lang" select="$lang"/>
+            
             <!-- Get the common <head> -->
             <xsl:call-template name="html-head">
                 <xsl:with-param name="front-end-path" select="$front-end-path"/>
@@ -305,6 +307,8 @@
         <xsl:variable name="front-end-path" select="$environment/m:url[@id eq 'front-end']/text()"/>
         
         <html>
+            
+            <xsl:attribute name="lang" select="$lang"/>
             
             <head>
                 
@@ -363,5 +367,17 @@
         </html>
         
     </xsl:template>
+    
+    <!-- Localization helpers -->
+    <!-- Coped from functions.xsl to avoid duplicate include warning -->
+    <xsl:function name="common:internal-link">
+        <xsl:param name="url" required="yes"/>
+        <xsl:param name="attributes" required="yes"/>
+        <xsl:param name="fragment-id" required="yes"/>
+        <xsl:param name="lang" required="yes"/>
+        <xsl:variable name="lang-attribute" select="if($lang = ('zh')) then concat('lang=', $lang) else ()"/>
+        <xsl:variable name="attributes-with-lang" select="($attributes, $lang-attribute)"/>
+        <xsl:value-of select="concat($url, if(count($attributes-with-lang) gt 0) then concat('?', string-join($attributes-with-lang, '&amp;')) else '', $fragment-id)"/>
+    </xsl:function>
     
 </xsl:stylesheet>

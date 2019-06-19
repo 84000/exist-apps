@@ -7,13 +7,8 @@ declare namespace m="http://read.84000.co/ns/1.0";
 
 declare option exist:serialize "method=xml indent=no";
 
-let $lang := request:get-parameter('lang', 'en')
-
-return
-    common:response(
-        "about/prototype", 
-        $common:app-id,
-        (
-            common:app-texts('about.prototype', <replace xmlns="http://read.84000.co/ns/1.0"/>, $lang)
-        )
-    )
+common:response(
+    "about/prototype", 
+    $common:app-id,
+    ()
+)

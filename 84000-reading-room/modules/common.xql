@@ -69,6 +69,7 @@ function common:response($model-type as xs:string, $app-id as xs:string, $data a
         timestamp="{ current-dateTime() }"
         app-id="{ $app-id }" 
         app-version="{ $common:app-version }"
+        data-path="{ $common:data-path }" 
         environment-path="{ $common:environment-path }"
         user-name="{ common:user-name() }" 
         lang="{ request:get-parameter('lang', 'en') }"
@@ -115,7 +116,7 @@ declare function common:normalize-space($nodes as node()*) as node()*{
     for $node in $nodes
     return
         if ($node instance of text()) then
-            text { normalize-space($node) }
+            text { translate(normalize-space(concat('', translate($node, '&#xA;', ''), '')), '', '') }
         else if ($node instance of element()) then
             element { node-name($node) }{
                 $node/@*,
@@ -397,7 +398,10 @@ declare function common:app-texts($search as xs:string, $replacements as element
         common:replace(
             element {QName('http://read.84000.co/ns/1.0', 'app-text')}{
                 attribute key { $key },
-                common:normalize-space($best/node())
+                if ($best instance of text()) then
+                    normalize-space($best)
+                else
+                    common:normalize-space($best/node())
             },
             $replacements
         )
@@ -496,7 +500,7 @@ declare function common:sort-trailing-number-in-string($seq as xs:string*, $sepa
             else
                 $string
     
-    order by $prefix, $number
+        order by $prefix, $number
     return $string
  
 };
