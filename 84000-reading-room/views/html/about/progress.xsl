@@ -176,7 +176,7 @@
                                         
                                     </div>
                                     <div class="col-sm-2">
-                                        <xsl:value-of select="format-number(tei:bibl/tei:location/@count-pages, '#,###')"/>
+                                        <xsl:value-of select="format-number(tei:bibl/tei:location/@count-pages/number(), '#,###')"/>
                                     </div>
                                 </div>
                             </xsl:for-each>
@@ -188,7 +188,7 @@
                             </div>
                             <div class="col-sm-2">
                                 <strong>
-                                    <xsl:value-of select="format-number(sum($texts/tei:bibl/tei:location/@count-pages), '#,###')"/>
+                                    <xsl:value-of select="format-number(sum($texts/tei:bibl/tei:location/@count-pages/number()), '#,###')"/>
                                 </strong>
                             </div>
                         </div>

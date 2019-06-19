@@ -147,7 +147,7 @@ declare function sponsorship:cost-estimate($teis as element()*) as element()* {
         for $tei in $teis
         return
             tei-content:source-bibl($tei, '')
-    let $count-pages := sum($bibls/tei:location/@count-pages/xs:integer(.))
+    let $count-pages := sum($bibls/tei:location/@count-pages/number())
     
     let $cost-per-page := $sponsorship:cost-groups/m:cost-groups/@cost-per-page
     let $basic-cost := $count-pages * $cost-per-page

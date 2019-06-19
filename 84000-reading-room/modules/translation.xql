@@ -165,7 +165,7 @@ declare function translation:toh($tei as element(), $resource-id as xs:string) a
 declare function translation:location($tei as element(), $resource-id as xs:string) as element() {
     let $bibl := tei-content:source-bibl($tei, $resource-id)
     return
-        <location xmlns="http://read.84000.co/ns/1.0" key="{ $bibl/@key }" count-pages="{$bibl/tei:location/@count-pages}">
+        <location xmlns="http://read.84000.co/ns/1.0" key="{ $bibl/@key }" count-pages="{$bibl/tei:location/@count-pages/number()}">
             <start volume="{ $bibl/tei:location/tei:start/@volume }" page="{ $bibl/tei:location/tei:start/@page }"/>
             <end volume="{ $bibl/tei:location/tei:end/@volume }" page="{ $bibl/tei:location/tei:end/@page }"/>
         </location>

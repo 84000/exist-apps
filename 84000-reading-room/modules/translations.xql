@@ -65,16 +65,16 @@ declare function translations:summary() as element() {
     let $commissioned-text-count := count($commissioned-fileDesc)
     let $not-started-text-count := $all-text-count - $commissioned-text-count
     
-    let $all-text-page-count := sum($fileDescs/tei:sourceDesc/tei:bibl[1]/tei:location[functx:is-a-number(@count-pages)]/@count-pages)
-    let $commissioned-text-page-count := sum($commissioned-fileDesc/tei:sourceDesc/tei:bibl[1]/tei:location[functx:is-a-number(@count-pages)]/@count-pages)
+    let $all-text-page-count := sum($fileDescs/tei:sourceDesc/tei:bibl[1]/tei:location/@count-pages/number())
+    let $commissioned-text-page-count := sum($commissioned-fileDesc/tei:sourceDesc/tei:bibl[1]/tei:location/@count-pages/number())
     let $not-started-text-page-count := $all-text-page-count - $commissioned-text-page-count
     
     let $all-toh-count := count($fileDescs/tei:sourceDesc/tei:bibl)
     let $commissioned-toh-count := count($commissioned-fileDesc/tei:sourceDesc/tei:bibl)
     let $not-started-toh-count := $all-toh-count - $commissioned-toh-count
     
-    let $all-toh-page-count := sum($fileDescs/tei:sourceDesc/tei:bibl/tei:location[functx:is-a-number(@count-pages)]/@count-pages)
-    let $commissioned-toh-page-count := sum($commissioned-fileDesc/tei:sourceDesc/tei:bibl/tei:location[functx:is-a-number(@count-pages)]/@count-pages)
+    let $all-toh-page-count := sum($fileDescs/tei:sourceDesc/tei:bibl/tei:location/@count-pages/number())
+    let $commissioned-toh-page-count := sum($commissioned-fileDesc/tei:sourceDesc/tei:bibl/tei:location/@count-pages/number())
     let $not-started-toh-page-count := $all-toh-page-count - $commissioned-toh-page-count
     
     return 
@@ -89,12 +89,12 @@ declare function translations:summary() as element() {
                 sponsored="{ count($sponsored-fileDesc) }" >
                 <pages 
                     count="{ $all-text-page-count }" 
-                    published="{ sum($published-fileDesc/tei:sourceDesc/tei:bibl[1]/tei:location[functx:is-a-number(@count-pages)]/@count-pages) }" 
-                    translated="{ sum($translated-fileDesc/tei:sourceDesc/tei:bibl[1]/tei:location[functx:is-a-number(@count-pages)]/@count-pages) }" 
-                    in-translation="{ sum($in-translation-fileDesc/tei:sourceDesc/tei:bibl[1]/tei:location[functx:is-a-number(@count-pages)]/@count-pages) }" 
+                    published="{ sum($published-fileDesc/tei:sourceDesc/tei:bibl[1]/tei:location/@count-pages/number()) }" 
+                    translated="{ sum($translated-fileDesc/tei:sourceDesc/tei:bibl[1]/tei:location/@count-pages/number()) }" 
+                    in-translation="{ sum($in-translation-fileDesc/tei:sourceDesc/tei:bibl[1]/tei:location/@count-pages/number()) }" 
                     commissioned="{ $commissioned-text-page-count }" 
                     not-started="{ $not-started-text-page-count }"
-                    sponsored="{ sum($sponsored-fileDesc/tei:sourceDesc/tei:bibl[1]/tei:location[functx:is-a-number(@count-pages)]/@count-pages) }" />
+                    sponsored="{ sum($sponsored-fileDesc/tei:sourceDesc/tei:bibl[1]/tei:location/@count-pages/number()) }" />
             </texts>
             <tohs 
                 count="{ $all-toh-count }" 
@@ -106,12 +106,12 @@ declare function translations:summary() as element() {
                 sponsored="{ count($sponsored-fileDesc/tei:sourceDesc/tei:bibl) }" >
                 <pages 
                     count="{ $all-toh-page-count }" 
-                    published="{ sum($published-fileDesc/tei:sourceDesc/tei:bibl/tei:location[functx:is-a-number(@count-pages)]/@count-pages) }" 
-                    translated="{ sum($translated-fileDesc/tei:sourceDesc/tei:bibl/tei:location[functx:is-a-number(@count-pages)]/@count-pages) }" 
-                    in-translation="{ sum($in-translation-fileDesc/tei:sourceDesc/tei:bibl/tei:location[functx:is-a-number(@count-pages)]/@count-pages) }" 
+                    published="{ sum($published-fileDesc/tei:sourceDesc/tei:bibl/tei:location/@count-pages/number()) }" 
+                    translated="{ sum($translated-fileDesc/tei:sourceDesc/tei:bibl/tei:location/@count-pages/number()) }" 
+                    in-translation="{ sum($in-translation-fileDesc/tei:sourceDesc/tei:bibl/tei:location/@count-pages/number()) }" 
                     commissioned="{ $commissioned-toh-page-count }" 
                     not-started="{ $not-started-toh-page-count }"
-                    sponsored="{ sum($sponsored-fileDesc/tei:sourceDesc/tei:bibl/tei:location[functx:is-a-number(@count-pages)]/@count-pages) }" />
+                    sponsored="{ sum($sponsored-fileDesc/tei:sourceDesc/tei:bibl/tei:location/@count-pages/number()) }" />
             </tohs>
             
         </outline-summary>
@@ -201,7 +201,7 @@ declare function translations:filtered-texts($section as xs:string, $status as x
             translations:filtered-text($tei, '', $include-sponsors, $include-downloads, false())
     
     let $texts-count := count($texts)
-    let $texts-pages-count := sum($texts/tei:bibl/tei:location[functx:is-a-number(@count-pages)]/@count-pages)
+    let $texts-pages-count := sum($texts/tei:bibl/tei:location/@count-pages/number())
     
     let $texts-words-count := sum($texts/@word-count)
     
