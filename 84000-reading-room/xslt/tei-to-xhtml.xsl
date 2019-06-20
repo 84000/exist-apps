@@ -7,11 +7,13 @@
     
     <xsl:import href="functions.xsl"/>
     
+    <!-- Strip return characters from text -->
     <xsl:template match="text()">
         <xsl:value-of select="translate(normalize-space(concat('', translate(., '&#xA;', ''), '')), '', '')"/>
     </xsl:template>
     
-    <xsl:template match="text()[not(normalize-space()) and position() = (1,last())]">
+    <!-- Strip leading or trailing spaces from a node -->
+    <xsl:template match="text()[not(normalize-space())][common:index-of-node(../node(), .) = (1, count(../node()))]">
         <xsl:value-of select="normalize-space()"/>
     </xsl:template>
     

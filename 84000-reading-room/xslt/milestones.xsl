@@ -13,8 +13,6 @@
         <milestone xmlns="http://www.tei-c.org/ns/1.0">
             <xsl:copy-of select="@*"/>
             <xsl:variable name="group" select="ancestor::*[exists(@prefix)][1]"/>
-            <!-- <xsl:attribute name="location" select="$group/name()"/> -->
-            <!-- <xsl:attribute name="chapter-index" select="$group/@chapter-index"/> -->
             <xsl:attribute name="label" select="concat($group/@prefix, '.', '­', common:index-of-node($group//tei:milestone, .))"/>
         </milestone>
     </xsl:template>
@@ -23,8 +21,6 @@
         <note xmlns="http://www.tei-c.org/ns/1.0">
             <xsl:copy-of select="@*"/>
             <xsl:variable name="group" select="ancestor::*[exists(@prefix)][1]"/>
-            <!-- <xsl:attribute name="location" select="$group/name()"/> -->
-            <!-- <xsl:attribute name="chapter-index" select="$group/@chapter-index"/> -->
             <xsl:copy-of select="node()"/>
         </note>
     </xsl:template>

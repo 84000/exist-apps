@@ -7,14 +7,14 @@
     <xsl:variable name="environment" select="doc(/m:response/@environment-path)/m:environment"/>
     <xsl:variable name="reading-room-path" select="$environment/m:url[@id eq 'reading-room']/text()"/>
     
-    <xsl:function name="m:test-result" as="item()*">
+    <xsl:template name="test-result">
         
-        <xsl:param name="success" as="xs:boolean"/>
-        <xsl:param name="cell-id" as="xs:string"/>
-        <xsl:param name="text-id" as="xs:string*"/>
-        <xsl:param name="text-title" as="xs:string*"/>
-        <xsl:param name="test-title" as="xs:string"/>
-        <xsl:param name="test-detail" as="node()"/>
+        <xsl:param name="success" as="xs:boolean" required="yes"/>
+        <xsl:param name="cell-id" as="xs:string" required="yes"/>
+        <xsl:param name="text-id" as="xs:string*" required="yes"/>
+        <xsl:param name="text-title" as="xs:string*" required="yes"/>
+        <xsl:param name="test-title" as="xs:string" required="yes"/>
+        <xsl:param name="test-detail" as="node()" required="yes"/>
         
         <a role="button" class="pop-up">
             <xsl:attribute name="href" select="concat('#', $cell-id)"/>
@@ -90,7 +90,7 @@
             </div>
         </div>
         
-    </xsl:function>
+    </xsl:template>
     
     <xsl:template match="/m:response">
         <xsl:variable name="content">
@@ -137,11 +137,11 @@
                                     <th>Text</th>
                                     <th>Load time</th>
                                     <xsl:for-each select="//m:results/m:section[1]/m:tests/m:test">
-                                        <th class="icon">
+                                        <th>
                                             <xsl:value-of select="position()"/>
                                         </th>
                                     </xsl:for-each>
-                                    <th class="icon">filter</th>
+                                    <th>filter</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -161,27 +161,24 @@
                                             </a>
                                         </td>
                                         <td>
-                                            <xsl:choose>
-                                                <xsl:when test="number(@duration) gt 1">
-                                                    <span class="label label-info">
-                                                        <xsl:value-of select="concat(@duration, ' secs')"/>
-                                                    </span>
-                                                </xsl:when>
-                                                <xsl:otherwise>
-                                                    <span class="label label-default">
-                                                        <xsl:value-of select="concat(@duration, ' secs')"/>
-                                                    </span>
-                                                </xsl:otherwise>
-                                            </xsl:choose>
+                                            <span class="label label-default">
+                                                <xsl:if test="number(@duration) gt 1">
+                                                    <xsl:attribute name="class" select="'label label-info'"/>
+                                                </xsl:if>
+                                                <xsl:value-of select="concat(@duration, ' secs')"/>
+                                            </span>
                                         </td>
                                         <xsl:for-each select="m:tests/m:test">
-                                            <xsl:variable name="test-id" select="position()"/>
-                                            <xsl:variable name="cell-id" select="concat('col-', $test-id,'row-', $table-row)"/>
-                                            <xsl:variable name="test-title" select="concat($test-id, '. ', m:title/text())"/>
-                                            <xsl:variable name="test-result" select="xs:boolean(@pass)"/>
-                                            <xsl:variable name="test-details" select="m:details"/>
+                                            <xsl:variable name="test-title" select="concat(position(), '. ', m:title/text())"/>
                                             <td class="icon">
-                                                <xsl:copy-of select="m:test-result($test-result, $cell-id, $text-id, $text-title, $test-title, $test-details)"/>
+                                                <xsl:call-template name="test-result">
+                                                    <xsl:with-param name="success" select="xs:boolean(@pass)"/>
+                                                    <xsl:with-param name="cell-id" select="concat('col-', position(),'row-', $table-row)"/>
+                                                    <xsl:with-param name="text-id" select="$text-id"/>
+                                                    <xsl:with-param name="text-title" select="$text-title"/>
+                                                    <xsl:with-param name="test-title" select="$text-title"/>
+                                                    <xsl:with-param name="test-detail" select="m:details"/>
+                                                </xsl:call-template>
                                             </td>
                                         </xsl:for-each>
                                         <td class="icon">

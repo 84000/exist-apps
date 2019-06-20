@@ -270,6 +270,7 @@ declare function translation:preface($tei as element()) as element()* {
 declare function translation:nested-section($section as element()?, $nesting as xs:integer, $parent-id) as element()* {
     if($section) then
     (
+        (: Add direct children :)
         $section/*[
             self::tei:head
             | self::tei:p
@@ -284,6 +285,7 @@ declare function translation:nested-section($section as element()?, $nesting as 
             | self::tei:seg
             | self::tei:table
         ],
+        (: Add subsections :)
         for $sub-section at $position in $section/tei:div[@type = ('section', 'chapter')]
             let $section-id := concat($parent-id, '-', $position)
         return

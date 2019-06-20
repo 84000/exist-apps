@@ -777,23 +777,20 @@ declare function tests:lucene-test($lang as xs:string, $test-id as xs:string) as
     (
         for $match in $matches
         return
-            <result xmlns="http://read.84000.co/ns/1.0">
-            {
+            element { QName('http://read.84000.co/ns/1.0', 'result') } {
+                attribute score { ft:score($match) },
                 if(not($test/m:match[@data-id eq $match/@xml:id])) then
                     attribute invalid { 'should-not' }
                 else
                     (),
                 util:expand($match, "expand-xincludes=no")
-            }
-            </result>,
+            },
         for $match in $test/m:match[not(@data-id = $matches/@xml:id)]
         return
-            <result xmlns="http://read.84000.co/ns/1.0">
-            {
+            element { QName('http://read.84000.co/ns/1.0', 'result') } {
                 attribute invalid { 'should' },
                 $lang-tests/m:data[@xml:id = $match/@data-id]
             }
-            </result>
     )
 };
 

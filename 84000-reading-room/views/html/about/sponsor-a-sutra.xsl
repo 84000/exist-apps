@@ -183,7 +183,12 @@
                                 </div>
                                 <div class="list-section">
                                     <xsl:for-each-group select="$texts" group-by="m:sponsorship-status/@project-id">
-                                    
+                                        
+                                        <xsl:sort select="number(m:toh/@number)"/>
+                                        <xsl:sort select="m:toh/@letter"/>
+                                        <xsl:sort select="number(m:toh/@chapter-number)"/>
+                                        <xsl:sort select="m:toh/@chapter-letter"/>
+                                        
                                         <div class="row list-item">
                                             <div class="col-sm-2 nowrap">
                                                 
