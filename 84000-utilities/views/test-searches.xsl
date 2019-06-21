@@ -193,8 +193,14 @@
                         <th>
                             <xsl:value-of select="'#'"/>
                         </th>
-                        <th colspan="3">
+                        <th>
                             <xsl:value-of select="$query-string"/>
+                        </th>
+                        <th colspan="2">
+                            <xsl:value-of select="'Result'"/>
+                        </th>
+                        <th>
+                            <xsl:value-of select="'Score'"/>
                         </th>
                         <th class="text-right">
                             <xsl:value-of select="concat('(', $lang, ' / ', $test-id,')')"/>
@@ -239,11 +245,11 @@
                                             </xsl:when>
                                             <xsl:otherwise>
                                                 <xsl:value-of select="'Matched! '"/>
-                                                <span class="small text-muted">
-                                                    <xsl:value-of select="concat('(', @score, ')')"/>
-                                                </span>
                                             </xsl:otherwise>
                                         </xsl:choose>
+                                    </td>
+                                    <td class="small text-muted">
+                                        <xsl:value-of select="@score"/>
                                     </td>
                                     <td class="text-right">
                                         <xsl:choose>
@@ -272,7 +278,7 @@
                         </xsl:when>
                         <xsl:otherwise>
                             <tr>
-                                <td colspan="5" class="text-muted text-center">
+                                <td colspan="6" class="text-muted text-center">
                                     <xsl:value-of select="'~ No matches ~'"/>
                                 </td>
                             </tr>
@@ -282,7 +288,7 @@
                 </tbody>
                 <tfoot>
                     <tr>
-                        <td colspan="5">
+                        <td colspan="6">
                             <form action="test-searches.html" method="post">
                                 <input type="hidden" name="lang">
                                     <xsl:attribute name="value" select="$lang"/>
