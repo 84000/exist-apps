@@ -2,6 +2,7 @@
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" version="2.0" exclude-result-prefixes="#all">
     
     <xsl:import href="website-page.xsl"/>
+    <xsl:import href="../../xslt/lang.xsl"/>
     
     <xsl:template match="/m:response">
         
@@ -34,17 +35,23 @@
                                 </div>
                                 <div id="popover-content" class="hidden">
                                     <h4 class="title">
-                                        <xsl:value-of select="normalize-space(m:app-text[@key eq 'source.ekangyur-description-title'])"/>
+                                        <xsl:call-template name="local-text">
+                                            <xsl:with-param name="local-key" select="'ekangyur-description-title'"/>
+                                        </xsl:call-template>
                                     </h4>
                                     <div class="content">
-                                        <xsl:copy-of select="m:app-text[@key eq 'source.ekangyur-description-content']/xhtml:*" copy-namespaces="no"/>
+                                        <xsl:call-template name="local-text">
+                                            <xsl:with-param name="local-key" select="'ekangyur-description-content'"/>
+                                        </xsl:call-template>
                                     </div>
                                 </div>
                             </div>
                         </div>
                         <div class="well well-sml">
                             <p class="text-center text-muted">
-                                <xsl:copy-of select="m:app-text[@key eq 'source.backlink-label']/xhtml:*" copy-namespaces="no"/>
+                                <xsl:call-template name="local-text">
+                                    <xsl:with-param name="local-key" select="'backlink-label'"/>
+                                </xsl:call-template>
                                 <br/>
                                 <a href="#">
                                     <xsl:attribute name="href" select="m:back-link/@url"/>

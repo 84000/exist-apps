@@ -32,8 +32,6 @@ declare variable $common:ekangyur-work := 'UT4CZ5369';
 declare variable $common:ekangyur-path := concat('/db/apps/eKangyur/data/', $common:ekangyur-work);
 declare variable $common:environment-path := '/db/system/config/db/system/environment.xml';
 declare variable $common:environment := doc($common:environment-path)/m:environment;
-declare variable $common:app-text := doc(concat($common:data-path, '/config/app-text.xml'));
-
 
 declare
     %test:assertEquals("84000-reading-room")
@@ -369,50 +367,26 @@ declare function common:valid-lang($lang) as xs:string {
         ''
 };
 
-declare function common:app-text($key as xs:string, $lang as xs:string) {
-
-    let $result := 
+declare function common:local-text($key as xs:string, $lang as xs:string) {
+    
+    let $local-texts :=
+        if($lang = ('en', 'zh')) then
+            doc(concat($common:data-path, '/config/text.', $lang, '.xml'))//m:item
+        else
+            doc(concat($common:data-path, '/config/text.en.xml'))//m:item
+    
+    let $local-text := 
         if(lower-case($lang) = ('', 'en')) then
-            $common:app-text//m:item[@key eq $key][not(@xml:lang) or @xml:lang eq 'en'][1]/node()
+            $local-texts//m:item[@key eq $key][not(@xml:lang) or @xml:lang eq 'en'][1]/node()
         else
-            $common:app-text//m:item[@key eq $key][@xml:lang eq $lang][1]/node()
+            $local-texts//m:item[@key eq $key][@xml:lang eq $lang][1]/node()
     
     return
-        if ($result instance of text()) then
-            normalize-space($result)
+        if ($local-text instance of text()) then
+            normalize-space($local-text)
         else
-            $result
-};
-
-declare function common:app-text($key as xs:string) {
-    common:app-text($key, 'en')
-};
-
-declare function common:app-texts($search as xs:string, $replacements as element(), $lang as xs:string) as element()* {
-    
-    let $keys := distinct-values($common:app-text//m:item[contains(@key, concat($search, '.'))]/@key)
-    
-    for $key in $keys
-        let $best := 
-            (
-                $common:app-text//m:item[@key eq $key][@xml:lang eq $lang],
-                $common:app-text//m:item[@key eq $key][not(@xml:lang) or @xml:lang eq 'en']
-            )[1]
-    return
-        common:replace(
-            element {QName('http://read.84000.co/ns/1.0', 'app-text')}{
-                attribute key { $key },
-                if ($best instance of text()) then
-                    normalize-space($best)
-                else
-                    common:normalize-space($best/node())
-            },
-            $replacements
-        )
-};
-
-declare function common:app-texts($search as xs:string, $replacements as element()) as element()* {
-    common:app-texts($search, $replacements, 'en')
+            common:normalize-space($local-text)
+            
 };
 
 declare function common:replace($node as node(), $replacements as element()) {

@@ -2,6 +2,7 @@
 <xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:util="http://exist-db.org/xquery/util" xmlns:common="http://read.84000.co/common" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" version="2.0" exclude-result-prefixes="#all">
     
     <xsl:import href="../../xslt/tei-to-xhtml.xsl"/>
+    <xsl:import href="../../xslt/lang.xsl"/>
     <xsl:import href="website-page.xsl"/>
     
     <!-- Look up environment variables -->
@@ -274,11 +275,15 @@
                                 </span>
                             </button>
                             <h4 class="modal-title" id="ebook-help-label">
-                                <xsl:value-of select="m:app-text[@key eq 'section.ebook-help-title']"/>
+                                <xsl:call-template name="local-text">
+                                    <xsl:with-param name="local-key" select="'ebook-help-title'"/>
+                                </xsl:call-template>
                             </h4>
                         </div>
                         <div class="modal-body">
-                            <xsl:copy-of select="m:app-text[@key eq 'section.ebook-help-body']/xhtml:*" copy-namespaces="no"/>
+                            <xsl:call-template name="local-text">
+                                <xsl:with-param name="local-key" select="'ebook-help-body'"/>
+                            </xsl:call-template>
                         </div>
                     </div>
                 </div>
@@ -621,7 +626,8 @@
                                     <a class="summary-link collapsed" role="button" data-toggle="collapse" aria-expanded="false">
                                         <xsl:attribute name="href" select="concat('#summary-detail-', m:toh/@key)"/>
                                         <xsl:attribute name="aria-controls" select="concat('summary-detail-', m:toh/@key)"/>
-                                        <i class="fa fa-chevron-down"/> Summary &amp; variant titles
+                                        <i class="fa fa-chevron-down"/>
+                                        <xsl:value-of select="' Summary &amp; variant titles'"/>
                                     </a>
                                     
                                     <div class="collapse summary-detail">
@@ -702,7 +708,9 @@
                                                 <a data-toggle="modal" href="#ebook-help" data-target="#ebook-help" class="text-warning">
                                                     <i class="fa fa-info-circle" aria-hidden="true"/>
                                                     <span class="small">
-                                                        <xsl:value-of select="/m:response/m:app-text[@key eq 'section.ebook-help-title']"/>
+                                                        <xsl:call-template name="local-text">
+                                                            <xsl:with-param name="local-key" select="'ebook-help-title'"/>
+                                                        </xsl:call-template>
                                                     </span>
                                                 </a>
                                             </li>

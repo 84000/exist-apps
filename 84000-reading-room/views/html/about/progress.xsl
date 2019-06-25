@@ -6,6 +6,12 @@
     <xsl:template match="/m:response">
         <xsl:variable name="content">
             
+            <p>
+                <xsl:call-template name="local-text">
+                    <xsl:with-param name="local-key" select="'page-intro'"/>
+                </xsl:call-template>
+            </p>
+            
             <div class="row about-stats">
                 <div class="col-sm-6 col-lg-8">
                     
@@ -14,47 +20,41 @@
                     <xsl:variable name="translated-pages" select="m:outline-summary/m:tohs/m:pages/@translated"/>
                     <xsl:variable name="in-translation-pages" select="m:outline-summary/m:tohs/m:pages/@in-translation"/>
                     
-                    <div class="stat green">
-                        <div class="heading">Published translations:</div>
-                        <div class="data">
-                            <span>
-                                <xsl:value-of select="format-number($published-pages, '#,###')"/>
-                            </span> pages, 
-                            <span>
-                                <xsl:value-of select="format-number(m:outline-summary/m:tohs/@published, '#,###')"/>
-                            </span> texts, 
-                            <span>
-                                <xsl:value-of select="format-number(($published-pages div $total-pages) * 100, '###,##0')"/>%</span> of the Kangyur.
-                        </div>
-                    </div>
+                    <xsl:call-template name="headline-stat">
+                        <xsl:with-param name="colour-class" select="'green'"/>
+                        <xsl:with-param name="label-text">
+                            <xsl:call-template name="local-text">
+                                <xsl:with-param name="local-key" select="'translations-published-label'"/>
+                            </xsl:call-template>
+                        </xsl:with-param>
+                        <xsl:with-param name="pages-value" select="$published-pages"/>
+                        <xsl:with-param name="texts-value" select="m:outline-summary/m:tohs/@published"/>
+                        <xsl:with-param name="percentage-value" select="$published-pages div $total-pages"/>
+                    </xsl:call-template>
                     
-                    <div class="stat blue">
-                        <div class="heading">Translations awaiting publication:</div>
-                        <div class="data">
-                            <span>
-                                <xsl:value-of select="format-number($translated-pages, '#,###')"/>
-                            </span> pages, 
-                            <span>
-                                <xsl:value-of select="format-number(m:outline-summary/m:tohs/@translated, '#,###')"/>
-                            </span> texts, 
-                            <span>
-                                <xsl:value-of select="format-number(($translated-pages div $total-pages) * 100, '###,##0')"/>%</span> of the Kangyur.
-                        </div>
-                    </div>
+                    <xsl:call-template name="headline-stat">
+                        <xsl:with-param name="colour-class" select="'blue'"/>
+                        <xsl:with-param name="label-text">
+                            <xsl:call-template name="local-text">
+                                <xsl:with-param name="local-key" select="'translations-awaiting-label'"/>
+                            </xsl:call-template>
+                        </xsl:with-param>
+                        <xsl:with-param name="pages-value" select="$translated-pages"/>
+                        <xsl:with-param name="texts-value" select="m:outline-summary/m:tohs/@translated"/>
+                        <xsl:with-param name="percentage-value" select="$translated-pages div $total-pages"/>
+                    </xsl:call-template>
                     
-                    <div class="stat orange">
-                        <div class="heading">Other translations in progress:</div>
-                        <div class="data">
-                            <span>
-                                <xsl:value-of select="format-number($in-translation-pages, '#,###')"/>
-                            </span> pages, 
-                            <span>
-                                <xsl:value-of select="format-number(m:outline-summary/m:tohs/@in-translation, '#,###')"/>
-                            </span> texts, 
-                            <span>
-                                <xsl:value-of select="format-number(($in-translation-pages div $total-pages) * 100, '###,##0')"/>%</span> of the Kangyur.
-                        </div>
-                    </div>
+                    <xsl:call-template name="headline-stat">
+                        <xsl:with-param name="colour-class" select="'orange'"/>
+                        <xsl:with-param name="label-text">
+                            <xsl:call-template name="local-text">
+                                <xsl:with-param name="local-key" select="'translations-remaining-label'"/>
+                            </xsl:call-template>
+                        </xsl:with-param>
+                        <xsl:with-param name="pages-value" select="$in-translation-pages"/>
+                        <xsl:with-param name="texts-value" select="m:outline-summary/m:tohs/@in-translation"/>
+                        <xsl:with-param name="percentage-value" select="$in-translation-pages div $total-pages"/>
+                    </xsl:call-template>
                     
                 </div>
                 <div class="col-sm-6 col-lg-4">
@@ -150,8 +150,16 @@
                     
                     <div class="text-list">
                         <div class="row table-headers">
-                            <div class="col-sm-2 hidden-xs">Toh</div>
-                            <div class="col-sm-10">Title</div>
+                            <div class="col-sm-2 hidden-xs">
+                                <xsl:call-template name="local-text">
+                                    <xsl:with-param name="local-key" select="'column-toh-label'"/>
+                                </xsl:call-template>
+                            </div>
+                            <div class="col-sm-10">
+                                <xsl:call-template name="local-text">
+                                    <xsl:with-param name="local-key" select="'column-title-label'"/>
+                                </xsl:call-template>
+                            </div>
                         </div>
                         <div class="list-section">
                             <xsl:for-each select="$texts">
@@ -196,7 +204,9 @@
                         
                         <div class="row table-footer">
                             <div class="col-sm-10 text-right">
-                                <xsl:value-of select="'Total pages:'"/>
+                                <xsl:call-template name="local-text">
+                                    <xsl:with-param name="local-key" select="'page-total-label'"/>
+                                </xsl:call-template>
                             </div>
                             <div class="col-sm-2">
                                 <strong>
@@ -209,10 +219,53 @@
                 </xsl:when>
                 <xsl:otherwise>
                     <p class="text-muted italic">
-                        <xsl:value-of select="'There are currently not texts in this list.'"/>
+                        <xsl:call-template name="local-text">
+                            <xsl:with-param name="local-key" select="'no-results-label'"/>
+                        </xsl:call-template>
                     </p>
                 </xsl:otherwise>
             </xsl:choose>
+        </div>
+        
+    </xsl:template>
+    
+    <xsl:template name="headline-stat">
+        <xsl:param name="colour-class" required="yes" as="xs:string"/>
+        <xsl:param name="label-text" required="yes" as="xs:string"/>
+        <xsl:param name="pages-value" required="yes" as="xs:integer"/>
+        <xsl:param name="texts-value" required="yes" as="xs:integer"/>
+        <xsl:param name="percentage-value" required="yes" as="xs:double"/>
+        <div>
+            <xsl:attribute name="class" select="concat('stat ', $colour-class)"/>
+            <div class="heading">
+                <xsl:value-of select="$label-text"/>
+            </div>
+            <div class="data">
+                <span>
+                    <xsl:value-of select="format-number($pages-value, '#,###')"/>
+                </span> 
+                <xsl:value-of select="' '"/>
+                <xsl:call-template name="local-text">
+                    <xsl:with-param name="local-key" select="'pages-label'"/>
+                </xsl:call-template>
+                <xsl:value-of select="', '"/>
+                <span>
+                    <xsl:value-of select="format-number($texts-value, '#,###')"/>
+                </span>
+                <xsl:value-of select="' '"/>
+                <xsl:call-template name="local-text">
+                    <xsl:with-param name="local-key" select="'texts-label'"/>
+                </xsl:call-template>
+                <xsl:value-of select="', '"/>
+                <span>
+                    <xsl:value-of select="format-number($percentage-value * 100, '###,##0')"/>
+                    <xsl:value-of select="'%'"/>
+                </span>
+                <xsl:value-of select="' '"/>
+                <xsl:call-template name="local-text">
+                    <xsl:with-param name="local-key" select="'context-label'"/>
+                </xsl:call-template>
+            </div>
         </div>
     </xsl:template>
     

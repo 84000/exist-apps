@@ -9,7 +9,11 @@
             <div class="row">
                 <div class="col-sm-8">
                     
-                    <h2>84000 Translators</h2>
+                    <h2>
+                        <xsl:call-template name="local-text">
+                            <xsl:with-param name="local-key" select="'lists-title'"/>
+                        </xsl:call-template>
+                    </h2>
                     
                     <xsl:for-each select="m:contributor-teams/m:team">
                         <xsl:variable name="team-id" select="@xml:id"/>
@@ -30,31 +34,55 @@
                 <div class="col-sm-4">
                     <div class="about-stats">
                         
-                        <h5>Summary</h5>
+                        <h4>
+                            <xsl:call-template name="local-text">
+                                <xsl:with-param name="local-key" select="'summary-title'"/>
+                            </xsl:call-template>
+                        </h4>
                         
                         <div>
                             <xsl:attribute name="class" select="concat('stat ', common:position-to-color(1, 'id'))"/>
-                            <div class="heading">Number of Teams</div>
+                            <div class="heading">
+                                <xsl:call-template name="local-text">
+                                    <xsl:with-param name="local-key" select="'team-count-label'"/>
+                                </xsl:call-template>
+                            </div>
                             <div class="data">
                                 <span>
                                     <xsl:value-of select="format-number(count(m:contributor-teams/m:team), '#,###')"/>
-                                </span> teams
+                                </span>
+                                <xsl:value-of select="''"/>
+                                <xsl:call-template name="local-text">
+                                    <xsl:with-param name="local-key" select="'teams-label'"/>
+                                </xsl:call-template>
                             </div>
                         </div>
                     
                         <div>
                             <xsl:attribute name="class" select="concat('stat ', common:position-to-color(2, 'id'))"/>
-                            <div class="heading">Number of Translators</div>
+                            <div class="heading">
+                                <xsl:call-template name="local-text">
+                                    <xsl:with-param name="local-key" select="'translator-count-label'"/>
+                                </xsl:call-template>
+                            </div>
                             <div class="data">
                                 <span>
                                     <xsl:value-of select="format-number(count(distinct-values(//m:team/m:person/@xml:id)), '#,###')"/>
-                                </span> translators
+                                </span>
+                                <xsl:value-of select="''"/>
+                                <xsl:call-template name="local-text">
+                                    <xsl:with-param name="local-key" select="'translators-label'"/>
+                                </xsl:call-template>
                             </div>
                         </div>
                         
                         <hr/>
                         
-                        <h5>Translators by affiliation</h5>
+                        <h4>
+                            <xsl:call-template name="local-text">
+                                <xsl:with-param name="local-key" select="'affiliation-title'"/>
+                            </xsl:call-template>
+                        </h4>
                         
                         <xsl:for-each select="m:contributor-institution-types/m:institution-type">
                             <div>
@@ -65,7 +93,11 @@
                                 <div class="data">
                                     <span>
                                         <xsl:value-of select="m:stat[@type eq 'contributor-percentage']/@value"/>%
-                                    </span> of translators
+                                    </span>
+                                    <xsl:value-of select="''"/>
+                                    <xsl:call-template name="local-text">
+                                        <xsl:with-param name="local-key" select="'affiliation-label'"/>
+                                    </xsl:call-template>
                                 </div>
                             </div>
                         </xsl:for-each>
@@ -115,7 +147,11 @@
                         
                         <hr/>
                         
-                        <h5>Translators by region</h5>
+                        <h4>
+                            <xsl:call-template name="local-text">
+                                <xsl:with-param name="local-key" select="'region-title'"/>
+                            </xsl:call-template>
+                        </h4>
                         
                         <xsl:for-each select="m:contributor-regions/m:region">
                             <div>
@@ -126,7 +162,11 @@
                                 <div class="data">
                                     <span>
                                         <xsl:value-of select="m:stat[@type eq 'contributor-percentage']/@value"/>%
-                                    </span> of translators
+                                    </span>
+                                    <xsl:value-of select="''"/>
+                                    <xsl:call-template name="local-text">
+                                        <xsl:with-param name="local-key" select="'region-label'"/>
+                                    </xsl:call-template>
                                 </div>
                             </div>
                         </xsl:for-each>

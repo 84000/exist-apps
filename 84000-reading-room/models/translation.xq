@@ -71,21 +71,13 @@ return
                 xmlns="http://read.84000.co/ns/1.0" 
                 doc-type="{ request:get-parameter('resource-suffix', 'www') }"
                 view-mode="{ request:get-parameter('view-mode', '') }" />,
-                
+            (: Calculated strings :)
+            <replace-text xmlns="http://read.84000.co/ns/1.0">
+                <value key="#CurrentDateTime">{ format-dateTime(current-dateTime(), '[h].[m01][Pn] on [FNn], [D1o] [MNn] [Y0001]') }</value>
+                <value key="#LinkToPage">{ $page-url }</value>
+            </replace-text>,
             (: Include translation data :)
-            $translation-data-internal-refs,
-            
-            (: If it's html include app texts :)
-            if(request:get-parameter('resource-suffix', '') = ('html', 'epub', 'azw3')) then
-                common:app-texts(
-                    'translation',
-                    <replace xmlns="http://read.84000.co/ns/1.0">
-                        <value key="#CurrentDateTime">{ format-dateTime(current-dateTime(), '[h].[m01][Pn] on [FNn], [D1o] [MNn] [Y0001]') }</value>
-                        <value key="#LinkToPage">{ $page-url }</value>
-                    </replace>
-                )
-            else
-                ()
+            $translation-data-internal-refs
         )
     )
 

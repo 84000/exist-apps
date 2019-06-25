@@ -8,27 +8,27 @@
         <xsl:variable name="content">
 
             <h3>
-                <xsl:call-template name="local-app-text">
+                <xsl:call-template name="local-text">
                     <xsl:with-param name="local-key" select="'page-heading'"/>
                 </xsl:call-template>
             </h3>
 
             <div class="row">
                 <div class="col-sm-8">
-                    <xsl:call-template name="local-app-text">
+                    <xsl:call-template name="local-text">
                         <xsl:with-param name="local-key" select="'page-intro'"/>
                     </xsl:call-template>
                 </div>
                 <div class="col-sm-4">
                     <div class="text-center bottom-margin">
                         <a class="btn btn-primary" href="https://84000.secure.force.com/donate" target="_blank" rel="noopener">
-                            <xsl:call-template name="local-app-text">
+                            <xsl:call-template name="local-text">
                                 <xsl:with-param name="local-key" select="'donate-label'"/>
                             </xsl:call-template>
                         </a>
                     </div>
                     <div class="well well-sm small">
-                        <xsl:call-template name="local-app-text">
+                        <xsl:call-template name="local-text">
                             <xsl:with-param name="local-key" select="'pull-out'"/>
                         </xsl:call-template>
                     </div>
@@ -39,7 +39,7 @@
                 <div class="col-sm-12">
                     
                     <h3>
-                        <xsl:call-template name="local-app-text">
+                        <xsl:call-template name="local-text">
                             <xsl:with-param name="local-key" select="'text-list-title'"/>
                         </xsl:call-template>
                     </h3>
@@ -52,7 +52,7 @@
                             <xsl:call-template name="expand-item">
                                 <xsl:with-param name="id" select="'priority'"/>
                                 <xsl:with-param name="title">
-                                    <xsl:call-template name="local-app-text">
+                                    <xsl:call-template name="local-text">
                                         <xsl:with-param name="local-key" select="'priority-title'"/>
                                     </xsl:call-template>
                                 </xsl:with-param>
@@ -60,7 +60,7 @@
                                 <xsl:with-param name="description">
                                     <div class="top-margin">
                                         <p class="italic">
-                                            <xsl:call-template name="local-app-text">
+                                            <xsl:call-template name="local-text">
                                                 <xsl:with-param name="local-key" select="'priority-description'"/>
                                             </xsl:call-template>
                                         </p>
@@ -76,7 +76,7 @@
                             <xsl:variable name="previous-page-upper" as="xs:integer" select="common:integer(preceding-sibling::m:cost-group[1]/@page-upper)"/>
                             <xsl:variable name="previous-group-cost" as="xs:integer" select="$previous-page-upper * xs:integer(/m:response/m:cost-groups/@cost-per-page)"/>
                             <xsl:variable name="group-title-app-text" as="xs:string">
-                                <xsl:call-template name="local-app-text">
+                                <xsl:call-template name="local-text">
                                     <xsl:with-param name="local-key" select="'text-list-section-title'"/>
                                 </xsl:call-template>
                             </xsl:variable>
@@ -89,7 +89,7 @@
                         
                         
                         <xsl:variable name="remainder-title-app-text" as="xs:string">
-                            <xsl:call-template name="local-app-text">
+                            <xsl:call-template name="local-text">
                                 <xsl:with-param name="local-key" select="'text-list-remainder-title'"/>
                             </xsl:call-template>
                         </xsl:variable>
@@ -108,7 +108,7 @@
                                             </img>
                                         </span>
                                         <span>
-                                            <xsl:call-template name="local-app-text">
+                                            <xsl:call-template name="local-text">
                                                 <xsl:with-param name="local-key" select="'blue-person-label'"/>
                                             </xsl:call-template>
                                         </span>
@@ -118,7 +118,7 @@
                                             </img>
                                         </span>
                                         <span>
-                                            <xsl:call-template name="local-app-text">
+                                            <xsl:call-template name="local-text">
                                                 <xsl:with-param name="local-key" select="'orange-person-label'"/>
                                             </xsl:call-template>
                                         </span>
@@ -128,7 +128,7 @@
                         </xsl:call-template>
                     </div>
                     
-                    <xsl:call-template name="local-app-text">
+                    <xsl:call-template name="local-text">
                         <xsl:with-param name="local-key" select="'footer'"/>
                     </xsl:call-template>
                     
@@ -178,8 +178,16 @@
                         <xsl:when test="count($texts)">
                             <div class="text-list">
                                 <div class="row table-headers">
-                                    <div class="col-sm-2 hidden-xs">Toh</div>
-                                    <div class="col-sm-10">Title</div>
+                                    <div class="col-sm-2 hidden-xs">
+                                        <xsl:call-template name="local-text">
+                                            <xsl:with-param name="local-key" select="'column-toh-label'"/>
+                                        </xsl:call-template>
+                                    </div>
+                                    <div class="col-sm-10">
+                                        <xsl:call-template name="local-text">
+                                            <xsl:with-param name="local-key" select="'column-title-label'"/>
+                                        </xsl:call-template>
+                                    </div>
                                 </div>
                                 <div class="list-section">
                                     <xsl:for-each-group select="$texts" group-by="m:sponsorship-status/@project-id">
@@ -193,6 +201,7 @@
                                             <div class="col-sm-2 nowrap">
                                                 
                                                 <xsl:for-each select="current-group()">
+                                                    <xsl:sort select="number(m:toh/@number)"/>
                                                     <xsl:if test="position() ne 1">
                                                         <br/>+
                                                     </xsl:if>
@@ -227,8 +236,8 @@
                                                 
                                                 <xsl:if test="m:sponsorship-status/m:status[@id eq 'reserved']">
                                                     <hr/>
-                                                    <p class="text-danger">
-                                                        <xsl:call-template name="local-app-text">
+                                                    <p class="italic text-danger">
+                                                        <xsl:call-template name="local-text">
                                                             <xsl:with-param name="local-key" select="'reserved-label'"/>
                                                         </xsl:call-template>
                                                     </p>
@@ -239,7 +248,7 @@
                                                     <div class="row">
                                                         <div class="col-sm-6">
                                                             <div>
-                                                                <xsl:call-template name="local-app-text">
+                                                                <xsl:call-template name="local-text">
                                                                     <xsl:with-param name="local-key" select="'sponsor-part-label'"/>
                                                                 </xsl:call-template>
                                                             </div>
@@ -272,7 +281,7 @@
                                                         <xsl:if test="not(m:sponsorship-status/m:cost/m:part[@status eq 'sponsored'])">
                                                             <div class="col-sm-6">
                                                                 <div>
-                                                                    <xsl:call-template name="local-app-text">
+                                                                    <xsl:call-template name="local-text">
                                                                         <xsl:with-param name="local-key" select="'sponsor-whole-label'"/>
                                                                     </xsl:call-template>
                                                                 </div>
@@ -305,7 +314,7 @@
                         <xsl:otherwise>
                             <hr class="sml-margin"/>
                             <p class="text-muted">
-                                <xsl:call-template name="local-app-text">
+                                <xsl:call-template name="local-text">
                                     <xsl:with-param name="local-key" select="'no-texts-of-type'"/>
                                 </xsl:call-template>
                             </p>

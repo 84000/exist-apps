@@ -2,6 +2,7 @@
 <xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:epub="http://www.idpf.org/2007/ops" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" exclude-result-prefixes="#all" version="2.0">
     
     <xsl:import href="../../../xslt/tei-to-xhtml.xsl"/>
+    <xsl:import href="../../../xslt/lang.xsl"/>
     <xsl:import href="epub-page.xsl"/>
     
     <xsl:template match="/m:response">
@@ -39,7 +40,9 @@
             </section>
             
             <section class="imprint center">
-                <xsl:copy-of select="m:app-text[@key eq 'translation.print-version']/xhtml:*" copy-namespaces="no"/>
+                <xsl:call-template name="local-text">
+                    <xsl:with-param name="local-key" select="'print-version'"/>
+                </xsl:call-template>
             </section>
             
             <xsl:if test="m:translation/m:translation/m:tantric-restriction/tei:p">

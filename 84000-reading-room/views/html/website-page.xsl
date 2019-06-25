@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:m="http://read.84000.co/ns/1.0" xmlns:pkg="http://expath.org/ns/pkg" xmlns:xhtml="http://www.w3.org/1999/xhtml" version="2.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" xmlns:pkg="http://expath.org/ns/pkg" xmlns:xhtml="http://www.w3.org/1999/xhtml" version="2.0" exclude-result-prefixes="#all">
     
     <!-- include navigation stylesheet -->
     <xsl:import href="../../xslt/84000-html.xsl"/>
@@ -32,19 +32,19 @@
                 <xsl:value-of select="common:internal-link('http://read.84000.co/search.html', (), '', $lang)"/>
             </xsl:when>
             <xsl:when test="/m:response/@model-type eq 'about/sponsors'">
-                <xsl:value-of select="common:internal-link('http://read.84000.co/about/sponsors', (), '', $lang)"/>
+                <xsl:value-of select="common:internal-link('http://read.84000.co/about/sponsors.html', (), '', $lang)"/>
             </xsl:when>
             <xsl:when test="/m:response/@model-type eq 'about/impact'">
-                <xsl:value-of select="common:internal-link('http://read.84000.co/about/impact', (), '', $lang)"/>
+                <xsl:value-of select="common:internal-link('http://read.84000.co/about/impact.html', (), '', $lang)"/>
             </xsl:when>
             <xsl:when test="/m:response/@model-type eq 'about/progress'">
-                <xsl:value-of select="common:internal-link('http://read.84000.co/about/progress', (), '', $lang)"/>
+                <xsl:value-of select="common:internal-link('http://read.84000.co/about/progress.html', (), '', $lang)"/>
             </xsl:when>
             <xsl:when test="/m:response/@model-type eq 'about/translators'">
-                <xsl:value-of select="common:internal-link('http://read.84000.co/about/translators', (), '', $lang)"/>
+                <xsl:value-of select="common:internal-link('http://read.84000.co/about/translators.html', (), '', $lang)"/>
             </xsl:when>
             <xsl:when test="/m:response/@model-type eq 'about/sponsor-a-sutra'">
-                <xsl:value-of select="common:internal-link('http://read.84000.co/about/sponsor-a-sutra', (), '', $lang)"/>
+                <xsl:value-of select="common:internal-link('http://read.84000.co/about/sponsor-a-sutra.html', (), '', $lang)"/>
             </xsl:when>
             <xsl:otherwise>
                 <xsl:value-of select="common:internal-link('#reading-room', (), '', '')"/>
@@ -155,14 +155,14 @@
         
         <script>
             function downloadJSAtOnload() {
-            var element = document.createElement("script");
-            element.src = "<xsl:value-of select="concat($front-end-path, '/js/84000-fe.min.js', '?v=', $app-version)"/>";
-            document.body.appendChild(element);
+                var element = document.createElement("script");
+                element.src = "<xsl:value-of select="concat($front-end-path, '/js/84000-fe.min.js', '?v=', $app-version)"/>";
+                document.body.appendChild(element);
             }
             if (window.addEventListener)
-            window.addEventListener("load", downloadJSAtOnload, false);
+                window.addEventListener("load", downloadJSAtOnload, false);
             else if (window.attachEvent)
-            window.attachEvent("onload", downloadJSAtOnload);
+                window.attachEvent("onload", downloadJSAtOnload);
             else window.onload = downloadJSAtOnload;
         </script>
         

@@ -508,7 +508,7 @@ declare function tests:glossary($tei as element()*, $html as element()*) as item
     let $glossary-count-html := count($html//*[@id eq 'glossary']//*[common:contains-class(@class, 'glossary-item')])
     let $glossary-count-tei := count($tei//tei:back/tei:div[@type='glossary']//tei:gloss)
     let $tei-terms-raw := $tei//tei:back/tei:div[@type='glossary']//tei:gloss/tei:term[text()][not(tei:ptr)][not(@xml:lang) or @xml:lang = ('Sa-Ltn', 'bo', 'Bo-Ltn', 'en')](:[(not(@xml:lang) and not(@type)) or not(text() = preceding-sibling::tei:term[not(@xml:lang) and not(@type)]/text())]:)
-    let $empty-term-placeholders := (common:app-text('glossary.term-empty-sa-ltn'), common:app-text('glossary.term-empty-bo-ltn'))
+    let $empty-term-placeholders := (common:local-text('glossary.term-empty-sa-ltn', 'en'), common:local-text('glossary.term-empty-bo-ltn', 'en'))
     
     let $tei-terms := 
         (

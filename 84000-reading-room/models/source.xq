@@ -53,12 +53,6 @@ return
             </back-link>,
             
             (: Include the source data :)
-            source:ekangyur-page($ekangyur-volume-number, $ekangyur-page-number, false()),
-            
-            (: If it's html include app texts :)
-            if(request:get-parameter('resource-suffix', '') = ('html', 'epub', 'azw3')) then
-                common:app-texts('source', <replace xmlns="http://read.84000.co/ns/1.0"/>)
-            else
-                ()
+            source:ekangyur-page($ekangyur-volume-number, $ekangyur-page-number, false())
         )
     )

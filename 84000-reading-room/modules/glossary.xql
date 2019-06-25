@@ -148,7 +148,7 @@ declare function glossary:cumulative-glossary() as element() {
         <cumulative-glossary xmlns="http://read.84000.co/ns/1.0">
             <disclaimer>
             {
-                common:app-text('cumulative-glossary.disclaimer')
+                common:local-text('cumulative-glossary.disclaimer', 'en')
             }
             </disclaimer>
             {

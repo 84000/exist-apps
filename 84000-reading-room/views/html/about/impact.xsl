@@ -5,72 +5,109 @@
     
     <xsl:template match="/m:response">
         <xsl:variable name="content">
-            <h2>Our Global Impact</h2>
-            
-            <div class="row about-stats">
-                <div class="col-sm-6">
-                    <p>84000’s two goals are: <strong>Translation</strong> and <strong>Global Access</strong>. </p>
-                    <p>Besides <strong>translating</strong> the words of the Buddha, we need to build and maintain a user-friendly and technologically robust mass publication platform (our online Reading Room) that will allow everyone in the world to have <strong>easy access</strong> to these texts. </p>
-                    <p>With your generous support, the online Reading Room has achieved <strong>8.3 million views</strong>, and the words of the Buddha are now being read by more than <strong>178,000 people</strong> from <strong>242 countries/regions</strong> spanning the globe.</p>
-                    <p>The diagram below provide an overview of the <strong>global impact</strong> we have created together. Your <a href="http://84000.co/how-you-can-help/sponsor-a-page" target="_blank">continued support</a> will provide global access to the words of the Buddha. </p>
+            <h2>
+                <xsl:call-template name="local-text">
+                    <xsl:with-param name="local-key" select="'page-subtitle'"/>
+                </xsl:call-template>
+            </h2>
+            <xsl:call-template name="local-text">
+                <xsl:with-param name="local-key" select="'page-introduction'"/>
+            </xsl:call-template>
+            <hr/>
+            <div class="about-stats">
+                <div class="row">
+                    <div class="col-sm-4">
+                        <div class="stat green">
+                            <xsl:call-template name="local-text">
+                                <xsl:with-param name="local-key" select="'visitors-per-week-stat'"/>
+                            </xsl:call-template>
+                        </div>
+                    </div>
+                    <div class="col-sm-8">
+                        <xsl:call-template name="local-text">
+                            <xsl:with-param name="local-key" select="'visitors-description'"/>
+                        </xsl:call-template>
+                    </div>
                 </div>
-                <div class="col-sm-6">
-                   
-                    <div class="stat green">
-                        <div class="heading">This website</div>
-                        <div class="data">
-                            <span>
-                                <xsl:value-of select="format-number(sum(//m:period/m:stat[@name = 'comms-pageviews']/@value), '#,###')"/>
-                            </span> views, 
-                            <span>
-                                <xsl:value-of select="format-number(sum(//m:period/m:stat[@name = 'comms-users']/@value), '#,###')"/>
-                            </span> visitors.
+                <hr/>
+                <div class="row">
+                    <div class="col-sm-4">
+                        <div class="stat blue">
+                            <xsl:call-template name="local-text">
+                                <xsl:with-param name="local-key" select="'reach-countries-stat'"/>
+                            </xsl:call-template>
                         </div>
                     </div>
-                    
-                    <div class="stat blue">
-                        <div class="heading">The Reading Room</div>
-                        <div class="data">
-                            <span>
-                                <xsl:value-of select="format-number(sum(//m:period/m:stat[@name = 'reading-room-pageviews']/@value), '#,###')"/>
-                            </span> views, 
-                            <span>
-                                <xsl:value-of select="format-number(sum(//m:period/m:stat[@name = 'reading-room-users']/@value), '#,###')"/>
-                            </span> visitors.
-                        </div>
+                    <div class="col-sm-8">
+                        <xsl:call-template name="local-text">
+                            <xsl:with-param name="local-key" select="'reach-description'"/>
+                        </xsl:call-template>
                     </div>
-                    
-                    <div class="stat orange">
-                        <div class="heading">Downloads from the Reading Room</div>
-                        <div class="data">
-                            <span>
-                                <xsl:value-of select="format-number(sum(//m:period/m:stat[@name = 'text-downloads']/@value), '#,###')"/>
-                            </span> downloads.
-                        </div>
-                    </div>
-                    
-                    <div class="stat red">
-                        <div class="heading">Our reach</div>
-                        <div class="data">
-                            <span>
-                                <xsl:value-of select="format-number(count(//m:list[@name = 'user-countries']/m:item), '#,###')"/>
-                            </span> different countries.
-                        </div>
-                    </div>
-                    
                 </div>
+                <hr/>
+                <div class="row">
+                    <div class="col-sm-4">
+                        <div class="stat orange">
+                            <xsl:call-template name="local-text">
+                                <xsl:with-param name="local-key" select="'engagement-minutes-stat'"/>
+                            </xsl:call-template>
+                        </div>
+                    </div>
+                    <div class="col-sm-8">
+                        <xsl:call-template name="local-text">
+                            <xsl:with-param name="local-key" select="'engagement-description'"/>
+                        </xsl:call-template>
+                    </div>
+                </div>
+                <hr/>
+                <div class="row">
+                    <div class="col-sm-4">
+                        <div class="stat red">
+                            <xsl:call-template name="local-text">
+                                <xsl:with-param name="local-key" select="'popular-views-stat'"/>
+                            </xsl:call-template>
+                        </div>
+                    </div>
+                    <div class="col-sm-8">
+                        <xsl:call-template name="local-text">
+                            <xsl:with-param name="local-key" select="'popular-description'"/>
+                        </xsl:call-template>
+                    </div>
+                </div>
+                <hr/>
             </div>
             
-            <h2>Countries where our readers come from</h2>
+            <h2>
+                <xsl:call-template name="local-text">
+                    <xsl:with-param name="local-key" select="'countries-title'"/>
+                </xsl:call-template>
+            </h2>
             
-            <div>
-                <img class="aligncenter img-responsive">
-                    <xsl:attribute name="src">
-                        <xsl:call-template name="local-app-text-img-src">
-                            <xsl:with-param name="local-key" select="'map-img-src'"/>
-                        </xsl:call-template>
-                    </xsl:attribute>
-                </img>
+            <xsl:variable name="map-img-src">
+                <xsl:call-template name="local-text">
+                    <xsl:with-param name="local-key" select="'map-img-src'"/>
+                </xsl:call-template>
+            </xsl:variable>
+            
+            <xsl:if test="$map-img-src gt ''">
+                <div>
+                    <img class="aligncenter img-responsive">
+                        <xsl:attribute name="src" select="concat($front-end-path, $map-img-src)"/>
+                    </img>
+                </div>
+            </xsl:if>
+            
+            <div class="top-margin">
+                <p>
+                    <xsl:call-template name="local-text">
+                        <xsl:with-param name="local-key" select="'countries-legend'"/>
+                    </xsl:call-template>
+                </p>
+                <p class="small text-muted">
+                    <xsl:call-template name="local-text">
+                        <xsl:with-param name="local-key" select="'countries-timestamp'"/>
+                    </xsl:call-template>
+                </p>
             </div>
         </xsl:variable>
         

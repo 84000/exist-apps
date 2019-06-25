@@ -2,6 +2,7 @@
 <xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:common="http://read.84000.co/common" xmlns:epub="http://www.idpf.org/2007/ops" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" exclude-result-prefixes="#all" version="2.0">
     
     <xsl:import href="../../xslt/tei-to-xhtml.xsl"/>
+    <xsl:import href="../../xslt/lang.xsl"/>
     <xsl:import href="website-page.xsl"/>
     
     <!-- Look up environment variables -->
@@ -46,7 +47,9 @@
                                 </aside>
                                 
                                 <aside id="print-version" class="visible-print-block text-center page">
-                                    <xsl:copy-of select="m:app-text[@key eq 'translation.print-version']/xhtml:*" copy-namespaces="no"/>
+                                    <xsl:call-template name="local-text">
+                                        <xsl:with-param name="local-key" select="'print-version'"/>
+                                    </xsl:call-template>
                                 </aside>
 
                                 <hr class="hidden-print"/>

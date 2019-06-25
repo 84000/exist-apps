@@ -543,10 +543,10 @@ declare function translation:glossary($tei as element()) as element() {
                             <term xml:lang="{ if($item/@xml:lang) then lower-case($item/@xml:lang) else 'en' }">
                             {
                                 if (not($item/text())) then
-                                    common:app-text(concat('glossary.term-empty-', lower-case($item/@xml:lang)))
-                                else if ($item/@xml:lang eq 'Bo-Ltn') then
+                                    common:local-text(concat('glossary.term-empty-', lower-case($item/@xml:lang)), 'en')
+                                else if ($item/@xml:lang eq 'Bo-Ltn') then 
                                     common:bo-ltn($item/text())
-                                else
+                                else 
                                     $item/text() 
                             }
                             </term>
