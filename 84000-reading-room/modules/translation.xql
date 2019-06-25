@@ -76,7 +76,11 @@ declare function translation:translation($tei as element()) as element() {
                     </sponsor>
             }
         </sponsors>
-        <edition>{ $tei//tei:editionStmt/tei:edition[1]/node() }</edition>
+        <edition>
+        { 
+            $tei//tei:editionStmt/tei:edition[1]/node() 
+        }
+        </edition>
         <license img-url="{ $tei//tei:publicationStmt/tei:availability/tei:licence/tei:graphic/@url }">
         {
             $tei//tei:publicationStmt/tei:availability/tei:licence/tei:p

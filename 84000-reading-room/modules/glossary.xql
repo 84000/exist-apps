@@ -234,7 +234,11 @@ declare function glossary:glossary-items($normalized-term as xs:string) as eleme
                                     }
                             }
                             </editors>
-                            <edition>{ $translation//tei:editionStmt/tei:edition[1]/text() ! concat(normalize-space(.), ' ') ! normalize-space(.) }</edition>
+                            <edition>
+                            { 
+                                $translation//tei:editionStmt/tei:edition[1]/text() ! concat(normalize-space(.), ' ') ! normalize-space(.) 
+                            }
+                            </edition>
                         </translation>
                         <term xml:lang="en">{ $gloss/tei:term[not(@type)][@xml:lang eq 'en' or not(@xml:lang)]/text()[1] ! functx:capitalize-first(.) ! normalize-space(.) }</term>
                         {

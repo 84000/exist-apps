@@ -174,15 +174,15 @@
             </item>
         </item>
         <item class="reading-room" url="#reading-room">
-            <label>Reading Room<!-- 雲端藏經閣 --></label>
+            <label>雲端藏經閣</label>
             <item url="http://read.84000.co/section/lobby.html?lang=zh">
-                <label>The Collection<!-- 經藏 --></label>
+                <label>經藏</label>
             </item>
             <item url="http://read.84000.co/section/all-translated.html?lang=zh">
-                <label>All Translated Texts<!-- 已翻譯經典 --></label>
+                <label>已翻譯經典</label>
             </item>
             <item url="http://read.84000.co/search.html?lang=zh">
-                <label>Search The Reading Room<!-- 雲端藏經閣檢索 --></label>
+                <label>雲端藏經閣檢索</label>
             </item>
         </item>
         <item class="resources" url="#ch-resources">

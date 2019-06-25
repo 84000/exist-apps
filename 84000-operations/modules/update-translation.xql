@@ -118,16 +118,16 @@ declare function update-translation:update($tei as element()) as element()* {
                                 ()
                     
                     (: Version :)
-                    else if($request-parameter eq 'text-version') then
+                    else if($request-parameter eq 'text-version' and normalize-space(request:get-parameter('text-version', '')) gt '') then
                         element { QName("http://www.tei-c.org/ns/1.0", "editionStmt") }{
                             element edition {
                                 text { concat(normalize-space(request:get-parameter('text-version', '')), ' ') },
-                                if(request:get-parameter('text-version-date', '')) then
-                                    element date {
+                                element date {
+                                    if(normalize-space(request:get-parameter('text-version-date', '')) gt '') then
                                         request:get-parameter('text-version-date', '')
-                                    }
-                                else 
-                                    ()
+                                    else
+                                        format-dateTime(current-dateTime(), '[Y]')
+                                }
                             }
                         }
                     
