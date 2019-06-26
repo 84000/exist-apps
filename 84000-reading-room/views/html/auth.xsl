@@ -3,8 +3,6 @@
     
     <xsl:import href="website-page.xsl"/>
     
-    <xsl:output method="html" indent="no" doctype-system="about:legacy-compat"/>
-    
     <!-- This page will redirect if you have permissions. Otherwise it'll keep coming back. -->
     
     <xsl:template match="/m:response">

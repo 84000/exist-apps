@@ -4,8 +4,6 @@
     <xsl:import href="../../xslt/functions.xsl"/>
     <xsl:import href="website-page.xsl"/>
     
-    <xsl:output method="html" indent="no" doctype-system="about:legacy-compat"/>
-    
     <!-- Look up environment variables -->
     <xsl:variable name="environment" select="doc(/m:response/@environment-path)/m:environment"/>
     <xsl:variable name="front-end-path" select="$environment/m:url[@id eq 'front-end']/text()"/>

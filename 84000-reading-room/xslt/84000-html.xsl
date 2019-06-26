@@ -8,7 +8,8 @@
     <xsl:param name="local-front-end-url" select="'http://fe.84000.co'"/>
     <xsl:param name="default-search-form-target" select="'comms'"/>
     
-    <xsl:output method="html" indent="no" doctype-system="about:legacy-compat" omit-xml-declaration="yes"/>
+    <!-- <xsl:output method="html" indent="no" doctype-system="about:legacy-compat" omit-xml-declaration="yes"/> -->
+    <xsl:output method="html" indent="no" omit-xml-declaration="yes"/>
     
     <xsl:template match="m:eft-header">
         <nav class="navbar navbar-default">
@@ -53,7 +54,7 @@
             </div>
             
             <div class="container">
-                <div id="navbar" class="navbar-collapse collapse" aria-expanded="false">
+                <div id="navbar" class="navbar-collapse collapse" role="navigation" aria-label="Main navigation" aria-expanded="false">
                     
                     <!-- Main navigation -->
                     <ul class="nav navbar-nav">
