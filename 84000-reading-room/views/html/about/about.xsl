@@ -19,6 +19,12 @@
                             
                             <div class="panel-img-header thumbnail">
                                 
+                                <xsl:variable name="page-title">
+                                    <xsl:call-template name="local-text">
+                                        <xsl:with-param name="local-key" select="'page-title'"/>
+                                    </xsl:call-template>
+                                </xsl:variable>
+                                
                                 <xsl:variable name="header-img-src">
                                     <xsl:call-template name="local-text">
                                         <xsl:with-param name="local-key" select="'header-img-src'"/>
@@ -29,14 +35,9 @@
                                     <xsl:attribute name="class" select="'panel-img-header has-img thumbnail'"/>
                                     <img class="stretch">
                                         <xsl:attribute name="src" select="concat($front-end-path, $header-img-src)"/>
+                                        <xsl:attribute name="alt" select="concat($page-title, ' page header image')"/>
                                     </img>
                                 </xsl:if>
-                                
-                                <xsl:variable name="page-title">
-                                    <xsl:call-template name="local-text">
-                                        <xsl:with-param name="local-key" select="'page-title'"/>
-                                    </xsl:call-template>
-                                </xsl:variable>
                                 
                                 <h1>
                                     <xsl:choose>

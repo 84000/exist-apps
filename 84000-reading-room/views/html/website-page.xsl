@@ -17,8 +17,10 @@
     <xsl:variable name="eft-header" select="doc('../../xslt/84000-header.xml')/m:eft-header"/>
     <xsl:variable name="eft-footer" select="doc('../../xslt/84000-footer.xml')/m:eft-footer"/>
     
-    <!-- override navigation params -->
+    <!-- language -->
     <xsl:variable name="lang" select="if(/m:response/@lang) then /m:response/@lang else 'en'"/>
+    
+    <!-- override navigation params -->
     <xsl:variable name="active-url">
         <!-- <xsl:value-of select="common:internal-link('http://read.84000.co/', (), '', $lang)"/> -->
         <xsl:choose>
@@ -192,6 +194,8 @@
         <xsl:param name="additional-links"/>
         
         <html>
+            
+            <xsl:attribute name="lang" select="$lang"/>
             
             <!-- Get the common <head> -->
             <xsl:call-template name="html-head">

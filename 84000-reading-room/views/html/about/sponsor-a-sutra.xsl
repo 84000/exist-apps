@@ -105,6 +105,12 @@
                                         <span>
                                             <img>
                                                 <xsl:attribute name="src" select="concat($front-end-path, '/imgs/blue_person.png')"/>
+                                                <xsl:attribute name="alt">
+                                                    <xsl:value-of select="'Icon for: '"/>
+                                                    <xsl:call-template name="local-text">
+                                                        <xsl:with-param name="local-key" select="'blue-person-label'"/>
+                                                    </xsl:call-template>
+                                                </xsl:attribute>
                                             </img>
                                         </span>
                                         <span>
@@ -115,6 +121,12 @@
                                         <span>
                                             <img>
                                                 <xsl:attribute name="src" select="concat($front-end-path, '/imgs/orange_person.png')"/>
+                                                <xsl:attribute name="alt">
+                                                    <xsl:value-of select="'Icon for: '"/>
+                                                    <xsl:call-template name="local-text">
+                                                        <xsl:with-param name="local-key" select="'orange-person-label'"/>
+                                                    </xsl:call-template>
+                                                </xsl:attribute>
                                             </img>
                                         </span>
                                         <span>
@@ -260,11 +272,23 @@
                                                                                 <xsl:when test="@status eq 'sponsored'">
                                                                                     <img>
                                                                                         <xsl:attribute name="src" select="concat($front-end-path, '/imgs/orange_person.png')"/>
+                                                                                        <xsl:attribute name="alt">
+                                                                                            <xsl:value-of select="'Icon for: '"/>
+                                                                                            <xsl:call-template name="local-text">
+                                                                                                <xsl:with-param name="local-key" select="'orange-person-label'"/>
+                                                                                            </xsl:call-template>
+                                                                                        </xsl:attribute>
                                                                                     </img>
                                                                                 </xsl:when>
                                                                                 <xsl:otherwise>
                                                                                     <img>
                                                                                         <xsl:attribute name="src" select="concat($front-end-path, '/imgs/blue_person.png')"/>
+                                                                                        <xsl:attribute name="alt">
+                                                                                            <xsl:value-of select="'Icon for: '"/>
+                                                                                            <xsl:call-template name="local-text">
+                                                                                                <xsl:with-param name="local-key" select="'blue-person-label'"/>
+                                                                                            </xsl:call-template>
+                                                                                        </xsl:attribute>
                                                                                     </img>
                                                                                 </xsl:otherwise>
                                                                             </xsl:choose>
@@ -289,6 +313,12 @@
                                                                     <span>
                                                                         <img>
                                                                             <xsl:attribute name="src" select="concat($front-end-path, '/imgs/blue_person.png')"/>
+                                                                            <xsl:attribute name="alt">
+                                                                                <xsl:value-of select="'Icon for: '"/>
+                                                                                <xsl:call-template name="local-text">
+                                                                                    <xsl:with-param name="local-key" select="'blue-person-label'"/>
+                                                                                </xsl:call-template>
+                                                                            </xsl:attribute>
                                                                         </img>
                                                                     </span>
                                                                     <span>

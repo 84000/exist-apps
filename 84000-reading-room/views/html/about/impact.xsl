@@ -93,6 +93,11 @@
                 <div>
                     <img class="aligncenter img-responsive">
                         <xsl:attribute name="src" select="concat($front-end-path, $map-img-src)"/>
+                        <xsl:attribute name="alt">
+                            <xsl:call-template name="local-text">
+                                <xsl:with-param name="local-key" select="'map-img-alt'"/>
+                            </xsl:call-template>
+                        </xsl:attribute>
                     </img>
                 </div>
             </xsl:if>

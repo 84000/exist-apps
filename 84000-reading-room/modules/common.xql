@@ -124,6 +124,21 @@ declare function common:normalize-space($nodes as node()*) as node()*{
             ()
 };
 
+(: Strips ids from content to avoid duplicates where multiple documents are merged :)
+declare function common:strip-ids($nodes as node()*) as node()*{
+    for $node in $nodes
+    return
+        if ($node instance of text()) then
+            text { $node }
+        else if ($node instance of element()) then
+            element { node-name($node) }{
+                $node/@*[not(local-name() = ('id', 'tid'))],
+                common:strip-ids($node/node())
+           }
+        else
+            ()
+};
+
 declare function common:integer($node as xs:anyAtomicType?) as xs:integer {
     replace(concat('0',$node), '\D', '')
 };

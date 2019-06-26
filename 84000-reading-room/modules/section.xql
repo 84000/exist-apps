@@ -263,7 +263,7 @@ declare function section:sub-section($tei as node(), $published-only as xs:boole
             { attribute type { $type } }
             { attribute sort-index { $tei//tei:teiHeader/tei:fileDesc/tei:sourceDesc/@sort-index } }
             { section:titles($tei) }
-            { section:abstract($tei) }
+            { common:strip-ids(section:abstract($tei)) }
             { section:warning($tei) }
             {
                 if($type eq 'grouping') then

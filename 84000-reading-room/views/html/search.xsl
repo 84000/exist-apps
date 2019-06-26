@@ -35,21 +35,21 @@
                                         <xsl:value-of select="'View Translated Texts'"/>
                                     </span>
                                 </a>
+                                
                                 <div>
-                                    <div aria-haspopup="true" aria-expanded="false">
-                                        <a href="#bookmarks-sidebar" id="bookmarks-btn" class="show-sidebar center-vertical together">
-                                            <span>
-                                                <span class="btn-round sml">
-                                                    <i class="fa fa-bookmark"/>
-                                                    <span class="badge badge-notification">0</span>
-                                                </span>
+                                    <a href="#bookmarks-sidebar" id="bookmarks-btn" class="show-sidebar center-vertical together" role="button" aria-haspopup="true" aria-expanded="false">
+                                        <span>
+                                            <span class="btn-round sml">
+                                                <i class="fa fa-bookmark"/>
+                                                <span class="badge badge-notification">0</span>
                                             </span>
-                                            <span class="btn-round-text">
-                                                <xsl:value-of select="'Bookmarks'"/>
-                                            </span>
-                                        </a>
-                                    </div>
+                                        </span>
+                                        <span class="btn-round-text">
+                                            <xsl:value-of select="'Bookmarks'"/>
+                                        </span>
+                                    </a>
                                 </div>
+                                
                             </div>
                         </div>
                     </div>

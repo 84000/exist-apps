@@ -24,6 +24,9 @@
                                     <xsl:attribute name="src">
                                         <xsl:value-of select="concat($local-front-end-url, '/imgs/logo.png')"/>
                                     </xsl:attribute>
+                                    <xsl:attribute name="alt">
+                                        <xsl:value-of select="'84000 logo'"/>
+                                    </xsl:attribute>
                                 </img>
                             </a>
                             
@@ -169,7 +172,7 @@
                                 </xsl:attribute>
                             </input>
                             <input type="submit" value="Submit" class="hidden"/>
-                            <span class="input-group-btn">
+                            <div class="input-group-btn">
                                 <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                     <i class="fa fa-search"/> <span class="caret"/>
                                 </button>
@@ -205,7 +208,7 @@
                                         </a>
                                     </li>
                                 </ul>
-                            </span>
+                            </div>
                         </div>
                         
                         <!-- Language switch -->
@@ -288,6 +291,9 @@
                                     <img>
                                         <xsl:attribute name="src">
                                             <xsl:value-of select="concat($local-front-end-url, '/imgs/84000_WeChat_QRCode.jpg')"/>
+                                        </xsl:attribute>
+                                        <xsl:attribute name="alt">
+                                            <xsl:value-of select="'WeChat QR code'"/>
                                         </xsl:attribute>
                                     </img>
                                 </div>

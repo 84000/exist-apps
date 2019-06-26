@@ -904,6 +904,7 @@
             
             <img class="logo">
                 <xsl:attribute name="src" select="concat($front-end-path,'/imgs/logo.png')"/>
+                <xsl:attribute name="alt" select="'84000 logo'"/>
             </img>
             
             <div id="toh">
@@ -970,6 +971,7 @@
             <div id="license">
                 <img>
                     <xsl:attribute name="src" select="$translation/m:translation/m:license/@img-url"/>
+                    <xsl:attribute name="alt" select="'Logo for the license'"/>
                 </img>
                 <xsl:for-each select="$translation/m:translation/m:license/tei:p">
                     <p class="text-muted small">
