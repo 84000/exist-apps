@@ -4,17 +4,15 @@
     <xsl:import href="../../84000-reading-room/views/html/website-page.xsl"/>
     <xsl:import href="../../84000-reading-room/xslt/functions.xsl"/>
     
-    <xsl:variable name="environment" select="doc(/m:response/@environment-path)/m:environment"/>
-    <xsl:variable name="reading-room-path" select="$environment/m:url[@id eq 'reading-room']/text()"/>
-    
     <xsl:function name="m:test-result" as="item()*">
         
-        <xsl:param name="success" as="xs:boolean"/>
-        <xsl:param name="cell-id" as="xs:string"/>
-        <xsl:param name="text-id" as="xs:string*"/>
-        <xsl:param name="text-title" as="xs:string*"/>
-        <xsl:param name="test-title" as="xs:string"/>
-        <xsl:param name="test-detail" as="node()"/>
+        <xsl:param name="success" as="xs:boolean" required="yes"/>
+        <xsl:param name="cell-id" as="xs:string" required="yes"/>
+        <xsl:param name="text-id" as="xs:string*" required="yes"/>
+        <xsl:param name="text-title" as="xs:string*" required="yes"/>
+        <xsl:param name="test-title" as="xs:string" required="yes"/>
+        <xsl:param name="test-domain" as="xs:string" required="yes"/>
+        <xsl:param name="test-detail" as="node()" required="yes"/>
         
         <a role="button" class="pop-up">
             <xsl:attribute name="href" select="concat('#', $cell-id)"/>
@@ -56,21 +54,21 @@
                         </li>
                         <li>
                             <a>
-                                <xsl:attribute name="href" select="concat($reading-room-path, '/translation/', $text-id, '.html')"/>
+                                <xsl:attribute name="href" select="concat($test-domain, '/translation/', $text-id, '.html')"/>
                                 <xsl:attribute name="target" select="concat($text-id, '-html')"/>
                                 <xsl:value-of select="'.html'"/>
                             </a>
                         </li>
                         <li>
                             <a>
-                                <xsl:attribute name="href" select="concat($reading-room-path, '/translation/', $text-id, '.xml')"/>
+                                <xsl:attribute name="href" select="concat($test-domain, '/translation/', $text-id, '.xml')"/>
                                 <xsl:attribute name="target" select="concat($text-id, '-xml')"/>
                                 <xsl:value-of select="'.xml'"/>
                             </a>
                         </li>
                         <li>
                             <a>
-                                <xsl:attribute name="href" select="concat($reading-room-path, '/translation/', $text-id, '.tei')"/>
+                                <xsl:attribute name="href" select="concat($test-domain, '/translation/', $text-id, '.tei')"/>
                                 <xsl:attribute name="target" select="concat($text-id, '-tei')"/>
                                 <xsl:value-of select="'.tei'"/>
                             </a>
@@ -108,7 +106,7 @@
                     
                     <div class="panel-body min-height-md">
                         
-                        <form action="/test-translations.html" method="post" class="form-inline filter-form">
+                        <form action="/test-translations.html" method="get" class="form-inline filter-form">
                             <div class="form-group">
                                 <select name="translation-id" id="translation-id" class="form-control">
                                     <option value="all">
@@ -169,10 +167,11 @@
                                     <xsl:variable name="toh-key" select="m:toh/@key"/>
                                     <xsl:variable name="text-id" select="@id"/>
                                     <xsl:variable name="text-title" select="m:title/text()"/>
+                                    <xsl:variable name="test-domain" select="@test-domain"/>
                                     <tr>
                                         <td>
                                             <a>
-                                                <xsl:attribute name="href" select="concat($reading-room-path, '/translation/', $toh-key, '.html')"/>
+                                                <xsl:attribute name="href" select="concat($test-domain, '/translation/', $toh-key, '.html')"/>
                                                 <xsl:attribute name="title" select="$text-title"/>
                                                 <xsl:attribute name="target" select="$toh-key"/>
                                                 <xsl:value-of select="m:toh/m:full"/>
@@ -202,7 +201,7 @@
                                             <xsl:variable name="test-result" select="xs:boolean(@pass)"/>
                                             <xsl:variable name="test-details" select="m:details"/>
                                             <td class="icon">
-                                                <xsl:copy-of select="m:test-result($test-result, $cell-id, $toh-key, $text-title, $test-title, $test-details)"/>
+                                                <xsl:copy-of select="m:test-result($test-result, $cell-id, $toh-key, $text-title, $test-title, $test-domain, $test-details)"/>
                                             </td>
                                         </xsl:for-each>
                                         <td class="icon">

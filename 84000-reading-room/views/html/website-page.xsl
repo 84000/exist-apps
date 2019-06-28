@@ -59,8 +59,7 @@
     <xsl:variable name="local-front-end-url" select="$front-end-path"/>
     <xsl:variable name="default-search-form-target" select="'reading-room'"/>
     
-    <!-- <xsl:output method="html" indent="no" doctype-system="about:legacy-compat" omit-xml-declaration="yes"/> -->
-    <xsl:output method="html" indent="no" omit-xml-declaration="no"/>
+    <xsl:output method="html" indent="no" doctype-system="about:legacy-compat" omit-xml-declaration="yes"/>
     
     <!-- html head tag -->
     <xsl:template name="html-head">

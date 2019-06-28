@@ -1,6 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" version="1.0" exclude-result-prefixes="xs m">
     
+    <!-- 
+        NOTE:
+        For use in eXist: add xmlns to root e.g. <xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml"  xmlns:xsl.../>
+        For use in php XSLTProcessor: remove xmlns from root e.g. <xsl:stylesheet  xmlns:xsl.../>
+    -->
+    
     <xsl:param name="lang" select="'en'"/>
     <xsl:param name="active-url" select="'/'"/>
     <xsl:param name="local-comms-url" select="''"/>
@@ -8,7 +14,6 @@
     <xsl:param name="local-front-end-url" select="'http://fe.84000.co'"/>
     <xsl:param name="default-search-form-target" select="'comms'"/>
     
-    <!-- <xsl:output method="html" indent="no" doctype-system="about:legacy-compat" omit-xml-declaration="yes"/> -->
     <xsl:output method="html" indent="no" omit-xml-declaration="yes"/>
     
     <xsl:template match="m:eft-header">
@@ -200,10 +205,10 @@
                                             </xsl:attribute>
                                             <div class="center-vertical">
                                                 <i class="fa fa-caret-right"/>
-                                                    <xsl:call-template name="translation">
+                                                <xsl:call-template name="translation">
                                                     <xsl:with-param name="translation-id" select="'button-search-comms'"/>
                                                     <xsl:with-param name="lang" select="$lang"/>
-                                                        <xsl:with-param name="text-node" select="false()"/>
+                                                    <xsl:with-param name="text-node" select="false()"/>
                                                 </xsl:call-template>
                                             </div>
                                         </a>
