@@ -347,7 +347,7 @@ declare function tests:test-section($section-tei as element()*, $section-html as
         count($section-html//xhtml:p | $section-html//xhtml:div[common:contains-class(@class, 'line')]) 
     
     let $section-count-tei-note := 
-        count($section-tei//tei:note)
+        count($section-tei//tei:note[@place eq 'end'])
     let $section-count-html-note := 
         count($section-html//xhtml:a[common:contains-class(@class, 'footnote-link')])
     
@@ -430,12 +430,12 @@ declare function tests:test-section($section-tei as element()*, $section-html as
 declare function tests:notes($tei as element()*, $html as element()*) as item() {
 
     let $notes-count-html := count($html//*[@id eq 'notes']/*/*[common:contains-class(@class, 'footnote')])
-    let $notes-count-tei := count($tei//tei:text//tei:note)
+    let $notes-count-tei := count($tei//tei:text//tei:note[@place eq 'end'])
     
     return
         <test xmlns="http://read.84000.co/ns/1.0" 
             id="notes"
-            pass="{ if($notes-count-html > 0 and $notes-count-html = $notes-count-tei) then 1 else 0 }">
+            pass="{ if($notes-count-html > 0 and $notes-count-html eq $notes-count-tei) then 1 else 0 }">
             <title>Notes test: The text has at least 1 note and the same number of notes are in the TEI and the HTML.</title>
             <result></result>
             <details>

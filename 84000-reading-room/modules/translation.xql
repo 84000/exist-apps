@@ -472,7 +472,7 @@ declare function translation:abbreviation-section($section as element()) as elem
 declare function translation:notes($tei as element()) as element() {
     <notes xmlns="http://read.84000.co/ns/1.0" prefix="n">
     {
-        for $note in $tei//tei:text//tei:note[not(parent::tei:table)]
+        for $note in $tei//tei:text//tei:note[@place eq 'end']
         return
             <note 
                 index="{ $note/@index/string() }" 
@@ -566,7 +566,7 @@ declare function translation:word-count($tei as element()) as xs:integer {
         $tei//tei:text/tei:body/tei:div[@type eq "translation"]/*[
                self::tei:div[@type = ("section", "chapter", "prologue", "colophon")] 
                or self::tei:head[@type ne 'translation']
-           ]//text()[count(ancestor::tei:note) eq 0]
+           ]//text()[not(ancestor::tei:note)]
     return
         common:word-count($translated-text)
 };

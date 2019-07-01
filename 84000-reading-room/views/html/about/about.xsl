@@ -31,7 +31,7 @@
                                     </xsl:call-template>
                                 </xsl:variable>
                                 
-                                <xsl:if test="$header-img-src">
+                                <xsl:if test="$header-img-src gt ''">
                                     <xsl:attribute name="class" select="'panel-img-header has-img thumbnail'"/>
                                     <img class="stretch">
                                         <xsl:attribute name="src" select="concat($front-end-path, $header-img-src)"/>
@@ -64,7 +64,7 @@
                                     </xsl:call-template>
                                 </xsl:variable>
                                 
-                                <xsl:if test="$page-quote">
+                                <xsl:if test="$page-quote gt ''">
                                     <blockquote>
                                         <xsl:value-of select="$page-quote"/>
                                         <xsl:if test="$page-quote-author">

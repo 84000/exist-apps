@@ -85,7 +85,7 @@
         </em>
     </xsl:template>
     
-    <xsl:template match="tei:note[not(parent::tei:table)]">
+    <xsl:template match="tei:note[@place eq 'end']">
         <a class="footnote-link">
             <xsl:attribute name="id" select="concat('link-to-', @xml:id)"/>
             <xsl:choose>

@@ -386,15 +386,11 @@ declare function common:local-text($key as xs:string, $lang as xs:string) {
     
     let $local-texts :=
         if($lang = ('en', 'zh')) then
-            doc(concat($common:data-path, '/config/text.', $lang, '.xml'))//m:item
+            doc(concat($common:data-path, '/config/texts.', $lang, '.xml'))//m:item
         else
-            doc(concat($common:data-path, '/config/text.en.xml'))//m:item
+            doc(concat($common:data-path, '/config/texts.en.xml'))//m:item
     
-    let $local-text := 
-        if(lower-case($lang) = ('', 'en')) then
-            $local-texts//m:item[@key eq $key][not(@xml:lang) or @xml:lang eq 'en'][1]/node()
-        else
-            $local-texts//m:item[@key eq $key][@xml:lang eq $lang][1]/node()
+    let $local-text := $local-texts[@key eq $key][1]/node()
     
     return
         if ($local-text instance of text()) then

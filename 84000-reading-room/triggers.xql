@@ -32,10 +32,11 @@ declare function local:footnote-indexes($doc) {
 
     (: Add indexes to footnotes :)
     (: This supports stable numbering accross all sections :)
-    let $count-notes := count($doc/tei:TEI/tei:text//tei:note)
-    let $max-note-index := max($doc/tei:TEI/tei:text//tei:note/@index ! common:integer(.))
-    let $count-distinct-note-indexes := count(distinct-values($doc/tei:TEI/tei:text//tei:note/@index))
-    let $count-notes-missing-index := count($doc/tei:TEI/tei:text//tei:note[not(@index) or @index eq ''])
+    let $end-notes := $doc/tei:TEI/tei:text//tei:note[@place eq 'end']
+    let $count-notes := count($end-notes)
+    let $max-note-index := max($end-notes/@index ! common:integer(.))
+    let $count-distinct-note-indexes := count(distinct-values($end-notes/@index))
+    let $count-notes-missing-index := count($end-notes[not(@index) or @index eq ''])
     
     return 
         if(
