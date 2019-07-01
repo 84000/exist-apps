@@ -44,7 +44,7 @@ declare function local:footnote-indexes($doc) {
             or $count-notes ne $count-distinct-note-indexes
             or $count-notes ne $max-note-index
         ) then
-            for $note at $index in $doc/tei:TEI/tei:text//tei:note
+            for $note at $index in $end-notes
             return
                 update insert attribute index {$index} into $note
         else ()
