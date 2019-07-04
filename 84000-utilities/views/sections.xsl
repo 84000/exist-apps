@@ -15,16 +15,7 @@
                 <div class="panel panel-default">
                     <div class="panel-heading bold hidden-print center-vertical">
                         
-                        <span class="title">
-                            <xsl:value-of select="'84000 Utilities'"/>
-                        </span>
-                        
-                        <span class="text-right">
-                            <a target="reading-room">
-                                <xsl:attribute name="href" select="$reading-room-path"/>
-                                <xsl:value-of select="'Reading Room'"/>
-                            </a>
-                        </span>
+                        <xsl:call-template name="header"/>
                         
                     </div>
                     
@@ -131,13 +122,15 @@
                     <xsl:with-param name="counter" select="1"/>
                     <xsl:with-param name="finish" select="xs:integer(@nesting)"/>
                     <xsl:with-param name="content">
-                        <xsl:value-of select="m:title"/>
-                        <ul class="list-inline">
+                        <span class="text-bold">
+                            <xsl:value-of select="m:title"/>
+                        </span>
+                        <ul class="list-inline inline-dots sml-margin bottom">
                             <li>
                                 <a>
                                     <xsl:attribute name="href" select="concat($reading-room-path ,'/section/', @id, '.tei')"/>
                                     <xsl:attribute name="target" select="concat(@id, '.tei')"/>
-                                    <span class="label label-primary">
+                                    <span class="small">
                                         <xsl:value-of select="concat(@id, '.tei')"/>
                                     </span>
                                 </a>
@@ -146,7 +139,7 @@
                                 <a>
                                     <xsl:attribute name="href" select="concat($reading-room-path ,'/section/', @id, '.xml')"/>
                                     <xsl:attribute name="target" select="concat(@id, '.xml')"/>
-                                    <span class="label label-primary">
+                                    <span class="small">
                                         <xsl:value-of select="concat(@id, '.xml')"/>
                                     </span>
                                 </a>
@@ -155,14 +148,14 @@
                                 <a>
                                     <xsl:attribute name="href" select="concat($reading-room-path ,'/section/', @id, '.html')"/>
                                     <xsl:attribute name="target" select="concat(@id, '.html')"/>
-                                    <span class="label label-primary">
+                                    <span class="small">
                                         <xsl:value-of select="concat(@id, '.html')"/>
                                     </span>
                                 </a>
                             </li>
                         </ul>
                         <div class="small">
-                            File: 
+                            <xsl:value-of select="'File: '"/>
                             <span class="break">
                                 <xsl:value-of select="@uri"/>
                             </span>

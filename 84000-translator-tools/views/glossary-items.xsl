@@ -5,18 +5,13 @@
     
     <xsl:template match="/m:response">
         
-        <xsl:variable name="environment" select="doc(/m:response/@environment-path)/m:environment"/>
-        <xsl:variable name="reading-room-path" select="$environment/m:url[@id eq 'reading-room']/text()"/>
-        
-        <xsl:for-each select="m:glossary/m:item">
+        <xsl:for-each select="m:glossary/m:instance">
              <div class="glossary-item">
-                 
-                 <xsl:variable name="uid" select="@uid/string()"/>
                  
                  <div class="title">
                      in
                      <a>
-                         <xsl:attribute name="href" select="concat($reading-room-path ,'/translation/', @translation-id, '.html', '#', $uid)"/>
+                         <xsl:attribute name="href" select="@uri"/>
                          <xsl:apply-templates select="m:translation/m:title/text()"/>
                      </a>
                      <label class="label label-default pull-right">

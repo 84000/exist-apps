@@ -26,7 +26,7 @@ let $tab :=
 let $xml-section := doc(concat($common:data-path, '/translator-tools/sections/', $tab, '.xml'))
 
 let $type := request:get-parameter('type', 'term')
-let $search := request:get-parameter('s', '')
+let $search := request:get-parameter('search', 'a')
 let $lang := request:get-parameter('lang', if($tab eq 'tibetan-search') then 'bo' else 'en')
 let $volume := request:get-parameter('volume', 1)
 let $page := request:get-parameter('page', 1)
@@ -43,14 +43,14 @@ return
         concat('translator-tools/', $tab),
         'translator-tools',
         (
-            <request xmlns="http://read.84000.co/ns/1.0" tab="{ $tab }" volume="{ $volume }" page="{ $page }">
+            <request xmlns="http://read.84000.co/ns/1.0" tab="{ $tab }" lang="{ $lang }" type="{ $type }" volume="{ $volume }" page="{ $page }">
                 <search>{ $search }</search>
             </request>,
             $tabs,
             if($tab eq 'search' and compare($search, '') gt 0) then 
                 search:search($search, $first-record, 15)
             else if($tab eq 'glossary') then 
-                glossary:glossary-terms($type, $lang, $search)
+                glossary:glossary-terms($type, $lang, $search, true())
             else if($tab eq 'tibetan-search') then 
             (
                 search:tm-search($search, $lang, $first-record, 15),

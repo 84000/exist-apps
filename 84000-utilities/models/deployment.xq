@@ -14,7 +14,7 @@ let $get-app := request:get-parameter('app', '')
 
 return 
     common:response(
-        'utilities/deploy',
+        'utilities/deployment',
         'utilities',
         (
             $deploy:deployment-conf/m:view-repo-url,

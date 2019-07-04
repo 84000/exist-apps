@@ -9,15 +9,9 @@
             <div class="container">
                 <div class="panel panel-default">
                     <div class="panel-heading bold hidden-print center-vertical">
-                        <span class="title">
-                            <xsl:value-of select="'84000 Utilities'"/>
-                        </span>
-                        <span class="text-right">
-                            <a target="reading-room">
-                                <xsl:attribute name="href" select="$reading-room-path"/>
-                                <xsl:value-of select="'Reading Room'"/>
-                            </a>
-                        </span>
+                        
+                        <xsl:call-template name="header"/>
+                        
                     </div>
                     <div class="panel-body">
                         <xsl:call-template name="tabs">

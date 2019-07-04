@@ -18,16 +18,7 @@
                 <div class="panel panel-default">
                     <div class="panel-heading bold hidden-print center-vertical">
                         
-                        <span class="title">
-                            <xsl:value-of select="'84000 Utilities'"/>
-                        </span>
-                        
-                        <span class="text-right">
-                            <a target="reading-room">
-                                <xsl:attribute name="href" select="$reading-room-path"/>
-                                <xsl:value-of select="'Reading Room'"/>
-                            </a>
-                        </span>
+                        <xsl:call-template name="header"/>
                         
                     </div>
                     
@@ -401,7 +392,7 @@
                                                 </div>
                                                 <div class="col-sm-6">
                                                     <small class="text-muted">
-                                                        <xsl:value-of select="'Total terms: '"/>
+                                                        <xsl:value-of select="'Total items: '"/>
                                                     </small>
                                                     <br/>
                                                     <xsl:value-of select="fn:format-number(xs:integer(sum(m:translations/m:text/@glossary-count)),'#,##0')"/>

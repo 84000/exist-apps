@@ -566,9 +566,12 @@ declare function translation:word-count($tei as element()) as xs:integer {
         $tei//tei:text/tei:body/tei:div[@type eq "translation"]/*[
                self::tei:div[@type = ("section", "chapter", "prologue", "colophon")] 
                or self::tei:head[@type ne 'translation']
-           ]//text()[not(ancestor::tei:note)]
+           ]//text()[normalize-space() and not(ancestor::tei:note)]
     return
-        common:word-count($translated-text)
+        if($translated-text gt '') then
+            common:word-count($translated-text)
+        else
+            0
 };
 
 declare function translation:glossary-count($tei as element()) as xs:integer {

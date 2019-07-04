@@ -155,7 +155,7 @@ declare function translation-status:next-task-id($text-id as xs:string, $positio
 };
 
 declare function translation-status:is-current-version($tei-version-str as xs:string?, $cached-version-str as xs:string?) as xs:boolean {
-    compare($tei-version-str, $cached-version-str) eq 0
+    string($tei-version-str) eq string($cached-version-str)
 };
 
 declare function translation-status:word-count($tei as element()) as xs:integer {
