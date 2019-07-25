@@ -1,0 +1,189 @@
+<lucene-tests xmlns="http://read.84000.co/ns/1.0">
+    <lang xml:lang="Sa-Ltn">
+        <label>Sanskrit</label>
+        <test xml:id="test-2">
+            <query>Maitreya­praṇidhana</query>
+            <match data-id="data-4"/>
+            <match data-id="data-5"/>
+            <match data-id="data-6"/>
+            <match data-id="data-7"/>
+            <match data-id="data-8"/>
+            <match data-id="data-18"/>
+
+        </test>
+        <test xml:id="test-6">
+            <query>Atyaya</query>
+            <match data-id="data-9"/>
+            <match data-id="data-11"/>
+        </test>
+        <test xml:id="test-7">
+            <query>Sūtra</query>
+            <match data-id="data-9"/>
+            <match data-id="data-11"/>
+            <match data-id="data-19"/>
+            
+        </test>
+        <test xml:id="test-8">
+            <query>sapta</query>
+            <match data-id="data-22"/>
+            <match data-id="data-21"/>
+            <match data-id="data-23"/>
+        </test>
+        <test xml:id="test-9">
+            <query>tṛṣṇā</query>
+            <match data-id="data-24"/>
+        </test>
+        <test xml:id="test-10">
+            <query>dhāraṇī</query>
+            <match data-id="data-28"/>
+            <match data-id="data-27"/>
+        </test>
+        <test xml:id="test-11">
+            <query>trishna</query>
+            <match data-id="data-26"/>
+            <match data-id="data-24"/>
+        </test>
+        <test xml:id="test-12">
+            <query>trsna</query>
+            <match data-id="data-24"/>
+            <match data-id="data-25"/>
+        </test>
+        <test xml:id="test-13">
+            <query>sila</query>
+            <match data-id="data-29"/>
+        </test>
+        <test xml:id="test-14">
+            <query>shila</query>
+            <match data-id="data-29"/>
+        </test>
+        <test xml:id="test-15">
+            <query>pari­jñātu­kāma</query>
+            <match data-id="data-30"/>
+        </test>
+        <test xml:id="test-16">
+            <query>śāliṃcī</query>
+            <match data-id="data-31"/>
+        </test>
+        <test xml:id="test-17">
+            <query>sutra</query>
+            <match data-id="data-19"/>
+        </test>
+        <test xml:id="test-18">
+            <query>parijnatukama</query>
+            <match data-id="data-30"/>
+        </test>
+        <test xml:id="test-19">
+            <query>dharani</query>
+            <match data-id="data-27"/>
+        </test>
+        <test xml:id="test-20">
+            <query>lkara</query>
+            <match data-id="data-34"/>
+        </test>
+        <test xml:id="test-21">
+            <query>l</query>
+            <match data-id="data-35"/>
+        </test>
+        <test xml:id="test-22">
+            <query>rkara</query>
+            <match data-id="data-36"/>
+        </test>
+        <test xml:id="test-23">
+            <query>sarah</query>
+            <match data-id="data-37"/>
+        </test>
+        <test xml:id="test-24">
+            <query>acaryamusti</query>
+            <match data-id="data-38"/>
+        </test>
+        <test xml:id="test-25">
+            <query>bodhimanda</query>
+            <match data-id="data-40"/>
+        </test>
+        <test xml:id="test-26">
+            <query>ācāryamuṣṭi</query>
+            <match data-id="data-38"/>
+        </test>
+        <test xml:id="test-27">
+            <query>bodhimaṇḍa</query>
+            <match data-id="data-40"/>
+        </test>
+        <test xml:id="test-28">
+            <query>	ḹ </query>
+            <match data-id="data-35"/>
+        </test>
+        <test xml:id="test-29">
+            <query>	ḷkāra</query>
+            <match data-id="data-34"/>
+        </test>
+        <test xml:id="test-30">
+            <query>	ṝkāra</query>
+            <match data-id="data-36"/>
+        </test>
+        <test xml:id="test-31">
+            <query>	śaraḥ</query>
+            <match data-id="data-37"/>
+        </test>
+        <data xml:id="data-1">maitreyapraṇid</data>
+        <data xml:id="data-2">Maitreyapraṇid</data>
+        <data xml:id="data-3">MaitreyaPraṇid</data>
+        <data xml:id="data-4">Maitreyapraṇidhana</data>
+        <data xml:id="data-5">Maitreya­praṇidhana</data>
+        <data xml:id="data-6">Maitreya­praṇidhana­rāja</data>
+        <data xml:id="data-7">maitreyapra[mukhas]ṇidhana</data>
+        <data xml:id="data-8">Maitreyapraṇidhanarāja</data>
+        <data xml:id="data-9">Atyayajñānasūtra</data>
+        <data xml:id="data-11">Atyayajñāna­sūtra</data>
+        <data xml:id="data-10">Maitreya</data>
+        <data xml:id="data-18">Maitreyaṇidhana</data>
+        <data xml:id="data-19">sūtra</data>
+        <data xml:id="data-20">Sūtta</data>
+        <data xml:id="data-21">saptamuni</data>
+        <data xml:id="data-22">sapta</data>
+        <data xml:id="data-23">saptotsada</data>
+        <data xml:id="data-24">tṛṣṇā</data>
+        <data xml:id="data-25">trsna</data>
+        <data xml:id="data-26">trishna</data>
+        <data xml:id="data-27">Dhāraṇī</data>
+        <data xml:id="data-28">Dhāraṇī</data>
+        <data xml:id="data-29">śīla</data>
+        <data xml:id="data-30">pari­jñātu­kāma</data>
+        <data xml:id="data-31">śāliṃcī</data>
+        <data xml:id="data-32">pari­jñātu­kāma</data>
+        <data xml:id="data-33">ḷrkāra</data>
+        <data xml:id="data-34">ḷkāra</data>
+        <data xml:id="data-35">ḹ </data>
+        <data xml:id="data-36">ṝkāra</data>
+        <data xml:id="data-37">śaraḥ</data>
+        <data xml:id="data-38">ācāryamuṣṭi</data>
+
+        <data xml:id="data-40">bodhimaṇḍa</data>
+    </lang>
+    <lang xml:lang="bo">
+        <label>Tibetan</label>
+    </lang>
+    <lang xml:lang="Bo-Ltn">
+        <label>Wylie</label>
+    </lang>
+    <lang xml:lang="en">
+        <label>English</label>
+        <test xml:id="test-3">
+            <query>abiding</query>
+            <match data-id="data-13"/>
+            <match data-id="data-14"/>
+        </test>
+        <test xml:id="test-4">
+            <query>miracle</query>
+            <match data-id="data-15"/>
+        </test>
+        <test xml:id="test-5">
+            <query>Buddha</query>
+            <match data-id="data-17"/>
+        </test>
+        <data xml:id="data-13">Abiding</data>
+        <data xml:id="data-14">Calm-abiding</data>
+        <data xml:id="data-15">Miracles</data>
+        <data xml:id="data-16">miraculous</data>
+        <data xml:id="data-17">Buddhadharma</data>
+    </lang>
+</lucene-tests>
