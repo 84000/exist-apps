@@ -903,6 +903,7 @@
         <div class="page">
             
             <img class="logo">
+                <!-- Update to set image in CSS -->
                 <xsl:attribute name="src" select="concat($front-end-path,'/imgs/logo.png')"/>
                 <xsl:attribute name="alt" select="'84000 logo'"/>
             </img>
@@ -970,6 +971,7 @@
             
             <div id="license">
                 <img>
+                    <!-- Update to set image in CSS -->
                     <xsl:attribute name="src" select="$translation/m:translation/m:license/@img-url"/>
                     <xsl:attribute name="alt" select="'Logo for the license'"/>
                 </img>

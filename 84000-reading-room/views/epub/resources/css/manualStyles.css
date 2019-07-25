@@ -20,7 +20,7 @@ blockquote {
 }
 body {
     color: #000000;
-    font-family: "IndUni-P";
+    font-family: "IndUni-P-84000";
 }
 h1,
 h2,
@@ -67,6 +67,7 @@ h5 {
 }
 h5.section-label {
     margin-top: 24pt;
+    line-height: 1.5;
 }
 
 /* helpers */

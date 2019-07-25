@@ -209,7 +209,6 @@ else if(not(common:auth-environment()) or sm:is-authenticated()) then
                 <parameters xmlns="http://exist.sourceforge.net/NS/exist">
                     <add-parameter name="resource-id" value="{ $resource-id }"/>
                     <add-parameter name="resource-suffix" value="{ $resource-suffix }"/>
-                    <add-parameter name="published-only" value="1"/>
                 </parameters>
             )
         else

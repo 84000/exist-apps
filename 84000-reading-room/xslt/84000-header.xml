@@ -122,9 +122,6 @@
             <item url="http://84000.co/about/contact">
                 <label>Contact</label>
             </item>
-            <item url="http://84000.co/about/privacy-policy">
-                <label>Privacy Policy</label>
-            </item>
         </item>        
         <item class="how-to-help" url="#how-to-help">
             <label>How You Can Help</label>

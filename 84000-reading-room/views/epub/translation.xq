@@ -46,7 +46,7 @@ let $entries := (
                 <item id="fontStyles" href="css/fontStyles.css" media-type="text/css"/>
                 <item id="logo" href="image/logo-stacked.png" media-type="image/png"/>
                 <item id="creative-commons-logo" href="image/CC_logo.png" media-type="image/png"/>
-                <item id="tibetan-font" href="fonts/DDC_Uchen.ttf" media-type="application/x-font-truetype"/>
+                <item id="tibetan-font" href="fonts/DDC_Uchen.ttf" media-type="application/vnd.ms-opentype"/>
                 <item id="english-font-regular" href="fonts/IndUni-P-84000-Regular.otf" media-type="application/vnd.ms-opentype"/>
                 <item id="english-font-bold" href="fonts/IndUni-P-Bold.otf" media-type="application/vnd.ms-opentype"/>
                 <item id="english-font-italic" href="fonts/IndUni-P-Italic.otf" media-type="application/vnd.ms-opentype"/>

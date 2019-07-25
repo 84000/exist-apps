@@ -15,7 +15,14 @@ declare option exist:serialize "method=xml indent=no";
 
 let $resource-id := upper-case(request:get-parameter('resource-id', 'lobby'))
 let $resource-suffix := request:get-parameter('resource-suffix', '')
-let $published-only := request:get-parameter('published-only', false())
+let $doc-type := 
+    if($resource-suffix = ('navigation.atom', 'acquisition.atom')) then 
+        'atom'
+    else
+        $resource-suffix
+
+(: Atom feeds default to published only, others not :)
+let $published-only := request:get-parameter('published-only', if($doc-type eq 'atom') then true() else false())
 let $translations-order := request:get-parameter('translations-order', 'toh')
 let $tei := tei-content:tei($resource-id, 'section')
 
@@ -29,6 +36,7 @@ return
                 xmlns="http://read.84000.co/ns/1.0" 
                 resource-id="{ $resource-id }"
                 resource-suffix="{ $resource-suffix }"
+                doc-type="{ $doc-type }"
                 published-only="{ $published-only }"
                 translations-order="{ $translations-order }" />,
                 

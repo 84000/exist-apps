@@ -35,7 +35,7 @@ declare function translation:title-variants($tei as element()) as element() {
         return
             <title xml:lang="{ $title/@xml:lang }">
             {
-                $title/text()
+                normalize-space($title/text())
             }
             </title>
     }
@@ -568,7 +568,7 @@ declare function translation:word-count($tei as element()) as xs:integer {
                or self::tei:head[@type ne 'translation']
            ]//text()[normalize-space() and not(ancestor::tei:note)]
     return
-        if($translated-text gt '') then
+        if($translated-text and not($translated-text = '')) then
             common:word-count($translated-text)
         else
             0

@@ -69,7 +69,8 @@ return
             (: Include request parameters :)
             <request 
                 xmlns="http://read.84000.co/ns/1.0" 
-                doc-type="{ request:get-parameter('resource-suffix', 'www') }"
+                resource-id="{ $resource-id }"
+                doc-type="{ request:get-parameter('resource-suffix', 'html') }"
                 view-mode="{ request:get-parameter('view-mode', '') }" />,
             (: Calculated strings :)
             <replace-text xmlns="http://read.84000.co/ns/1.0">
