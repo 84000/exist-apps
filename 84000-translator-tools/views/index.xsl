@@ -344,7 +344,7 @@
                     <form action="index.html" method="post" class="form-inline filter-form">
                         
                         <input type="hidden" name="tab" value="tibetan-search"/>
-                        <input type="hidden" name="s">
+                        <input type="hidden" name="search">
                             <xsl:attribute name="value" select="/m:response/m:tm-search/m:request/text()"/>
                         </input>
                         
@@ -425,7 +425,7 @@
                             <xsl:value-of select="'Select or type some Tibetan'"/>
                         </label>
                         <div class="form-group">
-                            <textarea rows="2" class="form-control text-bo" name="s" id="search-text-bo">
+                            <textarea rows="2" class="form-control text-bo" name="search" id="search-text-bo">
                                 <xsl:apply-templates select="/m:response/m:tm-search/m:request-bo"/>
                             </textarea>
                         </div>
@@ -446,7 +446,7 @@
                             <xsl:value-of select="'or type some Wylie'"/>
                         </label>
                         <div class="form-group">
-                            <textarea rows="2" class="form-control text-wy" name="s" id="search-text-bo-ltn">
+                            <textarea rows="2" class="form-control text-wy" name="search" id="search-text-bo-ltn">
                                 <xsl:apply-templates select="/m:response/m:tm-search/m:request-bo-ltn"/>
                             </textarea>
                         </div>
