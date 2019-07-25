@@ -45,8 +45,8 @@ declare function search:text-query($request as xs:string) as element() {
                         let $request-synonym := replace($request-normalized, $request-token, $synonym)
                         return
                         (
-                            <near slop="20" occur="should">{ $request-synonym }</near>,
-                            <wildcard occur="should">{ concat($request-synonym,'*') }</wildcard>
+                            <near slop="20" occur="should">{ $request-synonym }</near>
+                            ,<wildcard occur="should">{ concat($request-synonym,'*') }</wildcard>
                         )
                 }
             </bool>
@@ -55,7 +55,7 @@ declare function search:text-query($request as xs:string) as element() {
 
 declare function search:search($request as xs:string, $first-record as xs:double, $max-records as xs:double) as element() {
     
-    let $all := collection($common:tei-path)//tei:TEI[tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:idno/@xml:id]
+    let $all := collection($common:tei-path)//tei:TEI
     let $translated := $all[tei:teiHeader/tei:fileDesc/tei:publicationStmt/@status = $tei-content:published-statuses]
     
     let $options :=
@@ -136,9 +136,8 @@ declare function search:search($request as xs:string, $first-record as xs:double
                                 <match>
                                 {
                                     attribute node-type { node-name($match/*) },
-                                    attribute score { $match/@score },
-                                    $match/*/@*,
-                                    $match/*/node()
+                                    $match/@*,
+                                    $match/*
                                 }
                                 </match>
                         }

@@ -168,7 +168,7 @@
                             </input>
                         </xsl:if>
                         <div id="search-controls" class="input-group">
-                            <input type="text" name="s" class="form-control">
+                            <input type="text" name="search" class="form-control">
                                 <xsl:attribute name="placeholder">
                                     <xsl:call-template name="translation">
                                         <xsl:with-param name="translation-id" select="'placeholder-search'"/>

@@ -27,7 +27,7 @@
                         </input>
                     </xsl:if>
                     <div class="input-group">
-                        <input type="text" name="s" id="search" class="form-control" placeholder="Search" required="required">
+                        <input type="text" name="search" id="search" class="form-control" placeholder="Search" required="required">
                             <xsl:attribute name="value" select="m:search/m:request/text()"/>
                         </input>
                         <span class="input-group-btn">
