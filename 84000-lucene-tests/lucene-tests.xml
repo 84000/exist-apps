@@ -67,6 +67,8 @@
         <test xml:id="test-17">
             <query>sutra</query>
             <match data-id="data-19"/>
+            <match data-id="data-9"/>
+            <match data-id="data-11"/>
         </test>
         <test xml:id="test-18">
             <query>parijnatukama</query>
@@ -75,6 +77,7 @@
         <test xml:id="test-19">
             <query>dharani</query>
             <match data-id="data-27"/>
+            <match data-id="data-28"/>
         </test>
         <test xml:id="test-20">
             <query>lkara</query>
@@ -83,6 +86,7 @@
         <test xml:id="test-21">
             <query>l</query>
             <match data-id="data-35"/>
+            <match data-id="data-34"/>
         </test>
         <test xml:id="test-22">
             <query>rkara</query>
@@ -149,7 +153,7 @@
         <data xml:id="data-29">śīla</data>
         <data xml:id="data-30">pari­jñātu­kāma</data>
         <data xml:id="data-31">śāliṃcī</data>
-        <data xml:id="data-32">pari­jñātu­kāma</data>
+
         <data xml:id="data-33">ḷrkāra</data>
         <data xml:id="data-34">ḷkāra</data>
         <data xml:id="data-35">ḹ </data>
