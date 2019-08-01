@@ -51,47 +51,43 @@ declare function contributors:person($id as xs:string, $include-acknowledgements
 
 declare function contributors:acknowledgements($uri as xs:string){
     
-    let $query-options := 
-        <options>
-            <default-operator>and</default-operator>
-            <phrase-slop>0</phrase-slop>
-            <leading-wildcard>no</leading-wildcard>
-        </options>
-    
-    let $id := substring-after($uri, 'contributors.xml#')
-    
+    for $tei in 
+        $contributors:texts//tei:TEI[
+            tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:author/@ref = $uri
+            or tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:editor/@ref = $uri
+            or tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:consultant/@ref = $uri
+        ]
+        
+        let $translation-contributor := (
+            $tei//tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:author[@ref eq $uri]
+            | $tei//tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:editor[@ref eq $uri]
+            | $tei//tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:consultant[@ref eq $uri]
+        )[1]
+        
+        let $id := substring-after($uri, 'contributors.xml#')
+        
+        let $contributor-name := 
+            if($translation-contributor/text()) then
+                $translation-contributor/text()
+            else
+                $contributors:contributors/m:contributors/m:person[@xml:id eq $id]/m:label/text()
+        
+        let $acknowledgment := $tei//tei:front/tei:div[@type eq "acknowledgment"]
+        
+        let $mark-contributor-name := normalize-space(lower-case(replace($contributor-name, $contributors:person-prefixes, '')))
+        
+        let $marked-paragraphs := common:mark-nodes($acknowledgment/tei:p, $mark-contributor-name)
+        
     return
-        for $tei in 
-            $contributors:texts//tei:TEI[
-                tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:author/@ref = $uri
-                or tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:editor/@ref = $uri
-                or tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:consultant/@ref = $uri
-            ]
-            
-            let $translation-contributor := (
-                $tei//tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:author[@ref eq $uri]
-                | $tei//tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:editor[@ref eq $uri]
-                | $tei//tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:consultant[@ref eq $uri]
-            )[1]
-            
-            let $contributor-name := 
-                if($translation-contributor/text()) then
-                    $translation-contributor/text()
-                else
-                    replace($contributors:contributors/m:contributors/m:person[@xml:id eq $id]/m:label, $contributors:person-prefixes, '')
-            
-            let $acknowledgment := $tei//tei:front/tei:div[@type eq "acknowledgment"]
-            
-            let $marked-acknowledgement := common:marked-section($acknowledgment, $contributor-name)
-            
-        return
-            contributors:acknowledgement($tei, $marked-acknowledgement/tei:p)
+        contributors:acknowledgement($tei, $marked-paragraphs[exist:match])
 };
 
-declare function contributors:acknowledgement($tei as element(), $content) as element()* {
+declare function contributors:acknowledgement($tei as element(), $paragraphs as element()*) as element()* {
+
     let $title := tei-content:title($tei)
     let $translation-id := tei-content:id($tei)
     let $translation-status := $tei//tei:teiHeader/tei:fileDesc/tei:publicationStmt/@status
+    
     for $toh-key in $tei//tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl/@key
         let $toh := translation:toh($tei, $toh-key)
     return
@@ -102,7 +98,7 @@ declare function contributors:acknowledgement($tei as element(), $content) as el
             $toh,
             element tei:div {
                 attribute type {'acknowledgment'},
-                $content
+                $paragraphs
             }
         }
 };

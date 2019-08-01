@@ -282,47 +282,36 @@ declare function common:search-result($nodes as node()*) as node()*
         )
 };
 
-declare function common:marked-section($section as element()?, $strings as xs:string*) as element()?{
+declare function common:mark-nodes($nodes as node()*, $strings as xs:string*) as node()* {
     
-    let $marked-paragraphs :=
-        if($section and count($strings) gt 0) then
-            for $paragraph-text in $section/tei:p/data()
-                let $marked-paragraph := common:marked-paragraph( $paragraph-text, $strings )
-            return
-                if($marked-paragraph[exist:match]) then
-                    $marked-paragraph
-                else
-                    ()
-        else
-            ()
-
+    for $node in $nodes
     return
-        if($marked-paragraphs) then
-            element tei:div {
-                $section/@*,
-                $marked-paragraphs
-            }
+        if ($node instance of text()) then
+            common:mark-text( $node, $strings )
+        else if ($node instance of element()) then
+            element { node-name($node) }{
+                $node/@*,
+                common:mark-nodes($node/node(), $strings)
+           }
         else
-            $section
+            $node
 };
 
-declare function common:marked-paragraph($text as xs:string, $find as xs:string*) as element() {
+declare function common:mark-text($text as xs:string, $find as xs:string*) as node()* {
     
-    let $find-escaped := $find ! functx:escape-for-regex(.)
+    let $find-escaped := $find ! lower-case(.) ! normalize-space(.) ! functx:escape-for-regex(.)
     let $regex := concat('(', string-join($find-escaped, '|'),')')
-    let $analyze-result := analyze-string(normalize-space($text), $regex, 'i')
+    let $analyze-result := analyze-string($text, $regex, 'i')
     
     return
-        element tei:p {
-            for $node in $analyze-result/xpath:*
-            return
-                if($node[self::xpath:match]) then
-                    element exist:match {
-                        data($node)
-                    }
-                else
-                    data($node)
-        }
+        for $node in $analyze-result/xpath:*
+        return
+            if($node[self::xpath:match]) then
+                element exist:match {
+                    text { data($node) }
+                }
+            else
+                text { data($node) }
         
 };
 

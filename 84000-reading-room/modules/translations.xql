@@ -179,26 +179,23 @@ declare function translations:filtered-texts($section as xs:string, $status as x
         else
             $teis
     
+    (: Convert tei into filtered text :)
+    let $include-sponsors := not(empty($sponsorship:sponsorship-groups//m:group[@id eq $sponsorship-group]))
+    
     (: Duplicate by Toh if necessary :)
-    let $teis := 
+    let $texts := 
         if($deduplicate = ('text', 'sponsorship') and $search-toh eq '') then
-            $teis
+            for $tei in $teis
+                let $include-downloads := if (tei-content:translation-status-group($tei) eq 'published') then 'all' else ''
+                return 
+                    translations:filtered-text($tei, '', $include-sponsors, $include-downloads, false())
         else
             for $bibl in $teis/tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl[contains(@key, $search-toh)]
             return
-                $bibl/ancestor::tei:TEI
-    
-    (: Convert tei into filtered text :)
-    let $include-sponsors := not(empty($sponsorship:sponsorship-groups//m:group[@id eq $sponsorship-group]))
-    let $texts :=
-        for $tei in $teis
-            let $include-downloads :=
-                if (tei-content:translation-status-group($tei) eq 'published') then
-                    'all'
-                else
-                    ''
-        return
-            translations:filtered-text($tei, '', $include-sponsors, $include-downloads, false())
+                let $tei := $bibl/ancestor::tei:TEI
+                let $include-downloads := if (tei-content:translation-status-group($tei) eq 'published') then 'all' else ''
+                return 
+                    translations:filtered-text($tei, $bibl/@key, $include-sponsors, $include-downloads, false())
     
     let $texts-count := count($texts)
     let $texts-pages-count := sum($texts/tei:bibl/tei:location/@count-pages ! common:integer(.))

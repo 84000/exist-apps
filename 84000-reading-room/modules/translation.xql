@@ -686,30 +686,48 @@ declare function translation:sponsors($tei as element(), $include-acknowledgemen
     let $acknowledgment := $tei//tei:front/tei:div[@type eq "acknowledgment"]
     
     return
-        <sponsors xmlns="http://read.84000.co/ns/1.0" >
+        <sponsors xmlns="http://read.84000.co/ns/1.0">
         {(
             $sponsors/m:sponsor,
             if($include-acknowledgements) then
-                if($acknowledgment/tei:p and $sponsors/m:sponsor) then
-                
-                    (: Use the label from the entities file unless it's specified in the tei :)
-                    let $sponsor-strings := 
-                        for $translation-sponsor in $translation-sponsors
-                            let $translation-sponsor-text := normalize-space(lower-case($translation-sponsor/text()))
-                            let $translation-sponsor-id := substring-after($translation-sponsor/@ref, 'sponsors.xml#')
-                            let $sponsor-label-text := normalize-space(lower-case($sponsors/m:sponsor[@xml:id eq $translation-sponsor-id]/m:label))
-                        return
-                            if($translation-sponsor-text gt '') then
-                                normalize-space(lower-case($translation-sponsor-text))
-                            else if($sponsor-label-text gt '') then
-                                replace($sponsor-label-text, $sponsors:prefixes, '')
-                            else
-                                ()
-                    
+            
+                (: Use the label from the entities file unless it's specified in the tei :)
+                let $sponsor-strings := 
+                    for $translation-sponsor in $translation-sponsors
+                        let $translation-sponsor-text := $translation-sponsor
+                        let $translation-sponsor-id := substring-after($translation-sponsor/@ref, 'sponsors.xml#')
+                        let $sponsor-label-text := $sponsors/m:sponsor[@xml:id eq $translation-sponsor-id]/m:label
                     return
-                        common:marked-section($acknowledgment, $sponsor-strings)
-                else
-                    $acknowledgment
+                        if($translation-sponsor-text gt '') then
+                            $translation-sponsor-text
+                        else if($sponsor-label-text gt '') then
+                            $sponsor-label-text
+                        else
+                            ()
+                
+                let $marked-paragraphs := 
+                    if($acknowledgment/tei:p and $sponsor-strings) then
+                        let $mark-sponsor-strings := $sponsor-strings ! normalize-space(lower-case(replace(., $sponsors:prefixes, '')))
+                        return
+                            common:mark-nodes($acknowledgment/tei:p, $mark-sponsor-strings)
+                    else
+                        ()
+                
+                return
+                    element tei:div {
+                        attribute type { 'acknowledgment' },
+                        if($marked-paragraphs/exist:match) then
+                            $marked-paragraphs[exist:match]
+                        else if($sponsor-strings) then
+                            (
+                                attribute generated { true() },
+                                element tei:p {
+                                    text { concat('Sponsored by ', string-join($sponsor-strings, ', '), '.') }
+                                }
+                            )
+                        else
+                            ()
+                    }
              else
                 ()
         )}
@@ -731,22 +749,31 @@ declare function translation:contributors($tei as element(), $include-acknowledg
         {(
             $contributors,
             if($include-acknowledgements) then
-                if($acknowledgment/tei:p and $contributors) then
                 
-                    (: Use the label from the entities file unless it's specified in the tei :)
-                    let $contributor-strings := 
-                        for $translation-contributor in $translation-contributors
-                            let $contributor := $contributors[@xml:id eq substring-after($translation-contributor/@ref, 'contributors.xml#')]
-                        return 
-                            if($translation-contributor/text()) then
-                                normalize-space(lower-case($translation-contributor))
-                            else
-                                replace($contributor/m:label, $contributors:person-prefixes, '')
-                    
-                    return
-                        common:marked-section($acknowledgment, $contributor-strings)
-                else
-                    $acknowledgment
+                (: Use the label from the entities file unless it's specified in the tei :)
+                let $contributor-strings := 
+                    for $translation-contributor in $translation-contributors
+                        let $contributor := $contributors[@xml:id eq substring-after($translation-contributor/@ref, 'contributors.xml#')]
+                    return 
+                        if($translation-contributor/text()) then
+                            $translation-contributor
+                        else
+                            $contributor/m:label
+                
+                let $marked-paragraphs := 
+                    if($acknowledgment/tei:p and $contributor-strings) then
+                        let $mark-contributor-strings := $contributor-strings ! normalize-space(lower-case(replace(., $contributors:person-prefixes, '')))
+                        return
+                            common:mark-nodes($acknowledgment/tei:p, $mark-contributor-strings)
+                    else
+                        ()
+                
+                return
+                    element tei:div {
+                        attribute type { 'acknowledgment' },
+                       $marked-paragraphs[exist:match]
+                    }
+               
             else
                 ()
         )}

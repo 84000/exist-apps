@@ -58,41 +58,42 @@ declare function sponsors:sponsor($id as xs:string, $include-acknowledgements as
 
 declare function sponsors:acknowledgements($uri as xs:string) as element()* {
     
-    let $sponsor-id := substring-after($uri, 'sponsors.xml#')
+    for $tei in $sponsors:texts//tei:TEI[tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:sponsor/@ref eq $uri]
     
-    return
-        for $tei in $sponsors:texts//tei:TEI[tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:sponsor/@ref eq $uri]
+        let $translation-sponsor := $tei//tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:sponsor[@ref eq $uri][1]
         
-            let $translation-sponsor := $tei//tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:sponsor[@ref eq $uri][1]
-            
-            let $sponsor-name := 
-                if($translation-sponsor/text() gt '') then
-                    $translation-sponsor/text()
-                else
-                    $sponsors:sponsors/m:sponsors/m:sponsor[@xml:id eq $sponsor-id]/m:label/text()
-            
-            let $acknowledgment := $tei//tei:front/tei:div[@type eq "acknowledgment"]
-            
-            let $marked-acknowledgement := common:marked-section($acknowledgment, $sponsor-name)
-            
-            let $title := tei-content:title($tei)
-            let $translation-id := tei-content:id($tei)
-            let $translation-status := $tei//tei:teiHeader/tei:fileDesc/tei:publicationStmt/@status
-            
-            for $toh-key in $tei//tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl/@key
-                let $toh := translation:toh($tei, $toh-key)
-            return
-                element m:acknowledgement {
-                    attribute translation-id { $translation-id },
-                    attribute translation-status {$translation-status},
-                    element m:title { text { $title } },
-                    $toh,
-                    element tei:div {
-                        attribute type {'acknowledgment'},
-                        $marked-acknowledgement
-                    },
-                    sponsorship:text-status($translation-id, false())
-                }
+        let $sponsor-id := substring-after($uri, 'sponsors.xml#')
+        
+        let $sponsor-name := 
+            if($translation-sponsor/text() gt '') then
+                $translation-sponsor/text()
+            else
+                $sponsors:sponsors/m:sponsors/m:sponsor[@xml:id eq $sponsor-id]/m:label/text()
+        
+        let $acknowledgment := $tei//tei:front/tei:div[@type eq "acknowledgment"]
+        
+        let $mark-sponsor-name := normalize-space(lower-case(replace($sponsor-name, $sponsors:prefixes, '')))
+        
+        let $marked-paragraphs := common:mark-nodes($acknowledgment/tei:p, $mark-sponsor-name)
+        
+        let $title := tei-content:title($tei)
+        let $translation-id := tei-content:id($tei)
+        let $translation-status := $tei//tei:teiHeader/tei:fileDesc/tei:publicationStmt/@status
+        
+        for $toh-key in $tei//tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl/@key
+            let $toh := translation:toh($tei, $toh-key)
+        return
+            element m:acknowledgement {
+                attribute translation-id { $translation-id },
+                attribute translation-status {$translation-status},
+                element m:title { text { $title } },
+                $toh,
+                element tei:div {
+                    attribute type {'acknowledgment'},
+                    $marked-paragraphs[exist:match]
+                },
+                sponsorship:text-status($translation-id, false())
+            }
 };
 
 declare function sponsors:next-id() as xs:integer {

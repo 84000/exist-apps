@@ -123,7 +123,7 @@
                                         </xsl:if>
                                         
                                         <button type="submit" class="btn btn-primary pull-right">
-                                            Save
+                                            <xsl:value-of select="'Save'"/>
                                         </button>
                                     </div>
                                     
@@ -135,7 +135,9 @@
                                     <xsl:if test="count(m:person/m:acknowledgement) gt 1">
                                         <xsl:attribute name="class" select="'relative preview-list render-in-viewport'"/>
                                     </xsl:if>
-                                    <h4>Acknowledgements</h4>
+                                    <h4>
+                                        <xsl:value-of select="'Acknowledgements'"/>
+                                    </h4>
                                     <hr class="sml-margin"/>
                                     <xsl:call-template name="acknowledgements">
                                         <xsl:with-param name="acknowledgements" select="m:person/m:acknowledgement"/>
