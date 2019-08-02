@@ -12,7 +12,7 @@
         <xsl:value-of select="translate(normalize-space(concat('', translate(., '&#xA;', ''), '')), '', '')"/>
     </xsl:template>
     
-    <!-- Strip leading or trailing spaces from a node -->
+    <!-- Strip leading or trailing empty text nodes -->
     <xsl:template match="text()[not(normalize-space())][common:index-of-node(../node(), .) = (1, count(../node()))]">
         <xsl:value-of select="normalize-space()"/>
     </xsl:template>

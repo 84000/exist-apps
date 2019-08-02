@@ -19,28 +19,31 @@
                         
                         <xsl:variable name="target-id" select="@uid"/>
                         <xsl:variable name="target" select="/m:response//*[@xml:id eq $target-id]"/>
-                        <xsl:variable name="group" select="$target/ancestor::*[exists(@prefix)][1]"/>
-                        <xsl:variable name="location" select="$group/local-name()"/>
-                        <xsl:variable name="chapter-index" select="$group/@chapter-index"/>
+                        <xsl:variable name="section" select="$target/ancestor::*[self::m:summary | self::m:acknowledgment | self::m:preface | self::m:introduction | self::m:prologue  | self::m:body  | self::m:colophon  | self::m:appendix  | self::m:abbreviations  | self::m:bibliography  | self::m:glossary]"/>
+                        <xsl:variable name="section-name" select="local-name($section)"/>
+                        
+                        <xsl:variable name="OEBPS-entry">
+                            <xsl:choose>
+                                <xsl:when test="$section-name eq 'body' and $target/ancestor::m:chapter/@chapter-index">
+                                    <xsl:value-of select="concat('chapter-', $target/ancestor::m:chapter/@chapter-index,'.xhtml')"/>
+                                </xsl:when>
+                                <xsl:otherwise>
+                                    <xsl:value-of select="concat($section-name, '.xhtml')"/>
+                                </xsl:otherwise>
+                            </xsl:choose>
+                        </xsl:variable>
                         
                         <div class="gtr">
                             <a class="footnote-number">
                                 <xsl:attribute name="href">
-                                    <xsl:choose>
-                                        <xsl:when test="$location eq 'chapter'">
-                                            <xsl:value-of select="concat('chapter-', $chapter-index,'.xhtml#link-to-', @uid)"/>
-                                        </xsl:when>
-                                        <xsl:otherwise>
-                                            <xsl:value-of select="concat($location, '.xhtml#link-to-', @uid)"/>
-                                        </xsl:otherwise>
-                                    </xsl:choose>
+                                    <xsl:value-of select="concat($OEBPS-entry, '#link-to-', $target-id)"/>
                                 </xsl:attribute>
                                 <xsl:apply-templates select="@index"/>
                             </a>
                         </div>
                         
                         <div epub:type="footnote">
-                            <xsl:attribute name="id" select="@uid"/>
+                            <xsl:attribute name="id" select="$target-id"/>
                             <xsl:apply-templates select="node()"/>
                         </div>
                         

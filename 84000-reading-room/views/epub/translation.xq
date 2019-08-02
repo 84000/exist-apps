@@ -6,6 +6,8 @@ declare namespace tei = "http://www.tei-c.org/ns/1.0";
 import module namespace common = "http://read.84000.co/common" at "../../modules/common.xql";
 import module namespace translation = "http://read.84000.co/translation" at "../../modules/translation.xql";
 
+declare option exist:serialize "indent=no";
+
 let $data := request:get-data()
 let $translation-title := $data//m:translation/m:titles/m:title[@xml:lang eq 'en']/string()
 let $epub-id := concat('http://read.84000.co/translation/', $data//m:translation/m:source/@key, '.epub')
