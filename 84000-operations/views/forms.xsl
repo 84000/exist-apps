@@ -902,6 +902,11 @@
                     <div class="text-bold">
                         <xsl:value-of select="'Acknowledgment'"/>
                     </div>
+                    <xsl:if test="m:translation/m:sponsors/tei:div[@type eq 'acknowledgment']/@generated">
+                        <div class="alert alert-warning small sml-margin bottom">
+                            <p>Text auto-generated from the list. No acknowledgment found in the TEI.</p>
+                        </div>
+                    </xsl:if>
                     <xsl:if test="m:translation/m:sponsors/tei:div[@type eq 'acknowledgment']/tei:p">
                         <xsl:apply-templates select="m:translation/m:sponsors/tei:div[@type eq 'acknowledgment']/tei:p"/>
                         <hr/>

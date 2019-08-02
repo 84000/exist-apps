@@ -368,7 +368,21 @@
                                                 </xsl:if>
                                             </td>
                                             <td colspan="5">
-                                                <div class="pull-quote no-bottom-margin">
+                                                <div>
+                                                    <xsl:choose>
+                                                        <xsl:when test="m:sponsors/tei:div[@type eq 'acknowledgment']/@generated">
+                                                            <xsl:attribute name="class" select="'pull-quote orange-quote no-bottom-margin'"/>
+                                                            <div class="small text-warning">
+                                                                <xsl:value-of select="'Auto-generated acknowledgment:'"/>
+                                                            </div>
+                                                        </xsl:when>
+                                                        <xsl:otherwise>
+                                                            <xsl:attribute name="class" select="'pull-quote green-quote no-bottom-margin'"/>
+                                                            <div class="small">
+                                                                <xsl:value-of select="'Acknowledgment:'"/>
+                                                            </div>
+                                                        </xsl:otherwise>
+                                                    </xsl:choose>
                                                     <xsl:apply-templates select="m:sponsors/tei:div[@type eq 'acknowledgment']/tei:p"/>
                                                 </div>
                                             </td>

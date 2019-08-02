@@ -705,6 +705,8 @@ declare function translation:sponsors($tei as element(), $include-acknowledgemen
                         else
                             ()
                 
+                let $count-sponsor-strings := count($sponsor-strings)
+                
                 let $marked-paragraphs := 
                     if($acknowledgment/tei:p and $sponsor-strings) then
                         let $mark-sponsor-strings := $sponsor-strings ! normalize-space(lower-case(replace(., $sponsors:prefixes, '')))
@@ -722,7 +724,15 @@ declare function translation:sponsors($tei as element(), $include-acknowledgemen
                             (
                                 attribute generated { true() },
                                 element tei:p {
-                                    text { concat('Sponsored by ', string-join($sponsor-strings, ', '), '.') }
+                                    text { 'Sponsored by ' },
+                                        for $sponsor-string at $position  in $sponsor-strings
+                                        return
+                                        (
+                                            element exist:match {
+                                                text { $sponsor-string }
+                                            },
+                                            text { if($position eq $count-sponsor-strings) then  '.' else ', ' }
+                                        )
                                 }
                             )
                         else
