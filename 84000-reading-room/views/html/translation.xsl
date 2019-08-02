@@ -318,7 +318,7 @@
                 </div>
             </article>
             
-            <div class="nav-controls show-on-scroll hidden-print">
+            <div class="nav-controls show-on-scroll-xs hidden-print">
                 
                 <div id="navigation-btn-container" class="fixed-btn-container">
                     <a href="#contents-sidebar" class="btn-round show-sidebar">
