@@ -56,6 +56,7 @@ declare function search:text-query($request as xs:string) as element() {
 declare function search:search($request as xs:string, $first-record as xs:double, $max-records as xs:double) as element() {
     
     let $all := collection($common:tei-path)//tei:TEI
+    
     let $translated := $all[tei:teiHeader/tei:fileDesc/tei:publicationStmt/@status = $tei-content:published-statuses]
     
     let $options :=
@@ -68,85 +69,68 @@ declare function search:search($request as xs:string, $first-record as xs:double
     
     let $query := search:text-query($request)
     
-    let $results :=
-        for $result in 
-            $all//tei:teiHeader/tei:fileDesc//tei:title[ft:query(., $query, $options)]
-                | $all//tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl[ft:query(., $query, $options)]
-                | $all//tei:teiHeader/tei:fileDesc/tei:sourceDesc//tei:biblScope[ft:query(., $query, $options)]
-                | $translated//tei:text//tei:head[ft:query(., $query, $options)]
-                | $translated//tei:text//tei:p[ft:query(., $query, $options)]
-                | $translated//tei:text//tei:lg[ft:query(., $query, $options)]
-                | $translated//tei:text//tei:ab[ft:query(., $query, $options)]
-                | $translated//tei:text//tei:trailer[ft:query(., $query, $options)]
-                | $translated//tei:back//tei:bibl[ft:query(., $query, $options)]
-                | $translated//tei:back//tei:gloss[ft:query(., $query, $options)]
-            
-            let $scores := ft:score($result)
-            
+    let $results := 
+        $all//tei:teiHeader/tei:fileDesc//tei:title[ft:query(., $query, $options)]
+        | $all//tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl[ft:query(., $query, $options)]
+        | $all//tei:teiHeader/tei:fileDesc/tei:sourceDesc//tei:biblScope[ft:query(., $query, $options)]
+        | $translated//tei:text//tei:head[ft:query(., $query, $options)]
+        | $translated//tei:text//tei:p[ft:query(., $query, $options)]
+        | $translated//tei:text//tei:lg[ft:query(., $query, $options)]
+        | $translated//tei:text//tei:ab[ft:query(., $query, $options)]
+        | $translated//tei:text//tei:trailer[ft:query(., $query, $options)]
+        | $translated//tei:back//tei:bibl[ft:query(., $query, $options)]
+        | $translated//tei:back//tei:gloss[ft:query(., $query, $options)]
+    
+    let $result-groups := 
+        for $result in $results
+            let $score := ft:score($result)
             let $document-uri := base-uri($result)
             group by $document-uri
-            
-            let $sum-scores := sum($scores)
+            let $sum-scores := sum($score)
             order by $sum-scores descending
-         
-         return 
-            <result-group xmlns="http://read.84000.co/ns/1.0" document-uri="{ $document-uri }" sum-scores="{ $sum-scores }">
-            {
-                for $single in $result
-                return
-                    <match score="{ ft:score($single) }">
-                    {
-                        util:expand($single, "expand-xincludes=no")
-                    }
-                    </match>
-            }
-            </result-group>
-    
+        return
+            <result-group xmlns="http://read.84000.co/ns/1.0" document-uri="{ $document-uri }" score="{ $sum-scores }"/>
+        
     return 
         <search xmlns="http://read.84000.co/ns/1.0" >
             <request>{ $request }</request>
             <results
                 first-record="{ $first-record }"
                 max-records="{ $max-records }"
-                count-records="{ count($results) }">
-            {
-                if ($request) then
- 
-                    for $result-group in subsequence($results, $first-record, $max-records)
+                count-records="{ count($result-groups) }">
+                {
+                    for $result-group in subsequence($result-groups, $first-record, $max-records)
                         
                         let $tei := doc($result-group/@document-uri)/tei:TEI
+                        
                         let $tei-type := 
                             if($tei//tei:teiHeader/tei:fileDesc/@type = ('section', 'grouping', 'pseudo-section')) then
                                 'section'
                             else
                                 'translation'
-                                
-                        let $first-bibl := tei-content:source-bibl($tei, '')
-                        let $first-bibl-key :=  if($first-bibl/@key) then $first-bibl/@key else ''
 
                     return
-                        <item score="{ $result-group/@sum-scores }">
+                        <item score="{ $result-group/@score }">
                         {
                             search:source($tei-type, $tei)
                         }
                         {
-                            for $match in $result-group/m:match
-                            order by $match/@score descending
+                            for $result in $results
+                                let $document-uri := base-uri($result)
+                                where $document-uri eq $result-group/@document-uri
                             return
-                                <match>
+                                <match score="{ ft:score($result) }">
                                 {
-                                    attribute node-type { node-name($match/*) },
-                                    $match/@*,
-                                    $match/*
+                                    (: util:expand($result) :)
+                                    common:mark-nodes($result, $request)
                                 }
                                 </match>
                         }
                         </item>
-               else
-                    ()
-            }
+                }
             </results>
-        </search>(::)
+        </search>
+        
 };
 
 declare function search:source($tei-type as xs:string, $tei as node()) as element() {

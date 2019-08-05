@@ -299,9 +299,9 @@ declare function common:mark-nodes($nodes as node()*, $strings as xs:string*) as
 
 declare function common:mark-text($text as xs:string, $find as xs:string*) as node()* {
     
-    let $find-escaped := $find ! lower-case(.) ! normalize-space(.) ! functx:escape-for-regex(.)
+    let $find-escaped := $find ! common:normalize-unicode(.) ! lower-case(.) ! normalize-space(.) ! functx:escape-for-regex(.)
     let $regex := concat('(', string-join($find-escaped, '|'),')')
-    let $analyze-result := analyze-string($text, $regex, 'i')
+    let $analyze-result := analyze-string(common:normalize-unicode($text), $regex, 'i')
     
     return
         for $node in $analyze-result/xpath:*
@@ -313,6 +313,10 @@ declare function common:mark-text($text as xs:string, $find as xs:string*) as no
             else
                 text { data($node) }
         
+};
+
+declare function common:normalize-unicode($string as xs:string?) as xs:string? {
+    normalize-unicode(replace($string, '­', ''))
 };
 
 declare

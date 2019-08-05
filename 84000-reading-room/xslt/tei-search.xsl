@@ -287,7 +287,7 @@
                 <div class="search-match">
                     
                     <!-- Output the match (unless it's only in the note) -->
-                    <xsl:if test="descendant::exist:match[not(ancestor::tei:note)]">
+                    <xsl:if test="not(ancestor::tei:note)">
                         <div class="row">
                             <div class="col-sm-12">
                                 <span class="small">
