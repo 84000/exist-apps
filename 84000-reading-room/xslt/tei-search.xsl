@@ -42,6 +42,7 @@
                     <xsl:when test="m:search/m:results/m:item">
                         <xsl:variable name="first-record" select="m:search/m:results/@first-record"/>
                         <xsl:for-each select="m:search/m:results/m:item">
+                            <xsl:sort select="@score" data-type="number" order="descending"/>
                             <xsl:variable name="source" select="m:source"/>
                             <xsl:variable name="matches" select="m:match"/>
                             <xsl:variable name="count-matches" select="count(m:match)"/>
@@ -142,6 +143,7 @@
                                         </div>
                                         
                                         <xsl:for-each select="$matches">
+                                            <xsl:sort select="@score" data-type="number" order="descending"/>
                                             <xsl:choose>
                                                 <xsl:when test="@node-type eq 'title' and @type eq 'mainTitle' and @xml:lang eq 'en'">
                                                     <!-- Don't bother if it's the title, we already show this -->

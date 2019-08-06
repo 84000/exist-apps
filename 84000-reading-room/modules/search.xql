@@ -32,7 +32,7 @@ declare function search:text-query($request as xs:string) as element() {
         
     let $request-normalized := common:normalized-chars($request)
     
-    let $request-tokenized := tokenize(common:normalized-chars($request-normalized), '\s')
+    let $request-tokenized := tokenize($request-normalized, '\s')
     
     return
         <query>
@@ -42,11 +42,11 @@ declare function search:text-query($request as xs:string) as element() {
                 {
                     for $request-token in $request-tokenized
                         for $synonym in $synonyms//m:synonym[m:term/text() = $request-token]/m:term[not(text() = $request-token)]
-                        let $request-synonym := replace($request-normalized, $request-token, $synonym)
+                            let $request-synonym := replace($request-normalized, $request-token, $synonym)
                         return
                         (
-                            <near slop="20" occur="should">{ $request-synonym }</near>
-                            ,<wildcard occur="should">{ concat($request-synonym,'*') }</wildcard>
+                            <near slop="20" occur="should">{ $request-synonym }</near>,
+                            <wildcard occur="should">{ concat($request-synonym,'*') }</wildcard>
                         )
                 }
             </bool>
