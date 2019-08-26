@@ -10,5 +10,6 @@
     <target>84000-translator-tools</target>
     <prepare/>
     <finish>post-install.xql</finish>
-    <permissions xmlns:repo="http://exist-db.org/xquery/repo" password="" user="admin" group="translator-tools" mode="rw-r--r--"/>
+    <permissions user="admin" group="translator-tools" mode="rw-r--r--"/>
+<deployed>2019-08-13T14:14:11.815+02:00</deployed>
 </meta>
