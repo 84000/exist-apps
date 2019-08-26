@@ -95,45 +95,47 @@ declare function deploy:deploy-apps($admin-password as xs:string, $commit-msg as
     
     (: Sync app :)
     let $sync :=
-        if($repo-path and $admin-password-correct and $action eq 'push') then
-            (: Sync files with the file system :)
-            for $push-collection in $deploy:deployment-conf/m:apps/m:app/@collection
-                let $sync-collection := 
-                    file:sync(
-                        concat('/db/apps/', $push-collection), 
-                        concat('/', $repo-path, '/', $push-collection), 
-                        ()
+        if($repo-path and $admin-password-correct) then
+            if($action eq 'push')then
+                (: Sync files with the file system :)
+                for $push-collection in $deploy:deployment-conf/m:apps/m:app/@collection
+                    let $sync-collection := 
+                        file:sync(
+                            concat('/db/apps/', $push-collection), 
+                            concat('/', $repo-path, '/', $push-collection), 
+                            ()
+                        )
+                    where count($sync-collection//file:update) gt 0
+                return
+                    (
+                        $sync-collection,
+                        process:execute(
+                            ('bin/backup.sh', '-u', 'admin', '-p', $admin-password, '-b', concat('/db/apps/', $push-collection), '-d', concat('/', $repo-path, '/', $push-collection, '/zip/', $push-collection, '.zip')), 
+                            $exist-options
+                        ),
+                        deploy:git-push('--all', $commit-msg, $git-options)
                     )
-                where count($sync-collection//file:update) gt 0
-            return
+             else if($action eq 'pull' and $pull-collection) then
                 (
-                    $sync-collection,
+                    deploy:git-pull($git-options),
                     process:execute(
-                        ('bin/backup.sh', '-u', 'admin', '-p', $admin-password, '-b', concat('/db/apps/', $push-collection), '-d', concat('/', $repo-path, '/', $push-collection, '/zip/', $push-collection, '.zip')), 
+                        ('bin/backup.sh', '-u', 'admin', '-p', $admin-password, '-P', $admin-password, '-r', concat('/', $repo-path, '/', $pull-collection, '/zip/', $pull-collection, '.zip')),
                         $exist-options
-                    )
+                    ),
+                    repair:clean-all(),
+                    repair:repair()
                 )
+             else ()
         else
             ()
     
     return 
         <result xmlns="http://read.84000.co/ns/1.0">
-            <sync admin-password-correct="{ $admin-password-correct }">
+            <deployment  action="{ $action }"admin-password-correct="{ $admin-password-correct }">
             {
                 $sync
             }
-            </sync>
-            {
-                if($admin-password-correct) then
-                    if($action eq 'push' and  $sync and $git-options) then
-                        deploy:git-push('--all', $commit-msg, $git-options)
-                    else if($action eq 'pull' and $pull-collection) then
-                        deploy:git-pull($git-options)
-                    else
-                        ()
-                else
-                    ()
-            }
+            </deployment>
         </result>
     
 };
