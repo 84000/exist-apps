@@ -10,7 +10,8 @@
     <target>84000-translation-memory</target>
     <prepare/>
     <finish>post-install.xql</finish>
-    <permissions xmlns:repo="http://exist-db.org/xquery/repo" password="" user="admin" group="translation-memory" mode="rw-r--r--"/>
+    <permissions user="admin" group="translation-memory" mode="rw-r--r--"/>
     
 
+<deployed>2019-08-13T14:13:31.142+02:00</deployed>
 </meta>
