@@ -10,6 +10,6 @@
     <target>84000-operations</target>
     <prepare/>
     <finish>post-install.xql</finish>
-    <permissions xmlns:repo="http://exist-db.org/xquery/repo" password="0415554685" user="admin" group="operations" mode="rw-r--r--"/>
-    
+    <permissions user="admin" group="operations" mode="rw-r--r--"/>
+    <deployed>2019-08-13T15:12:37.644+02:00</deployed>
 </meta>
