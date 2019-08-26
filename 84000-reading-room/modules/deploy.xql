@@ -98,11 +98,20 @@ declare function deploy:deploy-apps($admin-password as xs:string, $commit-msg as
         if($repo-path and $admin-password-correct and $action eq 'push') then
             (: Sync files with the file system :)
             for $push-collection in $deploy:deployment-conf/m:apps/m:app/@collection
+                let $sync-collection := 
+                    file:sync(
+                        concat('/db/apps/', $push-collection), 
+                        concat('/', $repo-path, '/', $push-collection), 
+                        ()
+                    )
+                where count($sync-collection//file:update) gt 0
             return
-                file:sync(
-                   concat('/db/apps/', $push-collection), 
-                   concat('/', $repo-path, '/', $push-collection), 
-                   ()
+                (
+                    $sync-collection,
+                    process:execute(
+                        ('bin/backup.sh', '-u', 'admin', '-p', $admin-password, '-b', concat('/db/apps/', $push-collection), '-d', concat('/', $repo-path, '/', $push-collection, '/zip/', $push-collection, '.zip')), 
+                        $exist-options
+                    )
                 )
         else
             ()

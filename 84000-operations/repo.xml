@@ -11,6 +11,5 @@
     <prepare/>
     <finish>post-install.xql</finish>
     <permissions xmlns:repo="http://exist-db.org/xquery/repo" password="0415554685" user="admin" group="operations" mode="rw-r--r--"/>
-
-
+    
 </meta>
