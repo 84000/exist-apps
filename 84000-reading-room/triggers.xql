@@ -6,7 +6,6 @@ declare namespace tei="http://www.tei-c.org/ns/1.0";
 declare namespace m="http://read.84000.co/ns/1.0";
 
 import module namespace tei-content="http://read.84000.co/tei-content" at "modules/tei-content.xql";
-import module namespace translation="http://read.84000.co/translation" at "modules/translation.xql";
 import module namespace common="http://read.84000.co/common" at "modules/common.xql";
 
 declare function trigger:after-update-document($uri as xs:anyURI) {

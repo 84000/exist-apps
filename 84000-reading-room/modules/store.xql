@@ -6,10 +6,10 @@ declare namespace m = "http://read.84000.co/ns/1.0";
 declare namespace tei="http://www.tei-c.org/ns/1.0";
 declare namespace file="http://exist-db.org/xquery/file";
 
-import module namespace common = "http://read.84000.co/common" at "../../84000-reading-room/modules/common.xql";
-import module namespace tei-content="http://read.84000.co/tei-content" at "../../84000-reading-room/modules/tei-content.xql";
-import module namespace translation = "http://read.84000.co/translation" at "../../84000-reading-room/modules/translation.xql";
-import module namespace download = "http://read.84000.co/download" at "../../84000-reading-room/modules/download.xql";
+import module namespace common = "http://read.84000.co/common" at "common.xql";
+import module namespace tei-content="http://read.84000.co/tei-content" at "tei-content.xql";
+import module namespace translation = "http://read.84000.co/translation" at "translation.xql";
+import module namespace download = "http://read.84000.co/download" at "download.xql";
 
 import module namespace httpclient = "http://exist-db.org/xquery/httpclient";
 

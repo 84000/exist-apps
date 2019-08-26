@@ -53,7 +53,7 @@ return
                 glossary:glossary-terms($type, $lang, $search, true())
             else if($tab eq 'tibetan-search') then 
             (
-                search:tm-search($search, $lang, $first-record, 15),
+                search:tm-search($search, $lang, $first-record, 10),
                 source:ekangyur-page(source:ekangyur-volume-number(xs:integer($volume)), xs:integer($page), true()),
                 source:ekangyur-volumes(xs:integer($volume)),
                 contributors:persons(false())

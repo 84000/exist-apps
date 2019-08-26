@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<collection xmlns="http://exist-db.org/collection-config/1.0">
+    
+    <index xmlns:tmx="http://www.lisa.org/tmx14">
+        <!-- Lucene indexes -->
+        <lucene>
+            <analyzer class="org.tbrc.lucene.analysis.TibWhitespaceAnalyzer"/>
+            <text match="//tmx:seg"/>
+        </lucene>
+        
+        <!-- Range indexes -->
+        <range>
+            
+            <create qname="tmx:prop" type="xs:string">
+                <condition attribute="name" value="folio"/>
+                <field name="folio" type="xs:string" case="no"/>
+            </create>
+            
+        </range>
+        
+    </index>
+</collection>

@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<collection xmlns="http://exist-db.org/collection-config/1.0">
+    
+    <index xmlns:m="http://read.84000.co/ns/1.0">
+        
+        <!-- Lucene indexes -->
+        <lucene>
+            
+            <analyzer id="sa-ltn" class="io.bdrc.lucene.sa.SanskritAnalyzer">
+                <param name="mode" type="java.lang.String" value="word"/>
+                <param name="inputEncoding" type="java.lang.String" value="roman"/>
+                <param name="mergePrepositions" type="boolean" value="false"/>
+                <param name="filterGeminates" type="boolean" value="true"/>
+                <param name="lenient" type="java.lang.String" value="no"/>
+            </analyzer>
+            
+            <analyzer id="en" class="org.apache.lucene.analysis.standard.StandardAnalyzer"/>
+            
+            <analyzer id="bo" class="io.bdrc.lucene.bo.TibetanAnalyzer">
+                <param name="segmentInWords" type="boolean" value="true"/>
+                <param name="lemmatize" type="boolean" value="true"/>
+                <param name="filterChars" type="boolean" value="true"/>
+            </analyzer>
+            
+            <text match="//m:lang[@xml:lang = 'Sa-Ltn']/m:data" analyzer="sa-ltn" field="sa-ltn-data"/>
+            <text match="//m:lang[@xml:lang = 'en']/m:data" analyzer="en" field="en-data"/>
+            <text match="//m:lang[@xml:lang = 'bo']/m:data" analyzer="bo" field="bo-data"/>
+            <text match="//m:lang[@xml:lang = 'Bo-Ltn']/m:data" analyzer="en" field="bo-ltn-data"/>
+            
+        </lucene>
+        
+    </index>
+</collection>

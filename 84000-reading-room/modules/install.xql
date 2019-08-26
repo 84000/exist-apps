@@ -1,0 +1,64 @@
+xquery version "3.0";
+
+module namespace install="http://read.84000.co/install";
+
+import module namespace xmldb="http://exist-db.org/xquery/xmldb";
+import module namespace dbutil="http://exist-db.org/xquery/dbutil";
+
+declare function install:base-permissions($collection as xs:string) {
+
+    (: set collection permissions :)
+    xmldb:chmod-collection(
+        $collection,
+        xmldb:string-to-permissions("rwxr-xr-x")
+    ),
+    
+    (: set collection group :)
+    sm:chgrp($collection, 'reading-room'),
+    
+    (: set resource :)
+    for $resource in collection($collection) ! document-uri(.)
+    return
+    (
+        (: set group :)
+        if(not(ends-with($resource, '.xconf'))) then
+            sm:chgrp($resource, 'reading-room')
+        else
+            (),
+            
+        (: set permissions :)
+        if(ends-with($resource, '.xql') or ends-with($resource, '.xq')) then
+            sm:chmod($resource, 'rwxr-xr-x')
+        else
+            sm:chmod($resource, 'rw-r--r--')
+    ),
+    (: set resource permissions :)
+    for $child in xmldb:get-child-collections($collection)
+    return
+        install:base-permissions(concat($collection, "/", $child))
+};
+
+declare function install:special-permissions($collection as xs:string) {
+
+    (: Auth is restricted and referenced on calls in secured environment :)
+    sm:chmod(xs:anyURI($collection || "/models/auth.xq"), "rwxr-x---"),
+    
+    (: Only admins can run migrations :)
+    for $resource in collection($collection || "/migrations") ! document-uri(.)
+    return
+        sm:chmod($resource, "rwx------")
+    
+};
+
+declare function install:copy-xconf($collection as xs:string){
+    xmldb:copy(concat($collection, '/xconf/db/apps/84000-data'),"/db/system/config/db/apps")
+};
+
+declare function install:reindex() {
+    
+    xmldb:reindex('/db/apps/84000-data/config'),
+    xmldb:reindex('/db/apps/84000-data/operations'),
+    xmldb:reindex('/db/apps/84000-data/tei'),
+    xmldb:reindex('/db/apps/84000-data/translation-memory')
+
+};

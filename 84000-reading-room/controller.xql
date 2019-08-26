@@ -4,6 +4,7 @@ declare namespace m = "http://read.84000.co/ns/1.0";
 
 import module namespace common="http://read.84000.co/common" at "modules/common.xql";
 import module namespace download="http://read.84000.co/download" at "modules/download.xql";
+import module namespace log = "http://read.84000.co/log" at "modules/log.xql";
 
 declare variable $exist:path external;
 declare variable $exist:resource external;
@@ -89,7 +90,6 @@ declare function local:auth($redirect){
 };
 
 (: Log the request :)
-import module namespace log = "http://read.84000.co/log" at "modules/log.xql";
 let $log-request := log:log-request(concat($exist:controller, $exist:path), $controller-root, $collection-path, $resource-id, $resource-suffix)
 
 (: Process the request :)

@@ -64,7 +64,7 @@ return
                 { translation:translation($tei) }
                 { translation:toh($tei, '') }
             </translation>,
-            sponsors:sponsors('all', false(), false()),
+            sponsors:sponsors('all', false(), true()),
             sponsorship:text-status($text-id, true())
         )
     )

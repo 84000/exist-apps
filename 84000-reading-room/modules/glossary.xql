@@ -9,7 +9,7 @@ declare namespace m="http://read.84000.co/ns/1.0";
 declare namespace tei="http://www.tei-c.org/ns/1.0";
 
 import module namespace common="http://read.84000.co/common" at "common.xql";
-import module namespace tei-content="http://read.84000.co/tei-content" at "../modules/tei-content.xql";
+import module namespace tei-content="http://read.84000.co/tei-content" at "tei-content.xql";
 import module namespace translation="http://read.84000.co/translation" at "translation.xql";
 import module namespace functx="http://www.functx.com";
 
@@ -17,52 +17,45 @@ declare variable $glossary:translations :=
     collection($common:translations-path)//tei:TEI
         [tei:teiHeader/tei:fileDesc/tei:publicationStmt
             [@status = $tei-content:published-statuses]
-            (: [tei:idno/@xml:id = ("UT22084-031-002", "UT22084-066-018")] Restrict files for testing :)
+            [tei:idno/@xml:id = ("UT22084-031-002", "UT22084-066-018")](: Restrict files for testing :)
         ];
 
 declare variable $glossary:types := ('term', 'person', 'place', 'text');
 
 declare function glossary:lookup-options() as element() {
-    element options {
-        element default-operator { text { 'or' } },
-        element phrase-slop { text { '0' } },
-        element leading-wildcard { text { 'no' } },
-        element filter-rewrite { text { 'yes' } }
-    }
+    <options>
+        <default-operator>or</default-operator>
+        <phrase-slop>0</phrase-slop>
+        <leading-wildcard>no</leading-wildcard>
+        <filter-rewrite>yes</filter-rewrite>
+    </options>
 };
 
 declare function glossary:lookup-query($string as xs:string) as element() {
-    element query {
-        element phrase {
-            attribute occur {'must'},
-            text { $string }
-        }
-    }
+    <query>
+        <phrase occur="must">
+            { $string }
+        </phrase>
+    </query>
 };
 
 declare function glossary:search-options() as element() {
-    element options {
-        element default-operator { text { 'or' } },
-        element phrase-slop { text { '0' } },
-        element leading-wildcard { text { 'yes' } },
-        element filter-rewrite { text { 'yes' } }
-    }
+    <options>
+        <default-operator>or</default-operator>
+        <phrase-slop>0</phrase-slop>
+        <leading-wildcard>yes</leading-wildcard>
+        <filter-rewrite>yes</filter-rewrite>
+    </options>
 };
 
 declare function glossary:search-query($string as xs:string) as element() {
-    element query {
-        element bool {
-            element near {
-                attribute slop { '20' },
-                attribute occur { 'should' },
-                text { $string }
-            },
-            element wildcard {
-                concat('*', $string,'*')
-            }
-        }
-        
-    }
+    <query>
+        <bool>
+            <near slop="20" occur="must">
+                { $string }
+            </near>
+        </bool>
+    </query>
 };
 
 declare function glossary:valid-type($type as xs:string) as xs:string {
@@ -177,8 +170,11 @@ declare function glossary:glossary-terms($type as xs:string*, $lang as xs:string
 declare function glossary:matching-gloss($term as xs:string) as element()* {
     $glossary:translations//tei:back//tei:gloss/tei:term
         [not(@type eq 'definition')]
-        [ft:query-field(glossary:lang-field(common:valid-lang(@xml:lang)), glossary:lookup-query($term), glossary:lookup-options())]
-            /parent::tei:gloss
+        [ft:query-field(
+            glossary:lang-field(common:valid-lang(@xml:lang)),
+            glossary:lookup-query($term),
+            glossary:lookup-options()
+        )]/parent::tei:gloss
 };
 
 declare function glossary:glossary-items($term as xs:string) as element() {

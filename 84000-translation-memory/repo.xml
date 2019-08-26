@@ -3,12 +3,14 @@
     <description>84000 Translation Memory</description>
     <author>84000 Translating the words of the Buddha</author>
     <website>http://84000.co</website>
-    <status>alpha</status>
+    <status>beta</status>
     <license>GNU-LGPL</license>
     <copyright>true</copyright>
     <type>application</type>
     <target>84000-translation-memory</target>
-    <prepare>pre-install.xql</prepare>
-    <finish/>
-    <permissions user="admin" group="translation-memory" mode="rwxr-x---"/>
+    <prepare/>
+    <finish>post-install.xql</finish>
+    <permissions xmlns:repo="http://exist-db.org/xquery/repo" password="" user="admin" group="translation-memory" mode="rw-r--r--"/>
+    
+
 </meta>

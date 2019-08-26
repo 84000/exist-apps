@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<package xmlns="http://expath.org/ns/pkg" name="http://translation-memory.84000.co" abbrev="84000-translation-memory" version="1.1.5" spec="1.0">
+<package xmlns="http://expath.org/ns/pkg" name="http://read.84000.co/translation-memory" abbrev="84000-translation-memory" version="1.2.2" spec="1.0">
     <title>84000 Translation Memory</title>
+    <home>http://translation-memory.84000-translate.org</home>
     <dependency package="http://read.84000.co/reading-room"/>
-    <dependency package="http://read.84000.co/data"/>
 </package>

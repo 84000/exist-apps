@@ -9,6 +9,7 @@
     <type>application</type>
     <target>84000-reading-room</target>
     <prepare>pre-install.xql</prepare>
-    <finish/>
-    <permissions xmlns:repo="http://exist-db.org/xquery/repo" password="" user="admin" group="dba" mode="rw-r--r--"/>
+    <finish>post-install.xql</finish>
+    <permissions xmlns:repo="http://exist-db.org/xquery/repo" password="" user="admin" group="reading-room" mode="rw-r--r--"/>
+
 </meta>

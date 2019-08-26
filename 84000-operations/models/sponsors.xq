@@ -25,6 +25,6 @@ return
         'operations', 
         (
             <request xmlns="http://read.84000.co/ns/1.0" include-acknowledgements="{ $include-acknowledgements }"/>,
-            sponsors:sponsors('all', $include-acknowledgements, false())
+            sponsors:sponsors('all', $include-acknowledgements, true())
         )
     )

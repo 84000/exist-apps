@@ -2,13 +2,13 @@ xquery version "3.1";
 
 module namespace sponsors="http://read.84000.co/sponsors";
 
+declare namespace m="http://read.84000.co/ns/1.0";
+declare namespace tei="http://www.tei-c.org/ns/1.0";
+
 import module namespace common="http://read.84000.co/common" at "common.xql";
 import module namespace tei-content="http://read.84000.co/tei-content" at "tei-content.xql";
 import module namespace translation="http://read.84000.co/translation" at "translation.xql";
 import module namespace sponsorship="http://read.84000.co/sponsorship" at "sponsorship.xql";
-
-declare namespace m="http://read.84000.co/ns/1.0";
-declare namespace tei="http://www.tei-c.org/ns/1.0";
 
 declare variable $sponsors:sponsors := doc(concat($common:data-path, '/operations/sponsors.xml'));
 declare variable $sponsors:texts := collection($common:translations-path);
@@ -129,7 +129,7 @@ declare function sponsors:update($sponsor as node()?) as xs:string {
                     ()
             }
             {
-                for $type in ('founding', 'matching', 'sutra')
+                for $type in ('founding', 'matching-funds', 'sutra')
                 return
                     if(request:get-parameter(concat($type, '-type'), '')) then
                         <type id="{ $type }"/>

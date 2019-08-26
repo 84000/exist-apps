@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <meta xmlns="http://exist-db.org/xquery/repo">
-    <description>84000 Utilities</description>
+    <description>84000 Translators Tools</description>
     <author>84000 Translating the words of the Buddha</author>
-    <website>http://84000-translate.org</website>
-    <status>alpha</status>
+    <website>http://84000.co</website>
+    <status>stable</status>
     <license>GNU-LGPL</license>
     <copyright>true</copyright>
     <type>application</type>
     <target>84000-translator-tools</target>
-    <prepare>pre-install.xql</prepare>
-    <finish/>
-    <permissions user="admin" group="translator-tools" mode="rwxr-x---"/>
+    <prepare/>
+    <finish>post-install.xql</finish>
+    <permissions xmlns:repo="http://exist-db.org/xquery/repo" password="" user="admin" group="translator-tools" mode="rw-r--r--"/>
 </meta>

@@ -4,9 +4,11 @@ module namespace deploy="http://read.84000.co/deploy";
 
 declare namespace m="http://read.84000.co/ns/1.0";
 declare namespace file="http://exist-db.org/xquery/file";
+declare namespace expath="http://expath.org/ns/pkg";
 
-import module namespace common="http://read.84000.co/common" at "../../84000-reading-room/modules/common.xql";
+import module namespace common="http://read.84000.co/common" at "common.xql";
 import module namespace repair="http://exist-db.org/xquery/repo/repair" at "resource:org/exist/xquery/modules/expathrepo/repair.xql";
+import module namespace dbutil="http://exist-db.org/xquery/dbutil";
 
 declare variable $deploy:snapshot-conf := $common:environment//m:snapshot-conf;
 declare variable $deploy:deployment-conf := $common:environment//m:deployment-conf;
@@ -93,50 +95,15 @@ declare function deploy:deploy-apps($admin-password as xs:string, $commit-msg as
     
     (: Sync app :)
     let $sync :=
-        if($repo-path and $exist-path and $admin-password-correct) then
-            if($action eq 'push') then
-                (
-                    for $push-collection in $deploy:deployment-conf/m:apps/m:app/@collection
-                        (: Sync files with the file system :)
-                        let $file-sync := 
-                            file:sync(
-                               concat('/db/apps/', $push-collection), 
-                               concat('/', $repo-path, '/', $push-collection), 
-                               ()
-                            )
-                    return
-                    (
-                        $file-sync,
-                        (: If files were updated then create a new zip of the app :)
-                        if(count($file-sync//file:update) gt 0) then
-                            process:execute(
-                                ('bin/backup.sh', '-u', 'admin', '-p', $admin-password, '-b', concat('/db/apps/', $push-collection), '-d', concat('/', $repo-path, '/', $push-collection, '/zip/', $push-collection, '.zip')), 
-                                $exist-options
-                            )
-                        else
-                            ()
-                    )
+        if($repo-path and $admin-password-correct and $action eq 'push') then
+            (: Sync files with the file system :)
+            for $push-collection in $deploy:deployment-conf/m:apps/m:app/@collection
+            return
+                file:sync(
+                   concat('/db/apps/', $push-collection), 
+                   concat('/', $repo-path, '/', $push-collection), 
+                   ()
                 )
-            else if($action eq 'pull' and $pull-collection) then
-                let $git-pull := deploy:git-pull($git-options)
-                let $restore :=
-                    process:execute(
-                        ('bin/backup.sh', '-u', 'admin', '-p', $admin-password, '-P', $admin-password, '-r', concat('/', $repo-path, '/', $pull-collection, '/zip/', $pull-collection, '.zip')),
-                        $exist-options
-                    )
-                let $clean-up := 
-                    (
-                        repair:clean-all(),
-                        repair:repair()
-                    )
-                return
-                    (
-                        $git-pull,
-                        $restore,
-                        $clean-up
-                    )
-            else
-                ()
         else
             ()
     
@@ -148,8 +115,13 @@ declare function deploy:deploy-apps($admin-password as xs:string, $commit-msg as
             }
             </sync>
             {
-                if($action eq 'push' and  $sync and $git-options) then
-                    deploy:git-push('--all', $commit-msg, $git-options)
+                if($admin-password-correct) then
+                    if($action eq 'push' and  $sync and $git-options) then
+                        deploy:git-push('--all', $commit-msg, $git-options)
+                    else if($action eq 'pull' and $pull-collection) then
+                        deploy:git-pull($git-options)
+                    else
+                        ()
                 else
                     ()
             }
@@ -192,5 +164,29 @@ declare function deploy:git-pull($options as element()) as node()*{
     }
     </execute>
     
+};
+
+declare function deploy:create-package($app-collection as xs:string) {
+    let $entries :=
+        dbutil:scan(xs:anyURI($app-collection), function($collection as xs:anyURI?, $resource as xs:anyURI?) {
+            let $resource-relative-path := substring-after($resource, $app-collection || "/")
+            let $collection-relative-path := substring-after($collection, $app-collection || "/")
+            return
+                if (empty($resource)) then
+                    (: no need to create a collection entry for the app's root directory :)
+                    if ($collection-relative-path eq "") then
+                        ()
+                    else
+                        <entry type="collection" name="{$collection-relative-path}"/>
+                else if (util:binary-doc-available($resource)) then
+                    <entry type="uri" name="{$resource-relative-path}">{$resource}</entry>
+                else
+                    <entry type="xml" name="{$resource-relative-path}">{
+                        util:declare-option("exist:serialize", "expand-xincludes=no"),
+                        doc($resource)
+                    }</entry>
+        })
+    return 
+        compression:zip($entries, true())
 };
 

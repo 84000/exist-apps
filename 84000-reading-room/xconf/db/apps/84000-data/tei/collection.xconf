@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<collection xmlns="http://exist-db.org/collection-config/1.0">
+    
+    <triggers>
+        <trigger event="update" class="org.exist.collections.triggers.XQueryTrigger">
+            <parameter name="url" value="xmldb:exist:///db/apps/84000-reading-room/triggers.xql"/>
+        </trigger>
+    </triggers>
+    
+    <index xmlns:tei="http://www.tei-c.org/ns/1.0">
+        <!-- Lucene indexes -->
+        <lucene diacritics="no">
+            <!-- 
+            <analyzer id="tws" class="org.tbrc.lucene.analysis.TibWhitespaceAnalyzer"/>
+            <analyzer id="ws" class="org.apache.lucene.analysis.core.WhitespaceAnalyzer"/>
+            -->
+            <analyzer id="no-stopwords" class="org.apache.lucene.analysis.standard.StandardAnalyzer">
+                <param name="stopwords" type="org.apache.lucene.analysis.util.CharArraySet"/>
+            </analyzer>
+            <text match="//tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:title" boost="2.0"/>
+            <text match="//tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl" boost="2.0">
+                <inline qname="tei:ref"/>
+                <ignore qname="tei:biblScope"/>
+                <author qname="tei:biblScope"/>
+            </text>
+            <text match="//tei:teiHeader/tei:fileDesc/tei:sourceDesc//tei:biblScope"/>
+            <text match="//tei:text//tei:head" boost="1.5"/>
+            <text match="//tei:text//tei:p">
+                <inline qname="tei:note"/>
+                <inline qname="tei:title"/>
+                <inline qname="tei:foreign"/>
+            </text>
+            <text match="//tei:text//tei:lg">
+                <inline qname="tei:l"/>
+                <inline qname="tei:gloss"/>
+                <inline qname="tei:note"/>
+                <inline qname="tei:title"/>
+                <inline qname="tei:foreign"/>
+            </text>
+            <text match="//tei:text//tei:ab">
+                <inline qname="tei:note"/>
+                <inline qname="tei:title"/>
+                <inline qname="tei:foreign"/>
+            </text>
+            <text match="//tei:text//tei:trailer">
+                <inline qname="tei:note"/>
+                <inline qname="tei:title"/>
+                <inline qname="tei:foreign"/>
+            </text>
+            <text match="//tei:back//tei:bibl">
+                <inline qname="tei:title"/>
+                <inline qname="tei:foreign"/>
+            </text>
+            <text match="//tei:back//tei:gloss">
+                <inline qname="tei:term"/>
+                <inline qname="tei:title"/>
+                <inline qname="tei:foreign"/>
+            </text>
+            <text match="//tei:back//tei:gloss/tei:term" analyzer="no-stopwords" field="full-term"/>
+            <text match="//tei:back//tei:gloss/tei:term"/>
+        </lucene>
+        
+        <!-- Range indexes -->
+        <range>
+            
+            <create qname="tei:idno">
+                <field name="tei-id" match="@xml:id" type="xs:string"/>
+            </create>
+            
+            <create qname="tei:idno">
+                <field name="parent-id" match="@parent-id" type="xs:string"/>
+            </create>
+            
+            <create qname="tei:idno">
+                <field name="source-id" match="@source-id" type="xs:string"/>
+            </create>
+            
+            <create qname="tei:bibl">
+                <field name="translation-key" match="@key" type="xs:string"/>
+            </create>
+            
+            <create qname="tei:bibl">
+                <field name="translation-type" match="@type" type="xs:string"/>
+            </create>
+            
+            <create qname="tei:publicationStmt">
+                <field name="translation-status" match="@status" type="xs:string"/>
+            </create>
+            
+            <create qname="tei:fileDesc">
+                <field name="section-type" match="@type" type="xs:string"/>
+            </create>
+            
+            <!-- 
+            <create qname="tei:div">
+                <field name="div-type" match="@type" type="xs:string"/>
+            </create>
+            
+            <create qname="tei:head">
+                <field name="head-type" match="@type" type="xs:string"/>
+            </create>
+            -->
+            
+            <create qname="tei:sponsor">
+                <field name="sponsor-id" match="@ref" type="xs:string"/>
+            </create>
+            
+            <create qname="tei:author">
+                <field name="author-id" match="@ref" type="xs:string"/>
+            </create>
+            
+            <create qname="tei:editor">
+                <field name="editor-id" match="@ref" type="xs:string"/>
+            </create>
+            
+            <create qname="tei:consultant">
+                <field name="consultant-id" match="@ref" type="xs:string"/>
+            </create>
+            
+            <create qname="tei:gloss">
+                <field name="gloss-type" match="@type" type="xs:string"/>
+            </create>
+            
+            <create qname="tei:term">
+                <field name="term-lang" match="@xml:lang" type="xs:string"/>
+            </create>
+            
+            <create qname="tei:term">
+                <field name="term-type" match="@type" type="xs:string"/>
+            </create>
+            
+            <create qname="tei:term" type="xs:string"/>
+            <!--  -->
+        </range>
+        
+    </index>
+</collection>

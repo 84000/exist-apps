@@ -1,5 +1,5 @@
-# 84000 Utilities
+# 84000 Translator Tools
 
-Utilities for data management and testing of 84000 data.
+Tools for 84000 translators.
 
 You can find out more about eXist at [exist-db.org](http://exist-db.org).

@@ -76,7 +76,7 @@
                                             </span>
                                         </div>
                                         <div class="col-sm-3 text-right">
-                                            <xsl:if test="m:type[@id eq 'matching']">
+                                            <xsl:if test="m:type[@id eq 'matching-funds']">
                                                 <span class="label label-danger">
                                                     <xsl:value-of select="'Matching'"/>
                                                 </span>

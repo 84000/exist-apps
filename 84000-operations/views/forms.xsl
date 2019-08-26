@@ -231,7 +231,9 @@
                                 <div class="col-sm-9">
                                     <select class="form-control">
                                         <xsl:attribute name="name" select="'translator-team-id'"/>
-                                        <option value=""/>
+                                        <option value="">
+                                            <xsl:value-of select="'[none]'"/>
+                                        </option>
                                         <xsl:for-each select="/m:response/m:contributor-teams/m:team">
                                             <option>
                                                 <xsl:attribute name="value" select="concat('contributors.xml#', @xml:id)"/>
@@ -409,7 +411,9 @@
         <xsl:variable name="other-contributors" select="/m:response/m:contributor-persons/m:person[not(m:team[@id = $translator-team-id])]"/>
         <select class="form-control">
             <xsl:attribute name="name" select="$control-name"/>
-            <option value=""/>
+            <option value="">
+                <xsl:value-of select="'[none]'"/>
+            </option>
             <xsl:if test="$team-contributors">
                 <xsl:for-each select="$team-contributors">
                     <option>
@@ -983,7 +987,9 @@
                 <div class="col-sm-5">
                     <select class="form-control">
                         <xsl:attribute name="name" select="concat('sponsor-id-', position())"/>
-                        <option value=""/>
+                        <option value="">
+                            <xsl:value-of select="'[none]'"/>
+                        </option>
                         <xsl:for-each select="$all-sponsors">
                             <option>
                                 <xsl:attribute name="value" select="concat('sponsors.xml#', @xml:id)"/>
@@ -1175,7 +1181,9 @@
                 <select class="form-control">
                     <xsl:attribute name="name" select="$name"/>
                     <xsl:attribute name="id" select="$name"/>
-                    <option value=""/>
+                    <option value="">
+                        <xsl:value-of select="'[none]'"/>
+                    </option>
                     <xsl:for-each select="$options">
                         <xsl:variable name="option-id" select="(@xml:id, @id)[1]"/>
                         <xsl:variable name="text" select="if (m:name | m:label) then (m:name | m:label)[1] else text()"/>

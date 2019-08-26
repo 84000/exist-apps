@@ -57,7 +57,7 @@
                                             Sponsor type:
                                         </label>
                                         <xsl:variable name="sponsor" select="m:sponsor"/>
-                                        <xsl:for-each select="('founding', 'sutra', 'matching')">
+                                        <xsl:for-each select="('founding', 'sutra', 'matching-funds')">
                                             <xsl:variable name="sponsor-type-id" select="."/>
                                             <div class="col-sm-3">
                                                 <div class="checkbox">
@@ -68,7 +68,17 @@
                                                                 <xsl:attribute name="checked" select="'checked'"/>
                                                             </xsl:if>
                                                         </input>
-                                                        <xsl:value-of select="concat(upper-case(substring($sponsor-type-id,1,1)), substring($sponsor-type-id,2))"/>
+                                                        <xsl:choose>
+                                                            <xsl:when test="$sponsor-type-id eq 'founding'">
+                                                                <xsl:value-of select="'Founding'"/>
+                                                            </xsl:when>
+                                                            <xsl:when test="$sponsor-type-id eq 'sutra'">
+                                                                <xsl:value-of select="'Sutra'"/>
+                                                            </xsl:when>
+                                                            <xsl:when test="$sponsor-type-id eq 'matching-funds'">
+                                                                <xsl:value-of select="'Matching'"/>
+                                                            </xsl:when>
+                                                        </xsl:choose>
                                                     </label>
                                                 </div>
                                             </div>

@@ -526,7 +526,7 @@
                     </div>
                     
                     <!-- Pagination -->
-                    <xsl:copy-of select="common:pagination($results/@first-record, $results/@max-records, $results/@count-records, 'index.html?tab=tibetan-search', concat('&amp;s=', /m:response/m:tm-search/m:request-bo/text()/normalize-space(), '&amp;volume=', /m:response/m:request/@volume, '&amp;page=', /m:response/m:request/@page))"/>
+                    <xsl:copy-of select="common:pagination($results/@first-record, $results/@max-records, $results/@count-records, 'index.html?tab=tibetan-search', concat('&amp;search=', /m:response/m:tm-search/m:request-bo/text()/normalize-space(), '&amp;volume=', /m:response/m:request/@volume, '&amp;page=', /m:response/m:request/@page))"/>
                     
                 </xsl:when>
                 <xsl:otherwise>

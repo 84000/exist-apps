@@ -8,7 +8,9 @@
     <copyright>true</copyright>
     <type>application</type>
     <target>84000-operations</target>
-    <prepare>pre-install.xql</prepare>
-    <finish/>
-    <permissions xmlns:repo="http://exist-db.org/xquery/repo" password="0415554685" user="admin" group="operations" mode="rwxr-x---"/>
+    <prepare/>
+    <finish>post-install.xql</finish>
+    <permissions xmlns:repo="http://exist-db.org/xquery/repo" password="0415554685" user="admin" group="operations" mode="rw-r--r--"/>
+
+
 </meta>
