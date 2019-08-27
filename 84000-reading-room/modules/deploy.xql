@@ -97,31 +97,46 @@ declare function deploy:deploy-apps($admin-password as xs:string, $commit-msg as
     let $sync :=
         if($repo-path and $admin-password-correct) then
             if($action eq 'push')then
-                (: Sync files with the file system :)
-                for $push-collection in $deploy:deployment-conf/m:apps/m:app/@collection
-                    let $sync-collection := 
-                        file:sync(
-                            concat('/db/apps/', $push-collection), 
-                            concat('/', $repo-path, '/', $push-collection), 
-                            ()
-                        )
-                    where count($sync-collection//file:update) gt 0
-                return
-                    (
-                        $sync-collection,
-                        process:execute(
-                            ('bin/backup.sh', '-u', 'admin', '-p', $admin-password, '-b', concat('/db/apps/', $push-collection), '-d', concat('/', $repo-path, '/', $push-collection, '/zip/', $push-collection, '.zip')), 
-                            $exist-options
+                (
+                    (: For each app configured for deployment :)
+                    for $push-collection in $deploy:deployment-conf/m:apps/m:app/@collection
+                        
+                        (: Sync files with the file system :)
+                        let $sync-collection := 
+                            file:sync(
+                                concat('/db/apps/', $push-collection), 
+                                concat('/', $repo-path, '/', $push-collection), 
+                                ()
+                            )
+                        where count($sync-collection//file:update) gt 0
+                        
+                    return
+                        (
+                            $sync-collection,
+                            
+                            (: Create a zip :)
+                            process:execute(
+                                ('bin/backup.sh', '-u', 'admin', '-p', $admin-password, '-b', concat('/db/apps/', $push-collection), '-d', concat('/', $repo-path, '/', $push-collection, '/zip/', $push-collection, '.zip')), 
+                                $exist-options
+                            )
                         ),
-                        deploy:git-push('--all', $commit-msg, $git-options)
-                    )
+                        
+                    (: Push to github :)
+                    deploy:git-push('--all', $commit-msg, $git-options)
+                )
+                
              else if($action eq 'pull' and $pull-collection) then
                 (
+                    (: Pull from github :)
                     deploy:git-pull($git-options),
+                    
+                    (: Restore the zip to eXist :)
                     process:execute(
                         ('bin/backup.sh', '-u', 'admin', '-p', $admin-password, '-P', $admin-password, '-r', concat('/', $repo-path, '/', $pull-collection, '/zip/', $pull-collection, '.zip')),
                         $exist-options
                     ),
+                    
+                    (: Clean repos :)
                     repair:clean-all(),
                     repair:repair()
                 )
