@@ -460,16 +460,21 @@
             
             <!-- Row headers -->
             <div class="row table-headers">
-                <div class="hidden-xs hidden-sm col-md-1">Toh</div>
-                <div class="col-md-8 col-xs-4">
+                <div class="col-md-1 visible-md">
+                    <xsl:value-of select="'Toh'"/>
+                </div>
+                <div class="col-md-8 visible-md">
                     <xsl:value-of select="'Title'"/>
                 </div>
-                <div class="col-md-3 col-xs-8 col-sm-text-right">
+                <div class="col-xs-4 visible-xs visible-sm">
+                    <xsl:value-of select="'Text'"/>
+                </div>
+                <div class="col-xs-8 col-md-3">
                     <!-- Filter / Sort options -->
                     <xsl:choose>
                         <xsl:when test="lower-case($section/@id) eq 'all-translated'">
                             <!-- Form to sort translated -->
-                            <form method="post" class="filter-form">
+                            <form method="post" class="filter-form col-sm-pull-right">
                                 <label class="sr-only">
                                     <xsl:value-of select="'Sort translations'"/>
                                 </label>
@@ -491,7 +496,7 @@
                         </xsl:when>
                         <xsl:otherwise>
                             <!-- Form to filter translated -->
-                            <form method="post" class="filter-form">
+                            <form method="post" class="filter-form col-sm-pull-right">
                                 <div class="checkbox">
                                     <label>
                                         <input type="checkbox" name="published-only" value="1">
@@ -535,7 +540,7 @@
                             <xsl:attribute name="id" select="@resource-id"/>
                             
                             <!-- Toh number -->
-                            <div class="col-md-1">
+                            <div class="col-md-2 col-lg-1">
                                 
                                 <xsl:value-of select="m:toh/m:full"/>
                                 
@@ -544,11 +549,15 @@
                                     <xsl:value-of select="concat(' / ', m:base)"/>
                                 </xsl:for-each>
                                 
+                                <span class="visible-xs-inline visible-sm-inline col-sm-pull-right">
+                                    <xsl:copy-of select="common:translation-status(@status)"/>
+                                </span>
+                                
                                 <hr class="visible-xs-block visible-sm-block"/>
                                 
                             </div>
                             
-                            <div class="col-md-8">
+                            <div class="col-md-6 col-lg-8">
                                 
                                 <!-- English title -->
                                 <h4 class="title-en">
@@ -661,61 +670,67 @@
                             </div>
                             
                             <!-- Download options -->
-                            <div class="col-md-3 position-static">
+                            <div class="col-md-4 col-lg-3">
                                 
-                                <div class="col-sm-top-right">
-                                    <xsl:choose>
-                                        <xsl:when test="@status eq '1' and m:translation/m:publication-date/text()">
-                                            <span class="small text-muted">
+                                <xsl:choose>
+                                    <xsl:when test="@status eq '1'">
+                                        
+                                        <hr class="visible-xs visible-sm sml-margin"/>
+                                        
+                                        <xsl:if test="m:translation/m:publication-date/text()">
+                                            <div class="small sml-margin bottom">
                                                 <xsl:value-of select="concat('Published ', format-date(m:translation/m:publication-date, '[FNn,*-3], [D1o] [MNn,*-3] [Y]'))"/>
-                                            </span>
-                                        </xsl:when>
-                                        <xsl:otherwise>
-                                            <xsl:copy-of select="common:translation-status(@status)"/>
-                                        </xsl:otherwise>
-                                    </xsl:choose>
-                                </div>
-                                
-                                <xsl:if test="@status eq '1'">
-                                    
-                                    <hr class="visible-xs-block visible-sm-block"/>
-                                    
-                                    <ul class="translation-options">
-                                        <li>
-                                            <a>
-                                                <xsl:attribute name="href" select="common:internal-link(concat('/translation/', m:source/@key, '.html'), (), '', /m:response/@lang)"/>
-                                                <i class="fa fa-laptop"/>
-                                                <xsl:value-of select="'Read online'"/>
-                                            </a>
-                                        </li>
-                                        <xsl:for-each select="m:downloads/m:download">
-                                            <li>
-                                                <a target="_blank">
-                                                    <xsl:attribute name="title" select="normalize-space(text())"/>
-                                                    <xsl:attribute name="href" select="@url"/>
-                                                    <xsl:attribute name="download" select="@filename"/>
-                                                    <xsl:attribute name="class" select="'log-click'"/>
-                                                    <i>
-                                                        <xsl:attribute name="class" select="concat('fa ', @fa-icon-class)"/>
-                                                    </i>
-                                                    <xsl:value-of select="normalize-space(text())"/>
-                                                </a>
-                                            </li>
-                                        </xsl:for-each>
-                                        <xsl:if test="m:downloads/m:download[@type = ('epub', 'azw3')]">
-                                            <li>
-                                                <a data-toggle="modal" href="#ebook-help" data-target="#ebook-help" class="text-warning">
-                                                    <i class="fa fa-info-circle" aria-hidden="true"/>
-                                                    <span class="small">
-                                                        <xsl:call-template name="local-text">
-                                                            <xsl:with-param name="local-key" select="'ebook-help-title'"/>
-                                                        </xsl:call-template>
-                                                    </span>
-                                                </a>
-                                            </li>
+                                            </div>
                                         </xsl:if>
-                                    </ul>
-                                </xsl:if>
+                                        
+                                        <ul class="translation-options">
+                                            <li>
+                                                <a>
+                                                    <xsl:attribute name="href" select="common:internal-link(concat('/translation/', m:source/@key, '.html'), (), '', /m:response/@lang)"/>
+                                                    <i class="fa fa-laptop"/>
+                                                    <xsl:value-of select="'Read online'"/>
+                                                </a>
+                                            </li>
+                                            <xsl:for-each select="m:downloads/m:download">
+                                                <li>
+                                                    <a target="_blank">
+                                                        <xsl:attribute name="title" select="normalize-space(text())"/>
+                                                        <xsl:attribute name="href" select="@url"/>
+                                                        <xsl:attribute name="download" select="@filename"/>
+                                                        <xsl:attribute name="class" select="'log-click'"/>
+                                                        <i>
+                                                            <xsl:attribute name="class" select="concat('fa ', @fa-icon-class)"/>
+                                                        </i>
+                                                        <xsl:value-of select="normalize-space(text())"/>
+                                                    </a>
+                                                </li>
+                                            </xsl:for-each>
+                                            <xsl:if test="m:downloads/m:download[@type = ('epub', 'azw3')]">
+                                                <li>
+                                                    <a data-toggle="modal" href="#ebook-help" data-target="#ebook-help" class="text-warning">
+                                                        <i class="fa fa-info-circle" aria-hidden="true"/>
+                                                        <span class="small">
+                                                            <xsl:call-template name="local-text">
+                                                                <xsl:with-param name="local-key" select="'ebook-help-title'"/>
+                                                            </xsl:call-template>
+                                                        </span>
+                                                    </a>
+                                                </li>
+                                            </xsl:if>
+                                        </ul>
+                                        
+                                    </xsl:when>
+                                    <xsl:when test="@status gt '0'">
+                                        <div class="small sml-margin bottom text-warning visible-md">
+                                            <xsl:value-of select="'In progress'"/>
+                                        </div>
+                                    </xsl:when>
+                                    <xsl:otherwise>
+                                        <div class="small sml-margin bottom text-muted visible-md">
+                                            <xsl:value-of select="'Not Started'"/>
+                                        </div>
+                                    </xsl:otherwise>
+                                </xsl:choose>
                                 
                             </div>
                         </div>
