@@ -261,6 +261,7 @@ declare function translations:filtered-texts($section as xs:string, $status as x
 declare function translations:filtered-text($tei as element(), $toh-key as xs:string?, $include-sponsors as xs:boolean, $include-downloads as xs:string, $include-folios as xs:boolean) as element(){
     
     let $text-id := tei-content:id($tei)
+    let $lang := request:get-parameter('lang', 'en')
     
     return
         <text xmlns="http://read.84000.co/ns/1.0" 
@@ -277,7 +278,7 @@ declare function translations:filtered-text($tei as element(), $toh-key as xs:st
             { tei-content:source-bibl($tei, $toh-key) }
             { translation:location($tei, $toh-key) }
             { translation:translation($tei) }
-            { translation:summary($tei) }
+            { translation:summary($tei, $lang) }
             { sponsorship:text-status($text-id, false()) }
             { 
                 if($include-sponsors) then
@@ -355,8 +356,9 @@ declare function translations:translation-status-texts($status as xs:string*) as
     <translation-status-texts xmlns="http://read.84000.co/ns/1.0">
     {
         for $tei in $tei-content:translations-collection//tei:TEI[tei:teiHeader/tei:fileDesc[tei:publicationStmt/@status = $status]]
+            for $toh-key in $tei//tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl/@key
         return
-            translations:filtered-text($tei, '', false(), '', false())
+            translations:filtered-text($tei, $toh-key, false(), '', false())
     }
     </translation-status-texts>
 

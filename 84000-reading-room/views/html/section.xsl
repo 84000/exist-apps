@@ -464,7 +464,7 @@
                 <div class="col-md-8 col-xs-4">
                     <xsl:value-of select="'Title'"/>
                 </div>
-                <div class="col-md-3 col-xs-8">
+                <div class="col-md-3 col-xs-8 col-sm-text-right">
                     <!-- Filter / Sort options -->
                     <xsl:choose>
                         <xsl:when test="lower-case($section/@id) eq 'all-translated'">
@@ -658,14 +658,12 @@
                                     
                                 </xsl:if>
                                 
-                                <hr class="visible-xs-block visible-sm-block"/>
-                                
                             </div>
                             
                             <!-- Download options -->
                             <div class="col-md-3 position-static">
                                 
-                                <div class="translation-status">
+                                <div class="col-sm-top-right">
                                     <xsl:choose>
                                         <xsl:when test="@status eq '1' and m:translation/m:publication-date/text()">
                                             <span class="small text-muted">
@@ -679,6 +677,8 @@
                                 </div>
                                 
                                 <xsl:if test="@status eq '1'">
+                                    
+                                    <hr class="visible-xs-block visible-sm-block"/>
                                     
                                     <ul class="translation-options">
                                         <li>

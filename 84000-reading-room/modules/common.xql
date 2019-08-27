@@ -369,6 +369,8 @@ declare function common:valid-lang($lang) as xs:string {
         'Sa-Ltn'
     else if(lower-case($lang) eq 'bo') then
         'bo'
+    else if(lower-case($lang) eq 'zh') then
+        'zh'
     else if(lower-case($lang) eq 'en') then
         'en'
     else

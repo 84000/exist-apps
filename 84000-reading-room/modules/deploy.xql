@@ -131,7 +131,7 @@ declare function deploy:deploy-apps($admin-password as xs:string, $commit-msg as
     
     return 
         <result xmlns="http://read.84000.co/ns/1.0">
-            <deployment  action="{ $action }"admin-password-correct="{ $admin-password-correct }">
+            <deployment  action="{ $action }" admin-password-correct="{ $admin-password-correct }">
             {
                 $sync
             }

@@ -91,43 +91,54 @@
                 </div>
             </div>
             
-            <ul class="nav nav-tabs" role="tablist" id="progress-tabs">
-                <li role="presentation" class="active">
-                    <a href="#translations-published" role="tab" data-toggle="tab" aria-controls="translations-published">
-                        <xsl:value-of select="'Published Translations'"/>
-                    </a>
-                </li>
-                <li role="presentation">
-                    <a href="#translations-translated" role="tab" data-toggle="tab" aria-controls="translations-translated">
-                        <xsl:value-of select="'Translations Awaiting Publication'"/>
-                    </a>
-                </li>
-                <li role="presentation">
-                    <a href="#translations-in-translation" role="tab" data-toggle="tab" aria-controls="translations-in-translation">
-                        <xsl:value-of select="'Translations In Progress'"/>
-                    </a>
-                </li>
-            </ul>
+            <hr class="no-margin"/>
             
-            <div class="tab-content">
+            <div id="accordion" class="list-group accordion" role="tablist" aria-multiselectable="false">
                 
-                <xsl:call-template name="tab-list">
+                <xsl:call-template name="expand-item">
                     <xsl:with-param name="id" select="'translations-published'"/>
-                    <xsl:with-param name="texts" select="m:translations-published/m:translation-status-texts/m:text"/>
-                    <xsl:with-param name="active" select="true()"/>
+                    <xsl:with-param name="title">
+                        <xsl:call-template name="local-text">
+                            <xsl:with-param name="local-key" select="'translations-published-label'"/>
+                        </xsl:call-template>
+                    </xsl:with-param>
+                    <xsl:with-param name="content">
+                        <xsl:call-template name="text-list">
+                            <xsl:with-param name="texts" select="m:translations-published/m:translation-status-texts/m:text"/>
+                        </xsl:call-template>
+                    </xsl:with-param>
                 </xsl:call-template>
                 
-                <xsl:call-template name="tab-list">
+                <xsl:call-template name="expand-item">
                     <xsl:with-param name="id" select="'translations-translated'"/>
-                    <xsl:with-param name="texts" select="m:translations-translated/m:translation-status-texts/m:text"/>
+                    <xsl:with-param name="title">
+                        <xsl:call-template name="local-text">
+                            <xsl:with-param name="local-key" select="'translations-awaiting-label'"/>
+                        </xsl:call-template>
+                    </xsl:with-param>
+                    <xsl:with-param name="content">
+                        <xsl:call-template name="text-list">
+                            <xsl:with-param name="texts" select="m:translations-translated/m:translation-status-texts/m:text"/>
+                        </xsl:call-template>
+                    </xsl:with-param>
                 </xsl:call-template>
                 
-                <xsl:call-template name="tab-list">
+                <xsl:call-template name="expand-item">
                     <xsl:with-param name="id" select="'translations-in-translation'"/>
-                    <xsl:with-param name="texts" select="m:translations-in-translation/m:translation-status-texts/m:text"/>
+                    <xsl:with-param name="title">
+                        <xsl:call-template name="local-text">
+                            <xsl:with-param name="local-key" select="'translations-remaining-label'"/>
+                        </xsl:call-template>
+                    </xsl:with-param>
+                    <xsl:with-param name="content">
+                        <xsl:call-template name="text-list">
+                            <xsl:with-param name="texts" select="m:translations-in-translation/m:translation-status-texts/m:text"/>
+                        </xsl:call-template>
+                    </xsl:with-param>
                 </xsl:call-template>
                 
             </div>
+            
         </xsl:variable>
         
         <xsl:call-template name="about">
@@ -155,9 +166,14 @@
                                     <xsl:with-param name="local-key" select="'column-toh-label'"/>
                                 </xsl:call-template>
                             </div>
-                            <div class="col-sm-10">
+                            <div class="col-xs-8 col-sm-10">
                                 <xsl:call-template name="local-text">
                                     <xsl:with-param name="local-key" select="'column-title-label'"/>
+                                </xsl:call-template>
+                            </div>
+                            <div class="col-xs-4 visible-xs text-right">
+                                <xsl:call-template name="local-text">
+                                    <xsl:with-param name="local-key" select="'column-status-label'"/>
                                 </xsl:call-template>
                             </div>
                         </div>
@@ -173,9 +189,13 @@
                                         
                                         <xsl:value-of select="m:toh/m:full"/>
                                         
-                                        <xsl:call-template name="status-label">
-                                            <xsl:with-param name="status-group" select="@status-group"/>
-                                        </xsl:call-template>
+                                        <div class="col-xs-top-right">
+                                            <xsl:call-template name="status-label">
+                                               <xsl:with-param name="status-group" select="@status-group"/>
+                                           </xsl:call-template>
+                                        </div>
+                                        
+                                        <hr class="visible-xs sml-margin"/>
                                         
                                     </div>
                                     <div class="col-sm-8">
@@ -194,9 +214,14 @@
                                         
                                     </div>
                                     <div class="col-sm-2">
-                                        
+                                        <hr class="visible-xs sml-margin"/>
                                         <xsl:value-of select="format-number(m:location/@count-pages/number(), '#,###')"/>
-                                        
+                                        <span>
+                                            <xsl:value-of select="' '"/>
+                                            <xsl:call-template name="local-text">
+                                                <xsl:with-param name="local-key" select="'pages-label'"/>
+                                            </xsl:call-template>
+                                        </span>
                                     </div>
                                 </div>
                             </xsl:for-each>

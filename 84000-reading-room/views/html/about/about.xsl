@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" xmlns:i18n="http://exist-db.org/xquery/i18n" version="2.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" version="2.0" exclude-result-prefixes="#all">
     
     <xsl:import href="../website-page.xsl"/>
     <xsl:import href="../../../xslt/tei-to-xhtml.xsl"/>
@@ -294,13 +294,11 @@
         <xsl:param name="status-group" as="xs:string" required="yes"/>
         <xsl:choose>
             <xsl:when test="$status-group eq 'published'">
-                <br/>
                 <label class="label label-success">
                     <xsl:value-of select="'Published'"/>
                 </label>
             </xsl:when>
             <xsl:when test="$status-group = ('translated', 'in-translation')">
-                <br/>
                 <label class="label label-warning">
                     <xsl:value-of select="'In-progress'"/>
                 </label>
@@ -337,6 +335,318 @@
             </div>
             
         </xsl:if>
+    </xsl:template>
+    
+    <xsl:template name="expand-item">
+        
+        <xsl:param name="id" required="yes" as="xs:string"/>
+        <xsl:param name="title" required="yes" as="xs:string"/>
+        <xsl:param name="show-count" required="no" as="xs:integer?"/>
+        <xsl:param name="content" required="no" as="node()*"/>
+        
+        <div class="list-group-item">
+            
+            <div role="tab">
+                
+                <xsl:attribute name="id" select="concat($id, '-heading')"/>
+                
+                <a class="center-vertical full-width collapsed" role="button" data-toggle="collapse" data-parent="#accordion" aria-expanded="false">
+                    
+                    <xsl:attribute name="href" select="concat('#', $id, '-detail')"/>
+                    <xsl:attribute name="aria-controls" select="concat($id, '-detail')"/>
+                    
+                    <span>
+                        <span class="h4 list-group-item-heading">
+                            <xsl:value-of select="concat($title, ' ')"/>
+                            <xsl:if test="$show-count">
+                                <span class="badge badge-notification">
+                                    <xsl:value-of select="$show-count"/>
+                                </span>
+                            </xsl:if>
+                        </span>
+                    </span>
+                    
+                    <span class="text-right">
+                        <i class="fa fa-plus collapsed-show"/>
+                        <i class="fa fa-minus collapsed-hide"/>
+                    </span>
+                    
+                </a>
+            </div>
+            
+            <div class="panel-collapse collapse" role="tabpanel" aria-expanded="false">
+                
+                <xsl:attribute name="id" select="concat($id, '-detail')"/>
+                <xsl:attribute name="aria-labelledby" select="concat($id, '-heading')"/>
+                
+                <div class="panel-body no-padding">
+                    <xsl:copy-of select="$content"/>
+                </div>
+                
+            </div>
+            
+        </div>
+    </xsl:template>
+    
+    <xsl:template name="text-list">
+        
+        <xsl:param name="texts" required="yes" as="element()*"/>
+        <xsl:param name="grouping" required="no" as="xs:string?"/>
+        <xsl:param name="show-sponsorship" required="no" as="xs:boolean" select="false()"/>
+        <xsl:param name="show-sponsors" required="no" as="xs:boolean" select="false()"/>
+        
+        <xsl:choose>
+            <xsl:when test="count($texts)">
+                <div class="text-list">
+                    <div class="row table-headers">
+                        <div class="col-sm-2 hidden-xs">
+                            <xsl:call-template name="local-text">
+                                <xsl:with-param name="local-key" select="'column-toh-label'"/>
+                            </xsl:call-template>
+                        </div>
+                        <div class="col-sm-8 hidden-xs">
+                            <xsl:call-template name="local-text">
+                                <xsl:with-param name="local-key" select="'column-title-label'"/>
+                            </xsl:call-template>
+                        </div>
+                        <div class="col-sm-2 hidden-xs">
+                            <xsl:call-template name="local-text">
+                                <xsl:with-param name="local-key" select="'column-pages-label'"/>
+                            </xsl:call-template>
+                        </div>
+                        <div class="col-xs-8 visible-xs">
+                            <xsl:call-template name="local-text">
+                                <xsl:with-param name="local-key" select="'column-toh-label'"/>
+                            </xsl:call-template>
+                            <xsl:value-of select="' / '"/>
+                            <xsl:call-template name="local-text">
+                                <xsl:with-param name="local-key" select="'column-title-label'"/>
+                            </xsl:call-template>
+                        </div>
+                        <div class="col-xs-4 visible-xs text-right">
+                            <xsl:call-template name="local-text">
+                                <xsl:with-param name="local-key" select="'column-status-label'"/>
+                            </xsl:call-template>
+                        </div>
+                    </div>
+                    <div class="list-section">
+                        <xsl:for-each-group select="$texts" group-by="if($grouping eq 'sponsorship' and not(m:sponsorship-status/@project-id eq '')) then m:sponsorship-status/@project-id else if($grouping eq 'text') then @id else m:toh/@key">
+                            
+                            <xsl:sort select="number(m:toh/@number)"/>
+                            <xsl:sort select="m:toh/@letter"/>
+                            <xsl:sort select="number(m:toh/@chapter-number)"/>
+                            <xsl:sort select="m:toh/@chapter-letter"/>
+                            
+                            <div class="row list-item">
+                                <div class="col-sm-2 nowrap">
+                                    
+                                    <xsl:for-each select="current-group()">
+                                        <xsl:sort select="number(m:toh/@number)"/>
+                                        <xsl:if test="position() ne 1">
+                                            <br class="hidden-xs"/>+
+                                        </xsl:if>
+                                        <xsl:value-of select="m:toh/m:full"/>
+                                    </xsl:for-each>
+                                    
+                                    <br class="hidden-xs"/>
+                                    
+                                    <span class="col-xs-pull-right">
+                                        <xsl:call-template name="status-label">
+                                            <xsl:with-param name="status-group" select="@status-group"/>
+                                        </xsl:call-template>
+                                    </span>
+                                    
+                                    <hr class="visible-xs sml-margin"/>
+                                    
+                                </div>
+                                <div class="col-sm-8">
+                                    
+                                    <xsl:for-each select="current-group()">
+                                        <xsl:if test="position() ne 1">
+                                            <hr/>
+                                        </xsl:if>
+                                        
+                                        <xsl:call-template name="text-list-title">
+                                            <xsl:with-param name="text" select="."/>
+                                        </xsl:call-template>
+                                        
+                                        <xsl:call-template name="text-list-subtitles">
+                                            <xsl:with-param name="text" select="."/>
+                                        </xsl:call-template>
+                                        
+                                        <xsl:call-template name="expandable-summary">
+                                            <xsl:with-param name="text" select="."/>
+                                        </xsl:call-template>
+                                        
+                                    </xsl:for-each>
+                                    
+                                    <xsl:if test="$show-sponsorship">
+                                        <xsl:call-template name="sponsorship-status">
+                                            <xsl:with-param name="sponsorship-status" select="m:sponsorship-status"/>
+                                        </xsl:call-template>
+                                    </xsl:if>
+                                    
+                                    <xsl:if test="$show-sponsors">
+                                        <xsl:call-template name="sponsors">
+                                            <xsl:with-param name="sponsors" select="m:sponsors"/>
+                                            <xsl:with-param name="sponsorship-status" select="m:sponsorship-status"/>
+                                        </xsl:call-template>
+                                    </xsl:if>
+                                    
+                                </div>
+                                <div class="col-sm-2">
+                                    
+                                    <hr class="sml-margin visible-xs"/>
+                                    
+                                    <xsl:choose>
+                                        <xsl:when test="$show-sponsorship">
+                                            <xsl:value-of select="format-number(sum(m:sponsorship-status/m:cost/@pages), '#,###')"/>
+                                        </xsl:when>
+                                        <xsl:otherwise>
+                                            <xsl:value-of select="format-number(sum(m:location/@count-pages), '#,###')"/>
+                                        </xsl:otherwise>
+                                    </xsl:choose>
+                                    
+                                    <span class="visible-xs-inline">
+                                        <xsl:value-of select="' '"/>
+                                        <xsl:call-template name="local-text">
+                                            <xsl:with-param name="local-key" select="'pages-label'"/>
+                                        </xsl:call-template>
+                                    </span>
+                                    
+                                </div>
+                            </div>
+                            
+                        </xsl:for-each-group>
+                    </div>
+                </div>
+            </xsl:when>
+            <xsl:otherwise>
+                <hr class="sml-margin"/>
+                <p class="text-muted">
+                    <xsl:call-template name="local-text">
+                        <xsl:with-param name="local-key" select="'no-texts-of-type'"/>
+                    </xsl:call-template>
+                </p>
+            </xsl:otherwise>
+        </xsl:choose>
+    </xsl:template>
+    
+    <xsl:template name="sponsors">
+        <xsl:param name="sponsors" required="no" as="element(m:sponsors)?"/>
+        <xsl:param name="sponsorship-status" required="no" as="element(m:sponsorship-status)?"/>
+        
+        <xsl:if test="$sponsors/tei:div[@type eq 'acknowledgment']/tei:p">
+            <hr/>
+            <xsl:for-each select="$sponsors/tei:div[@type eq 'acknowledgment']/tei:p">
+                <p>
+                    <xsl:value-of select="data(.)"/>
+                </p>
+            </xsl:for-each>
+        </xsl:if>
+        
+        <xsl:if test="$sponsorship-status/m:status[@id eq 'part']">
+            <p class="text-muted">
+                <a class="italic text-danger">
+                    <xsl:attribute name="href" select="common:internal-link('http://read.84000.co/about/sponsor-a-sutra.html', (), '', /m:response/@lang)"/>
+                    <xsl:call-template name="local-text">
+                        <xsl:with-param name="local-key" select="'text-sponsorship-link-label'"/>
+                    </xsl:call-template>
+                </a>
+            </p>
+        </xsl:if>
+        
+    </xsl:template>
+    
+    <xsl:template name="sponsorship-status">
+        
+        <xsl:param name="sponsorship-status" required="no" as="element(m:sponsorship-status)?"/>
+        
+        <xsl:if test="$sponsorship-status/m:status[@id eq 'reserved']">
+            <hr/>
+            <p class="italic text-danger">
+                <xsl:call-template name="local-text">
+                    <xsl:with-param name="local-key" select="'reserved-label'"/>
+                </xsl:call-template>
+            </p>
+        </xsl:if>
+        
+        <xsl:if test="count($sponsorship-status/m:cost/m:part) gt 1">
+            <hr/>
+            <div class="row">
+                <div class="col-sm-6">
+                    <div>
+                        <xsl:call-template name="local-text">
+                            <xsl:with-param name="local-key" select="'sponsor-part-label'"/>
+                        </xsl:call-template>
+                    </div>
+                    <div class="center-vertical together">
+                        <xsl:for-each-group select="$sponsorship-status/m:cost/m:part" group-by="@amount">
+                            <xsl:for-each select="current-group()">
+                                <span>
+                                    <xsl:choose>
+                                        <xsl:when test="@status eq 'sponsored'">
+                                            <img>
+                                                <xsl:attribute name="src" select="concat($front-end-path, '/imgs/orange_person.png')"/>
+                                                <xsl:attribute name="alt">
+                                                    <xsl:value-of select="'Icon for: '"/>
+                                                    <xsl:call-template name="local-text">
+                                                        <xsl:with-param name="local-key" select="'orange-person-label'"/>
+                                                    </xsl:call-template>
+                                                </xsl:attribute>
+                                            </img>
+                                        </xsl:when>
+                                        <xsl:otherwise>
+                                            <img>
+                                                <xsl:attribute name="src" select="concat($front-end-path, '/imgs/blue_person.png')"/>
+                                                <xsl:attribute name="alt">
+                                                    <xsl:value-of select="'Icon for: '"/>
+                                                    <xsl:call-template name="local-text">
+                                                        <xsl:with-param name="local-key" select="'blue-person-label'"/>
+                                                    </xsl:call-template>
+                                                </xsl:attribute>
+                                            </img>
+                                        </xsl:otherwise>
+                                    </xsl:choose>
+                                </span>
+                            </xsl:for-each>
+                            <span>
+                                <xsl:value-of select="concat(count(current-group()), ' x ', 'US$',format-number(@amount, '#,###'))"/>
+                            </span>
+                        </xsl:for-each-group>
+                    </div>
+                </div>
+                
+                <!-- If none of the parts are taken offer the whole -->
+                <xsl:if test="not($sponsorship-status/m:cost/m:part[@status eq 'sponsored'])">
+                    <div class="col-sm-6">
+                        <div>
+                            <xsl:call-template name="local-text">
+                                <xsl:with-param name="local-key" select="'sponsor-whole-label'"/>
+                            </xsl:call-template>
+                        </div>
+                        <div class="center-vertical together">
+                            <span>
+                                <img>
+                                    <xsl:attribute name="src" select="concat($front-end-path, '/imgs/blue_person.png')"/>
+                                    <xsl:attribute name="alt">
+                                        <xsl:value-of select="'Icon for: '"/>
+                                        <xsl:call-template name="local-text">
+                                            <xsl:with-param name="local-key" select="'blue-person-label'"/>
+                                        </xsl:call-template>
+                                    </xsl:attribute>
+                                </img>
+                            </span>
+                            <span>
+                                <xsl:value-of select="concat('US$',format-number($sponsorship-status/m:cost/@rounded-cost, '#,###'))"/>
+                            </span>
+                        </div>
+                    </div>
+                </xsl:if>
+                
+            </div>
+        </xsl:if>
+        
     </xsl:template>
     
     

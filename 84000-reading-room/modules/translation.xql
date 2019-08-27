@@ -248,11 +248,25 @@ declare function translation:downloads($tei as element(), $resource-id as xs:str
 };
 
 declare function translation:summary($tei as element()) as element() {
-    <summary xmlns="http://read.84000.co/ns/1.0" prefix="s">
-    { 
-        $tei//tei:front//tei:div[@type eq 'summary']/*[self::tei:p | self::tei:milestone | self::tei:lg ]/.
-    }
-    </summary>
+    translation:summary($tei, '')
+};
+
+declare function translation:summary($tei as element(), $lang as xs:string) as element() {
+    let $valid-lang := common:valid-lang($lang)
+    let $valid-lang :=
+        if($valid-lang eq '') then
+            'en'
+        else
+            $valid-lang
+    return
+        <summary xmlns="http://read.84000.co/ns/1.0" prefix="s" xml:lang="{ $valid-lang }">
+        { 
+            if($valid-lang eq 'en') then
+                $tei//tei:front//tei:div[@type eq 'summary'][not(@xml:lang) or @xml:lang = 'en']/*[self::tei:p | self::tei:milestone | self::tei:lg ]/.
+            else
+                $tei//tei:front//tei:div[@type eq 'summary'][@xml:lang = $valid-lang]/*[self::tei:p | self::tei:milestone | self::tei:lg ]/.
+        }
+        </summary>
 };
 
 declare function translation:acknowledgment($tei as element()) as element() {
