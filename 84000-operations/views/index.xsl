@@ -238,16 +238,16 @@
                     <h4>Preview data on the public site</h4>
                     <ul>
                         <li>
-                            Progress <a href="{ $reading-room-path }/about/progress.html" target="translations">en</a> | <a href="{ $reading-room-path }/about/progress.html?lang=zh" target="translations">zh</a>
-                        </li>
-                        <li>
                             Impact <a href="{ $reading-room-path }/about/impact.html" target="impact">en</a> | <a href="{ $reading-room-path }/about/impact.html?lang=zh" target="impact">zh</a>
                         </li>
                         <li>
-                            Sponsors <a href="{ $reading-room-path }/about/sponsors.html" target="sponsors">en</a> | <a href="{ $reading-room-path }/about/sponsors.html?lang=zh" target="sponsors">zh</a>
+                            Progress <a href="{ $reading-room-path }/about/progress.html" target="translations">en</a> | <a href="{ $reading-room-path }/about/progress.html?lang=zh" target="translations">zh</a>
                         </li>
                         <li>
                             Sponsor a Sutra <a href="{ $reading-room-path }/about/sponsor-a-sutra.html" target="sponsor-a-sutra">en</a> | <a href="{ $reading-room-path }/about/sponsor-a-sutra.html?lang=zh" target="sponsor-a-sutra">zh</a>
+                        </li>
+                        <li>
+                            Sponsors <a href="{ $reading-room-path }/about/sponsors.html" target="sponsors">en</a> | <a href="{ $reading-room-path }/about/sponsors.html?lang=zh" target="sponsors">zh</a>
                         </li>
                         <li>
                             Translators <a href="{ $reading-room-path }/about/translators.html" target="translators">en</a> | <a href="{ $reading-room-path }/about/translators.html?lang=zh" target="translators">zh</a>
