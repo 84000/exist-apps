@@ -88,7 +88,7 @@ declare function tests:translations($translation-id as xs:string) as item(){
                         tests:translation-tantra-warning($tei, $toh-html)
                     }
                     {
-                        tests:test-section($tei//tei:front//tei:div[@type eq 'summary'], $toh-html//*[@id eq 'summary'], 'summary', 1, false(), true())
+                        tests:test-section($tei//tei:front//tei:div[@type eq 'summary'][not(@xml:lang) or @xml:lang eq 'en'], $toh-html//*[@id eq 'summary'], 'summary', 1, false(), true())
                     }
                     {
                         tests:test-section($tei//tei:front//tei:div[@type eq 'acknowledgment'], $toh-html//*[@id eq 'acknowledgements'], 'acknowledgements', 1, false(), true())
