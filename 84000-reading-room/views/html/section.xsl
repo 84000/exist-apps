@@ -460,16 +460,16 @@
             
             <!-- Row headers -->
             <div class="row table-headers">
-                <div class="col-md-1 visible-md">
+                <div class="col-md-1 hidden-xs hidden-sm">
                     <xsl:value-of select="'Toh'"/>
                 </div>
-                <div class="col-md-8 visible-md">
+                <div class="col-md-7 col-lg-8 hidden-xs hidden-sm">
                     <xsl:value-of select="'Title'"/>
                 </div>
                 <div class="col-xs-4 visible-xs visible-sm">
                     <xsl:value-of select="'Text'"/>
                 </div>
-                <div class="col-xs-8 col-md-3">
+                <div class="col-md-4 col-lg-3">
                     <!-- Filter / Sort options -->
                     <xsl:choose>
                         <xsl:when test="lower-case($section/@id) eq 'all-translated'">
@@ -530,17 +530,19 @@
                     
                     <!-- loop through the texts -->
                     <xsl:for-each select="m:texts/m:text">
+                        
                         <xsl:sort select="if(/m:response/m:request/@translations-order eq 'latest') then m:translation/m:publication-date else ''" order="descending"/>
                         <xsl:sort select="number(m:toh/@number)"/>
                         <xsl:sort select="m:toh/@letter"/>
                         <xsl:sort select="number(m:toh/@chapter-number)"/>
                         <xsl:sort select="m:toh/@chapter-letter"/>
+                        
                         <div class="row list-item">
                             
                             <xsl:attribute name="id" select="@resource-id"/>
                             
                             <!-- Toh number -->
-                            <div class="col-md-2 col-lg-1">
+                            <div class="col-md-1">
                                 
                                 <xsl:value-of select="m:toh/m:full"/>
                                 
@@ -557,7 +559,7 @@
                                 
                             </div>
                             
-                            <div class="col-md-6 col-lg-8">
+                            <div class="col-md-7 col-lg-8">
                                 
                                 <!-- English title -->
                                 <h4 class="title-en">
