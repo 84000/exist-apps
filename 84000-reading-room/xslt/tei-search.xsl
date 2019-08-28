@@ -290,19 +290,15 @@
                     
                     <!-- Output the match (unless it's only in the note) -->
                     <xsl:if test="not(ancestor::tei:note)">
-                        <div class="row">
-                            <div class="col-sm-12">
-                                <span class="small">
-                                    <xsl:if test="@node-type = ('title', 'head')">
-                                        <xsl:attribute name="class" select="''"/>
-                                        <xsl:if test="@type eq 'chapter'">
-                                            <xsl:attribute name="class" select="'uppercase'"/>
-                                        </xsl:if>
-                                    </xsl:if>
-                                    <!-- Reduce this to a snippet -->
-                                    <xsl:apply-templates select="node()"/>
-                                </span>
-                            </div>
+                        <div class="small">
+                            <xsl:if test="@node-type = ('title', 'head')">
+                                <xsl:attribute name="class" select="''"/>
+                                <xsl:if test="@type eq 'chapter'">
+                                    <xsl:attribute name="class" select="'uppercase'"/>
+                                </xsl:if>
+                            </xsl:if>
+                            <!-- Reduce this to a snippet -->
+                            <xsl:apply-templates select="node()"/>
                         </div>
                     </xsl:if>
                     
@@ -314,7 +310,7 @@
                                     <xsl:value-of select="@index"/>
                                 </span>
                             </div>
-                            <div class="col-sm-10">
+                            <div class="col-sm-11">
                                 <span class="small">
                                     <!-- Reduce this to a snippet -->
                                     <xsl:apply-templates select="node()"/>
@@ -323,14 +319,13 @@
                         </div>
                     </xsl:for-each>
                     
-                    <div class="row">
-                        <div class="col-sm-12">
-                            <a class="small">
-                                <xsl:attribute name="href" select="common:match-url(., /m:response/@lang)"/>
-                                <xsl:value-of select="'read...'"/>
-                            </a>
-                        </div>
+                    <div class="small">
+                        <a>
+                            <xsl:attribute name="href" select="common:match-url(., /m:response/@lang)"/>
+                            <xsl:value-of select="'read...'"/>
+                        </a>
                     </div>
+                    
                 </div>
             </xsl:otherwise>
         </xsl:choose>

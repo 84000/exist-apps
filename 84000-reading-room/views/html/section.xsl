@@ -296,7 +296,6 @@
             <xsl:with-param name="page-title" select="concat('84000 Reading Room | ', m:section/m:titles/m:title[@xml:lang = 'en'])"/>
             <xsl:with-param name="page-description" select="normalize-space(m:section/m:abstract/tei:p[1]/text())"/>
             <xsl:with-param name="content" select="$content"/>
-            <xsl:with-param name="nav-tab" select="'#reading-room'"/>
             <xsl:with-param name="additional-links">
                 
                 <!-- Add a navigation link to start (Lobby) -->

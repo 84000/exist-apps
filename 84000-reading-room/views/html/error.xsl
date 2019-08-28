@@ -42,7 +42,6 @@
             <xsl:with-param name="page-title" select="'84000 | Error'"/>
             <xsl:with-param name="page-description" select="'Sorry, there was an error.'"/>
             <xsl:with-param name="content" select="$content"/>
-            <xsl:with-param name="nav-tab" select="''"/>
         </xsl:call-template>
         
     </xsl:template>

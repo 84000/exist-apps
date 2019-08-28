@@ -121,6 +121,8 @@ declare function search:search($request as xs:string, $first-record as xs:double
                             return
                                 <match score="{ ft:score($result) }">
                                 {
+                                    attribute node-type { node-name($result) },
+                                    $result/@*,
                                     (: util:expand($result) :)
                                     common:mark-nodes($result, $request)
                                 }

@@ -108,7 +108,6 @@
             <xsl:with-param name="page-title" select="concat('84000 Reading Room | Search results for ', m:search/m:request/text())"/>
             <xsl:with-param name="page-description" select="''"/>
             <xsl:with-param name="content" select="$content"/>
-            <xsl:with-param name="nav-tab" select="'#reading-room'"/>
         </xsl:call-template>
         
     </xsl:template>

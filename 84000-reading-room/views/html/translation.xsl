@@ -75,7 +75,10 @@
                                         <xsl:with-param name="prefix" select="m:translation/m:summary/@prefix"/>
                                         <xsl:with-param name="title" select="'Summary'"/>
                                     </xsl:call-template>
-                                    <div class="render-in-viewport">
+                                    <div>
+                                        <xsl:if test="not(m:request/@view-mode = ('editor','app'))">
+                                            <xsl:attribute name="class" select="'render-in-viewport'"/>
+                                        </xsl:if>
                                         <xsl:apply-templates select="m:translation/m:summary"/>
                                     </div>
                                 </section>
@@ -88,7 +91,10 @@
                                         <xsl:with-param name="prefix" select="m:translation/m:acknowledgment/@prefix"/>
                                         <xsl:with-param name="title" select="'Acknowledgements'"/>
                                     </xsl:call-template>
-                                    <div class="render-in-viewport">
+                                    <div>
+                                        <xsl:if test="not(m:request/@view-mode = ('editor','app'))">
+                                            <xsl:attribute name="class" select="'render-in-viewport'"/>
+                                        </xsl:if>
                                         <xsl:apply-templates select="m:translation/m:acknowledgment"/>
                                     </div>
                                 </section>
@@ -102,7 +108,10 @@
                                             <xsl:with-param name="prefix" select="m:translation/m:preface/@prefix"/>
                                             <xsl:with-param name="title" select="'Preface'"/>
                                         </xsl:call-template>
-                                        <div class="render-in-viewport">
+                                        <div>
+                                            <xsl:if test="not(m:request/@view-mode = ('editor','app'))">
+                                                <xsl:attribute name="class" select="'render-in-viewport'"/>
+                                            </xsl:if>
                                             <xsl:apply-templates select="m:translation/m:preface"/>
                                         </div>
                                     </section>
@@ -116,7 +125,10 @@
                                         <xsl:with-param name="prefix" select="m:translation/m:introduction/@prefix"/>
                                         <xsl:with-param name="title" select="'Introduction'"/>
                                     </xsl:call-template>
-                                    <div class="render-in-viewport">
+                                    <div>
+                                        <xsl:if test="not(m:request/@view-mode = ('editor','app'))">
+                                            <xsl:attribute name="class" select="'render-in-viewport'"/>
+                                        </xsl:if>
                                         <xsl:apply-templates select="m:translation/m:introduction"/>
                                     </div>
                                 </section>
@@ -138,7 +150,10 @@
                                             <xsl:with-param name="title" select="'Prologue'"/>
                                             <xsl:with-param name="title-tag" select="'h3'"/>
                                         </xsl:call-template>
-                                        <div class="render-in-viewport">
+                                        <div>
+                                            <xsl:if test="not(m:request/@view-mode = ('editor','app'))">
+                                                <xsl:attribute name="class" select="'render-in-viewport'"/>
+                                            </xsl:if>
                                             <xsl:apply-templates select="m:translation/m:prologue"/>
                                         </div>
                                     </section>
@@ -175,7 +190,10 @@
                                                 
                                             </xsl:if>
                                             
-                                            <div class="render-in-viewport">
+                                            <div>
+                                                <xsl:if test="not(m:request/@view-mode = ('editor','app'))">
+                                                    <xsl:attribute name="class" select="'render-in-viewport'"/>
+                                                </xsl:if>
                                                 <xsl:apply-templates select="tei:*"/>
                                             </div>
                                             
@@ -197,7 +215,10 @@
                                             <xsl:with-param name="title-tag" select="'h3'"/>
                                         </xsl:call-template>
                                         
-                                        <div class="render-in-viewport">
+                                        <div>
+                                            <xsl:if test="not(m:request/@view-mode = ('editor','app'))">
+                                                <xsl:attribute name="class" select="'render-in-viewport'"/>
+                                            </xsl:if>
                                             <xsl:apply-templates select="m:translation/m:colophon"/>
                                         </div>
                                         
@@ -217,7 +238,10 @@
                                             <xsl:with-param name="title-tag" select="'h3'"/>
                                         </xsl:call-template>
                                         
-                                        <div class="render-in-viewport">
+                                        <div>
+                                            <xsl:if test="not(m:request/@view-mode = ('editor','app'))">
+                                                <xsl:attribute name="class" select="'render-in-viewport'"/>
+                                            </xsl:if>
                                             <xsl:for-each select="m:translation/m:appendix/m:chapter">
                                                 
                                                 <xsl:if test="position() gt 1">
@@ -253,7 +277,10 @@
                                             <xsl:with-param name="prefix" select="m:translation/m:abbreviations/@prefix"/>
                                             <xsl:with-param name="title" select="'Abbreviations'"/>
                                         </xsl:call-template>
-                                        <div class="render-in-viewport">
+                                        <div>
+                                            <xsl:if test="not(m:request/@view-mode = ('editor','app'))">
+                                                <xsl:attribute name="class" select="'render-in-viewport'"/>
+                                            </xsl:if>
                                             <div class="rw">
                                                 <xsl:call-template name="abbreviations">
                                                     <xsl:with-param name="translation" select="m:translation"/>
@@ -272,7 +299,10 @@
                                         <xsl:with-param name="prefix" select="m:translation/m:notes/@prefix"/>
                                         <xsl:with-param name="title" select="'Notes'"/>
                                     </xsl:call-template>
-                                    <div class="render-in-viewport">
+                                    <div>
+                                        <xsl:if test="not(m:request/@view-mode = ('editor','app'))">
+                                            <xsl:attribute name="class" select="'render-in-viewport'"/>
+                                        </xsl:if>
                                         <xsl:call-template name="notes">
                                             <xsl:with-param name="translation" select="m:translation"/>
                                         </xsl:call-template>
@@ -288,7 +318,10 @@
                                         <xsl:with-param name="title" select="'Bibliography'"/>
                                     </xsl:call-template>
                                     
-                                    <div class="render-in-viewport">
+                                    <div>
+                                        <xsl:if test="not(m:request/@view-mode = ('editor','app'))">
+                                            <xsl:attribute name="class" select="'render-in-viewport'"/>
+                                        </xsl:if>
                                         <xsl:for-each select="m:translation/m:bibliography">
                                             <div class="rw">
                                                 <xsl:apply-templates select="node()"/>
@@ -305,7 +338,10 @@
                                         <xsl:with-param name="prefix" select="m:translation/m:glossary/@prefix"/>
                                         <xsl:with-param name="title" select="'Glossary'"/>
                                     </xsl:call-template>
-                                    <div class="render-in-viewport">
+                                    <div>
+                                        <xsl:if test="not(m:request/@view-mode = ('editor','app'))">
+                                            <xsl:attribute name="class" select="'render-in-viewport'"/>
+                                        </xsl:if>
                                         <xsl:call-template name="glossary">
                                             <xsl:with-param name="translation" select="m:translation"/>
                                         </xsl:call-template>
@@ -1057,6 +1093,10 @@
                     
                     <div class="col-md-8 match-this-height print-width-override print-height-override">
                         
+                        <xsl:if test="/m:response/m:request/@view-mode = ('app')">
+                            <xsl:attribute name="class" select="'col-md-12 print-width-override print-height-override'"/>
+                        </xsl:if>
+                        
                         <xsl:attribute name="data-match-height" select="concat('g-', position())"/>
                         <xsl:attribute name="data-match-height-media" select="'.md,.lg'"/>
                         
@@ -1066,14 +1106,16 @@
                         
                     </div>
                     
-                    <div class="col-md-4 occurences hidden-print match-height-overflow print-height-override">
-                        <xsl:attribute name="data-match-height" select="concat('g-', position())"/>
-                        <xsl:attribute name="data-match-height-media" select="'.md,.lg'"/>
-                        <hr class="visible-xs-block visible-sm-block"/>
-                        <h6>
-                            <xsl:value-of select="'Finding passages containing this term...'"/>
-                        </h6>
-                    </div>
+                    <xsl:if test="not(/m:response/m:request/@view-mode = ('app'))">
+                        <div class="col-md-4 occurences hidden-print match-height-overflow print-height-override">
+                            <xsl:attribute name="data-match-height" select="concat('g-', position())"/>
+                            <xsl:attribute name="data-match-height-media" select="'.md,.lg'"/>
+                            <hr class="visible-xs-block visible-sm-block"/>
+                            <h6>
+                                <xsl:value-of select="'Finding passages containing this term...'"/>
+                            </h6>
+                        </div>
+                    </xsl:if>
                     
                 </div>
                 

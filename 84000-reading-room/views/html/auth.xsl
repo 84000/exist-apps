@@ -35,7 +35,6 @@
             <xsl:with-param name="page-title" select="'84000 | Authorisation'"/>
             <xsl:with-param name="page-description" select="'You are not authorised to access this resource.'"/>
             <xsl:with-param name="content" select="$content"/>
-            <xsl:with-param name="nav-tab" select="''"/>
         </xsl:call-template>
     
     </xsl:template>

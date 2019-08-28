@@ -395,6 +395,15 @@ declare function common:local-text($key as xs:string, $lang as xs:string) {
             
 };
 
+declare function common:view-mode() as xs:string {
+    let $view-mode := request:get-parameter('view-mode', '')
+    return
+        if($view-mode = ('editor', 'epub', 'app')) then 
+            $view-mode 
+        else 
+            ''
+};
+
 declare function common:replace($node as node(), $replacements as element()) {
     typeswitch ($node)
         case element() return 

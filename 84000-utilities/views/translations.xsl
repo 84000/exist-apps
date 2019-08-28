@@ -119,6 +119,12 @@
                                                     </xsl:if>
                                                     <xsl:value-of select="' / '"/>
                                                     <a class="small">
+                                                        <xsl:attribute name="href" select="concat($reading-room-path ,'/translation/', $toh/@key, '.html?view-mode=editor')"/>
+                                                        <xsl:attribute name="target" select="concat($toh/@key, '.html')"/>
+                                                        <xsl:value-of select="'editor mode'"/>
+                                                    </a>
+                                                    <xsl:value-of select="' / '"/>
+                                                    <a class="small">
                                                         <xsl:attribute name="href" select="concat('/test-translations.html?translation-id=', $text-id)"/>
                                                         <xsl:attribute name="target" select="concat('test-translation-', $text-id)"/>
                                                         <xsl:value-of select="'run tests'"/>

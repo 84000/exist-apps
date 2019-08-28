@@ -71,7 +71,7 @@ return
                 xmlns="http://read.84000.co/ns/1.0" 
                 resource-id="{ $resource-id }"
                 doc-type="{ request:get-parameter('resource-suffix', 'html') }"
-                view-mode="{ request:get-parameter('view-mode', '') }" />,
+                view-mode="{ common:view-mode() }" />,
             (: Calculated strings :)
             <replace-text xmlns="http://read.84000.co/ns/1.0">
                 <value key="#CurrentDateTime">{ format-dateTime(current-dateTime(), '[h].[m01][Pn] on [FNn], [D1o] [MNn] [Y0001]') }</value>

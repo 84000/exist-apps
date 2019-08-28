@@ -213,7 +213,6 @@
             <xsl:with-param name="page-title" select="concat('84000 | ', $page-title)"/>
             <xsl:with-param name="page-description" select="''"/>
             <xsl:with-param name="content" select="$content"/>
-            <xsl:with-param name="nav-tab" select="'#about'"/>
         </xsl:call-template>
         
     </xsl:template>

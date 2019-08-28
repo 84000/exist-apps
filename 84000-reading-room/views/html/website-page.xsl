@@ -20,6 +20,9 @@
     <!-- language -->
     <xsl:variable name="lang" select="if(/m:response/@lang) then /m:response/@lang else 'en'"/>
     
+    <!-- view-mode -->
+    <xsl:variable name="view-mode" select="/m:response/m:request/@view-mode"/>
+    
     <!-- override navigation params -->
     <xsl:variable name="active-url">
         <!-- <xsl:value-of select="common:internal-link('http://read.84000.co/', (), '', $lang)"/> -->
@@ -64,13 +67,13 @@
     <!-- html head tag -->
     <xsl:template name="html-head">
         
-        <xsl:param name="front-end-path" required="yes"/>
-        <xsl:param name="app-version" required="yes"/>
-        <xsl:param name="page-url" required="yes"/>
-        <xsl:param name="page-title" required="yes"/>
-        <xsl:param name="page-description" required="yes"/>
-        <xsl:param name="page-type" required="yes"/>
-        <xsl:param name="additional-links" required="no"/>
+        <xsl:param name="front-end-path" required="yes" as="xs:string"/>
+        <xsl:param name="app-version" required="yes" as="xs:string"/>
+        <xsl:param name="page-url" required="yes" as="xs:string"/>
+        <xsl:param name="page-title" required="yes" as="xs:string"/>
+        <xsl:param name="page-description" required="yes" as="xs:string"/>
+        <xsl:param name="page-type" required="yes" as="xs:string"/>
+        <xsl:param name="additional-links" required="no" as="node()*"/>
         
         <head>
             
@@ -151,36 +154,39 @@
     <!-- html footer -->
     <xsl:template name="html-footer">
         
-        <xsl:param name="app-version" required="yes"/>
-        <xsl:param name="front-end-path" required="yes"/>
-        <xsl:param name="ga-tracking-id"/>
+        <xsl:param name="app-version" required="yes" as="xs:string"/>
+        <xsl:param name="front-end-path" required="yes" as="xs:string"/>
+        <xsl:param name="ga-tracking-id" required="no" as="xs:string?"/>
         
         <!-- Shared footer -->
         <xsl:apply-templates select="$eft-footer"/>
         
-        <script>
-            function downloadJSAtOnload() {
+        <!-- Don't add js in static mode -->
+        <xsl:if test="not($view-mode eq 'app')">
+            <script>
+                function downloadJSAtOnload() {
                 var element = document.createElement("script");
                 element.src = "<xsl:value-of select="concat($front-end-path, '/js/84000-fe.min.js', '?v=', $app-version)"/>";
                 document.body.appendChild(element);
-            }
-            if (window.addEventListener)
+                }
+                if (window.addEventListener)
                 window.addEventListener("load", downloadJSAtOnload, false);
-            else if (window.attachEvent)
+                else if (window.attachEvent)
                 window.attachEvent("onload", downloadJSAtOnload);
-            else window.onload = downloadJSAtOnload;
-        </script>
-        
-        <xsl:if test="$ga-tracking-id != ''">
-            <script>
-                (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-                (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-                m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-                })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
-                ga('create', '<xsl:value-of select="$ga-tracking-id"/>', 'auto');
-                ga('set', 'anonymizeIp', true);
-                ga('send', 'pageview');
+                else window.onload = downloadJSAtOnload;
             </script>
+            
+            <xsl:if test="$ga-tracking-id and not($ga-tracking-id eq '')">
+                <script>
+                    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+                    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+                    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+                    })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+                    ga('create', '<xsl:value-of select="$ga-tracking-id"/>', 'auto');
+                    ga('set', 'anonymizeIp', true);
+                    ga('send', 'pageview');
+                </script>
+            </xsl:if>
         </xsl:if>
         
     </xsl:template>
@@ -188,13 +194,12 @@
     <!-- Website page -->
     <xsl:template name="website-page">
         
-        <xsl:param name="page-url" required="yes"/>
-        <xsl:param name="page-class" required="yes"/>
-        <xsl:param name="page-title" required="yes"/>
-        <xsl:param name="page-description" required="yes"/>
-        <xsl:param name="content"/>
-        <xsl:param name="nav-tab"/>
-        <xsl:param name="additional-links"/>
+        <xsl:param name="page-url" required="yes" as="xs:string"/>
+        <xsl:param name="page-class" required="yes" as="xs:string"/>
+        <xsl:param name="page-title" required="yes" as="xs:string"/>
+        <xsl:param name="page-description" required="yes" as="xs:string"/>
+        <xsl:param name="content" required="no" as="node()*"/>
+        <xsl:param name="additional-links" required="no" as="node()*"/>
         
         <html>
             
@@ -248,12 +253,12 @@
     <!-- Reading Room page -->
     <xsl:template name="reading-room-page">
         
-        <xsl:param name="page-url" required="yes"/>
-        <xsl:param name="page-class" required="yes"/>
-        <xsl:param name="page-title" required="yes"/>
-        <xsl:param name="page-description" required="yes"/>
-        <xsl:param name="content"/>
-        <xsl:param name="additional-links"/>
+        <xsl:param name="page-url" required="yes" as="xs:string"/>
+        <xsl:param name="page-class" required="yes" as="xs:string"/>
+        <xsl:param name="page-title" required="yes" as="xs:string"/>
+        <xsl:param name="page-description" required="yes" as="xs:string"/>
+        <xsl:param name="content" required="no" as="node()*"/>
+        <xsl:param name="additional-links" required="no" as="node()*"/>
         
         <html>
             
@@ -304,14 +309,8 @@
     <!-- Modal page -->
     <xsl:template name="modal-page">
         
-        <xsl:param name="page-title"/>
-        <xsl:param name="content"/>
-        
-        <!-- Look up environment variables -->
-        <xsl:variable name="environment-path" select="if(/m:response/@environment-path)then /m:response/@environment-path else '/db/system/config/db/system/environment.xml'"/>
-        <xsl:variable name="environment" select="doc($environment-path)/m:environment"/>
-        <xsl:variable name="app-version" select="/m:response/@app-version"/>
-        <xsl:variable name="front-end-path" select="$environment/m:url[@id eq 'front-end']/text()"/>
+        <xsl:param name="page-title" required="yes" as="xs:string"/>
+        <xsl:param name="content" required="no" as="node()*"/>
         
         <html>
             
@@ -345,30 +344,34 @@
                 <!-- Place content -->
                 <xsl:copy-of select="$content"/>
                 
-                <!-- Foooter components -->
-                <span id="media_test">
-                    <span class="visible-xs"/>
-                    <span class="visible-sm"/>
-                    <span class="visible-md"/>
-                    <span class="visible-lg"/>
-                    <span class="visible-print"/>
-                    <span class="visible-mobile"/>
-                    <span class="visible-desktop"/>
-                    <span class="event-hover"/>
-                </span>
-                
-                <script type="text/javascript">
-                    function downloadJSAtOnload() {
-                    var element = document.createElement("script");
-                    element.src = "<xsl:value-of select="concat($front-end-path, '/js/84000-fe.min.js', '?v=', $app-version)"/>";
-                    document.body.appendChild(element);
-                    }
-                    if (window.addEventListener)
-                    window.addEventListener("load", downloadJSAtOnload, false);
-                    else if (window.attachEvent)
-                    window.attachEvent("onload", downloadJSAtOnload);
-                    else window.onload = downloadJSAtOnload;
-                </script>
+                <xsl:if test="not($view-mode eq 'app')">
+                    
+                    <!-- Foooter components -->
+                    <span id="media_test">
+                        <span class="visible-xs"/>
+                        <span class="visible-sm"/>
+                        <span class="visible-md"/>
+                        <span class="visible-lg"/>
+                        <span class="visible-print"/>
+                        <span class="visible-mobile"/>
+                        <span class="visible-desktop"/>
+                        <span class="event-hover"/>
+                    </span>
+                    
+                    <script type="text/javascript">
+                        function downloadJSAtOnload() {
+                        var element = document.createElement("script");
+                        element.src = "<xsl:value-of select="concat($front-end-path, '/js/84000-fe.min.js', '?v=', $app-version)"/>";
+                        document.body.appendChild(element);
+                        }
+                        if (window.addEventListener)
+                        window.addEventListener("load", downloadJSAtOnload, false);
+                        else if (window.attachEvent)
+                        window.attachEvent("onload", downloadJSAtOnload);
+                        else window.onload = downloadJSAtOnload;
+                    </script>
+                    
+                </xsl:if>
                 
             </body>
         </html>
