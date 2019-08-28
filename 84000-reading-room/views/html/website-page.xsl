@@ -118,6 +118,9 @@
             <link rel="shortcut icon">
                 <xsl:attribute name="href" select="concat($front-end-path, '/favicon/favicon.ico')"/>
             </link>
+            <link rel="canonical">
+                <xsl:attribute name="href" select="$page-url"/>
+            </link>
             <xsl:copy-of select="$additional-links"/>
             <meta name="msapplication-config">
                 <xsl:attribute name="content" select="concat($front-end-path, '/favicon/browserconfig.xml')"/>

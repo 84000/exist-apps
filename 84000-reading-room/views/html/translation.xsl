@@ -498,6 +498,11 @@
                 <link rel="related" type="application/atom+xml;profile=opds-catalog;kind=navigation" href="/section/lobby.navigation.atom" title="The 84000 Reading Room"/>
                 <link rel="related" type="application/atom+xml;profile=opds-catalog;kind=acquisition" href="/section/all-translated.acquisition.atom" title="84000: All Translated Texts"/>
                 
+                <xsl:if test="m:request/@view-mode eq 'editor'">
+                    <script type="application/json" class="js-hypothesis-config">{"theme": "clean"}</script>
+                    <script src="https://hypothes.is/embed.js" async="async"/>
+                </xsl:if>
+                
             </xsl:with-param>
         </xsl:call-template>
         
