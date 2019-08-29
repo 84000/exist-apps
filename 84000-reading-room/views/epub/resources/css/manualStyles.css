@@ -469,9 +469,18 @@ img.logo-84000 {
 /* Glossary */
 .glossary-item {
     margin-bottom: 20pt;
+    page-break-inside: avoid;
 }
 .glossary-item .term {
     margin-top: 0pt;
+    line-height: 1.9em;
+    font-weight: bold;
+}
+.glossary-item p {
+    line-height: 1.7em;
+}
+.glossary-item p.definition {
+    line-height: 1.4em;
 }
 .glossary-item .alternative {
     display: none;
