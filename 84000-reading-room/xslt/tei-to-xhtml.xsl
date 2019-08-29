@@ -70,6 +70,9 @@
     
     <xsl:template match="tei:term">
         <span>
+            <xsl:if test="@ref">
+                <xsl:attribute name="data-ref" select="@ref"/>
+            </xsl:if>
             <xsl:call-template name="class-attribute">
                 <xsl:with-param name="base-classes">
                     <xsl:choose>
