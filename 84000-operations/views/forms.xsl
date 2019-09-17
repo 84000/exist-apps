@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" exclude-result-prefixes="#all" version="2.0">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" exclude-result-prefixes="#all" version="3.0">
     
     <xsl:import href="../../84000-reading-room/xslt/tei-to-xhtml.xsl"/>
     
@@ -164,9 +164,58 @@
                     <input type="hidden" name="post-id">
                         <xsl:attribute name="value" select="m:translation/@id"/>
                     </input>
-                    <xsl:call-template name="locations-controls">
-                        <xsl:with-param name="tohs" select="m:translation/m:toh"/>
-                    </xsl:call-template>
+                    <xsl:for-each select="m:translation/m:toh">
+                        <xsl:variable name="toh-key" select="./@key"/>
+                        <xsl:variable name="toh-location" select="/m:response/m:translation/m:location[@key eq $toh-key]"/>
+                        <input type="hidden">
+                            <xsl:attribute name="name" select="concat('work-', $toh-key)"/>
+                            <xsl:attribute name="value" select="$toh-location/@work"/>
+                        </input>
+                        <input type="hidden">
+                            <xsl:attribute name="name" select="concat('location-', $toh-key)"/>
+                            <xsl:attribute name="value" select="$toh-key"/>
+                        </input>
+                        <fieldset>
+                            <legend>
+                                <xsl:value-of select="concat('Toh ', ./m:base)"/>
+                            </legend>
+                            <div class="add-nodes-container">
+                                <xsl:for-each select="$toh-location/m:volume">
+                                    <div class="row add-nodes-group">
+                                        <div class="col-sm-3">
+                                            <xsl:copy-of select="m:text-input('Volume: ', concat('volume-', $toh-key, '-', position()), @number, 6, 'required')"/>
+                                        </div>
+                                        <div class="col-sm-3">
+                                            <xsl:copy-of select="m:text-input('First page: ', concat('start-page-', $toh-key, '-', position()), @start-page, 6, 'required')"/>
+                                        </div>
+                                        <div class="col-sm-3">
+                                            <xsl:copy-of select="m:text-input('Last page: ', concat('end-page-', $toh-key, '-', position()), @end-page, 6, 'required')"/>
+                                        </div>
+                                        <div class="col-sm-3">
+                                            <xsl:copy-of select="m:text-input('Count: ', concat('count-pages-', $toh-key, '-', position()), sum(@end-page - (@start-page - 1)), 6, 'disabled')"/>
+                                        </div>
+                                    </div>
+                                </xsl:for-each>
+                                <div>
+                                    <a href="#add-nodes" class="add-nodes">
+                                        <span class="monospace">+</span> add a volume </a>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-sm-9">
+                                    <xsl:variable name="sum-volume-pages" select="sum($toh-location/m:volume ! (xs:integer(@end-page) - (xs:integer(@start-page) - 1))) ! xs:integer(.)"/>
+                                    <xsl:if test="$sum-volume-pages ne xs:integer($toh-location/@count-pages)">
+                                        <div class="text-danger text-right sml-margin top">
+                                            <xsl:value-of select="concat('The sum of the volumes is ', $sum-volume-pages)"/>
+                                        </div>
+                                    </xsl:if>
+                                </div>
+                                <div class="col-sm-3">
+                                    <xsl:copy-of select="m:text-input('Page count: ', concat('count-pages-', $toh-key), $toh-location/@count-pages, 6, 'required')"/>
+                                </div>
+                            </div>
+                        </fieldset>
+                    </xsl:for-each>
                     <div class="pull-right">
                         <button type="submit" class="btn btn-primary">
                             <xsl:value-of select="'Save'"/>
@@ -175,37 +224,6 @@
                 </form>
             </xsl:with-param>
         </xsl:call-template>
-    </xsl:template>
-    
-    <!-- Location row -->
-    <xsl:template name="locations-controls">
-        <xsl:param name="tohs" required="yes"/>
-        <xsl:for-each select="$tohs">
-            <xsl:variable name="toh-key" select="./@key"/>
-            <xsl:variable name="toh-location" select="/m:response/m:translation/m:location[@key eq $toh-key]"/>
-            <input type="hidden">
-                <xsl:attribute name="name" select="concat('location-', $toh-key)"/>
-                <xsl:attribute name="value" select="$toh-key"/>
-            </input>
-            <fieldset>
-                <legend>
-                    <xsl:value-of select="concat('Toh ', ./m:base)"/>
-                </legend>
-                <div class="row">
-                    <div class="col-sm-4">
-                        <xsl:copy-of select="m:text-input('Start volume', concat('start-volume-', $toh-key), $toh-location/m:start/@volume, 6, 'required')"/>
-                        <xsl:copy-of select="m:text-input('Start page', concat('start-page-', $toh-key), $toh-location/m:start/@page, 6, 'required')"/>
-                    </div>
-                    <div class="col-sm-4">
-                        <xsl:copy-of select="m:text-input('End volume', concat('end-volume-', $toh-key), $toh-location/m:end/@volume, 6, 'required')"/>
-                        <xsl:copy-of select="m:text-input('End page', concat('end-page-', $toh-key), $toh-location/m:end/@page, 6, 'required')"/>
-                    </div>
-                    <div class="col-sm-4">
-                        <xsl:copy-of select="m:text-input('Count pages', concat('count-pages-', $toh-key), $toh-location/@count-pages, 6, 'required')"/>
-                    </div>
-                </div>
-            </fieldset>
-        </xsl:for-each>
     </xsl:template>
     
     <!-- Contributors in a panel -->

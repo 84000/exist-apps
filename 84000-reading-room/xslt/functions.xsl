@@ -276,10 +276,13 @@
         </xsl:for-each>
     </xsl:function>
     
+    <!-- 
+    Deprecated in favour of concat('folio-', @folio-index)
     <xsl:function name="common:folio-id" as="xs:string">
         <xsl:param name="folio-str" as="xs:string"/>
         <xsl:value-of select="concat('ref-', lower-case(replace($folio-str, '\.', '-')))"/>
     </xsl:function>
+     -->
     
     <!-- Localization helpers -->
     <xsl:function name="common:internal-link">

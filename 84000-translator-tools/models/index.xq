@@ -28,6 +28,7 @@ let $xml-section := doc(concat($common:data-path, '/translator-tools/sections/',
 let $type := request:get-parameter('type', 'term')
 let $search := request:get-parameter('search', if($tab eq 'glossary') then 'a' else '')
 let $lang := request:get-parameter('lang', if($tab eq 'tibetan-search') then 'bo' else 'en')
+let $work := request:get-parameter('work', $source:ekangyur-work)
 let $volume := request:get-parameter('volume', 1)
 let $page := request:get-parameter('page', 1)
 
@@ -54,8 +55,8 @@ return
             else if($tab eq 'tibetan-search') then 
             (
                 search:tm-search($search, $lang, $first-record, 10),
-                source:ekangyur-page(source:ekangyur-volume-number(xs:integer($volume)), xs:integer($page), true()),
-                source:ekangyur-volumes(xs:integer($volume)),
+                source:etext-page($work, $volume, $page, true()),
+                source:etext-volumes($work, xs:integer($volume)),
                 contributors:persons(false())
             )
             else

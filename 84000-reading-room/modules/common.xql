@@ -28,8 +28,6 @@ declare variable $common:sections-path := concat($common:tei-path, '/sections');
 (:declare variable $common:outlines-path := concat($common:data-path, '/outlines');:)
 declare variable $common:import-data-collection := '/84000-import-data';
 declare variable $common:import-data-path := concat('/db/apps', $common:import-data-collection);
-declare variable $common:ekangyur-work := 'UT4CZ5369';
-declare variable $common:ekangyur-path := concat('/db/apps/eKangyur/data/', $common:ekangyur-work);
 declare variable $common:environment-path := '/db/system/config/db/system/environment.xml';
 declare variable $common:environment := doc($common:environment-path)/m:environment;
 
@@ -362,7 +360,7 @@ declare function common:auth-environment() as xs:boolean {
         false()
 };
 
-declare function common:valid-lang($lang) as xs:string {
+declare function common:valid-lang($lang as xs:string) as xs:string {
     if(lower-case($lang) eq 'bo-ltn') then
         'Bo-Ltn'
     else if(lower-case($lang) eq 'sa-ltn') then

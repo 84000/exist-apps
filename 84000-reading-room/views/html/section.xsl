@@ -22,7 +22,7 @@
                         
                         <xsl:if test="$section-id eq 'lobby'">
                             <span class="title">
-                                <xsl:value-of select="'The Lobby'"/>
+                                <xsl:value-of select="'The Collection'"/>
                             </span>
                         </xsl:if>
                         
@@ -33,7 +33,7 @@
                                     <li>
                                         <a>
                                             <xsl:attribute name="href" select="common:internal-link('/section/lobby.html', (), '', /m:response/@lang)"/>
-                                            <xsl:value-of select="'The Lobby'"/>
+                                            <xsl:value-of select="'The Collection'"/>
                                         </a>
                                     </li>
                                 </xsl:if>
@@ -679,7 +679,7 @@
                                         <hr class="visible-xs visible-sm sml-margin"/>
                                         
                                         <xsl:if test="m:translation/m:publication-date/text()">
-                                            <div class="small sml-margin bottom">
+                                            <div class="small italic sml-margin bottom">
                                                 <xsl:value-of select="concat('Published ', format-date(m:translation/m:publication-date, '[FNn,*-3], [D1o] [MNn,*-3] [Y]'))"/>
                                             </div>
                                         </xsl:if>
@@ -722,13 +722,13 @@
                                         
                                     </xsl:when>
                                     <xsl:when test="@status gt '0'">
-                                        <div class="small sml-margin bottom text-warning visible-md">
-                                            <xsl:value-of select="'In progress'"/>
+                                        <div class="small italic sml-margin bottom text-warning visible-md visible-lg">
+                                            <xsl:value-of select="'Translation in progress'"/>
                                         </div>
                                     </xsl:when>
                                     <xsl:otherwise>
-                                        <div class="small sml-margin bottom text-muted visible-md">
-                                            <xsl:value-of select="'Not Started'"/>
+                                        <div class="small italic sml-margin bottom text-muted visible-md visible-lg">
+                                            <xsl:value-of select="'Translation not Started'"/>
                                         </div>
                                     </xsl:otherwise>
                                 </xsl:choose>

@@ -26,7 +26,7 @@ declare variable $tei-content:title-types :=
         <title-lang id="zh">Chinese</title-lang>
     </title-types>;
 
-declare function tei-content:id($tei as element()) as xs:string {
+declare function tei-content:id($tei as element(tei:TEI)) as xs:string {
     (: Returns the idno in a given tei doc :)
     $tei//tei:publicationStmt/tei:idno/@xml:id
 };
@@ -67,7 +67,7 @@ declare function tei-content:tei($resource-id as xs:string, $resource-type as xs
     
 };
 
-declare function tei-content:title($tei as element()) as xs:string {
+declare function tei-content:title($tei as element(tei:TEI)) as xs:string {
     (: Returns a standardised title in a given tei doc :)
     
     let $title := normalize-space($tei//tei:fileDesc//tei:title[@type='mainTitle'][@xml:lang eq 'en'][1]/text())
@@ -92,7 +92,7 @@ declare function tei-content:title($tei as node(), $type as xs:string?, $lang as
     translate(normalize-space(data($tei//tei:titleStmt/tei:title[@type eq $type][lower-case(@xml:lang) = $lang])), '&#x2003;', '&#x20;')
 };
 
-declare function tei-content:titles($tei as element()) as element() {
+declare function tei-content:titles($tei as element(tei:TEI)) as element() {
 
     <titles xmlns="http://read.84000.co/ns/1.0">
     {
@@ -108,7 +108,7 @@ declare function tei-content:titles($tei as element()) as element() {
     
 };
 
-declare function tei-content:title-set($tei as element(), $type as xs:string) as element()* {
+declare function tei-content:title-set($tei as element(tei:TEI), $type as xs:string) as element()* {
     
     let $bo := tei-content:title($tei, $type , 'bo')
     let $bo-ltn := tei-content:title($tei, $type , ('bo-ltn', ''))
@@ -146,7 +146,7 @@ declare function tei-content:title-set($tei as element(), $type as xs:string) as
     
 };
 
-declare function tei-content:translation-status($tei as element()) as xs:string {
+declare function tei-content:translation-status($tei as element(tei:TEI)) as xs:string {
     (: Returns the status of the text :)
     let $status := $tei//tei:teiHeader//tei:publicationStmt/@status
     return
@@ -156,22 +156,13 @@ declare function tei-content:translation-status($tei as element()) as xs:string 
             ''
 };
 
-declare function tei-content:translation-status-group($tei as element()) as xs:string? {
+declare function tei-content:translation-status-group($tei as element(tei:TEI)) as xs:string? {
     (: Returns the status group of the text :)
     string($tei-content:text-statuses/m:status[@status-id eq tei-content:translation-status($tei)]/@group)
 };
 
 declare function tei-content:text-statuses-selected($selected-ids as xs:string*) as element() {
     <text-statuses xmlns="http://read.84000.co/ns/1.0">
-    {
-        element status 
-        { 
-            attribute value { '0' },
-            if ('0' = $selected-ids) then attribute selected { 'selected' } else '',
-            text { '0 / Not started' }
-            
-        }
-    }
     {
         for $status in $tei-content:text-statuses/m:status
         return 
@@ -187,7 +178,7 @@ declare function tei-content:text-statuses-selected($selected-ids as xs:string*)
     </text-statuses>
 };
 
-declare function tei-content:source-bibl($tei as element(), $resource-id as xs:string) as node()? {
+declare function tei-content:source-bibl($tei as element(tei:TEI), $resource-id as xs:string) as node()? {
     (: Returns a bibl node based on a resource-id :)
     let $bibl := $tei//tei:sourceDesc/tei:bibl[@key eq lower-case($resource-id)][1]
     return
@@ -197,7 +188,7 @@ declare function tei-content:source-bibl($tei as element(), $resource-id as xs:s
             $bibl
 };
 
-declare function tei-content:source($tei as element(), $resource-id as xs:string) as element() {
+declare function tei-content:source($tei as element(tei:TEI), $resource-id as xs:string) as element() {
     
     (: Returns a source node filtered by resource-id :)
     
@@ -216,14 +207,23 @@ declare function tei-content:source($tei as element(), $resource-id as xs:string
                     <author>{ normalize-space($author/text()) }</author>
             }
             </authors>
-            <location>
-                <start volume="{ $bibl/tei:location/tei:start/@volume }" page="{ $bibl/tei:location/tei:start/@page }"/>
-                <end volume="{ $bibl/tei:location/tei:end/@volume }" page="{ $bibl/tei:location/tei:end/@page }"/>
-            </location>
+            {
+                tei-content:location($bibl)
+            }
         </source>
 };
 
-declare function tei-content:ancestors($tei as element(), $resource-id as xs:string, $nest as xs:integer) as element()? {
+declare function tei-content:location($bibl as element(tei:bibl)) as element() {
+    <location xmlns="http://read.84000.co/ns/1.0" key="{ $bibl/@key }" work="{ $bibl/tei:location/@work }"  count-pages="{common:integer($bibl/tei:location/@count-pages)}">
+    { 
+        for $volume in $bibl/tei:location/tei:volume
+        return
+            <volume number="{ $volume/@number }" start-page="{ $volume/@start-page }" end-page="{ $volume/@end-page }"/>
+    }
+    </location>
+};
+
+declare function tei-content:ancestors($tei as element(tei:TEI), $resource-id as xs:string, $nest as xs:integer) as element()? {
     
     (: Returns an ancestor tree for the translation :)
     
@@ -244,7 +244,7 @@ declare function tei-content:ancestors($tei as element(), $resource-id as xs:str
 };
 
 
-declare function tei-content:locked-by-user($tei as element()) as xs:string? {
+declare function tei-content:locked-by-user($tei as element(tei:TEI)) as xs:string? {
     
     let $document-uri := base-uri($tei)
     let $document-uri-tokenised := tokenize($document-uri, '/')
@@ -255,7 +255,7 @@ declare function tei-content:locked-by-user($tei as element()) as xs:string? {
 
 };
 
-declare function tei-content:document-url($tei as element()) as xs:string {
+declare function tei-content:document-url($tei as element(tei:TEI)) as xs:string {
     
     let $document-uri := base-uri($tei)
     let $document-uri-tokenised := tokenize($document-uri, '/')
@@ -266,7 +266,7 @@ declare function tei-content:document-url($tei as element()) as xs:string {
 
 };
 
-declare function tei-content:last-updated($fileDesc as element()) as xs:dateTime? {
+declare function tei-content:last-updated($fileDesc as element()?) as xs:dateTime {
     xs:dateTime(($fileDesc/tei:notesStmt/tei:note[@type eq "lastUpdated"][@date-time gt ''][1]/@date-time, '2010-01-01T00:00:00')[1])
 };
 

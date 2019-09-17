@@ -24,7 +24,6 @@ return
         'operations', 
         (
             <request xmlns="http://read.84000.co/ns/1.0" include-acknowledgements="{ $include-acknowledgements }"/>,
-            contributors:teams(true(), $include-acknowledgements, true()),
-            $tei-content:text-statuses
+            contributors:teams(true(), $include-acknowledgements, true())
         )
     )

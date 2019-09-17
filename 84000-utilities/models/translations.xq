@@ -14,8 +14,8 @@ declare option exist:serialize "method=xml indent=no";
 (: Get config :)
 let $store-conf := $common:environment/m:store-conf
 
-(: Status ids in post :)
-let $texts-status := request:get-parameter('texts-status', '1')
+(: Validate the status ids in post :)
+let $texts-status := $tei-content:text-statuses/m:status[xs:string(@status-id) = request:get-parameter('texts-status', '1')][not(@status-id eq '0')]/@status-id
 
 (: Request includes file to store :)
 let $store-file-name := request:get-parameter('store', '')

@@ -82,7 +82,7 @@ declare function contributors:acknowledgements($uri as xs:string){
         contributors:acknowledgement($tei, $marked-paragraphs[exist:match])
 };
 
-declare function contributors:acknowledgement($tei as element(), $paragraphs as element()*) as element()* {
+declare function contributors:acknowledgement($tei as element(tei:TEI), $paragraphs as element()*) as element()* {
 
     let $title := tei-content:title($tei)
     let $translation-id := tei-content:id($tei)
@@ -251,7 +251,7 @@ declare function contributors:next-id() as xs:integer {
     max($contributors:contributors/m:contributors/m:person/@xml:id ! substring-after(., 'person-') ! common:integer(.)) + 1
 };
 
-declare function contributors:update-person($person as node()?) as xs:string {
+declare function contributors:update-person($person as element(m:person)?) as xs:string {
     
     let $person-id :=
         if($person/@xml:id) then
@@ -291,7 +291,7 @@ declare function contributors:update-person($person as node()?) as xs:string {
         
 };
 
-declare function contributors:delete($person as node()) as element()? {
+declare function contributors:delete($person as element(m:person)) as element()? {
     common:update('contributor-person', $person, (), (), ())
 };
 
@@ -299,7 +299,7 @@ declare function contributors:next-team-id() as xs:integer {
     max($contributors:contributors/m:contributors/m:team/@xml:id ! substring-after(., 'team-') ! common:integer(.)) + 1
 };
 
-declare function contributors:update-team($team as node()?) as xs:string {
+declare function contributors:update-team($team as element(m:team)?) as xs:string {
     
     let $team-id :=
         if($team/@xml:id) then
@@ -332,7 +332,7 @@ declare function contributors:next-institution-id() as xs:integer {
     max($contributors:contributors/m:contributors/m:institution/@xml:id ! substring-after(., 'institution-') ! common:integer(.)) + 1
 };
 
-declare function contributors:update-institution($institution as node()?) as xs:string {
+declare function contributors:update-institution($institution as element(m:institution)?) as xs:string {
     
     let $institution-id :=
         if($institution/@xml:id) then

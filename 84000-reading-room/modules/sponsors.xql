@@ -100,7 +100,7 @@ declare function sponsors:next-id() as xs:integer {
     max($sponsors:sponsors/m:sponsors/m:sponsor/@xml:id ! substring-after(., 'sponsor-') ! common:integer(.)) + 1
 };
 
-declare function sponsors:update($sponsor as node()?) as xs:string {
+declare function sponsors:update($sponsor as element(m:sponsor)?) as xs:string {
     
     let $sponsor-id :=
         if($sponsor/@xml:id) then
@@ -147,6 +147,6 @@ declare function sponsors:update($sponsor as node()?) as xs:string {
         
 };
 
-declare function sponsors:delete($sponsor as element()){
+declare function sponsors:delete($sponsor as element(m:sponsor)){
     common:update('sponsor', $sponsor, (), (), ())
 };

@@ -1,5 +1,16 @@
 xquery version "3.1";
-
+(:
+    Functions relating to operations/translation-status.xml
+    
+    This functions as a cache for meta about the translations 
+    e.g. the word count and glossary count of a particular version of the translation.
+    If a file is queried and the version is out of date or not existing then the 
+    cache will be updated for that record and the result served.
+    The file also contains notes about the translation project.
+    
+    operations/translation-status.xml is not deployed between servers. 
+    DO NOT use it to store transferrable information, only information specific to this server.
+:)
 module namespace translation-status="http://read.84000.co/translation-status";
 
 import module namespace common="http://read.84000.co/common" at "common.xql";
@@ -158,7 +169,7 @@ declare function translation-status:is-current-version($tei-version-str as xs:st
     string($tei-version-str) eq string($cached-version-str)
 };
 
-declare function translation-status:word-count($tei as element()) as xs:integer {
+declare function translation-status:word-count($tei as element(tei:TEI)) as xs:integer {
     
     let $text-id := tei-content:id($tei)
     let $tei-version-str := translation:version-str($tei)
@@ -178,7 +189,7 @@ declare function translation-status:word-count($tei as element()) as xs:integer 
          
 };
 
-declare function translation-status:glossary-count($tei as element()) as xs:integer {
+declare function translation-status:glossary-count($tei as element(tei:TEI)) as xs:integer {
     
     let $text-id := tei-content:id($tei)
     let $tei-version-str := translation:version-str($tei)

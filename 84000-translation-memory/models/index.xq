@@ -13,48 +13,48 @@ import module namespace functx="http://www.functx.com";
 
 declare option exist:serialize "method=xml indent=no";
 
+(: Get translations for list. Do it first so we can default to first :)
 let $translations := translations:files($tei-content:published-statuses)
 let $translation-id := request:get-parameter('translation-id', $translations/m:file[1]/@id)
-let $translation := tei-content:tei($translation-id, 'translation')
-let $toh-key := translation:toh-key($translation, '') (: get the first/default toh-key so that it is consistent :)
-let $volume := translation:volume($translation, $toh-key)
-let $folios := translation:folios($translation, $toh-key)
-let $folio-request := request:get-parameter('folio', '')
-let $volume-request := request:get-parameter('volume', '')
-let $folio := 
-    if(xs:string($volume) eq xs:string($volume-request) and $folios/m:folio[lower-case(@id) eq $folio-request]) then
-        lower-case($folio-request)
+
+(: Get the tei :)
+let $tei:= tei-content:tei($translation-id, 'translation')
+(: Get the first/default toh-key so that it is consistent :)
+let $toh-key := translation:toh-key($tei, '') 
+let $location:= translation:location($tei, $toh-key)
+
+(: Get all the folios in the translation :)
+let $folios := translation:folios($tei, $toh-key)
+let $folio-request := request:get-parameter('folio', $folios/m:folio[1]/@tei-folio)
+let $folio := $folios/m:folio[lower-case(@tei-folio) = lower-case($folio-request)][1]
+let $folio :=
+    if(not($folio)) then
+        $folios/m:folio[1]
     else
-        lower-case($folios/m:folio[1]/@id)
+        $folio
 
 let $action := 
     if(request:get-parameter('action', '') eq 'remember-translation') then
-        translation-memory:remember($translation-id, $folio, request:get-parameter('source', ''), request:get-parameter('translation', ''))
+        translation-memory:remember($translation-id, $folio/@tei-folio, request:get-parameter('source', ''), request:get-parameter('translation', ''))
     else
         ()
 
-let $ekangyur-volume-number := source:ekangyur-volume-number($volume)
-let $folio-str := substring-after($folio, 'f.')
-let $folio-page := substring-before($folio-str, '.')
-let $folio-side := substring-after($folio-str, '.')
-let $ekangyur-page-number := 
-    if(functx:is-a-number($folio-page)) then 
-        source:ekangyur-page-number($volume, $folio-page, $folio-side)
-    else
-        0
-
 return
-    
     common:response(
         'translation-memory',
         'translation-memory',
         (
-            <request xmlns="http://read.84000.co/ns/1.0" translation-id="{ $translation-id }" folio="{ $folio }" />,
+            <request xmlns="http://read.84000.co/ns/1.0" translation-id="{ $translation-id }" folio="{ $folio/@tei-folio }" />,
             <action xmlns="http://read.84000.co/ns/1.0">{ $action }</action>,
             $translations,
             $folios,
-            translation:folio-content($translation, $folio, $toh-key),
-            source:ekangyur-page($ekangyur-volume-number, $ekangyur-page-number, true()),
-            translation-memory:folio($translation-id, $folio)
+            if ($folio) then
+            (
+                translation:folio-content($tei, $toh-key, $folio/@page-in-text),
+                source:etext-page($location, $folio/@page-in-text, true()),
+                translation-memory:folio($translation-id, $folio/@tei-folio)
+            )
+            else
+                ()
         )
     )

@@ -33,8 +33,7 @@ let $translation-data :=
         xmlns="http://read.84000.co/ns/1.0" 
         id="{ tei-content:id($tei) }"
         status="{ tei-content:translation-status($tei) }"
-        page-url="{ $page-url }"
-        ekangyur-work="{ $common:ekangyur-work }">
+        page-url="{ $page-url }">
         { tei-content:ancestors($tei, $resource-id, 1) }
         { translation:titles($tei) }
         { translation:long-titles($tei) }
@@ -55,11 +54,8 @@ let $translation-data :=
         { translation:glossary($tei) }
     </translation>
 
-(: Parse the milestones :)
-let $translation-data-milestones := transform:transform($translation-data, doc(concat($common:app-path, "/xslt/milestones.xsl")), <parameters/>)
-
-(: Parse the internal refs :)
-let $translation-data-internal-refs := transform:transform($translation-data-milestones, doc(concat($common:app-path, "/xslt/internal-refs.xsl")), <parameters/>)
+(: Parse the milestones, refs and pointers :)
+let $translation-data-internal-refs := transform:transform($translation-data, doc(concat($common:app-path, "/xslt/internal-refs.xsl")), <parameters/>)
 
 return
     common:response(

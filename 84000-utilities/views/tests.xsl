@@ -43,7 +43,7 @@
                                             <ul>
                                                 <li>
                                                     <a href="/validate.html?type=translations" target="validate-translations">
-                                                        <xsl:value-of select="'Translations'"/>
+                                                        <xsl:value-of select="'Published translations'"/>
                                                     </a>
                                                 </li>
                                                 <li>
@@ -52,13 +52,13 @@
                                                     </a>
                                                 </li>
                                                 <li>
-                                                    <a href="/validate.html?type=placeholders&amp;section=O1JC11494" target="validate-kangyur-placeholders">
-                                                        <xsl:value-of select="'Kangyur placeholders'"/>
+                                                    <a href="/validate.html?type=placeholders&amp;work=UT4CZ5369" target="validate-kangyur-placeholders">
+                                                        <xsl:value-of select="'Kangyur un-published'"/>
                                                     </a>
                                                 </li>
                                                 <li>
-                                                    <a href="/validate.html?type=placeholders&amp;section=O1JC7630" target="validate-tengyur-placeholders">
-                                                        <xsl:value-of select="'Tengyur placeholders'"/>
+                                                    <a href="/validate.html?type=placeholders&amp;work=UT23703" target="validate-tengyur-placeholders">
+                                                        <xsl:value-of select="'Tengyur un-published'"/>
                                                     </a>
                                                 </li>
                                             </ul>
@@ -72,7 +72,7 @@
                                                 <xsl:value-of select="'All texts should pass all tests before a new version is relased.'"/>
                                                 <br/>
                                                 <span class="text-danger">
-                                                    <xsl:value-of select="'Please use these page sparingly as they use lots of server resources.'"/>
+                                                    <xsl:value-of select="'Please use these pages sparingly as they use lots of server resources.'"/>
                                                 </span>
                                             </div>
                                             <ul>

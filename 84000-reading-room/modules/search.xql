@@ -135,7 +135,7 @@ declare function search:search($request as xs:string, $first-record as xs:double
         
 };
 
-declare function search:source($tei-type as xs:string, $tei as node()) as element() {
+declare function search:source($tei-type as xs:string, $tei as element(tei:TEI)) as element() {
     <source xmlns="http://read.84000.co/ns/1.0"
         tei-type="{ $tei-type }" 
         resource-id="{ tei-content:id($tei) }" 

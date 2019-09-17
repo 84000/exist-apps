@@ -5,26 +5,26 @@
     <xsl:import href="../../xslt/84000-html.xsl"/>
     
     <!-- Look up environment variables -->
-    <xsl:variable name="environment-path" select="if(/m:response/@environment-path)then /m:response/@environment-path else '/db/system/config/db/system/environment.xml'"/>
-    <xsl:variable name="environment" select="doc($environment-path)/m:environment"/>
-    <xsl:variable name="front-end-path" select="$environment/m:url[@id eq 'front-end']/text()"/>
-    <xsl:variable name="reading-room-path" select="$environment/m:url[@id eq 'reading-room']/text()"/>
-    <xsl:variable name="communications-site-path" select="$environment/m:url[@id eq 'communications-site']/text()"/>
-    <xsl:variable name="app-version" select="/m:response/@app-version"/>
-    <xsl:variable name="ga-tracking-id" select="$environment/m:google-analytics/@tracking-id"/>
+    <xsl:variable name="environment-path" select="if(/m:response/@environment-path)then /m:response/@environment-path else '/db/system/config/db/system/environment.xml'" as="xs:string"/>
+    <xsl:variable name="environment" select="doc($environment-path)/m:environment" as="element(m:environment)"/>
+    <xsl:variable name="front-end-path" select="$environment/m:url[@id eq 'front-end']/text()" as="xs:string"/>
+    <xsl:variable name="reading-room-path" select="$environment/m:url[@id eq 'reading-room']/text()" as="xs:string"/>
+    <xsl:variable name="communications-site-path" select="$environment/m:url[@id eq 'communications-site']/text()" as="xs:string"/>
+    <xsl:variable name="app-version" select="/m:response/@app-version" as="xs:string?"/>
+    <xsl:variable name="ga-tracking-id" select="$environment/m:google-analytics/@tracking-id" as="xs:string"/>
     
     <!-- get shared html -->
-    <xsl:variable name="eft-header" select="doc('../../xslt/84000-header.xml')/m:eft-header"/>
-    <xsl:variable name="eft-footer" select="doc('../../xslt/84000-footer.xml')/m:eft-footer"/>
+    <xsl:variable name="eft-header" select="doc('../../xslt/84000-header.xml')/m:eft-header" as="element(m:eft-header)"/>
+    <xsl:variable name="eft-footer" select="doc('../../xslt/84000-footer.xml')/m:eft-footer" as="element(m:eft-footer)"/>
     
     <!-- language -->
-    <xsl:variable name="lang" select="if(/m:response/@lang) then /m:response/@lang else 'en'"/>
+    <xsl:variable name="lang" select="if(/m:response/@lang) then /m:response/@lang else 'en'" as="xs:string"/>
     
     <!-- view-mode -->
-    <xsl:variable name="view-mode" select="/m:response/m:request/@view-mode"/>
+    <xsl:variable name="view-mode" select="/m:response/m:request/@view-mode" as="xs:string?"/>
     
     <!-- override navigation params -->
-    <xsl:variable name="active-url">
+    <xsl:variable name="active-url" as="xs:string">
         <!-- <xsl:value-of select="common:internal-link('http://read.84000.co/', (), '', $lang)"/> -->
         <xsl:choose>
             <xsl:when test="/m:response/m:section/@id eq 'ALL-TRANSLATED'">
@@ -57,10 +57,10 @@
         </xsl:choose>
     </xsl:variable>
     
-    <xsl:variable name="local-comms-url" select="$communications-site-path"/>
-    <xsl:variable name="local-reading-room-url" select="$reading-room-path"/>
-    <xsl:variable name="local-front-end-url" select="$front-end-path"/>
-    <xsl:variable name="default-search-form-target" select="'reading-room'"/>
+    <xsl:variable name="local-comms-url" select="$communications-site-path" as="xs:string"/>
+    <xsl:variable name="local-reading-room-url" select="$reading-room-path" as="xs:string"/>
+    <xsl:variable name="local-front-end-url" select="$front-end-path" as="xs:string"/>
+    <xsl:variable name="default-search-form-target" select="'reading-room'" as="xs:string"/>
     
     <xsl:output method="html" indent="no" doctype-system="about:legacy-compat" omit-xml-declaration="yes"/>
     
@@ -68,7 +68,6 @@
     <xsl:template name="html-head">
         
         <xsl:param name="front-end-path" required="yes" as="xs:string"/>
-        <xsl:param name="app-version" required="yes" as="xs:string"/>
         <xsl:param name="page-url" required="yes" as="xs:string"/>
         <xsl:param name="page-title" required="yes" as="xs:string"/>
         <xsl:param name="page-description" required="yes" as="xs:string"/>
@@ -154,7 +153,6 @@
     <!-- html footer -->
     <xsl:template name="html-footer">
         
-        <xsl:param name="app-version" required="yes" as="xs:string"/>
         <xsl:param name="front-end-path" required="yes" as="xs:string"/>
         <xsl:param name="ga-tracking-id" required="no" as="xs:string?"/>
         
@@ -208,7 +206,6 @@
             <!-- Get the common <head> -->
             <xsl:call-template name="html-head">
                 <xsl:with-param name="front-end-path" select="$front-end-path"/>
-                <xsl:with-param name="app-version" select="$app-version"/>
                 <xsl:with-param name="page-url" select="$page-url"/>
                 <xsl:with-param name="page-title" select="$page-title"/>
                 <xsl:with-param name="page-description" select="$page-description"/>
@@ -223,7 +220,7 @@
                 <!-- Environment alert -->
                 <xsl:if test="$environment/m:warning/text()">
                     <div class="environment-warning">
-                        <xsl:value-of select="$environment/m:warning/text()"/> / <xsl:value-of select="@user-name"/> / <xsl:value-of select="@app-version"/> / <xsl:value-of select="@exist-version"/>
+                        <xsl:value-of select="$environment/m:warning/text()"/> / <xsl:value-of select="@user-name"/> / <xsl:value-of select="$app-version"/> / <xsl:value-of select="@exist-version"/>
                     </div>
                 </xsl:if>
                 
@@ -241,7 +238,6 @@
                 <!-- Get the common <footer> -->
                 <xsl:call-template name="html-footer">
                     <xsl:with-param name="front-end-path" select="$front-end-path"/>
-                    <xsl:with-param name="app-version" select="$app-version"/>
                     <xsl:with-param name="ga-tracking-id" select="$ga-tracking-id"/>
                 </xsl:call-template>
                 
@@ -267,7 +263,6 @@
             <!-- Get the common <head> -->
             <xsl:call-template name="html-head">
                 <xsl:with-param name="front-end-path" select="$front-end-path"/>
-                <xsl:with-param name="app-version" select="$app-version"/>
                 <xsl:with-param name="page-url" select="$page-url"/>
                 <xsl:with-param name="page-title" select="$page-title"/>
                 <xsl:with-param name="page-description" select="$page-description"/>
@@ -282,7 +277,7 @@
                 <!-- Environment alert -->
                 <xsl:if test="$environment/m:warning/text()">
                     <div class="environment-warning">
-                        <xsl:value-of select="$environment/m:warning/text()"/> / <xsl:value-of select="@user-name"/> / <xsl:value-of select="@app-version"/> / <xsl:value-of select="@exist-version"/>
+                        <xsl:value-of select="$environment/m:warning/text()"/> / <xsl:value-of select="@user-name"/> / <xsl:value-of select="$app-version"/> / <xsl:value-of select="@exist-version"/>
                     </div>
                 </xsl:if>
                 
@@ -297,7 +292,6 @@
                 <!-- Get the common <footer> -->
                 <xsl:call-template name="html-footer">
                     <xsl:with-param name="front-end-path" select="$front-end-path"/>
-                    <xsl:with-param name="app-version" select="$app-version"/>
                     <xsl:with-param name="ga-tracking-id" select="$ga-tracking-id"/>
                 </xsl:call-template>
                 
@@ -379,7 +373,7 @@
     </xsl:template>
     
     <!-- Localization helpers -->
-    <!-- Coped from functions.xsl to avoid duplicate include warning -->
+    <!-- Copied from functions.xsl to avoid duplicate include warning -->
     <xsl:function name="common:internal-link">
         <xsl:param name="url" required="yes"/>
         <xsl:param name="attributes" required="yes"/>

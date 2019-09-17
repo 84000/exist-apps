@@ -62,6 +62,9 @@
                                         <li>
                                             <a href="?collection=config">Config collection</a>
                                         </li>
+                                        <li>
+                                            <a href="?collection=source">Tibetan source collection</a>
+                                        </li>
                                     </ul>
                                     
                                 </div>

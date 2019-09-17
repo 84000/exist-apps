@@ -24,10 +24,6 @@
                             <div class="col-sm-9">
                                 <form action="index.html" method="post" id="translation-memory-form" class="form-inline filter-form">
                                     
-                                    <input type="hidden" name="volume">
-                                        <xsl:attribute name="value" select="m:folios/@volume"/>
-                                    </input>
-                                    
                                     <div class="form-group">
                                         <label for="translation-id" class="sr-only">Translation</label>
                                         <select name="translation-id" class="form-control" id="translation-id" title="Translation">
@@ -48,30 +44,17 @@
                                         <label for="folio" class="sr-only">Folio</label>
                                         <select name="folio" class="form-control" id="folio" title="Folio">
                                             <xsl:for-each select="m:folios/m:folio">
-                                                <xsl:sort select="xs:integer(@page)"/>
-                                                <xsl:sort select="@side"/>
+                                                <xsl:sort select="xs:integer(@page-in-text)"/>
                                                 <option>
-                                                    <xsl:attribute name="value" select="@id"/>
-                                                    <xsl:if test="@id eq /m:response/m:request/@folio">
+                                                    <xsl:attribute name="value" select="@tei-folio"/>
+                                                    <xsl:if test="@tei-folio eq /m:response/m:request/@folio">
                                                         <xsl:attribute name="selected" select="'selected'"/>
                                                     </xsl:if>
-                                                    <xsl:value-of select="@id"/>
+                                                    <xsl:value-of select="@tei-folio"/>
                                                 </option>
                                             </xsl:for-each>
                                         </select>
                                     </div>
-                                    
-                                    <!-- 
-                                    <div class="form-group">
-                                        <label for="preceding-lines" class="sr-only">Preceding lines</label>
-                                        <input type="number" name="preceding-lines" id="preceding-lines" value="2" class="form-control" min="1" max="7" title="Preceding lines"/>
-                                    </div>
-                                    
-                                    <div class="form-group">
-                                        <label for="trailing-lines" class="sr-only">Preceding lines</label>
-                                        <input type="number" name="trailing-lines" id="trailing-lines" value="2" class="form-control"  min="1" max="7" title="Trailing lines"/>
-                                    </div>
-                                    -->
                                     
                                     <div class="form-group">
                                         <button class="btn btn-default" type="submit">
@@ -134,10 +117,6 @@
                                         <xsl:attribute name="value" select="m:request/@translation-id"/>
                                     </input>
                                     
-                                    <input type="hidden" name="volume">
-                                        <xsl:attribute name="value" select="m:folio-content/@volume"/>
-                                    </input>
-                                    
                                     <input type="hidden" name="folio">
                                         <xsl:attribute name="value" select="m:request/@folio"/>
                                     </input>
@@ -157,7 +136,7 @@
                                     </div>
                                     
                                     <div class="form-group">
-                                        <button type="submit" class="btn btn-primary pull-right">Add to memory</button>
+                                        <button type="submit" class="btn btn-success pull-right">Add to memory</button>
                                     </div>
                                     
                                 </form>

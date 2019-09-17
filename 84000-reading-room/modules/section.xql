@@ -14,7 +14,7 @@ import module namespace translation="http://read.84000.co/translation" at "trans
 declare variable $section:sections := collection($common:sections-path);
 declare variable $section:texts := collection($common:translations-path);
 
-declare function section:titles($tei as element()) as element() {
+declare function section:titles($tei as element(tei:TEI)) as element() {
     <titles xmlns="http://read.84000.co/ns/1.0">
     {
         tei-content:title-set($tei, 'mainTitle')
@@ -22,7 +22,7 @@ declare function section:titles($tei as element()) as element() {
     </titles>
 };
 
-declare function section:abstract($tei as element()) as element() {
+declare function section:abstract($tei as element(tei:TEI)) as element() {
 
     <abstract xmlns="http://read.84000.co/ns/1.0">
     { 
@@ -32,7 +32,7 @@ declare function section:abstract($tei as element()) as element() {
     
 };
 
-declare function section:warning($tei as element()) as element() {
+declare function section:warning($tei as element(tei:TEI)) as element() {
 
     <warning xmlns="http://read.84000.co/ns/1.0">
     { 
@@ -42,7 +42,7 @@ declare function section:warning($tei as element()) as element() {
     
 };
 
-declare function section:about($tei as element()) as element() {
+declare function section:about($tei as element(tei:TEI)) as element() {
 
     <about xmlns="http://read.84000.co/ns/1.0">
     { 
@@ -52,7 +52,7 @@ declare function section:about($tei as element()) as element() {
     
 };
 
-declare function section:text-stats($tei as element()) as element()* {
+declare function section:text-stats($tei as element(tei:TEI)) as element()* {
     let $descendants := section:descendants($tei, true())
     return
     (
@@ -61,11 +61,11 @@ declare function section:text-stats($tei as element()) as element()* {
     )
 };
 
-declare function section:descendants($tei as element(), $include-text-stats as xs:boolean) as element() {
+declare function section:descendants($tei as element(tei:TEI), $include-text-stats as xs:boolean) as element() {
     section:descendants($tei, $include-text-stats, 1)
 };
 
-declare function section:descendants($tei as element(), $include-text-stats as xs:boolean, $nest as xs:integer) as element()* {
+declare function section:descendants($tei as element(tei:TEI), $include-text-stats as xs:boolean, $nest as xs:integer) as element()* {
     
     let $id := upper-case(tei-content:id($tei))
     
@@ -185,7 +185,7 @@ declare function section:all-translated-texts() as element() {
     </texts>
 };
 
-declare function section:text($tei as node(), $resource-id as xs:string, $include-ancestors as xs:boolean) as element() {
+declare function section:text($tei as element(tei:TEI), $resource-id as xs:string, $include-ancestors as xs:boolean) as element() {
     <text xmlns="http://read.84000.co/ns/1.0">
         { attribute resource-id { $resource-id } }
         { attribute status { tei-content:translation-status($tei) } }
@@ -202,7 +202,7 @@ declare function section:text($tei as node(), $resource-id as xs:string, $includ
     </text>
 };
 
-declare function section:base-section($tei as node(), $published-only as xs:boolean, $include-text-stats as xs:boolean) as element() {
+declare function section:base-section($tei as element(tei:TEI), $published-only as xs:boolean, $include-text-stats as xs:boolean) as element() {
     
     let $id := tei-content:id($tei)
     
@@ -252,7 +252,7 @@ declare function section:base-section($tei as node(), $published-only as xs:bool
         
 };
 
-declare function section:sub-section($tei as node(), $published-only as xs:boolean) as element() {
+declare function section:sub-section($tei as element(tei:TEI), $published-only as xs:boolean) as element() {
     
     let $id := tei-content:id($tei)
     let $type := $tei//tei:teiHeader/tei:fileDesc/@type

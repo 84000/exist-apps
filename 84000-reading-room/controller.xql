@@ -167,7 +167,7 @@ else if(not(common:auth-environment()) or sm:is-authenticated()) then
             )
         else
             (: return the xml :)
-            if (request:get-parameter('folio', '') gt '') then
+            if (request:get-parameter('page', request:get-parameter('folio', '')) gt '') then
                 local:dispatch("/models/folio.xq", "",
                     <parameters xmlns="http://exist.sourceforge.net/NS/exist">
                         <add-parameter name="resource-id" value="{$resource-id}"/>

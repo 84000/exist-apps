@@ -46,4 +46,9 @@
         
     </xsl:template>
     
+    <!-- suppress namespace warning -->
+    <xsl:template match="dummy">
+        <!-- nothing -->
+    </xsl:template>
+    
 </xsl:stylesheet>

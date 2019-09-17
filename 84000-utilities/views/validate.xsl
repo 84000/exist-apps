@@ -20,9 +20,9 @@
                     <div class="panel-body">
                         
                         <h4>
-                            Schema: <xsl:value-of select="m:results/@schema"/>
+                            <xsl:value-of select="concat('Schema: ', m:results/@schema)"/>
                             <xsl:if test="m:results/@type eq 'placeholders'">
-                                / Section: <xsl:value-of select="m:results/@section"/>
+                                <xsl:value-of select="concat('| Work: ', m:results/@work)"/>
                             </xsl:if>
                         </h4>
                         
@@ -47,7 +47,7 @@
                                         </td>
                                         <td>
                                             <xsl:if test="m:result/m:error">
-                                                <a role="button" data-toggle="collapse" aria-expanded="false" aria-controls="collapseExample" class="center-vertical text-muted">
+                                                <a role="button" data-toggle="collapse" aria-expanded="false" class="center-vertical text-muted">
                                                     <xsl:attribute name="href" select="concat('#errors-', @id)"/>
                                                     <xsl:attribute name="aria-controls" select="concat('errors-', @id)"/>
                                                     <span>

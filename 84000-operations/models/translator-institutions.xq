@@ -27,7 +27,6 @@ return
             contributors:institutions(false()),
             contributors:regions(false()),
             contributors:institution-types(false()),
-            contributors:persons(false()),
-            $tei-content:text-statuses
+            contributors:persons(false())
         )
     )

@@ -46,17 +46,24 @@ declare function update-translation:update($tei as element()) as element()* {
                     (: Location :)
                     else if(starts-with($request-parameter, 'location-')) then
                         let $toh-key := substring-after($request-parameter, 'location-')
+                        let $volume-keys := 
+                            for $parameter in request:get-parameter-names()
+                                let $paramater-base := concat('volume-', $toh-key, '-')
+                                where starts-with($parameter, $paramater-base)
+                            return substring-after($parameter, $paramater-base)
                         return
                             element { QName("http://www.tei-c.org/ns/1.0", "location") }{
+                                attribute work { request:get-parameter(concat('work-', $toh-key), '0') },
                                 attribute count-pages { request:get-parameter(concat('count-pages-', $toh-key), '0') },
-                                element start {
-                                    attribute volume { request:get-parameter(concat('start-volume-', $toh-key), '0') },
-                                    attribute page { request:get-parameter(concat('start-page-', $toh-key), '0') }
-                                },
-                                element end {
-                                    attribute volume { request:get-parameter(concat('end-volume-', $toh-key), '0') },
-                                    attribute page { request:get-parameter(concat('end-page-', $toh-key), '0') }
-                                }
+                                for $volume-key in $volume-keys
+                                    let $volume-number := request:get-parameter(concat('volume-', $toh-key, '-', $volume-key), '0')
+                                    where $volume-number gt '0'
+                                return
+                                    element volume {
+                                        attribute number { $volume-number },
+                                        attribute start-page { request:get-parameter(concat('start-page-', $toh-key, '-', $volume-key), '0') },
+                                        attribute end-page { request:get-parameter(concat('end-page-', $toh-key, '-', $volume-key), '0') }
+                                    }
                             }
                     
                     (: Translator summary node may or may not exist :)
@@ -118,18 +125,26 @@ declare function update-translation:update($tei as element()) as element()* {
                                 ()
                     
                     (: Version :)
-                    else if($request-parameter eq 'text-version' and normalize-space(request:get-parameter('text-version', '')) gt '') then
-                        element { QName("http://www.tei-c.org/ns/1.0", "editionStmt") }{
-                            element edition {
-                                text { concat(normalize-space(request:get-parameter('text-version', '')), ' ') },
-                                element date {
-                                    if(normalize-space(request:get-parameter('text-version-date', '')) gt '') then
-                                        request:get-parameter('text-version-date', '')
-                                    else
-                                        format-dateTime(current-dateTime(), '[Y]')
+                    else if($request-parameter eq 'text-version') then
+                        let $request-version := normalize-space(request:get-parameter('text-version', ''))
+                        let $request-date := normalize-space(request:get-parameter('text-version-date', ''))
+                        return
+                            element { QName("http://www.tei-c.org/ns/1.0", "editionStmt") }{
+                                element edition {
+                                    text {
+                                        if($request-version gt '') then
+                                            concat($request-version, ' ') 
+                                        else
+                                            concat('0.1', ' ') 
+                                    },
+                                    element date {
+                                        if($request-date gt '') then
+                                            $request-date
+                                        else
+                                            format-dateTime(current-dateTime(), '[Y]')
+                                    }
                                 }
                             }
-                        }
                     
                     (: Publication date :)
                     else if($request-parameter eq 'publication-date') then
@@ -180,7 +195,7 @@ declare function update-translation:update($tei as element()) as element()* {
                 else
                     ()
             
-            (: Get the existing value so we can compare :)
+            (: Get the existing value so we can compare / replace :)
             let $existing-value := 
                 if(starts-with($request-parameter, 'title-text-')) then
                     common:item-from-index($parent/tei:title, substring-after($request-parameter, 'title-text-'))

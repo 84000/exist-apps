@@ -80,7 +80,7 @@
                             <xsl:value-of select="'ignore'"/>
                         </xsl:when>
                         <xsl:otherwise>
-                            <xsl:value-of select="'term'"/>
+                            <xsl:value-of select="'match'"/>
                         </xsl:otherwise>
                     </xsl:choose>
                 </xsl:with-param>
@@ -159,34 +159,38 @@
     </xsl:template>
     
     <xsl:template match="tei:ref">
-        <xsl:if test="(not(@rend) or not(@rend eq 'hidden')) and (not(@key) or @key eq /m:response/m:translation/m:source/@key)">
+        <!-- Only display visible <ref/>s-->
+        <!-- Some <ref/>s have been filtered out in translation-global based on @key -->
+        <xsl:if test="(not(@rend) or not(@rend eq 'hidden'))">
             <xsl:choose>
+                
+                <!-- @cRef designates an encoded (folio) link and will also have been assigned a @folio-index -->
                 <xsl:when test="@cRef">
-                    <xsl:variable name="volume" select="/m:response/m:translation/m:source/m:location/m:start/@volume"/>
-                    <xsl:variable name="folio" select="substring-after(lower-case(@cRef), 'f.')"/>
-                    <xsl:variable name="anchor" select="common:folio-id(@cRef)"/>
                     <xsl:choose>
-                        <!-- Conditions for creating a link... -->
-                        <xsl:when test="not(@type) and /m:response/m:request/@doc-type eq 'html' and (not(@work) or compare(@work, /m:response/m:translation/@ekangyur-work) eq 0) and $volume and $folio">
+                        
+                        <!-- If it's html then add a link -->
+                        <xsl:when test="not(@type) and /m:response/m:request/@doc-type eq 'html' and @folio-index">
+                            
                             <a class="ref log-click">
-                                <xsl:attribute name="id" select="$anchor"/>
-                                <xsl:attribute name="href" select="concat('/source/', /m:response/m:translation/m:source/@key, '.html?folio=', $folio, '&amp;anchor=', $anchor)"/>
+                                <!-- define an anchor so we can link back to this point -->
+                                <xsl:attribute name="id" select="concat('source-link-', @folio-index)"/>
+                                <xsl:attribute name="href" select="concat('/source/', /m:response/m:translation/m:source/@key, '.html?page=', @folio-index)"/>
                                 <xsl:attribute name="data-ajax-target" select="'#popup-footer-source .data-container'"/>
-                                <xsl:value-of select="'['"/>
-                                <xsl:apply-templates select="@cRef"/>
-                                <xsl:value-of select="']'"/>
+                                <xsl:value-of select="concat('[', @cRef, ']')"/>
                             </a>
+                            
                         </xsl:when>
+                        
                         <!-- ...or just output the text. -->
                         <xsl:otherwise>
                             <span class="ref">
-                                <xsl:value-of select="'['"/>
-                                <xsl:apply-templates select="@cRef"/>
-                                <xsl:value-of select="']'"/>
+                                <xsl:value-of select="concat('[', @cRef, ']')"/>
                             </span>
                         </xsl:otherwise>
                     </xsl:choose>
                 </xsl:when>
+                
+                <!-- @target designates an external (http) link -->
                 <xsl:when test="@target">
                     <a target="_blank">
                         <xsl:attribute name="href">
@@ -198,6 +202,8 @@
                         <xsl:apply-templates select="text()"/>
                     </a>
                 </xsl:when>
+                
+                <!-- Otherwise just output the text -->
                 <xsl:otherwise>
                     <span class="ref">
                         <xsl:apply-templates select="text()"/>

@@ -117,6 +117,10 @@
                 <field name="consultant-id" match="@ref" type="xs:string"/>
             </create>
             
+            <create qname="tei:location">
+                <field name="source-page-count" match="@count-pages" type="xs:integer"/>
+            </create>
+            
             <create qname="tei:gloss">
                 <field name="gloss-type" match="@type" type="xs:string"/>
             </create>

@@ -11,15 +11,16 @@ import module namespace sponsorship="http://read.84000.co/sponsorship" at "../..
 
 declare option exist:serialize "method=xml indent=no";
 
+let $work := request:get-parameter('work', 'UT4CZ5369')
 let $status := local:get-status-parameter()
-let $section := request:get-parameter('section', 'O1JC11494')
 let $sort := request:get-parameter('sort', '')
 let $range := request:get-parameter('range', '')
-let $sponsored := request:get-parameter('sponsored', '')
+let $sponsorship-group := request:get-parameter('sponsorship-group', '')
 let $deduplicate := request:get-parameter('deduplicate', '')
 let $search-toh := request:get-parameter('search-toh', '')
 
-let $filtered-texts := translations:filtered-texts($section, $status, $sort, $range, $sponsored, $search-toh, $deduplicate)
+let $filtered-texts := translations:filtered-texts($work, $status, $sort, $range, $sponsorship-group, $search-toh, $deduplicate)
+
 let $filtered-texts-ids := $filtered-texts/m:text/@id
 
 let $users-groups := local:user-groups()
@@ -31,11 +32,11 @@ return
         (
             <request 
                 xmlns="http://read.84000.co/ns/1.0" 
+                work="{ $work }" 
                 status="{ $status }"
-                section="{ $section }"
                 sort="{ $sort }"
                 range="{ $range }"
-                sponsored="{ $sponsored }"
+                sponsorship-group="{ $sponsorship-group }"
                 deduplicate="{ $deduplicate }">
                 <search-toh>{ $search-toh }</search-toh>    
             </request>,
@@ -44,6 +45,7 @@ return
                 translation-status:texts($filtered-texts-ids)
             },
             tei-content:text-statuses-selected($status),
+            $translations:page-size-ranges,
             $sponsorship:sponsorship-groups,
             if('utilities' = $users-groups) then
                 element { QName('http://read.84000.co/ns/1.0', 'permission') } {

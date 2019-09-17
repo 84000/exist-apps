@@ -7,48 +7,61 @@
     <xsl:template match="/m:response">
         
         <xsl:variable name="content">
-            <div id="popup-footer-source" class="container">
+            <div class="container">
                 <div class="panel panel-default">
-                    <div class="panel-heading bold">
+                    <div class="panel-heading bold text-center">
                         <span class="title">
                             <xsl:value-of select="m:back-link/m:title"/>
                         </span>
                     </div>
                     <div class="panel-body">
                         <div class="ajax-data">
-                            <h3 class="title">
-                                <xsl:value-of select="concat('Folio ', m:request/@folio)"/>
+                            <h3 class="title text-center no-margin">
+                                <xsl:choose>
+                                    <xsl:when test="m:source[@work eq 'UT4CZ5369']">
+                                        <xsl:value-of select="concat('Kangyur volume ', m:source/@volume, ', folio ', m:source/@folio-in-etext)"/>
+                                    </xsl:when>
+                                    <xsl:when test="m:source[@work eq 'UT23703']">
+                                        <xsl:value-of select="concat('Tengyur volume ', m:source/@volume, ', folio ', m:source/@folio-in-etext)"/>
+                                    </xsl:when>
+                                </xsl:choose>
                             </h3>
-                            <hr/>
-                            <div class="container">
-                                <xsl:apply-templates select="m:source[@name eq 'ekangyur']/m:language[@xml:lang eq 'bo']"/>
+                            <div class="container top-margin bottom-margin">
+                                <xsl:apply-templates select="m:source/m:language[@xml:lang eq 'bo']"/>
                             </div>
-                            <hr/>
+                            <hr class="no-margin"/>
                             <div class="footer" id="source-footer">
-                                <div class="container">
-                                    <p>
-                                        <xsl:value-of select="concat('eKangyur ', m:source[@name eq 'ekangyur']/@ekangyur-id, ', page ', m:source[@name eq 'ekangyur']/@page, '.')"/>
-                                        <a href="#popover-content" class="info" role="button" data-toggle="popover" data-placement="top" data-trigger="focus" data-container="#source-footer">
-                                            <i class="fa fa-info-circle"/>
-                                        </a>
-                                    </p>
-                                </div>
-                                <div id="popover-content" class="hidden">
-                                    <h4 class="title">
-                                        <xsl:call-template name="local-text">
-                                            <xsl:with-param name="local-key" select="'ekangyur-description-title'"/>
-                                        </xsl:call-template>
-                                    </h4>
-                                    <div class="content">
+                                <div class="container top-margin bottom-margin">
+                                    <div id="ekangyur-description" class="well well-sml collapse">
+                                        <h4 class="no-top-margin">
+                                            <xsl:call-template name="local-text">
+                                                <xsl:with-param name="local-key" select="'ekangyur-description-title'"/>
+                                            </xsl:call-template>
+                                        </h4>
                                         <xsl:call-template name="local-text">
                                             <xsl:with-param name="local-key" select="'ekangyur-description-content'"/>
                                         </xsl:call-template>
                                     </div>
+                                    <p class="text-center small text-muted ">
+                                        <xsl:choose>
+                                            <xsl:when test="m:source[@work eq 'UT4CZ5369']">
+                                                <xsl:value-of select="concat('eKangyur ', m:source/@etext-id, ', page ', m:source/@page-in-volume, '.')"/>
+                                            </xsl:when>
+                                            <xsl:when test="m:source[@work eq 'UT23703']">
+                                                <xsl:value-of select="concat('eTengyur ', m:source/@etext-id, ', page ', m:source/@page-in-volume, '.')"/>
+                                            </xsl:when>
+                                        </xsl:choose>
+                                        <a href="#ekangyur-description" class="info-icon" role="button" data-toggle="collapse">
+                                            <i class="fa fa-info-circle"/>
+                                        </a>
+                                    </p>
+                                    
                                 </div>
                             </div>
                         </div>
-                        <div class="well well-sml">
-                            <p class="text-center text-muted">
+                        <hr class="no-margin"/>
+                        <div class="top-margin bottom-margin">
+                            <p class="text-center">
                                 <xsl:call-template name="local-text">
                                     <xsl:with-param name="local-key" select="'backlink-label'"/>
                                 </xsl:call-template>
@@ -66,7 +79,7 @@
         
         <xsl:call-template name="reading-room-page">
             <xsl:with-param name="page-url" select="concat('http://read.84000.co/section/', m:section/@id, '.html')"/>
-            <xsl:with-param name="page-class" select="'translation'"/>
+            <xsl:with-param name="page-class" select="''"/>
             <xsl:with-param name="page-title" select="concat('84000 Reading Room | ', m:section/m:titles/m:title[@xml:lang = 'en'])"/>
             <xsl:with-param name="page-description" select="normalize-space(m:section/m:abstract/tei:p[1]/text())"/>
             <xsl:with-param name="content" select="$content"/>

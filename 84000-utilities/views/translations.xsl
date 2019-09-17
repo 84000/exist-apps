@@ -35,7 +35,7 @@
                                 <div class="col-sm-7">
                                     <form action="translations.html" method="post" class="form-horizontal filter-form sml-margin top">
                                         <select name="texts-status" id="texts-status" class="form-control">
-                                            <xsl:for-each select="m:text-statuses/m:status">
+                                            <xsl:for-each select="m:text-statuses/m:status[not(@status-id eq '0')]">
                                                 <option>
                                                     <xsl:attribute name="value" select="@status-id"/>
                                                     <xsl:if test="@status-id eq $texts-status">

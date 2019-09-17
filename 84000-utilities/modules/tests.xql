@@ -123,6 +123,9 @@ declare function tests:translations($translation-id as xs:string) as item(){
                     {
                         tests:glossary($tei, $toh-html)
                     }
+                    {
+                        tests:refs($tei, $toh-html, $toh-key)
+                    }
                 </tests>
             </translation>
         }
@@ -548,6 +551,48 @@ declare function tests:glossary($tei as element()*, $html as element()*) as item
                     for $term-not-found in $html-terms-not-found
                     return 
                         <detail type="debug">{ concat('"', $term-not-found, '" HTML not found in TEI.') }</detail>
+                }
+            </details>
+        </test>
+};
+
+
+declare function tests:refs($tei as element()*, $html as element()*, $toh-key as xs:string){
+    
+    let $tei-folios := translation:folios($tei, $toh-key)//m:folio
+    let $html-refs := $html//*[@id = ('prologue', 'translation', 'colophon')]//xhtml:a[common:contains-class(@class, 'ref')]
+    
+    let $folio-count-tei := count($tei-folios)
+    let $ref-count-html := count($html-refs)
+    
+    let $html-folio-equivalents := $html-refs ! lower-case(text())
+    
+    let $anomalies := 
+        for $tei-folio in $tei-folios
+            let $tei-folio-equivalent := concat('[', lower-case($tei-folio/@tei-folio), ']')
+            where not($tei-folio-equivalent = $html-folio-equivalents)
+        return 
+            concat('Volume ', $tei-folio/@volume, ' page ', $tei-folio/@page-in-volume, ' not found.' )
+    
+    let $pass := if($ref-count-html gt 0 and $ref-count-html eq $folio-count-tei and count($anomalies) eq 0) then 1 else 0
+    
+    return
+        <test xmlns="http://read.84000.co/ns/1.0" 
+            id="refs"
+            pass="{ $pass }">
+            <title>Refs: The text has at least 1 ref, there are the same number in the HTML as in the TEI with no anomalies.</title>
+            <details>
+                <detail>{ $folio-count-tei } refs(s) in the TEI, { $ref-count-html } refs(s) in the HTML.</detail>
+                {
+                    for $anomaly in $anomalies
+                    return
+                        <detail>{ $anomaly }</detail>
+                }
+                {
+                    if($pass eq 0) then
+                        <detail>For more information visit the "Folios" utility.</detail>
+                    else
+                        ()
                 }
             </details>
         </test>

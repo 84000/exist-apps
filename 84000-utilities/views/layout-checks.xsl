@@ -230,6 +230,23 @@
                                             </a>
                                         </li>
                                         <li>
+                                            <xsl:value-of select="'Refs: '"/>
+                                            <a target="test-layout">
+                                                <xsl:attribute name="href" select="concat($reading-room-path, '/translation/toh114.html#UT22084-051-002-14')"/>
+                                                <xsl:value-of select="'Rendered as Toh 114'"/>
+                                            </a>
+                                            <xsl:value-of select="', '"/>
+                                            <a target="test-layout">
+                                                <xsl:attribute name="href" select="concat($reading-room-path, '/translation/toh527.html#UT22084-051-002-14')"/>
+                                                <xsl:value-of select="'Rendered as Toh 527 - including inactive ref'"/>
+                                            </a>
+                                            <xsl:value-of select="', '"/>
+                                            <a target="test-layout">
+                                                <xsl:attribute name="href" select="concat($reading-room-path, '/translation/toh1-1.html#UT22084-001-001-136')"/>
+                                                <xsl:value-of select="'Refs 4a and 4.b have a footnote (60) between them containing a ref (14.b)'"/>
+                                            </a>
+                                        </li>
+                                        <li>
                                             <a target="test-layout">
                                                 <xsl:attribute name="href" select="concat($reading-room-path, '/translation/UT22084-080-015.html#UT22084-080-015-1670')"/>
                                                 <xsl:value-of select="'Long milestone'"/>

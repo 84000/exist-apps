@@ -5,10 +5,12 @@ import module namespace common="http://read.84000.co/common" at "../../84000-rea
 import module namespace tei-content="http://read.84000.co/tei-content" at "../../84000-reading-room/modules/tei-content.xql";
 import module namespace translations="http://read.84000.co/translations" at "../../84000-reading-room/modules/translations.xql";
 
+declare namespace m = "http://read.84000.co/ns/1.0";
+
 declare option exist:serialize "method=xml indent=no";
 
 common:response(
     'utilities/folios',
     'utilities',
-    translations:translations($tei-content:published-statuses, '', true())
+    translations:translations($tei-content:text-statuses/m:status[@marked-up = ('true')]/@status-id, '', true())
 )

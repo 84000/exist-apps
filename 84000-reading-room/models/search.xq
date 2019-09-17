@@ -9,11 +9,8 @@ import module namespace functx="http://www.functx.com";
 declare option exist:serialize "method=xml indent=no";
 
 (: TO DO: deprecate 's' search parameter :)
-let $search := 
-    if(request:get-parameter('search', '') gt '') then 
-        request:get-parameter('search', '')
-    else
-        request:get-parameter('s', '')
+let $search := request:get-parameter('search', request:get-parameter('s', ''))
+        
 
 let $first-record := 
     if(functx:is-a-number(request:get-parameter('first-record', 1))) then

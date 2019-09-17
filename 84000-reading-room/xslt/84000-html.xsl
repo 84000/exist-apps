@@ -4,7 +4,7 @@
     <!-- 
         NOTE:
         For use in eXist: add xmlns to root e.g. <xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml"  xmlns:xsl.../>
-        For use in php XSLTProcessor: remove xmlns from root e.g. <xsl:stylesheet  xmlns:xsl.../>
+        For use in php XSLTProcessor: remove xmlns from root e.g. <xsl:stylesheet xmlns:xsl.../>
     -->
     
     <xsl:param name="lang" select="'en'"/>
@@ -168,7 +168,7 @@
                             </input>
                         </xsl:if>
                         <div id="search-controls" class="input-group">
-                            <input type="text" name="search" class="form-control">
+                            <input type="text" name="s" class="form-control">
                                 <xsl:attribute name="placeholder">
                                     <xsl:call-template name="translation">
                                         <xsl:with-param name="translation-id" select="'placeholder-search'"/>

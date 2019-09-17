@@ -1,28 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xsl:stylesheet xmlns="http://read.84000.co/ns/1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" exclude-result-prefixes="#all" version="3.0">
     
-    <xsl:import href="functions.xsl"/>
-    
-    <!-- Ensure eveything is copied -->
     <xsl:template match="node()|@*">
         <xsl:copy>
             <xsl:apply-templates select="node()|@*"/>
         </xsl:copy>
     </xsl:template>
     
-    <!-- Parse milestones adding @label -->
-    <xsl:template match="tei:milestone">
-        <milestone xmlns="http://www.tei-c.org/ns/1.0">
-            <xsl:copy-of select="@*"/>
-            <!-- Get the prefix of the ancestor -->
-            <xsl:variable name="group" select="ancestor::*[exists(@prefix)][1]"/>
-            <!-- Add a label based on the prefix -->
-            <!-- include a soft-hyphen for line breaks -->
-            <xsl:attribute name="label" select="concat($group/@prefix, '.', '­', common:index-of-node($group//tei:milestone, .))"/>
-        </milestone>
-    </xsl:template>
-    
-    <!-- Parse pointers resolving internal links -->
     <xsl:template match="tei:ptr">
         <ptr xmlns="http://www.tei-c.org/ns/1.0">
             
@@ -106,48 +90,17 @@
         </ptr>
     </xsl:template>
     
-    <!-- Parse refs adding indexes -->
-    
-    <xsl:variable name="toh-key" select="m:translation/m:source/@key"/>
-    
-    <!-- Get valid refs for this rendering in the translation -->
-    <xsl:variable name="folio-refs" select="m:translation/m:*[self::m:prologue | self::m:body | self::m:colophon]//tei:ref[(not(@rend) or not(@rend eq 'hidden'))][starts-with(lower-case(@cRef), 'f.')][not(@key) or @key eq $toh-key][not(ancestor::tei:note)]"/>
-    <xsl:template match="tei:ref">
-        
-        <!-- See if this cRef has a valid ref -->
-        <xsl:variable name="folio-ref" select="$folio-refs[@cRef = current()/@cRef][(not(@rend) or not(@rend eq 'hidden'))][not(@key) or @key eq $toh-key][1]"/>
-        <!-- Dervive the index for the valid ref -->
-        <xsl:variable name="folio-index" select="if($folio-ref) then common:index-of-node($folio-refs, $folio-ref) else 0"/>
-        
-        <xsl:choose>
-            
-            <!-- Add the index of the folio -->
-            <xsl:when test="$folio-index">
-                <ref xmlns="http://www.tei-c.org/ns/1.0">
-                    <xsl:copy-of select="@*"/>
-                    <xsl:attribute name="folio-index" select="$folio-index"/>
-                    <xsl:copy-of select="node()"/>
-                </ref>
-            </xsl:when>
-            
-            <!-- strip these -->
-            <xsl:when test="@key and not(@key eq $toh-key)">
-                <!-- ignore -->
-            </xsl:when>
-            
-            <!--make a copy of all other refs -->
-            <xsl:otherwise>
-                <xsl:copy>
-                    <xsl:apply-templates select="node()|@*"/>
-                </xsl:copy>
-            </xsl:otherwise>
-            
-        </xsl:choose>
-    </xsl:template>
-    
-    <!-- Supress warning -->
-    <xsl:template match="m:dummy">
-        <!-- ignore -->
-    </xsl:template>
+    <!-- 
+    <xsl:template match="m:notes/m:note">
+        <note>
+            <xsl:copy-of select="@*"/>
+            <xsl:variable name="target-id" select="@uid"/>
+            <xsl:variable name="target" select="//*[@xml:id eq $target-id]"/>
+            <xsl:variable name="group" select="$target/ancestor::*[exists(@prefix)][1]"/>
+            <xsl:attribute name="location" select="$group/name()"/>
+            <xsl:attribute name="chapter-index" select="$group/@chapter-index"/>
+            <xsl:copy-of select="node()"/>
+        </note>
+    </xsl:template> -->
     
 </xsl:stylesheet>

@@ -17,7 +17,7 @@
                                 <li>
                                     <a>
                                         <xsl:attribute name="href" select="common:internal-link('/section/lobby.html', (), '', /m:response/@lang)"/>
-                                        <xsl:value-of select="'The Lobby'"/>
+                                        <xsl:value-of select="'The Collection'"/>
                                     </a>
                                 </li>
                             </ul>

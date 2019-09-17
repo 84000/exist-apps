@@ -17,7 +17,7 @@ declare variable $glossary:translations :=
     collection($common:translations-path)//tei:TEI
         [tei:teiHeader/tei:fileDesc/tei:publicationStmt
             [@status = $tei-content:published-statuses]
-            [tei:idno/@xml:id = ("UT22084-031-002", "UT22084-066-018")](: Restrict files for testing :)
+            (:[tei:idno/@xml:id = ("UT22084-031-002", "UT22084-066-018")] Restrict files for testing :)
         ];
 
 declare variable $glossary:types := ('term', 'person', 'place', 'text');
@@ -81,16 +81,15 @@ declare function glossary:glossary-terms($type as xs:string*, $lang as xs:string
     let $normalized-search := common:alphanumeric(common:normalized-chars($search))
     
     let $terms := 
-        if($type eq 'all') then
-            $glossary:translations//tei:back//tei:gloss/tei:term
-                [not(@type eq 'definition')]
         
-        else if($type eq 'search' and $normalized-search gt '') then
+        (: Search for term - all languages and types :)
+        if($type eq 'search' and $normalized-search gt '') then
             $glossary:translations//tei:back//tei:gloss/tei:term
                 [not(@type eq 'definition')]
                 [ft:query(., glossary:search-query($normalized-search), glossary:search-options())]
         
-        else if($valid-type gt '' and $valid-lang gt '' and $normalized-search gt '') then
+        (: Look-up terms based on letter, type and lang :)
+        else if($valid-type gt '' and $normalized-search gt '') then
             
             (: this shouldn't be necessary if collation were working!?? :)
             let $alt-searches := 
@@ -106,18 +105,45 @@ declare function glossary:glossary-terms($type as xs:string*, $lang as xs:string
                 else if($normalized-search eq 't') then ('t','ṭ')
                 else if($normalized-search eq 'u') then ('u','ū')
                 else $normalized-search
+                
             return
-                $glossary:translations//tei:back//tei:gloss[@type = $valid-type]/tei:term
-                    [@xml:lang eq $valid-lang or ($valid-lang eq 'en' and  not(@xml:lang))]
-                    [not(@type = ('definition','alternative'))]
-                    [matches(., concat('^(\d*\s+|The\s+|A\s+)?(', string-join($alt-searches, '|'), ').*'), 'i')]
+                if($valid-lang = ('en', '')) then
+                    $glossary:translations//tei:back//tei:gloss[@type = $valid-type]/tei:term
+                       [not(@xml:lang) or @xml:lang eq 'en']
+                       [not(@type = ('definition','alternative'))]
+                       [matches(., concat('^(\d*\s+|The\s+|A\s+)?(', string-join($alt-searches, '|'), ').*'), 'i')]
+                else
+                    $glossary:translations//tei:back//tei:gloss[@type = $valid-type]/tei:term
+                        [@xml:lang eq $valid-lang]
+                        [not(@type = ('definition','alternative'))]
+                        [matches(., concat('^(\d*\s+|The\s+|A\s+)?(', string-join($alt-searches, '|'), ').*'), 'i')]
         
+        (: All terms for type and lang :)
         else if($valid-type gt '') then
-            $glossary:translations//tei:back//tei:gloss[@type = $valid-type]/tei:term
-                [@xml:lang eq $valid-lang or ($valid-lang eq 'en' and  not(@xml:lang))]
+            if($valid-lang = ('en', '')) then
+                $glossary:translations//tei:back//tei:gloss[@type = $valid-type]/tei:term
+                    [not(@xml:lang) or @xml:lang eq 'en']
+                    [not(@type = ('definition','alternative'))]
+            else
+                $glossary:translations//tei:back//tei:gloss[@type = $valid-type]/tei:term
+                    [@xml:lang eq $valid-lang]
+                    [not(@type = ('definition','alternative'))]
+        
+        (: All terms for cummulative glossary :)
+        else if($type eq 'all') then
+            $glossary:translations//tei:back//tei:gloss/tei:term
                 [not(@type = ('definition','alternative'))]
+        
+        (: All terms for lang only :)
         else
-            ()
+            if($valid-lang = ('en', '')) then
+                $glossary:translations//tei:back//tei:gloss/tei:term
+                    [not(@xml:lang) or @xml:lang eq 'en']
+                    [not(@type = ('definition','alternative'))]
+            else
+                $glossary:translations//tei:back//tei:gloss/tei:term
+                    [@xml:lang eq $valid-lang]
+                    [not(@type = ('definition','alternative'))]
     
     return
         <glossary
@@ -148,7 +174,7 @@ declare function glossary:glossary-terms($type as xs:string*, $lang as xs:string
                 
                 let $matches := 
                     if($include-count) then
-                        glossary:matching-gloss($term[1])
+                        glossary:matching-gloss($term[1], if(not($term[1]/@xml:lang)) then 'en' else $term[1]/@xml:lang)
                     else
                         ()
                 
@@ -158,7 +184,7 @@ declare function glossary:glossary-terms($type as xs:string*, $lang as xs:string
                 where $normalized-term gt ''
             return
                 <term start-letter="{ substring($normalized-term, 1, 1) }" count-items="{ count($matches) }" score="{ $score }">
-                    <main-term xml:lang="{ $term[1]/@xml:lang }">{ normalize-space($term[1]) }</main-term>
+                    <main-term xml:lang="{ if(not($term[1]/@xml:lang)) then 'en' else $term[1]/@xml:lang }">{ normalize-space($term[1]) }</main-term>
                     <normalized-term>{ $normalized-term }</normalized-term>
                 </term>
                 
@@ -167,24 +193,47 @@ declare function glossary:glossary-terms($type as xs:string*, $lang as xs:string
         
 };
 
-declare function glossary:matching-gloss($term as xs:string) as element()* {
-    $glossary:translations//tei:back//tei:gloss/tei:term
-        [not(@type eq 'definition')]
-        [ft:query-field(
-            glossary:lang-field(common:valid-lang(@xml:lang)),
-            glossary:lookup-query($term),
-            glossary:lookup-options()
-        )]/parent::tei:gloss
+declare function glossary:matching-gloss($term as xs:string, $lang as xs:string) as element()* {
+    
+    let $valid-lang := common:valid-lang($lang)
+    
+    return
+        if($valid-lang eq 'en') then
+            $glossary:translations//tei:back//tei:gloss/tei:term
+                [not(@type eq 'definition')]
+                [not(@xml:lang) or @xml:lang eq 'en']
+                [ft:query-field(
+                    'full-term',
+                    glossary:lookup-query($term),
+                    glossary:lookup-options()
+                )]/parent::tei:gloss
+        else if($valid-lang gt '') then
+            $glossary:translations//tei:back//tei:gloss/tei:term
+                [not(@type eq 'definition')]
+                [ft:query-field(
+                    'full-term',
+                    glossary:lookup-query($term),
+                    glossary:lookup-options()
+                )]/parent::tei:gloss
+        else
+            $glossary:translations//tei:back//tei:gloss/tei:term
+                [not(@type eq 'definition')]
+                [ft:query-field(
+                    'full-term',
+                    glossary:lookup-query($term),
+                    glossary:lookup-options()
+                )]/parent::tei:gloss
+            
 };
 
-declare function glossary:glossary-items($term as xs:string) as element() {
+declare function glossary:glossary-items($term as xs:string, $lang as xs:string) as element() {
 
     <glossary
         xmlns="http://read.84000.co/ns/1.0"
         model-type="glossary-items">
         <key>{ $term }</key>
         {
-            for $gloss in glossary:matching-gloss($term)
+            for $gloss in glossary:matching-gloss($term, $lang)
                 
                 let $translation := $gloss/ancestor::tei:TEI
                 let $translation-title := tei-content:title($translation)
@@ -279,41 +328,44 @@ declare function glossary:glossary-items($term as xs:string) as element() {
 };
 
 declare function glossary:cumulative-glossary() as element() {
+
+    let $cummulative-terms := glossary:glossary-terms('all', '', '', false())//m:term
     
-    <cumulative-glossary xmlns="http://read.84000.co/ns/1.0">
-        <disclaimer>
-        {
-            common:local-text('cumulative-glossary.disclaimer', 'en')
-        }
-        </disclaimer>
-        {
-            for $term in glossary:glossary-terms('all', '', '', false())//m:term
-            
-            order by $term/m:normalized-term
-            
-            return
-                <term>
-                    { glossary:glossary-items($term/m:main-term)/* }
-                </term>
-        }
-    </cumulative-glossary>
+    return
+        <cumulative-glossary xmlns="http://read.84000.co/ns/1.0" terms-count="{ count($cummulative-terms) }">
+            <disclaimer>
+            {
+                common:local-text('cumulative-glossary.disclaimer', 'en')
+            }
+            </disclaimer>
+            {
+                for $term in $cummulative-terms (: subsequence($cummulative-terms, 1000, 1999) :)
+                    order by $term/m:normalized-term
+                return
+                    <term>
+                    {
+                        glossary:glossary-items($term/m:main-term, $term/m:main-term/@xml:lang)/*
+                    }
+                    </term>
+            }
+        </cumulative-glossary>
         
 };
 
-declare function glossary:item-count($translation as element()) as xs:integer {
+declare function glossary:item-count($tei as element(tei:TEI)) as xs:integer {
 
-    count($translation//tei:back//tei:div[@type eq 'glossary']//tei:item)
+    count($tei//tei:back//tei:div[@type eq 'glossary']//tei:item)
     
 };
 
-declare function glossary:item-query($item as element()) as element() {
+declare function glossary:item-query($gloss as element(tei:gloss)) as element() {
     <query>
         <bool>
         {
             for $term in 
-                $item/tei:term[@xml:lang eq 'en'][not(@type)] 
-                | $item/tei:term[not(@xml:lang)][not(@type)]
-                | $item/tei:term[@type = 'alternative']
+                $gloss/tei:term[@xml:lang eq 'en'][not(@type)] 
+                | $gloss/tei:term[not(@xml:lang)][not(@type)]
+                | $gloss/tei:term[@type = 'alternative']
             let $term-str := normalize-space(data($term))
             return 
                 (
@@ -325,7 +377,7 @@ declare function glossary:item-query($item as element()) as element() {
     </query>
 };
 
-declare function glossary:translation-glossary($translation as element()) as element() {
+declare function glossary:translation-glossary($tei as element(tei:TEI)) as element() {
     <glossary xmlns="http://read.84000.co/ns/1.0">
     {
         let $options := 
@@ -335,7 +387,7 @@ declare function glossary:translation-glossary($translation as element()) as ele
                 <leading-wildcard>no</leading-wildcard>
             </options>
             
-        for $item in $translation//tei:back//*[@type='glossary']//tei:gloss
+        for $item in $tei//tei:back//*[@type='glossary']//tei:gloss
             let $query := glossary:item-query($item)
             (: glossary:ft-query(data($item/tei:term[@xml:lang eq 'en'][not(@type)] | $item/tei:term[not(@xml:lang)][not(@type)])) :)
         return

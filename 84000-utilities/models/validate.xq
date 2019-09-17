@@ -4,6 +4,7 @@ import module namespace local="http://utilities.84000.co/local" at "../modules/l
 import module namespace common="http://read.84000.co/common" at "../../84000-reading-room/modules/common.xql";
 import module namespace tei-content="http://read.84000.co/tei-content" at "../../84000-reading-room/modules/tei-content.xql";
 import module namespace translations="http://read.84000.co/translations" at "../../84000-reading-room/modules/translations.xql";
+
 import module namespace validation="http://exist-db.org/xquery/validation" at "java:org.exist.xquery.functions.validation.ValidationModule";
 
 declare namespace tei="http://www.tei-c.org/ns/1.0";
@@ -12,7 +13,7 @@ declare namespace m = "http://read.84000.co/ns/1.0";
 declare option exist:serialize "method=xml indent=no";
 
 let $type := request:get-parameter('type', 'translations')
-let $section-id := request:get-parameter('section', 'O1JC11494')
+let $work := request:get-parameter('work', 'all')
 
 let $schema-path := 
     if($type = ('translations', 'placeholders')) then
@@ -26,21 +27,18 @@ let $schema :=
     else
         ()
 
+let $work-tei := translations:work-tei($work)
 let $files := 
     if($type eq 'placeholders') then
-        let $section-files := translations:section-tei($section-id)
-        return
-            $section-files[not(tei:teiHeader/tei:fileDesc/tei:publicationStmt/@status = $tei-content:published-statuses)]
+        $work-tei[not(tei:teiHeader/tei:fileDesc/tei:publicationStmt/@status = $tei-content:published-statuses)]
     else if($type eq 'translations') then
-        let $section-files := translations:section-tei('LOBBY')
-        return
-            $section-files[tei:teiHeader/tei:fileDesc/tei:publicationStmt/@status = $tei-content:published-statuses]
+        $work-tei[tei:teiHeader/tei:fileDesc/tei:publicationStmt/@status = $tei-content:published-statuses]
     else
         collection($common:sections-path)//tei:TEI
 
 let $reading-room-url := $common:environment/m:url[@id eq 'reading-room']/text()
 let $results := 
-    <results xmlns="http://read.84000.co/ns/1.0" type="{ $type }" schema="{ $schema-path }" section="{ $section-id }">
+    <results xmlns="http://read.84000.co/ns/1.0" type="{ $type }" schema="{ $schema-path }" work="{ $work }">
     {
         for $tei in $files
             let $id := tei-content:id($tei)

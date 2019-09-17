@@ -54,6 +54,9 @@ declare variable $sponsorship:sponsorship-groups :=
         <group id="available">
             <label>Available for sponsorship</label>
         </group>
+        <group id="no-status">
+            <label>No sponsorship status</label>
+        </group>
     </sponsorship-groups>;
 
 declare function sponsorship:text-status($text-id as xs:string, $estimate-cost as xs:boolean) as element() {
@@ -147,7 +150,7 @@ declare function sponsorship:text-ids($sponsorship-group as xs:string) as xs:str
     )
 };
 
-declare function sponsorship:cost-estimate($teis as element()*) as element()* {
+declare function sponsorship:cost-estimate($teis as element(tei:TEI)*) as element()* {
     
     (: This need modifying after the migration removing tei:titleStmt/@sponsored :)
     

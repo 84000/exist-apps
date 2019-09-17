@@ -256,6 +256,9 @@
                         </div>
                     </form>
                 </div>
+                <!-- 
+                    Removed as it takes too long.
+                    This needs another solution.
                 <div>
                     <div class="pull-right">
                         <a href="cumulative-glossary.zip" class="download-link center-vertical">
@@ -268,6 +271,7 @@
                         </a>
                     </div>
                 </div>
+                 -->
             </div>
             
             <ul class="nav nav-tabs sml-tabs top-margin" role="tablist">
@@ -299,7 +303,7 @@
                                     </div>
                                     <div class="col-sm-6 text-right">
                                         <a target="_self">
-                                            <xsl:attribute name="href" select="concat('glossary-items.html?term=', fn:encode-for-uri(m:main-term/text()))"/>
+                                            <xsl:attribute name="href" select="concat('glossary-items.html?term=', fn:encode-for-uri(m:main-term/text()), '&amp;lang=', m:main-term/@xml:lang)"/>
                                             <xsl:attribute name="data-ajax-target" select="concat('#occurrences-', position())"/>
                                             <xsl:choose>
                                                 <xsl:when test="xs:integer(@count-items) gt 1">
@@ -492,7 +496,7 @@
                                                         <xsl:attribute name="href" select="concat($reading-room-path, '/translation/', m:source/@resource-id, '.html#', m:match/@id)"/>
                                                     </xsl:when>
                                                     <xsl:when test="m:match/@type eq 'tm-unit'">
-                                                        <xsl:attribute name="href" select="concat($reading-room-path, '/translation/', m:source/@resource-id, '.html#', common:folio-id(m:match/@id))"/>
+                                                        <xsl:attribute name="href" select="concat($reading-room-path, '/translation/', m:source/@resource-id, '.html#', '')"/>
                                                     </xsl:when>
                                                 </xsl:choose>
                                                 <xsl:apply-templates select="m:source/m:title"/>

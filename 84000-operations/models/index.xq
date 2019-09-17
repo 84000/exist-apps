@@ -6,6 +6,7 @@ import module namespace local="http://operations.84000.co/local" at "../modules/
 import module namespace common="http://read.84000.co/common" at "../../84000-reading-room/modules/common.xql";
 import module namespace tei-content="http://read.84000.co/tei-content" at "../../84000-reading-room/modules/tei-content.xql";
 import module namespace translations="http://read.84000.co/translations" at "../../84000-reading-room/modules/translations.xql";
+import module namespace source="http://read.84000.co/source" at "../../84000-reading-room/modules/source.xql";
 
 declare option exist:serialize "method=xml indent=no";
 
@@ -13,7 +14,8 @@ common:response(
     'operations/index', 
     'operations', 
     (
-        translations:summary(),
+        translations:summary($source:ekangyur-work),
+        translations:summary($source:etengyur-work),
         $tei-content:text-statuses
     )
 )

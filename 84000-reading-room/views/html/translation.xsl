@@ -76,9 +76,6 @@
                                         <xsl:with-param name="title" select="'Summary'"/>
                                     </xsl:call-template>
                                     <div>
-                                        <xsl:if test="not(m:request/@view-mode = ('editor','app'))">
-                                            <xsl:attribute name="class" select="'render-in-viewport'"/>
-                                        </xsl:if>
                                         <xsl:apply-templates select="m:translation/m:summary"/>
                                     </div>
                                 </section>
@@ -92,9 +89,6 @@
                                         <xsl:with-param name="title" select="'Acknowledgements'"/>
                                     </xsl:call-template>
                                     <div>
-                                        <xsl:if test="not(m:request/@view-mode = ('editor','app'))">
-                                            <xsl:attribute name="class" select="'render-in-viewport'"/>
-                                        </xsl:if>
                                         <xsl:apply-templates select="m:translation/m:acknowledgment"/>
                                     </div>
                                 </section>
@@ -385,16 +379,16 @@
                 </div>
                  -->
                 
-                <div id="rewind-btn-container" class="fixed-btn-container hidden">
-                    <button class="btn-round" title="Return to the last location">
-                        <i class="fa fa-undo" aria-hidden="true"/>
-                    </button>
-                </div>
-                
                 <div id="link-to-trans-top-container" class="fixed-btn-container">
                     <a href="#top" class="btn-round scroll-to-anchor" title="top">
                         <i class="fa fa-arrow-up" aria-hidden="true"/>
                     </a>
+                </div>
+                
+                <div id="rewind-btn-container" class="fixed-btn-container hidden">
+                    <button class="btn-round" title="Return to the last location">
+                        <i class="fa fa-undo" aria-hidden="true"/>
+                    </button>
                 </div>
                 
             </div>
