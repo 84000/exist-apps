@@ -169,7 +169,7 @@
                     <xsl:choose>
                         
                         <!-- If it's html then add a link -->
-                        <xsl:when test="not(@type) and /m:response/m:request/@doc-type eq 'html' and @folio-index">
+                        <xsl:when test="/m:response/m:request/@doc-type eq 'html' and @folio-index">
                             
                             <a class="ref log-click">
                                 <!-- define an anchor so we can link back to this point -->

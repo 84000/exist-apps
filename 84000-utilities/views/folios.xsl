@@ -70,11 +70,7 @@
                                                 <xsl:value-of select="m:toh/m:base"/>
                                             </td>
                                             <td>
-                                                <a>
-                                                    <xsl:attribute name="href" select="concat($reading-room-path, '/translation/', $toh-key, '.html')"/>
-                                                    <xsl:attribute name="target" select="$toh-key"/>
-                                                    <xsl:value-of select="m:titles/m:title[@xml:lang eq 'en']"/>
-                                                </a>
+                                                <xsl:value-of select="m:titles/m:title[@xml:lang eq 'en']"/>
                                             </td>
                                             <td class="nowrap small">
                                                 <xsl:value-of select="concat('Vol. ', m:location/m:volume[1]/@number, ', page ', m:location/m:volume[1]/@start-page)"/>
@@ -90,9 +86,14 @@
                                                 </a>
                                             </td>
                                             <td class="icon">
-                                                <xsl:if test="m:folios[@count-pages ne @count-refs] or m:folios/m:folio[not(@tei-folio = (@folio-in-volume, @folio-consecutive))]">
-                                                    <i class="fa fa-times-circle"/>
-                                                </xsl:if>
+                                                <xsl:choose>
+                                                    <xsl:when test="m:folios[@count-pages ne @count-refs]">
+                                                        <i class="fa fa-times-circle"/>
+                                                    </xsl:when>
+                                                    <xsl:when test="m:folios/m:folio[not(@tei-folio = (@folio-in-volume, @folio-consecutive))]">
+                                                        <i class="fa fa-exclamation-circle"/>
+                                                    </xsl:when>
+                                                </xsl:choose>
                                             </td>
                                             <td class="nowrap text-danger small">
                                                 <xsl:if test="m:folios[@count-pages ne @count-refs]">
@@ -106,10 +107,10 @@
                                                 <table class="table table-responsive no-top-margin">
                                                     <thead>
                                                         <tr>
-                                                            <th>#</th>
-                                                            <th>Logical page</th>
-                                                            <th>TEI refs</th>
-                                                            <th>Issues</th>
+                                                            <th>Ref</th>
+                                                            <th>Location page</th>
+                                                            <th colspan="2">@cRef</th>
+                                                            <th colspan="2">HTML</th>
                                                             <th colspan="2">XML</th>
                                                         </tr>
                                                     </thead>
@@ -117,30 +118,20 @@
                                                         <xsl:for-each select="m:folios/m:folio">
                                                             <xsl:variable name="folio-row-id" select="concat($text-row-id, '-folio-', position())"/>
                                                             <tr>
-                                                                <td class="text-muted">
+                                                                <td>
                                                                     <xsl:value-of select="@page-in-text"/>.
                                                                 </td>
                                                                 <td>
                                                                     <xsl:value-of select="concat('Vol.', @volume, ' p.', @page-in-volume)"/> 
                                                                 </td>
                                                                 <td>
-                                                                    <a>
-                                                                        <!-- define an anchor so we can link back to this point -->
-                                                                        <xsl:attribute name="href" select="m:url[@format eq 'html'][@xml:lang eq 'bo']"/>
-                                                                        <xsl:attribute name="data-ajax-target" select="'#popup-footer-source .data-container'"/>
-                                                                        <xsl:choose>
-                                                                            <xsl:when test="@tei-folio gt ''">
-                                                                                <xsl:value-of select="concat('[', @tei-folio, ']')"/>
-                                                                            </xsl:when>
-                                                                            <xsl:otherwise>
-                                                                                <xsl:value-of select="'[None]'"/>
-                                                                            </xsl:otherwise>
-                                                                        </xsl:choose>
-                                                                    </a>
-                                                                    
+                                                                    <xsl:choose>
+                                                                        <xsl:when test="@tei-folio gt ''">
+                                                                            <xsl:value-of select="@tei-folio"/>
+                                                                        </xsl:when>
+                                                                    </xsl:choose>
                                                                 </td>
-                                                                <td class="small text-danger">
-                                                                    
+                                                                <td>
                                                                     <xsl:variable name="preceding-style" as="xs:string?">
                                                                         <xsl:variable name="preceding-folio" select="preceding-sibling::m:folio[@tei-folio = (@folio-in-volume, @folio-consecutive)][1]"/>
                                                                         <xsl:choose>
@@ -155,29 +146,53 @@
                                                                             </xsl:otherwise>
                                                                         </xsl:choose>
                                                                     </xsl:variable>
-                                                                    <xsl:if test="not(@tei-folio = (@folio-in-volume, @folio-consecutive))">
-                                                                        <xsl:choose>
-                                                                            <xsl:when test="$preceding-style eq 'consecutive'">
-                                                                                <xsl:value-of select="concat('Expected ', @folio-consecutive)"/>
-                                                                            </xsl:when>
-                                                                            <!-- <xsl:when test="$preceding-style eq 'parallel'">
-                                                                                <xsl:value-of select="concat('Expected ', @folio-in-volume)"/>
-                                                                            </xsl:when> -->
-                                                                            <xsl:otherwise>
-                                                                                <!-- <xsl:value-of select="concat('Expected ', @folio-in-volume, ' or ', @folio-consecutive)"/> -->
-                                                                                <xsl:value-of select="concat('Expected ', @folio-in-volume)"/>
-                                                                            </xsl:otherwise>
-                                                                        </xsl:choose>
-                                                                    </xsl:if>
+                                                                    <xsl:choose>
+                                                                        <xsl:when test="not(@tei-folio = (@folio-in-volume, @folio-consecutive))">
+                                                                            <xsl:choose>
+                                                                                <xsl:when test="@tei-folio eq ''">
+                                                                                    <xsl:attribute name="class" select="'small text-danger'"/>
+                                                                                    <xsl:value-of select="'Folio missing'"/>
+                                                                                </xsl:when>
+                                                                                <xsl:when test="$preceding-style eq 'consecutive'">
+                                                                                    <xsl:attribute name="class" select="'small text-warning'"/>
+                                                                                    <xsl:value-of select="concat('Logically ', @folio-consecutive)"/>
+                                                                                </xsl:when>
+                                                                                <!-- <xsl:when test="$preceding-style eq 'parallel'">
+                                                                                    <xsl:value-of select="concat('Expected ', @folio-in-volume)"/>
+                                                                                </xsl:when> -->
+                                                                                <xsl:otherwise>
+                                                                                    <xsl:attribute name="class" select="'small text-warning'"/>
+                                                                                    <!-- <xsl:value-of select="concat('Expected ', @folio-in-volume, ' or ', @folio-consecutive)"/> -->
+                                                                                    <xsl:value-of select="concat('Logically ', @folio-in-volume)"/>
+                                                                                </xsl:otherwise>
+                                                                            </xsl:choose>
+                                                                        </xsl:when>
+                                                                    </xsl:choose>
                                                                 </td>
                                                                 <td>
-                                                                    <a target="_blank">
+                                                                    <a>
+                                                                        <xsl:attribute name="href" select="m:url[@format eq 'html'][@xml:lang eq 'bo']"/>
+                                                                        <xsl:attribute name="data-ajax-target" select="'#popup-footer-source .data-container'"/>
+                                                                        <xsl:value-of select="'Tibetan (pop-up)'"/>
+                                                                    </a>
+                                                                </td>
+                                                                <td>
+                                                                    <a>
+                                                                        <xsl:attribute name="target" select="$text-row-id"/>
+                                                                        <xsl:attribute name="href" select="concat($reading-room-path, '/translation/', $toh-key, '.html', '#source-link-', @page-in-text)"/>
+                                                                        <xsl:value-of select="'English (link)'"/>
+                                                                    </a>
+                                                                </td>
+                                                                <td>
+                                                                    <a>
+                                                                        <xsl:attribute name="target" select="concat($folio-row-id, '-bo')"/>
                                                                         <xsl:attribute name="href" select="m:url[@format eq 'xml'][@xml:lang eq 'bo']"/>
                                                                         <xsl:value-of select="'Tibetan'"/>
                                                                     </a>
                                                                 </td>
                                                                 <td>
-                                                                    <a target="_blank">
+                                                                    <a>
+                                                                        <xsl:attribute name="target" select="concat($folio-row-id, '-en')"/>
                                                                         <xsl:attribute name="href" select="m:url[@format eq 'xml'][@xml:lang eq 'en']"/>
                                                                         <xsl:value-of select="'English'"/>
                                                                     </a>

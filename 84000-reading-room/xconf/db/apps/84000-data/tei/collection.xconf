@@ -134,6 +134,15 @@
             </create>
             
             <create qname="tei:term" type="xs:string"/>
+            
+            <create qname="tei:ref">
+                <field name="ref-type" match="@type" type="xs:string"/>
+            </create>
+            
+            <create qname="tei:ref">
+                <field name="ref-rend" match="@rend" type="xs:string"/>
+            </create>
+            
             <!--  -->
         </range>
         

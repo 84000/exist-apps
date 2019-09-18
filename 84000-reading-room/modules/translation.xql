@@ -610,7 +610,7 @@ declare function translation:count-volume-pages($location as element(m:location)
 declare function translation:folio-refs($tei as element(tei:TEI), $resource-id as xs:string){
     let $toh-key := translation:toh-key($tei, $resource-id)
     return
-        $tei//tei:body//tei:ref[(not(@rend) or not(@rend eq 'hidden'))][starts-with(lower-case(@cRef), 'f.')][not(@key) or @key eq $toh-key][not(ancestor::tei:note)]
+        $tei//tei:body//tei:ref[@type eq 'folio'][not(@rend) or not(@rend eq 'hidden')][not(@key) or @key eq $toh-key][not(ancestor::tei:note)]
 };
 
 declare function translation:folios($tei as element(tei:TEI), $resource-id as xs:string) as element() {

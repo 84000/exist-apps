@@ -54,6 +54,9 @@ declare function source:folio-to-number($folio as xs:string) as xs:integer {
 };
 
 declare function source:folio-to-page($tei as element(tei:TEI), $resource-id as xs:string, $folio as xs:string) as xs:integer {
+    
+    (: TO DO: Handles legacy links with no 'f.' prefix. This should be deprecated and full folio id required so that f. is not required.  :)
+    
     let $folio := 
         if(not(starts-with(lower-case($folio), 'f.'))) then
             concat('f.', $folio)

@@ -107,15 +107,15 @@
     </xsl:template>
     
     <!-- Parse refs adding indexes -->
-    
     <xsl:variable name="toh-key" select="m:translation/m:source/@key"/>
     
     <!-- Get valid refs for this rendering in the translation -->
-    <xsl:variable name="folio-refs" select="m:translation/m:*[self::m:prologue | self::m:body | self::m:colophon]//tei:ref[(not(@rend) or not(@rend eq 'hidden'))][starts-with(lower-case(@cRef), 'f.')][not(@key) or @key eq $toh-key][not(ancestor::tei:note)]"/>
+    <xsl:variable name="folio-refs" select="m:translation/m:*[self::m:prologue | self::m:body | self::m:colophon]//tei:ref[@type eq 'folio'][not(@rend) or not(@rend eq 'hidden')][not(@key) or @key eq $toh-key][not(ancestor::tei:note)]"/>
+    
     <xsl:template match="tei:ref">
         
         <!-- See if this cRef has a valid ref -->
-        <xsl:variable name="folio-ref" select="$folio-refs[@cRef = current()/@cRef][(not(@rend) or not(@rend eq 'hidden'))][not(@key) or @key eq $toh-key][1]"/>
+        <xsl:variable name="folio-ref" select="$folio-refs[@cRef = current()/@cRef][1]"/>
         <!-- Dervive the index for the valid ref -->
         <xsl:variable name="folio-index" select="if($folio-ref) then common:index-of-node($folio-refs, $folio-ref) else 0"/>
         

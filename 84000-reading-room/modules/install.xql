@@ -51,7 +51,7 @@ declare function install:special-permissions($collection as xs:string) {
 };
 
 declare function install:copy-xconf($collection as xs:string){
-    xmldb:copy(concat($collection, '/xconf/db/apps/84000-data'),"/db/system/config/db/apps")
+    xmldb:copy(concat($collection, '/xconf/db/apps'),"/db/system/config/db")
 };
 
 declare function install:reindex() {
@@ -59,6 +59,7 @@ declare function install:reindex() {
     xmldb:reindex('/db/apps/84000-data/config'),
     xmldb:reindex('/db/apps/84000-data/operations'),
     xmldb:reindex('/db/apps/84000-data/tei'),
-    xmldb:reindex('/db/apps/84000-data/translation-memory')
+    xmldb:reindex('/db/apps/84000-data/translation-memory'),
+    xmldb:reindex('/db/apps/tibetan-source')
 
 };
