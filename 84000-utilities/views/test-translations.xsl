@@ -178,7 +178,7 @@
                                             </a>
                                         </td>
                                         <td>
-                                            <xsl:copy-of select="common:translation-status(@status)"/>
+                                            <xsl:copy-of select="common:translation-status(@status-group)"/>
                                         </td>
                                         <td>
                                             <xsl:choose>

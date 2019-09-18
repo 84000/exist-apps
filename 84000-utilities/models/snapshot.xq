@@ -20,6 +20,6 @@ return
         (
             $deploy:snapshot-conf/m:view-repo-url,
             deploy:commit-data($action, $sync-resource, $commit-msg),
-            translations:files($tei-content:published-statuses)
+            translations:files($tei-content:marked-up-status-ids)
         )
     )

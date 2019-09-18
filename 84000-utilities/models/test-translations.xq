@@ -18,6 +18,6 @@ return
         (
             <request xmlns="http://read.84000.co/ns/1.0" translation-id="{$translation-id}" />,
             tests:translations($translation-id),
-            translations:files($tei-content:text-statuses/m:status[@marked-up = ('true')]/@status-id)
+            translations:files($tei-content:marked-up-status-ids)
         )
     )

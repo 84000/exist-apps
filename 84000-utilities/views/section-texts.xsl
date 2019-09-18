@@ -35,7 +35,7 @@
                         </td>
                         <td class="nowrap">
                             <xsl:value-of select="@id"/>
-                            <xsl:copy-of select="common:translation-status(@status)"/>
+                            <xsl:copy-of select="common:translation-status(@status-group)"/>
                         </td>
                     </tr>
                     <tr class="sub">

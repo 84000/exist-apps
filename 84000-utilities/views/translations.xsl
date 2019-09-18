@@ -103,7 +103,7 @@
                                                 <xsl:value-of select="m:toh/m:base"/>
                                             </td>
                                             <td>
-                                                <div>
+                                                <div class="break">
                                                     <a>
                                                         <xsl:attribute name="href" select="concat($reading-room-path ,'/translation/', $toh/@key, '.html')"/>
                                                         <xsl:attribute name="target" select="concat($toh/@key, '.html')"/>
@@ -130,7 +130,7 @@
                                                         <xsl:value-of select="'run tests'"/>
                                                     </a>
                                                 </div>
-                                                <div class="small text-muted">
+                                                <div class="small text-muted break">
                                                     <xsl:value-of select="@uri"/>
                                                 </div>
                                             </td>

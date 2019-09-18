@@ -86,7 +86,8 @@ declare function contributors:acknowledgement($tei as element(tei:TEI), $paragra
 
     let $title := tei-content:title($tei)
     let $translation-id := tei-content:id($tei)
-    let $translation-status := $tei//tei:teiHeader/tei:fileDesc/tei:publicationStmt/@status
+    let $translation-status := tei-content:translation-status($tei)
+    let $translation-status-group := tei-content:translation-status-group($tei)
     
     for $toh-key in $tei//tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl/@key
         let $toh := translation:toh($tei, $toh-key)
@@ -94,6 +95,7 @@ declare function contributors:acknowledgement($tei as element(tei:TEI), $paragra
         element m:acknowledgement {
             attribute translation-id { $translation-id },
             attribute translation-status {$translation-status},
+            attribute translation-status-group { $translation-status-group },
             element m:title { text { $title } },
             $toh,
             element tei:div {

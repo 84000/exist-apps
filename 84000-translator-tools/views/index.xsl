@@ -123,6 +123,11 @@
                                     
                                 </xsl:when>
                                 
+                                <!-- Translations list -->
+                                <xsl:when test="/m:response/m:request/@tab eq 'translations'">
+                                    <xsl:call-template name="translations"/>
+                                </xsl:when>
+                                
                                 <xsl:otherwise>
                                     <xsl:copy-of select="article/*"/>
                                 </xsl:otherwise>
@@ -542,6 +547,101 @@
             </xsl:choose>
             
         </div>
+    </xsl:template>
+    
+    <xsl:template name="translations">
+        <div class="alert alert-warning small text-center">
+            <p>This page lists all current translations and some meta data. The <strong>editor mode</strong> links open the translations with all sections expanded. This is convenient for searching.</p>
+        </div>
+        <table class="table table-responsive">
+            <thead>
+                <tr>
+                    <th>
+                        <xsl:value-of select="'Toh.'"/>
+                    </th>
+                    <th colspan="2">
+                        <xsl:value-of select="'Title'"/>
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                <xsl:for-each select="m:translations/m:text">
+                    <xsl:sort select="number(m:toh/@number)"/>
+                    <xsl:sort select="m:toh/m:base"/>
+                    <xsl:variable name="row-id" select="concat('text-', position())"/>
+                    <tr>
+                        <xsl:attribute name="id" select="m:toh/@key"/>
+                        <td>
+                            <xsl:value-of select="m:toh/m:base"/>
+                        </td>
+                        <td>
+                            <div class="break">
+                                <a>
+                                    <xsl:attribute name="href" select="concat($reading-room-path ,'/translation/', m:toh/@key, '.html')"/>
+                                    <xsl:attribute name="target" select="concat(m:toh/@key, '.html')"/>
+                                    <xsl:value-of select="m:titles/m:title[@xml:lang eq 'en']"/>
+                                </a>
+                                <xsl:value-of select="' / '"/>
+                                <a class="small">
+                                    <xsl:attribute name="href" select="concat($reading-room-path ,'/translation/', m:toh/@key, '.html?view-mode=editor')"/>
+                                    <xsl:attribute name="target" select="concat(m:toh/@key, '.html')"/>
+                                    <xsl:value-of select="'editor mode'"/>
+                                </a>
+                            </div>
+                        </td>
+                        <td>
+                            <a class="collapsed pull-right" role="button" data-toggle="collapse" aria-expanded="false">
+                                <xsl:attribute name="href" select="concat('#', $row-id, '-sub')"/>
+                                <xsl:attribute name="aria-controls" select="concat($row-id, '-sub')"/>
+                                <i class="fa fa-plus collapsed-show"/>
+                                <i class="fa fa-minus collapsed-hide"/>
+                            </a>
+                        </td>
+                    </tr>
+                    <tr class="sub collapse">
+                        <xsl:attribute name="id" select="concat($row-id, '-sub')"/>
+                        <td/>
+                        <td colspan="2">
+                            <div class="vertical-align">
+                                <span class="text-bo">
+                                    <xsl:value-of select="m:titles/m:title[@xml:lang eq 'bo']"/>
+                                </span>
+                                <span>
+                                    <xsl:value-of select="' · '"/>
+                                </span>
+                                <span class="text-sa">
+                                    <xsl:value-of select="m:titles/m:title[@xml:lang eq 'sa-ltn']"/>
+                                </span>
+                            </div>
+                            <ul class="list-unstyled small sml-margin top text-muted">
+                                <li>
+                                    <xsl:value-of select="tei:bibl/tei:biblScope"/>
+                                </li>
+                                <li>
+                                    <xsl:value-of select="'Translator(s): '"/>
+                                    <xsl:value-of select="string-join(m:translation/m:contributors/m:author[@role eq 'translatorEng'], ' · ')"/>
+                                </li>
+                                <xsl:if test="m:translation/m:contributors/m:editor[@role eq 'reviser']">
+                                    <li>
+                                        <xsl:value-of select="'Editor(s): '"/>
+                                        <xsl:value-of select="string-join(m:translation/m:contributors/m:editor[@role eq 'reviser'], ' · ')"/>
+                                    </li>
+                                </xsl:if>
+                                <xsl:if test="m:translation/m:contributors/m:consultant[@role eq 'advisor']">
+                                    <li>
+                                        <xsl:value-of select="'Advisor(s): '"/>
+                                        <xsl:value-of select="string-join(m:translation/m:contributors/m:consultant[@role eq 'advisor'], ' · ')"/>
+                                    </li>
+                                </xsl:if>
+                                <li>
+                                    <xsl:value-of select="concat('Published ', format-date(m:translation/m:publication-date, '[FNn,*-3], [D1o] [MNn,*-3] [Y]'))"/>
+                                </li>
+                            </ul>
+                        </td>
+                    </tr>
+                </xsl:for-each>
+            </tbody>
+        </table>
     </xsl:template>
     
     <xsl:template match="text()">

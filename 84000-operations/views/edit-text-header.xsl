@@ -30,7 +30,7 @@
                     </div>
                     
                     <div class="bottom-margin">
-                        <xsl:copy-of select="common:translation-status(m:translation/@status)"/>
+                        <xsl:copy-of select="common:translation-status(m:translation/@status-group)"/>
                         <xsl:if test="normalize-space(m:translation/m:translation/m:edition)">
                             <a class="label label-info">
                                 <xsl:attribute name="href" select="concat($reading-room-path, '/translation/', m:translation/@id, '.tei')"/>

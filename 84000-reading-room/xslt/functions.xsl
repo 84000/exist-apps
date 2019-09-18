@@ -230,14 +230,19 @@
     
     <!-- Translation status -->
     <xsl:function name="common:translation-status">
-        <xsl:param name="status"/>
+        <xsl:param name="status-group"/>
         <xsl:choose>
-            <xsl:when test="$status eq '1'">
+            <xsl:when test="$status-group eq 'published'">
                 <span class="label label-success published">
                     <xsl:value-of select="'Published'"/>
                 </span>
             </xsl:when>
-            <xsl:when test="$status gt '0'">
+            <xsl:when test="$status-group eq 'translated'">
+                <span class="label label-warning in-progress">
+                    <xsl:value-of select="'In progress'"/>
+                </span>
+            </xsl:when>
+            <xsl:when test="$status-group eq 'in-translation'">
                 <span class="label label-warning in-progress">
                     <xsl:value-of select="'In progress'"/>
                 </span>

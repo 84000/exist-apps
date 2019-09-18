@@ -141,6 +141,31 @@ declare function common:integer($node as xs:anyAtomicType?) as xs:integer {
     replace(concat('0',$node), '\D', '')
 };
 
+declare function common:format-number($number as numeric) as xs:string {
+
+    let $input := tokenize(string(abs($number)),'\.')[1]
+    let $dec := substring(tokenize(string($number),'\.')[2],1,2)
+    let $rev := reverse(string-to-codepoints(string($input)))
+    let $comma := string-to-codepoints(',')
+    
+    let $chars :=
+        for $c at $i in $rev
+        return (
+            $c,
+            if ($i mod 3 eq 0 and not($i eq count($rev))) then 
+                $comma 
+            else 
+                ()
+        )
+    
+    return 
+        concat(
+            if ($number lt 0) then '-' else (),
+            codepoints-to-string(reverse($chars)),
+            if ($dec != '') then concat('.',$dec) else ()
+        )
+};
+
 declare function common:small-caps($string as xs:string) as xs:string {
     translate($string, 'abcdefghijklmnopqrstuvwxyz', 'ᴀʙᴄᴅᴇꜰɢʜɪᴊᴋʟᴍɴᴏᴘǫʀsᴛᴜᴠᴡxʏᴢ')
 };

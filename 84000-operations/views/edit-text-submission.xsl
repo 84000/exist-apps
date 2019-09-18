@@ -47,7 +47,7 @@
                             </a>
                         </span>
                         <span class="text-right">
-                            <xsl:copy-of select="common:translation-status(m:translation/@status)"/>
+                            <xsl:copy-of select="common:translation-status(m:translation/@status-group)"/>
                         </span>
                     </div>
                     <hr/>

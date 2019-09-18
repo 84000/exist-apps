@@ -18,7 +18,7 @@
                 
                 <div class="panel panel-default">
                     
-                    <xsl:if test="not(m:translation/@status eq '1')">
+                    <xsl:if test="not(m:translation/@status-group eq 'published')">
                         <div class="panel-heading bold danger">
                             <xsl:value-of select="'This text is not yet ready for publication!'"/>
                         </div>

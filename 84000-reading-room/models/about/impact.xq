@@ -14,12 +14,11 @@ common:response(
         
         (: Calculated strings :)
         <replace-text xmlns="http://read.84000.co/ns/1.0">
-            <value key="#visitorsPerWeekFormatted">{ format-number(250, '#,###') }</value>
-            <value key="#reachCountriesFormatted">{ format-number(242, '#,###') }</value>
-            <value key="#engagementMinutesFormatted">{ format-number(6030, '#,###') }</value>
-            <value key="#topTextViewsFormatted">{ format-number(43610, '#,###') }</value>
+            <value key="#visitorsPerWeekFormatted">{ common:format-number(250) }</value>
+            <value key="#reachCountriesFormatted">{ common:format-number(242) }</value>
+            <value key="#engagementMinutesFormatted">{ common:format-number(6030) }</value>
+            <value key="#topTextViewsFormatted">{ common:format-number(43610) }</value>
         </replace-text>
         
-        (:doc(concat($common:data-path, '/operations/user-stats.xml')):)
     )
 )

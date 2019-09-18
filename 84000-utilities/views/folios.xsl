@@ -108,7 +108,7 @@
                                                     <thead>
                                                         <tr>
                                                             <th>Ref</th>
-                                                            <th>Location page</th>
+                                                            <th>Page</th>
                                                             <th colspan="2">@cRef</th>
                                                             <th colspan="2">HTML</th>
                                                             <th colspan="2">XML</th>
@@ -173,14 +173,14 @@
                                                                     <a>
                                                                         <xsl:attribute name="href" select="m:url[@format eq 'html'][@xml:lang eq 'bo']"/>
                                                                         <xsl:attribute name="data-ajax-target" select="'#popup-footer-source .data-container'"/>
-                                                                        <xsl:value-of select="'Tibetan (pop-up)'"/>
+                                                                        <xsl:value-of select="'Tibetan'"/>
                                                                     </a>
                                                                 </td>
                                                                 <td>
                                                                     <a>
                                                                         <xsl:attribute name="target" select="$text-row-id"/>
                                                                         <xsl:attribute name="href" select="concat($reading-room-path, '/translation/', $toh-key, '.html', '#source-link-', @page-in-text)"/>
-                                                                        <xsl:value-of select="'English (link)'"/>
+                                                                        <xsl:value-of select="'English'"/>
                                                                     </a>
                                                                 </td>
                                                                 <td>

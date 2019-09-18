@@ -93,7 +93,8 @@ return
                 id="{ $text-id }"
                 document-url="{ tei-content:document-url($tei) }" 
                 locked-by-user="{ tei-content:locked-by-user($tei) }"
-                status="{ tei-content:translation-status($tei) }">
+                status="{ tei-content:translation-status($tei) }"
+                status-group="{ tei-content:translation-status-group($tei) }">
                 { 
                     for $bibl in $tei//tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl
                     return

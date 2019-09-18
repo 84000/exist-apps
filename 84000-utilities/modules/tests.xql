@@ -25,11 +25,11 @@ declare function tests:translations($translation-id as xs:string) as item(){
     
     let $selected-translations := 
         if ($translation-id eq 'all') then 
-            $section:texts//tei:TEI[tei:teiHeader/tei:fileDesc/tei:publicationStmt/@status = $tei-content:text-statuses/m:status[@marked-up = ('true')]/@status-id]
+            $section:texts//tei:TEI[tei:teiHeader/tei:fileDesc/tei:publicationStmt/@status = $tei-content:marked-up-status-ids]
         else if ($translation-id eq 'published') then 
-            $section:texts//tei:TEI[tei:teiHeader/tei:fileDesc/tei:publicationStmt/@status = $tei-content:text-statuses/m:status[@group = ('published')]/@status-id]
-            else if ($translation-id eq 'in-markup') then 
-            $section:texts//tei:TEI[tei:teiHeader/tei:fileDesc/tei:publicationStmt/@status = $tei-content:text-statuses/m:status[@marked-up = ('true')][not(@group = ('published'))]/@status-id]
+            $section:texts//tei:TEI[tei:teiHeader/tei:fileDesc/tei:publicationStmt/@status = $tei-content:published-status-ids]
+        else if ($translation-id eq 'in-markup') then 
+            $section:texts//tei:TEI[tei:teiHeader/tei:fileDesc/tei:publicationStmt/@status = $tei-content:marked-up-status-ids[not(. = $tei-content:published-status-ids)]]
         else
             tei-content:tei(lower-case($translation-id), 'translation')
     
@@ -61,7 +61,8 @@ declare function tests:translations($translation-id as xs:string) as item(){
                <translation 
                    id="{ tei-content:id($tei) }" 
                    test-domain="{ $test-config/m:path/text() }" 
-                   status="{ $tei/tei:teiHeader/tei:fileDesc/tei:publicationStmt/@status }"
+                   status="{ tei-content:translation-status($tei) }"
+                   status-group="{ tei-content:translation-status-group($tei) }"
                    duration="{ functx:total-seconds-from-duration($end-time - $start-time) }">
                    <title>{ tei-content:title($tei) }</title>
                    { translation:toh($tei, $toh-key) }

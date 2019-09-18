@@ -1241,7 +1241,7 @@
                                 </a>
                                 <span>
                                     <xsl:copy-of select="common:sponsorship-status(m:sponsorship-status/m:status)"/>
-                                    <xsl:copy-of select="common:translation-status(@translation-status)"/>
+                                    <xsl:copy-of select="common:translation-status(@translation-status-group)"/>
                                 </span>
                             </div>
                             <xsl:apply-templates select="tei:div[@type eq 'acknowledgment']/*"/>

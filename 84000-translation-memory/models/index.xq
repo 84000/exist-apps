@@ -14,7 +14,7 @@ import module namespace functx="http://www.functx.com";
 declare option exist:serialize "method=xml indent=no";
 
 (: Get translations for list. Do it first so we can default to first :)
-let $translations := translations:files($tei-content:published-statuses)
+let $translations := translations:files($tei-content:published-status-ids)
 let $translation-id := request:get-parameter('translation-id', $translations/m:file[1]/@id)
 
 (: Get the tei :)

@@ -30,9 +30,9 @@ let $schema :=
 let $work-tei := translations:work-tei($work)
 let $files := 
     if($type eq 'placeholders') then
-        $work-tei[not(tei:teiHeader/tei:fileDesc/tei:publicationStmt/@status = $tei-content:published-statuses)]
+        $work-tei[not(tei:teiHeader/tei:fileDesc/tei:publicationStmt/@status = $tei-content:published-status-ids)]
     else if($type eq 'translations') then
-        $work-tei[tei:teiHeader/tei:fileDesc/tei:publicationStmt/@status = $tei-content:published-statuses]
+        $work-tei[tei:teiHeader/tei:fileDesc/tei:publicationStmt/@status = $tei-content:published-status-ids]
     else
         collection($common:sections-path)//tei:TEI
 

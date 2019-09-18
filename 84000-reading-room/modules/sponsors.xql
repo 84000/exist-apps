@@ -78,17 +78,19 @@ declare function sponsors:acknowledgements($uri as xs:string) as element()* {
         
         let $title := tei-content:title($tei)
         let $translation-id := tei-content:id($tei)
-        let $translation-status := $tei//tei:teiHeader/tei:fileDesc/tei:publicationStmt/@status
+        let $translation-status := tei-content:translation-status($tei)
+        let $translation-status-group := tei-content:translation-status-group($tei)
         
         for $toh-key in $tei//tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl/@key
             let $toh := translation:toh($tei, $toh-key)
         return
-            element m:acknowledgement {
+            element { QName('http://read.84000.co/ns/1.0', 'acknowledgement') } {
                 attribute translation-id { $translation-id },
                 attribute translation-status {$translation-status},
+                attribute translation-status-group { $translation-status-group },
                 element m:title { text { $title } },
                 $toh,
-                element tei:div {
+                element { QName('http://www.tei-c.org/ns/1.0', 'div') } {
                     attribute type {'acknowledgment'},
                     $marked-paragraphs[exist:match]
                 },

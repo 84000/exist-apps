@@ -25,30 +25,56 @@
                         <div class="row">
                             
                             <div class="col-sm-8 print-width-override">
-                                <div class="form-group print-no-margin">
-                                    <h4 class="text-bold no-top-margin no-bottom-margin hidden-print">Text statuses:</h4>
+                                <table class="table table-condensed no-border no-padding">
                                     <xsl:for-each select="m:text-statuses/m:status">
-                                        <div class="checkbox">
-                                            <xsl:choose>
-                                                <xsl:when test="@selected eq 'selected'">
-                                                    <xsl:attribute name="class" select="'checkbox'"/>
-                                                </xsl:when>
-                                                <xsl:otherwise>
-                                                    <xsl:attribute name="class" select="'checkbox hidden-print'"/>
-                                                </xsl:otherwise>
-                                            </xsl:choose>
-                                            <label>
+                                        <xsl:sort select="@status-id eq '0'"/>
+                                        <xsl:sort select="@status-id"/>
+                                        <tr>
+                                            <td>
+                                                <xsl:value-of select="@status-id"/>
+                                            </td>
+                                            <td>
                                                 <input type="checkbox" name="status[]">
                                                     <xsl:attribute name="value" select="@value"/>
+                                                    <xsl:attribute name="id" select="concat('status-', position())"/>
                                                     <xsl:if test="@selected eq 'selected'">
                                                         <xsl:attribute name="checked" select="'checked'"/>
                                                     </xsl:if>
                                                 </input>
-                                                <xsl:value-of select="text()"/>
-                                            </label>
-                                        </div>
+                                            </td>
+                                            <td>
+                                                <label>
+                                                    <xsl:attribute name="for" select="concat('status-', position())"/>
+                                                    <xsl:value-of select="text()"/>
+                                                    <span class="small text-muted">
+                                                        <xsl:value-of select="' / '"/>
+                                                        <xsl:choose>
+                                                            <xsl:when test="@group eq 'not-started'">
+                                                                <xsl:value-of select="'Not started'"/>
+                                                            </xsl:when>
+                                                        </xsl:choose>
+                                                        <xsl:choose>
+                                                            <xsl:when test="@group eq 'published'">
+                                                                <xsl:value-of select="'Published'"/>
+                                                            </xsl:when>
+                                                        </xsl:choose>
+                                                        <xsl:choose>
+                                                            <xsl:when test="@group eq 'translated'">
+                                                                <xsl:value-of select="'Translated'"/>
+                                                            </xsl:when>
+                                                        </xsl:choose>
+                                                        <xsl:choose>
+                                                            <xsl:when test="@group eq 'in-translation'">
+                                                                <xsl:value-of select="'In translation'"/>
+                                                            </xsl:when>
+                                                        </xsl:choose>
+                                                    </span>
+                                                </label>
+                                            </td>
+                                        </tr>
                                     </xsl:for-each>
-                                </div>
+                                </table>
+                                
                             </div>
                             
                             <div class="col-sm-4 print-width-override">
@@ -252,7 +278,7 @@
                                     <xsl:if test="/m:response/m:texts[@sort eq 'status'] and not($status-id eq $preceding-status-id)">
                                         <tr class="header">
                                             <td colspan="6">
-                                                <xsl:value-of select="$status/text()"/>
+                                                <xsl:value-of select="concat($status/@status-id, ' / ', $status/text())"/>
                                                 <xsl:value-of select="concat(' (', format-number(count(/m:response/m:texts/m:text[@status eq $status-id]), '#,###'), ' texts, ', format-number(sum(/m:response/m:texts/m:text[@status eq $status-id]/tei:bibl[1]/tei:location/@count-pages), '#,###'),' pages)')"/>
                                             </td>
                                         </tr>

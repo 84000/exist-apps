@@ -8,6 +8,8 @@ import module namespace glossary="http://read.84000.co/glossary" at "../../84000
 import module namespace search="http://read.84000.co/search" at "../../84000-reading-room/modules/search.xql";
 import module namespace source="http://read.84000.co/source" at "../../84000-reading-room/modules/source.xql";
 import module namespace contributors="http://read.84000.co/contributors" at "../../84000-reading-room/modules/contributors.xql";
+import module namespace tei-content="http://read.84000.co/tei-content" at "../../84000-reading-room/modules/tei-content.xql";
+import module namespace translations="http://read.84000.co/translations" at "../../84000-reading-room/modules/translations.xql";
 import module namespace functx="http://www.functx.com";
 
 declare option exist:serialize "method=xml indent=no";
@@ -59,6 +61,8 @@ return
                 source:etext-volumes($work, xs:integer($volume)),
                 contributors:persons(false())
             )
+            else if($tab eq 'translations') then 
+                translations:translations($tei-content:published-status-ids, '', false())
             else
                 $xml-section
         )

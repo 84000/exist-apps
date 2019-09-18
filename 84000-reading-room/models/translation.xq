@@ -33,6 +33,7 @@ let $translation-data :=
         xmlns="http://read.84000.co/ns/1.0" 
         id="{ tei-content:id($tei) }"
         status="{ tei-content:translation-status($tei) }"
+        status-group="{ tei-content:translation-status-group($tei) }"
         page-url="{ $page-url }">
         { tei-content:ancestors($tei, $resource-id, 1) }
         { translation:titles($tei) }

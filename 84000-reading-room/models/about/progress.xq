@@ -15,7 +15,7 @@ common:response(
     (
         translations:summary($source:ekangyur-work),
         element { QName('http://read.84000.co/ns/1.0', 'translations-published') } {
-            translations:translation-status-texts($tei-content:published-statuses)
+            translations:translation-status-texts($tei-content:text-statuses/m:status[@group = ('published')]/@status-id)
         },
         element { QName('http://read.84000.co/ns/1.0', 'translations-translated') } {
             translations:translation-status-texts($tei-content:text-statuses/m:status[@group = ('translated')]/@status-id)

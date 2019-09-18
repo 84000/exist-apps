@@ -57,7 +57,7 @@ declare function search:search($request as xs:string, $first-record as xs:double
     
     let $all := collection($common:tei-path)//tei:TEI
     
-    let $translated := $all[tei:teiHeader/tei:fileDesc/tei:publicationStmt/@status = $tei-content:published-statuses]
+    let $published := $all[tei:teiHeader/tei:fileDesc/tei:publicationStmt/@status = $tei-content:published-status-ids]
     
     let $options :=
         <options>
@@ -73,13 +73,13 @@ declare function search:search($request as xs:string, $first-record as xs:double
         $all//tei:teiHeader/tei:fileDesc//tei:title[ft:query(., $query, $options)]
         | $all//tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl[ft:query(., $query, $options)]
         | $all//tei:teiHeader/tei:fileDesc/tei:sourceDesc//tei:biblScope[ft:query(., $query, $options)]
-        | $translated//tei:text//tei:head[ft:query(., $query, $options)]
-        | $translated//tei:text//tei:p[ft:query(., $query, $options)]
-        | $translated//tei:text//tei:lg[ft:query(., $query, $options)]
-        | $translated//tei:text//tei:ab[ft:query(., $query, $options)]
-        | $translated//tei:text//tei:trailer[ft:query(., $query, $options)]
-        | $translated//tei:back//tei:bibl[ft:query(., $query, $options)]
-        | $translated//tei:back//tei:gloss[ft:query(., $query, $options)]
+        | $published//tei:text//tei:head[ft:query(., $query, $options)]
+        | $published//tei:text//tei:p[ft:query(., $query, $options)]
+        | $published//tei:text//tei:lg[ft:query(., $query, $options)]
+        | $published//tei:text//tei:ab[ft:query(., $query, $options)]
+        | $published//tei:text//tei:trailer[ft:query(., $query, $options)]
+        | $published//tei:back//tei:bibl[ft:query(., $query, $options)]
+        | $published//tei:back//tei:gloss[ft:query(., $query, $options)]
     
     let $result-groups := 
         for $result in $results
@@ -139,7 +139,8 @@ declare function search:source($tei-type as xs:string, $tei as element(tei:TEI))
     <source xmlns="http://read.84000.co/ns/1.0"
         tei-type="{ $tei-type }" 
         resource-id="{ tei-content:id($tei) }" 
-        translation-status="{ $tei//tei:teiHeader/tei:fileDesc/tei:publicationStmt/@status }">
+        translation-status="{ tei-content:translation-status($tei) }"
+        translation-status-group="{ tei-content:translation-status-group($tei) }">
         <title>{ tei-content:title($tei) }</title>
         {
             if($tei-type eq 'translation') then
@@ -231,7 +232,7 @@ declare function search:tm-search($request as xs:string, $lang as xs:string, $fi
                             tei-content:tei(substring-before($file-name, '.xml'), 'translation')
                         else
                             doc($document-uri)/tei:TEI
-                    let $expanded := util:expand($result, "expand-xincludes=no")
+                    let $expanded := common:mark-nodes($result, $request-bo) (: util:expand($result, "expand-xincludes=no") :)
                     
                 return
                     if($tei) then

@@ -16,7 +16,7 @@ import module namespace functx="http://www.functx.com";
 declare variable $glossary:translations := 
     collection($common:translations-path)//tei:TEI
         [tei:teiHeader/tei:fileDesc/tei:publicationStmt
-            [@status = $tei-content:published-statuses]
+            [@status = $tei-content:published-status-ids]
             (:[tei:idno/@xml:id = ("UT22084-031-002", "UT22084-066-018")] Restrict files for testing :)
         ];
 

@@ -11,9 +11,24 @@ import module namespace common="http://read.84000.co/common" at "common.xql";
 
 declare variable $tei-content:translations-collection := collection($common:translations-path);
 declare variable $tei-content:sections-collection := collection($common:sections-path);
-declare variable $tei-content:text-statuses := doc(concat($common:data-path, '/config/text-statuses.xml'))/m:text-statuses;
-declare variable $tei-content:published-statuses := $tei-content:text-statuses/m:status[@group = ('published')]/@status-id;
-declare variable $tei-content:in-progress-statuses := $tei-content:text-statuses/m:status[@group = ('translated', 'in-translation')]/@status-id;
+declare variable $tei-content:text-statuses := 
+    <text-statuses xmlns="http://read.84000.co/ns/1.0">
+        <status status-id="0" group="not-started">Not started</status>
+        <status status-id="1" group="published" marked-up="true">Published and announced</status>
+        <status status-id="1.b" group="published" marked-up="true">Published, not announced</status>
+        <status status-id="2" group="translated" marked-up="true">Marked up, awaiting final proofing</status>
+        <status status-id="2.a" group="translated" marked-up="true">Markup in process</status>
+        <status status-id="2.b" group="translated">Awaiting markup</status>
+        <status status-id="2.c" group="translated">Copyedited and awaiting post-copyedit checking</status>
+        <status status-id="2.d" group="translated">Being copyedited</status>
+        <status status-id="2.e" group="in-translation">Reviewed but awaiting final revision and /or approval before copyediting</status>
+        <status status-id="2.f" group="in-translation">In review</status>
+        <status status-id="2.g" group="in-translation">Approaching or awaiting review</status>
+        <status status-id="3" group="in-translation">Current translation projects</status>
+    </text-statuses>;
+declare variable $tei-content:published-status-ids := $tei-content:text-statuses/m:status[@group = ('published')]/@status-id;
+declare variable $tei-content:in-progress-status-ids := $tei-content:text-statuses/m:status[@group = ('translated', 'in-translation')]/@status-id;
+declare variable $tei-content:marked-up-status-ids := $tei-content:text-statuses/m:status[@marked-up = 'true']/@status-id;
 declare variable $tei-content:title-types :=
     <title-types xmlns="http://read.84000.co/ns/1.0">
         <title-type id="mainTitle">Main</title-type>
@@ -171,7 +186,7 @@ declare function tei-content:text-statuses-selected($selected-ids as xs:string*)
                 $status/@*,
                 attribute value { $status/@status-id },
                 if ($status/@status-id = $selected-ids) then attribute selected { 'selected' } else '',
-                text { concat($status/@status-id, ' / ', $status/@group, ' / ', $status/text()) }
+                text { $status/text() }
                 
             }
     }

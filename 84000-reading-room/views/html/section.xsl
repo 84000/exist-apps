@@ -551,7 +551,7 @@
                                 </xsl:for-each>
                                 
                                 <span class="visible-xs-inline visible-sm-inline col-sm-pull-right">
-                                    <xsl:copy-of select="common:translation-status(@status)"/>
+                                    <xsl:copy-of select="common:translation-status(@status-group)"/>
                                 </span>
                                 
                                 <hr class="visible-xs-block visible-sm-block"/>
@@ -565,7 +565,7 @@
                                     <xsl:choose>
                                         <xsl:when test="m:titles/m:title[@xml:lang='en'][not(@type)]/text()">
                                             <xsl:choose>
-                                                <xsl:when test="@status = '1'">
+                                                <xsl:when test="@status-group = 'published'">
                                                     <a>
                                                         <xsl:attribute name="href" select="common:internal-link(concat('/translation/', m:source/@key, '.html'), (), '', /m:response/@lang)"/>
                                                         <xsl:copy-of select="normalize-space(m:titles/m:title[@xml:lang='en'][not(@type)])"/> 
@@ -674,7 +674,7 @@
                             <div class="col-md-4 col-lg-3">
                                 
                                 <xsl:choose>
-                                    <xsl:when test="@status eq '1'">
+                                    <xsl:when test="@status-group eq 'published'">
                                         
                                         <hr class="visible-xs visible-sm sml-margin"/>
                                         
@@ -721,7 +721,12 @@
                                         </ul>
                                         
                                     </xsl:when>
-                                    <xsl:when test="@status gt '0'">
+                                    <xsl:when test="@status-group eq 'translated'">
+                                        <div class="small italic sml-margin bottom text-warning visible-md visible-lg">
+                                            <xsl:value-of select="'Translation in progress'"/>
+                                        </div>
+                                    </xsl:when>
+                                    <xsl:when test="@status-group eq 'in-translation'">
                                         <div class="small italic sml-margin bottom text-warning visible-md visible-lg">
                                             <xsl:value-of select="'Translation in progress'"/>
                                         </div>

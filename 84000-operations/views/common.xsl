@@ -71,7 +71,7 @@
                 <xsl:if test="$active-tab eq 'operations/search'">
                     <xsl:attribute name="class" select="'active'"/>
                 </xsl:if>
-                <a href="search.html?status=none">
+                <a href="search.html">
                     <xsl:value-of select="'Search'"/>
                 </a>
             </li>

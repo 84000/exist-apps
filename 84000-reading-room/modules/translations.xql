@@ -28,8 +28,7 @@ declare function translations:work-tei($work as xs:string) as element()* {
 };
 
 declare function translations:files($text-statuses as xs:string*) as element() {
-    <translations xmlns="http://read.84000.co/ns/1.0">
-    {
+    element { QName('http://read.84000.co/ns/1.0', 'translations') }{
         for $tei in $tei-content:translations-collection//tei:TEI[tei:teiHeader/tei:fileDesc/tei:publicationStmt/@status = $text-statuses]
             let $base-uri := base-uri($tei)
             let $file-name := util:unescape-uri(replace($base-uri, ".+/(.+)$", "$1"), 'UTF-8')
@@ -42,7 +41,6 @@ declare function translations:files($text-statuses as xs:string*) as element() {
                 tei-content:title($tei)
             }
     }
-    </translations>
 };
 
 declare function translations:summary($work as xs:string) as element() {
@@ -54,7 +52,7 @@ declare function translations:summary($work as xs:string) as element() {
     let $all-statuses := $tei-content:text-statuses/m:status[not(@status-id = ('0'))]/@status-id
     
     let $fileDescs := $tei/tei:teiHeader/tei:fileDesc
-    let $published-fileDesc := $fileDescs[tei:publicationStmt/@status = $tei-content:published-statuses]
+    let $published-fileDesc := $fileDescs[tei:publicationStmt/@status = $tei-content:published-status-ids]
     let $translated-fileDesc := $fileDescs[tei:publicationStmt/@status = $translated-statuses]
     let $in-translation-fileDesc := $fileDescs[tei:publicationStmt/@status = $in-translation-statuses]
     let $commissioned-fileDesc := $fileDescs[tei:publicationStmt/@status = $all-statuses]
@@ -247,37 +245,40 @@ declare function translations:filtered-texts($work as xs:string, $status as xs:s
                 deduplicate="{ $deduplicate }">
                 {
                     (: Sort the result, the sort may be based on the text detail :)
-                    if($sort = ('toh', '')) then
-                        for $text in $texts
-                            order by 
-                                xs:integer($text/m:toh/@number), 
-                                $text/m:toh/@letter, 
-                                if(functx:is-a-number($text/m:toh/@chapter-number)) then xs:integer($text/m:toh/@chapter-number) else 9999, 
-                                $text/m:toh/@chapter-letter
-                        return $text
-                    else if($sort eq 'status') then
-                        for $text in $texts
-                            order by 
-                                if ($text/@status = $tei-content:text-statuses/m:status[not(@status-id = ('0'))]/@status-id) then $text/@status else '4',
-                                xs:integer($text/m:toh/@number), 
-                                $text/m:toh/@letter, 
-                                if(functx:is-a-number($text/m:toh/@chapter-number)) then xs:integer($text/m:toh/@chapter-number) else 9999, 
-                                $text/m:toh/@chapter-letter
-                        return $text
-                    else if($sort eq 'longest') then
-                        for $text in $texts
-                            order by if(functx:is-a-number($text/tei:bibl/tei:location/@count-pages)) then xs:integer($text/tei:bibl/tei:location/@count-pages) else 1 descending
-                        return $text
-                    else if($sort eq 'shortest') then
-                        for $text in $texts
-                            order by if(functx:is-a-number($text/tei:bibl/tei:location/@count-pages)) then xs:integer($text/tei:bibl/tei:location/@count-pages) else 1
-                        return $text
-                    else
-                        $texts
+                    translations:sorted-texts($texts, $sort)
                 }
             </texts>
 };
 
+declare function translations:sorted-texts($texts as element(m:text)*, $sort as xs:string) as element()* {
+    if($sort = ('toh', '')) then
+        for $text in $texts
+            order by 
+                xs:integer($text/m:toh/@number), 
+                $text/m:toh/@letter, 
+                if(functx:is-a-number($text/m:toh/@chapter-number)) then xs:integer($text/m:toh/@chapter-number) else 9999, 
+                $text/m:toh/@chapter-letter
+        return $text
+    else if($sort eq 'status') then
+        for $text in $texts
+            order by 
+                if ($text/@status = $tei-content:text-statuses/m:status[not(@status-id = ('0'))]/@status-id) then $text/@status else '4',
+                xs:integer($text/m:toh/@number), 
+                $text/m:toh/@letter, 
+                if(functx:is-a-number($text/m:toh/@chapter-number)) then xs:integer($text/m:toh/@chapter-number) else 9999, 
+                $text/m:toh/@chapter-letter
+        return $text
+    else if($sort eq 'longest') then
+        for $text in $texts
+            order by if(functx:is-a-number($text/tei:bibl/tei:location/@count-pages)) then xs:integer($text/tei:bibl/tei:location/@count-pages) else 1 descending
+        return $text
+    else if($sort eq 'shortest') then
+        for $text in $texts
+            order by if(functx:is-a-number($text/tei:bibl/tei:location/@count-pages)) then xs:integer($text/tei:bibl/tei:location/@count-pages) else 1
+        return $text
+    else
+        $texts
+};
 
 declare function translations:filtered-text($tei as element(tei:TEI), $toh-key as xs:string?, $include-sponsors as xs:boolean, $include-downloads as xs:string, $include-folios as xs:boolean) as element(){
     
@@ -285,46 +286,35 @@ declare function translations:filtered-text($tei as element(tei:TEI), $toh-key a
     let $lang := request:get-parameter('lang', 'en')
     
     return
-        <text xmlns="http://read.84000.co/ns/1.0" 
-            id="{ $text-id }" 
-            uri="{ base-uri($tei) }"
-            file-name="{ util:unescape-uri(replace(base-uri($tei), ".+/(.+)$", "$1"), 'UTF-8') }"
-            status="{ tei-content:translation-status($tei) }"
-            status-group="{ tei-content:translation-status-group($tei) }"
-            word-count="{ translation-status:word-count($tei) }"
-            glossary-count="{ translation-status:glossary-count($tei) }">
-            { translation:toh($tei, $toh-key) }
-            { translation:titles($tei) }
-            { translation:title-variants($tei) }
-            { tei-content:source-bibl($tei, $toh-key) }
-            { translation:location($tei, $toh-key) }
-            { translation:translation($tei) }
-            { translation:summary($tei, $lang) }
-            { sponsorship:text-status($text-id, false()) }
-            { 
-                if($include-sponsors) then
-                    translation:sponsors($tei, true())
-                else
-                    ()
-             }
-             {
-                if($include-downloads gt '')then
-                    translation:downloads($tei, $toh-key, $include-downloads)
-                    (: It used to be like this. Not sure why.
-                        for $bibl in $tei/tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl
-                        return
-                            translation:downloads($tei, $bibl/@key, 'all')
-                    :)
-                else
-                    ()
-            }
-            {
-                if($include-folios) then
-                    translation:folios($tei, $toh-key)
-                else
-                    ()
-            }
-        </text>
+        element { QName('http://read.84000.co/ns/1.0', 'text') }{
+            attribute id { $text-id }, 
+            attribute uri { base-uri($tei) },
+            attribute file-name { util:unescape-uri(replace(base-uri($tei), ".+/(.+)$", "$1"), 'UTF-8') },
+            attribute status { tei-content:translation-status($tei) },
+            attribute status-group { tei-content:translation-status-group($tei) },
+            attribute word-count { translation-status:word-count($tei) },
+            attribute glossary-count { translation-status:glossary-count($tei) },
+            translation:toh($tei, $toh-key),
+            translation:titles($tei),
+            translation:title-variants($tei),
+            tei-content:source-bibl($tei, $toh-key),
+            translation:location($tei, $toh-key),
+            translation:translation($tei),
+            translation:summary($tei, $lang),
+            sponsorship:text-status($text-id, false()),
+            if($include-sponsors) then
+                translation:sponsors($tei, true())
+            else
+                (),
+            if($include-downloads gt '')then
+                translation:downloads($tei, $toh-key, $include-downloads)
+            else
+                (),
+            if($include-folios) then
+                translation:folios($tei, $toh-key)
+            else
+                ()
+        }
 };
 
 declare function translations:translations($text-statuses as xs:string*, $include-downloads as xs:string, $include-folios as xs:boolean) as element() {
