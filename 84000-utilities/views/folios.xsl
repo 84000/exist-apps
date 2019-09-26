@@ -110,8 +110,8 @@
                                                             <th>Ref</th>
                                                             <th>Page</th>
                                                             <th colspan="2">@cRef</th>
-                                                            <th colspan="2">HTML</th>
-                                                            <th colspan="2">XML</th>
+                                                            <th>Tibetan</th>
+                                                            <th>English</th>
                                                         </tr>
                                                     </thead>
                                                     <tbody>
@@ -171,30 +171,30 @@
                                                                 </td>
                                                                 <td>
                                                                     <a>
+                                                                        <xsl:attribute name="target" select="concat($folio-row-id, '-bo')"/>
                                                                         <xsl:attribute name="href" select="m:url[@format eq 'html'][@xml:lang eq 'bo']"/>
-                                                                        <xsl:attribute name="data-ajax-target" select="'#popup-footer-source .data-container'"/>
-                                                                        <xsl:value-of select="'Tibetan'"/>
+                                                                        <!-- TO DO: Using ajax popup requires CORS and Auth -->
+                                                                        <!-- <xsl:attribute name="data-ajax-target" select="'#popup-footer-source .data-container'"/> -->
+                                                                        <xsl:value-of select="'html'"/>
+                                                                    </a>
+                                                                    <xsl:value-of select="' | '"/>
+                                                                    <a>
+                                                                        <xsl:attribute name="target" select="concat($folio-row-id, '-bo')"/>
+                                                                        <xsl:attribute name="href" select="m:url[@format eq 'xml'][@xml:lang eq 'bo']"/>
+                                                                        <xsl:value-of select="'xml'"/>
                                                                     </a>
                                                                 </td>
                                                                 <td>
                                                                     <a>
                                                                         <xsl:attribute name="target" select="$text-row-id"/>
                                                                         <xsl:attribute name="href" select="concat($reading-room-path, '/translation/', $toh-key, '.html', '#source-link-', @page-in-text)"/>
-                                                                        <xsl:value-of select="'English'"/>
+                                                                        <xsl:value-of select="'reading room'"/>
                                                                     </a>
-                                                                </td>
-                                                                <td>
-                                                                    <a>
-                                                                        <xsl:attribute name="target" select="concat($folio-row-id, '-bo')"/>
-                                                                        <xsl:attribute name="href" select="m:url[@format eq 'xml'][@xml:lang eq 'bo']"/>
-                                                                        <xsl:value-of select="'Tibetan'"/>
-                                                                    </a>
-                                                                </td>
-                                                                <td>
+                                                                    <xsl:value-of select="' | '"/>
                                                                     <a>
                                                                         <xsl:attribute name="target" select="concat($folio-row-id, '-en')"/>
                                                                         <xsl:attribute name="href" select="m:url[@format eq 'xml'][@xml:lang eq 'en']"/>
-                                                                        <xsl:value-of select="'English'"/>
+                                                                        <xsl:value-of select="'xml'"/>
                                                                     </a>
                                                                 </td>
                                                             </tr>
@@ -228,6 +228,7 @@
                 </div>
             </div>
             
+            <!-- TO DO: solve the auth issues
             <div id="popup-footer-source" class="fixed-footer collapse hidden-print">
                 <div class="fix-height">
                     <div class="data-container">
@@ -242,7 +243,7 @@
                     </button>
                 </div>
             </div>
-            
+             -->
         </xsl:variable>
         
         <xsl:call-template name="reading-room-page">

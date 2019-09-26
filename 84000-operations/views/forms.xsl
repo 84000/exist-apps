@@ -484,7 +484,26 @@
                     <div class="row">
                         <!-- <div class="col-sm-12"> -->
                         <div class="col-sm-8">
-                            <xsl:copy-of select="m:select-input('Translation Status', 'translation-status', 9, 1, m:text-statuses/m:status)"/>
+                            <div class="form-group">
+                                <label class="control-label col-sm-3" for="translation-status">
+                                    <xsl:value-of select="'Translation Status'"/>
+                                </label>
+                                <div class="col-sm-9">
+                                    <select class="form-control" name="translation-status" id="translation-status">
+                                        <xsl:for-each select="m:text-statuses/m:status">
+                                            <xsl:sort select="@value eq '0'"/>
+                                            <xsl:sort select="@value"/>
+                                            <option>
+                                                <xsl:attribute name="value" select="@value"/>
+                                                <xsl:if test="@selected eq 'selected'">
+                                                    <xsl:attribute name="selected" select="'selected'"/>
+                                                </xsl:if>
+                                                <xsl:value-of select="concat(@value, ' / ', text())"/>
+                                            </option>
+                                        </xsl:for-each>
+                                    </select>
+                                </div>
+                            </div>
                             <div class="form-group">
                                 <label class="control-label col-sm-3" for="publication-date">
                                     <xsl:value-of select="'Publication Date'"/>
@@ -502,7 +521,7 @@
                                 <label class="control-label col-sm-3" for="text-version">Version</label>
                                 <div class="col-sm-2">
                                     <input type="text" name="text-version" id="text-version" class="form-control" placeholder="e.g. v 1.0">
-                                        <xsl:attribute name="value" select="m:translation/m:translation/m:edition/text()"/>
+                                        <xsl:attribute name="value" select="m:translation/m:translation/m:edition/text()/normalize-space()"/>
                                         <xsl:if test="m:text-statuses/m:status[@selected eq 'selected']/@value eq '1'">
                                             <xsl:attribute name="required" select="'required'"/>
                                         </xsl:if>
@@ -515,6 +534,9 @@
                                             <xsl:attribute name="required" select="'required'"/>
                                         </xsl:if>
                                     </input>
+                                </div>
+                                <div class="col-sm-5">
+                                    <input type="text" name="update-notes" id="update-notes" class="form-control" placeholder="Add a note about this version"/>
                                 </div>
                             </div>
                             <!--  -->
@@ -659,40 +681,32 @@
                             <xsl:variable name="history" select="(m:translation-status/m:status-update | m:translation-status/m:task[@checked-off])"/>
                             <xsl:if test="$history">
                                 <hr class="sml-margin"/>
-                                <h4 class="no-top-margin">
+                                <h4 class="no-top-margin no-bottom-margin">
                                     <xsl:value-of select="'History'"/>
                                 </h4>
                                 <div class="max-height-220">
                                     <ul class="small list-unstyled">
                                         <xsl:for-each select="$history">
-                                            <xsl:sort select="(./@date-time | ./@checked-off)" order="descending"/>
+                                            <xsl:sort select="(@date-time | @checked-off)" order="descending"/>
                                             <li>
-                                                <xsl:choose>
-                                                    <xsl:when test="@update eq 'text-version'">
-                                                        <div class="text-bold">
-                                                            <xsl:value-of select="concat('Version update - ', text())"/>
-                                                        </div>
-                                                        <div class="text-muted italic">
-                                                            <xsl:value-of select="common:date-user-string('Set ', ./@date-time, ./@user)"/>
-                                                        </div>
-                                                    </xsl:when>
-                                                    <xsl:when test="@update eq 'translation-status'">
-                                                        <div class="text-bold">
-                                                            <xsl:value-of select="concat('Status update - ', ./@value)"/>
-                                                        </div>
-                                                        <div class="text-muted italic">
-                                                            <xsl:value-of select="common:date-user-string('Set ', ./@date-time, ./@user)"/>
-                                                        </div>
-                                                    </xsl:when>
-                                                    <xsl:otherwise>
-                                                        <div class="text-bold">
-                                                            <xsl:value-of select="text()"/>
-                                                        </div>
-                                                        <div class="text-muted italic">
-                                                            <xsl:value-of select="common:date-user-string('Checked off ', ./@checked-off, ./@checked-off-by)"/>
-                                                        </div>
-                                                    </xsl:otherwise>
-                                                </xsl:choose>
+                                                <div class="text-bold">
+                                                    <xsl:choose>
+                                                        <xsl:when test="@update eq 'text-version'">
+                                                            <xsl:value-of select="'Version update: '"/>
+                                                        </xsl:when>
+                                                        <xsl:when test="@update eq 'translation-status'">
+                                                            <xsl:value-of select="'Status update: '"/>
+                                                        </xsl:when>
+                                                    </xsl:choose>
+                                                    <xsl:value-of select="@value"/>
+                                                    
+                                                    <xsl:if test="text() and not(text() eq @value)">
+                                                        <xsl:value-of select="concat(' / ', text())"/>
+                                                    </xsl:if>
+                                                </div>
+                                                <div class="text-muted italic">
+                                                    <xsl:value-of select="common:date-user-string('- Set ', @date-time, @user)"/>
+                                                </div>
                                             </li>
                                         </xsl:for-each>
                                     </ul>

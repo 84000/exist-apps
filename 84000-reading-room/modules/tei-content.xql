@@ -14,8 +14,8 @@ declare variable $tei-content:sections-collection := collection($common:sections
 declare variable $tei-content:text-statuses := 
     <text-statuses xmlns="http://read.84000.co/ns/1.0">
         <status status-id="0" group="not-started">Not started</status>
-        <status status-id="1" group="published" marked-up="true">Published and announced</status>
-        <status status-id="1.b" group="published" marked-up="true">Published, not announced</status>
+        <status status-id="1" group="published" marked-up="true">Published</status>
+        <status status-id="1.a" group="published" marked-up="true">Ready to publish</status>
         <status status-id="2" group="translated" marked-up="true">Marked up, awaiting final proofing</status>
         <status status-id="2.a" group="translated" marked-up="true">Markup in process</status>
         <status status-id="2.b" group="translated">Awaiting markup</status>

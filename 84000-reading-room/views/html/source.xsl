@@ -19,15 +19,15 @@
                             <h3 class="title text-center no-margin">
                                 <xsl:choose>
                                     <xsl:when test="m:source[@work eq 'UT4CZ5369']">
-                                        <xsl:value-of select="concat('Kangyur volume ', m:source/@volume, ', folio ', m:source/@folio-in-etext)"/>
+                                        <xsl:value-of select="concat('Kangyur volume ', m:source/m:page/@volume, ', folio ', m:source/m:page/@folio-in-etext)"/>
                                     </xsl:when>
                                     <xsl:when test="m:source[@work eq 'UT23703']">
-                                        <xsl:value-of select="concat('Tengyur volume ', m:source/@volume, ', folio ', m:source/@folio-in-etext)"/>
+                                        <xsl:value-of select="concat('Tengyur volume ', m:source/m:page/@volume, ', folio ', m:source/m:page/@folio-in-etext)"/>
                                     </xsl:when>
                                 </xsl:choose>
                             </h3>
                             <div class="container top-margin bottom-margin">
-                                <xsl:apply-templates select="m:source/m:language[@xml:lang eq 'bo']"/>
+                                <xsl:apply-templates select="m:source/m:page/m:language[@xml:lang eq 'bo']"/>
                             </div>
                             <hr class="no-margin"/>
                             <div class="footer" id="source-footer">
@@ -45,10 +45,10 @@
                                     <p class="text-center small text-muted ">
                                         <xsl:choose>
                                             <xsl:when test="m:source[@work eq 'UT4CZ5369']">
-                                                <xsl:value-of select="concat('eKangyur ', m:source/@etext-id, ', page ', m:source/@page-in-volume, '.')"/>
+                                                <xsl:value-of select="concat('eKangyur ', m:source/m:page/@etext-id, ', page ', m:source/m:page/@page-in-volume, '.')"/>
                                             </xsl:when>
                                             <xsl:when test="m:source[@work eq 'UT23703']">
-                                                <xsl:value-of select="concat('eTengyur ', m:source/@etext-id, ', page ', m:source/@page-in-volume, '.')"/>
+                                                <xsl:value-of select="concat('eTengyur ', m:source/m:page/@etext-id, ', page ', m:source/m:page/@page-in-volume, '.')"/>
                                             </xsl:when>
                                         </xsl:choose>
                                         <a href="#ekangyur-description" class="info-icon" role="button" data-toggle="collapse">

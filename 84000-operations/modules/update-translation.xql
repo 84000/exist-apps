@@ -126,22 +126,16 @@ declare function update-translation:update($tei as element()) as element()* {
                     
                     (: Version :)
                     else if($request-parameter eq 'text-version') then
-                        let $request-version := normalize-space(request:get-parameter('text-version', ''))
-                        let $request-date := normalize-space(request:get-parameter('text-version-date', ''))
+                        
+                        let $set-default := request:set-attribute('text-version', '0.1')
+                        let $set-default := request:set-attribute('text-version-date', format-dateTime(current-dateTime(), '[Y]'))
+                        
                         return
                             element { QName("http://www.tei-c.org/ns/1.0", "editionStmt") }{
                                 element edition {
-                                    text {
-                                        if($request-version gt '') then
-                                            concat($request-version, ' ') 
-                                        else
-                                            concat('0.1', ' ') 
-                                    },
+                                    text { common:get-parameter('text-version') || ' ' },
                                     element date {
-                                        if($request-date gt '') then
-                                            $request-date
-                                        else
-                                            format-dateTime(current-dateTime(), '[Y]')
+                                        text { common:get-parameter('text-version-date') }
                                     }
                                 }
                             }
@@ -158,13 +152,12 @@ declare function update-translation:update($tei as element()) as element()* {
                     
                     (: Attributes: translation status :)
                     else if($request-parameter = ('translation-status')) then
-                        attribute {'status'} {
-                            (: force zero to '' :)
-                            if(request:get-parameter($request-parameter, '') eq '0') then
-                                ''
-                            else
-                                request:get-parameter($request-parameter, '')
-                        }
+                        let $request-status := request:get-parameter($request-parameter, '')
+                        (: force zero to '' :)
+                        let $request-status := if($request-status eq '0') then '' else $request-status
+                        let $set-default := request:set-attribute('update-notes', $request-status)
+                        return
+                            attribute {'status'} { $request-status }
                 
                 (: Default to a string value :)
                 else if(not(ends-with($request-parameter, '[]'))) then
@@ -255,10 +248,10 @@ declare function update-translation:update($tei as element()) as element()* {
                     element { QName("http://www.tei-c.org/ns/1.0", "note") }{
                         attribute type { 'updated' },
                         attribute update { $request-parameter },
-                        attribute value { normalize-space(request:get-parameter($request-parameter, '')) },
+                        attribute value { common:get-parameter($request-parameter) },
                         attribute date-time { current-dateTime() },
                         attribute user { common:user-name() },
-                        text { string(normalize-space($new-value)) }
+                        text { common:get-parameter('update-notes') }
                     }
                 else
                     ()

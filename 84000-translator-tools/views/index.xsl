@@ -408,12 +408,12 @@
                     <div class="source text-overlay">
                         <div class="text divided text-bo">
                             <xsl:call-template name="text-marked">
-                                <xsl:with-param name="data" select="/m:response/m:source/m:language[@xml:lang eq 'bo']"/>
+                                <xsl:with-param name="data" select="/m:response/m:source/m:page/m:language[@xml:lang eq 'bo']"/>
                             </xsl:call-template>
                         </div>
                         <div id="folio-text" class="text plain text-bo" data-mouseup-set-input="#search-text-bo">
                             <xsl:call-template name="text-plain">
-                                <xsl:with-param name="data" select="/m:response/m:source/m:language[@xml:lang eq 'bo']//tei:p"/>
+                                <xsl:with-param name="data" select="/m:response/m:source/m:page/m:language[@xml:lang eq 'bo']//tei:p"/>
                             </xsl:call-template>
                         </div>
                     </div>
@@ -498,10 +498,10 @@
                                             <a target="reading-room">
                                                 <xsl:choose>
                                                     <xsl:when test="m:match/@type eq 'glossary-term'">
-                                                        <xsl:attribute name="href" select="concat($reading-room-path, '/translation/', m:source/@resource-id, '.html#', m:match/@id)"/>
+                                                        <xsl:attribute name="href" select="concat($reading-room-path, m:match/@location)"/>
                                                     </xsl:when>
                                                     <xsl:when test="m:match/@type eq 'tm-unit'">
-                                                        <xsl:attribute name="href" select="concat($reading-room-path, '/translation/', m:source/@resource-id, '.html#', '')"/>
+                                                        <xsl:attribute name="href" select="concat($reading-room-path, m:match/@location)"/>
                                                     </xsl:when>
                                                 </xsl:choose>
                                                 <xsl:apply-templates select="m:source/m:title"/>

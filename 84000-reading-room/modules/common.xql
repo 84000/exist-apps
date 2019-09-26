@@ -527,3 +527,11 @@ declare function common:item-from-index($items as item()*, $index) as item()? {
     else
         ()
 };
+
+(: Set a default for a request parameter in an request attribute with the same name, then call this to get it :)
+declare function common:get-parameter($parameter-name as xs:string) {
+    if(normalize-space(request:get-parameter($parameter-name, '')) gt '') then 
+        normalize-space(request:get-parameter($parameter-name, '')) 
+    else 
+        request:get-attribute($parameter-name)
+};

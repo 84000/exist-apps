@@ -103,34 +103,57 @@
                                                 <xsl:value-of select="m:toh/m:base"/>
                                             </td>
                                             <td>
-                                                <div class="break">
+                                                <div class="sml-margin bottom break">
                                                     <a>
                                                         <xsl:attribute name="href" select="concat($reading-room-path ,'/translation/', $toh/@key, '.html')"/>
                                                         <xsl:attribute name="target" select="concat($toh/@key, '.html')"/>
+                                                        <xsl:attribute name="title" select="'View this text in the Reading Room'"/>
                                                         <xsl:value-of select="m:titles/m:title[@xml:lang eq 'en']"/>
                                                     </a>
-                                                    <xsl:if test="$reading-room-no-cache-path">
-                                                        <xsl:value-of select="' / '"/>
-                                                        <a class="small">
-                                                            <xsl:attribute name="href" select="concat($reading-room-no-cache-path ,'/translation/', $toh/@key, '.html')"/>
-                                                            <xsl:attribute name="target" select="concat($toh/@key, '.html')"/>
-                                                            <xsl:value-of select="'bypass cache'"/>
-                                                        </a>
-                                                    </xsl:if>
-                                                    <xsl:value-of select="' / '"/>
-                                                    <a class="small">
-                                                        <xsl:attribute name="href" select="concat($reading-room-path ,'/translation/', $toh/@key, '.html?view-mode=editor')"/>
-                                                        <xsl:attribute name="target" select="concat($toh/@key, '.html')"/>
-                                                        <xsl:value-of select="'editor mode'"/>
-                                                    </a>
-                                                    <xsl:value-of select="' / '"/>
-                                                    <a class="small">
-                                                        <xsl:attribute name="href" select="concat('/test-translations.html?translation-id=', $text-id)"/>
-                                                        <xsl:attribute name="target" select="concat('test-translation-', $text-id)"/>
-                                                        <xsl:value-of select="'run tests'"/>
-                                                    </a>
                                                 </div>
-                                                <div class="small text-muted break">
+                                                <ul class="list-inline inline-dots sml-margin bottom small">
+                                                    <xsl:if test="$reading-room-no-cache-path">
+                                                        <li>
+                                                            <a>
+                                                                <xsl:attribute name="href" select="concat($reading-room-no-cache-path ,'/translation/', $toh/@key, '.html')"/>
+                                                                <xsl:attribute name="target" select="concat($toh/@key, '.html')"/>
+                                                                <xsl:attribute name="title" select="'View this text by-passing the cache'"/>
+                                                                <xsl:value-of select="'bypass cache'"/>
+                                                            </a>
+                                                        </li>
+                                                    </xsl:if>
+                                                    <li>
+                                                        <a>
+                                                            <xsl:attribute name="href" select="concat($reading-room-path ,'/translation/', $toh/@key, '.html?view-mode=editor')"/>
+                                                            <xsl:attribute name="target" select="concat($toh/@key, '.html')"/>
+                                                            <xsl:attribute name="title" select="'View this text in editor mode'"/>
+                                                            <xsl:value-of select="'editor mode'"/>
+                                                        </a>
+                                                    </li>
+                                                    <li>
+                                                        <a>
+                                                            <xsl:attribute name="href" select="concat('/test-translations.html?translation-id=', $text-id)"/>
+                                                            <xsl:attribute name="target" select="concat('test-translation-', $text-id)"/>
+                                                            <xsl:attribute name="title" select="'Run automated tests on this text'"/>
+                                                            <xsl:value-of select="'run tests'"/>
+                                                        </a>
+                                                    </li>
+                                                    <li>
+                                                        <a>
+                                                            <xsl:attribute name="href" select="concat($reading-room-path, '/translation/', $toh/@key, '.en.txt')"/>
+                                                            <xsl:attribute name="title" select="'Download translation as a text file'"/>
+                                                            <xsl:value-of select="'translation text file'"/>
+                                                        </a>
+                                                    </li>
+                                                    <li>
+                                                        <a>
+                                                            <xsl:attribute name="href" select="concat($reading-room-path, '/source/', $toh/@key, '.bo.txt')"/>
+                                                            <xsl:attribute name="title" select="'Download the source as a text file'"/>
+                                                            <xsl:value-of select="'source text file'"/>
+                                                        </a>
+                                                    </li>
+                                                </ul>
+                                                <div class="sml-margin bottom small text-muted break">
                                                     <xsl:value-of select="@uri"/>
                                                 </div>
                                             </td>
@@ -174,7 +197,7 @@
                                                 <!-- <xsl:variable name="master-downloads" select="/m:response/m:translations-master/m:translations/m:text/m:downloads[@resource-id eq $toh/@key]"/> -->
                                                 
                                                 <xsl:variable name="file-formats" select="('pdf', 'epub', 'azw3')"/>
-                                                <div class="small">
+                                                <div class="sml-margin bottom small">
                                                     <div class="row">
                                                         
                                                         <!-- Location column -->

@@ -21,7 +21,7 @@ declare function local:dispatch($model as xs:string, $view as xs:string, $parame
     <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
         <forward url="{concat($exist:controller, $model)}">
         { 
-            $parameters//add-parameter 
+            $parameters//add-parameter
         }
         </forward>
         {
@@ -33,7 +33,11 @@ declare function local:dispatch($model as xs:string, $view as xs:string, $parame
                             <set-attribute name="xslt.stylesheet" value="{concat($exist:root, $exist:controller, $view)}"/>
                         </forward>
                     else
-                        <forward url="{concat($exist:controller, $view)}"/>
+                        <forward url="{concat($exist:controller, $view)}">
+                        { 
+                            $parameters//set-header
+                        }
+                        </forward>
                 }
                 </view>
             else
@@ -165,6 +169,15 @@ else if(not(common:auth-environment()) or sm:is-authenticated()) then
                     <add-parameter name="resource-suffix" value="epub"/>
                 </parameters>
             )
+        else if (ends-with($resource-suffix,'.txt')) then (: Note: suffix will actually be en.txt :)
+            local:dispatch("/models/translation.xq", "/views/txt/translation.xq",
+                <parameters xmlns="http://exist.sourceforge.net/NS/exist">
+                    <add-parameter name="resource-id" value="{$resource-id}"/>
+                    <add-parameter name="resource-suffix" value="txt"/>
+                    <set-header name="Content-Type" value="text/plain"/>
+                    <set-header name="Content-Disposition" value="attachment"/>
+                </parameters>
+            )
         else
             (: return the xml :)
             if (request:get-parameter('page', request:get-parameter('folio', '')) gt '') then
@@ -234,6 +247,15 @@ else if(not(common:auth-environment()) or sm:is-authenticated()) then
                 <parameters xmlns="http://exist.sourceforge.net/NS/exist">
                     <add-parameter name="resource-id" value="{$resource-id}"/>
                     <add-parameter name="resource-suffix" value="json"/>
+                </parameters>
+            )
+        else if (ends-with($resource-suffix,'.txt')) then (: Note: suffix will actually be bo.txt :)
+            local:dispatch("/models/source.xq", "/views/txt/source.xq",
+                <parameters xmlns="http://exist.sourceforge.net/NS/exist">
+                    <add-parameter name="resource-id" value="{$resource-id}"/>
+                    <add-parameter name="resource-suffix" value="txt"/>
+                    <set-header name="Content-Type" value="text/plain"/>
+                    <set-header name="Content-Disposition" value="attachment"/>
                 </parameters>
             )
         else

@@ -90,6 +90,20 @@ declare function source:etext-volume($etext-id as xs:string) as element()* {
     collection($source:source-data-path)//tei:TEI[tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:idno[@type eq 'TBRC_TEXT_RID']/text() eq $etext-id]
 };
 
+declare function source:etext-full($location as element(m:location)) as element()? {
+    
+    let $work := $location/@work
+    return
+        element { QName('http://read.84000.co/ns/1.0', 'source') } {
+            attribute work { $work },
+            for $volume in $location/m:volume
+                for $page-in-volume at $page-index in xs:integer($volume/@start-page) to xs:integer($volume/@end-page)
+                return
+                    source:etext-page($work, xs:integer($volume/@number), $page-in-volume, false())
+        }
+    
+};
+
 declare function source:etext-page($location as element(m:location), $page-number as xs:integer, $add-context as xs:boolean) as element()? {
     
     let $work := $location/@work
@@ -117,9 +131,11 @@ declare function source:etext-page($location as element(m:location), $page-numbe
     let $page-volume := $page-volume[1]
     where $page-volume
     return
-        source:etext-page($work, $page-volume/@volume-number, $page-volume/@page-in-volume, $add-context)
+        element { QName('http://read.84000.co/ns/1.0', 'source') } {
+            attribute work { $work },
+            source:etext-page($work, $page-volume/@volume-number, $page-volume/@page-in-volume, $add-context)
+        }
 };
-
 
 declare function source:etext-page($work as xs:string, $volume-number as xs:integer, $page-number as xs:integer, $add-context as xs:boolean) as element()? {
     
@@ -135,8 +151,7 @@ declare function source:etext-page($work as xs:string, $volume-number as xs:inte
     let $trailing-milestone-n := ($trailing-lines + 1)
     
     return 
-        element { QName('http://read.84000.co/ns/1.0', 'source') } {
-            attribute work { $work },
+        element { QName('http://read.84000.co/ns/1.0','page') }  {
             attribute volume { $volume-number },
             attribute page-in-volume { $page-number },
             attribute folio-in-volume { source:page-to-folio($page-number) },
@@ -145,7 +160,9 @@ declare function source:etext-page($work as xs:string, $volume-number as xs:inte
             element language {
                 attribute xml:lang {'bo'},
                 
-                if($add-context) then (
+                (: Context around the page, in case page break comes in the middle of a passage :)
+                if($add-context) then 
+                (
                     element { QName('http://www.tei-c.org/ns/1.0', 'p') } { 
                         $preceding-page/tei:milestone[@unit eq 'line'][xs:integer(@n) eq $preceding-milestone-n]
                         | $preceding-page/child::node()[preceding-sibling::tei:milestone[@unit eq 'line'][xs:integer(@n) ge $preceding-milestone-n]] 
@@ -160,6 +177,7 @@ declare function source:etext-page($work as xs:string, $volume-number as xs:inte
                     }
                 )
                 else
+                    (: Just the page :)
                     $page
                 
             }

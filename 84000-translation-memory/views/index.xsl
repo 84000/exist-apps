@@ -63,7 +63,7 @@
                                     </div>
                                     
                                     <div class="form-group text text-muted italic">
-                                        <xsl:value-of select="concat('eKangyur volume ', m:source/@volume, ', page ', m:source/@page, '.')"/>
+                                        <xsl:value-of select="concat('eKangyur volume ', m:source/@volume, ', page ', m:source/m:page/@page, '.')"/>
                                     </div>
                                 </form>
                             </div>
@@ -82,12 +82,12 @@
                                 <div id="source-text" class="text-overlay">
                                     <div class="text divided text-bo">
                                         <xsl:call-template name="text-marked">
-                                            <xsl:with-param name="data" select="m:source/m:language[@xml:lang eq 'bo']"/>
+                                            <xsl:with-param name="data" select="m:source/m:page/m:language[@xml:lang eq 'bo']"/>
                                         </xsl:call-template>
                                     </div>
                                     <div class="text plain text-bo" data-mouseup-set-input="#tmx-form [name='source']">
                                         <xsl:call-template name="text-plain">
-                                            <xsl:with-param name="data" select="m:source/m:language[@xml:lang eq 'bo']//tei:p"/>
+                                            <xsl:with-param name="data" select="m:source/m:page/m:language[@xml:lang eq 'bo']//tei:p"/>
                                         </xsl:call-template>
                                     </div>
                                 </div>

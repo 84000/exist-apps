@@ -239,7 +239,7 @@ declare function translation-status:update($text-id as xs:string) as element()? 
             attribute version { $tei-version-str },
             attribute word-count { $word-count },
             attribute glossary-count { $glossary-count },
-            if('action-note' = $request-parameters and not(compare($existing-value/m:action-note/text(), request:get-parameter('action-note', '')) eq 0))then
+            if('action-note' = $request-parameters and not(compare(string($existing-value/m:action-note), request:get-parameter('action-note', '')) eq 0))then
                 element action-note {
                     attribute last-edited { current-dateTime() },
                     attribute last-edited-by { common:user-name() },
@@ -248,7 +248,7 @@ declare function translation-status:update($text-id as xs:string) as element()? 
             else
                 $existing-value/m:action-note
             ,
-            if('progress-note' = $request-parameters and not(compare($existing-value/m:progress-note/text(), request:get-parameter('progress-note', '')) eq 0))then
+            if('progress-note' = $request-parameters and not(compare(string($existing-value/m:progress-note), request:get-parameter('progress-note', '')) eq 0))then
                 element progress-note {
                     attribute last-edited { current-dateTime() },
                     attribute last-edited-by { common:user-name() },
@@ -257,7 +257,7 @@ declare function translation-status:update($text-id as xs:string) as element()? 
             else
                 $existing-value/m:progress-note
             ,
-            if('text-note' = $request-parameters and not(compare($existing-value/m:text-note/text(), request:get-parameter('text-note', '')) eq 0))then
+            if('text-note' = $request-parameters and not(compare(string($existing-value/m:text-note), request:get-parameter('text-note', '')) eq 0))then
                 element text-note {
                     attribute last-edited { current-dateTime() },
                     attribute last-edited-by { common:user-name() },
