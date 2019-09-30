@@ -678,34 +678,45 @@
                                     </xsl:for-each>
                                 </ol>
                             </div>
-                            <xsl:variable name="history" select="(m:translation-status/m:status-update | m:translation-status/m:task[@checked-off])"/>
-                            <xsl:if test="$history">
+                            <xsl:if test="m:translation-status/m:status-update[@date-time] | m:translation-status/m:task[@checked-off]">
                                 <hr class="sml-margin"/>
                                 <h4 class="no-top-margin no-bottom-margin">
                                     <xsl:value-of select="'History'"/>
                                 </h4>
                                 <div class="max-height-220">
                                     <ul class="small list-unstyled">
-                                        <xsl:for-each select="$history">
+                                        <xsl:for-each select="m:translation-status/m:status-update[@date-time] | m:translation-status/m:task[@checked-off]">
                                             <xsl:sort select="(@date-time | @checked-off)" order="descending"/>
                                             <li>
                                                 <div class="text-bold">
                                                     <xsl:choose>
-                                                        <xsl:when test="@update eq 'text-version'">
-                                                            <xsl:value-of select="'Version update: '"/>
+                                                        <xsl:when test="local-name(.) eq 'status-update'">
+                                                            <xsl:choose>
+                                                                <xsl:when test="@update eq 'text-version'">
+                                                                    <xsl:value-of select="'Version update: ' || @value"/>
+                                                                </xsl:when>
+                                                                <xsl:when test="@update eq 'translation-status'">
+                                                                    <xsl:value-of select="'Status update: ' || @value"/>
+                                                                </xsl:when>
+                                                            </xsl:choose>
+                                                            <xsl:if test="text() and not(text() eq @value)">
+                                                                <xsl:value-of select="concat(' / ', text())"/>
+                                                            </xsl:if>
                                                         </xsl:when>
-                                                        <xsl:when test="@update eq 'translation-status'">
-                                                            <xsl:value-of select="'Status update: '"/>
-                                                        </xsl:when>
+                                                        <xsl:otherwise>
+                                                            <xsl:value-of select="text()"/>
+                                                        </xsl:otherwise>
                                                     </xsl:choose>
-                                                    <xsl:value-of select="@value"/>
-                                                    
-                                                    <xsl:if test="text() and not(text() eq @value)">
-                                                        <xsl:value-of select="concat(' / ', text())"/>
-                                                    </xsl:if>
                                                 </div>
                                                 <div class="text-muted italic">
-                                                    <xsl:value-of select="common:date-user-string('- Set ', @date-time, @user)"/>
+                                                    <xsl:choose>
+                                                        <xsl:when test="local-name(.) eq 'status-update'">
+                                                            <xsl:value-of select="common:date-user-string('- Set ', @date-time, @user)"/>
+                                                        </xsl:when>
+                                                        <xsl:when test="local-name(.) eq 'task'">
+                                                            <xsl:value-of select="common:date-user-string('- Set ', @checked-off, @checked-off-by)"/>
+                                                        </xsl:when>
+                                                    </xsl:choose>
                                                 </div>
                                             </li>
                                         </xsl:for-each>

@@ -653,17 +653,17 @@ declare function translation:folios($tei as element(tei:TEI), $resource-id as xs
                         element url {
                             attribute format { 'xml' },
                             attribute xml:lang { 'bo' },
-                            text { concat($reading-room-path,'/source/', $location/@key, '.xml?page=', $page-index) }
+                            text { concat($reading-room-path,'/source/', $location/@key, '.xml?page=', $page-in-text) }
                         },
                         element url {
                             attribute format { 'html' },
                             attribute xml:lang { 'bo' },
-                            text { concat($reading-room-path,'/source/', $location/@key, '.html?page=', $page-index) }
+                            text { concat($reading-room-path,'/source/', $location/@key, '.html?page=', $page-in-text) }
                         },
                         element url {
                             attribute format { 'xml' },
                             attribute xml:lang { 'en' },
-                            text { concat($reading-room-path,'/translation/', $location/@key, '.xml?page=', $page-index) }
+                            text { concat($reading-room-path,'/translation/', $location/@key, '.xml?page=', $page-in-text) }
                         }
                    }
             }

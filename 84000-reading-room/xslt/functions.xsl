@@ -83,8 +83,8 @@
     
     <xsl:function name="common:date-user-string">
         <xsl:param name="action-text" as="xs:string" required="yes"/>
-        <xsl:param name="date-time" as="xs:dateTime" required="yes"/>
-        <xsl:param name="user-name" as="xs:string" required="yes"/>
+        <xsl:param name="date-time" as="xs:dateTime?"/>
+        <xsl:param name="user-name" as="xs:string?"/>
         <xsl:variable name="action-str">
             <xsl:if test="$action-text">
                 <xsl:value-of select="concat($action-text, ' ')"/>
@@ -92,7 +92,7 @@
         </xsl:variable>
         <xsl:variable name="date-str">
             <xsl:choose>
-                <xsl:when test="$date-time gt xs:dateTime('2000-01-01T00:00:00Z')">
+                <xsl:when test="$date-time instance of xs:dateTime and $date-time gt xs:dateTime('2000-01-01T00:00:00Z')">
                     <xsl:value-of select="concat('at ', format-dateTime($date-time, '[H01]:[m01] on [FNn,*-3], [D1o] [MNn,*-3] [Y01]'), ' ')"/>
                 </xsl:when>
                 <xsl:otherwise>

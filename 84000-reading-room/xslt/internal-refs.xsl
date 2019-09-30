@@ -115,9 +115,9 @@
     <xsl:template match="tei:ref">
         
         <!-- See if this cRef has a valid ref -->
-        <xsl:variable name="folio-ref" select="$folio-refs[@cRef = current()/@cRef][1]"/>
+        <xsl:variable name="valid-ref" select="$folio-refs[@cRef = current()/@cRef]"/>
         <!-- Dervive the index for the valid ref -->
-        <xsl:variable name="folio-index" select="if($folio-ref) then common:index-of-node($folio-refs, $folio-ref) else 0"/>
+        <xsl:variable name="folio-index" select="if($valid-ref) then common:index-of-node($folio-refs, .) else 0"/>
         
         <xsl:choose>
             

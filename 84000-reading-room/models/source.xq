@@ -48,6 +48,13 @@ return
             (
                 (: Get a page :)
                 source:etext-page($tei-location, $page, false()),
+                <translation 
+                    xmlns="http://read.84000.co/ns/1.0" 
+                    id="{ tei-content:id($tei) }"
+                    status="{ tei-content:translation-status($tei) }"
+                    status-group="{ tei-content:translation-status-group($tei) }">
+                    { translation:folio-content($tei, $resource-id, $page) }
+                </translation>,
                 
                 (: Include back link to the passage in the text :)
                 <back-link 

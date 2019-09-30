@@ -3,6 +3,7 @@
     
     <xsl:import href="website-page.xsl"/>
     <xsl:import href="../../xslt/lang.xsl"/>
+    <xsl:import href="../../xslt/tei-to-xhtml.xsl"/>
     
     <xsl:template match="/m:response">
         
@@ -15,16 +16,39 @@
                         </span>
                     </div>
                     <div class="panel-body">
+                        <div id="ekangyur-description" class="well well-sml collapse">
+                            <h4 class="no-top-margin">
+                                <xsl:call-template name="local-text">
+                                    <xsl:with-param name="local-key" select="'ekangyur-description-title'"/>
+                                </xsl:call-template>
+                            </h4>
+                            <xsl:call-template name="local-text">
+                                <xsl:with-param name="local-key" select="'ekangyur-description-content'"/>
+                            </xsl:call-template>
+                        </div>
                         <div class="ajax-data">
-                            <h3 class="title text-center no-margin">
+                            <xsl:variable name="work-string" as="xs:string">
                                 <xsl:choose>
                                     <xsl:when test="m:source[@work eq 'UT4CZ5369']">
-                                        <xsl:value-of select="concat('Kangyur volume ', m:source/m:page/@volume, ', folio ', m:source/m:page/@folio-in-etext)"/>
+                                        <xsl:value-of select="'Kangyur'"/>
                                     </xsl:when>
                                     <xsl:when test="m:source[@work eq 'UT23703']">
-                                        <xsl:value-of select="concat('Tengyur volume ', m:source/m:page/@volume, ', folio ', m:source/m:page/@folio-in-etext)"/>
+                                        <xsl:value-of select="'Tengyur'"/>
                                     </xsl:when>
                                 </xsl:choose>
+                            </xsl:variable>
+                            <xsl:variable name="folio-string" as="xs:string">
+                                <xsl:choose>
+                                    <xsl:when test="m:translation/m:folio-content/tei:ref[@type eq 'folio'][@cRef]">
+                                        <xsl:value-of select="m:translation/m:folio-content/tei:ref[@type eq 'folio'][1]/@cRef"/>
+                                    </xsl:when>
+                                    <xsl:otherwise>
+                                        <xsl:value-of select="concat('folio ', m:source/m:page/@folio-in-etext)"/>
+                                    </xsl:otherwise>
+                                </xsl:choose>
+                            </xsl:variable>
+                            <h3 class="title text-center no-margin">
+                                <xsl:value-of select="concat($work-string, ' volume ', m:source/m:page/@volume, ', ', $folio-string)"/>
                             </h3>
                             <div class="container top-margin bottom-margin">
                                 <xsl:apply-templates select="m:source/m:page/m:language[@xml:lang eq 'bo']"/>
@@ -32,30 +56,12 @@
                             <hr class="no-margin"/>
                             <div class="footer" id="source-footer">
                                 <div class="container top-margin bottom-margin">
-                                    <div id="ekangyur-description" class="well well-sml collapse">
-                                        <h4 class="no-top-margin">
-                                            <xsl:call-template name="local-text">
-                                                <xsl:with-param name="local-key" select="'ekangyur-description-title'"/>
-                                            </xsl:call-template>
-                                        </h4>
-                                        <xsl:call-template name="local-text">
-                                            <xsl:with-param name="local-key" select="'ekangyur-description-content'"/>
-                                        </xsl:call-template>
-                                    </div>
                                     <p class="text-center small text-muted ">
-                                        <xsl:choose>
-                                            <xsl:when test="m:source[@work eq 'UT4CZ5369']">
-                                                <xsl:value-of select="concat('eKangyur ', m:source/m:page/@etext-id, ', page ', m:source/m:page/@page-in-volume, '.')"/>
-                                            </xsl:when>
-                                            <xsl:when test="m:source[@work eq 'UT23703']">
-                                                <xsl:value-of select="concat('eTengyur ', m:source/m:page/@etext-id, ', page ', m:source/m:page/@page-in-volume, '.')"/>
-                                            </xsl:when>
-                                        </xsl:choose>
+                                        <xsl:value-of select="concat('e', $work-string, ' ', m:source/m:page/@etext-id, ', page ', m:source/m:page/@page-in-volume, ' (folio ', m:source/m:page/@folio-in-etext, ').')"/>
                                         <a href="#ekangyur-description" class="info-icon" role="button" data-toggle="collapse">
                                             <i class="fa fa-info-circle"/>
                                         </a>
                                     </p>
-                                    
                                 </div>
                             </div>
                         </div>

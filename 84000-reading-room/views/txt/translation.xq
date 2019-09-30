@@ -14,7 +14,7 @@ declare function local:parse-content($content) {
     for $group in $content/*
     return
         (: These are the content groups. They will be seperated by a return :)
-        if($group[self::tei:head | self::tei:p | self::tei:ab | self::tei:lg | self::tei:q | self::tei:list | self::tei:trailer | self::tei:label | self::tei:seg | self::tei:milestone])then
+        if($group[self::m:honoration | self::m:main-title | self::tei:head | self::tei:p | self::tei:ab | self::tei:lg | self::tei:q | self::tei:list | self::tei:trailer | self::tei:label | self::tei:seg | self::tei:milestone])then
         (
             (: Output milestones with id :)
             if($group[self::tei:milestone]) then
