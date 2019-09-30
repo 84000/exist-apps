@@ -56,7 +56,7 @@
                             <div class="footer" id="source-footer">
                                 <div class="container top-margin bottom-margin">
                                     <p class="text-center small text-muted ">
-                                        <xsl:value-of select="concat('e', $work-string, ' ', m:source/m:page/@etext-id, ', page ', m:source/m:page/@page-in-volume, ' (folio ', m:source/m:page/@folio-in-etext, ').')"/>
+                                        <xsl:value-of select="concat('e', $work-string, ' ', m:source/m:page/@etext-id, ', page ', m:source/m:page/@page-in-volume, ' (', m:source/m:page/@folio-in-etext, ').')"/>
                                         <a href="#ekangyur-description" class="info-icon" role="button" data-toggle="collapse">
                                             <i class="fa fa-info-circle"/>
                                         </a>
