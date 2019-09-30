@@ -3,7 +3,6 @@
     
     <xsl:import href="website-page.xsl"/>
     <xsl:import href="../../xslt/lang.xsl"/>
-    <xsl:import href="../../xslt/tei-to-xhtml.xsl"/>
     
     <xsl:template match="/m:response">
         

@@ -156,7 +156,6 @@ declare function source:etext-page($work as xs:string, $volume-number as xs:inte
             attribute page-in-volume { $page-number },
             attribute folio-in-volume { source:page-to-folio($page-number) },
             attribute folio-in-etext { $page/@data-orig-n },
-            attribute folio-in-tei { $page/@data-orig-n },
             attribute etext-id { $etext-id },
             element language {
                 attribute xml:lang {'bo'},
