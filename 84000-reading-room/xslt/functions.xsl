@@ -293,7 +293,7 @@
     <xsl:function name="common:internal-link">
         <xsl:param name="url" required="yes"/>
         <xsl:param name="attributes" required="yes"/>
-        <xsl:param name="fragment-id" required="yes"/>
+        <xsl:param name="fragment-id" required="yes" as="xs:string"/>
         <xsl:param name="lang" required="yes"/>
         <xsl:variable name="lang-attribute" select="if($lang = ('zh')) then concat('lang=', $lang) else ()"/>
         <xsl:variable name="attributes-with-lang" select="($attributes, $lang-attribute)"/>

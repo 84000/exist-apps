@@ -10,7 +10,7 @@
     <xsl:variable name="front-end-path" select="$environment/m:url[@id eq 'front-end']/text()" as="xs:string"/>
     <xsl:variable name="reading-room-path" select="$environment/m:url[@id eq 'reading-room']/text()" as="xs:string"/>
     <xsl:variable name="communications-site-path" select="$environment/m:url[@id eq 'communications-site']/text()" as="xs:string"/>
-    <xsl:variable name="app-version" select="/m:response/@app-version" as="xs:string?"/>
+    <xsl:variable name="app-version" select="if(/m:response/@app-version) then /m:response/@app-version else 'unknown'" as="xs:string"/>
     <xsl:variable name="ga-tracking-id" select="$environment/m:google-analytics/@tracking-id" as="xs:string"/>
     
     <!-- get shared html -->
@@ -377,7 +377,7 @@
     <xsl:function name="common:internal-link">
         <xsl:param name="url" required="yes"/>
         <xsl:param name="attributes" required="yes"/>
-        <xsl:param name="fragment-id" required="yes"/>
+        <xsl:param name="fragment-id" required="yes" as="xs:string"/>
         <xsl:param name="lang" required="yes"/>
         <xsl:variable name="lang-attribute" select="if($lang = ('zh')) then concat('lang=', $lang) else ()"/>
         <xsl:variable name="attributes-with-lang" select="($attributes, $lang-attribute)"/>

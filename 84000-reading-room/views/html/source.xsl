@@ -9,74 +9,100 @@
         <xsl:variable name="content">
             <div class="container">
                 <div class="panel panel-default">
-                    <div class="panel-heading bold text-center">
-                        <span class="title">
-                            <xsl:value-of select="m:back-link/m:title"/>
-                        </span>
-                    </div>
-                    <div class="panel-body">
-                        <div id="ekangyur-description" class="well well-sml collapse">
-                            <h4 class="no-top-margin">
-                                <xsl:call-template name="local-text">
-                                    <xsl:with-param name="local-key" select="'ekangyur-description-title'"/>
-                                </xsl:call-template>
-                            </h4>
-                            <xsl:call-template name="local-text">
-                                <xsl:with-param name="local-key" select="'ekangyur-description-content'"/>
-                            </xsl:call-template>
+                    
+                    <xsl:if test="m:back-link/m:title">
+                        <div class="panel-heading bold text-center">
+                            <span class="title">
+                                <xsl:value-of select="m:back-link/m:title"/>
+                            </span>
                         </div>
+                    </xsl:if>
+                    
+                    <div class="panel-body">
+                        
                         <div class="ajax-data">
+                            
                             <xsl:variable name="work-string" as="xs:string">
                                 <xsl:choose>
-                                    <xsl:when test="m:source[@work eq 'UT4CZ5369']">
-                                        <xsl:value-of select="'Kangyur'"/>
-                                    </xsl:when>
                                     <xsl:when test="m:source[@work eq 'UT23703']">
                                         <xsl:value-of select="'Tengyur'"/>
                                     </xsl:when>
-                                </xsl:choose>
-                            </xsl:variable>
-                            <xsl:variable name="folio-string" as="xs:string">
-                                <xsl:choose>
-                                    <xsl:when test="m:translation/m:folio-content/tei:ref[@type eq 'folio'][@cRef]">
-                                        <xsl:value-of select="m:translation/m:folio-content/tei:ref[@type eq 'folio'][1]/@cRef"/>
-                                    </xsl:when>
                                     <xsl:otherwise>
-                                        <xsl:value-of select="concat('folio ', m:source/m:page/@folio-in-etext)"/>
+                                        <xsl:value-of select="'Kangyur'"/>
                                     </xsl:otherwise>
                                 </xsl:choose>
                             </xsl:variable>
-                            <h3 class="title text-center no-margin">
-                                <xsl:value-of select="concat($work-string, ' volume ', m:source/m:page/@volume, ', ', $folio-string)"/>
-                            </h3>
-                            <div class="container top-margin bottom-margin">
-                                <xsl:apply-templates select="m:source/m:page/m:language[@xml:lang eq 'bo']"/>
-                            </div>
-                            <hr class="no-margin"/>
-                            <div class="footer" id="source-footer">
+                            
+                            <xsl:for-each select="m:source/m:page">
+                                <xsl:variable name="folio-string" as="xs:string">
+                                    <xsl:choose>
+                                        <xsl:when test="m:translation/m:folio-content/tei:ref[@type eq 'folio'][@cRef]">
+                                            <xsl:value-of select="m:translation/m:folio-content/tei:ref[@type eq 'folio'][1]/@cRef"/>
+                                        </xsl:when>
+                                        <xsl:otherwise>
+                                            <xsl:value-of select="concat('folio ', @folio-in-etext)"/>
+                                        </xsl:otherwise>
+                                    </xsl:choose>
+                                </xsl:variable>
+                                <h3 class="title text-center no-margin">
+                                    <xsl:value-of select="concat($work-string, ' volume ', @volume, ', ', $folio-string)"/>
+                                </h3>
                                 <div class="container top-margin bottom-margin">
-                                    <p class="text-center small text-muted ">
-                                        <xsl:value-of select="concat('e', $work-string, ' ', m:source/m:page/@etext-id, ', page ', m:source/m:page/@page-in-volume, ' (', m:source/m:page/@folio-in-etext, ').')"/>
-                                        <a href="#ekangyur-description" class="info-icon" role="button" data-toggle="collapse">
-                                            <i class="fa fa-info-circle"/>
-                                        </a>
-                                    </p>
+                                    <xsl:apply-templates select="m:language[@xml:lang eq 'bo']"/>
                                 </div>
+                                <hr class="no-margin"/>
+                                <div class="container footer" id="source-footer">
+                                    <div class="container top-margin bottom-margin">
+                                        <p class="text-center text-muted ">
+                                            <xsl:value-of select="concat('e', $work-string, ' ', @etext-id, ', page ', @page-in-volume, ' (', @folio-in-etext, ').')"/>
+                                        </p>
+                                    </div>
+                                </div>
+                            </xsl:for-each>
+                            
+                            <div class="container bottom-margin">
+                                
+                                <div class="text-center">
+                                    <a href="#ekangyur-description" class="vertical-align" role="button" data-toggle="collapse">
+                                        <span>
+                                            <i class="fa fa-info-circle"/>
+                                        </span>
+                                        <span>
+                                            <xsl:value-of select="' '"/>
+                                            <xsl:call-template name="local-text">
+                                                <xsl:with-param name="local-key" select="'ekangyur-description-title'"/>
+                                            </xsl:call-template>
+                                        </span>
+                                    </a>
+                                </div>
+                                
+                                <div id="ekangyur-description" class="well well-sml collapse text-center top-margin">
+                                    <xsl:call-template name="local-text">
+                                        <xsl:with-param name="local-key" select="'ekangyur-description-content'"/>
+                                    </xsl:call-template>
+                                </div>
+                                
                             </div>
+                            
                         </div>
-                        <hr class="no-margin"/>
-                        <div class="top-margin bottom-margin">
-                            <p class="text-center">
-                                <xsl:call-template name="local-text">
-                                    <xsl:with-param name="local-key" select="'backlink-label'"/>
-                                </xsl:call-template>
-                                <br/>
-                                <a href="#">
-                                    <xsl:attribute name="href" select="m:back-link/@url"/>
-                                    <xsl:value-of select="m:back-link/@url"/>
-                                </a>
-                            </p>
-                        </div>
+                        
+                        <!-- Keep outside of ajax data -->
+                        <xsl:if test="m:back-link/@url">
+                            <hr class="no-margin"/>
+                            <div class="container top-margin bottom-margin">
+                                <p class="text-center">
+                                    <xsl:call-template name="local-text">
+                                        <xsl:with-param name="local-key" select="'backlink-label'"/>
+                                    </xsl:call-template>
+                                    <br/>
+                                    <a href="#">
+                                        <xsl:attribute name="href" select="m:back-link/@url"/>
+                                        <xsl:value-of select="m:back-link/@url"/>
+                                    </a>
+                                </p>
+                            </div>
+                        </xsl:if>
+                        
                     </div>
                 </div>
             </div>

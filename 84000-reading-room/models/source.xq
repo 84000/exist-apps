@@ -17,6 +17,7 @@ declare option exist:serialize "method=xml indent=no";
 
 (: the id of the text :)
 let $resource-id := request:get-parameter('resource-id', '')
+let $resource-suffix := request:get-parameter('resource-suffix', '')
 let $tei := tei-content:tei($resource-id, 'translation')
 let $tei-location := translation:location($tei, $resource-id)
 
@@ -27,8 +28,10 @@ let $folio := request:get-parameter('folio', '')
 let $page := 
     if(functx:is-a-number(request:get-parameter('page', '0'))) then
         xs:integer(request:get-parameter('page', '0'))
-    else
+    else if($folio gt '') then
         source:folio-to-page($tei, $resource-id, $folio)
+    else
+        0
 
 let $reading-room-path := $common:environment/m:url[@id eq 'reading-room']/text()
 
@@ -63,9 +66,10 @@ return
                     <title>{ tei-content:title($tei) }</title>
                 </back-link>
             )
-            else
+            else if (lower-case($resource-suffix) = ('xml', 'txt')) then
                 (: Get the whole text :)
                 source:etext-full($tei-location)
-                
+            else
+                ()
         )
     )

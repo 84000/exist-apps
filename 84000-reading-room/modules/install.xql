@@ -3,7 +3,6 @@ xquery version "3.0";
 module namespace install="http://read.84000.co/install";
 
 import module namespace xmldb="http://exist-db.org/xquery/xmldb";
-import module namespace dbutil="http://exist-db.org/xquery/dbutil";
 
 declare function install:base-permissions($collection as xs:string) {
 
