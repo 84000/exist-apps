@@ -87,11 +87,10 @@
                                     <xsl:variable name="toh-key" select="m:toh/@key"/>
                                     <div class="row">
                                         <div class="col-sm-11 col-sm-offset-1 small text-muted">
-                                            in
+                                            <xsl:value-of select="'in'"/>
                                             <ul class="breadcrumb">
                                                 <xsl:for-each select="m:parent | m:parent//m:parent">
                                                     <xsl:sort select="@nesting" order="descending"/>
-                                                    
                                                     <li>
                                                         <xsl:value-of select="m:title[@xml:lang='en']/text()"/>
                                                     </li>
@@ -282,7 +281,7 @@
             </xsl:when>
             <xsl:when test="@node-type eq 'bibl' and @key gt ''">
                 <!-- A bibl ref replaces the Toh string -->
-                <xsl:apply-templates select="tei:ref"/>
+                <xsl:apply-templates select=".//tei:ref"/>
             </xsl:when>
             <xsl:otherwise>
                 <!-- Everything else is listed as a search-match -->

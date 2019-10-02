@@ -29,7 +29,7 @@ declare function translations:work-tei($work as xs:string) as element()* {
 
 declare function translations:files($text-statuses as xs:string*) as element() {
     element { QName('http://read.84000.co/ns/1.0', 'translations') }{
-        for $tei in $tei-content:translations-collection//tei:TEI[tei:teiHeader/tei:fileDesc/tei:publicationStmt/@status = $text-statuses]
+        for $tei in $tei-content:translations-collection//tei:TEI[tei:teiHeader/tei:fileDesc/tei:publicationStmt[@status = $text-statuses]]
             let $base-uri := base-uri($tei)
             let $file-name := util:unescape-uri(replace($base-uri, ".+/(.+)$", "$1"), 'UTF-8')
             order by $file-name
@@ -319,7 +319,7 @@ declare function translations:filtered-text($tei as element(tei:TEI), $toh-key a
 
 declare function translations:translations($text-statuses as xs:string*, $include-downloads as xs:string, $include-folios as xs:boolean) as element() {
 
-    let $translations := $tei-content:translations-collection//tei:TEI[tei:teiHeader/tei:fileDesc/tei:publicationStmt/@status = $text-statuses]
+    let $translations := $tei-content:translations-collection//tei:TEI[tei:teiHeader/tei:fileDesc/tei:publicationStmt[@status = $text-statuses]]
     
     return
         <translations xmlns="http://read.84000.co/ns/1.0">

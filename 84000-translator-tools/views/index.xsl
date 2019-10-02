@@ -408,12 +408,12 @@
                     <div class="source text-overlay">
                         <div class="text divided text-bo">
                             <xsl:call-template name="text-marked">
-                                <xsl:with-param name="data" select="/m:response/m:source/m:page/m:language[@xml:lang eq 'bo']"/>
+                                <xsl:with-param name="data" select="/m:response/m:page/m:language[@xml:lang eq 'bo']"/>
                             </xsl:call-template>
                         </div>
                         <div id="folio-text" class="text plain text-bo" data-mouseup-set-input="#search-text-bo">
                             <xsl:call-template name="text-plain">
-                                <xsl:with-param name="data" select="/m:response/m:source/m:page/m:language[@xml:lang eq 'bo']//tei:p"/>
+                                <xsl:with-param name="data" select="/m:response/m:page/m:language[@xml:lang eq 'bo']//tei:p"/>
                             </xsl:call-template>
                         </div>
                     </div>
@@ -551,7 +551,7 @@
     
     <xsl:template name="translations">
         <div class="alert alert-warning small text-center">
-            <p>This page lists all current translations and some meta data. The <strong>editor mode</strong> links open the translations with all sections expanded. This is convenient for searching.</p>
+            <p>This page lists all current translations and some meta data. The <strong>editor mode</strong> links open the translations with all sections expanded, this is convenient for searching, and an embedded annotation tool. For more information about using this tool please contact us.</p>
         </div>
         <table class="table table-responsive">
             <thead>

@@ -24,7 +24,7 @@ declare namespace tei="http://www.tei-c.org/ns/1.0";
 declare variable $translation-status:data := doc(concat($common:data-path, '/operations/translation-status.xml'));
 
 declare function translation-status:text($text-id as xs:string) as node()? {
-    $translation-status:data/m:translation-status/m:text[@text-id eq $text-id]
+    $translation-status:data/m:translation-status/m:text[@text-id eq $text-id][1]
 };
 
 declare function translation-status:texts($text-id as xs:string*) as node()* {

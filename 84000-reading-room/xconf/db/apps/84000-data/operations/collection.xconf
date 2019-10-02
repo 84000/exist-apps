@@ -1,11 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <collection xmlns="http://exist-db.org/collection-config/1.0">
+    
+    <!-- /db/apps/84000-data/operations/ -->
+    
     <index xmlns:m="http://read.84000.co/ns/1.0">
         
         <!-- Range indexes -->
         <range>
             
-            <!-- 
+            <!-- sponsors.xml
             <create qname="m:type">
                 <field name="type-id" match="@id" type="xs:string"/>
             </create>
@@ -14,10 +17,7 @@
                 <field name="sponsor-id" match="@xml:id" type="xs:string"/>
             </create> -->
             
-            <create qname="m:text">
-                <field name="text-id" match="@text-id" type="xs:string"/>
-            </create>
-            
+            <!-- sections-structure.xml -->
             <create qname="m:section">
                 <field name="section-source-id" match="@source-id" type="xs:string"/>
             </create>
@@ -26,10 +26,16 @@
                 <field name="text-source-id" match="@source-id" type="xs:string"/>
             </create>
             
+            <!-- sponsorship.xml -->
+            <create qname="m:text">
+                <field name="text-id" match="@text-id" type="xs:string"/>
+            </create>
+            
             <create qname="m:part">
                 <field name="part-status" match="@status" type="xs:string"/>
             </create>
             
         </range>
+        
     </index>
 </collection>

@@ -10,8 +10,8 @@
     <xsl:variable name="front-end-path" select="$environment/m:url[@id eq 'front-end']/text()" as="xs:string"/>
     <xsl:variable name="reading-room-path" select="$environment/m:url[@id eq 'reading-room']/text()" as="xs:string"/>
     <xsl:variable name="communications-site-path" select="$environment/m:url[@id eq 'communications-site']/text()" as="xs:string"/>
-    <xsl:variable name="app-version" select="if(/m:response/@app-version) then /m:response/@app-version else 'unknown'" as="xs:string"/>
     <xsl:variable name="ga-tracking-id" select="$environment/m:google-analytics/@tracking-id" as="xs:string"/>
+    <xsl:variable name="app-version" select="if(/m:response/@app-version) then /m:response/@app-version else 'unknown'" as="xs:string"/>
     
     <!-- get shared html -->
     <xsl:variable name="eft-header" select="doc('../../xslt/84000-header.xml')/m:eft-header" as="element(m:eft-header)"/>
@@ -375,10 +375,10 @@
     <!-- Localization helpers -->
     <!-- Copied from functions.xsl to avoid duplicate include warning -->
     <xsl:function name="common:internal-link">
-        <xsl:param name="url" required="yes"/>
-        <xsl:param name="attributes" required="yes"/>
+        <xsl:param name="url" required="yes" as="xs:string"/>
+        <xsl:param name="attributes" required="yes" as="xs:string*"/>
         <xsl:param name="fragment-id" required="yes" as="xs:string"/>
-        <xsl:param name="lang" required="yes"/>
+        <xsl:param name="lang" required="yes" as="xs:string"/>
         <xsl:variable name="lang-attribute" select="if($lang = ('zh')) then concat('lang=', $lang) else ()"/>
         <xsl:variable name="attributes-with-lang" select="($attributes, $lang-attribute)"/>
         <xsl:value-of select="concat($url, if(count($attributes-with-lang) gt 0) then concat('?', string-join($attributes-with-lang, '&amp;')) else '', $fragment-id)"/>

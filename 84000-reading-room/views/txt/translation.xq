@@ -19,7 +19,7 @@ declare function local:parse-content($content) {
             (: Output milestones with id :)
             if($group[self::tei:milestone]) then
             (
-                text { '{{milestone:{id:' || $group/@xml:id || '}}}' },
+                text { '{{milestone:' || $group/@xml:id || '}}' },
                 text {'&#32;'}
             )
             else
@@ -36,7 +36,7 @@ declare function local:parse-content($content) {
                     ,
                     (: Output milestones with id :)
                     if($node[self::tei:milestone]) then
-                        text { '{{milestone:{id:' || $node/@xml:id || '}}}' }
+                        text { '{{milestone:' || $node/@xml:id || '}}' }
                     
                     (: Output refs with cRef :)
                     else if($node[self::tei:ref][@folio-index]) then

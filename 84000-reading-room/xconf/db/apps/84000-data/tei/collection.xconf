@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <collection xmlns="http://exist-db.org/collection-config/1.0">
     
+    <!-- /db/apps/84000-data/tei/ -->
+    
     <triggers>
         <trigger event="update" class="org.exist.collections.triggers.XQueryTrigger">
             <parameter name="url" value="xmldb:exist:///db/apps/84000-reading-room/triggers.xql"/>
@@ -8,7 +10,7 @@
     </triggers>
     
     <index xmlns:tei="http://www.tei-c.org/ns/1.0">
-        <!-- Lucene indexes -->
+        
         <lucene diacritics="no">
             <!-- 
             <analyzer id="tws" class="org.tbrc.lucene.analysis.TibWhitespaceAnalyzer"/>
@@ -21,7 +23,7 @@
             <text match="//tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl" boost="2.0">
                 <inline qname="tei:ref"/>
                 <ignore qname="tei:biblScope"/>
-                <author qname="tei:biblScope"/>
+                <ignore qname="tei:author"/>
             </text>
             <text match="//tei:teiHeader/tei:fileDesc/tei:sourceDesc//tei:biblScope"/>
             <text match="//tei:text//tei:head" boost="1.5"/>
@@ -60,7 +62,6 @@
             <text match="//tei:back//tei:gloss/tei:term"/>
         </lucene>
         
-        <!-- Range indexes -->
         <range>
             
             <create qname="tei:idno">
@@ -81,6 +82,10 @@
             
             <create qname="tei:bibl">
                 <field name="translation-type" match="@type" type="xs:string"/>
+            </create>
+            
+            <create qname="tei:location">
+                <field name="translation-work" match="@work" type="xs:string"/>
             </create>
             
             <create qname="tei:publicationStmt">
@@ -143,7 +148,6 @@
                 <field name="ref-rend" match="@rend" type="xs:string"/>
             </create>
             
-            <!--  -->
         </range>
         
     </index>
