@@ -18,9 +18,8 @@
             
             <!-- *.tmx -->
             <create qname="tmx:prop" type="xs:string">
-                <condition attribute="name" value="folio">
-                   <field name="folio" type="xs:string" case="no"/>
-                </condition>
+                <condition attribute="name" value="folio"/>
+                <field name="folio" type="xs:string" case="no"/>
             </create>
             
         </range>

@@ -8,9 +8,9 @@
     <copyright>true</copyright>
     <type>application</type>
     <target>84000-utilities</target>
-    <prepare>pre-install.xql</prepare>
+    <!--<prepare>pre-install.xql</prepare>-->
     <finish>post-install.xql</finish>
-    <permissions user="admin" group="utilities" mode="rw-r--r--"/>
+    <permissions xmlns:repo="http://exist-db.org/xquery/repo" password="" user="admin" group="utilities" mode="rw-r--r--"/>
 
-<deployed>2019-08-13T14:31:38.452+02:00</deployed>
+
 </meta>
