@@ -23,9 +23,15 @@ declare function log:log-request($request as xs:string, $app as xs:string, $type
     
     let $logfile-name := "requests.xml"
     let $logfile-full := concat($common:log-path, '/', $logfile-name)
+    let $log := doc($logfile-full)/m:log
     
     where doc-available($logfile-full)
-    return
+    return (
+    
+        (: Insert return character :)
+        update insert text {'&#10;'} into $log,
+        
+        (: Insert log :)
         update insert
             <request xmlns="http://read.84000.co/ns/1.0" timestamp="{current-dateTime()}">
                 <request>{$request}</request>
@@ -35,7 +41,8 @@ declare function log:log-request($request as xs:string, $app as xs:string, $type
                 <resource-suffix>{$resource-suffix}</resource-suffix>
                 <parameters>{local:parameters()}</parameters>
             </request>
-        into doc($logfile-full)/m:log
+        into $log
+    )
 };
 
 declare function local:dateTimes($timestamps) as item()* {

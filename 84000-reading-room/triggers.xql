@@ -17,14 +17,18 @@ declare function trigger:after-update-document($uri as xs:anyURI) {
 
 declare function local:after-update-document-functions($doc) {
     
-    local:footnote-indexes($doc),
-    local:glossary-types($doc),
-    local:glossary-bo($doc, false()),
-    local:glossary-remove-term-ids($doc),
-    local:permanent-ids($doc),
-    local:temporary-ids($doc),
-    local:last-updated($doc)
-    
+    if($doc[tei:TEI/tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:idno/@xml:id]) then 
+    (
+        local:footnote-indexes($doc),
+        local:glossary-types($doc),
+        local:glossary-bo($doc, false()),
+        local:glossary-remove-term-ids($doc),
+        local:permanent-ids($doc),
+        local:temporary-ids($doc),
+        local:last-updated($doc)
+    )
+    else
+        ()
 };
 
 declare function local:footnote-indexes($doc) {
@@ -63,7 +67,7 @@ declare function local:chapter-indexes($doc) {
 declare function local:permanent-ids($doc) {
     (: Add ids to linkable nodes :)
     (: This enables persistent bookmarks :)
-    let $translation-id := tei-content:id($doc//tei:TEI)
+    let $translation-id := tei-content:id($doc/tei:TEI)
     let $max-id := max($doc//@xml:id ! substring-after(., $translation-id) ! substring(., 2) ! common:integer(.))
     for $element at $index in 
         $doc//tei:milestone[(not(@xml:id) or @xml:id='')]
@@ -107,7 +111,7 @@ declare function local:remove-temporary-ids($doc) {
 declare function local:glossary-types($doc) {
     (: Add types to glossary items :)
     (: Converts old format to new :)
-    let $translation-id := tei-content:id($doc//tei:TEI)
+    let $translation-id := tei-content:id($doc/tei:TEI)
     for $glossary in $doc//tei:div[@type='glossary']//tei:gloss[not(@type) or not(@type = ('term', 'person', 'place', 'text'))]
         let $glossary-id := $glossary/tei:term[@xml:id][1]/@xml:id
         let $glossary-id-end := substring-after($glossary-id, $translation-id)
@@ -252,18 +256,25 @@ declare function local:log-event($type as xs:string, $event as xs:string, $objec
         To inhibit logging remove the log file.    
     :)
     
-    let $log := "triggers.xml"
-    let $log-uri := concat($common:log-path, "/", $log)
+    let $log-file := "triggers.xml"
+    let $log-uri := concat($common:log-path, "/", $log-file)
+    let $log := doc($log-uri)/m:log
     
     where doc-available($log-uri)
-    return
+    return (
+    
+        (: Insert return character :)
+        update insert text {'&#10;'} into $log,
+        
+        (: Insert log :)
         update insert 
             <trigger xmlns="http://read.84000.co/ns/1.0" 
                 event="{string-join(($type, $event, $object-type), "-")}" 
                 uri="{$uri}" 
                 timestamp="{current-dateTime()}" 
                 user="{ common:user-name() }"/>
-        into doc($log-uri)/m:log
+        into $log
+    )
 };
 
 

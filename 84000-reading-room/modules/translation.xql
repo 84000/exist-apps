@@ -194,10 +194,84 @@ declare function translation:filename($tei as element(tei:TEI), $resource-id as 
         $filename
 };
 
+(: Just the version number part of the edition :)
+declare function translation:version-number-str($tei as element(tei:TEI)) as xs:string {
+    (: Remove all but the numbers and points :)
+    replace($tei//tei:editionStmt/tei:edition/text()[1],'[^0-9\.]','')
+};
+
+(: Just the version number part of the edition :)
+declare function translation:version-number($tei as element(tei:TEI)) as xs:integer* {
+    (: Remove all but the numbers and points :)
+    let $version-number-str := translation:version-number-str($tei)
+    
+    (: Split the numbers :)
+    let $version-number-split := tokenize($version-number-str, '\.')
+    
+    return (
+        if(count($version-number-split) gt 0 and functx:is-a-number($version-number-split[1])) then
+            xs:integer($version-number-split[1])
+        else
+            0
+        ,
+        if(count($version-number-split) gt 1 and functx:is-a-number($version-number-split[2])) then
+            xs:integer($version-number-split[2])
+        else if ($version-number-split[1] gt 0) then
+            0
+        else
+            1
+        ,
+        if(count($version-number-split) gt 2 and functx:is-a-number($version-number-split[3])) then
+            xs:integer($version-number-split[3])
+        else
+            0
+    )
+};
+
+(: Increment specific parts of the version number :)
+declare function translation:version-number-str-increment($tei as element(tei:TEI), $part as xs:string) as xs:string {
+    
+    let $version-number := translation:version-number($tei)
+    
+    return string-join((
+        if($part eq 'major') then
+            $version-number[1] + 1
+        else
+            $version-number[1]
+        ,
+        if($part eq 'minor') then
+            $version-number[2] + 1
+        else if($part eq 'major') then
+            0
+        else
+            $version-number[2]
+        ,
+        if($part eq 'revision') then
+            $version-number[3] + 1
+        else if($part = ('major', 'minor')) then
+            0
+        else
+            $version-number[3]
+    ), '.')
+};
+
+(: Just the date part of the edition :)
+declare function translation:version-date($tei as element(tei:TEI)) as xs:string {
+    (: Remove all but the numbers :)
+    replace($tei//tei:editionStmt/tei:edition/m:date/text(),'[^0-9]','')
+};
+
+(: The full version string :)
 declare function translation:version-str($tei as element(tei:TEI)) as xs:string {
-    let $edition := data($tei//tei:editionStmt/tei:edition[1])
-    return
-        replace(normalize-space(replace($edition, '[^a-z0-9\s\.]', ' ')), '\s', '-')
+    replace(
+        replace(
+            normalize-space(
+                string-join(
+                    $tei//tei:editionStmt/tei:edition//text()   (: Get all text :)
+                , ' ')                                          (: Make sure they don't concatenate :)
+            )                                                   (: Normalize the whitespace :)
+        , '[^a-zA-Z0-9\s\.]', '')                               (: Remove all but the alpanumeric, points and spaces :)
+    , '\s', '-')                                                (: Replace the spaces with hyphens :)
 };
 
 declare function translation:downloads($tei as element(tei:TEI), $resource-id as xs:string, $include as xs:string) as element() {

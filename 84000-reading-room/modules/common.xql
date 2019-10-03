@@ -462,6 +462,7 @@ function common:contains-class($string as xs:string?, $class as xs:string ) as x
     )
 }; 
 
+(: Generic update fumction :)
 declare function common:update($request-parameter as xs:string, $existing-value as item()?, $new-value as item()?, $insert-into as node()?, $insert-following as node()?) as element()? {
 
     if(functx:node-kind($existing-value) eq 'text' and compare($existing-value, $new-value) eq 0) then 
@@ -476,29 +477,45 @@ declare function common:update($request-parameter as xs:string, $existing-value 
     else if(not($existing-value) and not($new-value)) then
         () (: No data, do nothing :)
         
-    else
+    else 
+        (: Return <updated/> :)
         element { QName('http://read.84000.co/ns/1.0', 'updated') }
         {
+            (: Requested parameter :)
             attribute node { $request-parameter },
+            
+            (: Add a return character before elements so it's not too unreadable :)
+            if(not($new-value instance of xs:anyAtomicType) and functx:node-kind($new-value) eq 'element' and not($existing-value)) then
+                if(functx:node-kind($insert-following) eq 'element') then
+                    update insert text {'&#10;'} following $insert-following
+                else if(functx:node-kind($insert-into) eq 'element') then
+                    update insert text {'&#10;'} into $insert-into
+                else
+                    ()
+            else
+                ()
+            ,
+            
+            (: Do the update :)
             if(not($existing-value) and $new-value) then        (: Insert :)
             
                 if($insert-following) then                      (: Insert following :)
                     update insert $new-value following $insert-following
-                    
-                else                                            (: Insert wherever:)
+                else                                            (: Insert wherever :)
                     update insert $new-value into $insert-into
-            
+                
             else if($existing-value and not($new-value)) then   (: Delete:)
                 update delete $existing-value
             
-            else                                                (: Update :)
+            else                                                (: Replace :)
                 update replace $existing-value 
                     with $new-value
+            
 
         }
 };
 
-
+(: Sorts a sequence based on the trailing number e.g. ('n-3', 'n-1', 'n-2') -> ('n-1', 'n-2', 'n-3') :)
 declare function common:sort-trailing-number-in-string($seq as xs:string*, $separator) as xs:string* {
 
     for $string in $seq
@@ -521,6 +538,7 @@ declare function common:sort-trailing-number-in-string($seq as xs:string*, $sepa
  
 };
 
+(: Returns an item at the given index :)
 declare function common:item-from-index($items as item()*, $index) as item()? {
     if($index and functx:is-a-number($index) and count($items) ge xs:integer($index)) then
         $items[xs:integer($index)]

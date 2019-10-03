@@ -26,6 +26,7 @@ declare function deploy:execute-options($working-dir as xs:string) as element() 
     </options>
 };
 
+(: Commit data to Git and push to Github :)
 declare function deploy:commit-data($action as xs:string, $sync-resource as xs:string, $commit-msg as xs:string) {
 
     let $repo-path := $deploy:snapshot-conf/m:repo-path/text()
@@ -49,11 +50,11 @@ declare function deploy:commit-data($action as xs:string, $sync-resource as xs:s
     let $git-add := 
         if ($sync-resource eq 'all') then
             "--all"
-        else if($sync-resource eq 'translation-memory') then
-            "translation-memory/."
+        else if($sync-resource = ('tei', 'translation-memory', 'config')) then
+            concat($sync-resource, "/.")
         else
             substring-after($sync-resource, concat($common:data-path, '/'))
-            
+    
     let $commit-msg := 
         if(not($commit-msg))then
             concat('Sync ', substring-after($sync-resource, concat($common:data-path, '/')))
@@ -77,6 +78,7 @@ declare function deploy:commit-data($action as xs:string, $sync-resource as xs:s
     
 };
 
+(: Commit code to Git and push to GitHub :)
 declare function deploy:deploy-apps($admin-password as xs:string, $commit-msg as xs:string, $get-app as xs:string) as element() {
 
     let $repo-path := $deploy:deployment-conf/m:repo-path/text()
@@ -155,9 +157,8 @@ declare function deploy:deploy-apps($admin-password as xs:string, $commit-msg as
     
 };
 
+(: Push to GitHub :)
 declare function deploy:git-push($git-add as xs:string, $commit-msg as xs:string, $options as element()) as node()*{
-    
-    (: Push to GitHub :)
     <execute xmlns="http://read.84000.co/ns/1.0">
     {
         process:execute(('git', 'status'), $options)
@@ -178,20 +179,18 @@ declare function deploy:git-push($git-add as xs:string, $commit-msg as xs:string
         process:execute(('git', 'push', 'origin', 'master'), $options)
     }
     </execute>
-    
 };
 
+(: Pull from GitHub :)
 declare function deploy:git-pull($options as element()) as node()*{
-    
-    (: Pull from GitHub :)
     <execute xmlns="http://read.84000.co/ns/1.0">
     {
         process:execute(('git', 'pull', 'origin', 'master'), $options)
     }
     </execute>
-    
 };
 
+(: Create a xar package :)
 declare function deploy:create-package($app-collection as xs:string) {
     let $entries :=
         dbutil:scan(xs:anyURI($app-collection), function($collection as xs:anyURI?, $resource as xs:anyURI?) {

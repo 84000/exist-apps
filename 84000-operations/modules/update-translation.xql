@@ -127,8 +127,9 @@ declare function update-translation:update($tei as element()) as element()* {
                     (: Version :)
                     else if($request-parameter eq 'text-version') then
                         
-                        let $set-default := request:set-attribute('text-version', '0.1')
+                        let $set-default := request:set-attribute('text-version', 'v 0.1.0')
                         let $set-default := request:set-attribute('text-version-date', format-dateTime(current-dateTime(), '[Y]'))
+                        let $set-default := request:set-attribute('update-notes', common:get-parameter('text-version'))
                         
                         return
                             element { QName("http://www.tei-c.org/ns/1.0", "editionStmt") }{
@@ -243,6 +244,7 @@ declare function update-translation:update($tei as element()) as element()* {
                 else
                     ()
             
+            (: Define a note to add to notesStmt :)
             let $add-note := 
                 if($request-parameter = $parameter-add-notes and not(compare($existing-value, $new-value) eq 0)) then
                     element { QName("http://www.tei-c.org/ns/1.0", "note") }{
@@ -259,7 +261,10 @@ declare function update-translation:update($tei as element()) as element()* {
             where $existing-value or $new-value
             return
                 (
+                    (: Do the update :)
                     common:update($request-parameter, $existing-value, $new-value, $parent, $insert-following),
+                    
+                    (: Add the note :)
                     if($add-note) then 
                         common:update('add-note', (), $add-note, $tei//tei:fileDesc/tei:notesStmt, ())
                     else

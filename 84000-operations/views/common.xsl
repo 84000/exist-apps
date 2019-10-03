@@ -12,7 +12,7 @@
                 
                 <div class="panel-heading bold hidden-print center-vertical">
                     <span class="title">
-                        <xsl:value-of select="'84000 Project Management'"/>
+                        <xsl:value-of select="'84000 Publication Management'"/>
                     </span>
                     <span class="text-right">
                         <a target="reading-room">

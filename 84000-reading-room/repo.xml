@@ -10,7 +10,6 @@
     <target>84000-reading-room</target>
     <prepare>pre-install.xql</prepare>
     <finish>post-install.xql</finish>
-    <permissions user="admin" group="reading-room" mode="rw-r--r--"/>
-
-<deployed>2019-08-18T22:22:55.458+08:00</deployed>
+    <permissions xmlns:repo="http://exist-db.org/xquery/repo" password="" user="admin" group="reading-room" mode="rw-r--r--"/>
+    
 </meta>

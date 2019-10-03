@@ -52,6 +52,7 @@
                                 <thead>
                                     <tr>
                                         <th>Toh</th>
+                                        <th>Status</th>
                                         <th>Title</th>
                                         <th>Start</th>
                                         <th>End</th>
@@ -68,6 +69,26 @@
                                         <tr>
                                             <td>
                                                 <xsl:value-of select="m:toh/m:base"/>
+                                            </td>
+                                            <td>
+                                                <span>
+                                                    <xsl:choose>
+                                                        <xsl:when test="@status-group eq 'published'">
+                                                            <xsl:attribute name="class" select="'label label-success'"/>
+                                                        </xsl:when>
+                                                        <xsl:when test="@status-group eq 'translated'">
+                                                            <xsl:attribute name="class" select="'label label-primary'"/>
+                                                        </xsl:when>
+                                                        <xsl:when test="@status-group eq 'in-translation'">
+                                                            <xsl:attribute name="class" select="'label label-warning'"/>
+                                                        </xsl:when>
+                                                        <xsl:otherwise>
+                                                            <xsl:attribute name="class" select="'label label-default'"/>
+                                                        </xsl:otherwise>
+                                                    </xsl:choose>
+                                                    <xsl:attribute name="title" select="@status-group"/>
+                                                    <xsl:value-of select="if(@status) then @status else '0'"/>
+                                                </span>
                                             </td>
                                             <td>
                                                 <xsl:value-of select="m:titles/m:title[@xml:lang eq 'en']"/>
@@ -103,7 +124,7 @@
                                         </tr>
                                         <tr class="sub collapse">
                                             <xsl:attribute name="id" select="concat($text-row-id, '-sub')"/>
-                                            <td colspan="7">
+                                            <td colspan="8">
                                                 <table class="table table-responsive no-top-margin">
                                                     <thead>
                                                         <tr>
@@ -199,8 +220,8 @@
                                 </tbody>
                                 <tfoot>
                                     <tr>
-                                        <th colspan="2" class="text-right">Total</th>
-                                        <td colspan="5">
+                                        <th colspan="5" class="text-right">Total</th>
+                                        <td colspan="3">
                                             <xsl:value-of select="format-number(count(m:translations/m:text/m:folios/m:folio), '#,###')"/>
                                         </td>
                                     </tr>

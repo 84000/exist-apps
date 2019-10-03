@@ -41,37 +41,35 @@ let $delete-submission :=
 
 (: Process input, if it's posted :)
 let $updated := 
-    if($post-id or $delete-submission-id) then
-        (
-            update-translation:update($tei),
-            file-upload:process-upload($text-id),
-            translation-status:update($text-id)
-        )
+    if($post-id or $delete-submission-id) then (
+        update-translation:update($tei),
+        file-upload:process-upload($text-id),
+        translation-status:update($text-id)
+     )
      else
         ()
 
 (: If it's a new version :)
 let $tei-version-str := translation:version-str($tei)
 let $commit-version := 
-    if($store:conf and not(translation-status:is-current-version($tei-version-str, $current-version-str))) then
-        (
-            (: Commit to GitHub :)
-            deploy:commit-data('sync', tei-content:document-url($tei), ''),
-            
-            (: Store PDF and ebooks :)
-            if(tei-content:translation-status($tei) eq '1')then
-                for $bibl in $tei//tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl
-                return
-                    (   
-                        (: pdf :)
-                        store:create(concat($bibl/@key, '.pdf')),
-                        (: one ebook format does both :)
-                        store:create(concat($bibl/@key, '.epub'))
-                    )
-            else
-                ()
-            
-        )
+    if($store:conf and not(translation-status:is-current-version($tei-version-str, $current-version-str))) then (
+        
+        (: Commit to GitHub :)
+        deploy:commit-data('sync', tei-content:document-url($tei), ''),
+        
+        (: Store PDF and ebooks :)
+        if(tei-content:translation-status($tei) eq '1')then
+            for $bibl in $tei//tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl
+            return
+                (   
+                    (: pdf :)
+                    store:create(concat($bibl/@key, '.pdf')),
+                    (: one ebook format does both :)
+                    store:create(concat($bibl/@key, '.epub'))
+                )
+        else
+            ()
+    )
     else 
         ()
 
@@ -126,7 +124,11 @@ return
                 translation-status:submissions($text-id),
                 translation-status:status-updates($tei)
             }
-            </translation-status>
+            </translation-status>,
+            if($store:conf and $deploy:snapshot-conf) then
+                $deploy:snapshot-conf/m:view-repo-url
+            else
+                ()
         )
     )
     
