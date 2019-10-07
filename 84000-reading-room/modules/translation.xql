@@ -258,7 +258,7 @@ declare function translation:version-number-str-increment($tei as element(tei:TE
 (: Just the date part of the edition :)
 declare function translation:version-date($tei as element(tei:TEI)) as xs:string {
     (: Remove all but the numbers :)
-    replace($tei//tei:editionStmt/tei:edition/m:date/text(),'[^0-9]','')
+    replace($tei//tei:editionStmt/tei:edition/tei:date/text(),'[^0-9]','')
 };
 
 (: The full version string :)
