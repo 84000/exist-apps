@@ -31,6 +31,9 @@ declare function local:dispatch($model as xs:string, $view as xs:string, $parame
                     if(ends-with($view, '.xsl')) then
                         <forward servlet="XSLTServlet">
                             <set-attribute name="xslt.stylesheet" value="{concat($exist:root, $exist:controller, $view)}"/>
+                            { 
+                                $parameters//set-header
+                            }
                         </forward>
                     else
                         <forward url="{concat($exist:controller, $view)}">
@@ -176,6 +179,13 @@ else if(not(common:auth-environment()) or sm:is-authenticated()) then
                     <add-parameter name="resource-suffix" value="txt"/>
                     <set-header name="Content-Type" value="text/plain"/>
                     <set-header name="Content-Disposition" value="attachment"/>
+                </parameters>
+            )
+        else if ($resource-suffix eq 'rdf') then
+            local:dispatch("/models/translation.xq", "/views/rdf/translation.xsl",
+                <parameters xmlns="http://exist.sourceforge.net/NS/exist">
+                    <add-parameter name="resource-id" value="{$resource-id}"/>
+                    <add-parameter name="resource-suffix" value="rdf"/>
                 </parameters>
             )
         else

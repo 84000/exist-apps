@@ -752,7 +752,7 @@ declare function translation:folio-content($tei as element(tei:TEI), $resource-i
     (: Locate the next <ref/> after that :)
     let $end-ref := $refs[$page + 1]
     (: Get all sections that may have a <ref/>. They must be siblings so get direct children of section. :)
-    let $translation-paragraphs := $tei//tei:body//tei:div[@type='translation']//tei:div[@type = ('prologue', 'section', 'chapter')]/*[self::tei:head | self::tei:p | self::tei:ab | self::tei:q | self::tei:lg | self::tei:list| self::tei:table | self::tei:trailer]
+    let $translation-paragraphs := $tei//tei:body//tei:div[@type='translation']//tei:div[@type = ('prologue', 'section', 'chapter', 'colophon')]/*[self::tei:head | self::tei:p | self::tei:ab | self::tei:q | self::tei:lg | self::tei:list| self::tei:table | self::tei:trailer]
     
     (: Find the container of the start <ref/> and it's index :)
     let $start-ref-paragraph := $start-ref/ancestor::*[. = $translation-paragraphs]

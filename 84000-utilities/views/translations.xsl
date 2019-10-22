@@ -140,6 +140,22 @@
                                                     </li>
                                                     <li>
                                                         <a>
+                                                            <xsl:attribute name="href" select="concat($reading-room-path, '/translation/', $toh/@key, '.xml')"/>
+                                                            <xsl:attribute name="target" select="concat($toh/@key, '.xml')"/>
+                                                            <xsl:attribute name="title" select="'View xml data'"/>
+                                                            <xsl:value-of select="'xml'"/>
+                                                        </a>
+                                                    </li>
+                                                    <li>
+                                                        <a>
+                                                            <xsl:attribute name="href" select="concat($reading-room-path, '/translation/', $toh/@key, '.rdf')"/>
+                                                            <xsl:attribute name="target" select="concat($toh/@key, '.rdf')"/>
+                                                            <xsl:attribute name="title" select="'View RDF data'"/>
+                                                            <xsl:value-of select="'rdf'"/>
+                                                        </a>
+                                                    </li>
+                                                    <li>
+                                                        <a>
                                                             <xsl:attribute name="href" select="concat($reading-room-path, '/translation/', $toh/@key, '.en.txt')"/>
                                                             <xsl:attribute name="title" select="'Download translation as a text file'"/>
                                                             <xsl:value-of select="'translation text file'"/>

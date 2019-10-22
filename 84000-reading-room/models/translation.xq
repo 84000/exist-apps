@@ -56,7 +56,16 @@ let $translation-data :=
     </translation>
 
 (: Parse the milestones, refs and pointers :)
-let $translation-data-internal-refs := transform:transform($translation-data, doc(concat($common:app-path, "/xslt/internal-refs.xsl")), <parameters/>)
+let $translation-data-internal-refs := 
+    transform:transform(
+        transform:transform(
+            $translation-data, 
+            doc(concat($common:app-path, "/xslt/milestones.xsl")), 
+            <parameters/>
+        ),
+        doc(concat($common:app-path, "/xslt/internal-refs.xsl")), 
+        <parameters/>
+    )
 
 return
     common:response(

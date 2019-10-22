@@ -46,6 +46,7 @@ return
                     attribute user { common:user-name() },
                     text { $reason-for-increment }
                 }
+            
             (:
             let $do-update := (
                 common:update('text-version', $tei//tei:fileDesc/tei:editionStmt, $editionStmt, (), ()),

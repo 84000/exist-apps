@@ -1314,7 +1314,7 @@
                             <xsl:value-of select="'Upload a translation file'"/>
                         </label>
                         <div class="col-sm-7">
-                            <input type="file" name="submit-translation-file" id="submit-translation-file" class="form-control" required="required" accept="application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"/>
+                            <input type="file" name="submit-translation-file" id="submit-translation-file" class="form-control" required="required" accept="application/vnd.openxmlformats-officedocument.wordprocessingml.document, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"/>
                         </div>
                         <div class="col-sm-2">
                             <button type="submit" class="btn btn-primary pull-right">

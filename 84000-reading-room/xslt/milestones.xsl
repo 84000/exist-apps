@@ -22,15 +22,9 @@
         </milestone>
     </xsl:template>
     
-    <!-- Parse notes -->
-    <!-- Doesn't seem to do anything!!
-    <xsl:template match="tei:note">
-        <note xmlns="http://www.tei-c.org/ns/1.0">
-            <xsl:copy-of select="@*"/>
-            <xsl:variable name="group" select="ancestor::*[exists(@prefix)][1]"/>
-            <xsl:copy-of select="node()"/>
-        </note>
+    <!-- Supress warning -->
+    <xsl:template match="m:dummy">
+        <!-- ignore -->
     </xsl:template>
-     -->
     
 </xsl:stylesheet>

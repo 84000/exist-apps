@@ -10,18 +10,6 @@
         </xsl:copy>
     </xsl:template>
     
-    <!-- Parse milestones adding @label -->
-    <xsl:template match="tei:milestone">
-        <milestone xmlns="http://www.tei-c.org/ns/1.0">
-            <xsl:copy-of select="@*"/>
-            <!-- Get the prefix of the ancestor -->
-            <xsl:variable name="group" select="ancestor::*[exists(@prefix)][1]"/>
-            <!-- Add a label based on the prefix -->
-            <!-- include a soft-hyphen for line breaks -->
-            <xsl:attribute name="label" select="concat($group/@prefix, '.', '­', common:index-of-node($group//tei:milestone, .))"/>
-        </milestone>
-    </xsl:template>
-    
     <!-- Parse pointers resolving internal links -->
     <xsl:template match="tei:ptr">
         <ptr xmlns="http://www.tei-c.org/ns/1.0">
