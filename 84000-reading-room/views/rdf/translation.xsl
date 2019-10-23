@@ -87,12 +87,16 @@
                 <bdo:workLangScript rdf:resource="http://purl.bdrc.io/resource/Inc"/>
                 <bdo:workHasTranslation rdf:resource="{ 'http://purl.84000.co/resource/core/' || $eft-english-id }"/>
                 <bdo:workHasTranslation rdf:resource="{ 'http://purl.84000.co/resource/core/' || $eft-tibetan-id }"/>
-                <skos:prefLabel xml:lang="sa-x-iast">
-                    <xsl:value-of select="m:translation/m:titles/m:title[@xml:lang eq 'sa-ltn']"/>
-                </skos:prefLabel>
-                <skos:altLabel xml:lang="sa-x-iast">
-                    <xsl:value-of select="m:translation/m:long-titles/m:title[@xml:lang eq 'sa-ltn']"/>
-                </skos:altLabel>
+                <xsl:if test="m:translation/m:titles/m:title[@xml:lang eq 'sa-ltn']/text()">
+                    <skos:prefLabel xml:lang="sa-x-iast">
+                        <xsl:value-of select="m:translation/m:titles/m:title[@xml:lang eq 'sa-ltn']"/>
+                    </skos:prefLabel>
+                </xsl:if>
+                <xsl:if test="m:translation/m:long-titles/m:title[@xml:lang eq 'sa-ltn']/text()">
+                    <skos:altLabel xml:lang="sa-x-iast">
+                        <xsl:value-of select="m:translation/m:long-titles/m:title[@xml:lang eq 'sa-ltn']"/>
+                    </skos:altLabel>
+                </xsl:if>
             </rdf:Description>
             
             <xsl:comment>The Derge edition of the Tibetan translation</xsl:comment>
@@ -107,9 +111,11 @@
                     <bdo:workPartOf rdf:resource="{ 'http://purl.84000.co/resource/core/' || $collection-id }"/>
                 </xsl:if>
                 <bdo:workExpressionOf rdf:resource="{ 'http://purl.84000.co/resource/core/' || $eft-tibetan-id }"/>
-                <skos:prefLabel xml:lang="bo">
-                    <xsl:value-of select="m:translation/m:titles/m:title[@xml:lang eq 'bo']"/>
-                </skos:prefLabel>
+                <xsl:if test="m:translation/m:titles/m:title[@xml:lang eq 'bo']/text()">
+                    <skos:prefLabel xml:lang="bo">
+                        <xsl:value-of select="m:translation/m:titles/m:title[@xml:lang eq 'bo']"/>
+                    </skos:prefLabel>
+                </xsl:if>
             </rdf:Description>
             
             <xsl:comment>The original Tibetan translation</xsl:comment>
@@ -123,12 +129,16 @@
                 <bdo:workLangScript rdf:resource="http://purl.bdrc.io/resource/Bo"/>
                 <bdo:workHasExpression rdf:resource="{ 'http://purl.84000.co/resource/core/' || $eft-derge-id }"/>
                 <bdo:workTranslationOf rdf:resource="{ 'http://purl.84000.co/resource/core/' || $eft-indic-id }"/>
-                <skos:prefLabel xml:lang="bo">
-                    <xsl:value-of select="m:translation/m:titles/m:title[@xml:lang eq 'bo']"/>
-                </skos:prefLabel>
-                <skos:altLabel xml:lang="bo">
-                    <xsl:value-of select="m:translation/m:long-titles/m:title[@xml:lang eq 'bo']"/>
-                </skos:altLabel>
+                <xsl:if test="m:translation/m:titles/m:title[@xml:lang eq 'bo']/text()">
+                    <skos:prefLabel xml:lang="bo">
+                        <xsl:value-of select="m:translation/m:titles/m:title[@xml:lang eq 'bo']"/>
+                    </skos:prefLabel>
+                </xsl:if>
+                <xsl:if test="m:translation/m:long-titles/m:title[@xml:lang eq 'bo']/text()">
+                    <skos:altLabel xml:lang="bo">
+                        <xsl:value-of select="m:translation/m:long-titles/m:title[@xml:lang eq 'bo']"/>
+                    </skos:altLabel>
+                </xsl:if>
                 <xsl:if test="$text-refs/m:ref[@type eq 'rkts-work-id']">
                     <bdo:workRefrKTsK rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">
                         <xsl:value-of select="$text-refs/m:ref[@type eq 'rkts-work-id']/@value"/>
@@ -138,47 +148,47 @@
             
             <xsl:comment>The English translation</xsl:comment>
             <rdf:Description rdf:about="{ 'http://purl.84000.co/resource/core/' || $eft-english-id }">
-                
                 <rdf:type rdf:resource="http://purl.bdrc.io/ontology/core/Work"/>
                 <rdf:type rdf:resource="http://purl.bdrc.io/ontology/core/AbstractWork"/>
-                <bdo:workExpressionOf rdf:resource="{ 'http://purl.84000.co/resource/core/' || $eft-english-id  }"/>
-                <bdo:workHasExpression rdf:resource="{ 'http://purl.84000.co/resource/core/' || $eft-english-id  }"/>
                 <bdo:workTranslationOf rdf:resource="{ 'http://purl.84000.co/resource/core/' || $eft-indic-id }"/>
                 <bdo:workLangScript rdf:resource="http://purl.bdrc.io/resource/En"/>
-                <skos:prefLabel xml:lang="en">
-                    <xsl:value-of select="m:translation/m:titles/m:title[@xml:lang eq 'en']"/>
-                </skos:prefLabel>
-                <skos:altLabel xml:lang="en">
-                    <xsl:value-of select="m:translation/m:long-titles/m:title[@xml:lang eq 'en']"/>
-                </skos:altLabel>
-                
-                <xsl:comment>Creators</xsl:comment>
-                <xsl:for-each select="m:translation/m:translation/m:contributors/m:author[@role = 'translatorEng']">
-                    <xsl:variable name="contributor-id" select="substring-after(@ref, 'contributors.xml#')"/>
-                    <xsl:variable name="contributor" select="$contributors//m:person[@xml:id eq $contributor-id]"/>
-                    <xsl:if test="$contributor">
-                        
-                        <bdo:creator>
-                            <bdo:AgentAsCreator>
-                                <bdo:agent>
-                                    <bdo:Person>
-                                        <xsl:attribute name="rdf:about" select="concat('http://purl.84000.co/resource/core/', $contributor/@xml:id)"/>
-                                        <skos:prefLabel xml:lang="en">
-                                            <xsl:value-of select="$contributor/m:label"/>
-                                        </skos:prefLabel>
-                                        <xsl:if test="$contributor/m:ref[@type eq 'viaf']">
-                                            <bdo:sameAsVIAF>
-                                                <xsl:attribute name="rdf:resource" select="$contributor/m:ref[@type eq 'viaf']/@uri"/>
-                                            </bdo:sameAsVIAF>
-                                        </xsl:if>
-                                    </bdo:Person>
-                                </bdo:agent>
-                                <bdo:role rdf:resource="http://purl.bdrc.io/resource/R0ER0017"/>
-                            </bdo:AgentAsCreator>
-                        </bdo:creator>
-                        
-                    </xsl:if>
-                </xsl:for-each>
+                <xsl:if test="m:translation/m:titles/m:title[@xml:lang eq 'en']/text()">
+                    <skos:prefLabel xml:lang="en">
+                        <xsl:value-of select="m:translation/m:titles/m:title[@xml:lang eq 'en']"/>
+                    </skos:prefLabel>
+                </xsl:if>
+                <xsl:if test="m:translation/m:long-titles/m:title[@xml:lang eq 'en']/text()">
+                    <skos:altLabel xml:lang="en">
+                        <xsl:value-of select="m:translation/m:long-titles/m:title[@xml:lang eq 'en']"/>
+                    </skos:altLabel>
+                </xsl:if>
+                <xsl:if test="m:translation/m:translation/m:contributors/m:author[@role = 'translatorEng']">
+                    <xsl:comment>Creators</xsl:comment>
+                    <xsl:for-each select="m:translation/m:translation/m:contributors/m:author[@role = 'translatorEng']">
+                        <xsl:variable name="contributor-id" select="substring-after(@ref, 'contributors.xml#')"/>
+                        <xsl:variable name="contributor" select="$contributors//m:person[@xml:id eq $contributor-id]"/>
+                        <xsl:if test="$contributor">
+                            <bdo:creator>
+                                <bdo:AgentAsCreator>
+                                    <bdo:agent>
+                                        <bdo:Person>
+                                            <xsl:attribute name="rdf:about" select="concat('http://purl.84000.co/resource/core/', $contributor/@xml:id)"/>
+                                            <skos:prefLabel xml:lang="en">
+                                                <xsl:value-of select="$contributor/m:label"/>
+                                            </skos:prefLabel>
+                                            <xsl:if test="$contributor/m:ref[@type eq 'viaf']">
+                                                <bdo:sameAsVIAF>
+                                                    <xsl:attribute name="rdf:resource" select="$contributor/m:ref[@type eq 'viaf']/@uri"/>
+                                                </bdo:sameAsVIAF>
+                                            </xsl:if>
+                                        </bdo:Person>
+                                    </bdo:agent>
+                                    <bdo:role rdf:resource="http://purl.bdrc.io/resource/R0ER0017"/>
+                                </bdo:AgentAsCreator>
+                            </bdo:creator>
+                        </xsl:if>
+                    </xsl:for-each>
+                </xsl:if>
             </rdf:Description>
             
         </rdf:RDF>
