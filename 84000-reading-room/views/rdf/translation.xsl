@@ -162,6 +162,9 @@
                         <xsl:value-of select="m:translation/m:long-titles/m:title[@xml:lang eq 'en']"/>
                     </skos:altLabel>
                 </xsl:if>
+                <xsl:if test="m:translation/@status-group eq 'published'">
+                    <adm:canonicalHtml rdf:resource="{ m:translation/@page-url }"/>
+                </xsl:if>
                 <xsl:if test="m:translation/m:translation/m:contributors/m:author[@role = 'translatorEng']">
                     <xsl:comment>Creators</xsl:comment>
                     <xsl:for-each select="m:translation/m:translation/m:contributors/m:author[@role = 'translatorEng']">
