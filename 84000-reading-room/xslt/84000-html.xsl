@@ -52,6 +52,15 @@
                                 </button>
                             </span>
                             
+                            <div class="visible-desktop">
+                                <div class="center-vertical pull-right">
+                                    <span>
+                                        <xsl:call-template name="language-links"/>
+                                    </span>
+                                    <xsl:call-template name="search-form"/>
+                                </div>
+                            </div>
+                            
                         </div>
                     </div>
                 </div>
@@ -146,145 +155,61 @@
                                 
                             </li>
                         </xsl:for-each>
+                        
+                        <!-- Search form -->
+                        <li class="search visible-mobile">
+                            <xsl:call-template name="search-form"/>
+                        </li>
+                        
+                        <!-- language links -->
+                        <li class="languages visible-mobile">
+                            <div class="center-vertical">
+                                <xsl:call-template name="language-links"/>
+                            </div>
+                        </li>
+                        
+                        <!-- social media links -->
+                        <li class="social">
+                            <div id="social" class="center-vertical">
+                                <span>
+                                    <xsl:call-template name="translation">
+                                        <xsl:with-param name="translation-id" select="'label-social-icons'"/>
+                                        <xsl:with-param name="lang" select="$lang"/>
+                                        <xsl:with-param name="text-node" select="false()"/>
+                                    </xsl:call-template>
+                                </span>
+                                <xsl:for-each select="m:social[@xml:lang = $lang]/m:item">
+                                    <a target="_blank">
+                                        <xsl:choose>
+                                            <xsl:when test="starts-with(@url, '#')">
+                                                <xsl:attribute name="data-toggle">
+                                                    <xsl:value-of select="'modal'"/>
+                                                </xsl:attribute>
+                                                <xsl:attribute name="data-target">
+                                                    <xsl:value-of select="@url"/>
+                                                </xsl:attribute>
+                                            </xsl:when>
+                                        </xsl:choose>
+                                        <xsl:attribute name="href">
+                                            <xsl:call-template name="local-url">
+                                                <xsl:with-param name="url" select="@url"/>
+                                            </xsl:call-template>
+                                        </xsl:attribute>
+                                        <xsl:attribute name="title">
+                                            <xsl:value-of select="m:label/text()"/>
+                                        </xsl:attribute>
+                                        <i aria-hidden="true">
+                                            <xsl:attribute name="class">
+                                                <xsl:value-of select="@icon-class"/>
+                                            </xsl:attribute>
+                                        </i>
+                                    </a>
+                                </xsl:for-each>
+                            </div>
+                        </li>
+                        
                     </ul>
                     
-                    <!-- Search form -->
-                    <form method="get" role="search" name="searchformTop" class="navbar-form navbar-right">
-                        <xsl:attribute name="action">
-                            <xsl:choose>
-                                <xsl:when test="$default-search-form-target = 'reading-room'">
-                                    <xsl:value-of select="concat($local-reading-room-url, '/search.html')"/>
-                                </xsl:when>
-                                <xsl:otherwise>
-                                    <xsl:value-of select="concat($local-comms-url, '/')"/>
-                                </xsl:otherwise>
-                            </xsl:choose>
-                        </xsl:attribute>
-                        <xsl:if test="$lang = 'zh'">
-                            <input type="hidden" name="lang">
-                                <xsl:attribute name="value">
-                                    <xsl:value-of select="$lang"/>
-                                </xsl:attribute>
-                            </input>
-                        </xsl:if>
-                        <div id="search-controls" class="input-group">
-                            <input type="text" name="s" class="form-control">
-                                <xsl:attribute name="placeholder">
-                                    <xsl:call-template name="translation">
-                                        <xsl:with-param name="translation-id" select="'placeholder-search'"/>
-                                        <xsl:with-param name="lang" select="$lang"/>
-                                        <xsl:with-param name="text-node" select="true()"/>
-                                    </xsl:call-template>
-                                </xsl:attribute>
-                            </input>
-                            <input type="submit" value="Submit" class="hidden"/>
-                            <div class="input-group-btn">
-                                <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                    <i class="fa fa-search"/> <span class="caret"/>
-                                </button>
-                                <ul class="dropdown-menu">
-                                    <li>
-                                        <a class="on-click-submit">
-                                            <xsl:attribute name="href">
-                                                <xsl:value-of select="concat($local-reading-room-url, '/search.html')"/>
-                                            </xsl:attribute>
-                                            <div class="center-vertical">
-                                                <i class="fa fa-caret-right"/>
-                                                <xsl:call-template name="translation">
-                                                    <xsl:with-param name="translation-id" select="'button-search-reading-room'"/>
-                                                    <xsl:with-param name="lang" select="$lang"/>
-                                                    <xsl:with-param name="text-node" select="false()"/>
-                                                </xsl:call-template>
-                                            </div>
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a class="on-click-submit">
-                                            <xsl:attribute name="href">
-                                                <xsl:value-of select="concat($local-comms-url, '/')"/>
-                                            </xsl:attribute>
-                                            <div class="center-vertical">
-                                                <i class="fa fa-caret-right"/>
-                                                <xsl:call-template name="translation">
-                                                    <xsl:with-param name="translation-id" select="'button-search-comms'"/>
-                                                    <xsl:with-param name="lang" select="$lang"/>
-                                                    <xsl:with-param name="text-node" select="false()"/>
-                                                </xsl:call-template>
-                                            </div>
-                                        </a>
-                                    </li>
-                                </ul>
-                            </div>
-                        </div>
-                        
-                        <!-- Language switch -->
-                        <div id="language-links">
-                            <a>
-                                <xsl:attribute name="href">
-                                    <xsl:choose>
-                                        <xsl:when test="$active-url = '#reading-room' or starts-with($active-url, 'http://read.84000.co')">
-                                            <xsl:value-of select="'?lang=en'"/>
-                                        </xsl:when>
-                                        <xsl:otherwise>
-                                            <xsl:value-of select="$local-comms-url"/>
-                                        </xsl:otherwise>
-                                    </xsl:choose>
-                                </xsl:attribute>
-                                <xsl:value-of select="'English'"/>
-                            </a>
-                            <xsl:value-of select="' | '"/>
-                            <a>
-                                <xsl:attribute name="href">
-                                    <xsl:choose>
-                                        <xsl:when test="$active-url = '#reading-room' or starts-with($active-url, 'http://read.84000.co')">
-                                            <xsl:value-of select="'?lang=zh'"/>
-                                        </xsl:when>
-                                        <xsl:otherwise>
-                                            <xsl:value-of select="concat($local-comms-url, '/ch')"/>
-                                        </xsl:otherwise>
-                                    </xsl:choose>
-                                </xsl:attribute>
-                                <xsl:value-of select="'中文'"/>
-                            </a>
-                        </div>
-                        
-                    </form>
-                    
-                    <!-- social media links -->
-                    <div id="social" class="center-vertical">
-                        <xsl:call-template name="translation">
-                            <xsl:with-param name="translation-id" select="'label-social-icons'"/>
-                            <xsl:with-param name="lang" select="$lang"/>
-                            <xsl:with-param name="text-node" select="false()"/>
-                        </xsl:call-template>
-                        <xsl:for-each select="m:social[@xml:lang = $lang]/m:item">
-                            <a target="_blank">
-                                <xsl:choose>
-                                    <xsl:when test="starts-with(@url, '#')">
-                                        <xsl:attribute name="data-toggle">
-                                            <xsl:value-of select="'modal'"/>
-                                        </xsl:attribute>
-                                        <xsl:attribute name="data-target">
-                                            <xsl:value-of select="@url"/>
-                                        </xsl:attribute>
-                                    </xsl:when>
-                                </xsl:choose>
-                                <xsl:attribute name="href">
-                                    <xsl:call-template name="local-url">
-                                        <xsl:with-param name="url" select="@url"/>
-                                    </xsl:call-template>
-                                </xsl:attribute>
-                                <xsl:attribute name="title">
-                                    <xsl:value-of select="m:label/text()"/>
-                                </xsl:attribute>
-                                <i aria-hidden="true">
-                                    <xsl:attribute name="class">
-                                        <xsl:value-of select="@icon-class"/>
-                                    </xsl:attribute>
-                                </i>
-                            </a>
-                        </xsl:for-each>
-                    </div>
                 </div>
             </div>
             
@@ -486,5 +411,104 @@
             </xsl:choose>
         </xsl:if>
     </xsl:template>
+    
+    <xsl:template name="language-links">
+        <a>
+            <xsl:attribute name="href">
+                <xsl:choose>
+                    <xsl:when test="$active-url = '#reading-room' or starts-with($active-url, 'http://read.84000.co')">
+                        <xsl:value-of select="'?lang=en'"/>
+                    </xsl:when>
+                    <xsl:otherwise>
+                        <xsl:value-of select="$local-comms-url"/>
+                    </xsl:otherwise>
+                </xsl:choose>
+            </xsl:attribute>
+            <xsl:value-of select="'English'"/>
+        </a>
+        <span>
+            <xsl:value-of select="' | '"/>
+        </span>
+        <a>
+            <xsl:attribute name="href">
+                <xsl:choose>
+                    <xsl:when test="$active-url = '#reading-room' or starts-with($active-url, 'http://read.84000.co')">
+                        <xsl:value-of select="'?lang=zh'"/>
+                    </xsl:when>
+                    <xsl:otherwise>
+                        <xsl:value-of select="concat($local-comms-url, '/ch')"/>
+                    </xsl:otherwise>
+                </xsl:choose>
+            </xsl:attribute>
+            <xsl:value-of select="'中文'"/>
+        </a>
+    </xsl:template>
+    
+    <xsl:template name="search-form">
+        <form method="get" role="search" name="searchformTop" class="navbar-form navbar-right">
+            <xsl:attribute name="action">
+                <xsl:choose>
+                    <xsl:when test="$default-search-form-target = 'reading-room'">
+                        <xsl:value-of select="concat($local-reading-room-url, '/search.html')"/>
+                    </xsl:when>
+                    <xsl:otherwise>
+                        <xsl:value-of select="concat($local-comms-url, '/')"/>
+                    </xsl:otherwise>
+                </xsl:choose>
+            </xsl:attribute>
+            <xsl:if test="$lang = 'zh'">
+                <input type="hidden" name="lang">
+                    <xsl:attribute name="value">
+                        <xsl:value-of select="$lang"/>
+                    </xsl:attribute>
+                </input>
+            </xsl:if>
+            <div id="search-controls" class="input-group">
+                <input type="text" name="s" class="form-control">
+                    <xsl:attribute name="placeholder">
+                        <xsl:call-template name="translation">
+                            <xsl:with-param name="translation-id" select="'placeholder-search'"/>
+                            <xsl:with-param name="lang" select="$lang"/>
+                            <xsl:with-param name="text-node" select="true()"/>
+                        </xsl:call-template>
+                    </xsl:attribute>
+                </input>
+                <input type="submit" value="Submit" class="hidden"/>
+                <div class="input-group-btn">
+                    <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <i class="fa fa-search"/> <span class="caret"/>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-right">
+                        <li>
+                            <a class="on-click-submit">
+                                <xsl:attribute name="href">
+                                    <xsl:value-of select="concat($local-reading-room-url, '/search.html')"/>
+                                </xsl:attribute>
+                                <xsl:call-template name="translation">
+                                    <xsl:with-param name="translation-id" select="'button-search-reading-room'"/>
+                                    <xsl:with-param name="lang" select="$lang"/>
+                                    <xsl:with-param name="text-node" select="false()"/>
+                                </xsl:call-template>
+                                
+                            </a>
+                        </li>
+                        <li>
+                            <a class="on-click-submit">
+                                <xsl:attribute name="href">
+                                    <xsl:value-of select="concat($local-comms-url, '/')"/>
+                                </xsl:attribute>
+                                <xsl:call-template name="translation">
+                                    <xsl:with-param name="translation-id" select="'button-search-comms'"/>
+                                    <xsl:with-param name="lang" select="$lang"/>
+                                    <xsl:with-param name="text-node" select="false()"/>
+                                </xsl:call-template>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </form>
+    </xsl:template>
+
     
 </xsl:stylesheet>
