@@ -282,7 +282,7 @@ declare function translation:downloads($tei as element(tei:TEI), $resource-id as
     return
         <downloads xmlns="http://read.84000.co/ns/1.0" tei-version="{ $tei-version }" resource-id="{ $resource-id }">
         {
-            for $type in ('pdf', 'epub', 'azw3')
+            for $type in ('pdf', 'epub', 'azw3', 'rdf')
                 let $stored-version := download:stored-version-str($resource-id, $type)
                 where (
                     ($include eq 'all')                                                                 (: return all types :)
@@ -301,6 +301,8 @@ declare function translation:downloads($tei as element(tei:TEI), $resource-id as
                             'fa-amazon'
                         else if($type eq 'pdf') then
                             'fa-file-pdf-o'
+                        else if($type eq 'rdf') then
+                            ''
                         else
                             ''
                     },
@@ -311,6 +313,8 @@ declare function translation:downloads($tei as element(tei:TEI), $resource-id as
                             'Download AZW3 (Kindle)'
                         else if($type eq 'pdf') then
                             'Download PDF'
+                        else if($type eq 'rdf') then
+                            'Download RDF'
                         else
                             ''
                     }

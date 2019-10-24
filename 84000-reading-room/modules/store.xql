@@ -100,6 +100,11 @@ declare function store:create($file-name as xs:string) as element() {
                     let $store-new-azw3 := store:store-new-azw3($azw3-file-path, $tei-version)
                     return
                         string-join(($store-new-epub, $store-new-azw3), ' ')
+                else if($file-extension eq 'rdf') then
+                    (:'Store new rdf':)
+                    let $file-path := concat($common:data-path, '/', $file-extension, '/', $resource-id, '.rdf')
+                    return
+                        store:store-new-rdf($file-path, $tei-version)
                 else
                     'Unknown file type'
             else
@@ -266,6 +271,37 @@ declare function store:store-new-azw3($file-path as xs:string, $version as xs:st
                 
       else
             'Ebook generation config not found.'
+};
+
+declare function store:store-new-rdf($file-path as xs:string, $version as xs:string) as xs:string* {
+    
+    let $rdf-url := $store:conf/m:rdf-url/text()
+    
+    return
+        if($rdf-url) then
+        
+            let $file-path-tokenized := tokenize($file-path, '/')
+            let $file-collection := string-join(subsequence($file-path-tokenized, 1, count($file-path-tokenized) - 1), '/')
+            let $file-name := lower-case($file-path-tokenized[last()])
+            let $url := concat($rdf-url, '/translation/', $file-name)
+            
+            let $download := store:http-download($url, $file-collection, $file-name)
+            return
+                if(name($download) eq 'stored') then
+                    let $set-file-group:= sm:chgrp(xs:anyURI($file-path), $store:file-group)
+                    let $set-file-permissions:= sm:chmod(xs:anyURI($file-path), $store:file-permissions)
+                    let $store-version-number := store:store-version-str($file-collection, $file-name, $version)
+                    return
+                        concat('New version saved as ', $file-path)
+                        
+                else if(name($download) eq 'error') then
+                    concat('RDF generation failed: ', $download/m:message)
+                    
+                else
+                    'RDF generation failed.'
+         
+         else
+            'RDF generation config not found.'
 };
 
 declare function store:http-download($file-url as xs:string, $collection as xs:string, $file-name as xs:string) as item()* {

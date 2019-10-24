@@ -692,7 +692,7 @@
                                                     <xsl:value-of select="'Read online'"/>
                                                 </a>
                                             </li>
-                                            <xsl:for-each select="m:downloads/m:download">
+                                            <xsl:for-each select="m:downloads/m:download[@type = ('pdf', 'epub', 'azw3')]">
                                                 <li>
                                                     <a target="_blank">
                                                         <xsl:attribute name="title" select="normalize-space(text())"/>

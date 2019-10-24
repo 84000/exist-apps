@@ -65,7 +65,10 @@ let $commit-version :=
                     (: pdf :)
                     store:create(concat($bibl/@key, '.pdf')),
                     (: one ebook format does both :)
-                    store:create(concat($bibl/@key, '.epub'))
+                    store:create(concat($bibl/@key, '.epub')),
+                    (: rdf :)
+                    store:create(concat($bibl/@key, '.rdf')),
+                    deploy:commit-data('sync', 'rdf', concat('Sync ', $bibl/@key, '.rdf'))
                 )
         else
             ()

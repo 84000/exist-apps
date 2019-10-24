@@ -334,6 +334,13 @@ else if(not(common:auth-environment()) or sm:is-authenticated()) then
                     <set-header name="Content-Disposition" value="attachment"/>
                 </forward>
             </dispatch>
+        else if ($resource-suffix eq 'rdf') then
+             <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+                <forward url="{ download:file-path($exist:resource) }">
+                    <set-header name="Content-Type" value="application/rdf+xml"/>
+                    <set-header name="Content-Disposition" value="attachment"/>
+                </forward>
+            </dispatch>
         else
             (: Return an error :)
             <dispatch xmlns="http://exist.sourceforge.net/NS/exist">

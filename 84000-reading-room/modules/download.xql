@@ -31,7 +31,11 @@ declare function download:stored-version-str($resource-id as xs:string, $file-ex
     let $file-version-node := $file-versions-doc/m:file-versions/m:file-version[@file-name eq $file-name]
     
     (: Check the file is there :)
-    let $file-exists := util:binary-doc-available(concat($file-collection, '/', $file-name))
+    let $file-exists := 
+        if($file-extension = ('xml', 'rdf')) then
+            doc-available(concat($file-collection, '/', $file-name))
+        else
+            util:binary-doc-available(concat($file-collection, '/', $file-name))
     
     return
         if($file-exists and $file-version-node) then

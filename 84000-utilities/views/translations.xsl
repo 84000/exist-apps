@@ -212,7 +212,7 @@
                                                 <xsl:variable name="master-downloads" select="/m:response/m:translations-master/m:translations/m:*/m:downloads[@resource-id eq $toh/@key]"/>
                                                 <!-- <xsl:variable name="master-downloads" select="/m:response/m:translations-master/m:translations/m:text/m:downloads[@resource-id eq $toh/@key]"/> -->
                                                 
-                                                <xsl:variable name="file-formats" select="('pdf', 'epub', 'azw3')"/>
+                                                <xsl:variable name="file-formats" select="('pdf', 'epub', 'azw3', 'rdf')"/>
                                                 <div class="sml-margin bottom small">
                                                     <div class="row">
                                                         
@@ -274,7 +274,15 @@
                                                         <xsl:for-each select="$file-formats">
                                                             <xsl:variable name="file-format" select="."/>
                                                             <div class="col-sm-2">
-                                                                <xsl:value-of select="$text-downloads[@type eq $file-format]/@version"/>
+                                                                <xsl:choose>
+                                                                    <xsl:when test="$text-downloads[@type eq $file-format][not(@version = ('none', 'unknown', ''))]/@version">
+                                                                        <xsl:value-of select="$text-downloads[@type eq $file-format]/@version"/>
+                                                                    </xsl:when>
+                                                                    <xsl:otherwise>
+                                                                        <xsl:attribute name="class" select="'col-sm-2 text-muted'"/>
+                                                                        <xsl:value-of select="'None'"/>
+                                                                    </xsl:otherwise>
+                                                                </xsl:choose>
                                                             </div>
                                                         </xsl:for-each>
                                                         
@@ -298,7 +306,15 @@
                                                             <xsl:for-each select="$file-formats">
                                                                 <xsl:variable name="file-format" select="."/>
                                                                 <div class="col-sm-2">
-                                                                    <xsl:value-of select="$master-downloads/m:download[@type eq $file-format]/@version"/>
+                                                                    <xsl:choose>
+                                                                        <xsl:when test="$master-downloads/m:download[@type eq $file-format][not(@version = ('none', 'unknown', ''))]/@version">
+                                                                            <xsl:value-of select="$master-downloads/m:download[@type eq $file-format]/@version"/>
+                                                                        </xsl:when>
+                                                                        <xsl:otherwise>
+                                                                            <xsl:attribute name="class" select="'col-sm-2 text-muted'"/>
+                                                                            <xsl:value-of select="'None'"/>
+                                                                        </xsl:otherwise>
+                                                                    </xsl:choose>
                                                                 </div>
                                                             </xsl:for-each>
                                                         </div>
@@ -350,7 +366,7 @@
                                                                     <xsl:choose>
                                                                         
                                                                         <!-- If outdated then offer to get from master -->
-                                                                        <xsl:when test="compare($master-downloads/@tei-version, $tei-version) ne 0">
+                                                                        <xsl:when test="compare($master-downloads/@tei-version, $tei-version) ne 0 and $master-downloads/@tei-version gt ''">
                                                                             <a>
                                                                                 <xsl:attribute name="href" select="concat('/translations.html?store=', $toh/@key, '.tei', '&amp;texts-status=', $texts-status)"/>
                                                                                 <span class="label label-danger">
@@ -380,7 +396,7 @@
                                                                         <xsl:choose>
                                                                             
                                                                             <!-- If master is outdated then just warn -->
-                                                                            <xsl:when test="compare($master-file-version, $master-downloads/@tei-version) ne 0">
+                                                                            <xsl:when test="not($master-file-version gt '') or compare($master-file-version, $master-downloads/@tei-version) ne 0">
                                                                                 <span class="label label-info">
                                                                                     <xsl:value-of select="'Update collaboration'"/>
                                                                                 </span>

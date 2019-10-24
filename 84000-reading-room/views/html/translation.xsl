@@ -1031,7 +1031,7 @@
         <a href="#" class="btn-round print-preview" title="Print">
             <i class="fa fa-print"/>
         </a>
-        <xsl:for-each select="$translation/m:downloads/m:download">
+        <xsl:for-each select="$translation/m:downloads/m:download[@type = ('pdf', 'epub', 'azw3')]">
             <a target="_blank">
                 <xsl:attribute name="title" select="normalize-space(text())"/>
                 <xsl:attribute name="href" select="@url"/>
@@ -1142,7 +1142,7 @@
                         </a>
                     </td>
                 </tr>
-                <xsl:for-each select="$translation/m:downloads/m:download">
+                <xsl:for-each select="$translation/m:downloads/m:download[@type = ('pdf', 'epub', 'azw3')]">
                     <tr>
                         <td>
                             <a target="_blank">
