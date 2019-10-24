@@ -32,12 +32,18 @@
                                     
                                     <div class="alert alert-info small text-center">
                                         <p>
-                                            <xsl:value-of select="'This function makes a snapshot of the selected resource(s) and pushes it to the public '"/>
-                                            <a target="_blank" class="alert-link">
-                                                <xsl:attribute name="href" select="//m:view-repo-url/text()"/>
-                                                <xsl:value-of select="'GitHub repository'"/>
-                                            </a>.
+                                            <xsl:value-of select="'This function makes a snapshot of the selected resource(s) and pushes it to the public GitHub repositories: '"/>
                                         </p>
+                                        <ul class="list-inline inline-dots">
+                                            <xsl:for-each select="('data-tei', 'data-config', 'data-translation-memory', 'data-rdf')">
+                                                <li>
+                                                    <a target="_blank" class="alert-link">
+                                                        <xsl:attribute name="href" select="concat('https://github.com/84000/', ., '/commits/master')"/>
+                                                        <xsl:value-of select="."/>
+                                                    </a>
+                                                </li>
+                                            </xsl:for-each>
+                                        </ul>
                                     </div>
                                     
                                     <form action="/snapshot.html" method="post" class="form-horizontal">
