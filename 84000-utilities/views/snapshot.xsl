@@ -51,8 +51,10 @@
                                             </label>
                                             <div class="col-sm-9">
                                                 <select name="resource" id="resource" class="form-control">
-                                                    <option value="all">All data (translations, schemas and outlines)</option>
-                                                    <option value="translation-memory">Translation memory files</option>
+                                                    <option value="tei">All TEI files</option>
+                                                    <option value="config">Config files</option>
+                                                    <option value="tm">Translation Memory files</option>
+                                                    <option value="rdf">RDF files</option>
                                                     <xsl:for-each select="m:translations/m:file">
                                                         <xsl:sort select="@file-name"/>
                                                         <option>

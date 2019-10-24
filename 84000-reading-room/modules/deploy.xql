@@ -28,14 +28,14 @@ declare function deploy:execute-options($working-dir as xs:string) as element() 
 
 (: Commit data to Git and push to Github :)
 declare function deploy:commit-data($action as xs:string, $sync-resource as xs:string, $commit-msg as xs:string) {
-
+    
     let $repo-path := $deploy:snapshot-conf/m:repo-path/text()
     
-    (: Sync data :)
+    (: Sync all data :)
     let $sync :=
         if($action eq 'sync' and $repo-path) then
             (
-                for $collection in ('tei', 'translation-memory', 'config')
+                for $collection in ('tei', 'translation-memory', 'config', 'rdf')
                 return
                     file:sync(
                         concat($common:data-path, '/', $collection), 
@@ -48,18 +48,28 @@ declare function deploy:commit-data($action as xs:string, $sync-resource as xs:s
     
     (: Only add specified file to commit :)
     let $git-add := 
-        if ($sync-resource eq 'all') then
-            "--all"
-        else if($sync-resource = ('tei', 'translation-memory', 'config')) then
-            concat($sync-resource, "/.")
+        if($sync-resource = ('tei', 'config', 'tm', 'rdf')) then
+            '--all'
         else
-            substring-after($sync-resource, concat($common:data-path, '/'))
+            substring-after($sync-resource, concat($common:data-path, '/tei/'))
     
+    (: Default to file name if no commit message provided :)
     let $commit-msg := 
         if(not($commit-msg))then
-            concat('Sync ', substring-after($sync-resource, concat($common:data-path, '/')))
+            concat('Sync ', substring-after($sync-resource, concat($common:data-path, '/tei/')))
         else
             $commit-msg
+    
+    (: Git working directory :)
+    let $working-dir :=
+        if($sync-resource eq 'config') then
+            $repo-path || '/config'
+        else if($sync-resource eq 'tm') then
+            $repo-path || '/translation-memory'
+        else if($sync-resource eq 'rdf') then
+            $repo-path || '/rdf'
+        else
+            $repo-path || '/tei'
     
     return 
         <result xmlns="http://read.84000.co/ns/1.0">
@@ -70,7 +80,7 @@ declare function deploy:commit-data($action as xs:string, $sync-resource as xs:s
             </sync>
             {
                 if($sync) then
-                    deploy:git-push($git-add, $commit-msg, deploy:execute-options($repo-path))
+                    deploy:git-push($git-add, $commit-msg, deploy:execute-options($working-dir))
                 else
                     ()
             }
