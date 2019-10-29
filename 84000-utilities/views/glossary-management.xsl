@@ -31,26 +31,26 @@
                                     <input type="hidden" name="lang" value=""/>
                                     <div id="search-controls" class="input-group full-width">
                                         <input type="text" name="search" class="form-control" placeholder="Search all types and languages...">
-                                            <xsl:attribute name="value" select="/m:response/m:request/m:search"/>
+                                            <xsl:attribute name="value" select="/m:response/m:request/m:parameter[@name eq 'search']"/>
                                         </input>
                                         
                                         <span class="input-group-btn">
                                             <!-- 
                                             <select name="search-lang" class="form-control">
                                                 <option value="en">
-                                                    <xsl:if test="/m:response/m:request/@search-lang eq 'en'">
+                                                    <xsl:if test="/m:response/m:request/m:parameter[@name eq 'search-lang'] eq 'en'">
                                                         <xsl:attribute name="selected" select="'selected'"/>
                                                     </xsl:if>
                                                     <xsl:value-of select="'en'"/>
                                                 </option>
                                                 <option value="sa-ltn">
-                                                    <xsl:if test="/m:response/m:request/@search-lang eq 'sa-ltn'">
+                                                    <xsl:if test="/m:response/m:request/m:parameter[@name eq 'search-lang'] eq 'sa-ltn'">
                                                         <xsl:attribute name="selected" select="'selected'"/>
                                                     </xsl:if>
                                                     <xsl:value-of select="'skt'"/>
                                                 </option>
                                                 <option value="bo-ltn">
-                                                    <xsl:if test="/m:response/m:request/@search-lang eq 'bo-ltn'">
+                                                    <xsl:if test="/m:response/m:request/m:parameter[@name eq 'search-lang'] eq 'bo-ltn'">
                                                         <xsl:attribute name="selected" select="'selected'"/>
                                                     </xsl:if>
                                                     <xsl:value-of select="'wy'"/>

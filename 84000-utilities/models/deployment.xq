@@ -17,6 +17,7 @@ return
         'utilities/deployment',
         'utilities',
         (
+            local:request(),
             $deploy:deployment-conf/m:view-repo-url,
             $deploy:deployment-conf/m:apps,
             if($admin-password gt '') then

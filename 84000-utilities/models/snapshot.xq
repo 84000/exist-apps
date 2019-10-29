@@ -1,5 +1,6 @@
 xquery version "3.0" encoding "UTF-8";
 
+import module namespace local="http://utilities.84000.co/local" at "../modules/local.xql";
 import module namespace common="http://read.84000.co/common" at "../../84000-reading-room/modules/common.xql";
 import module namespace deploy="http://read.84000.co/deploy" at "../../84000-reading-room/modules/deploy.xql";
 import module namespace tei-content="http://read.84000.co/tei-content" at "../../84000-reading-room/modules/tei-content.xql";
@@ -18,6 +19,7 @@ return
         'utilities/snapshot',
         'utilities',
         (
+            local:request(),
             $deploy:snapshot-conf/m:view-repo-url,
             deploy:commit-data($action, $sync-resource, $commit-msg),
             translations:files($tei-content:marked-up-status-ids)

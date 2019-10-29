@@ -12,6 +12,9 @@ return
     common:response(
         'utilities/requests',
         'utilities',
-        log:requests($first-record, 15)
+        (
+            local:request(),
+            log:requests($first-record, 15)
+        )
     )
 

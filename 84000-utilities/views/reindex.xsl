@@ -30,7 +30,7 @@
                             <div class="row">
                                 <div class="col-sm-6 col-sm-offset-3">
                             
-                                    <xsl:if test="m:request/@collection gt ''">
+                                    <xsl:if test="m:request/m:parameter[@name eq 'collection'] gt ''">
                                         <div role="alert">
                                             <xsl:choose>
                                                 <xsl:when test="m:result/@reindexed eq 'true'">

@@ -116,7 +116,7 @@
                                     <xsl:for-each select="//m:descendants">
                                         <option>
                                             <xsl:attribute name="value" select="@id"/>
-                                            <xsl:if test="@id eq /m:response/m:request/@section-id">
+                                            <xsl:if test="@id eq /m:response/m:request/m:parameter[@name eq 'section-id']">
                                                 <xsl:attribute name="selected" select="'selected'"/>
                                             </xsl:if>
                                             <xsl:value-of select="concat(@id, ' / ', common:limit-str(data(m:title), 100))"/>
@@ -137,11 +137,11 @@
                                     <th>Text</th>
                                     <th>Load time</th>
                                     <xsl:for-each select="//m:results/m:section[1]/m:tests/m:test">
-                                        <th>
+                                        <th class="icon">
                                             <xsl:value-of select="position()"/>
                                         </th>
                                     </xsl:for-each>
-                                    <th>filter</th>
+                                    <th class="icon">filter</th>
                                 </tr>
                             </thead>
                             <tbody>

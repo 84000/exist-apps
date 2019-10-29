@@ -478,13 +478,9 @@ declare function common:update($request-parameter as xs:string, $existing-value 
         () (: No data, do nothing :)
         
     else 
-        (: Return <updated/> :)
-        element { QName('http://read.84000.co/ns/1.0', 'updated') }
-        {
-            (: Requested parameter :)
-            attribute node { $request-parameter },
-            
-            (: Add a return character before elements so it's not too unreadable :)
+        
+        (: Add a return character before elements so it's not too unreadable :)
+        let $add-return-char :=
             if(not($new-value instance of xs:anyAtomicType) and functx:node-kind($new-value) eq 'element' and not($existing-value)) then
                 if(functx:node-kind($insert-following) eq 'element') then
                     update insert text {'&#10;'} following $insert-following
@@ -494,25 +490,32 @@ declare function common:update($request-parameter as xs:string, $existing-value 
                     ()
             else
                 ()
-            ,
-            
-            (: Do the update :)
-            if(not($existing-value) and $new-value) then        (: Insert :)
-            
-                if($insert-following) then                      (: Insert following :)
-                    update insert $new-value following $insert-following
-                else                                            (: Insert wherever :)
-                    update insert $new-value into $insert-into
+        
+        (: Return <updated/> :)
+        return
+            element { QName('http://read.84000.co/ns/1.0', 'updated') }
+            {
+                (: Request parameter :)
+                attribute node { $request-parameter },             
                 
-            else if($existing-value and not($new-value)) then   (: Delete:)
-                update delete $existing-value
+                (: Do the update :)
+                if(not($existing-value) and $new-value) then        (: Insert :)
             
-            else                                                (: Replace :)
-                update replace $existing-value 
-                    with $new-value
-            
-
-        }
+                    if($insert-following) then                      (: Insert following :)
+                        update insert $new-value following $insert-following
+                    else if($insert-into) then                      (: Insert wherever :)
+                        update insert $new-value into $insert-into
+                    else
+                        ()
+                    
+                else if($existing-value and not($new-value)) then   (: Delete:)
+                    update delete $existing-value
+                
+                else                                                (: Replace :)
+                    update replace $existing-value 
+                        with $new-value
+                
+            }
 };
 
 (: Sorts a sequence based on the trailing number e.g. ('n-3', 'n-1', 'n-2') -> ('n-1', 'n-2', 'n-3') :)

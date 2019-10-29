@@ -108,21 +108,22 @@
                         
                         <form action="/test-translations.html" method="get" class="form-inline filter-form">
                             <div class="form-group">
+                                <xsl:variable name="request-translation-id" select="/m:response/m:request/m:parameter[@name eq 'translation-id']" as="xs:string"/>
                                 <select name="translation-id" id="translation-id" class="form-control">
                                     <option value="all">
-                                        <xsl:if test="/m:response/m:request/@translation-id eq 'all'">
+                                        <xsl:if test="$request-translation-id eq 'all'">
                                             <xsl:attribute name="selected" select="'selected'"/>
                                         </xsl:if>
                                         <xsl:value-of select="'All translations'"/>
                                     </option>
                                     <option value="published">
-                                        <xsl:if test="/m:response/m:request/@translation-id eq 'published'">
+                                        <xsl:if test="$request-translation-id eq 'published'">
                                             <xsl:attribute name="selected" select="'selected'"/>
                                         </xsl:if>
                                         <xsl:value-of select="'Published translations'"/>
                                     </option>
                                     <option value="in-markup">
-                                        <xsl:if test="/m:response/m:request/@translation-id eq 'in-markup'">
+                                        <xsl:if test="$request-translation-id eq 'in-markup'">
                                             <xsl:attribute name="selected" select="'selected'"/>
                                         </xsl:if>
                                         <xsl:value-of select="'Translations in markup'"/>
@@ -131,7 +132,7 @@
                                         <xsl:sort select="@id"/>
                                         <option>
                                             <xsl:attribute name="value" select="@id"/>
-                                            <xsl:if test="@id eq /m:response/m:request/@translation-id">
+                                            <xsl:if test="@id eq $request-translation-id">
                                                 <xsl:attribute name="selected" select="'selected'"/>
                                             </xsl:if>
                                             <xsl:value-of select="common:limit-str(concat(@file-name, ' / ', data(.)), 140)"/>

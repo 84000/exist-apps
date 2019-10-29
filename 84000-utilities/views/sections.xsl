@@ -178,6 +178,15 @@
                                     </a>
                                 </li>
                             </xsl:if>
+                            <li>
+                                <a>
+                                    <xsl:attribute name="href" select="concat('/test-sections.html?section-id=', @id)"/>
+                                    <xsl:attribute name="target" select="concat(@id, 'tests')"/>
+                                    <span class="small">
+                                        <xsl:value-of select="'run tests'"/>
+                                    </span>
+                                </a>
+                            </li>
                         </ul>
                         <div class="small">
                             <xsl:value-of select="'File: '"/>

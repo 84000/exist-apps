@@ -60,6 +60,7 @@ return
         'utilities/translations',
         'utilities',
         (
+            local:request(),
             $translations-local,
             $translations-master,
             $tei-content:text-statuses,

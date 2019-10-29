@@ -76,7 +76,7 @@ return
         'utilities/validate',
         'utilities',
         (
-            <request xmlns="http://read.84000.co/ns/1.0" type="{ $type }"/>,
+            local:request(),
             $results
         )
     )

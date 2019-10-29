@@ -14,5 +14,8 @@ return
     common:response(
         'utilities/section-texts',
         'utilities',
-        section:texts($section-id, $published-only, $include-descendants)
+        (
+            local:request(),
+            section:texts($section-id, $published-only, $include-descendants)
+        )
     )

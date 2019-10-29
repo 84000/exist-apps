@@ -12,5 +12,8 @@ return
 common:response(
     'utilities/client-errors',
     'utilities',
-    log:client-errors($first-record, 15)
+    (
+        local:request(),
+        log:client-errors($first-record, 15)
+    )
 )

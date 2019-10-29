@@ -909,10 +909,11 @@ declare function tests:add-test-match($should-match as xs:boolean, $test-id as x
     
     return
         common:update('test-match', $existing-value, $new-value, $test, $test/m:match[last()])
+        (:<debug>{ $existing-value, $new-value, $test, $test/m:match[last()] }</debug>:)
     
 };
 
 declare function tests:reindex(){
-    xmldb:reindex($tests:utilities-data-collection, $tests:tests-file)
+    xmldb:reindex($tests:utilities-data-collection)
 };
 

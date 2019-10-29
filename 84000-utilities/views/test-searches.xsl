@@ -7,6 +7,8 @@
     <xsl:template match="/m:response">
         <xsl:variable name="content">
             
+            <xsl:variable name="request-lang" select="m:request/m:parameter[@name eq 'lang']"/>
+            
             <div class="container">
                 <div class="panel panel-default">
                     
@@ -14,6 +16,7 @@
                         
                         <span class="title">
                             <xsl:value-of select="'Test Searches'"/>
+                            <xsl:value-of select="$request-lang"/>
                         </span>
                         
                     </div>
@@ -22,7 +25,7 @@
                         <ul class="nav nav-tabs active-tab-refresh" role="tablist">
                             <xsl:for-each select="m:langs/m:lang">
                                 <li role="presentation">
-                                    <xsl:if test="lower-case(@xml:lang) eq lower-case(/m:response/m:request/@lang)">
+                                    <xsl:if test="lower-case(@xml:lang) eq lower-case($request-lang)">
                                         <xsl:attribute name="class" select="'active'"/>
                                     </xsl:if>
                                     <a>
@@ -40,7 +43,7 @@
                                 <form action="test-searches.html" method="post">
                                     <input type="hidden" name="action" value="add-test"/>
                                     <input type="hidden" name="lang">
-                                        <xsl:attribute name="value" select="m:request/@lang"/>
+                                        <xsl:attribute name="value" select="$request-lang"/>
                                     </input>
                                     <div class="input-group">
                                         <input type="text" name="test-string" class="form-control" placeholder="Add a query e.g. Sūtra"/>
@@ -68,7 +71,7 @@
                                             <tr data-toggle="collapse" class="collapsed">
                                                 <xsl:attribute name="data-target" select="concat('#test-results-', @xml:id)"/>
                                                 <td>
-                                                    <xsl:attribute name="class" select="common:lang-class(m:request/@lang)"/>
+                                                    <xsl:attribute name="class" select="common:lang-class($request-lang)"/>
                                                     <xsl:value-of select="m:query"/>
                                                 </td>
                                                 <td class="icon">
@@ -93,7 +96,7 @@
                                 <form action="test-searches.html" method="post" class="form-horizontal">
                                     <input type="hidden" name="action" value="add-data"/>
                                     <input type="hidden" name="lang">
-                                        <xsl:attribute name="value" select="m:request/@lang"/>
+                                        <xsl:attribute name="value" select="$request-lang"/>
                                     </input>
                                     <div class="form-group">
                                         <div class="col-sm-10">
@@ -126,7 +129,7 @@
                                         </div> -->
                                         <div class="col-sm-2">
                                             <a role="button">
-                                                <xsl:attribute name="href" select="concat('?action=reindex&amp;lang=', m:request/@lang)"/>
+                                                <xsl:attribute name="href" select="concat('?action=reindex&amp;lang=', $request-lang)"/>
                                                 <xsl:attribute name="class" select="'btn btn-default'"/>
                                                 <xsl:value-of select="'Re-index'"/>
                                             </a>
@@ -140,7 +143,7 @@
                                     <xsl:for-each select="m:tests/m:test">
                                         <xsl:call-template name="result-set">
                                             <xsl:with-param name="test-id" select="@xml:id"/>
-                                            <xsl:with-param name="lang" select="/m:response/m:request/@lang"/>
+                                            <xsl:with-param name="lang" select="$request-lang"/>
                                             <xsl:with-param name="query-string" select="m:query"/>
                                             <xsl:with-param name="results" select="m:result"/>
                                         </xsl:call-template>

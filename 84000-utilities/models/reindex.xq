@@ -31,7 +31,7 @@ return
         'utilities/reindex',
         'utilities',
         (
-            <request xmlns="http://read.84000.co/ns/1.0" collection="{ request:get-parameter('collection', '') }" />,
+            local:request(),
             <result xmlns="http://read.84000.co/ns/1.0" collection="{ $reindex-collection }" reindexed="{ $reindex }" />
         )
         

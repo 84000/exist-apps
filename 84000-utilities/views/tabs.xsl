@@ -32,17 +32,17 @@
             <tab page="client-errors.html" model="utilities/client-errors">
                 <label>Client Errors</label>
             </tab>
-            <xsl:if test="$environment/m:snapshot-conf">
+            <xsl:if test="$environment/m:snapshot-conf and /m:response/m:request/m:authenticated-user/m:group[@name eq 'snapshots']">
                 <tab page="snapshot.html" model="utilities/snapshot">
                     <label>Make a data snapshot</label>
                 </tab>
             </xsl:if>
-            <xsl:if test="$environment/m:deployment-conf and /m:response/@user-name eq 'admin'">
+            <xsl:if test="$environment/m:deployment-conf and /m:response/m:request/m:authenticated-user/@name eq 'admin'">
                 <tab page="deployment.html" model="utilities/deployment">
                     <label>Deploy the software</label>
                 </tab>
             </xsl:if>
-            <xsl:if test="/m:response/@user-name eq 'admin'">
+            <xsl:if test="/m:response/m:request/m:authenticated-user/m:group[@name eq 'dba']">
                 <tab page="reindex.html" model="utilities/reindex">
                     <label>Re-index the data</label>
                 </tab>

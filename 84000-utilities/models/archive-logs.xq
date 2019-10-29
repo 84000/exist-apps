@@ -9,5 +9,8 @@ declare option exist:serialize "method=xml indent=no";
 common:response(
     'utilities/archive-logs',
     'utilities',
-    log:achive-logs()
+    (
+       local:request(),
+       log:achive-logs()
+    )
 )

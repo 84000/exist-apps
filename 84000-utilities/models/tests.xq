@@ -8,5 +8,7 @@ declare option exist:serialize "method=xml indent=no";
 common:response(
     'utilities/tests',
     'utilities',
-    ()
+    (
+        local:request()
+    )
 )

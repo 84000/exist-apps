@@ -15,9 +15,7 @@ return
         'utilities/glossary-management',
         'utilities',
         (
-            <request xmlns="http://read.84000.co/ns/1.0" search-lang="{ $search-lang }" type="{ $type }">
-                <search>{ $search }</search>
-            </request>,
+            local:request(),
             glossary:glossary-terms($type, $search-lang, $search, false())
         )
         

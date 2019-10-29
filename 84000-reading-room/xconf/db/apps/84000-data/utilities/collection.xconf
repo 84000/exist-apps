@@ -6,7 +6,7 @@
     <index xmlns:m="http://read.84000.co/ns/1.0">
         
         <lucene>
-            
+            <!-- 
             <analyzer id="sa-ltn" class="io.bdrc.lucene.sa.SanskritAnalyzer">
                 <param name="mode" type="java.lang.String" value="word"/>
                 <param name="inputEncoding" type="java.lang.String" value="roman"/>
@@ -22,13 +22,13 @@
                 <param name="lemmatize" type="boolean" value="true"/>
                 <param name="filterChars" type="boolean" value="true"/>
             </analyzer>
-            
-            <!-- lucene-tests.xml -->
+            -->
+            <!-- lucene-tests.xml
             <text match="//m:lang[@xml:lang = 'Sa-Ltn']/m:data" analyzer="sa-ltn" field="sa-ltn-data"/>
             <text match="//m:lang[@xml:lang = 'en']/m:data" analyzer="en" field="en-data"/>
             <text match="//m:lang[@xml:lang = 'bo']/m:data" analyzer="bo" field="bo-data"/>
             <text match="//m:lang[@xml:lang = 'Bo-Ltn']/m:data" analyzer="en" field="bo-ltn-data"/>
-            
+             -->
         </lucene>
         
     </index>
