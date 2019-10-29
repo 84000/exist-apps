@@ -51,10 +51,6 @@
                                                         </p>
                                                     </div>
                                                     
-                                                    <div class="alert alert-danger small text-center" role="alert">
-                                                        <xsl:value-of select="'Only database administrators can deploy code.'"/>
-                                                    </div>
-                                                    
                                                     <div class="form-group">
                                                         <label for="message" class="col-sm-3 control-label">
                                                             <xsl:value-of select="'Commit message'"/>

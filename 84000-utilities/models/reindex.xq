@@ -21,7 +21,7 @@ let $reindex-collection as xs:string :=
         ''
 
 let $reindex := 
-    if($reindex-collection gt '') then
+    if(local:user-in-group('dba') and $reindex-collection gt '') then
         xmldb:reindex($reindex-collection)
     else 
         ''

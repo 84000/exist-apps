@@ -31,7 +31,6 @@ return
         'utilities',
         (
             local:request(),
-            $action-result,
             tests:lucene-test-languages(),
             tests:lucene-lang-data($lang),
             tests:lucene-tests($lang)
