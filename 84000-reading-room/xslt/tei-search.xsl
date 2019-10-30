@@ -76,7 +76,7 @@
                                                 </span>
                                             </xsl:when>
                                             <xsl:otherwise>
-                                                <xsl:copy-of select="common:translation-status(m:source/@translation-status)"/>
+                                                <xsl:copy-of select="common:translation-status($source/@translation-status-group)"/>
                                             </xsl:otherwise>
                                         </xsl:choose>
                                     </div>
