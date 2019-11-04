@@ -34,7 +34,7 @@
             
             <xsl:comment>Some admin data</xsl:comment>
             <rdf:Description rdf:about="http://purl.84000.co/resource/core/DatasetAdminData">
-                <bda:metadataLegal rdf:resource="http://purl.84000.co/resource/core/LegalData"/>
+                <adm:metadataLegal rdf:resource="http://purl.84000.co/resource/core/LegalData"/>
                 <xsl:if test="$collection-id">
                     <adm:adminAbout rdf:resource="{ 'http://purl.84000.co/resource/core/' || $collection-id }"/>
                 </xsl:if>

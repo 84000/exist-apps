@@ -7,10 +7,12 @@
         
         <lucene>
             
-            <analyzer class="org.tbrc.lucene.analysis.TibWhitespaceAnalyzer"/>
+            <analyzer class="org.tbrc.lucene.analysis.TibWhitespaceAnalyzer" id="bo"/>
+            <analyzer class="org.apache.lucene.analysis.standard.StandardAnalyzer" id="en"/>
             
             <!-- *.tmx -->
-            <text match="//tmx:seg"/>
+            <text match="//tmx:tuv[@xml:lang = 'bo']/tmx:seg" analyzer="bo" field="tmx-bo"/>
+            <text match="//tmx:tuv[@xml:lang = 'en']/tmx:seg" analyzer="en" field="tmx-en"/>
             
         </lucene>
         
