@@ -9,27 +9,23 @@
         <xsl:variable name="page-title" select="'Body Title'"/>
         <xsl:variable name="translation-title" select="m:translation/m:titles/m:title[@xml:lang eq 'en']"/>
         
-        <xsl:variable name="content">
-            
-            <section id="body-title">
-                <div class="center half-title">
-                    <xsl:if test="m:translation/m:body/m:honoration/text()">
-                        <h2>
-                            <xsl:apply-templates select="m:translation/m:body/m:honoration"/>
-                        </h2>
-                    </xsl:if>
-                    <h1>
-                        <xsl:apply-templates select="m:translation/m:body/m:main-title"/>
-                    </h1>
-                </div>
-            </section>
-            
-        </xsl:variable>
-        
         <xsl:call-template name="epub-page">
             <xsl:with-param name="translation-title" select="$translation-title"/>
             <xsl:with-param name="page-title" select="$page-title"/>
-            <xsl:with-param name="content" select="$content"/>
+            <xsl:with-param name="content">
+                <section id="body-title">
+                    <div class="center half-title">
+                        <xsl:if test="m:translation/m:body/m:honoration/text()">
+                            <h2>
+                                <xsl:apply-templates select="m:translation/m:body/m:honoration"/>
+                            </h2>
+                        </xsl:if>
+                        <h1>
+                            <xsl:apply-templates select="m:translation/m:body/m:main-title"/>
+                        </h1>
+                    </div>
+                </section>
+            </xsl:with-param>
         </xsl:call-template>
         
     </xsl:template>

@@ -34,7 +34,8 @@ h6 {
     font-weight: bold;
 }
 section,
-aside {
+aside,
+.new-page {
     display: block;
     page-break-before: always;
     max-width: 100%;
@@ -138,6 +139,9 @@ h5.section-label {
 .header h4 {
     margin-top: 0;
     margin-bottom: 20pt;
+}
+.header h3 {
+    text-transform: uppercase;
 }
 
 /* blockquote */
@@ -281,6 +285,7 @@ br+.rw > p,
 .gtr {
     display: block;
     float: left;
+    text-align: left;
     margin-left: -35pt;
     width: 30pt;
     font-size: .75em;
@@ -455,6 +460,10 @@ img.logo-84000 {
     font-weight: normal;
     text-align: left;
 }
+#abbreviations table th,
+#abbreviations table td {
+    border-top: none;
+}
 #abbreviations p {
     margin-bottom: 8pt;
 }
@@ -494,6 +503,7 @@ img.logo-84000 {
 .heading-section {
     display: table;
     margin: 0px auto;
+    padding: 0px 40px;
 }
 .heading-section h4 {
     margin-bottom: 0px;

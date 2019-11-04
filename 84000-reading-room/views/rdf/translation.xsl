@@ -20,6 +20,7 @@
         <xsl:variable name="text-key" select="m:translation/m:source/m:location/@key" as="xs:string"/>
         <xsl:variable name="text-refs" select="$texts//m:text[@key eq $text-key]"/>
         <xsl:variable name="bdrc-work-id" select="$text-refs/m:ref[@type eq 'bdrc-work-id']/@value" as="xs:string?"/>
+        <xsl:variable name="bdrc-tibetan-id" select="$text-refs/m:ref[@type eq 'bdrc-tibetan-id']/@value" as="xs:string?"/>
         <xsl:variable name="bdrc-derge-id" select="$text-refs/m:ref[@type eq 'bdrc-derge-id']/@value" as="xs:string?"/>
         
         <!-- Set ids -->
@@ -132,9 +133,9 @@
             <rdf:Description rdf:about="{ 'http://purl.84000.co/resource/core/' || $eft-tibetan-id }">
                 <rdf:type rdf:resource="http://purl.bdrc.io/ontology/core/Work"/>
                 <rdf:type rdf:resource="http://purl.bdrc.io/ontology/core/AbstractWork"/>
-                <xsl:if test="$bdrc-work-id">
-                    <owl:sameAs rdf:resource="{ 'http://purl.bdrc.io/resource/' || $bdrc-work-id }"/>
-                    <adm:sameAsBDRC rdf:resource="{ 'http://purl.bdrc.io/resource/' || $bdrc-work-id }"/>
+                <xsl:if test="$bdrc-tibetan-id">
+                    <owl:sameAs rdf:resource="{ 'http://purl.bdrc.io/resource/' || $bdrc-tibetan-id }"/>
+                    <adm:sameAsBDRC rdf:resource="{ 'http://purl.bdrc.io/resource/' || $bdrc-tibetan-id }"/>
                 </xsl:if>
                 <bdo:workLangScript rdf:resource="http://purl.bdrc.io/resource/Bo"/>
                 <bdo:workHasExpression rdf:resource="{ 'http://purl.84000.co/resource/core/' || $eft-derge-id }"/>

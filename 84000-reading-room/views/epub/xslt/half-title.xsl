@@ -9,25 +9,28 @@
         <xsl:variable name="page-title" select="'Half Title'"/>
         <xsl:variable name="translation-title" select="m:translation/m:titles/m:title[@xml:lang eq 'en']"/>
         
-        <xsl:variable name="content">
-            <section class="center half-title" epub:type="halftitlepage">
-                <h2 class="text-bo">
-                    <xsl:apply-templates select="m:translation/m:titles/m:title[@xml:lang eq 'bo']"/>
-                </h2>
-                <h1>
-                    <xsl:apply-templates select="m:translation/m:titles/m:title[@xml:lang eq 'en']"/>
-                </h1>
-                <h2 class="text-sa">
-                    <xsl:apply-templates select="m:translation/m:titles/m:title[@xml:lang eq 'sa-ltn']"/>
-                </h2>
-                <img src="image/logo-stacked.png" alt="84000 Translating the Words of the Buddha Logo" class="logo logo-84000"/>
-            </section>
-        </xsl:variable>
-        
         <xsl:call-template name="epub-page">
             <xsl:with-param name="translation-title" select="$translation-title"/>
             <xsl:with-param name="page-title" select="$page-title"/>
-            <xsl:with-param name="content" select="$content"/>
+            <xsl:with-param name="content">
+                <section class="center half-title" epub:type="halftitlepage">
+                    
+                    <h2 class="text-bo">
+                        <xsl:apply-templates select="m:translation/m:titles/m:title[@xml:lang eq 'bo']"/>
+                    </h2>
+                    
+                    <h1>
+                        <xsl:apply-templates select="m:translation/m:titles/m:title[@xml:lang eq 'en']"/>
+                    </h1>
+                    
+                    <h2 class="text-sa">
+                        <xsl:apply-templates select="m:translation/m:titles/m:title[@xml:lang eq 'sa-ltn']"/>
+                    </h2>
+                    
+                    <img src="image/logo-stacked.png" alt="84000 Translating the Words of the Buddha Logo" class="logo logo-84000"/>
+                    
+                </section>
+            </xsl:with-param>
         </xsl:call-template>
         
     </xsl:template>

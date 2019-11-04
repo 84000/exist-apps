@@ -323,7 +323,8 @@ declare function common:mark-nodes($nodes as node()*, $strings as xs:string*) as
 declare function common:mark-text($text as xs:string, $find as xs:string*) as node()* {
     
     let $find-escaped := $find ! common:normalize-unicode(.) ! lower-case(.) ! normalize-space(.) ! functx:escape-for-regex(.)
-    let $regex := concat('(', string-join($find-escaped, '|'),')')
+    
+    let $regex := concat('(', string-join(tokenize($find-escaped, '\s+'), '|'),')')
     let $analyze-result := analyze-string(common:normalize-unicode($text), $regex, 'i')
     
     return

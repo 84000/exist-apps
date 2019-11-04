@@ -55,76 +55,91 @@
                                 <hr class="hidden-print"/>
     
                                 <aside id="contents" class="page">
+                                    
                                     <xsl:call-template name="section-title">
                                         <xsl:with-param name="id" select="'contents'"/>
                                         <xsl:with-param name="prefix" select="'co'"/>
                                         <xsl:with-param name="title" select="'Contents'"/>
                                     </xsl:call-template>
+                                    
                                     <div class="rw">
                                         <xsl:call-template name="table-of-contents">
                                             <xsl:with-param name="translation" select="m:translation"/>
                                         </xsl:call-template>
                                     </div>
+                                    
                                 </aside>
 
                                 <hr class="hidden-print"/>
     
                                 <section id="summary" class="page text glossarize-section">
+                                    
                                     <xsl:call-template name="section-title">
                                         <xsl:with-param name="id" select="'summary'"/>
                                         <xsl:with-param name="prefix" select="m:translation/m:summary/@prefix"/>
                                         <xsl:with-param name="title" select="'Summary'"/>
                                     </xsl:call-template>
+                                    
                                     <div>
                                         <xsl:apply-templates select="m:translation/m:summary"/>
                                     </div>
+                                    
                                 </section>
     
                                 <hr class="hidden-print"/>
     
                                 <section id="acknowledgements" class="text">
+                                    
                                     <xsl:call-template name="section-title">
                                         <xsl:with-param name="id" select="'acknowledgements'"/>
                                         <xsl:with-param name="prefix" select="m:translation/m:acknowledgment/@prefix"/>
                                         <xsl:with-param name="title" select="'Acknowledgements'"/>
                                     </xsl:call-template>
+                                    
                                     <div>
                                         <xsl:apply-templates select="m:translation/m:acknowledgment"/>
                                     </div>
+                                    
                                 </section>
                                 
                                 <xsl:if test="m:translation/m:preface//tei:*">
                                     <hr class="hidden-print"/>
                                     
                                     <section id="preface" class="page text">
+                                        
                                         <xsl:call-template name="section-title">
                                             <xsl:with-param name="id" select="'preface'"/>
                                             <xsl:with-param name="prefix" select="m:translation/m:preface/@prefix"/>
                                             <xsl:with-param name="title" select="'Preface'"/>
                                         </xsl:call-template>
+                                        
                                         <div>
                                             <xsl:if test="not(m:request/@view-mode = ('editor','app'))">
                                                 <xsl:attribute name="class" select="'render-in-viewport'"/>
                                             </xsl:if>
                                             <xsl:apply-templates select="m:translation/m:preface"/>
                                         </div>
+                                        
                                     </section>
                                 </xsl:if>
     
                                 <hr class="hidden-print"/>
     
                                 <section id="introduction" class="page text glossarize-section">
+                                    
                                     <xsl:call-template name="section-title">
                                         <xsl:with-param name="id" select="'introduction'"/>
                                         <xsl:with-param name="prefix" select="m:translation/m:introduction/@prefix"/>
                                         <xsl:with-param name="title" select="'Introduction'"/>
                                     </xsl:call-template>
+                                    
                                     <div>
                                         <xsl:if test="not(m:request/@view-mode = ('editor','app'))">
                                             <xsl:attribute name="class" select="'render-in-viewport'"/>
                                         </xsl:if>
                                         <xsl:apply-templates select="m:translation/m:introduction"/>
                                     </div>
+                                    
                                 </section>
 
                                 <hr class="hidden-print"/>
@@ -138,18 +153,21 @@
                                 <xsl:if test="m:translation/m:prologue//tei:*">
                                     <hr class="hidden-print"/>
                                     <section id="prologue" class="page text glossarize-section">
+                                        
                                         <xsl:call-template name="section-title">
                                             <xsl:with-param name="id" select="'prologue'"/>
                                             <xsl:with-param name="prefix" select="m:translation/m:prologue/@prefix"/>
                                             <xsl:with-param name="title" select="'Prologue'"/>
                                             <xsl:with-param name="title-tag" select="'h3'"/>
                                         </xsl:call-template>
+                                        
                                         <div>
                                             <xsl:if test="not(m:request/@view-mode = ('editor','app'))">
                                                 <xsl:attribute name="class" select="'render-in-viewport'"/>
                                             </xsl:if>
                                             <xsl:apply-templates select="m:translation/m:prologue"/>
                                         </div>
+                                        
                                     </section>
                                 </xsl:if>
                                 
@@ -266,11 +284,13 @@
                                     <hr class="hidden-print"/>
                                     
                                     <section id="abbreviations" class="page">
+                                        
                                         <xsl:call-template name="section-title">
                                             <xsl:with-param name="id" select="'abbreviations'"/>
                                             <xsl:with-param name="prefix" select="m:translation/m:abbreviations/@prefix"/>
                                             <xsl:with-param name="title" select="'Abbreviations'"/>
                                         </xsl:call-template>
+                                        
                                         <div>
                                             <xsl:if test="not(m:request/@view-mode = ('editor','app'))">
                                                 <xsl:attribute name="class" select="'render-in-viewport'"/>
@@ -281,6 +301,7 @@
                                                 </xsl:call-template>
                                             </div>
                                         </div>
+                                        
                                     </section>
                                     
                                 </xsl:if>
@@ -288,11 +309,13 @@
                                 <hr class="hidden-print"/>
     
                                 <section id="notes" class="page glossarize-section">
+                                    
                                     <xsl:call-template name="section-title">
                                         <xsl:with-param name="id" select="'notes'"/>
                                         <xsl:with-param name="prefix" select="m:translation/m:notes/@prefix"/>
                                         <xsl:with-param name="title" select="'Notes'"/>
                                     </xsl:call-template>
+                                    
                                     <div>
                                         <xsl:if test="not(m:request/@view-mode = ('editor','app'))">
                                             <xsl:attribute name="class" select="'render-in-viewport'"/>
@@ -306,6 +329,7 @@
                                 <hr class="hidden-print"/>
                                 
                                 <section id="bibliography" class="page">
+                                    
                                     <xsl:call-template name="section-title">
                                         <xsl:with-param name="id" select="'bibliography'"/>
                                         <xsl:with-param name="prefix" select="m:translation/m:bibliography/@prefix"/>
@@ -327,11 +351,13 @@
                                 <hr class="hidden-print"/>
 
                                 <section id="glossary" class="page glossarize-section">
+                                    
                                     <xsl:call-template name="section-title">
                                         <xsl:with-param name="id" select="'glossary'"/>
                                         <xsl:with-param name="prefix" select="m:translation/m:glossary/@prefix"/>
                                         <xsl:with-param name="title" select="'Glossary'"/>
                                     </xsl:call-template>
+                                    
                                     <div>
                                         <xsl:if test="not(m:request/@view-mode = ('editor','app'))">
                                             <xsl:attribute name="class" select="'render-in-viewport'"/>
@@ -340,6 +366,7 @@
                                             <xsl:with-param name="translation" select="m:translation"/>
                                         </xsl:call-template>
                                     </div>
+                                    
                                 </section>
     
                             </div>
@@ -558,88 +585,6 @@
                 <h1>
                     <xsl:apply-templates select="$translation/m:body/m:main-title"/>
                 </h1>
-            </div>
-        </div>
-    </xsl:template>
-    
-    <xsl:template name="chapter-title">
-        <xsl:param name="chapter-index" required="yes"/>
-        <xsl:param name="prefix" required="yes"/>
-        <xsl:param name="title" required="yes"/>
-        <xsl:param name="title-number" required="yes"/>
-        <div class="rw rw-chapter-title">
-            <div class="gtr">
-                <a class="milestone milestone-h4" title="Bookmark this section">
-                    <xsl:attribute name="href" select="concat('#chapter-', $prefix)"/>
-                    <xsl:value-of select="concat($prefix, '.')"/>
-                </a>
-            </div>
-            <div class="rw-heading">
-                <xsl:choose>
-                    <xsl:when test="$title-number/text() and not($title/text())">
-                        <xsl:if test="$title-number/text()">
-                            <h2 class="chapter-number">
-                                <xsl:call-template name="tid">
-                                    <xsl:with-param name="node" select="$title-number"/>
-                                </xsl:call-template>
-                                <xsl:apply-templates select="$title-number/text()"/>
-                            </h2>
-                        </xsl:if>
-                    </xsl:when>
-                    <xsl:otherwise>
-                        <xsl:if test="$title-number/text()">
-                            <h4 class="chapter-number">
-                                <xsl:call-template name="tid">
-                                    <xsl:with-param name="node" select="$title-number"/>
-                                </xsl:call-template>
-                                <xsl:apply-templates select="$title-number/text()"/>
-                            </h4>
-                        </xsl:if>
-                        <xsl:if test="$title/text()">
-                            <h2>
-                                <xsl:call-template name="tid">
-                                    <xsl:with-param name="node" select="$title"/>
-                                </xsl:call-template>
-                                <xsl:apply-templates select="$title/text()"/>
-                            </h2>
-                        </xsl:if>
-                    </xsl:otherwise>
-                </xsl:choose>
-            </div>
-        </div>
-    </xsl:template>
-    
-    <xsl:template name="section-title">
-        <xsl:param name="id" required="yes"/>
-        <xsl:param name="prefix" required="yes"/>
-        <xsl:param name="title" required="yes"/>
-        <xsl:param name="title-tag" select="'h3'" required="no"/>
-        <div class="rw rw-section-title">
-            <div class="gtr">
-                <a title="Bookmark this section">
-                    <xsl:attribute name="href" select="concat('#', $id)"/>
-                    <xsl:attribute name="class" select="concat('milestone', ' milestone-', $title-tag)"/>
-                    <xsl:value-of select="concat($prefix, '.')"/>
-                </a>
-            </div>
-            <div class="rw-heading">
-                <xsl:choose>
-                    <xsl:when test="$title-tag eq 'h2'">
-                        <h2>
-                            <xsl:value-of select="$title"/>
-                        </h2>
-                    </xsl:when>
-                    <xsl:when test="$title-tag eq 'h4'">
-                        <h4>
-                            <xsl:value-of select="$title"/>
-                        </h4>
-                    </xsl:when>
-                    <xsl:otherwise>
-                        <h3>
-                            <xsl:value-of select="$title"/>
-                        </h3>
-                    </xsl:otherwise>
-                </xsl:choose>
             </div>
         </div>
     </xsl:template>

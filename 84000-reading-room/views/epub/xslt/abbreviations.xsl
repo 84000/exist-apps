@@ -6,28 +6,31 @@
     
     <xsl:template match="/m:response">
         
-        <xsl:variable name="page-title" select="'Abbreviations'"/>
+        <xsl:variable name="section-id" select="'abbreviations'"/>
+        <xsl:variable name="section-title" select="'Abbreviations'"/>
+        <xsl:variable name="section-prefix" select="m:translation/m:abbreviations/@prefix"/>
         <xsl:variable name="translation-title" select="m:translation/m:titles/m:title[@xml:lang eq 'en']"/>
-        
-        <xsl:variable name="content">
-            
-            <section id="abbreviations">
-                <div class="center header">
-                    <h2>
-                        <xsl:value-of select="$page-title"/>
-                    </h2>
-                </div>
-                <xsl:call-template name="abbreviations">
-                    <xsl:with-param name="translation" select="m:translation"/>
-                </xsl:call-template>
-            </section>
-            
-        </xsl:variable>
         
         <xsl:call-template name="epub-page">
             <xsl:with-param name="translation-title" select="$translation-title"/>
-            <xsl:with-param name="page-title" select="$page-title"/>
-            <xsl:with-param name="content" select="$content"/>
+            <xsl:with-param name="page-title" select="$section-title"/>
+            <xsl:with-param name="content">
+                <section>
+                    
+                    <xsl:attribute name="id" select="$section-id"/>
+                    
+                    <div class="center header">
+                        <h3>
+                            <xsl:value-of select="$section-title"/>
+                        </h3>
+                    </div>
+                    
+                    <xsl:call-template name="abbreviations">
+                        <xsl:with-param name="translation" select="m:translation"/>
+                    </xsl:call-template>
+                    
+                </section>
+            </xsl:with-param>
         </xsl:call-template>
         
     </xsl:template>

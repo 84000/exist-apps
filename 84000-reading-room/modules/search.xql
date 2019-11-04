@@ -170,14 +170,30 @@ declare function search:tm-search($request as xs:string, $lang as xs:string, $fi
     let $request-bo := 
         if($lang eq 'bo') then
             $request
-        else
+        else if($lang eq 'bo-ltn') then
             common:bo-from-wylie($request)
+        else
+            ''
     
     let $request-bo-ltn := 
         if($lang eq 'bo-ltn') then
             $request
-        else
+        else if($lang eq 'bo') then
             common:wylie-from-bo($request)
+        else
+            ''
+    
+    let $search :=
+        if($lang = ('bo', 'bo-ltn')) then
+            $request-bo
+        else
+            $request
+    
+    let $search-lang := 
+        if($lang = ('bo', 'bo-ltn')) then
+            'bo'
+        else
+            'en'
     
     let $options :=
         <options>
@@ -188,33 +204,44 @@ declare function search:tm-search($request as xs:string, $lang as xs:string, $fi
         </options>
     
     let $query := 
-        <query>
-        { 
-            for $phrase in tokenize(normalize-space($request-bo), '།')
-            return
-                <phrase>{ $phrase }</phrase>
-        }
-        </query>
+        if($search-lang eq 'bo') then
+            <query>
+            { 
+                for $phrase in tokenize(normalize-space($search), '།')
+                return
+                    <phrase>{ $search }</phrase>
+            }
+            </query>
+        else
+            <query>
+                <phrase>{ $search }</phrase>
+            </query>
     
     let $translation-memory := collection(concat($common:data-path, '/translation-memory'))
     
     let $translations := collection($common:translations-path)
     
     let $results :=
-        if ($request-bo) then
-            for $result in 
-                (
-                    $translation-memory//tmx:tu[ft:query(tmx:tuv[@xml:lang eq 'bo']/tmx:seg, $query, $options)],
-                    $translations//tei:back//tei:gloss[ft:query(tei:term[@xml:lang eq 'bo'], $query, $options)]
-                )
-                order by ft:score($result) descending
-            return $result
-        else
-            ()
+        for $result in (
+            if($search-lang eq 'bo') then
+                $translation-memory//tmx:tu[ft:query-field('tmx-bo', $query, $options)]
+            else
+                $translation-memory//tmx:tu[ft:query-field('tmx-en', $query, $options)]
+            ,
+            if($search-lang eq 'bo') then
+                $translations//tei:back//tei:gloss[ft:query(tei:term[@xml:lang eq 'bo'], $query, $options)]
+            else
+                $translations//tei:back//tei:gloss[ft:query(tei:term[not(@xml:lang) or @xml:lang eq 'en'][not(@type)], $query, $options)]
+        )
+            order by ft:score($result) descending
+        return 
+            $result
+            
     
     return
         <tm-search xmlns="http://read.84000.co/ns/1.0">
             <request lang="{ $lang }">{ $request }</request>
+            <search lang="{ $search-lang }">{ $search }</search>
             <request-bo>{ $request-bo }</request-bo>
             <request-bo-ltn>{ $request-bo-ltn }</request-bo-ltn>
             <results
@@ -233,7 +260,7 @@ declare function search:tm-search($request as xs:string, $lang as xs:string, $fi
                         else
                             doc($document-uri)/tei:TEI
                     
-                    let $expanded := common:mark-nodes($result, $request-bo) (: util:expand($result, "expand-xincludes=no") :)
+                    let $expanded := common:mark-nodes($result, $search) (: util:expand($result, "expand-xincludes=no") :)
                     
                 return
                     if($tei) then
@@ -259,7 +286,7 @@ declare function search:tm-search($request as xs:string, $lang as xs:string, $fi
                                         attribute type { 'tm-unit' },
                                         attribute location { concat('/translation/', $toh-key, '.html#', $source-link-id) },
                                         element tibetan { $expanded/tmx:tuv[@xml:lang eq "bo"]/tmx:seg/node() },
-                                        element translation { $result/tmx:tuv[@xml:lang eq "en"]/tmx:seg/node() }
+                                        element translation { $expanded/tmx:tuv[@xml:lang eq "en"]/tmx:seg/node() }
                                     }
                                 
                             else
@@ -271,9 +298,9 @@ declare function search:tm-search($request as xs:string, $lang as xs:string, $fi
                                     element match {
                                         attribute type { 'glossary-term' },
                                         attribute location { concat('/translation/', $toh-key, '.html#', $result/@xml:id) },
-                                        element tibetan { $expanded/tei:term[not(@type)][@xml:lang eq "bo"][exist:match] },
-                                        element translation { $result/tei:term[not(@type)][not(@xml:lang) or @xml:lang eq "en"][1] },
-                                        element sanskrit { $result/tei:term[not(@type)][@xml:lang eq "Sa-Ltn"][1] }
+                                        element tibetan { ($expanded/tei:term[not(@type)][@xml:lang eq "bo"][exist:match], $expanded/tei:term[not(@type)][@xml:lang eq "bo"])[1] }, 
+                                        element translation { ($expanded/tei:term[not(@type)][not(@xml:lang) or @xml:lang eq "en"][not(@type)][exist:match], $expanded/tei:term[not(@type)][not(@xml:lang) or @xml:lang eq "en"][not(@type)])[1] },
+                                        element sanskrit { ($expanded/tei:term[not(@type)][@xml:lang eq "Sa-Ltn"][exist:match], $expanded/tei:term[not(@type)][@xml:lang eq "Sa-Ltn"])[1] }
                                     }
                                 
                         }

@@ -692,6 +692,7 @@
                                                     <xsl:value-of select="'Read online'"/>
                                                 </a>
                                             </li>
+                                            <xsl:variable name="title-en" select="m:titles/m:title[@xml:lang='en'][not(@type)]/text()" as="xs:string"/>
                                             <xsl:for-each select="m:downloads/m:download[@type = ('pdf', 'epub', 'azw3')]">
                                                 <li>
                                                     <a target="_blank">
@@ -699,6 +700,7 @@
                                                         <xsl:attribute name="href" select="@url"/>
                                                         <xsl:attribute name="download" select="@filename"/>
                                                         <xsl:attribute name="class" select="'log-click'"/>
+                                                        <xsl:attribute name="data-download-dana" select="$title-en"/>
                                                         <i>
                                                             <xsl:attribute name="class" select="concat('fa ', @fa-icon-class)"/>
                                                         </i>
@@ -708,7 +710,7 @@
                                             </xsl:for-each>
                                             <xsl:if test="m:downloads/m:download[@type = ('epub', 'azw3')]">
                                                 <li>
-                                                    <a data-toggle="modal" href="#ebook-help" data-target="#ebook-help" class="text-warning">
+                                                    <a data-toggle="modal" href="#ebook-help" data-target="#ebook-help" class="visible-scripts text-warning">
                                                         <i class="fa fa-info-circle" aria-hidden="true"/>
                                                         <span class="small">
                                                             <xsl:call-template name="local-text">

@@ -801,6 +801,125 @@
         </div>
     </xsl:template>
     
+    <!-- Chapter title -->
+    <xsl:template name="chapter-title">
+        <xsl:param name="chapter-index" required="yes"/>
+        <xsl:param name="prefix" required="yes"/>
+        <xsl:param name="title" required="yes"/>
+        <xsl:param name="title-number" required="yes"/>
+        <div class="rw rw-chapter-title">
+            <div class="gtr">
+                <xsl:choose>
+                    
+                    <!-- show a link -->
+                    <xsl:when test="/m:response/m:request/@doc-type eq 'html'">
+                        <a class="milestone milestone-h4" title="Bookmark this section">
+                            <xsl:attribute name="href" select="concat('#chapter-', $prefix)"/>
+                            <xsl:value-of select="concat($prefix, '.')"/>
+                        </a>
+                    </xsl:when>
+                    
+                    <!-- or just the text -->
+                    <xsl:otherwise>
+                        <xsl:value-of select="concat($prefix, '.')"/>
+                    </xsl:otherwise>
+                    
+                </xsl:choose>
+            </div>
+            <div class="rw-heading">
+                <xsl:choose>
+                    
+                    <xsl:when test="$title-number/text() and not($title/text())">
+                        <xsl:if test="$title-number/text()">
+                            <h2 class="chapter-number">
+                                <xsl:call-template name="tid">
+                                    <xsl:with-param name="node" select="$title-number"/>
+                                </xsl:call-template>
+                                <xsl:apply-templates select="$title-number/text()"/>
+                            </h2>
+                        </xsl:if>
+                    </xsl:when>
+                    
+                    <xsl:otherwise>
+                        
+                        <xsl:if test="$title-number/text()">
+                            <h4 class="chapter-number">
+                                <xsl:call-template name="tid">
+                                    <xsl:with-param name="node" select="$title-number"/>
+                                </xsl:call-template>
+                                <xsl:apply-templates select="$title-number/text()"/>
+                            </h4>
+                        </xsl:if>
+                        
+                        <xsl:if test="$title/text()">
+                            <h2>
+                                <xsl:call-template name="tid">
+                                    <xsl:with-param name="node" select="$title"/>
+                                </xsl:call-template>
+                                <xsl:apply-templates select="$title/text()"/>
+                            </h2>
+                        </xsl:if>
+                        
+                    </xsl:otherwise>
+                </xsl:choose>
+            </div>
+        </div>
+    </xsl:template>
+    
+    <!-- Section title -->
+    <xsl:template name="section-title">
+        <xsl:param name="id" required="yes"/>
+        <xsl:param name="prefix" required="yes"/>
+        <xsl:param name="title" required="yes"/>
+        <xsl:param name="title-tag" select="'h3'" required="no"/>
+        <div class="rw rw-section-title">
+            <div class="gtr">
+                
+                <xsl:choose>
+                    
+                    <!-- show a link -->
+                    <xsl:when test="/m:response/m:request/@doc-type eq 'html'">
+                        <a title="Bookmark this section">
+                            <xsl:attribute name="href" select="concat('#', $id)"/>
+                            <xsl:attribute name="class" select="concat('milestone', ' milestone-', $title-tag)"/>
+                            <xsl:value-of select="concat($prefix, '.')"/>
+                        </a>
+                    </xsl:when>
+                    
+                    <!-- or just the text -->
+                    <xsl:otherwise>
+                        <xsl:value-of select="concat($prefix, '.')"/>
+                    </xsl:otherwise>
+                    
+                </xsl:choose>
+                
+            </div>
+            <div class="rw-heading">
+                <xsl:choose>
+                    
+                    <xsl:when test="$title-tag eq 'h2'">
+                        <h2>
+                            <xsl:value-of select="$title"/>
+                        </h2>
+                    </xsl:when>
+                    
+                    <xsl:when test="$title-tag eq 'h4'">
+                        <h4>
+                            <xsl:value-of select="$title"/>
+                        </h4>
+                    </xsl:when>
+                    
+                    <xsl:otherwise>
+                        <h3>
+                            <xsl:value-of select="$title"/>
+                        </h3>
+                    </xsl:otherwise>
+                    
+                </xsl:choose>
+            </div>
+        </div>
+    </xsl:template>
+    
     <!-- Abbreviations -->
     <xsl:template name="abbreviations">
         <xsl:param name="translation" required="yes"/>

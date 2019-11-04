@@ -13,51 +13,31 @@
         <xsl:variable name="translation-title" select="m:translation/m:titles/m:title[@xml:lang eq 'en']"/>
         <xsl:variable name="chapter" select="m:translation/m:body/m:chapter[@chapter-index eq $chapter-index]"/>
         
-        <xsl:variable name="content">
-            
-            <section class="translation" epub:type="chapter">
-                
-                <xsl:attribute name="id" select="concat('chapter-', $prefix)"/>
-                
-                <xsl:if test="$chapter/m:title/text() or $chapter/m:title-number/text()">
-                    <div class="center header">
-                        <xsl:choose>
-                            <xsl:when test="$chapter/m:title-number/text() and not($chapter/m:title/text())">
-                                <xsl:if test="$chapter/m:title-number/text()">
-                                    <h2 class="chapter-number">
-                                        <xsl:apply-templates select="$chapter/m:title-number/text()"/>
-                                    </h2>
-                                </xsl:if>
-                            </xsl:when>
-                            <xsl:otherwise>
-                                <xsl:if test="$chapter/m:title-number/text()">
-                                    <h4 class="chapter-number">
-                                        <xsl:apply-templates select="$chapter/m:title-number/text()"/>
-                                    </h4>
-                                </xsl:if>
-                                
-                                <xsl:if test="$chapter/m:title/text()">
-                                    <h2>
-                                        <xsl:apply-templates select="$chapter/m:title/text()"/>
-                                    </h2>
-                                </xsl:if>
-                            </xsl:otherwise>
-                        </xsl:choose>
-                    </div>
-                </xsl:if>
-                
-                <div class="text">
-                    <xsl:apply-templates select="$chapter/tei:*"/>
-                </div>
-                
-            </section>
-            
-        </xsl:variable>
-        
         <xsl:call-template name="epub-page">
             <xsl:with-param name="translation-title" select="$translation-title"/>
             <xsl:with-param name="page-title" select="$page-title"/>
-            <xsl:with-param name="content" select="$content"/>
+            <xsl:with-param name="content">
+                <section class="translation" epub:type="chapter">
+                    
+                    <xsl:attribute name="id" select="concat('chapter-', $prefix)"/>
+                    
+                    <xsl:if test="$chapter/m:title/text() or $chapter/m:title-number/text()">
+                        <div class="center header">
+                            <xsl:call-template name="chapter-title">
+                                <xsl:with-param name="title" select="$chapter/m:title"/>
+                                <xsl:with-param name="title-number" select="$chapter/m:title-number"/>
+                                <xsl:with-param name="chapter-index" select="$chapter/@chapter-index/string()"/>
+                                <xsl:with-param name="prefix" select="$chapter/@prefix/string()"/>
+                            </xsl:call-template>
+                        </div>
+                    </xsl:if>
+                    
+                    <div class="text">
+                        <xsl:apply-templates select="$chapter/tei:*"/>
+                    </div>
+                    
+                </section>
+            </xsl:with-param>
         </xsl:call-template>
         
     </xsl:template>

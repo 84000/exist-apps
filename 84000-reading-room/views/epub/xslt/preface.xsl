@@ -6,26 +6,33 @@
     
     <xsl:template match="/m:response">
         
-        <xsl:variable name="page-title" select="'Preface'"/>
+        <xsl:variable name="section-id" select="'preface'"/>
+        <xsl:variable name="section-title" select="'Preface'"/>
+        <xsl:variable name="section-prefix" select="m:translation/m:preface/@prefix"/>
         <xsl:variable name="translation-title" select="m:translation/m:titles/m:title[@xml:lang eq 'en']"/>
-        
-        <xsl:variable name="content">
-            <section id="preface" class="translation" epub:type="preface">
-                <div class="center header">
-                    <h2>
-                        <xsl:value-of select="$page-title"/>
-                    </h2>
-                </div>
-                <div class="text">
-                    <xsl:apply-templates select="m:translation/m:preface"/>
-                </div>
-            </section>
-        </xsl:variable>
-        
+       
         <xsl:call-template name="epub-page">
             <xsl:with-param name="translation-title" select="$translation-title"/>
-            <xsl:with-param name="page-title" select="$page-title"/>
-            <xsl:with-param name="content" select="$content"/>
+            <xsl:with-param name="page-title" select="$section-title"/>
+            <xsl:with-param name="content">
+                <section class="translation" epub:type="preface">
+                    
+                    <xsl:attribute name="id" select="$section-id"/>
+                    
+                    <div class="center header">
+                        <xsl:call-template name="section-title">
+                            <xsl:with-param name="id" select="$section-id"/>
+                            <xsl:with-param name="prefix" select="$section-prefix"/>
+                            <xsl:with-param name="title" select="$section-title"/>
+                        </xsl:call-template>
+                    </div>
+                    
+                    <div class="text">
+                        <xsl:apply-templates select="m:translation/m:preface"/>
+                    </div>
+                    
+                </section>
+            </xsl:with-param>
         </xsl:call-template>
         
     </xsl:template>
