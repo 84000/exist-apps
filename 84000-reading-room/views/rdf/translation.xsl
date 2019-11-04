@@ -76,8 +76,8 @@
                             <xsl:value-of select="$collection-refs/m:label"/>
                         </skos:prefLabel>
                         <rdf:type rdf:resource="http://purl.bdrc.io/ontology/core/Work"/>
+                        <adm:canonicalHtml rdf:resource="http://read.84000.co/section/O1JC11494.html"/>
                     </rdf:Description>
-                    <adm:canonicalHtml rdf:resource="http://read.84000.co/section/O1JC11494.html"/>
                 </xsl:when>
             </xsl:choose>
             
