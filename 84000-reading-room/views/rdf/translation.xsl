@@ -30,9 +30,6 @@
         <xsl:variable name="eft-tibetan-id" select="'WAT' || $eft-id" as="xs:string"/>
         <xsl:variable name="eft-derge-id" select="'WEKD' || $eft-id" as="xs:string"/>
         
-        <!-- Html end-points -->
-        <xsl:variable name="translation-html" select="m:translation/@page-url"/>
-        
         <rdf:RDF xmlns:eftr="http://purl.84000.co/resource/core/" xmlns:bdr="http://purl.bdrc.io/resource/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:owl="http://www.w3.org/2002/07/owl#" xmlns:xsd="http://www.w3.org/2001/XMLSchema#" xmlns:skos="http://www.w3.org/2004/02/skos/core#" xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#" xmlns:adm="http://purl.bdrc.io/ontology/admin/" xmlns:bdo="http://purl.bdrc.io/ontology/core/" xmlns:bda="http://purl.bdrc.io/admindata/"> 
             
             <xsl:comment>Some admin data</xsl:comment>

@@ -74,22 +74,26 @@
                                     </aside>
                                     
                                 </xsl:if>
-
-                                <hr class="hidden-print"/>
-    
-                                <section id="summary" class="page text glossarize-section">
+                                
+                                <xsl:if test="m:translation/m:summary[tei:p]">
                                     
-                                    <xsl:call-template name="section-title">
-                                        <xsl:with-param name="id" select="'summary'"/>
-                                        <xsl:with-param name="prefix" select="m:translation/m:summary/@prefix"/>
-                                        <xsl:with-param name="title" select="'Summary'"/>
-                                    </xsl:call-template>
+                                    <hr class="hidden-print"/>
                                     
-                                    <div>
-                                        <xsl:apply-templates select="m:translation/m:summary"/>
-                                    </div>
+                                    <section id="summary" class="page text glossarize-section">
+                                        
+                                        <xsl:call-template name="section-title">
+                                            <xsl:with-param name="id" select="'summary'"/>
+                                            <xsl:with-param name="prefix" select="m:translation/m:summary/@prefix"/>
+                                            <xsl:with-param name="title" select="'Summary'"/>
+                                        </xsl:call-template>
+                                        
+                                        <div>
+                                            <xsl:apply-templates select="m:translation/m:summary"/>
+                                        </div>
+                                        
+                                    </section>
                                     
-                                </section>
+                                </xsl:if>
                                 
                                 <xsl:if test="m:translation/@status = $render-status">
                                 
