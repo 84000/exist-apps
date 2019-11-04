@@ -473,24 +473,27 @@
                     <xsl:choose>
                         <xsl:when test="lower-case($section/@id) eq 'all-translated'">
                             <!-- Form to sort translated -->
-                            <form method="post" class="filter-form col-sm-pull-right">
-                                <label class="sr-only">
-                                    <xsl:value-of select="'Sort translations'"/>
-                                </label>
-                                <select name="translations-order" class="form-control">
-                                    <option value="toh">
-                                        <xsl:if test="m:request/@translations-order eq 'toh'">
-                                            <xsl:attribute name="selected" select="'selected'"/>
-                                        </xsl:if>
-                                        <xsl:value-of select="'Sort by Tohoku number'"/>
-                                    </option>
-                                    <option value="latest">
-                                        <xsl:if test="m:request/@translations-order eq 'latest'">
-                                            <xsl:attribute name="selected" select="'latest'"/>
-                                        </xsl:if>
-                                        <xsl:value-of select="'Most recent publications'"/>
-                                    </option>
-                                </select>
+                            <form method="post" class="filter-form form-inline col-sm-pull-right">
+                                <div class="form-group">
+                                    <label class="sr-only">
+                                        <xsl:value-of select="'Sort translations'"/>
+                                    </label>
+                                    <select name="translations-order" class="form-control">
+                                        <option value="toh">
+                                            <xsl:if test="m:request/@translations-order eq 'toh'">
+                                                <xsl:attribute name="selected" select="'selected'"/>
+                                            </xsl:if>
+                                            <xsl:value-of select="'Sort by Tohoku number'"/>
+                                        </option>
+                                        <option value="latest">
+                                            <xsl:if test="m:request/@translations-order eq 'latest'">
+                                                <xsl:attribute name="selected" select="'latest'"/>
+                                            </xsl:if>
+                                            <xsl:value-of select="'Most recent publications'"/>
+                                        </option>
+                                    </select>
+                                </div>
+                                <button type="submit" class="btn btn-default hidden-scripts">Go</button>
                             </form>
                         </xsl:when>
                         <xsl:otherwise>

@@ -30,6 +30,9 @@
         <xsl:variable name="eft-tibetan-id" select="'WAT' || $eft-id" as="xs:string"/>
         <xsl:variable name="eft-derge-id" select="'WEKD' || $eft-id" as="xs:string"/>
         
+        <!-- Html end-points -->
+        <xsl:variable name="translation-html" select="m:translation/@page-url"/>
+        
         <rdf:RDF xmlns:eftr="http://purl.84000.co/resource/core/" xmlns:bdr="http://purl.bdrc.io/resource/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:owl="http://www.w3.org/2002/07/owl#" xmlns:xsd="http://www.w3.org/2001/XMLSchema#" xmlns:skos="http://www.w3.org/2004/02/skos/core#" xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#" xmlns:adm="http://purl.bdrc.io/ontology/admin/" xmlns:bdo="http://purl.bdrc.io/ontology/core/" xmlns:bda="http://purl.bdrc.io/admindata/"> 
             
             <xsl:comment>Some admin data</xsl:comment>
@@ -44,12 +47,14 @@
                 <adm:adminAbout rdf:resource="{ 'http://purl.84000.co/resource/core/' || $eft-indic-id }"/>
                 <adm:graphId rdf:resource="http://purl.84000.co/resource/core/Dataset"/>
                 <rdf:type rdf:resource="http://purl.bdrc.io/ontology/admin/AdminData"/>
+                <adm:canonicalHtml rdf:resource="http://84000.co/about/copyright"/>
             </rdf:Description>
             
             <xsl:comment>Content provider</xsl:comment>
             <rdf:Description rdf:about="http://purl.84000.co/resource/core/EFT">
                <rdf:type rdf:resource="http://purl.bdrc.io/ontology/admin/ContentProvider"/>
                <rdfs:label>84000</rdfs:label>
+               <adm:canonicalHtml rdf:resource="http://84000.co"/>
             </rdf:Description>
             
             <xsl:comment>Legal data</xsl:comment>
@@ -59,6 +64,7 @@
                 <adm:license rdf:resource="http://purl.bdrc.io/admindata/LicenseCC0"/>
                 <adm:copyrightOwner rdf:resource="http://purl.84000.co/resource/core/EFT"/>
                 <skos:prefLabel xml:lang="en">Metadata related to the translations by 84000, provided under the CC0 License</skos:prefLabel>
+                <adm:canonicalHtml rdf:resource="http://84000.co/about/copyright"/>
             </rdf:Description>
             
             <xsl:comment>The collection</xsl:comment>
@@ -74,6 +80,7 @@
                         </skos:prefLabel>
                         <rdf:type rdf:resource="http://purl.bdrc.io/ontology/core/Work"/>
                     </rdf:Description>
+                    <adm:canonicalHtml rdf:resource="http://read.84000.co/section/O1JC11494.html"/>
                 </xsl:when>
             </xsl:choose>
             
@@ -108,6 +115,7 @@
                         <xsl:value-of select="m:translation/m:long-titles/m:title[@xml:lang eq 'en']"/>
                     </skos:altLabel>
                 </xsl:if>
+                <adm:canonicalHtml rdf:resource="{ m:translation/@page-url }"/>
             </rdf:Description>
             
             <xsl:comment>The Derge edition of the Tibetan translation</xsl:comment>
@@ -127,6 +135,7 @@
                         <xsl:value-of select="m:translation/m:titles/m:title[@xml:lang eq 'bo']"/>
                     </skos:prefLabel>
                 </xsl:if>
+                <adm:canonicalHtml rdf:resource="{ m:translation/@page-url }"/>
             </rdf:Description>
             
             <xsl:comment>The original Tibetan translation</xsl:comment>
@@ -155,6 +164,7 @@
                         <xsl:value-of select="$text-refs/m:ref[@type eq 'rkts-work-id']/@value"/>
                     </bdo:workRefrKTsK>
                 </xsl:if>
+                <adm:canonicalHtml rdf:resource="{ m:translation/@page-url }"/>
             </rdf:Description>
             
             <xsl:if test="m:translation/@status-group eq 'published'">
