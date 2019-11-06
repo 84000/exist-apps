@@ -293,31 +293,7 @@ declare function translation:downloads($tei as element(tei:TEI), $resource-id as
                 element download {
                     attribute type { $type },
                     attribute url { concat('/data/', $file-name ,'.', $type) },
-                    attribute version { $stored-version },
-                    attribute fa-icon-class {
-                        if($type eq 'epub') then
-                            'fa-book'
-                        else if($type eq 'azw3') then
-                            'fa-amazon'
-                        else if($type eq 'pdf') then
-                            'fa-file-pdf-o'
-                        else if($type eq 'rdf') then
-                            ''
-                        else
-                            ''
-                    },
-                    text {
-                        if($type eq 'epub') then
-                            'Download EPUB'
-                        else if($type eq 'azw3') then
-                            'Download AZW3 (Kindle)'
-                        else if($type eq 'pdf') then
-                            'Download PDF'
-                        else if($type eq 'rdf') then
-                            'Download RDF'
-                        else
-                            ''
-                    }
+                    attribute version { $stored-version }
                 }
         }
         </downloads>

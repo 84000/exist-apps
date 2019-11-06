@@ -86,8 +86,8 @@
                 <rdf:type rdf:resource="http://purl.bdrc.io/ontology/core/Work"/>
                 <rdf:type rdf:resource="http://purl.bdrc.io/ontology/core/AbstractWork"/>
                 <xsl:if test="$bdrc-work-id">
-                    <owl:sameAs rdf:resource="{ 'http://purl.bdrc.io/resource/' || $bdrc-work-id }"/>
-                    <adm:sameAsBDRC rdf:resource="{ 'http://purl.bdrc.io/resource/' || $bdrc-work-id }"/>
+                    <owl:sameAs rdf:resource="{ $bdrc-work-id }"/>
+                    <adm:sameAsBDRC rdf:resource="{ $bdrc-work-id }"/>
                 </xsl:if>
                 <bdo:workLangScript rdf:resource="http://purl.bdrc.io/resource/Inc"/>
                 <bdo:workHasTranslation rdf:resource="{ 'http://purl.84000.co/resource/core/' || $eft-english-id }"/>
@@ -118,11 +118,11 @@
             <xsl:comment>The Derge edition of the Tibetan translation</xsl:comment>
             <rdf:Description rdf:about="{ 'http://purl.84000.co/resource/core/' || $eft-derge-id }">
                 <rdf:type rdf:resource="http://purl.bdrc.io/ontology/core/Work"/>
-                <bdo:workLangScript rdf:resource="http://purl.bdrc.io/resource/BoDbuCan"/>
                 <xsl:if test="$bdrc-derge-id">
-                    <owl:sameAs rdf:resource="{ 'http://purl.bdrc.io/resource/' || $bdrc-derge-id }"/>
-                    <adm:sameAsBDRC rdf:resource="{ 'http://purl.bdrc.io/resource/' || $bdrc-derge-id }"/>
+                    <owl:sameAs rdf:resource="{ $bdrc-derge-id }"/>
+                    <adm:sameAsBDRC rdf:resource="{ $bdrc-derge-id }"/>
                 </xsl:if>
+                <bdo:workLangScript rdf:resource="http://purl.bdrc.io/resource/BoDbuCan"/>
                 <xsl:if test="$collection-id">
                     <bdo:workPartOf rdf:resource="{ 'http://purl.84000.co/resource/core/' || $collection-id }"/>
                 </xsl:if>
@@ -140,8 +140,8 @@
                 <rdf:type rdf:resource="http://purl.bdrc.io/ontology/core/Work"/>
                 <rdf:type rdf:resource="http://purl.bdrc.io/ontology/core/AbstractWork"/>
                 <xsl:if test="$bdrc-tibetan-id">
-                    <owl:sameAs rdf:resource="{ 'http://purl.bdrc.io/resource/' || $bdrc-tibetan-id }"/>
-                    <adm:sameAsBDRC rdf:resource="{ 'http://purl.bdrc.io/resource/' || $bdrc-tibetan-id }"/>
+                    <owl:sameAs rdf:resource="{ $bdrc-tibetan-id }"/>
+                    <adm:sameAsBDRC rdf:resource="{ $bdrc-tibetan-id }"/>
                 </xsl:if>
                 <bdo:workLangScript rdf:resource="http://purl.bdrc.io/resource/Bo"/>
                 <bdo:workHasExpression rdf:resource="{ 'http://purl.84000.co/resource/core/' || $eft-derge-id }"/>

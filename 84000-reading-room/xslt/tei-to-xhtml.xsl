@@ -1056,4 +1056,36 @@
         </xsl:choose>
     </xsl:template>
     
+    <xsl:template name="download-label">
+        <xsl:param name="type" as="xs:string"/>
+        <xsl:choose>
+            <xsl:when test="$type eq 'epub'">
+                <xsl:value-of select="'Download EPUB'"/>
+            </xsl:when>
+            <xsl:when test="$type eq 'azw3'">
+                <xsl:value-of select="'Download AZW3 (Kindle)'"/>
+            </xsl:when>
+            <xsl:when test="$type eq 'pdf'">
+                <xsl:value-of select="'Download PDF'"/>
+            </xsl:when>
+        </xsl:choose>
+    </xsl:template>
+    
+    <xsl:template name="download-icon">
+        <xsl:param name="type" as="xs:string"/>
+        <i>
+            <xsl:choose>
+                <xsl:when test="$type eq 'epub'">
+                    <xsl:attribute name="class" select="'fa fa-book'"/>
+                </xsl:when>
+                <xsl:when test="$type eq 'azw3'">
+                    <xsl:attribute name="class" select="'fa fa-amazon'"/>
+                </xsl:when>
+                <xsl:when test="$type eq 'pdf'">
+                    <xsl:attribute name="class" select="'fa fa-file-pdf-o'"/>
+                </xsl:when>
+            </xsl:choose>
+        </i>
+    </xsl:template>
+    
 </xsl:stylesheet>

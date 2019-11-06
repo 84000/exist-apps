@@ -22,14 +22,14 @@
                     <xsl:call-template name="alert-translation-locked"/>
                     
                     <!-- Title -->
-                    <div class="h3 text-sa no-bottom-margin">
-                        <a target="_blank" class="text-muted">
+                    <div class="h3 no-bottom-margin">
+                        <a target="_blank">
                             <xsl:attribute name="href" select="concat($reading-room-path, '/translation/', m:translation/@id, '.html')"/>
                             <xsl:value-of select="concat(string-join(m:translation/m:toh/m:full, ' / '), ' : ', m:translation/m:title)"/>
                         </a>
                     </div>
                     
-                    <div class="bottom-margin">
+                    <div class="sml-margin bottom">
                         <xsl:copy-of select="common:translation-status(m:translation/@status-group)"/>
                         <xsl:if test="normalize-space(m:translation/m:translation/m:edition)">
                             <a class="label label-info">
@@ -65,6 +65,10 @@
                                 </xsl:for-each>
                             </xsl:for-each>
                         </xsl:if>
+                    </div>
+                    
+                    <div class="small text-muted bottom-margin">
+                        <xsl:value-of select="concat('TEI file: ', m:translation/@document-url)"/>
                     </div>
                     
                     <div class="panel-group" role="tablist" aria-multiselectable="true" id="forms-accordion">

@@ -998,13 +998,17 @@
         </a>
         <xsl:for-each select="$translation/m:downloads/m:download[@type = ('pdf', 'epub', 'azw3')]">
             <a target="_blank">
-                <xsl:attribute name="title" select="normalize-space(text())"/>
+                <xsl:attribute name="title">
+                    <xsl:call-template name="download-label">
+                        <xsl:with-param name="type" select="@type"/>
+                    </xsl:call-template>
+                </xsl:attribute>
                 <xsl:attribute name="href" select="@url"/>
                 <xsl:attribute name="download" select="@filename"/>
                 <xsl:attribute name="class" select="'btn-round log-click'"/>
-                <i class="fa fa-file-pdf-o">
-                    <xsl:attribute name="class" select="concat('fa ', @fa-icon-class)"/>
-                </i>
+                <xsl:call-template name="download-icon">
+                    <xsl:with-param name="type" select="@type"/>
+                </xsl:call-template>
             </a>
         </xsl:for-each>
     </xsl:template>
@@ -1112,22 +1116,32 @@
                         <tr>
                             <td>
                                 <a target="_blank">
-                                    <xsl:attribute name="title" select="normalize-space(text())"/>
+                                    <xsl:attribute name="title">
+                                        <xsl:call-template name="download-label">
+                                            <xsl:with-param name="type" select="@type"/>
+                                        </xsl:call-template>
+                                    </xsl:attribute>
                                     <xsl:attribute name="href" select="@url"/>
                                     <xsl:attribute name="download" select="@filename"/>
                                     <xsl:attribute name="class" select="'log-click'"/>
-                                    <i>
-                                        <xsl:attribute name="class" select="concat('fa ', @fa-icon-class)"/>
-                                    </i>
+                                    <xsl:call-template name="download-icon">
+                                        <xsl:with-param name="type" select="@type"/>
+                                    </xsl:call-template>
                                 </a>
                             </td>
                             <td>
                                 <a target="_blank">
-                                    <xsl:attribute name="title" select="normalize-space(text())"/>
+                                    <xsl:attribute name="title">
+                                        <xsl:call-template name="download-label">
+                                            <xsl:with-param name="type" select="@type"/>
+                                        </xsl:call-template>
+                                    </xsl:attribute>
                                     <xsl:attribute name="href" select="@url"/>
                                     <xsl:attribute name="download" select="@filename"/>
                                     <xsl:attribute name="class" select="'log-click'"/>
-                                    <xsl:value-of select="normalize-space(text())"/>
+                                    <xsl:call-template name="download-label">
+                                        <xsl:with-param name="type" select="@type"/>
+                                    </xsl:call-template>
                                 </a>
                             </td>
                         </tr>

@@ -699,15 +699,21 @@
                                             <xsl:for-each select="m:downloads/m:download[@type = ('pdf', 'epub', 'azw3')]">
                                                 <li>
                                                     <a target="_blank">
-                                                        <xsl:attribute name="title" select="normalize-space(text())"/>
+                                                        <xsl:attribute name="title">
+                                                            <xsl:call-template name="download-label">
+                                                                <xsl:with-param name="type" select="@type"/>
+                                                            </xsl:call-template>
+                                                        </xsl:attribute>
                                                         <xsl:attribute name="href" select="@url"/>
                                                         <xsl:attribute name="download" select="@filename"/>
                                                         <xsl:attribute name="class" select="'log-click'"/>
                                                         <xsl:attribute name="data-download-dana" select="$title-en"/>
-                                                        <i>
-                                                            <xsl:attribute name="class" select="concat('fa ', @fa-icon-class)"/>
-                                                        </i>
-                                                        <xsl:value-of select="normalize-space(text())"/>
+                                                        <xsl:call-template name="download-icon">
+                                                            <xsl:with-param name="type" select="@type"/>
+                                                        </xsl:call-template>
+                                                        <xsl:call-template name="download-label">
+                                                            <xsl:with-param name="type" select="@type"/>
+                                                        </xsl:call-template>
                                                     </a>
                                                 </li>
                                             </xsl:for-each>

@@ -330,7 +330,7 @@ else if(not(common:auth-environment()) or sm:is-authenticated()) then
         else if ($resource-suffix eq 'azw3') then
              <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
                 <forward url="{ download:file-path($exist:resource) }">
-                    <set-header name="Content-Type" value="application/vnd.amazon.mobi8-ebook"/>
+                    <set-header name="Content-Type" value="application/x-mobi8-ebook"/>
                     <set-header name="Content-Disposition" value="attachment"/>
                 </forward>
             </dispatch>
