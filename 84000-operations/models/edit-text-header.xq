@@ -57,7 +57,7 @@ let $commit-version :=
         (: Commit to GitHub :)
         deploy:commit-data('sync', tei-content:document-url($tei), ''),
         
-        (: Store PDF and ebooks :)
+        (: Store associated files :)
         if(tei-content:translation-status($tei) eq '1')then
             for $bibl in $tei//tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl
             return

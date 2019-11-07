@@ -17,6 +17,7 @@ import module namespace translation="http://read.84000.co/translation" at "../mo
 declare option exist:serialize "method=xml indent=no";
 
 let $resource-id := request:get-parameter('resource-id', '')
+let $resource-suffix := request:get-parameter('resource-suffix', '')
 
 (: Get the tei :)
 let $tei := tei-content:tei($resource-id, 'translation')
@@ -35,24 +36,30 @@ let $translation-data :=
         status="{ tei-content:translation-status($tei) }"
         status-group="{ tei-content:translation-status-group($tei) }"
         page-url="{ $page-url }">
-        { tei-content:ancestors($tei, $resource-id, 1) }
-        { translation:titles($tei) }
-        { translation:long-titles($tei) }
-        { $source }
-        { translation:translation($tei) }
-        { translation:downloads($tei, $resource-id, 'any-version') }
-        { translation:summary($tei) }
-        { translation:acknowledgment($tei) }
-        { translation:preface($tei) }
-        { translation:introduction($tei) }
-        { translation:prologue($tei) }
-        { translation:body($tei) }
-        { translation:colophon($tei) }
-        { translation:appendix($tei) }
-        { translation:abbreviations($tei) }
-        { translation:notes($tei) }
-        { translation:bibliography($tei) }
-        { translation:glossary($tei) }
+        {(
+            translation:titles($tei),
+            translation:long-titles($tei),
+            $source,
+            translation:translation($tei),
+            translation:summary($tei),
+            translation:acknowledgment($tei),
+            if(not($resource-suffix eq 'rdf')) then(
+                tei-content:ancestors($tei, $resource-id, 1),
+                translation:downloads($tei, $resource-id, 'any-version'),
+                translation:preface($tei),
+                translation:introduction($tei),
+                translation:prologue($tei),
+                translation:body($tei),
+                translation:colophon($tei),
+                translation:appendix($tei),
+                translation:abbreviations($tei),
+                translation:notes($tei),
+                translation:bibliography($tei),
+                translation:glossary($tei)
+            )
+            else
+                ()
+        )}
     </translation>
 
 (: Parse the milestones, refs and pointers :)

@@ -35,6 +35,11 @@
                 <field name="part-status" match="@status" type="xs:string"/>
             </create>
             
+            <!-- text-refs.xml -->
+            <create qname="m:text">
+                <field name="text-key" match="@key" type="xs:string"/>
+            </create>
+            
         </range>
         
     </index>

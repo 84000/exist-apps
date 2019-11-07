@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" exclude-result-prefixes="#all" version="3.0">
+<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:skos="http://www.w3.org/2004/02/skos/core#" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" exclude-result-prefixes="xsl xs tei m" version="3.0">
 
     <!-- Use this output header to return xml for debugging -->
     <xsl:output method="xml" indent="no" encoding="UTF-8" media-type="application/xml"/>
@@ -30,7 +30,7 @@
         <xsl:variable name="eft-tibetan-id" select="'WAT' || $eft-id" as="xs:string"/>
         <xsl:variable name="eft-derge-id" select="'WEKD' || $eft-id" as="xs:string"/>
         
-        <rdf:RDF xmlns:eftr="http://purl.84000.co/resource/core/" xmlns:bdr="http://purl.bdrc.io/resource/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:owl="http://www.w3.org/2002/07/owl#" xmlns:xsd="http://www.w3.org/2001/XMLSchema#" xmlns:skos="http://www.w3.org/2004/02/skos/core#" xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#" xmlns:adm="http://purl.bdrc.io/ontology/admin/" xmlns:bdo="http://purl.bdrc.io/ontology/core/" xmlns:bda="http://purl.bdrc.io/admindata/"> 
+        <rdf:RDF xmlns:eftr="http://purl.84000.co/resource/core/" xmlns:bdr="http://purl.bdrc.io/resource/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:owl="http://www.w3.org/2002/07/owl#" xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#" xmlns:adm="http://purl.bdrc.io/ontology/admin/" xmlns:bdo="http://purl.bdrc.io/ontology/core/" xmlns:bda="http://purl.bdrc.io/admindata/"> 
             
             <xsl:comment>Some admin data</xsl:comment>
             <rdf:Description rdf:about="http://purl.84000.co/resource/core/DatasetAdminData">
@@ -92,26 +92,12 @@
                 <bdo:workLangScript rdf:resource="http://purl.bdrc.io/resource/Inc"/>
                 <bdo:workHasTranslation rdf:resource="{ 'http://purl.84000.co/resource/core/' || $eft-english-id }"/>
                 <bdo:workHasTranslation rdf:resource="{ 'http://purl.84000.co/resource/core/' || $eft-tibetan-id }"/>
-                <xsl:if test="m:translation/m:titles/m:title[@xml:lang eq 'sa-ltn']/text()">
-                    <skos:prefLabel xml:lang="sa-x-iast">
-                        <xsl:value-of select="m:translation/m:titles/m:title[@xml:lang eq 'sa-ltn']"/>
-                    </skos:prefLabel>
-                </xsl:if>
-                <xsl:if test="m:translation/m:long-titles/m:title[@xml:lang eq 'sa-ltn']/text()">
-                    <skos:altLabel xml:lang="sa-x-iast">
-                        <xsl:value-of select="m:translation/m:long-titles/m:title[@xml:lang eq 'sa-ltn']"/>
-                    </skos:altLabel>
-                </xsl:if>
-                <xsl:if test="m:translation/m:titles/m:title[@xml:lang eq 'en']/text()">
-                    <skos:prefLabel xml:lang="en">
-                        <xsl:value-of select="m:translation/m:titles/m:title[@xml:lang eq 'en']"/>
-                    </skos:prefLabel>
-                </xsl:if>
-                <xsl:if test="m:translation/m:long-titles/m:title[@xml:lang eq 'en']/text()">
-                    <skos:altLabel xml:lang="en">
-                        <xsl:value-of select="m:translation/m:long-titles/m:title[@xml:lang eq 'en']"/>
-                    </skos:altLabel>
-                </xsl:if>
+                <xsl:call-template name="translation-titles">
+                    <xsl:with-param name="lang" select="'sa-ltn'"/>
+                </xsl:call-template>
+                <xsl:call-template name="translation-titles">
+                    <xsl:with-param name="lang" select="'en'"/>
+                </xsl:call-template>
                 <adm:canonicalHtml rdf:resource="{ m:translation/@page-url }"/>
             </rdf:Description>
             
@@ -127,11 +113,9 @@
                     <bdo:workPartOf rdf:resource="{ 'http://purl.84000.co/resource/core/' || $collection-id }"/>
                 </xsl:if>
                 <bdo:workExpressionOf rdf:resource="{ 'http://purl.84000.co/resource/core/' || $eft-tibetan-id }"/>
-                <xsl:if test="m:translation/m:titles/m:title[@xml:lang eq 'bo']/text()">
-                    <skos:prefLabel xml:lang="bo">
-                        <xsl:value-of select="m:translation/m:titles/m:title[@xml:lang eq 'bo']"/>
-                    </skos:prefLabel>
-                </xsl:if>
+                <xsl:call-template name="translation-titles">
+                    <xsl:with-param name="lang" select="'bo'"/>
+                </xsl:call-template>
                 <adm:canonicalHtml rdf:resource="{ m:translation/@page-url }"/>
             </rdf:Description>
             
@@ -146,16 +130,9 @@
                 <bdo:workLangScript rdf:resource="http://purl.bdrc.io/resource/Bo"/>
                 <bdo:workHasExpression rdf:resource="{ 'http://purl.84000.co/resource/core/' || $eft-derge-id }"/>
                 <bdo:workTranslationOf rdf:resource="{ 'http://purl.84000.co/resource/core/' || $eft-indic-id }"/>
-                <xsl:if test="m:translation/m:titles/m:title[@xml:lang eq 'bo']/text()">
-                    <skos:prefLabel xml:lang="bo">
-                        <xsl:value-of select="m:translation/m:titles/m:title[@xml:lang eq 'bo']"/>
-                    </skos:prefLabel>
-                </xsl:if>
-                <xsl:if test="m:translation/m:long-titles/m:title[@xml:lang eq 'bo']/text()">
-                    <skos:altLabel xml:lang="bo">
-                        <xsl:value-of select="m:translation/m:long-titles/m:title[@xml:lang eq 'bo']"/>
-                    </skos:altLabel>
-                </xsl:if>
+                <xsl:call-template name="translation-titles">
+                    <xsl:with-param name="lang" select="'bo'"/>
+                </xsl:call-template>
                 <xsl:if test="$text-refs/m:ref[@type eq 'rkts-work-id']">
                     <bdo:workRefrKTsK rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">
                         <xsl:value-of select="$text-refs/m:ref[@type eq 'rkts-work-id']/@value"/>
@@ -171,16 +148,9 @@
                     <rdf:type rdf:resource="http://purl.bdrc.io/ontology/core/AbstractWork"/>
                     <bdo:workTranslationOf rdf:resource="{ 'http://purl.84000.co/resource/core/' || $eft-indic-id }"/>
                     <bdo:workLangScript rdf:resource="http://purl.bdrc.io/resource/En"/>
-                    <xsl:if test="m:translation/m:titles/m:title[@xml:lang eq 'en']/text()">
-                        <skos:prefLabel xml:lang="en">
-                            <xsl:value-of select="m:translation/m:titles/m:title[@xml:lang eq 'en']"/>
-                        </skos:prefLabel>
-                    </xsl:if>
-                    <xsl:if test="m:translation/m:long-titles/m:title[@xml:lang eq 'en']/text()">
-                        <skos:altLabel xml:lang="en">
-                            <xsl:value-of select="m:translation/m:long-titles/m:title[@xml:lang eq 'en']"/>
-                        </skos:altLabel>
-                    </xsl:if>
+                    <xsl:call-template name="translation-titles">
+                        <xsl:with-param name="lang" select="'en'"/>
+                    </xsl:call-template>
                     <adm:canonicalHtml rdf:resource="{ m:translation/@page-url }"/>
                     <xsl:if test="m:translation/m:translation/m:contributors/m:author[@role = 'translatorEng']">
                         <xsl:comment>Creators</xsl:comment>
@@ -215,6 +185,39 @@
         </rdf:RDF>
 
     </xsl:template>
-
+    
+    <xsl:template name="translation-titles">
+        <xsl:param name="lang" as="xs:string"/>
+        <xsl:if test="m:translation/m:titles/m:title[@xml:lang eq $lang]/text()">
+            <skos:prefLabel>
+                <xsl:call-template name="set-xml-lang">
+                    <xsl:with-param name="lang" select="$lang"/>
+                </xsl:call-template>
+                <xsl:value-of select="m:translation/m:titles/m:title[@xml:lang eq $lang]"/>
+            </skos:prefLabel>
+        </xsl:if>
+        <xsl:if test="m:translation/m:long-titles/m:title[@xml:lang eq $lang]/text()">
+            <skos:altLabel>
+                <xsl:call-template name="set-xml-lang">
+                    <xsl:with-param name="lang" select="$lang"/>
+                </xsl:call-template>
+                <xsl:value-of select="m:translation/m:long-titles/m:title[@xml:lang eq $lang]"/>
+            </skos:altLabel>
+        </xsl:if>
+    </xsl:template>
+    
+    <xsl:template name="set-xml-lang">
+        <xsl:param name="lang" as="xs:string"/>
+        <xsl:attribute name="xml:lang">
+            <xsl:choose>
+                <xsl:when test="$lang eq 'sa-ltn'">
+                    <xsl:value-of select="'sa-x-iast'"/>
+                </xsl:when>
+                <xsl:otherwise>
+                    <xsl:value-of select="$lang"/>
+                </xsl:otherwise>
+            </xsl:choose>
+        </xsl:attribute>
+    </xsl:template>
 
 </xsl:stylesheet>

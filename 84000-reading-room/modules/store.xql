@@ -79,8 +79,8 @@ declare function store:create($file-name as xs:string) as element() {
     let $store-version := download:stored-version-str($resource-id, $file-extension)
     
     (: Get TEI document version :)
-    let $translation := tei-content:tei($resource-id, 'translation')
-    let $tei-version := translation:version-str($translation)
+    let $tei := tei-content:tei($resource-id, 'translation')
+    let $tei-version := translation:version-str($tei)
     
     return
         <updated xmlns="http://read.84000.co/ns/1.0" resource-id="{ $resource-id }">
@@ -134,7 +134,7 @@ declare function store:stored-version-str($resource-id as xs:string, $file-exten
     
 };
 
-declare function store:store-new-pdf($file-path as xs:string, $version as xs:string) {
+declare function store:store-new-pdf($file-path as xs:string, $version as xs:string) as xs:string {
     
     let $pdf-config := $store:conf/m:pdfs
     
@@ -169,7 +169,7 @@ declare function store:store-new-pdf($file-path as xs:string, $version as xs:str
             'PDF generation config not found.'
 };
 
-declare function store:store-new-epub($file-path as xs:string, $version as xs:string) as xs:string* {
+declare function store:store-new-epub($file-path as xs:string, $version as xs:string) as xs:string {
     
     let $ebook-config := $store:conf/m:ebooks
     
@@ -200,7 +200,7 @@ declare function store:store-new-epub($file-path as xs:string, $version as xs:st
             'Ebook generation config not found.'
 };
 
-declare function store:store-new-azw3($file-path as xs:string, $version as xs:string) as xs:string* {
+declare function store:store-new-azw3($file-path as xs:string, $version as xs:string) as xs:string {
     
     let $ebook-config := $store:conf/m:ebooks
     
@@ -273,7 +273,7 @@ declare function store:store-new-azw3($file-path as xs:string, $version as xs:st
             'Ebook generation config not found.'
 };
 
-declare function store:store-new-rdf($file-path as xs:string, $version as xs:string) as xs:string* {
+declare function store:store-new-rdf($file-path as xs:string, $version as xs:string) as xs:string {
     
     let $rdf-url := $store:conf/m:rdf-url/text()
     
@@ -424,9 +424,5 @@ declare function store:store-version-str($collection as xs:string, $file-name as
             version="{ $version }"/>
 
     return
-        if($current) then
-            update replace $current with $new
-        else
-            update insert $new into $file-versions
-
+        common:update('version-str', $current, $new, $file-versions, ())
 };
