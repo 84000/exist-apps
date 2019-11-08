@@ -115,7 +115,7 @@ declare function update-translation:update($tei as element()) as element()* {
                             else
                                 $contributors:contributors//m:person[@xml:id eq substring-after($contributor-id, 'contributors.xml#')]/m:label/text()
                         return
-                            if($contributor-id and $contributor-node-name and $contributor-role) then
+                            if($contributor-id gt '' and $contributor-node-name and $contributor-role) then
                                 element { QName("http://www.tei-c.org/ns/1.0", $contributor-node-name) }{
                                     attribute role { $contributor-role },
                                     attribute ref { $contributor-id },
@@ -192,7 +192,12 @@ declare function update-translation:update($tei as element()) as element()* {
             (: Get the existing value so we can compare / replace :)
             let $existing-value := 
                 if(starts-with($request-parameter, 'title-text-')) then
-                    common:item-from-index($parent/tei:title, substring-after($request-parameter, 'title-text-'))
+                    let $title-index := substring-after($request-parameter, 'title-text-')
+                    let $title-type := request:get-parameter(concat('title-type-', $title-index), '')
+                    let $title-lang := request:get-parameter(concat('title-lang-', $title-index), '')
+                    return
+                        $parent/tei:title[@type eq $title-type][@xml:lang eq $title-lang]
+                    (: common:item-from-index($parent/tei:title, substring-after($request-parameter, 'title-text-')):)
                 else if(starts-with($request-parameter, 'location-')) then
                     $parent/tei:location
                 else if($request-parameter eq 'translation-status') then

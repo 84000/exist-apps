@@ -2,6 +2,7 @@ xquery version "3.0";
 
 declare namespace m = "http://read.84000.co/ns/1.0";
 declare namespace tei="http://www.tei-c.org/ns/1.0";
+declare namespace rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#";
 
 import module namespace common="http://read.84000.co/common" at "../../84000-reading-room/modules/common.xql";
 import module namespace source="http://read.84000.co/source" at "../../84000-reading-room/modules/source.xql";
@@ -16,11 +17,13 @@ let $teis := translations:work-tei($work)
 let $kangyur-toh-keys := $teis//tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl[tei:location/@work eq 'UT4CZ5369']/@key
 let $text-refs := doc(concat($common:data-path, '/operations/text-refs.xml'))
 let $rdf-file-versions := doc(concat($common:data-path, '/rdf/file-versions.xml'))
+let $rdf-collection := collection(concat($common:data-path, '/rdf'))
 
 return (
     concat('Count tohs: ', count($kangyur-toh-keys)),
-    concat('Count rdf files: ', count($rdf-file-versions//m:file-version)),
-    concat('Missing rdf files: ', string-join($kangyur-toh-keys[not(concat(., '.rdf') = $rdf-file-versions//m:file-version/@file-name)], ', ')),
+    concat('Count rdf files: ', count($rdf-collection//rdf:RDF)),
+    concat('Count rdf version elements: ', count($rdf-file-versions//m:file-version)),
+    concat('Missing rdf files: ', string-join($kangyur-toh-keys[not(concat(., '.rdf') = $rdf-file-versions//m:file-version/@file-name)], ', '))(:,
     '------------------------------------------------',
     (# exist:batch-transaction #) {
         for $toh-key at $position in $kangyur-toh-keys(:[. eq 'toh4521']:)
@@ -43,5 +46,5 @@ return (
             
             
     }
-(::)
+:)
 )
