@@ -124,7 +124,7 @@ declare function search:search($request as xs:string, $first-record as xs:double
                                     attribute node-type { node-name($result) },
                                     $result/@*,
                                     (: util:expand($result) :)
-                                    common:mark-nodes($result, $request)
+                                    common:mark-nodes($result, $request, false())
                                 }
                                 </match>
                         }
@@ -260,7 +260,7 @@ declare function search:tm-search($request as xs:string, $lang as xs:string, $fi
                         else
                             doc($document-uri)/tei:TEI
                     
-                    let $expanded := common:mark-nodes($result, $search) (: util:expand($result, "expand-xincludes=no") :)
+                    let $expanded := common:mark-nodes($result, $search, false()) (: util:expand($result, "expand-xincludes=no") :)
                     
                 return
                     if($tei) then

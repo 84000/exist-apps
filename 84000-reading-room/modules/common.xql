@@ -305,26 +305,32 @@ declare function common:search-result($nodes as node()*) as node()*
         )
 };
 
-declare function common:mark-nodes($nodes as node()*, $strings as xs:string*) as node()* {
+declare function common:mark-nodes($nodes as node()*, $strings as xs:string*, $phrase as xs:boolean) as node()* {
     
     for $node in $nodes
     return
         if ($node instance of text()) then
-            common:mark-text( $node, $strings )
+            common:mark-text( $node, $strings, $phrase)
         else if ($node instance of element()) then
             element { node-name($node) }{
                 $node/@*,
-                common:mark-nodes($node/node(), $strings)
+                common:mark-nodes($node/node(), $strings, $phrase)
            }
         else
             $node
 };
 
-declare function common:mark-text($text as xs:string, $find as xs:string*) as node()* {
+declare function common:mark-text($text as xs:string, $find as xs:string*, $phrase as xs:boolean) as node()* {
     
     let $find-escaped := $find ! common:normalize-unicode(.) ! lower-case(.) ! normalize-space(.) ! functx:escape-for-regex(.)
     
-    let $regex := concat('(', string-join(tokenize($find-escaped, '\s+'), '|'),')')
+    let $find-tokenized :=
+        if(not($phrase)) then
+            tokenize($find-escaped, '\s+')
+        else
+            $find-escaped
+    
+    let $regex := concat('(', string-join($find-tokenized, '|'),')')
     let $analyze-result := analyze-string(common:normalize-unicode($text), $regex, 'i')
     
     return

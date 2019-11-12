@@ -104,7 +104,7 @@ declare function tei-content:title($tei as element(tei:TEI)) as xs:string {
 };
 
 declare function tei-content:title($tei as node(), $type as xs:string?, $lang as xs:string*) as xs:string {
-    translate(normalize-space(data($tei//tei:titleStmt/tei:title[@type eq $type][lower-case(@xml:lang) = $lang])), '&#x2003;', '&#x20;')
+    translate(normalize-space($tei//tei:titleStmt/tei:title[@type eq $type][lower-case(@xml:lang) = $lang][1]/text()), '&#x2003;', '&#x20;')
 };
 
 declare function tei-content:titles($tei as element(tei:TEI)) as element() {

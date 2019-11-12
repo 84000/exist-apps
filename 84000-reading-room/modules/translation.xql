@@ -812,7 +812,7 @@ declare function translation:sponsors($tei as element(tei:TEI), $include-acknowl
                     if($acknowledgment/tei:p and $sponsor-strings) then
                         let $mark-sponsor-strings := $sponsor-strings ! normalize-space(lower-case(replace(., $sponsors:prefixes, '')))
                         return
-                            common:mark-nodes($acknowledgment/tei:p, $mark-sponsor-strings)
+                            common:mark-nodes($acknowledgment/tei:p, $mark-sponsor-strings, true())
                     else
                         ()
                 
@@ -875,7 +875,7 @@ declare function translation:contributors($tei as element(tei:TEI), $include-ack
                     if($acknowledgment/tei:p and $contributor-strings) then
                         let $mark-contributor-strings := $contributor-strings ! normalize-space(lower-case(replace(., $contributors:person-prefixes, '')))
                         return
-                            common:mark-nodes($acknowledgment/tei:p, $mark-contributor-strings)
+                            common:mark-nodes($acknowledgment/tei:p, $mark-contributor-strings, true())
                     else
                         ()
                 
