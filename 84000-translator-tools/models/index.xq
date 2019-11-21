@@ -1,6 +1,7 @@
 xquery version "3.0" encoding "UTF-8";
 
 declare namespace m="http://read.84000.co/ns/1.0";
+declare namespace tei="http://www.tei-c.org/ns/1.0";
 
 import module namespace local="http://translator-tools.84000.co/local" at "../modules/local.xql";
 import module namespace common="http://read.84000.co/common" at "../../84000-reading-room/modules/common.xql";
@@ -27,9 +28,9 @@ let $tab :=
 
 let $xml-section := doc(concat($common:data-path, '/translator-tools/sections/', $tab, '.xml'))
 
-let $type := request:get-parameter('type', 'term')
+let $type := request:get-parameter('type', if($tab eq 'tm-search') then 'folio' else 'term')
 let $search := request:get-parameter('search', if($tab eq 'glossary') then 'a' else '')
-let $lang := request:get-parameter('lang', if($tab eq 'tibetan-search') then 'bo' else 'en')
+let $lang := request:get-parameter('lang', if($tab eq 'tm-search') then 'bo' else 'en')
 let $work := request:get-parameter('work', $source:ekangyur-work)
 let $volume := request:get-parameter('volume', 1)
 let $page := request:get-parameter('page', 1)
@@ -40,6 +41,15 @@ let $first-record :=
     else
         1
 
+let $etext-page :=  source:etext-page($work, $volume, $page, true())
+
+(:
+let $search := 
+    if($type eq 'folio') then
+        normalize-space(string-join($etext-page//tei:p[@class eq "selected"]/text(), ' '))
+    else
+        $search
+:)
 return
 
     common:response(
@@ -54,10 +64,10 @@ return
                 search:search($search, $first-record, 15)
             else if($tab eq 'glossary') then 
                 glossary:glossary-terms($type, $lang, $search, true())
-            else if($tab eq 'tibetan-search') then 
+            else if($tab eq 'tm-search') then 
             (
+                $etext-page,
                 search:tm-search($search, $lang, $first-record, 10),
-                source:etext-page($work, $volume, $page, true()),
                 source:etext-volumes($work, xs:integer($volume)),
                 contributors:persons(false())
             )

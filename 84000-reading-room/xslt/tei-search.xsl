@@ -166,7 +166,7 @@
                         </xsl:for-each>
                         
                         <!-- Pagination -->
-                        <xsl:copy-of select="common:pagination(m:search/m:results/@first-record, m:search/m:results/@max-records, m:search/m:results/@count-records, $action, concat('&amp;s=', m:search/m:request/text()))"/>
+                        <xsl:copy-of select="common:pagination(m:search/m:results/@first-record, m:search/m:results/@max-records, m:search/m:results/@count-records, $action, concat('&amp;search=', m:search/m:request/text()))"/>
                         
                     </xsl:when>
                     <xsl:otherwise>

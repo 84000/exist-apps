@@ -108,7 +108,7 @@ declare function search:search($request as xs:string, $first-record as xs:double
                                 'section'
                             else
                                 'translation'
-
+                    
                     return
                         <item score="{ $result-group/@score }">
                         {
@@ -117,14 +117,22 @@ declare function search:search($request as xs:string, $first-record as xs:double
                         {
                             for $result in $results
                                 let $document-uri := base-uri($result)
+                                
+                                let $expanded := util:expand($result, "expand-xincludes=no")
+                                
+                                let $expanded :=
+                                    if(not($expanded//exist:match)) then
+                                        common:mark-nodes($result, $request, 'words')
+                                    else
+                                        $expanded
+                                
                                 where $document-uri eq $result-group/@document-uri
                             return
                                 <match score="{ ft:score($result) }">
                                 {
                                     attribute node-type { node-name($result) },
                                     $result/@*,
-                                    (: util:expand($result) :)
-                                    common:mark-nodes($result, $request, false())
+                                    $expanded
                                 }
                                 </match>
                         }
@@ -198,7 +206,7 @@ declare function search:tm-search($request as xs:string, $lang as xs:string, $fi
     let $options :=
         <options>
             <default-operator>or</default-operator>
-            <phrase-slop>0</phrase-slop>
+            <phrase-slop>200</phrase-slop>
             <leading-wildcard>no</leading-wildcard>
             <filter-rewrite>yes</filter-rewrite>
         </options>
@@ -206,15 +214,22 @@ declare function search:tm-search($request as xs:string, $lang as xs:string, $fi
     let $query := 
         if($search-lang eq 'bo') then
             <query>
-            { 
-                for $phrase in tokenize(normalize-space($search), '།')
+            {
+                for $phrase in tokenize(normalize-space($search), '\s+')
+                where not($phrase = ('།'))
                 return
-                    <phrase>{ $search }</phrase>
+                    <near ordered="no">{ $phrase }</near>
             }
             </query>
         else
             <query>
-                <phrase>{ $search }</phrase>
+                <bool>
+                { 
+                    for $term in tokenize(normalize-space($search), '\s+')
+                    return
+                        <term>{ $term }</term>
+                }
+                </bool>
             </query>
     
     let $translation-memory := collection(concat($common:data-path, '/translation-memory'))
@@ -233,7 +248,9 @@ declare function search:tm-search($request as xs:string, $lang as xs:string, $fi
             else
                 $translations//tei:back//tei:gloss[ft:query(tei:term[not(@xml:lang) or @xml:lang eq 'en'][not(@type)], $query, $options)]
         )
-            order by ft:score($result) descending
+            let $score := ft:score($result)
+            order by $score descending
+            (:where $score ge 5:)
         return 
             $result
             
@@ -242,8 +259,6 @@ declare function search:tm-search($request as xs:string, $lang as xs:string, $fi
         <tm-search xmlns="http://read.84000.co/ns/1.0">
             <request lang="{ $lang }">{ $request }</request>
             <search lang="{ $search-lang }">{ $search }</search>
-            <request-bo>{ $request-bo }</request-bo>
-            <request-bo-ltn>{ $request-bo-ltn }</request-bo-ltn>
             <results
                 first-record="{ $first-record }"
                 max-records="{ $max-records }"
@@ -251,6 +266,7 @@ declare function search:tm-search($request as xs:string, $lang as xs:string, $fi
             {
                 for $result in subsequence($results[local-name() = ('tu', 'gloss')], $first-record, $max-records)
                     
+                    let $score := ft:score($result)
                     let $document-uri := base-uri($result)
                     let $document-uri-tokenized := tokenize($document-uri, '/')
                     let $file-name := $document-uri-tokenized[last()]
@@ -260,11 +276,23 @@ declare function search:tm-search($request as xs:string, $lang as xs:string, $fi
                         else
                             doc($document-uri)/tei:TEI
                     
-                    let $expanded := common:mark-nodes($result, $search, false()) (: util:expand($result, "expand-xincludes=no") :)
+                    let $expanded := util:expand($result, "expand-xincludes=no")
+                    
+                    let $expanded :=
+                        if(not($expanded//exist:match)) then
+                            if($lang eq 'bo') then
+                                common:mark-nodes($result, $search, 'tibetan')
+                            else
+                                common:mark-nodes($result, $search, 'words')
+                        else
+                            $expanded
                     
                 return
                     if($tei) then
                         element item { 
+                        
+                            (: Score :)
+                            attribute score { $score },
                             
                             (: TEI source :)
                             search:source('translation', $tei),
@@ -278,7 +306,12 @@ declare function search:tm-search($request as xs:string, $lang as xs:string, $fi
                                 let $toh-key := if($folio-ref/@key) then $folio-ref/@key else ''
                                 let $toh-key := translation:toh($tei, $toh-key)/@key
                                 let $folio-refs := translation:folio-refs($tei, $toh-key)
-                                let $page-index := functx:index-of-node($folio-refs, $folio-ref)
+                                let $page-index := 
+                                    if($folio-ref) then
+                                        functx:index-of-node($folio-refs, $folio-ref)
+                                    else
+                                        0
+                                    
                                 let $source-link-id := translation:source-link-id($page-index)
                                 
                                 return

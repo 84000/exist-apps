@@ -1,4 +1,4 @@
-xquery version "3.0";
+xquery version "3.1";
 
 module namespace common="http://read.84000.co/common";
 
@@ -305,44 +305,54 @@ declare function common:search-result($nodes as node()*) as node()*
         )
 };
 
-declare function common:mark-nodes($nodes as node()*, $strings as xs:string*, $phrase as xs:boolean) as node()* {
+declare function common:mark-nodes($nodes as node()*, $strings as xs:string*, $mode as xs:string) as node()* {
     
     for $node in $nodes
     return
         if ($node instance of text()) then
-            common:mark-text( $node, $strings, $phrase)
+            common:mark-text($node, $strings, $mode)
         else if ($node instance of element()) then
             element { node-name($node) }{
                 $node/@*,
-                common:mark-nodes($node/node(), $strings, $phrase)
+                common:mark-nodes($node/node(), $strings, $mode)
            }
         else
             $node
 };
 
-declare function common:mark-text($text as xs:string, $find as xs:string*, $phrase as xs:boolean) as node()* {
+declare function common:mark-text($text as xs:string, $find as xs:string*, $mode as xs:string) as node()* {
     
     let $find-escaped := $find ! common:normalize-unicode(.) ! lower-case(.) ! normalize-space(.) ! functx:escape-for-regex(.)
     
     let $find-tokenized :=
-        if(not($phrase)) then
-            tokenize($find-escaped, '\s+')
+        if($mode = ('words')) then
+             tokenize($find-escaped, '\s+')
+        else if($mode = ('tibetan')) then
+             tokenize($find-escaped, '\s+') ! replace(., '།', '')
         else
             $find-escaped
     
-    let $regex := concat('(', string-join($find-tokenized, '|'),')')
-    let $analyze-result := analyze-string(common:normalize-unicode($text), $regex, 'i')
+    (: Don't know why this is necessary but fixes something in 4.7.1 :)
+    let $text-replaced := replace($text, ' ', ' _')
     
-    return
-        for $node in $analyze-result/xpath:*
+    let $regex := 
+        if($mode = ('tibetan')) then
+            concat('(', string-join($find-tokenized[not(. = ('།'))], '|'),')')
+        else
+            concat('(?:\W|^)(', string-join($find-tokenized, '|'),')(?:\W|$)')
+            
+    let $analyze-result := analyze-string(common:normalize-unicode($text-replaced), $regex, 'i')
+    
+    return 
+        for $text in $analyze-result//text()
+            (: Remove the underscore again :)
         return
-            if($node[self::xpath:match]) then
+            if($text[parent::xpath:group]) then
                 element exist:match {
-                    text { data($node) }
+                    text { $text }
                 }
             else
-                text { data($node) }
-        
+                text { replace($text, '_', '') }
 };
 
 declare function common:normalize-unicode($string as xs:string?) as xs:string? {

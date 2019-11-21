@@ -7,12 +7,18 @@
         
         <lucene>
             
-            <analyzer class="org.tbrc.lucene.analysis.TibWhitespaceAnalyzer" id="bo"/>
             <analyzer class="org.apache.lucene.analysis.standard.StandardAnalyzer" id="en"/>
             
+            <!-- <analyzer class="org.tbrc.lucene.analysis.TibWhitespaceAnalyzer" id="bo"/> -->
+            <analyzer class="io.bdrc.lucene.bo.TibetanAnalyzer" id="bo">
+                <param name="segmentInWords" type="boolean" value="false"/>
+                <param name="lemmatize" type="boolean" value="true"/>
+                <param name="filterChars" type="boolean" value="true"/>
+            </analyzer>
+            
             <!-- *.tmx -->
-            <text match="//tmx:tuv[@xml:lang = 'bo']/tmx:seg" analyzer="bo" field="tmx-bo"/>
             <text match="//tmx:tuv[@xml:lang = 'en']/tmx:seg" analyzer="en" field="tmx-en"/>
+            <text match="//tmx:tuv[@xml:lang = 'bo']/tmx:seg" analyzer="bo" field="tmx-bo"/>
             
         </lucene>
         

@@ -76,7 +76,7 @@ declare function contributors:acknowledgements($uri as xs:string){
         
         let $mark-contributor-name := normalize-space(lower-case(replace($contributor-name, $contributors:person-prefixes, '')))
         
-        let $marked-paragraphs := common:mark-nodes($acknowledgment/tei:p, $mark-contributor-name, true())
+        let $marked-paragraphs := common:mark-nodes($acknowledgment/tei:p, $mark-contributor-name, 'phrase')
         
     return
         contributors:acknowledgement($tei, $marked-paragraphs[exist:match])

@@ -51,7 +51,6 @@
                                 <span>
                                     <xsl:value-of select="format-number(count(m:contributor-teams/m:team), '#,###')"/>
                                 </span>
-                                <xsl:value-of select="''"/>
                                 <xsl:call-template name="local-text">
                                     <xsl:with-param name="local-key" select="'teams-label'"/>
                                 </xsl:call-template>
@@ -69,7 +68,6 @@
                                 <span>
                                     <xsl:value-of select="format-number(count(distinct-values(//m:team/m:person/@xml:id)), '#,###')"/>
                                 </span>
-                                <xsl:value-of select="''"/>
                                 <xsl:call-template name="local-text">
                                     <xsl:with-param name="local-key" select="'translators-label'"/>
                                 </xsl:call-template>
@@ -92,9 +90,9 @@
                                 </div>
                                 <div class="data">
                                     <span>
-                                        <xsl:value-of select="m:stat[@type eq 'contributor-percentage']/@value"/>%
+                                        <xsl:value-of select="m:stat[@type eq 'contributor-percentage']/@value"/>
+                                        <xsl:value-of select="'%'"/>
                                     </span>
-                                    <xsl:value-of select="''"/>
                                     <xsl:call-template name="local-text">
                                         <xsl:with-param name="local-key" select="'affiliation-label'"/>
                                     </xsl:call-template>
@@ -161,9 +159,9 @@
                                 </div>
                                 <div class="data">
                                     <span>
-                                        <xsl:value-of select="m:stat[@type eq 'contributor-percentage']/@value"/>%
+                                        <xsl:value-of select="m:stat[@type eq 'contributor-percentage']/@value"/>
+                                        <xsl:value-of select="'%'"/>
                                     </span>
-                                    <xsl:value-of select="''"/>
                                     <xsl:call-template name="local-text">
                                         <xsl:with-param name="local-key" select="'region-label'"/>
                                     </xsl:call-template>

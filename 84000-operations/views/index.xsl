@@ -186,6 +186,7 @@
                         <xsl:value-of select="format-number(($translated-pages div $total-pages) * 100, '###,##0')"/>%
                     </td>
                 </tr>
+                
                 <xsl:variable name="in-translation-pages" select="$outline-summary/m:texts/m:pages/@in-translation"/>
                 <tr class="in-translation">
                     <td>
@@ -215,6 +216,7 @@
                         <xsl:value-of select="format-number(($in-translation-pages div $total-pages) * 100, '###,##0')"/>%
                     </td>
                 </tr>
+                
                 <xsl:variable name="not-started-pages" select="$outline-summary/m:texts/m:pages/@not-started"/>
                 <tr class="not-started">
                     <td>
@@ -243,11 +245,12 @@
                         <xsl:value-of select="format-number(($not-started-pages div $total-pages) * 100, '###,##0')"/>%
                     </td>
                 </tr>
+                
                 <xsl:variable name="sponsored-pages" select="$outline-summary/m:texts/m:pages/@sponsored"/>
                 <tr class="sponsored">
                     <td>
                         <a>
-                            <xsl:attribute name="href" select="concat('search.html?sponsored=sponsored&amp;work=', $outline-summary/@work)"/>
+                            <xsl:attribute name="href" select="concat('search.html?sponsorship-group=sponsored&amp;work=', $outline-summary/@work)"/>
                             <xsl:value-of select="'Sponsored'"/>
                         </a>
                     </td>

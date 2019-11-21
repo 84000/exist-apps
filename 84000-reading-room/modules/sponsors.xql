@@ -74,7 +74,7 @@ declare function sponsors:acknowledgements($uri as xs:string) as element()* {
         
         let $mark-sponsor-name := normalize-space(lower-case(replace($sponsor-name, $sponsors:prefixes, '')))
         
-        let $marked-paragraphs := common:mark-nodes($acknowledgment/tei:p, $mark-sponsor-name, true())
+        let $marked-paragraphs := common:mark-nodes($acknowledgment/tei:p, $mark-sponsor-name, 'phrase')
         
         let $title := tei-content:title($tei)
         let $translation-id := tei-content:id($tei)

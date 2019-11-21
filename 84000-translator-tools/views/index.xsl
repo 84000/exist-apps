@@ -104,6 +104,7 @@
                                     <xsl:call-template name="search">
                                         <xsl:with-param name="action" select="'index.html?tab=search'"/>
                                     </xsl:call-template>
+                                    
                                 </xsl:when>
                                 
                                 <!-- Cumulative Glossary -->
@@ -112,14 +113,9 @@
                                 </xsl:when>
                                 
                                 <!-- Tibetan Search -->
-                                <xsl:when test="/m:response/m:request/@tab eq 'tibetan-search'">
+                                <xsl:when test="/m:response/m:request/@tab eq 'tm-search'">
                                     
-                                    <div class="alert alert-warning small text-center">
-                                        <p>The Tibetan Search below is a convenient way to browse translation memories created from published 84000 translations. Search for a term or phrase by entering Tibetan script or Wylie into the search fields, or simply highlight a segment in the e-Kangyur display on the left. You can learn more about Translation Memories under the <a href="?tab=smartcat">CAT Tools</a> tab.</p>
-                                        <p>**Please be aware that this is a beta version.**</p>
-                                    </div>
-                                    
-                                    <xsl:call-template name="tibetan-search"/>
+                                    <xsl:call-template name="tm-search"/>
                                     
                                 </xsl:when>
                                 
@@ -342,142 +338,81 @@
         </div>
     </xsl:template>
     
-    <xsl:template name="tibetan-search">
+    <xsl:template name="tm-search">
         
-        <xsl:variable name="request-volume" select="/m:response/m:request/@volume"/>
         
+        <div class="alert alert-warning small text-center">
+            <p>
+                This page searches translation memories created from published 84000 translations. Search for a term or phrase by entering <b>Tibetan</b>, <b>Wylie</b> or <b>English</b> into the search fields, or search larger passages of Tibetan in the <b>select</b> tab. 
+                You can learn more about Translation Memories under the <a href="?tab=smartcat">CAT Tools</a> tab.
+            </p>
+        </div>
+       
         <div id="search-container">
             
-            <div class="row">
-                <div class="col-sm-4">
-                    <div class="tabs-container">
-                        <ul class="nav nav-tabs" role="tablist">
-                            
-                            <!-- Tibetan tab -->
-                            <li role="presentation">
-                                <xsl:if test="/m:response/m:request/@lang = ('bo')">
-                                    <xsl:attribute name="class" select="'active'"/>
-                                </xsl:if>
-                                <a href="#tibetan-search" aria-controls="tibetan-search" role="tab" data-toggle="tab">Tibetan</a>
-                            </li>
-                            
-                            <!-- Wylie tab -->
-                            <li role="presentation">
-                                <xsl:if test="/m:response/m:request/@lang = ('bo-ltn')">
-                                    <xsl:attribute name="class" select="'active'"/>
-                                </xsl:if>
-                                <a href="#wylie-search" aria-controls="wylie-search" role="tab" data-toggle="tab">Wylie</a>
-                            </li>
-                            
-                            <!-- English tab -->
-                            <li role="presentation">
-                                <xsl:if test="/m:response/m:request/@lang = ('en')">
-                                    <xsl:attribute name="class" select="'active'"/>
-                                </xsl:if>
-                                <a href="#english-search" aria-controls="english-search" role="tab" data-toggle="tab">English</a>
-                            </li>
-                            
-                        </ul>
-                        
-                    </div>
+            <div class="tabs-container">
+                <ul class="nav nav-tabs" role="tablist">
                     
-                    <div class="tab-content">
-                        <div role="tabpanel" id="tibetan-search" class="tab-pane fade">
-                            <xsl:if test="/m:response/m:request/@lang = ('bo')">
-                                <xsl:attribute name="class" select="'tab-pane fade in active'"/>
-                            </xsl:if>
-                            <form action="index.html" method="post" accept-charset="UTF-8">
-                                <input type="hidden" name="tab" value="tibetan-search"/>
-                                <input type="hidden" name="lang" value="bo"/>
-                                <input type="hidden" name="volume">
-                                    <xsl:attribute name="value" select="$request-volume"/>
-                                </input>
-                                <input type="hidden" name="page">
-                                    <xsl:attribute name="value" select="/m:response/m:request/@page/xs:integer(.)"/>
-                                </input>
-                                <label for="search-text-bo" class="small text-muted">
-                                    <xsl:value-of select="'Select or type some Tibetan'"/>
-                                </label>
-                                <div class="form-group">
-                                    <input type="text" class="form-control text-bo" name="search" id="search-text-bo">
-                                        <xsl:attribute name="value">
-                                            <xsl:apply-templates select="/m:response/m:tm-search/m:request-bo"/>
-                                        </xsl:attribute>
-                                    </input>
-                                </div>
-                                <div class="form-group">
-                                    <button type="submit" class="btn btn-primary">Search Tibetan</button>
-                                </div>
-                            </form>
-                        </div>
-                        <div role="tabpanel" id="wylie-search" class="tab-pane fade">
-                            <xsl:if test="/m:response/m:request/@lang = ('bo-ltn')">
-                                <xsl:attribute name="class" select="'tab-pane fade in active'"/>
-                            </xsl:if>
-                            <form action="index.html" method="post" accept-charset="UTF-8">
-                                <input type="hidden" name="tab" value="tibetan-search"/>
-                                <input type="hidden" name="lang" value="bo-ltn"/>
-                                <input type="hidden" name="volume">
-                                    <xsl:attribute name="value" select="$request-volume"/>
-                                </input>
-                                <input type="hidden" name="page">
-                                    <xsl:attribute name="value" select="/m:response/m:request/@page/xs:integer(.)"/>
-                                </input>
-                                <label for="search-text-bo-ltn" class="small text-muted">
-                                    <xsl:value-of select="'Type some Wylie'"/>
-                                </label>
-                                <div class="form-group">
-                                    <input type="text" class="form-control text-wy" name="search" id="search-text-bo-ltn">
-                                        <xsl:attribute name="value">
-                                            <xsl:apply-templates select="/m:response/m:tm-search/m:request-bo-ltn"/>
-                                        </xsl:attribute>
-                                    </input>
-                                </div>
-                                <div class="form-group">
-                                    <button type="submit" class="btn btn-primary">Search Wylie</button>
-                                </div>
-                            </form>
-                        </div>
-                        <div role="tabpanel" id="english-search" class="tab-pane fade">
-                            <xsl:if test="/m:response/m:request/@lang = ('en')">
-                                <xsl:attribute name="class" select="'tab-pane fade in active'"/>
-                            </xsl:if>
-                            <form action="index.html" method="post" accept-charset="UTF-8">
-                                <input type="hidden" name="tab" value="tibetan-search"/>
-                                <input type="hidden" name="lang" value="en"/>
-                                <input type="hidden" name="volume">
-                                    <xsl:attribute name="value" select="$request-volume"/>
-                                </input>
-                                <input type="hidden" name="page">
-                                    <xsl:attribute name="value" select="/m:response/m:request/@page/xs:integer(.)"/>
-                                </input>
-                                <label for="search-text-en" class="small text-muted">
-                                    <xsl:value-of select="'Type some English'"/>
-                                </label>
-                                <div class="form-group">
-                                    <input type="text" class="form-control text-en" name="search" id="search-text-en">
-                                        <xsl:attribute name="value">
-                                            <xsl:apply-templates select="/m:response/m:tm-search/m:request[@lang eq 'en']"/>
-                                        </xsl:attribute>
-                                    </input>
-                                </div>
-                                <div class="form-group">
-                                    <button type="submit" class="btn btn-primary">Search English</button>
-                                </div>
-                            </form>
-                        </div>
+                    <!-- Folio tab -->
+                    <li role="presentation">
+                        <xsl:if test="/m:response/m:request/@type = ('folio')">
+                            <xsl:attribute name="class" select="'active'"/>
+                        </xsl:if>
+                        <a href="#folio-search" aria-controls="folio-search" role="tab" data-toggle="tab">Select a Passage</a>
+                    </li>
+                    
+                    <!-- Tibetan tab -->
+                    <li role="presentation">
+                        <xsl:if test="/m:response/m:request/@type = ('bo')">
+                            <xsl:attribute name="class" select="'active'"/>
+                        </xsl:if>
+                        <a href="#tibetan-search" aria-controls="tibetan-search" role="tab" data-toggle="tab">Tibetan</a>
+                    </li>
+                    
+                    <!-- Wylie tab -->
+                    <li role="presentation">
+                        <xsl:if test="/m:response/m:request/@type = ('bo-ltn')">
+                            <xsl:attribute name="class" select="'active'"/>
+                        </xsl:if>
+                        <a href="#wylie-search" aria-controls="wylie-search" role="tab" data-toggle="tab">Wylie</a>
+                    </li>
+                    
+                    <!-- English tab -->
+                    <li role="presentation">
+                        <xsl:if test="/m:response/m:request/@type = ('en')">
+                            <xsl:attribute name="class" select="'active'"/>
+                        </xsl:if>
+                        <a href="#english-search" aria-controls="english-search" role="tab" data-toggle="tab">English</a>
+                    </li>
+                    
+                </ul>
+                
+            </div>
+            
+            <div class="tab-content">
+                <div role="tabpanel" id="folio-search" class="tab-pane fade">
+                    <xsl:if test="/m:response/m:request/@type = ('folio')">
+                        <xsl:attribute name="class" select="'tab-pane fade in active'"/>
+                    </xsl:if>
+                    <div class="bottom-margin">
+                        <p class="text-muted small">
+                            <xsl:value-of select="'Use your mouse to select any passage from the text below and search for any relevant translations.'"/>
+                        </p>
                     </div>
-                </div>
-                <div class="col-sm-8">
                     <form action="index.html" method="post" class="form-inline filter-form">
                         
-                        <input type="hidden" name="tab" value="tibetan-search"/>
-                        <input type="hidden" name="search">
-                            <xsl:attribute name="value" select="/m:response/m:tm-search/m:request/text()"/>
+                        <input type="hidden" name="tab" value="tm-search"/>
+                        <input type="hidden" name="type" value="folio"/>
+                        <input type="hidden" name="lang" value="bo"/>
+                        
+                        <input type="hidden" name="search" id="search-text-folio" data-onload-mark="#folio-text">
+                            <xsl:attribute name="value">
+                                <xsl:apply-templates select="/m:response/m:request[@type eq 'folio']/m:search"/>
+                            </xsl:attribute>
                         </input>
                         
                         <div class="form-group">
-                            <label for="volume" class="sr-only">
+                            <label for="volume">
                                 <xsl:value-of select="'Volume'"/>
                             </label>
                             <select name="volume" class="form-control" id="volume">
@@ -485,7 +420,7 @@
                                     <xsl:sort select="xs:integer(@number)"/>
                                     <option>
                                         <xsl:attribute name="value" select="@number"/>
-                                        <xsl:if test="xs:integer(@number) eq xs:integer($request-volume)">
+                                        <xsl:if test="xs:integer(@number) eq xs:integer(/m:response/m:request/@volume)">
                                             <xsl:attribute name="selected" select="'selected'"/>
                                         </xsl:if>
                                         <xsl:value-of select="concat('eKangyur volume ', @number, ' (', @id, ')')"/>
@@ -495,12 +430,12 @@
                         </div>
                         
                         <div class="form-group">
-                            <label for="page" class="sr-only">
+                            <label for="page">
                                 <xsl:value-of select="'Page'"/>
                             </label>
                             <select name="page" class="form-control" id="page">
                                 <xsl:variable name="requested-page" select="/m:response/m:request/@page" as="xs:integer"/>
-                                <xsl:for-each select="/m:response/m:volumes/m:volume[xs:integer(@number) eq xs:integer($request-volume)]/m:page">
+                                <xsl:for-each select="/m:response/m:volumes/m:volume[xs:integer(@number) eq xs:integer(/m:response/m:request/@volume)]/m:page">
                                     <option>
                                         <xsl:attribute name="value" select="@index"/>
                                         <xsl:if test="xs:integer(@index) eq $requested-page">
@@ -513,24 +448,20 @@
                         </div>
                         
                         <div class="form-group">
-                            <button class="btn btn-default" type="submit">
-                                <i class="fa fa-refresh"/>
+                            <button class="btn btn-primary" type="submit">
+                                <xsl:value-of select="'Search for selection'"/>
                             </button>
                         </div>
                         
-                        <input type="hidden" data-onload-mark="#folio-text">
-                            <xsl:attribute name="value" select="/m:response/m:tm-search/m:request-bo"/>
-                        </input>
-                        
                     </form>
                     
-                    <div class="source text-overlay">
+                    <div class="source text-overlay text-left">
                         <div class="text divided text-bo">
                             <xsl:call-template name="text-marked">
                                 <xsl:with-param name="data" select="/m:response/m:page/m:language[@xml:lang eq 'bo']"/>
                             </xsl:call-template>
                         </div>
-                        <div id="folio-text" class="text plain text-bo" data-mouseup-set-input="#search-text-bo">
+                        <div id="folio-text" class="text plain text-bo" data-mouseup-set-input="#search-text-folio">
                             <xsl:call-template name="text-plain">
                                 <xsl:with-param name="data" select="/m:response/m:page/m:language[@xml:lang eq 'bo']//tei:p"/>
                             </xsl:call-template>
@@ -539,16 +470,45 @@
                     
                 </div>
                 
+                <div role="tabpanel" id="tibetan-search" class="tab-pane fade">
+                    <xsl:if test="/m:response/m:request/@type eq 'bo'">
+                        <xsl:attribute name="class" select="'tab-pane fade in active'"/>
+                    </xsl:if>
+                    <xsl:call-template name="search-form">
+                        <xsl:with-param name="type" select="'bo'"/>
+                    </xsl:call-template>
+                </div>
+                
+                <div role="tabpanel" id="wylie-search" class="tab-pane fade">
+                    <xsl:if test="/m:response/m:request/@type eq 'bo-ltn'">
+                        <xsl:attribute name="class" select="'tab-pane fade in active'"/>
+                    </xsl:if>
+                    <xsl:call-template name="search-form">
+                        <xsl:with-param name="type" select="'bo-ltn'"/>
+                    </xsl:call-template>
+                </div>
+                
+                <div role="tabpanel" id="english-search" class="tab-pane fade">
+                    <xsl:if test="/m:response/m:request/@type eq 'en'">
+                        <xsl:attribute name="class" select="'tab-pane fade in active'"/>
+                    </xsl:if>
+                    <xsl:call-template name="search-form">
+                        <xsl:with-param name="type" select="'en'"/>
+                    </xsl:call-template>
+                </div>
                 
             </div>
             
             <xsl:variable name="results" select="/m:response/m:tm-search/m:results"/>
             <xsl:choose>
                 <xsl:when test="$results/m:item">
+                    
+                    <!-- Results list -->
                     <div class="search-results top-margin">
+                        
                         <xsl:for-each select="$results/m:item">
                             <div class="search-result row">
-                                <div class="col-sm-6">
+                                <div class="col-sm-7">
                                     <div class="row">
                                         <div class="col-sm-1 small text-muted sml-margin top">
                                             <xsl:value-of select="concat(position() + $results/@first-record - 1, '.')"/>
@@ -573,7 +533,7 @@
                                     </div>
                                 </div>
                                 <div>
-                                    <div class="col-sm-6">
+                                    <div class="col-sm-5">
                                         <p class="title">
                                             <a target="reading-room">
                                                 <xsl:choose>
@@ -615,7 +575,9 @@
                     </div>
                     
                     <!-- Pagination -->
-                    <xsl:copy-of select="common:pagination($results/@first-record, $results/@max-records, $results/@count-records, 'index.html?tab=tibetan-search', concat('&amp;search=', /m:response/m:tm-search/m:request-bo/text()/normalize-space(), '&amp;volume=', /m:response/m:request/@volume, '&amp;page=', /m:response/m:request/@page))"/>
+                    <!-- To do: change this to a re-post of the form maybe? -->
+                    <xsl:copy-of select="common:pagination($results/@first-record, $results/@max-records, $results/@count-records, 'index.html?tab=tm-search', concat('&amp;type=', /m:response/m:request/@type, '&amp;search=', /m:response/m:request/m:search/text()/normalize-space(), '&amp;lang=', /m:response/m:request/@lang, '&amp;volume=', /m:response/m:request/@volume, '&amp;page=', /m:response/m:request/@page))"/>
+                    
                     
                 </xsl:when>
                 <xsl:otherwise>
@@ -626,7 +588,88 @@
                 </xsl:otherwise>
             </xsl:choose>
             
+            <!-- 
+            <xsl:for-each select="distinct-values($results/m:item/m:match/m:tibetan//exist:match)">
+                <xsl:sort select="string-length(.)" order="descending"/>
+                <xsl:variable name="match" select="."/>
+                <xsl:if test="not($results/m:item/m:match/m:tibetan//exist:match[not(text() eq $match)][contains(text(), $match)])">
+                    <input type="hidden" data-onload-mark="#folio-text">
+                        <xsl:attribute name="value" select="."/>
+                    </input>
+                </xsl:if>
+            </xsl:for-each>
+             -->
         </div>
+    </xsl:template>
+    
+    <xsl:template name="search-form">
+        
+        <xsl:param name="type" as="xs:string"/>
+        
+        <xsl:variable name="lang" as="xs:string">
+            <xsl:choose>
+                <xsl:when test="$type eq 'folio'">
+                    <xsl:value-of select="'bo'"/>
+                </xsl:when>
+                <xsl:otherwise>
+                    <xsl:value-of select="$type"/>
+                </xsl:otherwise>
+            </xsl:choose>
+        </xsl:variable>
+        
+        <form action="index.html" method="post" accept-charset="UTF-8" class="form-inline">
+            <input type="hidden" name="tab" value="tm-search"/>
+            <input type="hidden" name="type">
+                <xsl:attribute name="value" select="$type"/>
+            </input>
+            <input type="hidden" name="lang">
+                <xsl:attribute name="value" select="$lang"/>
+            </input>
+            <input type="hidden" name="volume">
+                <xsl:attribute name="value" select="/m:response/m:request/@volume"/>
+            </input>
+            <input type="hidden" name="page">
+                <xsl:attribute name="value" select="/m:response/m:request/@page/xs:integer(.)"/>
+            </input>
+            <label class="form-label">
+                <xsl:attribute name="for" select="concat('tm-search-', $type)"/>
+                <xsl:choose>
+                    <xsl:when test="$lang eq 'bo'">
+                        <xsl:value-of select="'Search Tibetan'"/>
+                    </xsl:when>
+                    <xsl:when test="$lang eq 'bo-ltn'">
+                        <xsl:value-of select="'Search Wylie'"/>
+                    </xsl:when>
+                    <xsl:otherwise>
+                        <xsl:value-of select="'Search English'"/>
+                    </xsl:otherwise>
+                </xsl:choose>
+            </label>
+            <div class="input-group">
+                <input type="text" name="search">
+                    <xsl:attribute name="id" select="concat('tm-search-', $type)"/>
+                    <xsl:choose>
+                        <xsl:when test="$lang eq 'bo'">
+                            <xsl:attribute name="class" select="'form-control text-bo'"/>
+                        </xsl:when>
+                        <xsl:when test="$lang eq 'bo-ltn'">
+                            <xsl:attribute name="class" select="'form-control text-wy'"/>
+                        </xsl:when>
+                        <xsl:otherwise>
+                            <xsl:attribute name="class" select="'form-control'"/>
+                        </xsl:otherwise>
+                    </xsl:choose>
+                    <xsl:attribute name="value">
+                        <xsl:apply-templates select="/m:response/m:request[@type eq $type]/m:search"/>
+                    </xsl:attribute>
+                </input>
+                <div class="input-group-btn">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fa fa-search"/>
+                    </button>
+                </div>
+            </div>
+        </form>
     </xsl:template>
     
     <xsl:template name="translations">
