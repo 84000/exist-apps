@@ -340,12 +340,8 @@
     
     <xsl:template name="tm-search">
         
-        
         <div class="alert alert-warning small text-center">
-            <p>
-                This page searches translation memories created from published 84000 translations. Search for a term or phrase by entering <b>Tibetan</b>, <b>Wylie</b> or <b>English</b> into the search fields, or search larger passages of Tibetan in the <b>select</b> tab. 
-                You can learn more about Translation Memories under the <a href="?tab=smartcat">CAT Tools</a> tab.
-            </p>
+            <p>This page searches translation memories created from published 84000 translations. It will additionally return any results from 84000's cumulative glossary. Search for a term or phrase by entering Tibetan, Wylie or English into the search fields, or search larger passages of Tibetan in the <b>select</b> tab.</p>
         </div>
        
         <div id="search-container">
@@ -508,7 +504,7 @@
                         
                         <xsl:for-each select="$results/m:item">
                             <div class="search-result row">
-                                <div class="col-sm-7">
+                                <div class="col-sm-6">
                                     <div class="row">
                                         <div class="col-sm-1 small text-muted sml-margin top">
                                             <xsl:value-of select="concat(position() + $results/@first-record - 1, '.')"/>
@@ -533,7 +529,7 @@
                                     </div>
                                 </div>
                                 <div>
-                                    <div class="col-sm-5">
+                                    <div class="col-sm-6">
                                         <p class="title">
                                             <a target="reading-room">
                                                 <xsl:choose>

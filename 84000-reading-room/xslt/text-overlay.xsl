@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" exclude-result-prefixes="xs" version="2.0">
+<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" exclude-result-prefixes="#all" version="2.0">
     
     <xsl:template name="text-marked">
         <xsl:param name="data"/>
@@ -69,7 +69,7 @@
     
     <xsl:template name="normalize">
         <xsl:param name="text" as="xs:string"/>
-        <xsl:value-of select="translate(normalize-space(concat('', translate($text, '&#xA;', ''), '')), '', '')"/>
+        <xsl:value-of select="translate(normalize-space(concat('', translate(replace($text, '་\s+$', '་'), '&#xA;', ''), '')), '', '')"/>
     </xsl:template>
     
 </xsl:stylesheet>

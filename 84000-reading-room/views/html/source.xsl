@@ -3,6 +3,7 @@
     
     <xsl:import href="website-page.xsl"/>
     <xsl:import href="../../xslt/lang.xsl"/>
+    <xsl:import href="../../xslt/functions.xsl"/>
     
     <xsl:template match="/m:response">
         
@@ -131,7 +132,7 @@
     </xsl:template>
     
     <xsl:template match="text()">
-        <xsl:value-of select="normalize-space(.)"/>
+        <xsl:value-of select="common:normalize-bo(.)"/>
     </xsl:template>
     
 </xsl:stylesheet>

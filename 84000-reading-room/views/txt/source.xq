@@ -15,8 +15,7 @@ declare function local:parse-content($content) {
     return
     (
         (
-            text { '{{page:{number:' || $position || ',folio:' || $page/@folio-in-etext || '}}}' },
-            text {'&#32;'}
+            text { '{{page:{number:' || $position || ',folio:' || $page/@folio-in-etext || '}}}' }
         ),
         for $node at $position in $page//node()[self::text() | self::tei:milestone[@unit eq "text"]]
         return
@@ -30,9 +29,9 @@ declare function local:parse-content($content) {
                 text { '{{toh:' || $node/@toh || '}}' }
             )
             else
+            (: Output text :)
             (
-                normalize-space($node),
-                text {'&#32;'}
+                translate(normalize-space(concat('', translate(replace($node, '་\s+$', '་'), '&#xA;', ''), '')), '', '')
             )
     )
 };

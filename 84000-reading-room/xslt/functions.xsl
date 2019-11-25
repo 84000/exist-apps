@@ -63,6 +63,11 @@
         <xsl:value-of select="translate(lower-case($sa-string), $in, $out)"/>
     </xsl:function>
     
+    <xsl:function name="common:normalize-bo">
+        <xsl:param name="bo-string" as="xs:string"/>
+        <xsl:value-of select="translate(normalize-space(concat('', translate(replace($bo-string, '་\s+$', '་'), '&#xA;', ''), '')), '', '')"/>
+    </xsl:function>
+    
     <xsl:function name="common:alphanumeric" as="xs:string*">
         <xsl:param name="string" as="xs:string"/>
         <xsl:value-of select="replace($string, '[^a-zA-Z0-9]', '')"/>
