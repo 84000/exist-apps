@@ -148,6 +148,10 @@
                 <field name="ref-rend" match="@rend" type="xs:string"/>
             </create>
             
+            <create qname="tei:ref">
+                <field name="ref-cref" match="@cRef" type="xs:string" case="no"/>
+            </create>
+            
         </range>
         
     </index>

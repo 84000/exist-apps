@@ -14,8 +14,8 @@ import module namespace functx="http://www.functx.com";
 declare variable $translation-memory:data-path := concat($common:data-path, '/translation-memory-generator/');
 
 declare function translation-memory:translation($translation-id as xs:string) as element(tmx:tmx)? {
-    (:collection($translation-memory:data-path)//tmx:tmx[tmx:header[@eft:text-id eq $translation-id]]:)
-    doc(concat($translation-memory:data-path, $translation-id, '.xml'))//tmx:tmx
+    collection($translation-memory:data-path)//tmx:tmx[tmx:header[@eft:text-id eq $translation-id]]
+    (:doc(concat($translation-memory:data-path, $translation-id, '.xml'))//tmx:tmx:)
 };
 
 declare function translation-memory:folio($translation-id as xs:string, $folio as xs:string) as element() {

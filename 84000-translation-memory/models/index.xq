@@ -25,14 +25,15 @@ let $location:= translation:location($tei, $toh-key)
 
 (: Get all the folios in the translation :)
 let $folios := translation:folios($tei, $toh-key)
-let $folio := $folios/m:folio[lower-case(@tei-folio) = lower-case(request:get-parameter('folio', ''))][1]
+let $folio-request := lower-case(request:get-parameter('folio', ''))
+let $folio := $folios/m:folio[lower-case(@tei-folio) = $folio-request][1]
 let $folio :=
     if(not($folio)) then
         $folios/m:folio[1]
     else
         $folio
 
-let $folio-request := string($folio/@tei-folio)
+let $tei-folio := string($folio/@tei-folio)
 let $page-in-text := number($folio/@page-in-text)
 
 let $folio-translation := 
@@ -49,13 +50,13 @@ let $folio-source :=
 
 let $action := 
     if(request:get-parameter('action', '') eq 'remember-translation') then
-        translation-memory:remember($translation-id, $folio-request, request:get-parameter('source', ''), request:get-parameter('translation', ''))
+        translation-memory:remember($translation-id, $tei-folio, request:get-parameter('source', ''), request:get-parameter('translation', ''))
     else
         ()
 
 let $folio-tmx := 
-    if ($folio-request) then
-        translation-memory:folio($translation-id, $folio-request)
+    if ($tei-folio) then
+        translation-memory:folio($translation-id, $tei-folio)
     else
         ()
 
@@ -64,7 +65,7 @@ return
         'translation-memory',
         'translation-memory',
         (
-            <request xmlns="http://read.84000.co/ns/1.0" translation-id="{ $translation-id }" folio="{ $folio-request }" />,
+            <request xmlns="http://read.84000.co/ns/1.0" translation-id="{ $translation-id }" folio="{ $tei-folio }" />,
             <action xmlns="http://read.84000.co/ns/1.0">{ $action }</action>,
             $translations,
             $folios,

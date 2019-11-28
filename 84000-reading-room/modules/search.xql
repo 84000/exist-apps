@@ -116,23 +116,25 @@ declare function search:search($request as xs:string, $first-record as xs:double
                         }
                         {
                             for $result in $results
-                                let $document-uri := base-uri($result)
                                 
+                                where base-uri($result) eq $result-group/@document-uri
+                                
+                                (:
                                 let $expanded := util:expand($result, "expand-xincludes=no")
-                                
                                 let $expanded :=
                                     if(not($expanded//exist:match)) then
                                         common:mark-nodes($result, $request, 'words')
                                     else
                                         $expanded
-                                
-                                where $document-uri eq $result-group/@document-uri
+                                :)
+                                        
                             return
                                 <match score="{ ft:score($result) }">
                                 {
                                     attribute node-type { node-name($result) },
                                     $result/@*,
-                                    $expanded
+                                    (:$expanded:)
+                                    common:mark-nodes($result, $request, 'words')
                                 }
                                 </match>
                         }
@@ -337,6 +339,7 @@ declare function search:tm-search($request as xs:string, $lang as xs:string, $fi
                                         attribute location { concat('/translation/', $toh-key, '.html#', $result/@xml:id) },
                                         element tibetan { ($expanded/tei:term[not(@type)][@xml:lang eq "bo"][exist:match], $expanded/tei:term[not(@type)][@xml:lang eq "bo"])[1] }, 
                                         element translation { ($expanded/tei:term[not(@type)][not(@xml:lang) or @xml:lang eq "en"][not(@type)][exist:match], $expanded/tei:term[not(@type)][not(@xml:lang) or @xml:lang eq "en"][not(@type)])[1] },
+                                        element wylie { ($expanded/tei:term[not(@type)][@xml:lang eq "Bo-Ltn"][exist:match], $expanded/tei:term[not(@type)][@xml:lang eq "Bo-Ltn"])[1] },
                                         element sanskrit { ($expanded/tei:term[not(@type)][@xml:lang eq "Sa-Ltn"][exist:match], $expanded/tei:term[not(@type)][@xml:lang eq "Sa-Ltn"])[1] }
                                     }
                                 
