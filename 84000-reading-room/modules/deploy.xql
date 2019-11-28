@@ -35,7 +35,7 @@ declare function deploy:commit-data($action as xs:string, $sync-resource as xs:s
     let $sync :=
         if($action eq 'sync' and $repo-path) then
             (
-                for $collection in ('tei', 'translation-memory', 'config', 'rdf')
+                for $collection in ('tei', 'translation-memory', 'translation-memory-generator', 'config', 'rdf')
                 return
                     file:sync(
                         concat($common:data-path, '/', $collection), 
@@ -48,7 +48,7 @@ declare function deploy:commit-data($action as xs:string, $sync-resource as xs:s
     
     (: Only add specified file to commit :)
     let $git-add := 
-        if($sync-resource = ('tei', 'config', 'tm', 'rdf')) then
+        if($sync-resource = ('tei', 'config', 'tm', 'tmg', 'rdf')) then
             '--all'
         else
             substring-after($sync-resource, concat($common:data-path, '/tei/'))
@@ -66,6 +66,8 @@ declare function deploy:commit-data($action as xs:string, $sync-resource as xs:s
             $repo-path || '/config'
         else if($sync-resource eq 'tm') then
             $repo-path || '/translation-memory'
+        else if($sync-resource eq 'tmg') then
+            $repo-path || '/translation-memory-generator'
         else if($sync-resource eq 'rdf') then
             $repo-path || '/rdf'
         else

@@ -60,6 +60,7 @@
                                                     <option value="tei">All TEI files</option>
                                                     <option value="config">Config files</option>
                                                     <option value="tm">Translation Memory files</option>
+                                                    <option value="tmg">Translation Memory Generator files</option>
                                                     <option value="rdf">RDF files</option>
                                                     <xsl:for-each select="m:translations/m:file">
                                                         <xsl:sort select="@file-name"/>

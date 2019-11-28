@@ -9,10 +9,10 @@ declare variable $collection-uri := concat($common:data-path, '/translation-memo
 
 declare function local:set-mimetypes(){
     for $file in xmldb:get-child-resources($collection-uri)
+    order by $file
     return
         if(not(xmldb:get-mime-type(xs:anyURI(concat($collection-uri, '/', $file))) eq 'application/xml')) then
         (
-            concat($file, ' converted to xml'),
             xmldb:store(
                 $collection-uri, 
                 $file, 
@@ -20,7 +20,8 @@ declare function local:set-mimetypes(){
                 'application/xml'
             ),
             sm:chgrp(xs:anyURI(concat($collection-uri, '/', $file)), 'translation-memory'),
-            sm:chmod(xs:anyURI(concat($collection-uri, '/', $file)), 'rw-rw-r--')
+            sm:chmod(xs:anyURI(concat($collection-uri, '/', $file)), 'rw-rw-r--'),(::)
+            concat($file, ' converted to xml')
         )
         else
             concat('ALREADY XML: ', $file)
@@ -77,15 +78,15 @@ declare function local:update-header($resource-id as xs:string, $tmx-header as e
     return
         if($text-id and $tmx-header) then
         (
-            concat('MAPPED: ', $resource-id, ' TO ', $text-id),
-            update replace $tmx-header with $tmx-header-new (::)
+            update replace $tmx-header with $tmx-header-new,
+            concat('MAPPED: ', $resource-id, ' TO ', $text-id)(::)
         )
         else
             concat('MISSING: ', $resource-id)
 };
 
-local:set-mimetypes(),
-local:set-text-ids(),
-local:set-text-ids-again()(::)
+(:local:set-mimetypes(),:)
+local:set-text-ids()(:,
+local:set-text-ids-again():)
 
 
