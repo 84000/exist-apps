@@ -8,7 +8,7 @@ module namespace search="http://read.84000.co/search";
 
 declare namespace tei="http://www.tei-c.org/ns/1.0";
 declare namespace xhtml="http://www.w3.org/1999/xhtml";
-declare namespace m="http://read.84000.co/ns/1.0";
+declare namespace eft="http://read.84000.co/ns/1.0";
 declare namespace tmx="http://www.lisa.org/tmx14";
 declare namespace exist="http://exist.sourceforge.net/NS/exist";
 
@@ -41,7 +41,7 @@ declare function search:text-query($request as xs:string) as element() {
                 <wildcard occur="should">{ concat($request-normalized,'*') }</wildcard>
                 {
                     for $request-token in $request-tokenized
-                        for $synonym in $synonyms//m:synonym[m:term/text() = $request-token]/m:term[not(text() = $request-token)]
+                        for $synonym in $synonyms//eft:synonym[eft:term/text() = $request-token]/eft:term[not(text() = $request-token)]
                             let $request-synonym := replace($request-normalized, $request-token, $synonym)
                         return
                         (
@@ -255,7 +255,7 @@ declare function search:tm-search($request as xs:string, $lang as xs:string, $fi
             $result
             
     
-    return
+    return 
         <tm-search xmlns="http://read.84000.co/ns/1.0">
             <request lang="{ $lang }">{ $request }</request>
             <search lang="{ $search-lang }">{ $search }</search>
@@ -267,14 +267,18 @@ declare function search:tm-search($request as xs:string, $lang as xs:string, $fi
                 for $result in subsequence($results[local-name() = ('tu', 'gloss')], $first-record, $max-records)
                     
                     let $score := ft:score($result)
-                    let $document-uri := base-uri($result)
-                    let $document-uri-tokenized := tokenize($document-uri, '/')
-                    let $file-name := $document-uri-tokenized[last()]
+                    
                     let $tei := 
                         if(local-name($result) eq 'tu') then
-                            tei-content:tei(substring-before($file-name, '.xml'), 'translation')
+                            let $tmx := $result/ancestor::tmx:tmx
+                            let $translation-id := $tmx/tmx:header/@eft:text-id
+                            return
+                                if($translation-id) then
+                                    tei-content:tei($translation-id, 'translation')
+                                else
+                                    ()
                         else
-                            doc($document-uri)/tei:TEI
+                            $result/ancestor::tei:TEI
                     
                     let $expanded := util:expand($result, "expand-xincludes=no")
                     

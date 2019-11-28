@@ -394,6 +394,7 @@
         <xsl:param name="grouping" required="no" as="xs:string?"/>
         <xsl:param name="show-sponsorship" required="no" as="xs:boolean" select="false()"/>
         <xsl:param name="show-sponsors" required="no" as="xs:boolean" select="false()"/>
+        <xsl:param name="show-translation-status" required="no" as="xs:boolean" select="false()"/>
         
         <xsl:choose>
             <xsl:when test="count($texts)">
@@ -459,13 +460,17 @@
                                         <xsl:value-of select="m:toh/m:full"/>
                                     </xsl:for-each>
                                     
-                                    <br class="hidden-xs"/>
-                                    
-                                    <span class="col-xs-pull-right">
-                                        <xsl:call-template name="status-label">
-                                            <xsl:with-param name="status-group" select="@status-group"/>
-                                        </xsl:call-template>
-                                    </span>
+                                    <xsl:if test="$show-translation-status">
+                                        
+                                        <br class="hidden-xs"/>
+                                        
+                                        <span class="col-xs-pull-right">
+                                            <xsl:call-template name="status-label">
+                                                <xsl:with-param name="status-group" select="@status-group"/>
+                                            </xsl:call-template>
+                                        </span>
+                                        
+                                    </xsl:if>
                                     
                                     <hr class="visible-xs sml-margin"/>
                                     

@@ -22,7 +22,7 @@ return
             local:request(),
             $deploy:snapshot-conf/m:view-repo-url,
             translations:files($tei-content:marked-up-status-ids),
-            if(local:user-in-group('snapshots')) then
+            if(common:user-in-group('snapshots')) then
                 deploy:commit-data($action, $sync-resource, $commit-msg)
             else
                 ()

@@ -29,12 +29,3 @@ declare function local:request(){
     }
     </request>
 };
-
-declare function local:user-in-group($group as xs:string) as xs:boolean {
-    
-    if(sm:id()//sm:real/sm:groups/sm:group[text() eq $group]) then
-        true()
-    else
-        false()
-        
-};

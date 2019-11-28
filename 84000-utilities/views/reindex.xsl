@@ -60,6 +60,9 @@
                                             <a href="?collection=translation-memory">Translation memory collection</a>
                                         </li>
                                         <li>
+                                            <a href="?collection=translation-memory-generator">Translation memory generator collection</a>
+                                        </li>
+                                        <li>
                                             <a href="?collection=config">Config collection</a>
                                         </li>
                                         <li>

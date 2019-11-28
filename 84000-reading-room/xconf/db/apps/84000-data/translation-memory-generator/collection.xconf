@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<collection xmlns="http://exist-db.org/collection-config/1.0">
+    
+    <!-- /db/apps/84000-data/translation-memory/ -->
+    
+    <index xmlns:tmx="http://www.lisa.org/tmx14">
+        
+        <range>
+            
+            <!-- *.tmx -->
+            <create qname="tmx:prop" type="xs:string">
+                <condition attribute="name" value="folio"/>
+                <field name="folio" type="xs:string" case="no"/>
+            </create>
+            
+        </range>
+        
+    </index>
+</collection>

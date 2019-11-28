@@ -13,6 +13,8 @@ let $reindex-collection as xs:string :=
         concat($common:data-path, '/operations')
     else if(request:get-parameter('collection', '') eq 'translation-memory') then
         concat($common:data-path, '/translation-memory')
+    else if(request:get-parameter('collection', '') eq 'translation-memory-generator') then
+        concat($common:data-path, '/translation-memory-generator')
     else if(request:get-parameter('collection', '') eq 'config') then
         concat($common:data-path, '/config')
     else if(request:get-parameter('collection', '') eq 'source') then
@@ -21,7 +23,7 @@ let $reindex-collection as xs:string :=
         ''
 
 let $reindex := 
-    if(local:user-in-group('dba') and $reindex-collection gt '') then
+    if(common:user-in-group('dba') and $reindex-collection gt '') then
         xmldb:reindex($reindex-collection)
     else 
         ''

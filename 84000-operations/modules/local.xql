@@ -16,8 +16,3 @@ declare function local:get-status-parameter(){
         else
             $post-status
 };
-
-declare function local:user-groups() as xs:string* {
-    let $user := sm:id()
-    return $user//sm:real/sm:groups/sm:group
-};

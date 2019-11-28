@@ -20,7 +20,7 @@ return
             local:request(),
             $deploy:deployment-conf/m:view-repo-url,
             $deploy:deployment-conf/m:apps,
-            if(local:user-in-group('dba') and $admin-password gt '') then
+            if(common:user-in-group('dba') and $admin-password gt '') then
                 deploy:deploy-apps($admin-password, $commit-msg, $get-app)
             else
                 ()

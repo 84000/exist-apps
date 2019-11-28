@@ -63,7 +63,7 @@
                                     </div>
                                     
                                     <div class="form-group text text-muted italic">
-                                        <xsl:value-of select="concat('eKangyur volume ', m:source/@volume, ', page ', m:source/m:page/@page, '.')"/>
+                                        <xsl:value-of select="concat('eKangyur volume ', m:source/m:page/@volume, ', page ', m:source/m:page/@page-in-volume, '.')"/>
                                     </div>
                                 </form>
                             </div>

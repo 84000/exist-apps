@@ -394,6 +394,15 @@ function common:user-name() as xs:string* {
         $user//sm:real/sm:username
 };
 
+declare function common:user-in-group($group as xs:string*) as xs:boolean {
+    
+    if(sm:id()//sm:real/sm:groups/sm:group[text() = $group]) then
+        true()
+    else
+        false()
+        
+};
+
 declare function common:auth-environment() as xs:boolean {
     (: Check the environment to see if we need to login :)
     if($common:environment/@auth eq '1')then
@@ -481,6 +490,15 @@ function common:contains-class($string as xs:string?, $class as xs:string ) as x
 
 (: Generic update fumction :)
 declare function common:update($request-parameter as xs:string, $existing-value as item()?, $new-value as item()?, $insert-into as node()?, $insert-following as node()?) as element()? {
+    
+    (:
+    <debug>
+        <request-parameter>{$request-parameter}</request-parameter>
+        <existing-value>{$existing-value}</existing-value>
+        <new-value>{$new-value}</new-value>
+        <insert-into>{$insert-into}</insert-into>
+        <insert-following>{$insert-following}</insert-following>
+    </debug>:)
 
     if(functx:node-kind($existing-value) eq 'text' and compare($existing-value, $new-value) eq 0) then 
         () (: Data unchanged, do nothing :)

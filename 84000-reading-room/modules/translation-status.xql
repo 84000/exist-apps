@@ -183,9 +183,8 @@ declare function translation-status:word-count($tei as element(tei:TEI)) as xs:i
             xs:integer($cached-count)
         else
             let $create-new-translation-status := translation-status:update($text-id)
-            let $translation-status := translation-status:text($text-id)
             return
-                $translation-status/@word-count
+                $create-new-translation-status//m:text/@word-count
          
 };
 
@@ -202,14 +201,13 @@ declare function translation-status:glossary-count($tei as element(tei:TEI)) as 
             xs:integer($cached-count)
         else
             let $create-new-translation-status := translation-status:update($text-id)
-            let $translation-status := translation-status:text($text-id)
             return
-                $translation-status/@glossary-count
+                $create-new-translation-status//m:text/@glossary-count
     
 };
 
 declare function translation-status:update($text-id as xs:string) as element()? {
-    
+
     let $existing-value := translation-status:text($text-id)
     let $request-parameters := request:get-parameter-names()
     
@@ -222,108 +220,110 @@ declare function translation-status:update($text-id as xs:string) as element()? 
     
     let $word-count := 
         if(translation-status:is-current-version($tei-version-str, $cached-version-str) and functx:is-a-number($cached-word-count)) then
-            xs:integer($cached-word-count)
-        else
+           xs:integer($cached-word-count)
+        else if(tei-content:translation-status-group($tei) eq 'published') then
             translation:word-count($tei)
-    
+        else
+           0
+   
     let $glossary-count := 
         if(translation-status:is-current-version($tei-version-str, $cached-version-str) and functx:is-a-number($cached-glossary-count)) then
-            xs:integer($cached-glossary-count)
-        else
+           xs:integer($cached-glossary-count)
+        else if(tei-content:translation-status-group($tei) eq 'published') then
             translation:glossary-count($tei)
-    
-    let $new-value := 
-        element { QName('http://read.84000.co/ns/1.0', 'text') }{
-            attribute text-id { $text-id },
-            attribute updated { current-dateTime() },
-            attribute version { $tei-version-str },
-            attribute word-count { $word-count },
-            attribute glossary-count { $glossary-count },
-            if('action-note' = $request-parameters and not(compare(string($existing-value/m:action-note), request:get-parameter('action-note', '')) eq 0))then
-                element action-note {
-                    attribute last-edited { current-dateTime() },
-                    attribute last-edited-by { common:user-name() },
-                    text { request:get-parameter('action-note', '') }
-                }
-            else
-                $existing-value/m:action-note
-            ,
-            if('progress-note' = $request-parameters and not(compare(string($existing-value/m:progress-note), request:get-parameter('progress-note', '')) eq 0))then
-                element progress-note {
-                    attribute last-edited { current-dateTime() },
-                    attribute last-edited-by { common:user-name() },
-                    text { request:get-parameter('progress-note', '') }
-                }
-            else
-                $existing-value/m:progress-note
-            ,
-            if('text-note' = $request-parameters and not(compare(string($existing-value/m:text-note), request:get-parameter('text-note', '')) eq 0))then
-                element text-note {
-                    attribute last-edited { current-dateTime() },
-                    attribute last-edited-by { common:user-name() },
-                    text { request:get-parameter('text-note', '') }
-                }
-            else
-                $existing-value/m:text-note
-            ,
-            for $task in $existing-value/m:task
-            return
-                if($task/@xml:id = request:get-parameter('task-check-off[]', '')) then
-                    functx:add-or-update-attributes(
-                        $task, 
-                        (xs:QName('checked-off'), xs:QName('checked-off-by')), 
-                        (current-dateTime(), common:user-name())
-                    )
-                else
-                    $task
-            ,
-            for $task-id at $pos in request:get-parameter('task-add[]', '')
-                let $task-text := request:get-parameter(concat('task-add-', $task-id), '')
-                where $task-text
-            return
-                element task {
-                    attribute xml:id { translation-status:next-task-id($text-id, $pos) },
-                    attribute added { current-dateTime() },
-                    attribute added-by { common:user-name() },
-                    if(not($task-id eq 'custom')) then
-                        attribute task-id { $task-id }
-                    else
-                        (),
-                    text { $task-text }
-                }
-            ,
-            (: Include existing sbmissions, unless it's removal is in request :)
-            $existing-value/m:submission[not(@id eq request:get-parameter('delete-submission-id', ''))],
-            (: Add additional submissions :)
-            if(request:get-attribute('submission-id') gt '' and not($existing-value/m:submission[@id eq request:get-attribute('submission-id')])) then
-                element submission {
-                    attribute id { request:get-attribute('submission-id') },
-                    attribute original-file-name { request:get-uploaded-file-name('submit-translation-file') },
-                    attribute date-time { current-dateTime() },
-                    attribute user { common:user-name() }
-                }
-            else
-                ()
-            
-        }
-    
+        else
+           0
+   
+   let $new-value := 
+       element { QName('http://read.84000.co/ns/1.0', 'text') }{
+           attribute text-id { $text-id },
+           attribute updated { current-dateTime() },
+           attribute version { $tei-version-str },
+           attribute word-count { $word-count },
+           attribute glossary-count { $glossary-count },
+           if('action-note' = $request-parameters and not(compare(string($existing-value/m:action-note), request:get-parameter('action-note', '')) eq 0))then
+               element action-note {
+                   attribute last-edited { current-dateTime() },
+                   attribute last-edited-by { common:user-name() },
+                   text { request:get-parameter('action-note', '') }
+               }
+           else
+               $existing-value/m:action-note
+           ,
+           if('progress-note' = $request-parameters and not(compare(string($existing-value/m:progress-note), request:get-parameter('progress-note', '')) eq 0))then
+               element progress-note {
+                   attribute last-edited { current-dateTime() },
+                   attribute last-edited-by { common:user-name() },
+                   text { request:get-parameter('progress-note', '') }
+               }
+           else
+               $existing-value/m:progress-note
+           ,
+           if('text-note' = $request-parameters and not(compare(string($existing-value/m:text-note), request:get-parameter('text-note', '')) eq 0))then
+               element text-note {
+                   attribute last-edited { current-dateTime() },
+                   attribute last-edited-by { common:user-name() },
+                   text { request:get-parameter('text-note', '') }
+               }
+           else
+               $existing-value/m:text-note
+           ,
+           for $task in $existing-value/m:task
+           return
+               if($task/@xml:id = request:get-parameter('task-check-off[]', '')) then
+                   functx:add-or-update-attributes(
+                       $task, 
+                       (xs:QName('checked-off'), xs:QName('checked-off-by')), 
+                       (current-dateTime(), common:user-name())
+                   )
+               else
+                   $task
+           ,
+           for $task-id at $pos in request:get-parameter('task-add[]', '')
+               let $task-text := request:get-parameter(concat('task-add-', $task-id), '')
+               where $task-text
+           return
+               element task {
+                   attribute xml:id { translation-status:next-task-id($text-id, $pos) },
+                   attribute added { current-dateTime() },
+                   attribute added-by { common:user-name() },
+                   if(not($task-id eq 'custom')) then
+                       attribute task-id { $task-id }
+                   else
+                       (),
+                   text { $task-text }
+               }
+           ,
+           (: Include existing sbmissions, unless it's removal is in request :)
+           $existing-value/m:submission[not(@id eq request:get-parameter('delete-submission-id', ''))],
+           (: Add additional submissions :)
+           if(request:get-attribute('submission-id') gt '' and not($existing-value/m:submission[@id eq request:get-attribute('submission-id')])) then
+               element submission {
+                   attribute id { request:get-attribute('submission-id') },
+                   attribute original-file-name { request:get-uploaded-file-name('submit-translation-file') },
+                   attribute date-time { current-dateTime() },
+                   attribute user { common:user-name() }
+               }
+           else
+               ()
+           
+       }
+   
     let $parent := $translation-status:data/m:translation-status
     
     let $insert-following := $translation-status:data/m:translation-status/m:text[last()]
-    
-return
-    if($existing-value or $new-value) then
-        common:update('translation-status', $existing-value, $new-value, $parent, $insert-following)
-        (:element update-debug {
-            element request-parameter { 'translation-status' }, 
-            element existing-value { $existing-value }, 
-            element new-value { $new-value }, 
-            element parent { $parent }, 
-            element insert-following { $insert-following }
-        }:)
-    else
-        ()
-    
+   
+    let $do-update := 
+        if(($existing-value or $new-value) and common:user-in-group(('operations', 'utilities'))) then
+            common:update('translation-status', $existing-value, $new-value, $parent, $insert-following)
+        else
+            ()
+            
+    return
+        element { QName('http://read.84000.co/ns/1.0', 'updated') }
+        {
+            $new-value
+        }
 };
 
 declare function translation-status:update-submission($text-id as xs:string, $submission-id as xs:string) as element()* {
@@ -341,9 +341,15 @@ declare function translation-status:update-submission($text-id as xs:string, $su
                 attribute user { common:user-name() }
             }
     
-    return
+    let $do-update := 
         for $new-value in $new-values
         return
             common:update('update-submission', (), $new-value, $parent, ())
+    
+    return
+        element { QName('http://read.84000.co/ns/1.0', 'updated') }
+        {
+            $new-values
+        }
 };
 

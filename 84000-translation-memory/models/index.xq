@@ -25,17 +25,37 @@ let $location:= translation:location($tei, $toh-key)
 
 (: Get all the folios in the translation :)
 let $folios := translation:folios($tei, $toh-key)
-let $folio-request := request:get-parameter('folio', $folios/m:folio[1]/@tei-folio)
-let $folio := $folios/m:folio[lower-case(@tei-folio) = lower-case($folio-request)][1]
+let $folio := $folios/m:folio[lower-case(@tei-folio) = lower-case(request:get-parameter('folio', ''))][1]
 let $folio :=
     if(not($folio)) then
         $folios/m:folio[1]
     else
         $folio
 
+let $folio-request := string($folio/@tei-folio)
+let $page-in-text := number($folio/@page-in-text)
+
+let $folio-translation := 
+    if ($tei and $page-in-text gt 0) then
+        translation:folio-content($tei, $toh-key, $page-in-text)
+    else
+        ()
+
+let $folio-source := 
+    if ($location and $page-in-text gt 0) then
+        source:etext-page($location, $page-in-text, true())
+    else
+        ()
+
 let $action := 
     if(request:get-parameter('action', '') eq 'remember-translation') then
-        translation-memory:remember($translation-id, $folio/@tei-folio, request:get-parameter('source', ''), request:get-parameter('translation', ''))
+        translation-memory:remember($translation-id, $folio-request, request:get-parameter('source', ''), request:get-parameter('translation', ''))
+    else
+        ()
+
+let $folio-tmx := 
+    if ($folio-request) then
+        translation-memory:folio($translation-id, $folio-request)
     else
         ()
 
@@ -44,17 +64,12 @@ return
         'translation-memory',
         'translation-memory',
         (
-            <request xmlns="http://read.84000.co/ns/1.0" translation-id="{ $translation-id }" folio="{ $folio/@tei-folio }" />,
+            <request xmlns="http://read.84000.co/ns/1.0" translation-id="{ $translation-id }" folio="{ $folio-request }" />,
             <action xmlns="http://read.84000.co/ns/1.0">{ $action }</action>,
             $translations,
             $folios,
-            if ($folio) then
-            (
-                translation:folio-content($tei, $toh-key, $folio/@page-in-text),
-                source:etext-page($location, $folio/@page-in-text, true()),
-                translation-memory:folio($translation-id, $folio/@tei-folio)
-            )
-            else
-                ()
+            $folio-translation,
+            $folio-source,
+            $folio-tmx
         )
     )

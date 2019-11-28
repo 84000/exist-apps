@@ -23,8 +23,6 @@ let $filtered-texts := translations:filtered-texts($work, $status, $sort, $range
 
 let $filtered-texts-ids := $filtered-texts/m:text/@id
 
-let $users-groups := local:user-groups()
-
 return
     common:response(
         'operations/search', 
@@ -47,7 +45,7 @@ return
             tei-content:text-statuses-selected($status),
             $translations:page-size-ranges,
             $sponsorship:sponsorship-groups,
-            if('utilities' = $users-groups) then
+            if(common:user-in-group('utilities')) then
                 element { QName('http://read.84000.co/ns/1.0', 'permission') } {
                     attribute group { 'utilities' }
                 }
