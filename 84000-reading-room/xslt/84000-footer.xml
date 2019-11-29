@@ -29,20 +29,20 @@
         <text xml:lang="zh">官網：</text>
     </translation>
     <translation id="website-link">
-        <text xml:lang="en">http://84000.co</text>
-        <text xml:lang="zh">http://84000.co/ch</text>
+        <text xml:lang="en">https://84000.co</text>
+        <text xml:lang="zh">https://84000.co/ch</text>
     </translation>
     <translation id="website-link-text">
-        <text xml:lang="en">http://84000.co</text>
-        <text xml:lang="zh">http://84000.co/ch</text>
+        <text xml:lang="en">https://84000.co</text>
+        <text xml:lang="zh">https://84000.co/ch</text>
     </translation>
     <translation id="privacy-label">
         <text xml:lang="en">Privacy Policy</text>
         <text xml:lang="zh">隱私權聲明</text>
     </translation>
     <translation id="privacy-link">
-        <text xml:lang="en">http://84000.co/about/privacy-policy</text>
-        <text xml:lang="zh">http://84000.co/about/privacy-policy</text>
+        <text xml:lang="en">https://84000.co/about/privacy-policy</text>
+        <text xml:lang="zh">https://84000.co/about/privacy-policy</text>
     </translation>
     <translation id="top-link-title">
         <text xml:lang="en">Return to the top of the page</text>

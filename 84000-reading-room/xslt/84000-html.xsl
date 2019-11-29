@@ -10,8 +10,8 @@
     <xsl:param name="lang" select="'en'"/>
     <xsl:param name="active-url" select="'/'"/>
     <xsl:param name="local-comms-url" select="''"/>
-    <xsl:param name="local-reading-room-url" select="'http://read.84000.co'"/>
-    <xsl:param name="local-front-end-url" select="'http://fe.84000.co'"/>
+    <xsl:param name="local-reading-room-url" select="'https://read.84000.co'"/>
+    <xsl:param name="local-front-end-url" select="'https://fe.84000.co'"/>
     <xsl:param name="default-search-form-target" select="'comms'"/>
     
     <xsl:output method="html" indent="no" omit-xml-declaration="yes"/>
@@ -25,7 +25,10 @@
                         <div class="navbar-brand center-vertical">
                             
                             <!-- Logo -->
-                            <a href="http://84000.co" class="logo">
+                            <a class="logo">
+                                <xsl:attribute name="href">
+                                    <xsl:value-of select="$local-comms-url"/>
+                                </xsl:attribute>
                                 <img>
                                     <xsl:attribute name="src">
                                         <xsl:value-of select="concat($local-front-end-url, '/imgs/logo.png')"/>
@@ -358,8 +361,8 @@
     
     <xsl:template name="local-url">
         <xsl:param name="url"/>
-        <xsl:variable name="standard-comms-url" select="'http://84000.co'"/>
-        <xsl:variable name="standard-reading-room-url" select="'http://read.84000.co'"/>
+        <xsl:variable name="standard-comms-url" select="'https://84000.co'"/>
+        <xsl:variable name="standard-reading-room-url" select="'https://read.84000.co'"/>
         <xsl:choose>
             <xsl:when test="starts-with($url, $standard-reading-room-url)">
                 <xsl:value-of select="concat($local-reading-room-url, substring-after($url, $standard-reading-room-url))"/>
@@ -416,7 +419,7 @@
         <a>
             <xsl:attribute name="href">
                 <xsl:choose>
-                    <xsl:when test="$active-url = '#reading-room' or starts-with($active-url, 'http://read.84000.co')">
+                    <xsl:when test="$active-url = '#reading-room' or starts-with($active-url, 'https://read.84000.co')">
                         <xsl:value-of select="'?lang=en'"/>
                     </xsl:when>
                     <xsl:otherwise>
@@ -432,7 +435,7 @@
         <a>
             <xsl:attribute name="href">
                 <xsl:choose>
-                    <xsl:when test="$active-url = '#reading-room' or starts-with($active-url, 'http://read.84000.co')">
+                    <xsl:when test="$active-url = '#reading-room' or starts-with($active-url, 'https://read.84000.co')">
                         <xsl:value-of select="'?lang=zh'"/>
                     </xsl:when>
                     <xsl:otherwise>
