@@ -3,7 +3,7 @@
     
     <!-- 
         NOTE:
-        For use in eXist: add xmlns to root e.g. <xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml"  xmlns:xsl.../>
+        For use in eXist: leave xmlns to root e.g. <xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml"  xmlns:xsl.../>
         For use in php XSLTProcessor: remove xmlns from root e.g. <xsl:stylesheet xmlns:xsl.../>
     -->
     

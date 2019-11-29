@@ -58,6 +58,7 @@
                                             <div class="col-sm-9">
                                                 <select name="resource" id="resource" class="form-control">
                                                     <option value="tei">All TEI files</option>
+                                                    <option value="sections">Section TEI files</option>
                                                     <option value="config">Config files</option>
                                                     <option value="tm">Translation Memory files</option>
                                                     <option value="tmg">Translation Memory Generator files</option>

@@ -70,6 +70,8 @@ declare function deploy:commit-data($action as xs:string, $sync-resource as xs:s
             $repo-path || '/translation-memory-generator'
         else if($sync-resource eq 'rdf') then
             $repo-path || '/rdf'
+        else if($sync-resource eq 'sections') then
+            $repo-path || '/tei/sections'
         else
             $repo-path || '/tei'
     
