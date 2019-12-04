@@ -17,7 +17,7 @@ declare variable $store:conf := $common:environment//m:store-conf[@type eq 'mast
 declare variable $store:file-group := 'utilities';
 declare variable $store:file-permissions := 'rw-rw-r--';
 
-declare function store:download-master($file-name as xs:string, $translations-master-host as xs:string) as element() {
+declare function store:download-master($file-name as xs:string, $translations-master-host as xs:string) as element()? {
     
     (: extract elements from the file name :)
     let $file-name-tokenized := tokenize($file-name, '\.')
@@ -41,7 +41,7 @@ declare function store:download-master($file-name as xs:string, $translations-ma
                 else
                     ()
                 
-        else if($file-extension = ('pdf', 'epub', 'azw3')) then
+        else if($file-extension = ('pdf', 'epub', 'azw3', 'rdf')) then
             
             (:  
                 Download the latest file from the master and set the version

@@ -85,8 +85,8 @@ declare function local:update-header($resource-id as xs:string, $tmx-header as e
             concat('MISSING: ', $resource-id)
 };
 
-(:local:set-mimetypes(),:)
-local:set-text-ids()(:,
+local:set-mimetypes()(:,
+local:set-text-ids():)(:,
 local:set-text-ids-again():)
 
 
