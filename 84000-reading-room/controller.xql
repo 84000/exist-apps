@@ -15,7 +15,7 @@ declare variable $resource-id := lower-case(substring-before($exist:resource, ".
 declare variable $resource-suffix := lower-case(substring-after($exist:resource, "."));
 declare variable $collection-path := lower-case(substring-before(substring-after($exist:path, "/"), "/"));
 declare variable $controller-root := lower-case(substring-after($exist:controller, "/"));
-declare variable $redirects := doc(concat($common:data-path, '/config/redirects.xml'))/m:redirects;
+declare variable $redirects := doc('/db/system/config/db/system/redirects.xml')/m:redirects;
 
 declare function local:dispatch($model as xs:string, $view as xs:string, $parameters as node()) as node(){
     <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
