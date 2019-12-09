@@ -125,7 +125,7 @@
                                 </xsl:when>
                                 
                                 <xsl:otherwise>
-                                    <xsl:copy-of select="article/*"/>
+                                    <xsl:copy-of select="xhtml:article/*"/>
                                 </xsl:otherwise>
                                 
                             </xsl:choose>

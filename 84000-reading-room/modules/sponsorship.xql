@@ -10,7 +10,7 @@ import module namespace tei-content="http://read.84000.co/tei-content" at "tei-c
 import module namespace translation="http://read.84000.co/translation" at "translation.xql";
 
 declare variable $sponsorship:data := doc(concat($common:data-path, '/operations/sponsorship.xml'));
-declare variable $sponsorship:cost-groups := doc(concat($common:data-path, '/config/cost-groups.xml'));
+declare variable $sponsorship:cost-groups := doc(concat($common:app-config, '/', 'cost-groups.xml'));
 
 declare variable $sponsorship:sponsorship-statuses :=
     <sponsorship-statuses xmlns="http://read.84000.co/ns/1.0">

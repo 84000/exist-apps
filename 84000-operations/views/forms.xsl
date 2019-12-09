@@ -470,19 +470,14 @@
                         <xsl:attribute name="value" select="m:translation/@id"/>
                     </input>
                     
-                    <xsl:if test="m:view-repo-url">
-                        <div class="alert alert-warning small text-center">
-                            <xsl:choose>
-                                <xsl:when test="m:translation/@status eq '1'">
-                                    <p>Updating the version number will commit the new version to the <a href="{ m:view-repo-url/text() }" target="github" class="alert-link">Github repository</a> and will generate new pdf and ebook files. This can take some time.</p>
-                                </xsl:when>
-                                <xsl:otherwise>
-                                    <p>Updating the version number will commit the new version to the <a href="{ m:view-repo-url/text() }" target="github" class="alert-link">Github repository</a>.</p>
-                                </xsl:otherwise>
-                            </xsl:choose>
-                        </div>
-                    </xsl:if>
-                    
+                    <div class="alert alert-warning small text-center">
+                        <p>
+                            <xsl:value-of select="'Updating the version number will commit the new version to the Github repository.'"/>
+                            <xsl:if test="m:translation/@status eq '1'">
+                                <xsl:value-of select="' Associated files (pdfs, ebooks) will be generated for published texts. This can take some time.'"/>
+                            </xsl:if>
+                        </p>
+                    </div>
                     
                     <div class="row">
                         <!-- <div class="col-sm-12"> -->

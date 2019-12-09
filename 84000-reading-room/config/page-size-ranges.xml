@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<page-size-ranges xmlns="http://read.84000.co/ns/1.0">
+    <range id="1" min="1" max="30"/>
+    <range id="2" min="1" max="99"/>
+    <range id="3" min="100" max="149"/>
+    <range id="4" min="150" max="199"/>
+    <range id="5" min="200" max="10000"/>
+</page-size-ranges>

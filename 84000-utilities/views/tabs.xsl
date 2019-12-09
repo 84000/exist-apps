@@ -32,7 +32,7 @@
             <tab page="client-errors.html" model="utilities/client-errors">
                 <label>Client Errors</label>
             </tab>
-            <xsl:if test="$environment/m:snapshot-conf and /m:response/m:request/m:authenticated-user/m:group[@name eq 'snapshots']">
+            <!--<xsl:if test="$environment/m:snapshot-conf and /m:response/m:request/m:authenticated-user/m:group[@name eq 'snapshots']">
                 <tab page="snapshot.html" model="utilities/snapshot">
                     <label>Make a data snapshot</label>
                 </tab>
@@ -40,6 +40,16 @@
             <xsl:if test="$environment/m:deployment-conf and /m:response/m:request/m:authenticated-user/@name eq 'admin'">
                 <tab page="deployment.html" model="utilities/deployment">
                     <label>Deploy the software</label>
+                </tab>
+            </xsl:if>-->
+            <xsl:if test="$environment/m:git-config/m:push/m:repo and /m:response/m:request/m:authenticated-user/m:group[@name eq 'git-push']">
+                <tab page="git-push.html" model="utilities/git-push">
+                    <label>Push updated files to the Git repository</label>
+                </tab>
+            </xsl:if>
+            <xsl:if test="$environment/m:git-config/m:pull/m:repo and /m:response/m:request/m:authenticated-user/m:group[@name eq 'dba']">
+                <tab page="git-pull.html" model="utilities/git-pull">
+                    <label>Pull latest files from the Git repository</label>
                 </tab>
             </xsl:if>
             <xsl:if test="/m:response/m:request/m:authenticated-user/m:group[@name eq 'dba']">

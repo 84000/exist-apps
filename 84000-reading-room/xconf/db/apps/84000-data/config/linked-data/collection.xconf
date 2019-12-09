@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<collection xmlns="http://exist-db.org/collection-config/1.0">
+    
+    <!-- /db/apps/84000-data/config-linked-data/ -->
+    
+    <index xmlns:m="http://read.84000.co/ns/1.0">
+        
+        <!-- Range indexes -->
+        <range>
+            
+            <!-- text-refs.xml -->
+            <create qname="m:text">
+                <field name="text-key" match="@key" type="xs:string"/>
+            </create>
+            
+        </range>
+        
+    </index>
+</collection>

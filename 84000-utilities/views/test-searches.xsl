@@ -7,7 +7,7 @@
     <xsl:template match="/m:response">
         <xsl:variable name="content">
             
-            <xsl:variable name="request-lang" select="m:request/m:parameter[@name eq 'lang']"/>
+            <xsl:variable name="request-lang" select="if(m:request/m:parameter[@name eq 'lang']) then m:request/m:parameter[@name eq 'lang'] else 'sa-ltn'" as="xs:string"/>
             
             <div class="container">
                 <div class="panel panel-default">
@@ -16,7 +16,6 @@
                         
                         <span class="title">
                             <xsl:value-of select="'Test Searches'"/>
-                            <xsl:value-of select="$request-lang"/>
                         </span>
                         
                     </div>

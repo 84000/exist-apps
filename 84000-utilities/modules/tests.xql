@@ -13,9 +13,8 @@ declare namespace tei="http://www.tei-c.org/ns/1.0";
 declare namespace xhtml="http://www.w3.org/1999/xhtml";
 declare namespace m="http://read.84000.co/ns/1.0";
 
-declare variable $tests:utilities-data-collection := concat($common:data-path, '/utilities');
-declare variable $tests:tests-file := 'lucene-tests.xml';
-declare variable $tests:lucene-tests := doc(concat($tests:utilities-data-collection, '/', $tests:tests-file))/m:lucene-tests;
+declare variable $tests:utilities-data-collection := concat($common:data-path, '/config/tests');
+declare variable $tests:lucene-tests := doc(concat($tests:utilities-data-collection, '/', 'lucene-tests.xml'))/m:lucene-tests;
 
 declare function tests:translations($translation-id as xs:string) as item(){
     
@@ -606,7 +605,7 @@ declare function tests:normalize-whitespace($string as xs:string) as xs:string {
 
 declare function tests:structure() as element() {
 
-    let $sections-structure := doc(concat($common:data-path, '/operations/sections-structure.xml'))
+    let $sections-structure := doc(concat($common:data-path, '/config/tests/sections-structure.xml'))
     
     let $sections := $section:sections
     let $texts := $section:texts

@@ -55,7 +55,8 @@ let $commit-version :=
     if($store:conf and not(translation-status:is-current-version($tei-version-str, $current-version-str))) then (
         
         (: Commit to GitHub :)
-        deploy:commit-data('sync', tei-content:document-url($tei), ''),
+        (:deploy:commit-data('sync', tei-content:document-url($tei), ''),:)
+        deploy:push('data-tei', (), (), tei-content:document-url($tei)),
         
         (: Store associated files :)
         if(tei-content:translation-status($tei) eq '1')then
@@ -68,7 +69,8 @@ let $commit-version :=
                     store:create(concat($bibl/@key, '.epub')),
                     (: rdf :)
                     store:create(concat($bibl/@key, '.rdf')),
-                    deploy:commit-data('sync', 'rdf', concat('Sync ', $bibl/@key, '.rdf'))
+                    (:deploy:commit-data('sync', 'rdf', concat('Sync ', $bibl/@key, '.rdf')):)
+                    deploy:push('data-rdf', (), concat('Sync ', $bibl/@key, '.rdf'), ())
                 )
         else
             ()
@@ -117,9 +119,9 @@ return
             contributors:persons(false()),
             contributors:teams(true(), false(), false()),
             $tei-content:title-types,
-            doc(concat($common:data-path, '/config/contributor-types.xml')),
-            doc(concat($common:data-path, '/config/publication-tasks.xml')),
-            doc(concat($common:data-path, '/config/submission-checklist.xml')),
+            doc('../config/contributor-types.xml'),
+            doc('../config/publication-tasks.xml'),
+            doc('../config/submission-checklist.xml'),
             <translation-status xmlns="http://read.84000.co/ns/1.0" >
             {
                 translation-status:notes($text-id),
@@ -127,11 +129,7 @@ return
                 translation-status:submissions($text-id),
                 translation-status:status-updates($tei)
             }
-            </translation-status>,
-            if($store:conf and $deploy:snapshot-conf) then
-                $deploy:snapshot-conf/m:view-repo-url
-            else
-                ()
+            </translation-status>
         )
     )
     

@@ -17,15 +17,6 @@
                 <field name="sponsor-id" match="@xml:id" type="xs:string"/>
             </create> -->
             
-            <!-- sections-structure.xml -->
-            <create qname="m:section">
-                <field name="section-source-id" match="@source-id" type="xs:string"/>
-            </create>
-            
-            <create qname="m:text">
-                <field name="text-source-id" match="@source-id" type="xs:string"/>
-            </create>
-            
             <!-- sponsorship.xml -->
             <create qname="m:text">
                 <field name="text-id" match="@text-id" type="xs:string"/>
@@ -33,11 +24,6 @@
             
             <create qname="m:part">
                 <field name="part-status" match="@status" type="xs:string"/>
-            </create>
-            
-            <!-- text-refs.xml -->
-            <create qname="m:text">
-                <field name="text-key" match="@key" type="xs:string"/>
             </create>
             
         </range>

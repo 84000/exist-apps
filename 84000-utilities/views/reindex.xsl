@@ -51,22 +51,28 @@
                                     
                                     <ul>
                                         <li>
-                                            <a href="?collection=tei">TEI collection</a>
+                                            <a href="?collection=tests">Test data</a>
                                         </li>
                                         <li>
-                                            <a href="?collection=operations">Operations collection</a>
+                                            <a href="?collection=linked-data">Linked Data references</a>
                                         </li>
                                         <li>
-                                            <a href="?collection=translation-memory">Translation memory collection</a>
+                                            <a href="?collection=operations">Operations data</a>
                                         </li>
                                         <li>
-                                            <a href="?collection=translation-memory-generator">Translation memory generator collection</a>
+                                            <a href="?collection=tei">TEI data</a>
                                         </li>
                                         <li>
-                                            <a href="?collection=config">Config collection</a>
+                                            <a href="?collection=translation-memory">Translation memory data</a>
                                         </li>
                                         <li>
-                                            <a href="?collection=source">Tibetan source collection</a>
+                                            <a href="?collection=translation-memory-generator">Translation memory generator data</a>
+                                        </li>
+                                        <li>
+                                            <a href="?collection=source">Tibetan source data</a>
+                                        </li>
+                                        <li>
+                                            <a href="?collection=reading-room-config">Reading Room config</a>
                                         </li>
                                     </ul>
                                     

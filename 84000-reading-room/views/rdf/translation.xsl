@@ -6,8 +6,8 @@
     <!-- <xsl:output method="xml" indent="no" encoding="UTF-8" media-type="application/rdf+xml"/> -->
 
     <xsl:variable name="contributors" select="doc(concat(/m:response/@data-path, '/operations/contributors.xml'))"/>
-    <xsl:variable name="collections" select="doc(concat(/m:response/@data-path, '/operations/collection-refs.xml'))"/>
-    <xsl:variable name="texts" select="doc(concat(/m:response/@data-path, '/operations/text-refs.xml'))"/>
+    <xsl:variable name="collections" select="doc(concat(/m:response/@data-path, '/config/linked-data/collection-refs.xml'))"/>
+    <xsl:variable name="texts" select="doc(concat(/m:response/@data-path, '/config/linked-data/text-refs.xml'))"/>
 
     <xsl:template match="/m:response">
         

@@ -7,18 +7,23 @@ import module namespace source="http://read.84000.co/source" at "../../84000-rea
 declare option exist:serialize "method=xml indent=no";
 
 let $reindex-collection as xs:string := 
-    if(request:get-parameter('collection', '') eq 'tei') then
-        $common:tei-path
+    
+    if(request:get-parameter('collection', '') eq 'tests') then
+        concat($common:data-path, '/config/tests')
+    else if(request:get-parameter('collection', '') eq 'linked-data') then
+        concat($common:data-path, '/config/linked-data')
     else if(request:get-parameter('collection', '') eq 'operations') then
         concat($common:data-path, '/operations')
+    else if(request:get-parameter('collection', '') eq 'tei') then
+        concat($common:data-path, '/tei')
     else if(request:get-parameter('collection', '') eq 'translation-memory') then
         concat($common:data-path, '/translation-memory')
     else if(request:get-parameter('collection', '') eq 'translation-memory-generator') then
         concat($common:data-path, '/translation-memory-generator')
-    else if(request:get-parameter('collection', '') eq 'config') then
-        concat($common:data-path, '/config')
     else if(request:get-parameter('collection', '') eq 'source') then
         $source:source-data-path
+    else if(request:get-parameter('collection', '') eq 'reading-room-config') then
+        $common:app-config
     else 
         ''
 

@@ -13,6 +13,173 @@ import module namespace dbutil="http://exist-db.org/xquery/dbutil";
 declare variable $deploy:snapshot-conf := $common:environment//m:snapshot-conf;
 declare variable $deploy:deployment-conf := $common:environment//m:deployment-conf;
 
+declare variable $deploy:git-config := $common:environment/m:git-config;
+
+declare function deploy:exist-options() as element() {
+    <options>
+        <workingDir>{ $deploy:git-config/@exist-path/string() }</workingDir>
+        { deploy:environment-vars() }
+    </options>
+};
+
+declare function deploy:git-options($repo as element(m:repo)) as element() {
+    <options>
+        <workingDir>{ $repo/@path/string() }</workingDir>
+        { deploy:environment-vars() }
+    </options>
+};
+
+declare function deploy:environment-vars() as element() {
+    <environment>
+    {
+        for $env-var in $common:environment//m:env-vars/m:var
+        return 
+            <env name="{ upper-case($env-var/@id) }" value="/{ $env-var/text() }"/>
+    }
+    </environment>
+};
+
+declare function deploy:admin-password-correct($admin-password as xs:string?) as xs:boolean {
+    if($admin-password) then
+        xmldb:authenticate('/db', 'admin', $admin-password)
+    else
+        false()
+};
+
+declare function deploy:push($repo-id as xs:string, $admin-password as xs:string?, $commit-msg as xs:string?, $resource as xs:string?) as element(m:result){
+    
+    (: get the repo from the config :)
+    let $repo := $deploy:git-config/m:push/m:repo[@id eq $repo-id]
+    
+    (: validate the admin password :)
+    let $admin-password-correct := deploy:admin-password-correct($admin-password)
+    
+    let $exist-options := deploy:exist-options()
+    let $git-options := deploy:git-options($repo)
+    
+    let $commit-msg := 
+        if(not($commit-msg))then
+            concat('Sync ', $repo/m:label)
+        else
+            $commit-msg
+    
+    let $git-add := 
+        if($resource) then
+            let $sync := $repo/m:sync[starts-with($resource, @collection)][1]
+            let $sub-dir := 
+                if($sync/@sub-dir) then
+                    concat($sync/@sub-dir, '/')
+                else
+                    ''
+            let $resource-relative := substring-after($resource, concat($sync/@collection, '/'))
+            return
+                concat($sub-dir, $resource-relative)
+        else
+            '--all'
+            
+    where $repo and $git-add
+    return
+        <result xmlns="http://read.84000.co/ns/1.0" admin-password-correct="{ $admin-password-correct }">
+        {
+            (: options debug :)
+            (:$exist-options,
+            $git-options,:)
+            
+            (: sync the data :)
+            for $sync in $repo/m:sync[@collection]
+            
+                let $sub-dir := 
+                    if($sync[@sub-dir gt '']) then
+                        concat('/',  $sync/@sub-dir)
+                    else
+                        ''
+                
+                let $backup := 
+                    if($sync[@backup gt '']) then
+                        concat('/',  $sync/@backup)
+                    else
+                        ''
+                
+                let $do-sync := 
+                    file:sync(
+                        $sync/@collection, 
+                        concat($repo/@path, $sub-dir), 
+                        ()
+                    )
+                    
+                where $do-sync//file:update and $admin-password-correct eq true() and ends-with($backup, '.zip')
+            return
+                process:execute(
+                    ('bin/backup.sh', '-u', 'admin', '-p', $admin-password, '-b', $sync/@collection, '-d', concat($repo/@path, $sub-dir, $backup))
+                    , $exist-options
+                )
+            ,
+            <push>
+            {
+                (: Do Git push :)
+                (:process:execute(('git', 'status'), $git-options),:)
+                process:execute(('git', 'add', $git-add), $git-options),
+                process:execute(('git', 'commit', "-m", $commit-msg), $git-options),
+                process:execute(('git', 'push', 'origin', 'master'), $git-options)
+            }
+            </push>
+        }
+        </result>
+};
+
+declare function deploy:pull($repo-id as xs:string, $admin-password as xs:string) as element(m:result){
+    
+    (: get the repo from the config :)
+    let $repo := $deploy:git-config/m:pull/m:repo[@id eq $repo-id]
+    
+    (: validate the admin password :)
+    let $admin-password-correct := deploy:admin-password-correct($admin-password)
+    
+    let $exist-options := deploy:exist-options()
+    let $git-options := deploy:git-options($repo)
+    
+    where $repo
+    return
+        <result xmlns="http://read.84000.co/ns/1.0" admin-password-correct="{ $admin-password-correct }">
+        {
+            (: options debug :)
+            (:$exist-options,
+            $git-options,:)
+            
+            <pull>
+            {
+                (: Do Git pull :)
+                (:process:execute(('git', 'status'), $git-options),:)
+                process:execute(('git', 'pull', 'origin', 'master'), $git-options)
+            }
+            </pull>,
+            
+            (: Restore the zip to eXist :)
+            for $restore in $repo/m:restore
+            
+                let $backup := 
+                    if($restore[@backup gt '']) then
+                        concat('/',  $restore/@backup)
+                    else
+                        ''
+                
+                where $backup gt '' and ends-with($backup, '.zip') and $admin-password-correct and doc-available(concat($repo/@path, $backup))
+            return
+                process:execute(
+                    ('bin/backup.sh', '-u', 'admin', '-p', $admin-password, '-P', $admin-password, '-r', concat($repo/@path, $backup)),
+                    $exist-options
+                )
+            (:,
+            
+            (\: Clean repos :\)
+            repair:clean-all(),
+            repair:repair():)
+        }
+        </result>
+};
+
+
+(: Old code from here... :)
 declare function deploy:execute-options($working-dir as xs:string) as element() {
     <options>
         <workingDir>/{ $working-dir }</workingDir>

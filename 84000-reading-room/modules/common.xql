@@ -18,6 +18,7 @@ import module namespace converter="http://tbrc.org/xquery/ewts2unicode" at "java
 declare variable $common:app-id := common:app-id();
 declare variable $common:root-path := concat('/db/apps/', $common:app-id);
 declare variable $common:app-path := concat('/db/apps/', $common:app-id);
+declare variable $common:app-config := concat($common:app-path, '/config');
 declare variable $common:app-version := doc(concat($common:root-path, '/expath-pkg.xml'))/pkg:package/@version;
 declare variable $common:log-path := '/db/system/logs';
 declare variable $common:data-collection := '/84000-data';
@@ -65,6 +66,8 @@ function common:response($model-type as xs:string, $app-id as xs:string, $data a
         timestamp="{ current-dateTime() }"
         app-id="{ $app-id }" 
         app-version="{ $common:app-version }"
+        app-path="{ $common:app-path }" 
+        app-config="{ $common:app-config }" 
         data-path="{ $common:data-path }" 
         environment-path="{ $common:environment-path }"
         user-name="{ common:user-name() }" 
@@ -430,9 +433,9 @@ declare function common:local-text($key as xs:string, $lang as xs:string) {
     
     let $local-texts :=
         if($lang = ('en', 'zh')) then
-            doc(concat($common:data-path, '/config/texts.', $lang, '.xml'))//m:item
+            doc(concat($common:app-config, '/', 'texts.', $lang, '.xml'))//m:item
         else
-            doc(concat($common:data-path, '/config/texts.en.xml'))//m:item
+            doc(concat($common:app-config, '/', 'texts.en.xml'))//m:item
     
     let $local-text := $local-texts[@key eq $key][1]/node()
     

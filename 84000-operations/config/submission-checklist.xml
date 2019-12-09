@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<submission-checklist xmlns="http://read.84000.co/ns/1.0">
+    <document>
+        <item id="document-template">84000 template</item>
+    </document>
+    <spreadsheet>
+        <item id="spreadsheet-template">84000 template</item>
+        <item id="apostrophes-checked">Apostrophes checked</item>
+    </spreadsheet>
+</submission-checklist>

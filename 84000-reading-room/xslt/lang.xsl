@@ -3,7 +3,7 @@
     
     <xsl:variable name="response-lang" select="/m:response/@lang"/>
     <xsl:variable name="replace-text" select="/m:response/m:replace-text/m:value"/>
-    <xsl:variable name="text-items" select="doc(concat(/m:response/@data-path, '/config/texts.', if($response-lang = ('en', 'zh')) then $response-lang else 'en', '.xml'))//m:item"/>
+    <xsl:variable name="text-items" select="doc(concat(/m:response/@app-config, '/', 'texts.', if($response-lang = ('en', 'zh')) then $response-lang else 'en', '.xml'))//m:item"/>
     
     <xsl:template name="local-text">
         <xsl:param name="local-key" as="xs:string" required="yes"/>

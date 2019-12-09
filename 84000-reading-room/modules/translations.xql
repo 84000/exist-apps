@@ -16,7 +16,7 @@ import module namespace sponsorship="http://read.84000.co/sponsorship" at "spons
 import module namespace source="http://read.84000.co/source" at "source.xql";
 import module namespace functx="http://www.functx.com";
 
-declare variable $translations:page-size-ranges := doc(concat($common:data-path, '/config/page-size-ranges.xml'));
+declare variable $translations:page-size-ranges := doc(concat($common:app-config, '/', 'page-size-ranges.xml'));
 
 declare function translations:work-tei($work as xs:string) as element()* {
     if($work eq 'all') then

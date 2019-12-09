@@ -19,8 +19,8 @@ let $tabs := local:user-tabs()
 let $tab := $tabs//m:tab[@id eq request:get-parameter('tab','')]/@id
 let $tab := 
     if(not($tab gt ''))then
-        if($tabs//m:tab[@home]) then
-            $tabs//m:tab[@home]/@id
+        if($tabs//m:tab[@home][1]) then
+            $tabs//m:tab[@home][1]/@id
         else
             $tabs//m:tab[1]/@id
     else

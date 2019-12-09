@@ -28,7 +28,8 @@ let $store-file :=
         (
             store:create($store-file-name),
             if(ends-with($store-file-name, '.rdf')) then
-                deploy:commit-data('sync', 'rdf', concat('Sync ', $store-file-name))
+                (:deploy:commit-data('sync', 'rdf', concat('Sync ', $store-file-name)):)
+                deploy:push('data-rdf', (), concat('Sync ', $store-file-name), ())
             else
                 ()
         )
