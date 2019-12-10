@@ -11,7 +11,7 @@
         <xsl:variable name="reading-room-path" select="$environment/m:url[@id eq 'reading-room']/text()"/>
         <xsl:variable name="reading-room-no-cache-path" select="$environment/m:url[@id eq 'reading-room-no-cache']/text()"/>
         <xsl:variable name="texts-status" select="m:translations/m:text-status[1]/@id"/>
-        
+        <xsl:variable name="diff" select="not(/m:response/m:request/m:parameter[@name eq 'texts-status']) or /m:response/m:request/m:parameter[@name eq 'texts-status']/text() eq 'diff'"/>
         
         <xsl:variable name="content">
             
@@ -41,7 +41,7 @@
                                             <!-- If it's a client then add an option to view different files -->
                                             <xsl:if test="$environment/m:store-conf[@type eq 'client']">
                                                 <option value="diff">
-                                                    <xsl:if test="compare(m:request/m:parameter[@name eq 'texts-status'], 'diff') eq 0">
+                                                    <xsl:if test="$diff">
                                                         <xsl:attribute name="selected" select="'selected'"/>
                                                     </xsl:if>
                                                     <xsl:value-of select="'Texts where there is a new version'"/>
@@ -112,7 +112,7 @@
                                         <xsl:variable name="master-downloads" select="/m:response/m:translations-master/m:translations/m:text/m:downloads[@resource-id eq $toh/@key]"/>
                                         
                                         <!-- If it's a client and it's diff only show where master and client differ -->
-                                        <xsl:if test="$environment/m:store-conf[not(@type eq 'client')] or not(/m:response/m:request/m:parameter[@name eq 'texts-status']/text() eq 'diff') or ($master-downloads and not(compare($tei-version, $master-downloads/@tei-version) eq 0))">
+                                        <xsl:if test="$environment/m:store-conf[not(@type eq 'client')] or not($diff) or ($master-downloads and not(compare($tei-version, $master-downloads/@tei-version) eq 0))">
                                             
                                             <!-- Translation title -->
                                             <tr>
