@@ -59,7 +59,7 @@ let $commit-version :=
         deploy:push('data-tei', (), (), tei-content:document-url($tei)),
         
         (: Store associated files :)
-        if(tei-content:translation-status($tei) eq '1')then
+        if(tei-content:translation-status-group($tei) eq 'published')then
             for $bibl in $tei//tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl
             return
                 (   

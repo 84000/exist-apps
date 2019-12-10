@@ -134,6 +134,6 @@ local:move-redirects()
 (:local:move-tests():)
 (:local:move-linked-data-refs():)
 (: No need to move reading-room config!!! It's deployed in the app??? local:move-reading-room-config() :)
-(:local:move-operations-config():)
+(: No need to move operations config!!! It's deployed in the app??? local:move-operations-config():)
 
 
