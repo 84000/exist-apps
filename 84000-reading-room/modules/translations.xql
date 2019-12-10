@@ -396,6 +396,7 @@ declare function translations:downloads($resource-ids as xs:string*) as element(
     <translations xmlns="http://read.84000.co/ns/1.0">
     {
      for $tei in  $tei-content:translations-collection//tei:TEI[tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl[@key = $resource-ids]]
+        let $text-id := tei-content:id($tei)
      return
         element { QName('http://read.84000.co/ns/1.0', 'text') }{
             attribute id { $text-id }, 

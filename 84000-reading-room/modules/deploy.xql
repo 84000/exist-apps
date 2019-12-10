@@ -89,13 +89,13 @@ declare function deploy:push($repo-id as xs:string, $admin-password as xs:string
             for $sync in $repo/m:sync[@collection]
             
                 let $sub-dir := 
-                    if($sync[@sub-dir gt '']) then
+                    if($sync[@sub-dir]) then
                         concat('/',  $sync/@sub-dir)
                     else
                         ''
                 
                 let $backup := 
-                    if($sync[@backup gt '']) then
+                    if($sync[@backup]) then
                         concat('/',  $sync/@backup)
                     else
                         ''
@@ -109,10 +109,13 @@ declare function deploy:push($repo-id as xs:string, $admin-password as xs:string
                     
                 where $do-sync//file:update and $admin-password-correct eq true() and ends-with($backup, '.zip')
             return
+            (
+                $do-sync,
                 process:execute(
                     ('bin/backup.sh', '-u', 'admin', '-p', $admin-password, '-b', $sync/@collection, '-d', concat($repo/@path, $sub-dir, $backup))
                     , $exist-options
                 )
+            )
             ,
             <push>
             {
@@ -158,12 +161,12 @@ declare function deploy:pull($repo-id as xs:string, $admin-password as xs:string
             for $restore in $repo/m:restore
             
                 let $backup := 
-                    if($restore[@backup gt '']) then
+                    if($restore[@backup]) then
                         concat('/',  $restore/@backup)
                     else
                         ''
                 
-                where $backup gt '' and ends-with($backup, '.zip') and $admin-password-correct and doc-available(concat($repo/@path, $backup))
+                where $backup gt '' and ends-with($backup, '.zip') and $admin-password-correct
             return
                 process:execute(
                     ('bin/backup.sh', '-u', 'admin', '-p', $admin-password, '-P', $admin-password, '-r', concat($repo/@path, $backup)),
