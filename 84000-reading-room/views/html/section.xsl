@@ -525,9 +525,11 @@
                     <xsl:if test="self::m:sub-section and m:texts/m:text">
                         <xsl:attribute name="class" select="'list-grouping border'"/>
                         <xsl:attribute name="id" select="concat('grouping-', @id)"/>
-                        <xsl:call-template name="section-title">
-                            <xsl:with-param name="section" select="."/>
-                        </xsl:call-template>
+                        <div class=" text-center bottom-margin">
+                            <xsl:call-template name="section-title">
+                                <xsl:with-param name="section" select="."/>
+                            </xsl:call-template>
+                        </div>
                     </xsl:if>
                     
                     <!-- loop through the texts -->

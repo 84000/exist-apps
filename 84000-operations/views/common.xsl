@@ -72,9 +72,17 @@
                     <xsl:attribute name="class" select="'active'"/>
                 </xsl:if>
                 <a href="search.html">
-                    <xsl:value-of select="'Search'"/>
+                    <xsl:value-of select="'Translations'"/>
                 </a>
             </li>
+            <!--<li role="presentation">
+                <xsl:if test="$active-tab eq 'operations/sections'">
+                    <xsl:attribute name="class" select="'active'"/>
+                </xsl:if>
+                <a href="sections.html">
+                    <xsl:value-of select="'Sections'"/>
+                </a>
+            </li>-->
             <li role="presentation">
                 <xsl:if test="$active-tab eq 'operations/sponsors'">
                     <xsl:attribute name="class" select="'active'"/>

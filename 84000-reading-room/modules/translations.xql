@@ -338,6 +338,22 @@ declare function translations:translations($text-statuses as xs:string*, $includ
     
 };
 
+declare function translations:versioned($include-downloads as xs:string, $include-folios as xs:boolean) as element() {
+
+    let $translations := $tei-content:translations-collection//tei:TEI[tei:teiHeader/tei:fileDesc/tei:editionStmt[tei:edition/text()]]
+    
+    return
+        <translations xmlns="http://read.84000.co/ns/1.0">
+        {
+            for $toh-key in $translations//tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl/@key
+                let $tei := $translations[tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl[@key eq lower-case($toh-key)]]
+            return
+                translations:filtered-text($tei, $toh-key, false(), $include-downloads, $include-folios)
+        }
+        </translations>
+    
+};
+
 declare function translations:sponsored-texts() as element() {
     
     <sponsored-texts xmlns="http://read.84000.co/ns/1.0">
@@ -381,16 +397,14 @@ declare function translations:downloads($resource-ids as xs:string*) as element(
     {
      for $tei in  $tei-content:translations-collection//tei:TEI[tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl[@key = $resource-ids]]
      return
-        <translation 
-            id="{ tei-content:id($tei) }"
-            uri="{ base-uri($tei) }"
-            file-name="{ util:unescape-uri(replace(base-uri($tei), ".+/(.+)$", "$1"), 'UTF-8') }">
-            { 
-                for $resource-id in $tei/tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl[@key = $resource-ids]/@key
-                return
-                    translation:downloads($tei, $resource-id, 'all')
-            }
-        </translation>
+        element { QName('http://read.84000.co/ns/1.0', 'text') }{
+            attribute id { $text-id }, 
+            attribute uri { base-uri($tei) },
+            attribute file-name { util:unescape-uri(replace(base-uri($tei), ".+/(.+)$", "$1"), 'UTF-8') },
+            for $resource-id in $tei/tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl[@key = $resource-ids]/@key
+            return
+                translation:downloads($tei, $resource-id, 'all')
+        }
     }
     </translations>
     

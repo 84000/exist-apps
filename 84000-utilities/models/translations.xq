@@ -15,8 +15,10 @@ declare option exist:serialize "method=xml indent=no";
 (: Get config :)
 let $store-conf := $common:environment/m:store-conf
 
+let $request-status :=  request:get-parameter('texts-status', 'diff')
+
 (: Validate the status ids in post :)
-let $texts-status := $tei-content:text-statuses/m:status[xs:string(@status-id) = request:get-parameter('texts-status', '1')][not(@status-id eq '0')]/@status-id
+let $texts-status := $tei-content:text-statuses/m:status[xs:string(@status-id) = $request-status][not(@status-id eq '0')]/@status-id
 
 (: Request includes file to store :)
 let $store-file-name := request:get-parameter('store', '')
@@ -39,7 +41,14 @@ let $store-file :=
         ()
 
 (: Translations in this database :)
-let $translations-local := translations:translations($texts-status, 'all', false())
+let $translations-local := 
+    if($request-status eq 'diff') then
+        (: Get all texts with a version  :)
+        translations:versioned('all', false())
+    else if($texts-status) then
+        translations:translations($texts-status, 'all', false())
+    else
+        ()
 
 (: If this is a client get translations in master database :)
 let $translations-master := 

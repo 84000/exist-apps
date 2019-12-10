@@ -2,6 +2,7 @@
 <xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" version="2.0" exclude-result-prefixes="#all">
     
     <xsl:import href="../../84000-reading-room/views/html/website-page.xsl"/>
+    <xsl:import href="../../84000-reading-room/xslt/layout.xsl"/>
     <xsl:import href="tabs.xsl"/>
     
     <xsl:variable name="environment" select="doc(/m:response/@environment-path)/m:environment"/>
@@ -277,23 +278,5 @@
         </xsl:for-each>
     </xsl:template>
     
-    <xsl:template name="indent">
-        <xsl:param name="counter"/>
-        <xsl:param name="finish"/>
-        <xsl:param name="content"/>
-        <span class="indent">
-            <xsl:choose>
-                <xsl:when test="$counter eq $finish">
-                    <xsl:copy-of select="$content"/>
-                </xsl:when>
-                <xsl:otherwise>
-                    <xsl:call-template name="indent">
-                        <xsl:with-param name="counter" select="$counter + 1"/>
-                        <xsl:with-param name="finish" select="$finish"/>
-                        <xsl:with-param name="content" select="$content"/>
-                    </xsl:call-template>
-                </xsl:otherwise>
-            </xsl:choose>
-        </span>
-    </xsl:template>
+    
 </xsl:stylesheet>
