@@ -15,7 +15,13 @@ declare option exist:serialize "method=xml indent=no";
 (: Get config :)
 let $store-conf := $common:environment/m:store-conf
 
-let $request-status :=  request:get-parameter('texts-status', 'diff')
+let $default-status := 
+    if($store-conf[@type eq 'client']) then
+        'diff'
+    else
+        '1'
+
+let $request-status :=  request:get-parameter('texts-status', $default-status)
 
 (: Validate the status ids in post :)
 let $texts-status := $tei-content:text-statuses/m:status[xs:string(@status-id) = $request-status][not(@status-id eq '0')]/@status-id

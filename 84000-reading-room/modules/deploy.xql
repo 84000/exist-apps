@@ -172,6 +172,7 @@ declare function deploy:pull($repo-id as xs:string, $admin-password as xs:string
                     ('bin/backup.sh', '-u', 'admin', '-p', $admin-password, '-P', $admin-password, '-r', concat($repo/@path, $backup)),
                     $exist-options
                 )
+                
             (:,
             
             (\: Clean repos :\)
