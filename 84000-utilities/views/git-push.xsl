@@ -35,14 +35,14 @@
                                             <xsl:value-of select="'This function makes a snapshot of the selected resource(s) and pushes it to the relevant GitHub repositories: '"/>
                                         </p>
                                         <ul class="list-inline inline-dots">
-                                            <xsl:for-each select="$environment/m:git-config/m:push/m:repo">
+                                            <xsl:for-each-group select="$environment/m:git-config/m:push/m:repo" group-by="@url">
                                                 <li>
                                                     <a target="_blank" class="alert-link nowrap">
                                                         <xsl:attribute name="href" select="concat(@url, '/commits/master')"/>
                                                         <xsl:value-of select="@url"/>
                                                     </a>
                                                 </li>
-                                            </xsl:for-each>
+                                            </xsl:for-each-group>
                                         </ul>
                                     </div>
                                     

@@ -35,14 +35,14 @@
                                             <xsl:value-of select="'This function pulls the lastest files from the relevant GitHub repositories and loads it into the database where appropriate.'"/>
                                         </p>
                                         <ul class="list-inline inline-dots">
-                                            <xsl:for-each select="$environment/m:git-config/m:pull/m:repo">
+                                            <xsl:for-each-group select="$environment/m:git-config/m:pull/m:repo" group-by="@url">
                                                 <li>
                                                     <a target="_blank" class="alert-link nowrap">
                                                         <xsl:attribute name="href" select="concat(@url, '/commits/master')"/>
                                                         <xsl:value-of select="@url"/>
                                                     </a>
                                                 </li>
-                                            </xsl:for-each>
+                                            </xsl:for-each-group>
                                         </ul>
                                     </div>
                                     

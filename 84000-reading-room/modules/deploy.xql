@@ -16,14 +16,14 @@ declare variable $deploy:deployment-conf := $common:environment//m:deployment-co
 declare variable $deploy:git-config := $common:environment/m:git-config;
 
 declare function deploy:exist-options() as element() {
-    <options>
+    <options type="exist-options">
         <workingDir>{ $deploy:git-config/@exist-path/string() }</workingDir>
         { deploy:environment-vars() }
     </options>
 };
 
 declare function deploy:git-options($repo as element(m:repo)) as element() {
-    <options>
+    <options type="git-options">
         <workingDir>{ $repo/@path/string() }</workingDir>
         { deploy:environment-vars() }
     </options>
@@ -120,7 +120,7 @@ declare function deploy:push($repo-id as xs:string, $admin-password as xs:string
             <push>
             {
                 (: Do Git push :)
-                (:process:execute(('git', 'status'), $git-options),:)
+                process:execute(('git', 'status'), $git-options),
                 process:execute(('git', 'add', $git-add), $git-options),
                 process:execute(('git', 'commit', "-m", $commit-msg), $git-options),
                 process:execute(('git', 'push', 'origin', 'master'), $git-options)

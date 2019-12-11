@@ -450,7 +450,7 @@
                                         </xsl:if>
                                     </xsl:for-each>
                                 </tbody>
-                                <xsl:if test="$environment/m:store-conf[not(@type eq 'client')] or not(/m:response/m:request/m:parameter[@name eq 'texts-status']/text() eq 'diff')">
+                                <xsl:if test="$environment/m:store-conf[not(@type eq 'client')] or not($diff)">
                                     <tfoot>
                                         <tr>
                                             <td/>
