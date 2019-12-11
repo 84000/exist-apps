@@ -9,6 +9,7 @@ declare variable $collection-uri := concat($common:data-path, '/translation-memo
 
 declare function local:set-mimetypes(){
     for $file in xmldb:get-child-resources($collection-uri)
+    where not($file eq 'README.md')
     order by $file
     return
         if(not(xmldb:get-mime-type(xs:anyURI(concat($collection-uri, '/', $file))) eq 'application/xml')) then
@@ -20,8 +21,8 @@ declare function local:set-mimetypes(){
                 'application/xml'
             ),
             sm:chgrp(xs:anyURI(concat($collection-uri, '/', $file)), 'translation-memory'),
-            sm:chmod(xs:anyURI(concat($collection-uri, '/', $file)), 'rw-rw-r--'),(::)
-            concat($file, ' converted to xml')
+            sm:chmod(xs:anyURI(concat($collection-uri, '/', $file)), 'rw-rw-r--'),
+            concat($file, ' (', xmldb:get-mime-type(xs:anyURI(concat($collection-uri, '/', $file))), ') converted to xml')
         )
         else
             concat('ALREADY XML: ', $file)

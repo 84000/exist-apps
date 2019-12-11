@@ -60,6 +60,9 @@
                                             <a href="?collection=operations">Operations data</a>
                                         </li>
                                         <li>
+                                            <a href="?collection=local">Local data</a>
+                                        </li>
+                                        <li>
                                             <a href="?collection=tei">TEI data</a>
                                         </li>
                                         <li>

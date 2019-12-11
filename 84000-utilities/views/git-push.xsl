@@ -31,6 +31,9 @@
                                 <div class="col-sm-offset-2 col-sm-8">
                                     
                                     <div class="alert alert-success small text-center">
+                                        <h1 class="no-top-margin text-success">
+                                            <xsl:value-of select="concat($environment/m:warning, '$ git push')"/>
+                                        </h1>
                                         <p>
                                             <xsl:value-of select="'This function makes a snapshot of the selected resource(s) and pushes it to the relevant GitHub repositories: '"/>
                                         </p>
@@ -107,7 +110,7 @@
                                                 <hr/>
                                             </xsl:for-each>
                                             <strong>
-                                                <xsl:value-of select="concat($environment/m:warning, '$ ')"/>
+                                                <xsl:value-of select="concat($environment/m:warning, '$ ...')"/>
                                             </strong>
                                         </code>
                                     </div>

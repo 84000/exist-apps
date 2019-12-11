@@ -31,6 +31,9 @@
                                 <div class="col-sm-offset-2 col-sm-8">
                                     
                                     <div class="alert alert-danger small text-center">
+                                        <h1 class="no-top-margin">
+                                            <xsl:value-of select="concat($environment/m:warning, '$ git pull')"/>
+                                        </h1>
                                         <p>
                                             <xsl:value-of select="'This function pulls the lastest files from the relevant GitHub repositories and loads it into the database where appropriate.'"/>
                                         </p>
@@ -97,7 +100,7 @@
                                                 <hr/>
                                             </xsl:for-each>
                                             <strong>
-                                                <xsl:value-of select="concat($environment/m:warning, '$ ')"/>
+                                                <xsl:value-of select="concat($environment/m:warning, '$ ...')"/>
                                             </strong>
                                         </code>
                                     </div>

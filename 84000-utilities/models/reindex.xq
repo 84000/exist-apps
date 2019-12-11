@@ -14,6 +14,8 @@ let $reindex-collection as xs:string :=
         concat($common:data-path, '/config/linked-data')
     else if(request:get-parameter('collection', '') eq 'operations') then
         concat($common:data-path, '/operations')
+    else if(request:get-parameter('collection', '') eq 'local') then
+        concat($common:data-path, '/local')
     else if(request:get-parameter('collection', '') eq 'tei') then
         concat($common:data-path, '/tei')
     else if(request:get-parameter('collection', '') eq 'translation-memory') then

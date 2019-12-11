@@ -21,7 +21,7 @@ import module namespace functx="http://www.functx.com";
 declare namespace m="http://read.84000.co/ns/1.0";
 declare namespace tei="http://www.tei-c.org/ns/1.0";
 
-declare variable $translation-status:data := doc(concat($common:data-path, '/operations/translation-status.xml'));
+declare variable $translation-status:data := doc(concat($common:data-path, '/local/translation-status.xml'));
 
 declare function translation-status:text($text-id as xs:string) as node()? {
     $translation-status:data/m:translation-status/m:text[@text-id eq $text-id][1]
