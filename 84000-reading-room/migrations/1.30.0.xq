@@ -130,9 +130,20 @@ declare function local:move-linked-data-refs(){
     'moved collection-refs.xml'
 };
 
+declare function local:move-translation-status(){
+
+    (: Move text-refs.xml :)
+    if(doc-available('/db/apps/84000-data/operations/translation-status.xml')) then
+        xmldb:move('/db/apps/84000-data/operations', '/db/apps/84000-data/local', 'translation-status.xml')
+    else
+        (),
+    'moved translation-status.xml'
+};
+
 local:move-redirects()
 (:local:move-tests():)
 (:local:move-linked-data-refs():)
+(:local:move-translation-status():)
 (: No need to move reading-room config!!! It's deployed in the app??? local:move-reading-room-config() :)
 (: No need to move operations config!!! It's deployed in the app??? local:move-operations-config():)
 

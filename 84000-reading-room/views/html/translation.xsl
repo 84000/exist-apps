@@ -970,7 +970,7 @@
                 <div id="license">
                     <img>
                         <!-- Update to set image in CSS -->
-                        <xsl:attribute name="src" select="$translation/m:translation/m:license/@img-url"/>
+                        <xsl:attribute name="src" select="replace($translation/m:translation/m:license/@img-url, '^http:', 'https:')"/>
                         <xsl:attribute name="alt" select="'Logo for the license'"/>
                     </img>
                     <xsl:for-each select="$translation/m:translation/m:license/tei:p">
