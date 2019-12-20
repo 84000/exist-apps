@@ -93,6 +93,7 @@
                     <xsl:with-param name="content">
                         <table class="table no-border">
                             <xsl:for-each select="m:sponsors/m:sponsor[m:type[@id eq 'founding']]">
+                                <xsl:sort select="xs:integer(fn:substring-after(@xml:id, 'sponsor-'))"/>
                                 <tr>
                                     <td class="nowrap">
                                         <xsl:value-of select="concat(position(), '.')"/>
