@@ -15,18 +15,20 @@ declare option exist:serialize "method=xml indent=no";
 (: Get config :)
 let $store-conf := $common:environment/m:store-conf
 
+(: If client then default to diff view :)
 let $default-status := 
     if($store-conf[@type eq 'client']) then
         'diff'
     else
         '1'
 
+(: Get requested status :)
 let $request-status :=  request:get-parameter('texts-status', $default-status)
 
-(: Validate the status ids in post :)
+(: Validate the status :)
 let $texts-status := $tei-content:text-statuses/m:status[xs:string(@status-id) = $request-status][not(@status-id eq '0')]/@status-id
 
-(: Request includes file to store :)
+(: Store a file if requested :)
 let $store-file-name := request:get-parameter('store', '')
 let $store-file := 
     if($store-file-name gt '') then
@@ -46,21 +48,11 @@ let $store-file :=
     else
         ()
 
-(: Translations in this database :)
-let $translations-local := 
-    if($request-status eq 'diff') then
-        (: Get all texts with a version  :)
-        translations:versioned('all', false())
-    else if($texts-status) then
-        translations:translations($texts-status, 'all', false())
-    else
-        ()
-
-(: If this is a client get translations in master database :)
+(: If this is a client get translations in MASTER database to compare versions :)
 let $translations-master := 
     if($store-conf[@type eq 'client']) then
-        let $resource-ids-str := string-join($translations-local/m:text/m:toh/@key, ',')
-        let $translations-master-request := concat($store-conf/m:translations-master-host, '/downloads.xml?resource-ids=', $resource-ids-str)
+        (:let $resource-ids-str := string-join($translations-local/m:text/m:toh/@key, ','):)
+        let $translations-master-request := concat($store-conf/m:translations-master-host, '/downloads.xml?resource-ids=versioned')
         let $request := <hc:request href="{ $translations-master-request }" method="GET"/>
         let $response := hc:send-request($request)
         return
@@ -68,6 +60,28 @@ let $translations-master :=
                 (: attribute url { $translations-master-request }, :)
                 $response[2]/m:response/m:translations
             }
+    else
+        ()
+
+(: Get translations in LOCAL database :)
+let $translations-local := 
+    if($request-status eq 'diff') then
+        (: Filter out all the texts with a different version from master :)
+        <translations xmlns="http://read.84000.co/ns/1.0">
+        {
+            let $translations-local := translations:translations((), $translations-master//m:translations/m:text/m:downloads/@resource-id/string(), 'all', false())
+            for $translation-local in $translations-local/m:text
+                let $translation-local-toh := $translation-local/m:toh/@key/string()
+                let $translation-local-version := $translation-local/m:downloads/@tei-version/string()
+                let $master-version := $translations-master/m:translations/m:text/m:downloads[@resource-id = $translation-local-toh]/@tei-version
+            where not($translation-local-version eq $master-version)
+            return
+                $translation-local
+        }
+        </translations>
+    else if($texts-status) then
+        (: Get the texts with this status :)
+        translations:translations($texts-status, (), 'all', false())
     else
         ()
 

@@ -14,6 +14,6 @@ common:response(
     'utilities',
     (
         local:request(),
-        translations:translations($tei-content:marked-up-status-ids, '', true())
+        translations:translations($tei-content:marked-up-status-ids, (), '', true())
     )
 )

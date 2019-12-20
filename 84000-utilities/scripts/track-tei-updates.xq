@@ -51,9 +51,7 @@ let $add-note :=
     element {QName("http://www.tei-c.org/ns/1.0", "note")} {
         attribute type {'updated'},
         attribute update {'text-version'},
-        attribute value {
-            'v ' || $new-version-number-str
-        },
+        attribute value { 'v ' || $new-version-number-str },
         attribute date-time {current-dateTime()},
         attribute user {'admin'},
         text {'Automated version increment'}
