@@ -60,7 +60,7 @@ declare function store:download-master($file-name as xs:string, $translations-ma
     
     return
        if($download)then
-           <updated xmlns="http://read.84000.co/ns/1.0" resource-id="{ $resource-id }">
+           <updated xmlns="http://read.84000.co/ns/1.0" update="store-file" resource-id="{ $resource-id }">
            {
                $download
            }
@@ -83,7 +83,7 @@ declare function store:create($file-name as xs:string) as element() {
     let $tei-version := translation:version-str($tei)
     
     return
-        <updated xmlns="http://read.84000.co/ns/1.0" resource-id="{ $resource-id }">
+        <updated xmlns="http://read.84000.co/ns/1.0" update="create-file" resource-id="{ $resource-id }">
         {
             if(compare($store-version, $tei-version) ne 0)then
                 (: generate and store the latest version :)

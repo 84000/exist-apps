@@ -516,10 +516,22 @@
                                 </div>
                             </div>
                             <div class="form-group">
-                                <label class="control-label col-sm-3" for="text-version">Version</label>
+                                <label class="control-label col-sm-3" for="text-version">
+                                    <xsl:value-of select="'Version'"/>
+                                </label>
                                 <div class="col-sm-2">
                                     <input type="text" name="text-version" id="text-version" class="form-control" placeholder="e.g. v 1.0">
-                                        <xsl:attribute name="value" select="m:translation/m:translation/m:edition/text()/normalize-space()"/>
+                                        <!-- Force the addition of a version number if the form is used -->
+                                        <xsl:attribute name="value">
+                                            <xsl:choose>
+                                                <xsl:when test="m:translation/m:translation/m:edition/text()[1]/normalize-space()">
+                                                    <xsl:value-of select="m:translation/m:translation/m:edition/text()[1]/normalize-space()"/>
+                                                </xsl:when>
+                                                <xsl:otherwise>
+                                                    <xsl:value-of select="'0.0.1'"/>
+                                                </xsl:otherwise>
+                                            </xsl:choose>
+                                        </xsl:attribute>
                                         <xsl:if test="m:text-statuses/m:status[@selected eq 'selected']/@value eq '1'">
                                             <xsl:attribute name="required" select="'required'"/>
                                         </xsl:if>
@@ -527,7 +539,16 @@
                                 </div>
                                 <div class="col-sm-2">
                                     <input type="text" name="text-version-date" id="text-version-date" class="form-control" placeholder="e.g. 2019">
-                                        <xsl:attribute name="value" select="m:translation/m:translation/m:edition/tei:date"/>
+                                        <xsl:attribute name="value">
+                                            <xsl:choose>
+                                                <xsl:when test="m:translation/m:translation/m:edition/tei:date/text()/normalize-space()">
+                                                    <xsl:value-of select="m:translation/m:translation/m:edition/tei:date/text()/normalize-space()"/>
+                                                </xsl:when>
+                                                <xsl:otherwise>
+                                                    <xsl:value-of select="format-dateTime(current-dateTime(), '[Y]')"/>
+                                                </xsl:otherwise>
+                                            </xsl:choose>
+                                        </xsl:attribute>
                                         <xsl:if test="m:text-statuses/m:status[@selected eq 'selected']/@value eq '1'">
                                             <xsl:attribute name="required" select="'required'"/>
                                         </xsl:if>

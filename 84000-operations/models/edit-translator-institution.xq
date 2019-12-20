@@ -36,7 +36,7 @@ return
                 id="{ $institution/@xml:id }"/>,
             <updates
                 xmlns="http://read.84000.co/ns/1.0" >
-                { if($new-id) then <updated/> else () }
+                { if($new-id) then <updated node="translator-institution" update="insert"/> else () }
             </updates>,
             $institution,
             $contributors:contributors/m:contributors/m:person[m:institution/@id eq $institution/@xml:id],

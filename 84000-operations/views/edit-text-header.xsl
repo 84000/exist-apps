@@ -22,7 +22,7 @@
                     <xsl:call-template name="alert-translation-locked"/>
                     
                     <!-- Title -->
-                    <div class="h3 no-bottom-margin">
+                    <div class="h3 sml-margin top bottom">
                         <a target="_blank">
                             <xsl:attribute name="href" select="concat($reading-room-path, '/translation/', m:translation/@id, '.html')"/>
                             <xsl:value-of select="concat(string-join(m:translation/m:toh/m:full, ' / '), ' : ', m:translation/m:title)"/>

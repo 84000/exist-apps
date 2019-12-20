@@ -540,19 +540,28 @@ declare function common:update($request-parameter as xs:string, $existing-value 
                 if(not($existing-value) and $new-value) then        (: Insert :)
             
                     if($insert-following) then                      (: Insert following :)
-                        update insert $new-value following $insert-following
+                    (
+                        update insert $new-value following $insert-following,
+                        attribute update { 'insert' }
+                    )
                     else if($insert-into) then                      (: Insert wherever :)
-                        update insert $new-value into $insert-into
+                    (
+                        update insert $new-value into $insert-into,
+                        attribute update { 'insert' }
+                    )
                     else
                         ()
                     
                 else if($existing-value and not($new-value)) then   (: Delete:)
-                    update delete $existing-value
-                
+                (
+                    update delete $existing-value,
+                    attribute update { 'delete' }
+                )
                 else                                                (: Replace :)
-                    update replace $existing-value 
-                        with $new-value
-                
+                (
+                    update replace $existing-value with $new-value,
+                    attribute update { 'replace' }
+                )
             }
 };
 

@@ -322,6 +322,7 @@ declare function translation-status:update($text-id as xs:string) as element()? 
     return
         element { QName('http://read.84000.co/ns/1.0', 'updated') }
         {
+            $do-update/@*,
             $new-value
         }
 };
@@ -349,6 +350,7 @@ declare function translation-status:update-submission($text-id as xs:string, $su
     return
         element { QName('http://read.84000.co/ns/1.0', 'updated') }
         {
+            attribute update { 'replace' },
             $new-values
         }
 };

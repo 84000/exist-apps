@@ -39,10 +39,15 @@
     
     <!-- Generic alert -->
     <xsl:template name="alert-updated">
-        <xsl:if test="m:updates/m:updated">
-            <div class="alert alert-success alert-temporary" role="alert">
+        <xsl:if test="m:updates/m:updated[@update]">
+            <div class="alert alert-success alert-temporary sml-margin bottom" role="alert">
                 <xsl:value-of select="'Updated'"/>
             </div>
+            <xsl:if test="not(m:updates/m:updated[@update][@node eq 'text-version'])">
+                <div class="alert alert-danger sml-margin bottom" role="alert">
+                    <xsl:value-of select="'To ensure these updates are deployed to the distribution server please update the version in the status section!!'"/>
+                </div>
+            </xsl:if>
         </xsl:if>
     </xsl:template>
     

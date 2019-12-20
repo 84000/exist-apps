@@ -104,7 +104,7 @@ declare function file-upload:process-upload($text-id as xs:string) as element()?
         let $set-submission-id-attribute := request:set-attribute('submission-id', $submission-id)
         
         return 
-            <updated xmlns="http://read.84000.co/ns/1.0" file-upload="{ $upload-name-unique }" directory="{ $upload-directory }" />
+            <updated xmlns="http://read.84000.co/ns/1.0" update="upload-file" file-upload="{ $upload-name-unique }" directory="{ $upload-directory }" />
     else
         ()
 
@@ -128,7 +128,7 @@ declare function file-upload:delete-file($text-id as xs:string, $submission-id a
         let $remove-file := xmldb:remove($submission/@file-collection, xmldb:encode($submission/@file-name))
         
         return
-            <updated xmlns="http://read.84000.co/ns/1.0" file-deleted="{ $submission/@file-name }" directory="{ $submission/@file-collection }" />
+            <updated xmlns="http://read.84000.co/ns/1.0" update="delete-file" file-deleted="{ $submission/@file-name }" directory="{ $submission/@file-collection }" />
      else
         ()
 };
@@ -169,7 +169,7 @@ declare function file-upload:generate-tei($text-id as xs:string, $submission-id 
                             )
                         
                         return 
-                            <updated xmlns="http://read.84000.co/ns/1.0" tei-generated="{ $submission/m:tei-file/@file-name }" directory="{ $submission/@file-collection }"/>
+                            <updated xmlns="http://read.84000.co/ns/1.0" update="generate-file" tei-generated="{ $submission/m:tei-file/@file-name }" directory="{ $submission/@file-collection }"/>
                     else
                         ()
             else
