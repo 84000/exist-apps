@@ -216,10 +216,8 @@ declare function translation:version-number($tei as element(tei:TEI)) as xs:inte
         ,
         if(count($version-number-split) gt 1 and functx:is-a-number($version-number-split[2])) then
             xs:integer($version-number-split[2])
-        else if ($version-number-split[1] gt 0) then
-            0
         else
-            1
+            0
         ,
         if(count($version-number-split) gt 2 and functx:is-a-number($version-number-split[3])) then
             xs:integer($version-number-split[3])

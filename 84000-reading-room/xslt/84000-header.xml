@@ -283,10 +283,9 @@
             <item url="https://84000.co/ch-how-you-can-help/ch-shop-n-give">
                 <label>購物捐獻</label>
             </item> -->
-            <!-- No Chinese page
-            <item url="https://84000.co/ch-how-you-can-help/ch-spread-the-word/">
+            <item url="https://84000.co/ch-how-you-can-help/ch-howhelp-subscribe/">
                 <label>訂閱電子通訊</label>
-            </item> -->
+            </item>
         </item>
     </navigation>
     <social xml:lang="en">

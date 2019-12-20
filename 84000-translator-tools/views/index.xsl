@@ -19,7 +19,7 @@
                     <div class="panel-heading bold hidden-print center-vertical">
                         
                         <span class="title">
-                            <xsl:value-of select="concat('84000 Translator Tools / ', $tab-label)"/>
+                            <xsl:value-of select="concat('84000 Community / ', $tab-label)"/>
                         </span>
                         
                         <span>
@@ -44,7 +44,7 @@
                             <div class="container">
                                 <div class="fix-width">
                                     <h4 class="uppercase">
-                                        <xsl:value-of select="'84000 Translator Tools'"/>
+                                        <xsl:value-of select="'84000 Community'"/>
                                     </h4>
                                     <table class="table table-hover no-border">
                                         <tbody>
@@ -151,8 +151,8 @@
         <xsl:call-template name="reading-room-page">
             <xsl:with-param name="page-url" select="''"/>
             <xsl:with-param name="page-class" select="'utilities wait'"/>
-            <xsl:with-param name="page-title" select="concat($tab-label, ' | 84000 Translator Tools')"/>
-            <xsl:with-param name="page-description" select="'Tools for 84000 translators'"/>
+            <xsl:with-param name="page-title" select="concat($tab-label, ' | 84000 Community')"/>
+            <xsl:with-param name="page-description" select="'Tools for the 84000 translator community'"/>
             <xsl:with-param name="content" select="$content"/>
         </xsl:call-template>
         
