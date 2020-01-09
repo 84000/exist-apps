@@ -554,7 +554,7 @@
                                                     <xsl:value-of select="'in '"/>
                                                     <xsl:for-each select="m:parent | m:parent//m:parent">
                                                         <xsl:sort select="@nesting" order="descending"/>
-                                                        <xsl:value-of select="m:title[@xml:lang='en']/text()"/>
+                                                        <xsl:value-of select="m:titles/m:title[@xml:lang='en']/text()"/>
                                                         <xsl:value-of select="' / '"/>
                                                     </xsl:for-each>
                                                     <xsl:if test="m:toh/m:full">

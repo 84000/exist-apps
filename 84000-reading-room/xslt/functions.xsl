@@ -228,7 +228,7 @@
                             <xsl:attribute name="href" select="common:internal-link(concat('/section/', @id, '.html'), (), '', /m:response/@lang)"/>
                         </xsl:otherwise>
                     </xsl:choose>
-                    <xsl:apply-templates select="m:title[@xml:lang='en']/text()"/>
+                    <xsl:apply-templates select="m:titles/m:title[@xml:lang='en']/text()"/>
                 </a>
             </li>
         </xsl:for-each>

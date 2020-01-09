@@ -1059,6 +1059,9 @@
     <xsl:template name="download-label">
         <xsl:param name="type" as="xs:string"/>
         <xsl:choose>
+            <xsl:when test="$type eq 'html'">
+                <xsl:value-of select="'Read online'"/>
+            </xsl:when>
             <xsl:when test="$type eq 'epub'">
                 <xsl:value-of select="'Download EPUB'"/>
             </xsl:when>
@@ -1075,6 +1078,9 @@
         <xsl:param name="type" as="xs:string"/>
         <i>
             <xsl:choose>
+                <xsl:when test="$type eq 'html'">
+                    <xsl:attribute name="class" select="'fa fa-laptop'"/>
+                </xsl:when>
                 <xsl:when test="$type eq 'epub'">
                     <xsl:attribute name="class" select="'fa fa-book'"/>
                 </xsl:when>

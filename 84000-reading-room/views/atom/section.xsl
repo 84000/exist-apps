@@ -13,14 +13,14 @@
         <feed xmlns:fh="http://purl.org/syndication/history/1.0" xmlns:opds="http://opds-spec.org/2010/catalog" xmlns:dc="http://purl.org/dc/terms/" xmlns:thr="http://purl.org/syndication/thread/1.0" xml:lang="en">
             
             <id>
-                <xsl:value-of select="concat('http://read.84000.co/section/', upper-case(eft:section/@id), '/', $feed-type)"/>
+                <xsl:value-of select="concat('https://read.84000.co/section/', upper-case(eft:section/@id), '/', $feed-type)"/>
             </id>
             
             <title>
                 <xsl:value-of select="eft:section/eft:titles/eft:title[@xml:lang eq 'en']"/>
             </title>
             
-            <icon>http://fe.84000.co/favicon/favicon.ico</icon>
+            <icon>https://fe.84000.co/favicon/favicon.ico</icon>
             
             <updated>
                 <xsl:value-of select="eft:section/@last-updated"/>
@@ -28,7 +28,7 @@
             
             <author>
                 <name>84000: Translating the Words of the Buddha</name>
-                <uri>http://read.84000.co</uri>
+                <uri>https://read.84000.co</uri>
             </author>
             
             <xsl:if test="eft:section/eft:abstract/*">
@@ -97,7 +97,7 @@
                     <xsl:attribute name="type" select="'application/atom+xml;profile=opds-catalog;kind=navigation'"/>
                     <xsl:attribute name="href" select="concat('/section/', upper-case(eft:section/eft:parent/@id), '.navigation.atom')"/>
                     <xsl:attribute name="rel" select="'up'"/>
-                    <xsl:attribute name="title" select="eft:section/eft:parent/eft:title[@xml:lang eq 'en']"/>
+                    <xsl:attribute name="title" select="eft:section/eft:parent/eft:titles/eft:title[@xml:lang eq 'en']"/>
                 </link>
             </xsl:if>
             
@@ -182,10 +182,10 @@
                 <xsl:otherwise>
                     
                     <!-- Navigation feed: add entries for sub sections -->
-                    <xsl:for-each select="eft:section/eft:descendants">
+                    <xsl:for-each select="eft:section/eft:section">
                         
                         <xsl:variable name="descendant-id" select="@id"/>
-                        <xsl:variable name="sub-section" select="/eft:response/eft:section/eft:sub-section[@id eq $descendant-id]"/>
+                        <xsl:variable name="sub-section" select="/eft:response/eft:section/eft:section[@id eq $descendant-id]"/>
                         <xsl:variable name="text-stats" select="eft:text-stats"/>
                         
                         <!-- If there are texts add an acquisition entry -->

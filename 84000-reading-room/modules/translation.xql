@@ -51,7 +51,7 @@ declare function translation:translation($tei as element(tei:TEI)) as element() 
                 return 
                     element summary {
                         $contributor/@ref,
-                        $contributor/node()
+                        common:normalize-space($contributor/node())
                     }
             }
             {
@@ -84,12 +84,12 @@ declare function translation:translation($tei as element(tei:TEI)) as element() 
         </edition>
         <license img-url="{ $tei//tei:publicationStmt/tei:availability/tei:licence/tei:graphic/@url }">
         {
-            $tei//tei:publicationStmt/tei:availability/tei:licence/tei:p
+            common:normalize-space($tei//tei:publicationStmt/tei:availability/tei:licence/tei:p)
         }
         </license>
         <publication-statement>
         {
-            $tei//tei:publicationStmt/tei:publisher/node()
+            common:normalize-space($tei//tei:publicationStmt/tei:publisher/node())
         }
         </publication-statement>
         <publication-date>
@@ -99,7 +99,7 @@ declare function translation:translation($tei as element(tei:TEI)) as element() 
         </publication-date>
         <tantric-restriction>
         {
-            $tei//tei:publicationStmt/tei:availability/tei:p[@type eq 'tantricRestriction']
+            common:normalize-space($tei//tei:publicationStmt/tei:availability/tei:p[@type eq 'tantricRestriction'])
         }
         </tantric-restriction>
     </translation>
@@ -272,6 +272,10 @@ declare function translation:version-str($tei as element(tei:TEI)) as xs:string 
     , '\s', '-')                                                (: Replace the spaces with hyphens :)
 };
 
+declare function translation:canonical-html($resource-id as xs:string) as xs:string {
+    concat('https://read.84000.co/translation/', $resource-id, '.html')
+};
+
 declare function translation:downloads($tei as element(tei:TEI), $resource-id as xs:string, $include as xs:string) as element() {
     
     let $file-name := translation:filename($tei, $resource-id)
@@ -280,8 +284,20 @@ declare function translation:downloads($tei as element(tei:TEI), $resource-id as
     return
         <downloads xmlns="http://read.84000.co/ns/1.0" tei-version="{ $tei-version }" resource-id="{ $resource-id }">
         {
-            for $type in ('pdf', 'epub', 'azw3', 'rdf')
-                let $stored-version := download:stored-version-str($resource-id, $type)
+            for $type in ('html', 'pdf', 'epub', 'azw3', 'rdf')
+                
+                let $stored-version := 
+                    if($type eq 'html') then
+                        $tei-version
+                    else
+                        download:stored-version-str($resource-id, $type)
+                
+                let $url := 
+                    if($type eq 'html') then
+                        concat('/translation/', $resource-id ,'.html')
+                    else
+                        concat('/data/', $file-name ,'.', $type)
+                
                 where (
                     ($include eq 'all')                                                                 (: return all types :)
                     or ($include eq 'any-version' and not($stored-version eq 'none'))                   (: return if there is any version :)
@@ -290,7 +306,7 @@ declare function translation:downloads($tei as element(tei:TEI), $resource-id as
             return
                 element download {
                     attribute type { $type },
-                    attribute url { concat('/data/', $file-name ,'.', $type) },
+                    attribute url { $url },
                     attribute version { $stored-version }
                 }
         }
@@ -311,10 +327,12 @@ declare function translation:summary($tei as element(tei:TEI), $lang as xs:strin
     return
         <summary xmlns="http://read.84000.co/ns/1.0" prefix="s" xml:lang="{ $valid-lang }">
         { 
-            if($valid-lang eq 'en') then
-                $tei//tei:front//tei:div[@type eq 'summary'][not(@xml:lang) or @xml:lang = 'en']/*[self::tei:p | self::tei:milestone | self::tei:lg ]/.
-            else
-                $tei//tei:front//tei:div[@type eq 'summary'][@xml:lang = $valid-lang]/*[self::tei:p | self::tei:milestone | self::tei:lg ]/.
+            common:normalize-space(
+                if($valid-lang eq 'en') then
+                    $tei//tei:front//tei:div[@type eq 'summary'][not(@xml:lang) or @xml:lang = 'en']/*[self::tei:p | self::tei:milestone | self::tei:lg ]/.
+                else
+                    $tei//tei:front//tei:div[@type eq 'summary'][@xml:lang = $valid-lang]/*[self::tei:p | self::tei:milestone | self::tei:lg ]/.
+            )
         }
         </summary>
 };

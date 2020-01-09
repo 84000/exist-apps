@@ -25,9 +25,6 @@ let $tei := tei-content:tei($resource-id, 'translation')
 (: Get the source so we can extract the Toh :)
 let $source := tei-content:source($tei, $resource-id)
 
-(: Set the canonical url :)
-let $page-url := concat('http://read.84000.co/translation/', $source/@key, '.html')
-
 (: Compile all the translation data :)
 let $translation-data :=
     <translation 
@@ -35,7 +32,7 @@ let $translation-data :=
         id="{ tei-content:id($tei) }"
         status="{ tei-content:translation-status($tei) }"
         status-group="{ tei-content:translation-status-group($tei) }"
-        page-url="{ $page-url }">
+        page-url="{ translation:canonical-html($source/@key) }">
         {(
             translation:titles($tei),
             translation:long-titles($tei),
@@ -43,7 +40,7 @@ let $translation-data :=
             translation:translation($tei),
             translation:summary($tei),
             translation:acknowledgment($tei),
-            if(not($resource-suffix eq 'rdf')) then(
+            if(not($resource-suffix = ('rdf', 'json'))) then(
                 tei-content:ancestors($tei, $resource-id, 1),
                 translation:downloads($tei, $resource-id, 'any-version'),
                 translation:preface($tei),
@@ -88,7 +85,7 @@ return
             (: Calculated strings :)
             <replace-text xmlns="http://read.84000.co/ns/1.0">
                 <value key="#CurrentDateTime">{ format-dateTime(current-dateTime(), '[h].[m01][Pn] on [FNn], [D1o] [MNn] [Y0001]') }</value>
-                <value key="#LinkToPage">{ $page-url }</value>
+                <value key="#LinkToPage">{ translation:canonical-html($source/@key) }</value>
             </replace-text>,
             (: Include translation data :)
             $translation-data-internal-refs

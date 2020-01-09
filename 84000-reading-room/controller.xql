@@ -17,35 +17,38 @@ declare variable $collection-path := lower-case(substring-before(substring-after
 declare variable $controller-root := lower-case(substring-after($exist:controller, "/"));
 declare variable $redirects := doc('/db/system/config/db/system/redirects.xml')/m:redirects;
 
-declare function local:dispatch($model as xs:string, $view as xs:string, $parameters as node()) as node(){
+declare function local:dispatch($model as xs:string?, $view as xs:string?, $parameters as node()?) as node(){
     <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-        <forward url="{concat($exist:controller, $model)}">
-        { 
-            $parameters//add-parameter
-        }
-        </forward>
-        {
-            if($view)then
-                <view>
-                {
-                    if(ends-with($view, '.xsl')) then
-                        <forward servlet="XSLTServlet">
-                            <set-attribute name="xslt.stylesheet" value="{concat($exist:root, $exist:controller, $view)}"/>
-                            { 
-                                $parameters//set-header
-                            }
-                        </forward>
-                    else
-                        <forward url="{concat($exist:controller, $view)}">
+    {
+        if($model)then
+            <forward url="{concat($exist:controller, $model)}">
+            { 
+                $parameters//add-parameter
+            }
+            </forward>
+        else
+            (),
+        if($view)then
+            <view>
+            {
+                if(ends-with($view, '.xsl')) then
+                    <forward servlet="XSLTServlet">
+                        <set-attribute name="xslt.stylesheet" value="{concat($exist:root, $exist:controller, $view)}"/>
                         { 
                             $parameters//set-header
                         }
-                        </forward>
-                }
-                </view>
-            else
-                ()
-        }
+                    </forward>
+                else
+                    <forward url="{concat($exist:controller, $view)}">
+                    { 
+                        $parameters//set-header
+                    }
+                    </forward>
+            }
+            </view>
+        else
+            ()
+    }
     </dispatch>
 };
 
@@ -152,7 +155,7 @@ else if(not(common:auth-environment()) or sm:is-authenticated()) then
                 </parameters>
             )
         else if ($resource-suffix eq 'json') then (: placeholder - this is incomplete :)
-            local:dispatch("/models/translation.xq", "/views/json/xmlToJson.xq",
+            local:dispatch("/models/translation.xq", "/views/json/translation.xq",
                 <parameters xmlns="http://exist.sourceforge.net/NS/exist">
                     <add-parameter name="resource-id" value="{$resource-id}"/>
                     <add-parameter name="resource-suffix" value="json"/>
@@ -221,7 +224,7 @@ else if(not(common:auth-environment()) or sm:is-authenticated()) then
                 </parameters>
             )
         else if ($resource-suffix eq 'json') then
-            local:dispatch("/models/section.xq", "/views/json/xmlToJson.xq", 
+            local:dispatch("/models/section.xq", "/views/json/section.xq", 
                 <parameters xmlns="http://exist.sourceforge.net/NS/exist">
                     <add-parameter name="resource-id" value="{$resource-id}"/>
                     <add-parameter name="resource-suffix" value="json"/>
@@ -253,7 +256,7 @@ else if(not(common:auth-environment()) or sm:is-authenticated()) then
                 </parameters>
             )
         else if ($resource-suffix eq 'json') then
-            local:dispatch("/models/source.xq", "/views/json/xmlToJson.xq", 
+            local:dispatch("/models/source.xq", "/views/json/source.xq", 
                 <parameters xmlns="http://exist.sourceforge.net/NS/exist">
                     <add-parameter name="resource-id" value="{$resource-id}"/>
                     <add-parameter name="resource-suffix" value="json"/>
@@ -282,6 +285,13 @@ else if(not(common:auth-environment()) or sm:is-authenticated()) then
         if ($resource-suffix eq 'html') then
             local:dispatch-html("/models/search.xq", "/views/html/search.xsl", 
                 <parameters xmlns="http://exist.sourceforge.net/NS/exist"/>
+            )
+        else if ($resource-suffix eq 'json') then
+            local:dispatch("/models/search.xq", "/views/json/search.xq", 
+                <parameters xmlns="http://exist.sourceforge.net/NS/exist">
+                    <add-parameter name="resource-id" value="{$resource-id}"/>
+                    <add-parameter name="resource-suffix" value="json"/>
+                </parameters>
             )
         else
             (: return the xml :)

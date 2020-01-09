@@ -23,6 +23,21 @@ let $doc-type :=
 
 (: Atom feeds default to published only, others not :)
 let $published-only := request:get-parameter('published-only', if($doc-type eq 'atom') then true() else false())
+(: Only include direct children texts (or groupings), don't go down the tree :)
+let $child-texts-only := request:get-parameter('child-texts-only', true())
+
+let $include-texts := 
+    if(xs:boolean($published-only)) then
+        if(xs:boolean($child-texts-only)) then
+            'children-published'
+        else
+            'descendants-published'
+    else
+        if(xs:boolean($child-texts-only)) then
+            'children'
+        else
+            'descendants'
+
 let $translations-order := request:get-parameter('translations-order', 'toh')
 let $tei := tei-content:tei($resource-id, 'section')
 
@@ -37,11 +52,11 @@ return
                 resource-id="{ $resource-id }"
                 resource-suffix="{ $resource-suffix }"
                 doc-type="{ $doc-type }"
-                published-only="{ $published-only }"
-                translations-order="{ $translations-order }" />,
+                published-only="{ xs:boolean($published-only) }"
+                child-texts-only="{ xs:boolean($child-texts-only) }"/>,
                 
             (: Include section data :)
-            section:base-section($tei, $published-only, true())
+            section:section-tree($tei, true(), $include-texts)
             
         )
     )

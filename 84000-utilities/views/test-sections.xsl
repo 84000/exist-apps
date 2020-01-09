@@ -113,13 +113,13 @@
                                 <label for="section-id" class="sr-only">Section</label>
                                 <select name="section-id" id="section-id" class="form-control">
                                     <option value="all">All sections</option>
-                                    <xsl:for-each select="//m:descendants">
+                                    <xsl:for-each select="m:section | m:section//m:section">
                                         <option>
                                             <xsl:attribute name="value" select="@id"/>
                                             <xsl:if test="@id eq /m:response/m:request/m:parameter[@name eq 'section-id']">
                                                 <xsl:attribute name="selected" select="'selected'"/>
                                             </xsl:if>
-                                            <xsl:value-of select="concat(@id, ' / ', common:limit-str(data(m:title), 100))"/>
+                                            <xsl:value-of select="concat(@id, ' / ', common:limit-str(m:titles/m:title[@xml:lang eq 'en']/text(), 100))"/>
                                         </option>
                                     </xsl:for-each>
                                 </select>

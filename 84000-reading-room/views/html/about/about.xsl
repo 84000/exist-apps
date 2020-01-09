@@ -224,21 +224,21 @@
         <xsl:param name="text"/>
         
         <h4 class="title-en">
+            <xsl:variable name="title" as="xs:string*">
+                <xsl:if test="$text/m:titles/m:parent">
+                    <xsl:value-of select="concat($text/m:titles/m:parent/m:titles/m:title[@xml:lang eq 'en'], ', ')"/>
+                </xsl:if>
+                <xsl:value-of select="$text/m:titles/m:title[@xml:lang eq 'en']"/>
+            </xsl:variable>
             <xsl:choose>
                 <xsl:when test="$text/@status eq '1'">
                     <a>
-                        <xsl:attribute name="href" select="concat('http://read.84000.co/translation/', $text/m:toh/@key, '.html')"/>
-                        <xsl:if test="$text/m:titles/m:parent">
-                            <xsl:value-of select="concat($text/m:titles/m:parent/m:title, ', ')"/>
-                        </xsl:if>
-                        <xsl:value-of select="$text/m:titles/m:title[@xml:lang eq 'en']"/>
+                        <xsl:attribute name="href" select="$text/@page-url"/>
+                        <xsl:value-of select="$title"/>
                     </a>
                 </xsl:when>
                 <xsl:otherwise>
-                    <xsl:if test="$text/m:titles/m:parent">
-                        <xsl:value-of select="concat($text/m:titles/m:parent/m:title, ', ')"/>
-                    </xsl:if>
-                    <xsl:value-of select="$text/m:titles/m:title[@xml:lang eq 'en']"/>
+                    <xsl:value-of select="$title"/>
                 </xsl:otherwise>
             </xsl:choose>
         </h4>

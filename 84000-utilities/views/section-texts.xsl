@@ -18,7 +18,7 @@
                 </tr>
             </thead>
             <tbody>
-                <xsl:for-each select="m:texts/m:text">
+                <xsl:for-each select="m:section/m:texts/m:text">
                     <xsl:sort select="number(m:toh/@number)"/>
                     <xsl:sort select="m:toh/@letter"/>
                     <xsl:sort select="number(m:toh/@chapter-number)"/>

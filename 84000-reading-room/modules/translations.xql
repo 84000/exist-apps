@@ -8,7 +8,6 @@ declare namespace m = "http://read.84000.co/ns/1.0";
 
 import module namespace common="http://read.84000.co/common" at "common.xql";
 import module namespace tei-content="http://read.84000.co/tei-content" at "tei-content.xql";
-import module namespace section="http://read.84000.co/section" at "section.xql";
 import module namespace translation="http://read.84000.co/translation" at "translation.xql";
 import module namespace sponsors="http://read.84000.co/sponsors" at "sponsors.xql";
 import module namespace translation-status="http://read.84000.co/translation-status" at "translation-status.xql";
@@ -284,17 +283,19 @@ declare function translations:filtered-text($tei as element(tei:TEI), $toh-key a
     
     let $text-id := tei-content:id($tei)
     let $lang := request:get-parameter('lang', 'en')
+    let $toh := translation:toh($tei, $toh-key)
     
     return
         element { QName('http://read.84000.co/ns/1.0', 'text') }{
             attribute id { $text-id }, 
             attribute uri { base-uri($tei) },
             attribute file-name { util:unescape-uri(replace(base-uri($tei), ".+/(.+)$", "$1"), 'UTF-8') },
+            attribute page-url { translation:canonical-html($toh/@key) },
             attribute status { tei-content:translation-status($tei) },
             attribute status-group { tei-content:translation-status-group($tei) },
             attribute word-count { translation-status:word-count($tei) },
             attribute glossary-count { translation-status:glossary-count($tei) },
-            translation:toh($tei, $toh-key),
+            $toh,
             translation:titles($tei),
             translation:title-variants($tei),
             tei-content:source-bibl($tei, $toh-key),

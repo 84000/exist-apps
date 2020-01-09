@@ -99,7 +99,7 @@
                             - There are texts in a sub-section (it's a grouping section)
                             - There were texts but published-only was selected
                         -->
-                        <xsl:variable name="show-texts" select="(m:section/m:texts/m:text or m:section/m:sub-section/m:texts/m:text or m:section/m:texts/@published-only eq '1')"/>
+                        <xsl:variable name="show-texts" select="(m:section/m:texts/m:text or m:section/m:section[@type eq 'grouping']/m:texts/m:text or m:section/m:texts/@published-only eq '1')"/>
                         
                         <!-- 
                             Conditions for showing tabs
@@ -108,7 +108,7 @@
                             - or there are sections
                             - or there's some about content
                         -->
-                        <xsl:if test="not($section-id = ('lobby', 'all-translated')) and ($show-texts or m:section/m:sub-section or m:section/m:about/*)">
+                        <xsl:if test="not($section-id = ('lobby', 'all-translated')) and ($show-texts or m:section/m:section or m:section/m:about/*)">
                             
                             <!-- Content tabs (sections/texts/summary) -->
                             <div class="tabs-container-center">
@@ -121,7 +121,7 @@
                                         </li>
                                     </xsl:if>
                                     
-                                    <xsl:if test="m:section/m:sub-section[not(@type eq 'grouping')]">
+                                    <xsl:if test="m:section/m:section[not(@type eq 'grouping')]">
                                         <!-- Sections tab -->
                                         <li role="presentation">
                                             <xsl:attribute name="class" select="if(not($show-texts)) then 'active' else ''"/>
@@ -164,7 +164,7 @@
                                     <xsl:when test="$show-texts">
                                         <xsl:attribute name="class" select="'tab-pane fade'"/>
                                     </xsl:when>
-                                    <xsl:when test="m:section/m:sub-section">
+                                    <xsl:when test="m:section/m:section[not(@type eq 'grouping')]">
                                         <xsl:attribute name="class" select="'tab-pane fade in active'"/>
                                     </xsl:when>
                                 </xsl:choose>
@@ -175,6 +175,7 @@
                                     <xsl:call-template name="sub-sections">
                                         <xsl:with-param name="section" select="m:section"/>
                                     </xsl:call-template>
+                                    
                                 </div>
                             </div>
                             
@@ -407,6 +408,10 @@
                 <div class="col-xs-12 col-md-offset-2 col-md-8">
                     
                     <!-- stats -->
+                    <xsl:variable name="count-texts" as="xs:integer" select="$section/m:text-stats/m:stat[@type eq 'count-text-descendants']/@value"/>
+                    <xsl:variable name="count-published" as="xs:integer" select="$section/m:text-stats/m:stat[@type eq 'count-published-descendants']/@value"/>
+                    <xsl:variable name="count-in-progress" as="xs:integer" select="$section/m:text-stats/m:stat[@type eq 'count-in-progress-descendants']/@value"/>
+                    
                     <xsl:choose>
                         
                         <xsl:when test="lower-case($section/@id) = 'all-translated'">
@@ -414,7 +419,7 @@
                                 <tbody>
                                     <tr>
                                         <td>
-                                            <xsl:value-of select="concat('Published: ', format-number(count($section/m:texts/m:text), '#,###'))"/>
+                                            <xsl:value-of select="concat('Published: ', format-number($count-published, '#,###'))"/>
                                         </td>
                                     </tr>
                                 </tbody>
@@ -422,9 +427,6 @@
                         </xsl:when>
                         
                         <xsl:otherwise>
-                            <xsl:variable name="count-texts" as="xs:integer" select="$section/m:text-stats/m:stat[@type eq 'count-text-descendants']/@value"/>
-                            <xsl:variable name="count-published" as="xs:integer" select="$section/m:text-stats/m:stat[@type eq 'count-published-descendants']/@value"/>
-                            <xsl:variable name="count-in-progress" as="xs:integer" select="$section/m:text-stats/m:stat[@type eq 'count-in-progress-descendants']/@value"/>
                             <table class="table table-stats">
                                 <tbody>
                                     <tr>
@@ -517,12 +519,12 @@
             
             <!-- Text rows -->
             <!-- Texts can either be direct children of the section or a sub-section which is a grouping -->
-            <xsl:for-each select="$section | $section/m:sub-section">
+            <xsl:for-each select="$section | $section/m:section[@type eq 'grouping']">
                 <xsl:sort select="number(m:texts/m:text[1]/m:toh/@number)"/>
                 <div class="list-grouping">
                     
                     <!-- Change the class and add a title if they are a grouped sub-section -->
-                    <xsl:if test="self::m:sub-section and m:texts/m:text">
+                    <xsl:if test="@nesting gt '1' and m:texts/m:text">
                         <xsl:attribute name="class" select="'list-grouping border'"/>
                         <xsl:attribute name="id" select="concat('grouping-', @id)"/>
                         <div class=" text-center bottom-margin">
@@ -690,26 +692,27 @@
                                         </xsl:if>
                                         
                                         <ul class="translation-options">
-                                            <li>
-                                                <a>
-                                                    <xsl:attribute name="href" select="common:internal-link(concat('/translation/', m:source/@key, '.html'), (), '', /m:response/@lang)"/>
-                                                    <i class="fa fa-laptop"/>
-                                                    <xsl:value-of select="'Read online'"/>
-                                                </a>
-                                            </li>
                                             <xsl:variable name="title-en" select="m:titles/m:title[@xml:lang='en'][not(@type)]/text()" as="xs:string"/>
-                                            <xsl:for-each select="m:downloads/m:download[@type = ('pdf', 'epub', 'azw3')]">
+                                            <xsl:for-each select="m:downloads/m:download[@type = ('html', 'pdf', 'epub', 'azw3')]">
                                                 <li>
-                                                    <a target="_blank">
+                                                    <a>
                                                         <xsl:attribute name="title">
                                                             <xsl:call-template name="download-label">
                                                                 <xsl:with-param name="type" select="@type"/>
                                                             </xsl:call-template>
                                                         </xsl:attribute>
-                                                        <xsl:attribute name="href" select="@url"/>
-                                                        <xsl:attribute name="download" select="@filename"/>
-                                                        <xsl:attribute name="class" select="'log-click'"/>
-                                                        <xsl:attribute name="data-download-dana" select="$title-en"/>
+                                                        <xsl:choose>
+                                                            <xsl:when test="@type eq 'html'">
+                                                                <xsl:attribute name="href" select="common:internal-link(@url, (), '', /m:response/@lang)"/>
+                                                            </xsl:when>
+                                                            <xsl:otherwise>
+                                                                <xsl:attribute name="href" select="@url"/>
+                                                                <xsl:attribute name="target" select="'_blank'"/>
+                                                                <xsl:attribute name="download" select="@filename"/>
+                                                                <xsl:attribute name="class" select="'log-click'"/>
+                                                                <xsl:attribute name="data-download-dana" select="$title-en"/>
+                                                            </xsl:otherwise>
+                                                        </xsl:choose>
                                                         <xsl:call-template name="download-icon">
                                                             <xsl:with-param name="type" select="@type"/>
                                                         </xsl:call-template>
@@ -721,7 +724,7 @@
                                             </xsl:for-each>
                                             <xsl:if test="m:downloads/m:download[@type = ('epub', 'azw3')]">
                                                 <li>
-                                                    <a data-toggle="modal" href="#ebook-help" data-target="#ebook-help" class="visible-scripts text-warning">
+                                                    <a data-toggle="modal" href="#ebook-help" data-target="#ebook-help" class="visible-scripts text-muted">
                                                         <i class="fa fa-info-circle" aria-hidden="true"/>
                                                         <span class="small">
                                                             <xsl:call-template name="local-text">
@@ -762,8 +765,8 @@
     <xsl:template name="sub-sections">
         <xsl:param name="section"/>
         
-        <xsl:variable name="count-sections" select="count($section/m:sub-section)"/>
-        <xsl:for-each select="$section/m:sub-section">
+        <xsl:variable name="count-sections" select="count($section/m:section[not(@type eq 'grouping')])"/>
+        <xsl:for-each select="$section/m:section[not(@type eq 'grouping')]">
             <xsl:sort select="number(@sort-index)"/>
             <xsl:variable name="sub-section-id" select="@id"/>
             <div>
@@ -913,9 +916,9 @@
                     </div>
                     
                     <div class="footer">
-                        <xsl:variable name="count-texts" as="xs:integer" select="$section/m:descendants[@id eq $sub-section-id]/m:text-stats/m:stat[@type eq 'count-text-descendants']/@value"/>
-                        <xsl:variable name="count-published" as="xs:integer" select="$section/m:descendants[@id eq $sub-section-id]/m:text-stats/m:stat[@type eq 'count-published-descendants']/@value"/>
-                        <xsl:variable name="count-in-progress" as="xs:integer" select="$section/m:descendants[@id eq $sub-section-id]/m:text-stats/m:stat[@type eq 'count-in-progress-descendants']/@value"/>
+                        <xsl:variable name="count-texts" as="xs:integer" select="$section/m:section[@id eq $sub-section-id]/m:text-stats/m:stat[@type eq 'count-text-descendants']/@value"/>
+                        <xsl:variable name="count-published" as="xs:integer" select="$section/m:section[@id eq $sub-section-id]/m:text-stats/m:stat[@type eq 'count-published-descendants']/@value"/>
+                        <xsl:variable name="count-in-progress" as="xs:integer" select="$section/m:section[@id eq $sub-section-id]/m:text-stats/m:stat[@type eq 'count-in-progress-descendants']/@value"/>
                         <table class="table">
                             <tbody>
                                 <tr>

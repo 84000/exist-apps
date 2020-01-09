@@ -9,6 +9,7 @@ import module namespace section="http://read.84000.co/section" at "../../84000-r
 declare option exist:serialize "method=xml indent=no";
 
 let $section-id := request:get-parameter('section-id', 'all')
+let $tei := tei-content:tei('lobby', 'section')
 
 return 
     common:response(
@@ -17,6 +18,6 @@ return
         (
             local:request(),
             tests:sections($section-id),
-            section:descendants(tei-content:tei('lobby', 'section'), false())
+            section:child-sections($tei, false(), 'none')
         )
     )

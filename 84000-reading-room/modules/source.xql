@@ -133,6 +133,7 @@ declare function source:etext-page($location as element(m:location), $page-numbe
     return
         element { QName('http://read.84000.co/ns/1.0', 'source') } {
             attribute work { $work },
+            attribute page-url { concat('https://read.84000.co/source/', $location/@key, '.xml?page=', $page-volume/@page-number) },
             source:etext-page($work, $page-volume/@volume-number, $page-volume/@page-in-volume, $add-context)
         }
 };

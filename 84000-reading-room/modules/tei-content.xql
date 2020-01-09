@@ -104,7 +104,7 @@ declare function tei-content:title($tei as element(tei:TEI)) as xs:string {
 };
 
 declare function tei-content:title($tei as node(), $type as xs:string?, $lang as xs:string*) as xs:string {
-    translate(normalize-space($tei//tei:titleStmt/tei:title[@type eq $type][lower-case(@xml:lang) = $lang][1]/text()), '&#x2003;', '&#x20;')
+    translate(normalize-space($tei//tei:titleStmt/tei:title[@type eq $type][lower-case(@xml:lang) = $lang ! lower-case(.)][1]), '&#x2003;', '&#x20;')
 };
 
 declare function tei-content:titles($tei as element(tei:TEI)) as element() {
@@ -146,15 +146,16 @@ declare function tei-content:title-set($tei as element(tei:TEI), $type as xs:str
         <title xmlns="http://read.84000.co/ns/1.0" xml:lang="bo-ltn">{ $bo-ltn }</title>,
         <title xmlns="http://read.84000.co/ns/1.0" xml:lang="sa-ltn">{ $sa-ltn }</title>,        
         if($source-bibl/@type eq 'chapter') then
-            let $parent := tei-content:tei($source-bibl/tei:idno/@parent-id, 'section')
-            return
-                <parent xmlns="http://read.84000.co/ns/1.0">
-                    <title xml:lang="en">
-                    {
-                        tei-content:title($parent)
-                    }
-                    </title>
-                </parent>
+            <parent xmlns="http://read.84000.co/ns/1.0">
+                <titles>
+                {
+                    tei-content:title-set(
+                        tei-content:tei($source-bibl/tei:idno/@parent-id, 'section'), 
+                        'mainTitle'
+                    )
+                }
+                </titles>
+            </parent>
         else
             ()
     )
@@ -240,7 +241,7 @@ declare function tei-content:location($bibl as element(tei:bibl)) as element() {
 
 declare function tei-content:ancestors($tei as element(tei:TEI), $resource-id as xs:string, $nest as xs:integer) as element()? {
     
-    (: Returns an ancestor tree for the translation :)
+    (: Returns an ancestor tree for the tei file :)
     
     let $source-bibl := tei-content:source-bibl($tei, $resource-id)
     let $parent-id := $source-bibl/tei:idno/@parent-id
@@ -249,7 +250,11 @@ declare function tei-content:ancestors($tei as element(tei:TEI), $resource-id as
     return
         if($parent-tei) then
             <parent xmlns="http://read.84000.co/ns/1.0" id="{ $parent-id }" nesting="{ $nest }" type="{ $parent-tei//tei:teiHeader/tei:fileDesc/@type }">
-                <title xml:lang="en">{ tei-content:title($parent-tei) }</title>
+                <titles>
+                {
+                    tei-content:title-set($parent-tei, 'mainTitle')
+                }
+                </titles>
                 { 
                     tei-content:ancestors($parent-tei, '', $nest + 1) 
                 }

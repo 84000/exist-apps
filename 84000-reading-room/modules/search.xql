@@ -6,6 +6,7 @@ xquery version "3.0" encoding "UTF-8";
 :)
 module namespace search="http://read.84000.co/search";
 
+declare namespace m = "http://read.84000.co/ns/1.0";
 declare namespace tei="http://www.tei-c.org/ns/1.0";
 declare namespace xhtml="http://www.w3.org/1999/xhtml";
 declare namespace eft="http://read.84000.co/ns/1.0";
@@ -102,19 +103,12 @@ declare function search:search($request as xs:string, $first-record as xs:double
                     for $result-group in subsequence($result-groups, $first-record, $max-records)
                         
                         let $tei := doc($result-group/@document-uri)/tei:TEI
-                        
-                        let $tei-type := 
-                            if($tei//tei:teiHeader/tei:fileDesc/@type = ('section', 'grouping', 'pseudo-section')) then
-                                'section'
-                            else
-                                'translation'
+                        let $search-tei := search:tei($tei)
                     
                     return
                         <item score="{ $result-group/@score }">
                         {
-                            search:source($tei-type, $tei)
-                        }
-                        {
+                            $search-tei,
                             for $result in $results
                                 
                                 where base-uri($result) eq $result-group/@document-uri
@@ -131,8 +125,11 @@ declare function search:search($request as xs:string, $first-record as xs:double
                             return
                                 <match score="{ ft:score($result) }">
                                 {
-                                    attribute node-type { node-name($result) },
-                                    $result/@*,
+                                    attribute node-name { local-name($result) },
+                                    attribute node-type { $result/@type },
+                                    attribute node-lang { $result/@xml:lang },
+                                    (:$result/@*,:)
+                                    attribute link { search:match-link($result, $search-tei) },
                                     (:$expanded:)
                                     common:mark-nodes($result, $request, 'words')
                                 }
@@ -145,34 +142,115 @@ declare function search:search($request as xs:string, $first-record as xs:double
         
 };
 
-declare function search:source($tei-type as xs:string, $tei as element(tei:TEI)) as element() {
-    <source xmlns="http://read.84000.co/ns/1.0"
-        tei-type="{ $tei-type }" 
-        resource-id="{ tei-content:id($tei) }" 
-        translation-status="{ tei-content:translation-status($tei) }"
-        translation-status-group="{ tei-content:translation-status-group($tei) }">
-        <title>{ tei-content:title($tei) }</title>
-        {
-            if($tei-type eq 'translation') then
-                translation:translation($tei)
+declare function search:match-link($result as element(), $search-tei as element()) as xs:string {
+
+    if($search-tei/@type eq 'translation') then
+        if($search-tei/@translation-status-group eq 'published') then
+            
+            (: Published translation :)
+            if($result/@xml:id) then
+                (:Has an xml:id:)
+                concat(functx:substring-before-if-contains($search-tei/@link, '#'),'#', $result/@xml:id)
+            else if($result/@tid) then
+                (: Has an id :)
+                concat(functx:substring-before-if-contains($search-tei/@link, '#'),'#node-', $result/@tid)
+            else if(local-name($result) = ('ref', 'biblScope')) then
+                (: Toh / Scope :)
+                concat(functx:substring-before-if-contains($search-tei/@link, '#'),'#toh')
+            else if(local-name($result) = ('author', 'sponsor')) then
+                (: Author :)
+                concat(functx:substring-before-if-contains($search-tei/@link, '#'),'#acknowledgements')
             else
-                ()
-        }
-        { 
-            if($tei-type eq 'translation') then
-                for $toh-key in $tei//tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl/@key
+                (: Default to the beginning of the page :)
+                $search-tei/@link
+            
+        else
+        
+            (: Un-published text :)
+            if($result/@tid) then
+                (: Has an id that must be elaborated to work in the section/texts list :)
+                concat(functx:substring-before-if-contains($search-tei/@link, '#'), '#', $search-tei/m:bibl[1]/@toh-key,'-node-', $result/@tid)
+            else if($result[local-name($result) eq 'title' and $result/@type eq 'otherTitle']) then
+                (: Has a collapsed title in the section/texts list :)
+                concat(functx:substring-before-if-contains($search-tei/@link, '#'), '#', $search-tei/m:bibl[1]/@toh-key, '-title-variants')
+            else
+                $search-tei/@link
+            
+    else if($search-tei/@type eq 'section') then
+        (: Section :)
+        if($result/@xml:id) then
+            (: Has an xml:id :)
+            concat(functx:substring-before-if-contains($search-tei/@link, '#'),'#', $result/@xml:id)
+        else if($result/@tid) then
+            (: Has an id :)
+            concat(functx:substring-before-if-contains($search-tei/@link, '#'),'#node-', $result/@tid)
+        else
+            (: Default to the beginning of the page :)
+            $search-tei/@link
+    else
+        $search-tei/@link
+};
+
+declare function search:tei($tei as element(tei:TEI)) as element() {
+
+    let $tei-type := 
+        if($tei//tei:teiHeader/tei:fileDesc/@type = ('section', 'grouping', 'pseudo-section')) then
+            'section'
+        else
+            'translation'
+    
+    let $resource-id := tei-content:id($tei)
+    
+    let $trandlation-status := tei-content:translation-status($tei)
+    
+    let $trandlation-status-group := tei-content:translation-status-group($tei)
+    
+    let $link := 
+        if($tei-type eq 'translation') then
+            if($trandlation-status-group eq 'published') then
+                (: Published translation :)
+                concat('/translation/', $resource-id, '.html')
+            else
+                (: Un-published text :)
+                let $first-bibl := $tei//tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl[1]
                 return
-                    <bibl>
-                        { translation:toh($tei, $toh-key) }
-                        { tei-content:ancestors($tei, $toh-key, 1) }
-                    </bibl>
-                    
-            else
-                <bibl>
-                    { tei-content:ancestors($tei, '', 1) }
-                </bibl>
-        }
-    </source>
+                    concat('/section/', $first-bibl/tei:idno/@parent-id, '.html', '#', $first-bibl/@key)
+        else if($tei-type eq 'section') then
+            (: Section :)
+            concat('/section/', $resource-id, '.html')
+        else
+            ''
+    
+    return
+        <tei xmlns="http://read.84000.co/ns/1.0"
+            type="{ $tei-type }" 
+            resource-id="{ $resource-id }" 
+            link="{ $link }"
+            translation-status="{ $trandlation-status }"
+            translation-status-group="{ $trandlation-status-group }">
+            <titles>{ tei-content:title-set($tei, 'mainTitle') }</titles>
+            {
+                if($tei-type eq 'translation') then
+                (
+                    translation:translation($tei),
+                    for $toh-key in $tei//tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl/@key
+                    return
+                        (: Must group these in m:bibl to keep track of @key group :)
+                        element bibl {
+                            attribute toh-key { $toh-key },
+                            attribute canonical-html { translation:canonical-html($toh-key) },
+                            translation:toh($tei, $toh-key),
+                            tei-content:ancestors($tei, $toh-key, 1)
+                        }
+                )
+                else
+                    (: Must group these in m:bibl to keep track of @key group :)
+                    element bibl {
+                        attribute toh-key { $tei//tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl/@key },
+                        tei-content:ancestors($tei, '', 1)
+                    }
+            }
+        </tei>
 };
 
 declare function search:tm-search($request as xs:string, $lang as xs:string, $first-record as xs:double, $max-records as xs:double)  as element() {
@@ -301,7 +379,7 @@ declare function search:tm-search($request as xs:string, $lang as xs:string, $fi
                             attribute score { $score },
                             
                             (: TEI source :)
-                            search:source('translation', $tei),
+                            search:tei($tei),
                             
                             (: Data :)
                             if(local-name($result) eq 'tu') then

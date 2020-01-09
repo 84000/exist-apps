@@ -10,7 +10,6 @@ declare option exist:serialize "method=xml indent=no";
 
 (: TO DO: deprecate 's' search parameter :)
 let $search := request:get-parameter('search', request:get-parameter('s', ''))
-        
 
 let $first-record := 
     if(functx:is-a-number(request:get-parameter('first-record', 1))) then

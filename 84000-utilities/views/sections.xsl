@@ -28,7 +28,7 @@
                         
                         <div class="tab-content">
                             
-                            <div class="alert alert-info small text-center">
+                            <!--<div class="alert alert-info small text-center">
                                 <p>
                                     Expresses the structure of divisions in the 84000 version of the canon. 
                                     This data in xml format: 
@@ -37,15 +37,15 @@
                                         All sections
                                     </a> | 
                                     <a target="kangyur-texts-xml" class="alert-link">
-                                        <xsl:attribute name="href" select="concat($utilities-path, '/section-texts.xml?section-id=O1JC11494&amp;include-descendants=true')"/>
+                                        <xsl:attribute name="href" select="concat($utilities-path, '/section-texts.xml?section-id=O1JC11494&include-descendants=true')"/>
                                         Kangyur texts
                                     </a> | 
                                     <a target="tengyur-texts-xml" class="alert-link">
-                                        <xsl:attribute name="href" select="concat($utilities-path, '/section-texts.xml?section-id=O1JC7630&amp;include-descendants=true')"/>
+                                        <xsl:attribute name="href" select="concat($utilities-path, '/section-texts.xml?section-id=O1JC7630&include-descendants=true')"/>
                                         Tengyur texts
                                     </a>
                                 </p>
-                            </div>
+                            </div>-->
                             
                             <!-- Some tests -->
                             <xsl:choose>
@@ -82,7 +82,7 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <xsl:for-each select="m:descendants">
+                                    <xsl:for-each select="m:section">
                                         <xsl:sort select="xs:integer(@sort-index)"/>
                                         <xsl:call-template name="section-row"/>
                                     </xsl:for-each>
@@ -124,7 +124,7 @@
                     <xsl:with-param name="finish" select="xs:integer(@nesting)"/>
                     <xsl:with-param name="content">
                         <span class="text-bold">
-                            <xsl:value-of select="m:title"/>
+                            <xsl:value-of select="m:titles/m:title[@xml:lang eq 'en']"/>
                         </span>
                         <ul class="list-inline inline-dots sml-margin bottom">
                             <li>
@@ -147,6 +147,15 @@
                                     <xsl:attribute name="target" select="concat(@id, '.xml')"/>
                                     <span class="small">
                                         <xsl:value-of select="'xml'"/>
+                                    </span>
+                                </a>
+                            </li>
+                            <li>
+                                <a>
+                                    <xsl:attribute name="href" select="concat($reading-room-path ,'/section/', @id, '.json')"/>
+                                    <xsl:attribute name="target" select="concat(@id, '.json')"/>
+                                    <span class="small">
+                                        <xsl:value-of select="'json'"/>
                                     </span>
                                 </a>
                             </li>
@@ -268,11 +277,11 @@
             <td colspan="2">
                 <div class="collapse">
                     <xsl:attribute name="id" select="$section-texts-id"/>
-                    Texts
+                    <xsl:value-of select="'Texts'"/>
                 </div>
             </td>
         </tr>
-        <xsl:for-each select="m:descendants">
+        <xsl:for-each select="m:section">
             <xsl:sort select="xs:integer(@sort-index)"/>
             <xsl:call-template name="section-row"/>
         </xsl:for-each>

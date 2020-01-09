@@ -115,7 +115,15 @@ declare function common:normalize-space($nodes as node()*) as node()*{
     for $node in $nodes
     return
         if ($node instance of text()) then
-            text { translate(normalize-space(concat('', translate($node, '&#xA;', ''), '')), '', '') }
+            text {
+                translate(
+                    normalize-space(
+                        concat('', 
+                            translate($node, '&#xA;', '')   (: Strip return characters :)
+                         , '')                             (: Wrap in delete chars to preserve leading/trailing spaces :)
+                    )                                       (: Normalize space to simplify multiple spaces :)
+                , '', '')                                  (: Remove delete characters :)
+            }
         else if ($node instance of element()) then
             element { node-name($node) }{
                 $node/@*,
