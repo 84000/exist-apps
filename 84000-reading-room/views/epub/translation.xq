@@ -181,12 +181,16 @@ let $entries := (
     for $chapter in $data/m:response/m:translation/m:body/m:chapter
     return
         <entry name="OEBPS/chapter-{ $chapter/@chapter-index }.xhtml" type="xml">
-            { transform:transform($data, doc("xslt/chapter.xsl"), 
-                <parameters>
-                    <param name="chapter-index" value="{ $chapter/@chapter-index }"/>
-                    <param name="prefix" value="{ $chapter/@prefix }"/>
-                </parameters>
-            ) }
+            { 
+                transform:transform(
+                    $data, 
+                    doc("xslt/chapter.xsl"), 
+                    <parameters>
+                        <param name="chapter-index" value="{ $chapter/@chapter-index }"/>
+                        <param name="prefix" value="{ $chapter/@prefix }"/>
+                    </parameters>
+                ) 
+            }
         </entry>
     ,
     if($data/m:response/m:translation/m:colophon//tei:*) then 

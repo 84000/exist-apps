@@ -303,19 +303,6 @@ declare function common:unescape($text as xs:string*) as node()* {
             $html/HTML/BODY/node()
 };
 
-declare function common:search-result($nodes as node()*) as node()*
-{
-    for $node in $nodes
-    return
-        transform:transform(
-            $node, 
-            doc(concat($common:app-path, "/xslt/search-result.xsl")), 
-            (), 
-            (), 
-            'method=xml indent=no'
-        )
-};
-
 declare function common:mark-nodes($nodes as node()*, $strings as xs:string*, $mode as xs:string) as node()* {
     
     for $node in $nodes
