@@ -53,7 +53,8 @@ return
                 resource-suffix="{ $resource-suffix }"
                 doc-type="{ $doc-type }"
                 published-only="{ xs:boolean($published-only) }"
-                child-texts-only="{ xs:boolean($child-texts-only) }"/>,
+                child-texts-only="{ xs:boolean($child-texts-only) }"
+                translations-order="{ $translations-order }"/>,
                 
             (: Include section data :)
             section:section-tree($tei, true(), $include-texts)

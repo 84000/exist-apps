@@ -55,7 +55,7 @@
                     </div>
                     
                     <div class="panel-body">
-                        <div id="title text-center">
+                        <div id="title" class="text-center">
                             <div class="row">
                                 <div class="col-sm-offset-2 col-sm-8">
                                     <div class="title">

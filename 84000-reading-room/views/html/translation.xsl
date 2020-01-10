@@ -1006,6 +1006,9 @@
                 <xsl:attribute name="href" select="@url"/>
                 <xsl:attribute name="download" select="@filename"/>
                 <xsl:attribute name="class" select="'btn-round log-click'"/>
+                <xsl:if test="@type = ('pdf', 'epub', 'azw3')">
+                    <xsl:attribute name="data-download-dana" select="$translation/m:titles/m:title[@xml:lang eq 'en']/text()"/>
+                </xsl:if>
                 <xsl:call-template name="download-icon">
                     <xsl:with-param name="type" select="@type"/>
                 </xsl:call-template>
@@ -1139,6 +1142,7 @@
                                     <xsl:attribute name="href" select="@url"/>
                                     <xsl:attribute name="download" select="@filename"/>
                                     <xsl:attribute name="class" select="'log-click'"/>
+                                    <xsl:attribute name="data-download-dana" select="$translation/m:titles/m:title[@xml:lang eq 'en']/text()"/>
                                     <xsl:call-template name="download-label">
                                         <xsl:with-param name="type" select="@type"/>
                                     </xsl:call-template>
