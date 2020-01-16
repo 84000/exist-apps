@@ -16,6 +16,7 @@ declare variable $resource-suffix := lower-case(substring-after($exist:resource,
 declare variable $collection-path := lower-case(substring-before(substring-after($exist:path, "/"), "/"));
 declare variable $controller-root := lower-case(substring-after($exist:controller, "/"));
 declare variable $redirects := doc('/db/system/config/db/system/redirects.xml')/m:redirects;
+declare variable $user-name := common:user-name();
 
 declare function local:dispatch($model as xs:string?, $view as xs:string?, $parameters as node()?) as node(){
     <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
@@ -123,6 +124,10 @@ else if(not(common:auth-environment()) or sm:is-authenticated()) then
     if (lower-case($exist:resource) = $redirects//m:resource/@xml:id) then
         local:redirect($redirects//m:resource[@xml:id = lower-case($exist:resource)][1]/parent::m:redirect/@target)
     
+    (: Restrict view to single resource :)
+    else if($redirects/m:redirect[@user-name eq $user-name][not(@resource-id eq $resource-id)]) then
+        local:redirect($redirects/m:redirect[@user-name eq $user-name][1]/@target)
+        
     (: Trap no path :) (: Trap index/home :)
     else if ($exist:path = ('', '/') or lower-case($collection-path) = ('old-app')) then
         local:dispatch-html("/models/section.xq", "/views/html/section.xsl", 

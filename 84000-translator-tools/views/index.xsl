@@ -540,15 +540,15 @@
                                                         <xsl:attribute name="href" select="concat($reading-room-path, m:match/@location)"/>
                                                     </xsl:when>
                                                 </xsl:choose>
-                                                <xsl:apply-templates select="m:source/m:title"/>
+                                                <xsl:apply-templates select="m:tei/m:titles/m:title[@xml:lang eq 'en']"/>
                                             </a>
                                             <br/>
                                             <span class="translators text-muted small">
                                                 <xsl:value-of select="'Translated by '"/>
-                                                <xsl:variable name="author-ids" select="m:source/m:translation/m:contributors/m:author[@role eq 'translatorEng']/@ref ! substring-after(., 'contributors.xml#')"/>
+                                                <xsl:variable name="author-ids" select="m:tei/m:translation/m:contributors/m:author[@role eq 'translatorEng']/@ref ! substring-after(., 'contributors.xml#')"/>
                                                 <xsl:value-of select="string-join(/m:response/m:contributor-persons/m:person[@xml:id = $author-ids]/m:label, ' · ')"/>
                                             </span>
-                                            <xsl:for-each select="m:source/m:bibl">
+                                            <xsl:for-each select="m:tei/m:bibl">
                                                 <br/>
                                                 <span class="ancestors text-muted small">
                                                     <xsl:value-of select="'in '"/>
