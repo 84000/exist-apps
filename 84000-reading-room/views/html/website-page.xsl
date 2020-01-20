@@ -218,9 +218,9 @@
                 <xsl:attribute name="class" select="$page-class"/>
                 
                 <!-- Environment alert -->
-                <xsl:if test="$environment/m:warning/text()">
+                <xsl:if test="$environment/m:label/text()">
                     <div class="environment-warning">
-                        <xsl:value-of select="$environment/m:warning/text()"/> / <xsl:value-of select="@user-name"/> / <xsl:value-of select="$app-version"/> / <xsl:value-of select="@exist-version"/>
+                        <xsl:value-of select="$environment/m:label/text()"/> / <xsl:value-of select="@user-name"/> / <xsl:value-of select="$app-version"/> / <xsl:value-of select="@exist-version"/>
                     </div>
                 </xsl:if>
                 
@@ -275,9 +275,9 @@
                 <xsl:attribute name="class" select="$page-class"/>
                 
                 <!-- Environment alert -->
-                <xsl:if test="$environment/m:warning/text()">
+                <xsl:if test="$environment/m:label/text()">
                     <div class="environment-warning">
-                        <xsl:value-of select="$environment/m:warning/text()"/> / <xsl:value-of select="@user-name"/> / <xsl:value-of select="$app-version"/> / <xsl:value-of select="@exist-version"/>
+                        <xsl:value-of select="$environment/m:label/text()"/> / <xsl:value-of select="@user-name"/> / <xsl:value-of select="$app-version"/> / <xsl:value-of select="@exist-version"/>
                     </div>
                 </xsl:if>
                 

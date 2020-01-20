@@ -401,9 +401,9 @@ declare function common:user-in-group($group as xs:string*) as xs:boolean {
         
 };
 
-declare function common:auth-environment() as xs:boolean {
+declare function common:auth-path($path as xs:string) as xs:boolean {
     (: Check the environment to see if we need to login :)
-    if($common:environment/@auth eq '1')then
+    if($common:environment/m:auth[@path eq $path]) then
         true()
     else
         false()
