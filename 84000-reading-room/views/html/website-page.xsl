@@ -372,6 +372,41 @@
         
     </xsl:template>
     
+    <!-- Widget page -->
+    <xsl:template name="widget-page">
+        
+        <xsl:param name="page-url" required="yes" as="xs:string"/>
+        <xsl:param name="page-class" required="yes" as="xs:string"/>
+        <xsl:param name="page-title" required="yes" as="xs:string"/>
+        <xsl:param name="page-description" required="yes" as="xs:string"/>
+        <xsl:param name="content" required="no" as="node()*"/>
+        
+        <html>
+            
+            <xsl:attribute name="lang" select="$lang"/>
+            
+            <!-- Get the common <head> -->
+            <xsl:call-template name="html-head">
+                <xsl:with-param name="front-end-path" select="$front-end-path"/>
+                <xsl:with-param name="page-url" select="$page-url"/>
+                <xsl:with-param name="page-title" select="$page-title"/>
+                <xsl:with-param name="page-description" select="$page-description"/>
+                <xsl:with-param name="page-type" select="'communications'"/>
+            </xsl:call-template>
+            
+            <body id="top">
+                
+                <xsl:attribute name="class" select="$page-class"/>
+                
+                <!-- Place content -->
+                <xsl:copy-of select="$content"/>
+                
+            </body>
+        </html>
+        
+    </xsl:template>
+    
+    
     <!-- Localization helpers -->
     <!-- Copied from functions.xsl to avoid duplicate include warning -->
     <xsl:function name="common:internal-link">

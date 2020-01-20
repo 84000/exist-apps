@@ -21,6 +21,7 @@ declare variable $user-name := common:user-name();
 declare function local:dispatch($model as xs:string?, $view as xs:string?, $parameters as node()?) as node(){
     <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
     {
+        (: Model optional :)
         if($model)then
             <forward url="{concat($exist:controller, $model)}">
             { 
@@ -28,7 +29,9 @@ declare function local:dispatch($model as xs:string?, $view as xs:string?, $para
             }
             </forward>
         else
-            (),
+            ()
+        ,
+        (: View optional :)
         if($view)then
             <view>
             {
@@ -55,14 +58,19 @@ declare function local:dispatch($model as xs:string?, $view as xs:string?, $para
 
 declare function local:dispatch-html($model as xs:string, $view as xs:string, $parameters as node()) as node(){
     <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+        <!-- Model -->
         <forward url="{concat($exist:controller, $model)}">
         {
             $parameters//add-parameter 
         }
         </forward>
+        <!-- View -->
         <view>
             <forward servlet="XSLTServlet">
                 <set-attribute name="xslt.stylesheet" value="{concat($exist:root, $exist:controller, $view)}"/>
+                { 
+                    $parameters//set-header
+                }
             </forward>
         </view>
         <error-handler>
@@ -258,6 +266,7 @@ else if(not(common:auth-environment()) or sm:is-authenticated()) then
                 <parameters xmlns="http://exist.sourceforge.net/NS/exist">
                     <add-parameter name="resource-id" value="{$resource-id}"/>
                     <add-parameter name="resource-suffix" value="html"/>
+                    <set-header name="Access-Control-Allow-Origin" value="*"/>
                 </parameters>
             )
         else if ($resource-suffix eq 'json') then
@@ -315,6 +324,21 @@ else if(not(common:auth-environment()) or sm:is-authenticated()) then
         else
             (: return the xml :)
             local:dispatch(concat("/models/about/",  $resource-id, ".xq"), "", 
+                <parameters xmlns="http://exist.sourceforge.net/NS/exist"/>
+            )
+    
+    (: Widget :)
+    else if ($collection-path eq "widget") then
+        if ($resource-suffix eq 'html') then
+            local:dispatch-html(concat("/models/widget/",  $resource-id, ".xq"), concat("/views/html/widget/",  $resource-id, ".xsl"), 
+                <parameters xmlns="http://exist.sourceforge.net/NS/exist">
+                    <add-parameter name="resource-suffix" value="html"/>
+                    <set-header name="Access-Control-Allow-Origin" value="*"/>
+                </parameters>
+            )
+        else
+            (: return the xml :)
+            local:dispatch(concat("/models/widget/",  $resource-id, ".xq"), "", 
                 <parameters xmlns="http://exist.sourceforge.net/NS/exist"/>
             )
     

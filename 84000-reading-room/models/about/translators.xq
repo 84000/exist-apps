@@ -15,7 +15,6 @@ common:response(
     (
         contributors:teams(false(), false(), true()),
         contributors:regions(true()),
-        contributors:institution-types(true()),
-        translations:summary($source:ekangyur-work)
+        contributors:institution-types(true())
     )
 )

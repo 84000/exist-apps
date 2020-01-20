@@ -19,7 +19,7 @@ return
             <request 
                 xmlns="http://read.84000.co/ns/1.0" 
                 tab="{ request:get-parameter('tab', 'matching-funds-tab') }"/>,
-            translations:summary($source:ekangyur-work),
+            
             sponsors:sponsors($sponsor-ids, false(), false()),
             translations:sponsored-texts()
         )

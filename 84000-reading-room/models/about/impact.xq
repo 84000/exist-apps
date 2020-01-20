@@ -10,8 +10,6 @@ common:response(
     "about/impact", 
     $common:app-id,
     (
-        translations:summary($source:ekangyur-work),
-        
         (: Calculated strings :)
         <replace-text xmlns="http://read.84000.co/ns/1.0">
             <value key="#visitorsPerWeekFormatted">{ common:format-number(250) }</value>

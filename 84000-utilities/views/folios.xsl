@@ -194,20 +194,20 @@
                                                                         <xsl:attribute name="target" select="'check-folios'"/>
                                                                         <xsl:attribute name="href" select="m:url[@format eq 'html'][@xml:lang eq 'bo']"/>
                                                                         <!-- TO DO: Using ajax popup requires CORS and Auth -->
-                                                                        <!-- <xsl:attribute name="data-ajax-target" select="'#popup-footer-source .data-container'"/> -->
-                                                                        <xsl:value-of select="'Tibetan HTML'"/>
+                                                                        <xsl:attribute name="data-ajax-target" select="'#popup-footer-source .data-container'"/>
+                                                                        <xsl:value-of select="'Tibetan (pop-up)'"/>
                                                                     </a>
                                                                     <xsl:value-of select="' | '"/>
                                                                     <a>
                                                                         <xsl:attribute name="target" select="'check-folios'"/>
                                                                         <xsl:attribute name="href" select="m:url[@format eq 'xml'][@xml:lang eq 'bo']"/>
-                                                                        <xsl:value-of select="'Bilingual XML'"/>
+                                                                        <xsl:value-of select="'Bilingual (XML)'"/>
                                                                     </a>
                                                                     <xsl:value-of select="' | '"/>
                                                                     <a>
                                                                         <xsl:attribute name="target" select="'check-folios'"/>
                                                                         <xsl:attribute name="href" select="concat($reading-room-path, '/translation/', $toh-key, '.html', '#source-link-', @page-in-text)"/>
-                                                                        <xsl:value-of select="'Reading Room'"/>
+                                                                        <xsl:value-of select="'Reading Room (link)'"/>
                                                                     </a>
                                                                 </td>
                                                             </tr>
@@ -241,7 +241,7 @@
                 </div>
             </div>
             
-            <!-- TO DO: solve the auth issues
+            <!-- TO DO: solve the auth issues -->
             <div id="popup-footer-source" class="fixed-footer collapse hidden-print">
                 <div class="fix-height">
                     <div class="data-container">
@@ -256,7 +256,7 @@
                     </button>
                 </div>
             </div>
-             -->
+            
         </xsl:variable>
         
         <xsl:call-template name="reading-room-page">
