@@ -22,7 +22,7 @@
             <div class="brand-header">
                 <div class="container">
                     <div class="navbar-header">
-                        <div class="navbar-brand center-vertical">
+                        <div class="navbar-brand center-vertical full-width">
                             
                             <!-- Logo -->
                             <a class="logo">
@@ -56,7 +56,7 @@
                             </span>
                             
                             <div class="visible-desktop">
-                                <div class="center-vertical pull-right">
+                                <div class="center-vertical align-right">
                                     <span>
                                         <xsl:call-template name="language-links"/>
                                     </span>
@@ -94,6 +94,7 @@
                                                 </xsl:otherwise>
                                             </xsl:choose>
                                         </xsl:attribute>
+                                        
                                         <!-- Main nav -->
                                         <a class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
                                             <xsl:attribute name="href">
@@ -112,20 +113,47 @@
                                         <ul class="dropdown-menu">
                                             <xsl:for-each select="m:item">
                                                 <li>
-                                                    <xsl:if test="@url = $active-url">
-                                                        <xsl:attribute name="class">
-                                                            <xsl:value-of select="'active'"/>
-                                                        </xsl:attribute>
-                                                    </xsl:if>
-                                                    
-                                                    <a>
-                                                        <xsl:attribute name="href">
-                                                            <xsl:call-template name="local-url">
-                                                                <xsl:with-param name="url" select="@url"/>
-                                                            </xsl:call-template>
-                                                        </xsl:attribute>
-                                                        <xsl:value-of select="m:label"/>
-                                                    </a>
+                                                    <xsl:choose>
+                                                        <xsl:when test="m:item">
+                                                            <div class="top-vertical together subnav">
+                                                                <div class="title">
+                                                                    <xsl:value-of select="m:label"/>
+                                                                </div>
+                                                                <div class="links">
+                                                                    <ul>
+                                                                        <xsl:for-each select="m:item">
+                                                                            <li>
+                                                                                <a>
+                                                                                    <xsl:attribute name="href">
+                                                                                        <xsl:call-template name="local-url">
+                                                                                            <xsl:with-param name="url" select="@url"/>
+                                                                                        </xsl:call-template>
+                                                                                    </xsl:attribute>
+                                                                                    <xsl:value-of select="m:label"/>
+                                                                                </a>
+                                                                            </li>
+                                                                        </xsl:for-each>
+                                                                    </ul>
+                                                                </div>
+                                                            </div>
+                                                        </xsl:when>
+                                                        <xsl:otherwise>
+                                                            <xsl:if test="@url = $active-url">
+                                                                <xsl:attribute name="class">
+                                                                    <xsl:value-of select="'active'"/>
+                                                                </xsl:attribute>
+                                                            </xsl:if>
+                                                            
+                                                            <a>
+                                                                <xsl:attribute name="href">
+                                                                    <xsl:call-template name="local-url">
+                                                                        <xsl:with-param name="url" select="@url"/>
+                                                                    </xsl:call-template>
+                                                                </xsl:attribute>
+                                                                <xsl:value-of select="m:label"/>
+                                                            </a>
+                                                        </xsl:otherwise>
+                                                    </xsl:choose>
                                                 </li>
                                             </xsl:for-each>
                                         </ul>
@@ -448,7 +476,7 @@
     </xsl:template>
     
     <xsl:template name="search-form">
-        <form method="get" role="search" name="searchformTop" class="navbar-form navbar-right">
+        <form method="get" role="search" name="searchformTop" class="navbar-form">
             <xsl:attribute name="action">
                 <xsl:choose>
                     <xsl:when test="$default-search-form-target = 'reading-room'">

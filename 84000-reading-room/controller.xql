@@ -266,7 +266,6 @@ return
                     <parameters xmlns="http://exist.sourceforge.net/NS/exist">
                         <add-parameter name="resource-id" value="{$resource-id}"/>
                         <add-parameter name="resource-suffix" value="html"/>
-                        <set-header name="Access-Control-Allow-Origin" value="*"/>
                     </parameters>
                 )
             else if ($resource-suffix eq 'json') then
@@ -333,7 +332,6 @@ return
                 local:dispatch-html(concat("/models/widget/",  $resource-id, ".xq"), concat("/views/html/widget/",  $resource-id, ".xsl"), 
                     <parameters xmlns="http://exist.sourceforge.net/NS/exist">
                         <add-parameter name="resource-suffix" value="html"/>
-                        <set-header name="Access-Control-Allow-Origin" value="*"/>
                     </parameters>
                 )
             else

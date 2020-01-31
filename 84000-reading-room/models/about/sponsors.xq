@@ -18,6 +18,7 @@ return
         (
             <request 
                 xmlns="http://read.84000.co/ns/1.0" 
+                sharing-url="/about/sponsors.html" 
                 tab="{ request:get-parameter('tab', 'matching-funds-tab') }"/>,
             
             sponsors:sponsors($sponsor-ids, false(), false()),

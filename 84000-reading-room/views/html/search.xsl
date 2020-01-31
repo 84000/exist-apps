@@ -9,9 +9,10 @@
         <!-- PAGE CONTENT -->
         <xsl:variable name="content">
             
-            <div class="container">
-                <div class="panel panel-default">
-                    <div class="panel-heading bold center-vertical">
+            <div class="title-band">
+                <div class="container">
+                    <div class="center-vertical-sm full-width">
+                        
                         <div>
                             <ul class="breadcrumb">
                                 <li>
@@ -20,24 +21,31 @@
                                         <xsl:value-of select="'The Collection'"/>
                                     </a>
                                 </li>
+                                <li>
+                                    <xsl:value-of select="'Search'"/>
+                                </li>
                             </ul>
                         </div>
+                        
                         <div>
-                            <div class="pull-right center-vertical">
-                                <a class="center-vertical together">
-                                    <xsl:attribute name="href" select="common:internal-link('/section/all-translated.html', (), '', /m:response/@lang)"/>
-                                    <span>
-                                        <span class="btn-round sml">
-                                            <i class="fa fa-list"/>
-                                        </span>
-                                    </span>
-                                    <span class="btn-round-text">
-                                        <xsl:value-of select="'View Translated Texts'"/>
-                                    </span>
-                                </a>
+                            <div class="center-vertical pull-right">
                                 
                                 <div>
-                                    <a href="#bookmarks-sidebar" id="bookmarks-btn" class="show-sidebar center-vertical together" role="button" aria-haspopup="true" aria-expanded="false">
+                                    <a class="center-vertical">
+                                        <xsl:attribute name="href" select="common:internal-link('/section/all-translated.html', (), '', /m:response/@lang)"/>
+                                        <span>
+                                            <span class="btn-round sml">
+                                                <i class="fa fa-list"/>
+                                            </span>
+                                        </span>
+                                        <span class="btn-round-text">
+                                            <xsl:value-of select="'View Published Translations'"/>
+                                        </span>
+                                    </a>
+                                </div>
+                                
+                                <div>
+                                    <a href="#bookmarks-sidebar" id="bookmarks-btn" class="show-sidebar center-vertical" role="button" aria-haspopup="true" aria-expanded="false">
                                         <span>
                                             <span class="btn-round sml">
                                                 <i class="fa fa-bookmark"/>
@@ -52,52 +60,34 @@
                                 
                             </div>
                         </div>
+                        
                     </div>
+                </div>
+            </div>
+            <div class="content-band">
+                <div class="container">
                     
-                    <div class="panel-body">
-                        <div id="title" class="text-center">
-                            <div class="row">
-                                <div class="col-sm-offset-2 col-sm-8">
-                                    <div class="title">
-                                        <h1>Search The Reading Room</h1>
-                                        <hr/>
-                                        <p>Our database contains both the translated texts and titles and summaries for other works within the Kangyur and Tengyur where available.</p>
-                                    </div>
+                    <div id="title" class="text-center">
+                        <div class="row">
+                            <div class="col-sm-offset-2 col-sm-8">
+                                <div class="title">
+                                    <h1>Search The Reading Room</h1>
+                                    <hr/>
+                                    <p>Our database contains both the translated texts and titles and summaries for other works within the Kangyur and Tengyur where available.</p>
                                 </div>
                             </div>
                         </div>
-                        
-                        <xsl:call-template name="search">
-                            <xsl:with-param name="action" select="'search.html'"/>
-                            <xsl:with-param name="lang" select="/m:response/@lang"/>
-                        </xsl:call-template>
-                        
                     </div>
                     
-                    <div id="bookmarks-sidebar" class="fixed-sidebar collapse width hidden-print">
-                        
-                        <div class="container">
-                            <div class="fix-width">
-                                <h4>Bookmarks</h4>
-                                <table id="bookmarks-list" class="contents-table">
-                                    <tbody/>
-                                    <tfoot/>
-                                </table>
-                            </div>
-                        </div>
-                        
-                        <div class="fixed-btn-container close-btn-container right">
-                            <button type="button" class="btn-round close" aria-label="Close">
-                                <span aria-hidden="true">
-                                    <i class="fa fa-times"/>
-                                </span>
-                            </button>
-                        </div>
-                        
-                    </div>
+                    <xsl:call-template name="search">
+                        <xsl:with-param name="action" select="'search.html'"/>
+                        <xsl:with-param name="lang" select="/m:response/@lang"/>
+                    </xsl:call-template>
                     
                 </div>
             </div>
+            
+            <xsl:call-template name="bookmarks-sidebar"/>
             
         </xsl:variable>
         

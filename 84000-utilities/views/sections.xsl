@@ -3,7 +3,7 @@
     
     <xsl:import href="../../84000-reading-room/views/html/website-page.xsl"/>
     <xsl:import href="../../84000-reading-room/xslt/layout.xsl"/>
-    <xsl:import href="tabs.xsl"/>
+    <xsl:import href="common.xsl"/>
     
     <xsl:variable name="environment" select="doc(/m:response/@environment-path)/m:environment"/>
     <xsl:variable name="reading-room-path" select="$environment/m:url[@id eq 'reading-room']/text()"/>
@@ -12,96 +12,48 @@
     <xsl:template match="/m:response">
         
         <xsl:variable name="content">
-            <div class="container">
-                <div class="panel panel-default">
-                    <div class="panel-heading bold hidden-print center-vertical">
-                        
-                        <xsl:call-template name="header"/>
-                        
-                    </div>
-                    
-                    <div class="panel-body">
-                        
-                        <xsl:call-template name="tabs">
-                            <xsl:with-param name="active-tab" select="@model-type"/>
-                        </xsl:call-template>
-                        
-                        <div class="tab-content">
-                            
-                            <!--<div class="alert alert-info small text-center">
-                                <p>
-                                    Expresses the structure of divisions in the 84000 version of the canon. 
-                                    This data in xml format: 
-                                    <a target="sections-xml" class="alert-link">
-                                        <xsl:attribute name="href" select="concat($utilities-path, '/sections.xml')"/>
-                                        All sections
-                                    </a> | 
-                                    <a target="kangyur-texts-xml" class="alert-link">
-                                        <xsl:attribute name="href" select="concat($utilities-path, '/section-texts.xml?section-id=O1JC11494&include-descendants=true')"/>
-                                        Kangyur texts
-                                    </a> | 
-                                    <a target="tengyur-texts-xml" class="alert-link">
-                                        <xsl:attribute name="href" select="concat($utilities-path, '/section-texts.xml?section-id=O1JC7630&include-descendants=true')"/>
-                                        Tengyur texts
-                                    </a>
-                                </p>
-                            </div>-->
-                            
-                            <!-- Some tests -->
-                            <xsl:choose>
-                                <xsl:when test="count(m:results/m:structure/m:test[@pass eq '0']) eq 0">
-                                    <div class="alert alert-success small text-center">
-                                        <p>
-                                            <xsl:value-of select="'No errors were found in the sections structure.'"/>
-                                        </p>
-                                    </div>
-                                </xsl:when>
-                                <xsl:otherwise>
-                                    <xsl:for-each select="m:results/m:structure/m:test[@pass eq '0']">
-                                        <div class="alert alert-danger small">
-                                            <p>
-                                                <xsl:value-of select="concat('Failed test: ', m:title)"/>
-                                            </p>
-                                            <ol>
-                                                <xsl:for-each select="m:details/m:detail">
-                                                    <li>
-                                                        <xsl:value-of select="text()"/>
-                                                    </li>
-                                                </xsl:for-each>
-                                            </ol>
-                                        </div>
-                                    </xsl:for-each>
-                                </xsl:otherwise>
-                            </xsl:choose>
-                            
-                            <table class="table table-responsive">
-                                <thead>
-                                    <tr>
-                                        <th>Section</th>
-                                        <th>Texts</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <xsl:for-each select="m:section">
-                                        <xsl:sort select="xs:integer(@sort-index)"/>
-                                        <xsl:call-template name="section-row"/>
-                                    </xsl:for-each>
-                                </tbody>
-                            </table>
-                            
-                        </div>
-                    </div>
-                </div>
-            </div>
             
-            <!-- Link to top of page -->
-            <div class="hidden-print">
-                <div id="link-to-top-container" class="fixed-btn-container">
-                    <a href="#top" id="link-to-top" class="btn-round scroll-to-anchor" title="Return to the top of the page">
-                        <i class="fa fa-arrow-up" aria-hidden="true"/>
-                    </a>
-                </div>
-            </div>
+            <!-- Some tests -->
+            <xsl:choose>
+                <xsl:when test="count(m:results/m:structure/m:test[@pass eq '0']) eq 0">
+                    <div class="alert alert-success small text-center">
+                        <p>
+                            <xsl:value-of select="'No errors were found in the sections structure.'"/>
+                        </p>
+                    </div>
+                </xsl:when>
+                <xsl:otherwise>
+                    <xsl:for-each select="m:results/m:structure/m:test[@pass eq '0']">
+                        <div class="alert alert-danger small">
+                            <p>
+                                <xsl:value-of select="concat('Failed test: ', m:title)"/>
+                            </p>
+                            <ol>
+                                <xsl:for-each select="m:details/m:detail">
+                                    <li>
+                                        <xsl:value-of select="text()"/>
+                                    </li>
+                                </xsl:for-each>
+                            </ol>
+                        </div>
+                    </xsl:for-each>
+                </xsl:otherwise>
+            </xsl:choose>
+            
+            <table class="table table-responsive">
+                <thead>
+                    <tr>
+                        <th>Section</th>
+                        <th>Texts</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <xsl:for-each select="m:section">
+                        <xsl:sort select="xs:integer(@sort-index)"/>
+                        <xsl:call-template name="section-row"/>
+                    </xsl:for-each>
+                </tbody>
+            </table>
             
         </xsl:variable>
         
@@ -110,7 +62,11 @@
             <xsl:with-param name="page-class" select="'utilities'"/>
             <xsl:with-param name="page-title" select="'Sections | 84000 Utilities'"/>
             <xsl:with-param name="page-description" select="'Utilities for Individual Sections'"/>
-            <xsl:with-param name="content" select="$content"/>
+            <xsl:with-param name="content">
+                <xsl:call-template name="utilities-page">
+                    <xsl:with-param name="content" select="$content"/>
+                </xsl:call-template>
+            </xsl:with-param>
         </xsl:call-template>
         
     </xsl:template>

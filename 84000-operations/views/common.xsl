@@ -1,18 +1,27 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:common="http://read.84000.co/common" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" xmlns:exslt="http://exslt.org/common" version="3.0" exclude-result-prefixes="#all">
     
+    <xsl:variable name="environment" select="doc(/m:response/@environment-path)/m:environment" as="element(m:environment)"/>
+    <xsl:variable name="reading-room-path" select="$environment/m:url[@id eq 'reading-room']/text()" as="xs:string"/>
+    <xsl:variable name="front-end-path" select="$environment/m:url[@id eq 'front-end']/text()" as="xs:string"/>
+    
     <!-- Page header -->
     <xsl:template name="operations-page">
-        <xsl:param name="reading-room-path" required="yes"/>
         <xsl:param name="active-tab"/>
         <xsl:param name="page-content" required="yes"/>
         
-        <div class="container">
-            <div class="panel panel-default">
-                
-                <div class="panel-heading bold hidden-print center-vertical">
-                    <span class="title">
-                        <xsl:value-of select="'84000 Publication Management'"/>
+        <div class="title-band">
+            <div class="container">
+                <div class="center-vertical full-width">
+                    <span class="logo">
+                        <img alt="84000 logo">
+                            <xsl:attribute name="src" select="concat($front-end-path, '/imgs/logo.png')"/>
+                        </img>
+                    </span>
+                    <span>
+                        <h1>
+                            <xsl:value-of select="'Publication Management'"/>
+                        </h1>
                     </span>
                     <span class="text-right">
                         <a target="reading-room">
@@ -21,20 +30,29 @@
                         </a>
                     </span>
                 </div>
-                
-                <div class="panel-body">
-                    
-                    <xsl:call-template name="tabs">
-                        <xsl:with-param name="active-tab" select="$active-tab"/>
-                    </xsl:call-template>
-                    
-                    <div class="tab-content">
-                        <xsl:copy-of select="$page-content"/>
-                    </div>
-                    
+            </div>
+        </div>
+        
+        <div class="content-band">
+            <div class="container">
+                <xsl:call-template name="tabs">
+                    <xsl:with-param name="active-tab" select="$active-tab"/>
+                </xsl:call-template>
+                <div class="tab-content">
+                    <xsl:copy-of select="$page-content"/>
                 </div>
             </div>
         </div>
+        
+        <!-- Link to top of page -->
+        <div class="hidden-print">
+            <div id="link-to-top-container" class="fixed-btn-container">
+                <a href="#top" id="link-to-top" class="btn-round scroll-to-anchor" title="Return to the top of the page">
+                    <i class="fa fa-arrow-up" aria-hidden="true"/>
+                </a>
+            </div>
+        </div>
+        
     </xsl:template>
     
     <!-- Generic alert -->

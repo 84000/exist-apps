@@ -86,9 +86,12 @@
         </p>
     </item>
     <item key="about.common.kangyur-count-before-label">
-        《甘珠爾》總頁數	
+        《甘珠爾》總頁數
     </item>
     <item key="about.common.translation-count-before-label">
+        翻譯中頁數
+    </item>
+    <item key="about.common.translated-count-before-label">
         已翻譯頁數
     </item>
     <item key="about.common.published-count-before-label">
@@ -98,7 +101,7 @@
         線上捐款
     </item>
     <item key="about.common.sponsor-button-link">
-        http://84000.co/ch-page
+        https://84000.co/ch-how-you-can-help/ch-howhelp-subscribe/
     </item>
     <item key="about.common.donate-instructions-link">
         http://84000.co/media/ch_donate_instructions.pdf

@@ -1283,7 +1283,7 @@
                                     <xsl:attribute name="href" select="replace($link-href, '@translation-id', @translation-id)"/>
                                     <xsl:value-of select="m:toh/m:full"/> / <xsl:value-of select="m:title"/>
                                 </a>
-                                <span>
+                                <span class="text-right">
                                     <xsl:copy-of select="common:sponsorship-status(m:sponsorship-status/m:status)"/>
                                     <xsl:copy-of select="common:translation-status(@translation-status-group)"/>
                                 </span>

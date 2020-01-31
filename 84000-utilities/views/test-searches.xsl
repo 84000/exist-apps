@@ -3,157 +3,142 @@
     
     <xsl:import href="../../84000-reading-room/views/html/website-page.xsl"/>
     <xsl:import href="../../84000-reading-room/xslt/functions.xsl"/>
+    <xsl:import href="common.xsl"/>
     
     <xsl:template match="/m:response">
         <xsl:variable name="content">
             
             <xsl:variable name="request-lang" select="if(m:request/m:parameter[@name eq 'lang']) then m:request/m:parameter[@name eq 'lang'] else 'sa-ltn'" as="xs:string"/>
             
-            <div class="container">
-                <div class="panel panel-default">
+            <ul class="nav nav-tabs active-tab-refresh" role="tablist">
+                <xsl:for-each select="m:langs/m:lang">
+                    <li role="presentation">
+                        <xsl:if test="lower-case(@xml:lang) eq lower-case($request-lang)">
+                            <xsl:attribute name="class" select="'active'"/>
+                        </xsl:if>
+                        <a>
+                            <xsl:attribute name="href" select="concat('?lang=', lower-case(@xml:lang))"/>
+                            <xsl:value-of select="m:label"/>
+                        </a>
+                    </li>
+                </xsl:for-each>
+            </ul>
+            
+            <div class="row">
+                <div class="col-sm-4">
                     
-                    <div class="panel-heading bold hidden-print center-vertical">
-                        
-                        <span class="title">
-                            <xsl:value-of select="'Test Searches'"/>
-                        </span>
-                        
-                    </div>
+                    <!-- Form to add a new query -->
+                    <form action="test-searches.html" method="post">
+                        <input type="hidden" name="action" value="add-test"/>
+                        <input type="hidden" name="lang">
+                            <xsl:attribute name="value" select="$request-lang"/>
+                        </input>
+                        <div class="input-group">
+                            <input type="text" name="test-string" class="form-control" placeholder="Add a query e.g. Sūtra"/>
+                            <span class="input-group-btn">
+                                <button class="btn btn-primary" type="submit">
+                                    <xsl:value-of select="'Add'"/>
+                                </button>
+                            </span>
+                        </div>
+                    </form>
                     
-                    <div class="panel-body min-height-md">
-                        <ul class="nav nav-tabs active-tab-refresh" role="tablist">
-                            <xsl:for-each select="m:langs/m:lang">
-                                <li role="presentation">
-                                    <xsl:if test="lower-case(@xml:lang) eq lower-case($request-lang)">
-                                        <xsl:attribute name="class" select="'active'"/>
-                                    </xsl:if>
-                                    <a>
-                                        <xsl:attribute name="href" select="concat('?lang=', lower-case(@xml:lang))"/>
-                                        <xsl:value-of select="m:label"/>
-                                    </a>
-                                </li>
+                    <!-- List of queries -->
+                    
+                    <table class="table table-responsive table-icons">
+                        <thead>
+                            <tr>
+                                <th colspan="2">
+                                    <xsl:value-of select="'Query'"/>
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <xsl:for-each select="m:tests/m:test">
+                                <xsl:sort select="m:sort"/>
+                                <tr data-toggle="collapse" class="collapsed">
+                                    <xsl:attribute name="data-target" select="concat('#test-results-', @xml:id)"/>
+                                    <td>
+                                        <xsl:attribute name="class" select="common:lang-class($request-lang)"/>
+                                        <xsl:value-of select="m:query"/>
+                                    </td>
+                                    <td class="icon">
+                                        <xsl:choose>
+                                            <xsl:when test="m:result[@invalid]">
+                                                <i class="fa fa-times-circle"/>
+                                            </xsl:when>
+                                            <xsl:otherwise>
+                                                <i class="fa fa-check-circle"/>
+                                            </xsl:otherwise>
+                                        </xsl:choose>
+                                    </td>
+                                </tr>
                             </xsl:for-each>
-                        </ul>
-                        
-                        <div class="row">
-                            <div class="col-sm-4">
-                                
-                                <!-- Form to add a new query -->
-                                <form action="test-searches.html" method="post">
-                                    <input type="hidden" name="action" value="add-test"/>
-                                    <input type="hidden" name="lang">
-                                        <xsl:attribute name="value" select="$request-lang"/>
-                                    </input>
-                                    <div class="input-group">
-                                        <input type="text" name="test-string" class="form-control" placeholder="Add a query e.g. Sūtra"/>
-                                        <span class="input-group-btn">
-                                            <button class="btn btn-primary" type="submit">
-                                                <xsl:value-of select="'Add'"/>
-                                            </button>
-                                        </span>
-                                    </div>
-                                </form>
-                                
-                                <!-- List of queries -->
-                                
-                                <table class="table table-responsive table-icons">
-                                    <thead>
-                                        <tr>
-                                            <th colspan="2">
-                                                <xsl:value-of select="'Query'"/>
-                                            </th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <xsl:for-each select="m:tests/m:test">
-                                            <xsl:sort select="m:sort"/>
-                                            <tr data-toggle="collapse" class="collapsed">
-                                                <xsl:attribute name="data-target" select="concat('#test-results-', @xml:id)"/>
-                                                <td>
-                                                    <xsl:attribute name="class" select="common:lang-class($request-lang)"/>
-                                                    <xsl:value-of select="m:query"/>
-                                                </td>
-                                                <td class="icon">
-                                                    <xsl:choose>
-                                                        <xsl:when test="m:result[@invalid]">
-                                                            <i class="fa fa-times-circle"/>
-                                                        </xsl:when>
-                                                        <xsl:otherwise>
-                                                            <i class="fa fa-check-circle"/>
-                                                        </xsl:otherwise>
-                                                    </xsl:choose>
-                                                </td>
-                                            </tr>
-                                        </xsl:for-each>
-                                    </tbody>
-                                </table>
-                                
-                            </div>
-                            <div class="col-sm-8">
-                                
-                                <!-- Form to add new text to be searched (data) -->
-                                <form action="test-searches.html" method="post" class="form-horizontal">
-                                    <input type="hidden" name="action" value="add-data"/>
-                                    <input type="hidden" name="lang">
-                                        <xsl:attribute name="value" select="$request-lang"/>
-                                    </input>
-                                    <div class="form-group">
-                                        <div class="col-sm-10">
-                                            <div class="input-group">
-                                                <input type="text" name="data-string" class="form-control" placeholder="String to be indexed e.g. Atyayajñānasūtra"/>
-                                                <span class="input-group-btn">
-                                                    <button class="btn btn-primary" type="submit">
-                                                        <xsl:value-of select="'Add'"/>
-                                                    </button>
-                                                </span>
-                                            </div>
-                                        </div>
-                                        <!-- 
-                                        <div class="col-sm-2">
-                                            <a role="button" data-toggle="collapse">
-                                                <xsl:attribute name="href" select="'#test-results-all'"/>
-                                                <xsl:attribute name="aria-controls" select="'test-results-all'"/>
-                                                <xsl:choose>
-                                                    <xsl:when test="m:request/@test-id eq 'all'">
-                                                        <xsl:attribute name="class" select="'btn btn-default'"/>
-                                                        <xsl:attribute name="aria-expanded" select="'true'"/>
-                                                    </xsl:when>
-                                                    <xsl:otherwise>
-                                                        <xsl:attribute name="class" select="'btn btn-default collapsed'"/>
-                                                        <xsl:attribute name="aria-expanded" select="'false'"/>
-                                                    </xsl:otherwise>
-                                                </xsl:choose>
-                                                <xsl:value-of select="'Add a match'"/>
-                                            </a>
-                                        </div> -->
-                                        <div class="col-sm-2">
-                                            <a role="button">
-                                                <xsl:attribute name="href" select="concat('?action=reindex&amp;lang=', $request-lang)"/>
-                                                <xsl:attribute name="class" select="'btn btn-default'"/>
-                                                <xsl:value-of select="'Re-index'"/>
-                                            </a>
-                                        </div>
-                                    </div>
-                                </form>
-                                
-                                <!-- List of results -->
-                                <div id="results-panel" class="replace">
-                                    
-                                    <xsl:for-each select="m:tests/m:test">
-                                        <xsl:call-template name="result-set">
-                                            <xsl:with-param name="test-id" select="@xml:id"/>
-                                            <xsl:with-param name="lang" select="$request-lang"/>
-                                            <xsl:with-param name="query-string" select="m:query"/>
-                                            <xsl:with-param name="results" select="m:result"/>
-                                        </xsl:call-template>
-                                    </xsl:for-each>
-                                    
+                        </tbody>
+                    </table>
+                    
+                </div>
+                <div class="col-sm-8">
+                    
+                    <!-- Form to add new text to be searched (data) -->
+                    <form action="test-searches.html" method="post" class="form-horizontal">
+                        <input type="hidden" name="action" value="add-data"/>
+                        <input type="hidden" name="lang">
+                            <xsl:attribute name="value" select="$request-lang"/>
+                        </input>
+                        <div class="form-group">
+                            <div class="col-sm-10">
+                                <div class="input-group">
+                                    <input type="text" name="data-string" class="form-control" placeholder="String to be indexed e.g. Atyayajñānasūtra"/>
+                                    <span class="input-group-btn">
+                                        <button class="btn btn-primary" type="submit">
+                                            <xsl:value-of select="'Add'"/>
+                                        </button>
+                                    </span>
                                 </div>
-                                
+                            </div>
+                            <!-- 
+                            <div class="col-sm-2">
+                                <a role="button" data-toggle="collapse">
+                                    <xsl:attribute name="href" select="'#test-results-all'"/>
+                                    <xsl:attribute name="aria-controls" select="'test-results-all'"/>
+                                    <xsl:choose>
+                                        <xsl:when test="m:request/@test-id eq 'all'">
+                                            <xsl:attribute name="class" select="'btn btn-default'"/>
+                                            <xsl:attribute name="aria-expanded" select="'true'"/>
+                                        </xsl:when>
+                                        <xsl:otherwise>
+                                            <xsl:attribute name="class" select="'btn btn-default collapsed'"/>
+                                            <xsl:attribute name="aria-expanded" select="'false'"/>
+                                        </xsl:otherwise>
+                                    </xsl:choose>
+                                    <xsl:value-of select="'Add a match'"/>
+                                </a>
+                            </div> -->
+                            <div class="col-sm-2">
+                                <a role="button">
+                                    <xsl:attribute name="href" select="concat('?action=reindex&amp;lang=', $request-lang)"/>
+                                    <xsl:attribute name="class" select="'btn btn-default'"/>
+                                    <xsl:value-of select="'Re-index'"/>
+                                </a>
                             </div>
                         </div>
+                    </form>
+                    
+                    <!-- List of results -->
+                    <div id="results-panel" class="replace">
+                        
+                        <xsl:for-each select="m:tests/m:test">
+                            <xsl:call-template name="result-set">
+                                <xsl:with-param name="test-id" select="@xml:id"/>
+                                <xsl:with-param name="lang" select="$request-lang"/>
+                                <xsl:with-param name="query-string" select="m:query"/>
+                                <xsl:with-param name="results" select="m:result"/>
+                            </xsl:call-template>
+                        </xsl:for-each>
                         
                     </div>
+                    
                 </div>
             </div>
             
@@ -164,7 +149,11 @@
             <xsl:with-param name="page-class" select="'utilities tests'"/>
             <xsl:with-param name="page-title" select="'Search Tests | 84000 Utilities'"/>
             <xsl:with-param name="page-description" select="'Automated tests for 84000 searches'"/>
-            <xsl:with-param name="content" select="$content"/>
+            <xsl:with-param name="content">
+                <xsl:call-template name="utilities-page">
+                    <xsl:with-param name="content" select="$content"/>
+                </xsl:call-template>
+            </xsl:with-param>
         </xsl:call-template>
         
     </xsl:template>

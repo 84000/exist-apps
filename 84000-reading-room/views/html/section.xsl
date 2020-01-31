@@ -16,15 +16,9 @@
             
             <xsl:variable name="section-id" select="lower-case(m:section/@id)"/>
             
-            <div class="container">
-                <div class="panel panel-default">
-                    <div class="panel-heading bold center-vertical">
-                        
-                        <xsl:if test="$section-id eq 'lobby'">
-                            <span class="title">
-                                <xsl:value-of select="'The Collection'"/>
-                            </span>
-                        </xsl:if>
+            <div class="title-band">
+                <div class="container">
+                    <div class="center-vertical-sm full-width">
                         
                         <div>
                             <ul class="breadcrumb">
@@ -40,28 +34,34 @@
                                 
                                 <xsl:copy-of select="common:breadcrumb-items(m:section/m:parent | m:section/m:parent//m:parent, /m:response/@lang)"/>
                                 
+                                <li>
+                                    <xsl:value-of select="m:section/m:titles/m:title[@xml:lang = 'en']"/>
+                                </li>
+                                
                             </ul>
                         </div>
                         
                         <div>
-                            <div class="pull-right center-vertical">
+                            <div class="center-vertical pull-right">
                                 
                                 <xsl:if test="not($section-id eq 'all-translated')">
-                                    <a class="center-vertical together">
-                                        <xsl:attribute name="href" select="common:internal-link('/section/all-translated.html', (), '', /m:response/@lang)"/>
-                                        <span>
-                                            <span class="btn-round sml">
-                                                <i class="fa fa-list"/>
+                                    <div>
+                                        <a class="center-vertical">
+                                            <xsl:attribute name="href" select="common:internal-link('/section/all-translated.html', (), '', /m:response/@lang)"/>
+                                            <span>
+                                                <span class="btn-round sml">
+                                                    <i class="fa fa-list"/>
+                                                </span>
                                             </span>
-                                        </span>
-                                        <span class="btn-round-text">
-                                            <xsl:value-of select="'View Translated Texts'"/>
-                                        </span>
-                                    </a>
+                                            <span class="btn-round-text">
+                                                <xsl:value-of select="'View Published Translations'"/>
+                                            </span>
+                                        </a>
+                                    </div>
                                 </xsl:if>
                                 
                                 <div>
-                                    <a href="#bookmarks-sidebar" id="bookmarks-btn" class="show-sidebar center-vertical together" role="button" aria-haspopup="true" aria-expanded="false">
+                                    <a href="#bookmarks-sidebar" id="bookmarks-btn" class="show-sidebar center-vertical" role="button" aria-haspopup="true" aria-expanded="false">
                                         <span>
                                             <span class="btn-round sml">
                                                 <i class="fa fa-bookmark"/>
@@ -76,193 +76,172 @@
                                 
                             </div>
                         </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="content-band">
+                <div class="container">
+                    <div id="title">
+                        
+                        <xsl:call-template name="section-title">
+                            <xsl:with-param name="section" select="m:section"/>
+                        </xsl:call-template>
+                        
+                        <xsl:call-template name="section-stats">
+                            <xsl:with-param name="section" select="m:section"/>
+                        </xsl:call-template>
                         
                     </div>
                     
-                    <div class="panel-body">
-                        
-                        <div id="title">
-                            
-                            <xsl:call-template name="section-title">
-                                <xsl:with-param name="section" select="m:section"/>
-                            </xsl:call-template>
-                            
-                            <xsl:call-template name="section-stats">
-                                <xsl:with-param name="section" select="m:section"/>
-                            </xsl:call-template>
-                            
-                        </div>
-                        
-                        <!-- 
+                    <!-- 
                             Conditions for having a text tab
                             - There are texts
                             - There are texts in a sub-section (it's a grouping section)
                             - There were texts but published-only was selected
                         -->
-                        <xsl:variable name="show-texts" select="(m:section/m:texts/m:text or m:section/m:section[@type eq 'grouping']/m:texts/m:text or m:section/m:texts/@published-only eq '1')"/>
-                        
-                        <!-- 
+                    <xsl:variable name="show-texts" select="(m:section/m:texts/m:text or m:section/m:section[@type eq 'grouping']/m:texts/m:text or m:section/m:texts/@published-only eq '1')"/>
+                    
+                    <!-- 
                             Conditions for showing tabs
                             - it's not lobby or all translated
                             - and there are texts ($show-texts)
                             - or there are sections
                             - or there's some about content
                         -->
-                        <xsl:if test="not($section-id = ('lobby', 'all-translated')) and ($show-texts or m:section/m:section or m:section/m:about/*)">
-                            
-                            <!-- Content tabs (sections/texts/summary) -->
-                            <div class="tabs-container-center">
-                                <ul class="nav nav-tabs" role="tablist">
-                                    
-                                    <xsl:if test="$show-texts">
-                                        <!-- Texts tab -->
-                                        <li role="presentation" class="active">
-                                            <a href="#texts" aria-controls="texts" role="tab" data-toggle="tab">Texts</a>
-                                        </li>
-                                    </xsl:if>
-                                    
-                                    <xsl:if test="m:section/m:section[not(@type eq 'grouping')]">
-                                        <!-- Sections tab -->
-                                        <li role="presentation">
-                                            <xsl:attribute name="class" select="if(not($show-texts)) then 'active' else ''"/>
-                                            <a href="#sections" aria-controls="sections" role="tab" data-toggle="tab">Sections</a>
-                                        </li>
-                                    </xsl:if>
-                                    
-                                    <xsl:if test="m:section/m:about/*">
-                                        <!-- About tab -->
-                                        <li role="presentation">
-                                            <a href="#summary" aria-controls="summary" role="tab" data-toggle="tab">About</a>
-                                        </li>
-                                    </xsl:if>
-                                    
-                                </ul>
-                                
-                            </div>
-                        </xsl:if>
-        
-                        <!-- Tab content -->
-                        <div class="tab-content">
-                            
-                            <!-- Texts -->
-                            <div role="tabpanel" id="texts" class="hidden">
+                    <xsl:if test="not($section-id = ('lobby', 'all-translated')) and ($show-texts or m:section/m:section or m:section/m:about/*)">
+                        
+                        <!-- Content tabs (sections/texts/summary) -->
+                        <div class="tabs-container-center">
+                            <ul class="nav nav-tabs" role="tablist">
                                 
                                 <xsl:if test="$show-texts">
-                                    <xsl:attribute name="class" select="'tab-pane fade in active'"/>
+                                    <!-- Texts tab -->
+                                    <li role="presentation" class="active">
+                                        <a href="#texts" aria-controls="texts" role="tab" data-toggle="tab">Texts</a>
+                                    </li>
                                 </xsl:if>
                                 
-                                <xsl:call-template name="section-texts">
-                                    <xsl:with-param name="section" select="m:section"/>
-                                </xsl:call-template>
-                            
-                            </div>
-                            
-                            <!-- Sections -->
-                            <div role="tabpanel" id="sections" class="hidden">
-                                
-                                <xsl:choose>
-                                    <xsl:when test="$show-texts">
-                                        <xsl:attribute name="class" select="'tab-pane fade'"/>
-                                    </xsl:when>
-                                    <xsl:when test="m:section/m:section[not(@type eq 'grouping')]">
-                                        <xsl:attribute name="class" select="'tab-pane fade in active'"/>
-                                    </xsl:when>
-                                </xsl:choose>
-                                
-                                <div class="row sections">
-                                    
-                                    <!-- Sub-sections -->
-                                    <xsl:call-template name="sub-sections">
-                                        <xsl:with-param name="section" select="m:section"/>
-                                    </xsl:call-template>
-                                    
-                                </div>
-                            </div>
-                            
-                            <!-- Summary -->
-                            <div role="tabpanel" id="summary" class="hidden">
+                                <xsl:if test="m:section/m:section[not(@type eq 'grouping')]">
+                                    <!-- Sections tab -->
+                                    <li role="presentation">
+                                        <xsl:attribute name="class" select="if(not($show-texts)) then 'active' else ''"/>
+                                        <a href="#sections" aria-controls="sections" role="tab" data-toggle="tab">Sections</a>
+                                    </li>
+                                </xsl:if>
                                 
                                 <xsl:if test="m:section/m:about/*">
-                                    <xsl:attribute name="class" select="'tab-pane fade'"/>
+                                    <!-- About tab -->
+                                    <li role="presentation">
+                                        <a href="#summary" aria-controls="summary" role="tab" data-toggle="tab">About</a>
+                                    </li>
                                 </xsl:if>
                                 
-                                <div class="row">
-                                    <div class="col-md-offset-2 col-md-8 text-left">
-                                        <xsl:apply-templates select="m:section/m:about/*"/>
-                                    </div>
-                                </div>
+                            </ul>
+                            
+                        </div>
+                    </xsl:if>
+                    
+                    <!-- Tab content -->
+                    <div class="tab-content">
+                        
+                        <!-- Texts -->
+                        <div role="tabpanel" id="texts" class="hidden">
+                            
+                            <xsl:if test="$show-texts">
+                                <xsl:attribute name="class" select="'tab-pane fade in active'"/>
+                            </xsl:if>
+                            
+                            <xsl:call-template name="section-texts">
+                                <xsl:with-param name="section" select="m:section"/>
+                            </xsl:call-template>
+                            
+                        </div>
+                        
+                        <!-- Sections -->
+                        <div role="tabpanel" id="sections" class="hidden">
+                            
+                            <xsl:choose>
+                                <xsl:when test="$show-texts">
+                                    <xsl:attribute name="class" select="'tab-pane fade'"/>
+                                </xsl:when>
+                                <xsl:when test="m:section/m:section[not(@type eq 'grouping')]">
+                                    <xsl:attribute name="class" select="'tab-pane fade in active'"/>
+                                </xsl:when>
+                            </xsl:choose>
+                            
+                            <div class="row sections">
+                                
+                                <!-- Sub-sections -->
+                                <xsl:call-template name="sub-sections">
+                                    <xsl:with-param name="section" select="m:section"/>
+                                </xsl:call-template>
                                 
                             </div>
-                            
                         </div>
                         
-                        <hr/>
-                        
-                        <div class="row">
-                            <div class="col-md-offset-2 col-md-8">
-                                <div class="row">
-                                    <div class="col-xs-6 col-sm-4">
-                                        <a class="text-success center-vertical center-aligned">
-                                            <xsl:attribute name="href" select="common:internal-link('/search.html', (), '', /m:response/@lang)"/>
-                                            <span class="btn-round green sml">
-                                                <i class="fa fa-search"/>
-                                            </span>
-                                            <span class="btn-round-text">
-                                                <xsl:value-of select="'Search the Reading Room'"/>
-                                            </span>
-                                        </a>
-                                    </div>
-                                    <div class="col-xs-6 col-sm-4">
-                                        <a class="text-danger center-vertical center-aligned">
-                                            <xsl:attribute name="href" select="common:internal-link('/section/all-translated.html', (), '', /m:response/@lang)"/>
-                                            <span class="btn-round red sml">
-                                                <i class="fa fa-list"/>
-                                            </span>
-                                            <span class="btn-round-text">
-                                                <xsl:value-of select="'View Translated Texts'"/>
-                                            </span>
-                                        </a>
-                                    </div>
-                                    <div class="col-xs-12 col-sm-4">
-                                        <a href="http://84000.co/how-you-can-help/donate/#sap" class="center-vertical center-aligned">
-                                            <xsl:copy-of select="common:override-href(/m:response/@lang, 'zh', 'http://84000.co/ch-howhelp/donate')"/>
-                                            <span class="btn-round sml">
-                                                <i class="fa fa-gift"/>
-                                            </span>
-                                            <span class="btn-round-text">
-                                                <xsl:value-of select="'Sponsor Translation'"/>
-                                            </span>
-                                        </a>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div id="bookmarks-sidebar" class="fixed-sidebar collapse width hidden-print">
+                        <!-- Summary -->
+                        <div role="tabpanel" id="summary" class="hidden">
                             
-                            <div class="container">
-                                <div class="fix-width">
-                                    <h4>Bookmarks</h4>
-                                    <table id="bookmarks-list" class="contents-table">
-                                        <tbody/>
-                                        <tfoot/>
-                                    </table>
-                                </div>
-                            </div>
+                            <xsl:if test="m:section/m:about/*">
+                                <xsl:attribute name="class" select="'tab-pane fade'"/>
+                            </xsl:if>
                             
-                            <div class="fixed-btn-container close-btn-container right">
-                                <button type="button" class="btn-round close" aria-label="Close">
-                                    <span aria-hidden="true">
-                                        <i class="fa fa-times"/>
-                                    </span>
-                                </button>
+                            <div class="row">
+                                <div class="col-md-offset-2 col-md-8 text-left">
+                                    <xsl:apply-templates select="m:section/m:about/*"/>
+                                </div>
                             </div>
                             
                         </div>
                         
                     </div>
+                    
+                    <hr/>
+                    
+                    <div class="row">
+                        <div class="col-md-offset-2 col-md-8">
+                            <div class="row">
+                                <div class="col-sm-4 bottom-margin-xs">
+                                    <a class="text-success center-vertical">
+                                        <xsl:attribute name="href" select="common:internal-link('/search.html', (), '', /m:response/@lang)"/>
+                                        <span class="btn-round green sml">
+                                            <i class="fa fa-search"/>
+                                        </span>
+                                        <span class="btn-round-text">
+                                            <xsl:value-of select="'Search the Reading Room'"/>
+                                        </span>
+                                    </a>
+                                </div>
+                                <div class="col-sm-4 bottom-margin-xs">
+                                    <a class="text-danger center-vertical">
+                                        <xsl:attribute name="href" select="common:internal-link('/section/all-translated.html', (), '', /m:response/@lang)"/>
+                                        <span class="btn-round red sml">
+                                            <i class="fa fa-list"/>
+                                        </span>
+                                        <span class="btn-round-text">
+                                            <xsl:value-of select="'View Published Translations'"/>
+                                        </span>
+                                    </a>
+                                </div>
+                                <div class="col-sm-4 bottom-margin-xs">
+                                    <a href="http://84000.co/how-you-can-help/donate/#sap" class="center-vertical">
+                                        <xsl:copy-of select="common:override-href(/m:response/@lang, 'zh', 'http://84000.co/ch-howhelp/donate')"/>
+                                        <span class="btn-round sml">
+                                            <i class="fa fa-gift"/>
+                                        </span>
+                                        <span class="btn-round-text">
+                                            <xsl:value-of select="'Sponsor Translation'"/>
+                                        </span>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
+            
+            <xsl:call-template name="bookmarks-sidebar"/>
             
             <div class="modal fade" tabindex="-1" role="dialog" id="ebook-help" aria-labelledby="ebook-help-label">
                 <div class="modal-dialog" role="document">
@@ -508,7 +487,7 @@
                                                 <xsl:attribute name="checked" select="'checked'"/>
                                             </xsl:if>
                                         </input>
-                                        <xsl:value-of select="'Published texts only'"/>
+                                        <xsl:value-of select="'Published translations only'"/>
                                     </label>
                                 </div>
                             </form>
@@ -691,7 +670,7 @@
                                             </div>
                                         </xsl:if>
                                         
-                                        <ul class="translation-options">
+                                        <ul class="translation-links">
                                             <xsl:variable name="title-en" select="m:titles/m:title[@xml:lang='en'][not(@type)]/text()" as="xs:string"/>
                                             <xsl:for-each select="m:downloads/m:download[@type = ('html', 'pdf', 'epub', 'azw3')]">
                                                 <li>
@@ -881,30 +860,32 @@
                     </xsl:if>
                     
                     <div data-match-height="outline-section" data-match-height-media=".sm,.md,.lg">
+                        
                         <a target="_self" class="block-link">
                             <xsl:attribute name="href" select="common:internal-link(concat('/section/', @id/string(), '.html'), (), '', /m:response/@lang)"/>
                             <h3>
                                 <xsl:value-of select="m:titles/m:title[@xml:lang='en']/text()"/> 
                             </h3>
                             <xsl:if test="m:titles/m:title[@xml:lang='bo']/text()">
-                                <p class="text-bo">
+                                <h4 class="text-bo">
                                     <xsl:value-of select="m:titles/m:title[@xml:lang='bo']/text()"/>
-                                </p>
+                                </h4>
                             </xsl:if>
                             <xsl:if test="m:titles/m:title[@xml:lang='bo-ltn']/text()">
-                                <p class="text-wy">
+                                <h4 class="text-wy">
                                     <xsl:value-of select="m:titles/m:title[@xml:lang='bo-ltn']/text()"/>
-                                </p>
+                                </h4>
                             </xsl:if>
                             <xsl:if test="m:titles/m:title[@xml:lang='sa-ltn']/text()">
-                                <p class="text-sa">
+                                <h4 class="text-sa">
                                     <xsl:value-of select="m:titles/m:title[@xml:lang='sa-ltn']/text()"/>
-                                </p>
+                                </h4>
                             </xsl:if>
-                            <div class="notes">
-                                <xsl:apply-templates select="m:abstract/*"/>
-                            </div>
                         </a>
+                        
+                        <div class="notes">
+                            <xsl:apply-templates select="m:abstract/*"/>
+                        </div>
                         
                         <xsl:if test="m:warning/tei:p">
                             <xsl:call-template name="tantra-warning">

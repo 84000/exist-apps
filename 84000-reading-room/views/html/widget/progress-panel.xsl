@@ -10,8 +10,8 @@
         <xsl:variable name="content">
             <div class="container">
                 <div class="row">
-                    <div class="col-sm-offset-4 col-sm-4 ajax-data">
-                        <div class="panel panel-default">
+                    <div class="col-sm-offset-4 col-sm-4">
+                        <div id="panel" class="panel panel-default">
                             <div class="panel-heading">
                                 <h3 class="panel-title">
                                     <xsl:call-template name="local-text">
@@ -19,86 +19,103 @@
                                     </xsl:call-template>
                                 </h3>
                             </div>
-                            <div class="panel-body">
-                                <xsl:call-template name="local-text">
-                                    <xsl:with-param name="local-key" select="'support-description'"/>
-                                </xsl:call-template>
-                                <table id="translation-stats">
-                                    <tbody>
-                                        <tr>
-                                            <xsl:call-template name="local-text-if-exists">
-                                                <xsl:with-param name="local-key" select="'kangyur-count-before-label'"/>
-                                                <xsl:with-param name="node-name" select="'th'"/>
-                                            </xsl:call-template>
-                                            <td>
-                                                <xsl:value-of select="format-number(/m:response/m:outline-summary/m:tohs/m:pages/@count, '#,###')"/>
-                                            </td>
-                                            <xsl:call-template name="local-text-if-exists">
-                                                <xsl:with-param name="local-key" select="'kangyur-count-after-label'"/>
-                                                <xsl:with-param name="node-name" select="'th'"/>
-                                            </xsl:call-template>
-                                        </tr>
-                                        <tr>
-                                            <xsl:call-template name="local-text-if-exists">
-                                                <xsl:with-param name="local-key" select="'translation-count-before-label'"/>
-                                                <xsl:with-param name="node-name" select="'th'"/>
-                                            </xsl:call-template>
-                                            <td>
-                                                <xsl:value-of select="format-number(/m:response/m:outline-summary/m:tohs/m:pages/@in-translation, '#,###')"/>
-                                            </td>
-                                            <xsl:call-template name="local-text-if-exists">
-                                                <xsl:with-param name="local-key" select="'translation-count-after-label'"/>
-                                                <xsl:with-param name="node-name" select="'th'"/>
-                                            </xsl:call-template>
-                                        </tr>
-                                        <tr>
-                                            <xsl:call-template name="local-text-if-exists">
-                                                <xsl:with-param name="local-key" select="'published-count-before-label'"/>
-                                                <xsl:with-param name="node-name" select="'th'"/>
-                                            </xsl:call-template>
-                                            <td>
-                                                <xsl:value-of select="format-number(/m:response/m:outline-summary/m:tohs/m:pages/@published, '#,###')"/>
-                                            </td>
-                                            <xsl:call-template name="local-text-if-exists">
-                                                <xsl:with-param name="local-key" select="'published-count-after-label'"/>
-                                                <xsl:with-param name="node-name" select="'th'"/>
-                                            </xsl:call-template>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                                <div class="text-center">
-                                    <div>
-                                        <a class="btn btn-primary">
-                                            <xsl:attribute name="href">
-                                                <xsl:call-template name="local-text">
-                                                    <xsl:with-param name="local-key" select="'sponsor-button-link'"/>
+                            <div id="panel-body" class="panel-body">
+                                <div id="panel-content">
+                                    <xsl:call-template name="local-text">
+                                        <xsl:with-param name="local-key" select="'support-description'"/>
+                                    </xsl:call-template>
+                                    <table id="translation-stats">
+                                        <tbody>
+                                            <tr>
+                                                <xsl:call-template name="local-text-if-exists">
+                                                    <xsl:with-param name="local-key" select="'published-count-before-label'"/>
+                                                    <xsl:with-param name="node-name" select="'th'"/>
                                                 </xsl:call-template>
-                                            </xsl:attribute>
-                                            <xsl:call-template name="local-text">
-                                                <xsl:with-param name="local-key" select="'sponsor-button-label'"/>
-                                            </xsl:call-template>
-                                        </a>
-                                    </div>
-                                    <xsl:variable name="donate-instructions-link">
-                                        <xsl:call-template name="local-text">
-                                            <xsl:with-param name="local-key" select="'donate-instructions-link'"/>
-                                        </xsl:call-template>
-                                    </xsl:variable>
-                                    <xsl:if test="$donate-instructions-link">
-                                        <div class="sml-margin top">
-                                            <a target="_blank">
-                                                <xsl:attribute name="href" select="$donate-instructions-link"/>
-                                                <xsl:attribute name="title">
+                                                <td>
+                                                    <xsl:value-of select="format-number(/m:response/m:outline-summary/m:tohs/m:pages/@published, '#,###')"/>
+                                                </td>
+                                                <xsl:call-template name="local-text-if-exists">
+                                                    <xsl:with-param name="local-key" select="'published-count-after-label'"/>
+                                                    <xsl:with-param name="node-name" select="'th'"/>
+                                                </xsl:call-template>
+                                            </tr>
+                                            
+                                            <tr>
+                                                <xsl:call-template name="local-text-if-exists">
+                                                    <xsl:with-param name="local-key" select="'translation-count-before-label'"/>
+                                                    <xsl:with-param name="node-name" select="'th'"/>
+                                                </xsl:call-template>
+                                                <td>
+                                                    <xsl:value-of select="format-number(/m:response/m:outline-summary/m:tohs/m:pages/@translated, '#,###')"/>
+                                                </td>
+                                                <xsl:call-template name="local-text-if-exists">
+                                                    <xsl:with-param name="local-key" select="'translated-count-after-label'"/>
+                                                    <xsl:with-param name="node-name" select="'th'"/>
+                                                </xsl:call-template>
+                                            </tr>
+                                            <tr>
+                                                <xsl:call-template name="local-text-if-exists">
+                                                    <xsl:with-param name="local-key" select="'translation-count-before-label'"/>
+                                                    <xsl:with-param name="node-name" select="'th'"/>
+                                                </xsl:call-template>
+                                                <td>
+                                                    <xsl:value-of select="format-number(/m:response/m:outline-summary/m:tohs/m:pages/@in-translation, '#,###')"/>
+                                                </td>
+                                                <xsl:call-template name="local-text-if-exists">
+                                                    <xsl:with-param name="local-key" select="'translation-count-after-label'"/>
+                                                    <xsl:with-param name="node-name" select="'th'"/>
+                                                </xsl:call-template>
+                                            </tr>
+                                            <tr>
+                                                <xsl:call-template name="local-text-if-exists">
+                                                    <xsl:with-param name="local-key" select="'kangyur-count-before-label'"/>
+                                                    <xsl:with-param name="node-name" select="'th'"/>
+                                                </xsl:call-template>
+                                                <td>
+                                                    <xsl:value-of select="format-number(/m:response/m:outline-summary/m:tohs/m:pages/@count, '#,###')"/>
+                                                </td>
+                                                <xsl:call-template name="local-text-if-exists">
+                                                    <xsl:with-param name="local-key" select="'kangyur-count-after-label'"/>
+                                                    <xsl:with-param name="node-name" select="'th'"/>
+                                                </xsl:call-template>
+                                            </tr>
+                                            
+                                        </tbody>
+                                    </table>
+                                    <div class="text-center">
+                                        <div>
+                                            <a class="btn btn-primary">
+                                                <xsl:attribute name="href">
                                                     <xsl:call-template name="local-text">
-                                                        <xsl:with-param name="local-key" select="'donate-instructions-link-title'"/>
+                                                        <xsl:with-param name="local-key" select="'sponsor-button-link'"/>
                                                     </xsl:call-template>
                                                 </xsl:attribute>
                                                 <xsl:call-template name="local-text">
-                                                    <xsl:with-param name="local-key" select="'donate-instructions-label'"/>
+                                                    <xsl:with-param name="local-key" select="'sponsor-button-label'"/>
                                                 </xsl:call-template>
                                             </a>
                                         </div>
-                                    </xsl:if>
+                                        <xsl:variable name="donate-instructions-link">
+                                            <xsl:call-template name="local-text">
+                                                <xsl:with-param name="local-key" select="'donate-instructions-link'"/>
+                                            </xsl:call-template>
+                                        </xsl:variable>
+                                        <xsl:if test="$donate-instructions-link">
+                                            <div class="sml-margin top">
+                                                <a target="_blank">
+                                                    <xsl:attribute name="href" select="$donate-instructions-link"/>
+                                                    <xsl:attribute name="title">
+                                                        <xsl:call-template name="local-text">
+                                                            <xsl:with-param name="local-key" select="'donate-instructions-link-title'"/>
+                                                        </xsl:call-template>
+                                                    </xsl:attribute>
+                                                    <xsl:call-template name="local-text">
+                                                        <xsl:with-param name="local-key" select="'donate-instructions-label'"/>
+                                                    </xsl:call-template>
+                                                </a>
+                                            </div>
+                                        </xsl:if>
+                                    </div>
                                 </div>
                             </div>
                         </div>

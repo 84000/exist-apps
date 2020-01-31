@@ -13,6 +13,9 @@ common:response(
     "about/progress", 
     $common:app-id,
     (
+        <request xmlns="http://read.84000.co/ns/1.0" 
+            sharing-url="/about/progress.html"/>,
+        translations:summary($source:ekangyur-work),
         element { QName('http://read.84000.co/ns/1.0', 'translations-published') } {
             translations:translation-status-texts($tei-content:text-statuses/m:status[@group = ('published')]/@status-id)
         },

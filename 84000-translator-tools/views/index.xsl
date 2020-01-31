@@ -13,17 +13,21 @@
         
         <xsl:variable name="content">
             
-            <div class="container">
-                <div class="panel panel-default">
-                    
-                    <div class="panel-heading bold hidden-print center-vertical">
-                        
-                        <span class="title">
-                            <xsl:value-of select="concat('84000 Community / ', $tab-label)"/>
+            <div class="title-band">
+                <div class="container">
+                    <div class="center-vertical full-width">
+                        <span class="logo">
+                            <img alt="84000 logo">
+                                <xsl:attribute name="src" select="concat($front-end-path, '/imgs/logo.png')"/>
+                            </img>
                         </span>
-                        
                         <span>
-                            <a href="#navigation-sidebar" class="center-vertical together pull-right show-sidebar">
+                            <h1>
+                                <xsl:value-of select="concat('84000 Community / ', $tab-label)"/>
+                            </h1>
+                        </span>
+                        <span>
+                            <a href="#navigation-sidebar" class="center-vertical align-right show-sidebar">
                                 <span class="btn-round-text">
                                     <xsl:value-of select="'Navigation'"/>
                                 </span>
@@ -34,107 +38,107 @@
                                 </span>
                             </a>
                         </span>
-                        
                     </div>
-                    
-                    <div class="panel-body">
-                        
-                        <div id="navigation-sidebar" class="fixed-sidebar collapse width hidden-print">
-                            
-                            <div class="container">
-                                <div class="fix-width">
-                                    <h4 class="uppercase">
-                                        <xsl:value-of select="'84000 Community'"/>
-                                    </h4>
-                                    <table class="table table-hover no-border">
-                                        <tbody>
-                                            <xsl:for-each select="m:tabs/m:tab">
-                                                <tr>
-                                                    <xsl:if test="/m:response/m:request/@tab eq @id">
-                                                        <xsl:attribute name="class" select="'active'"/>
-                                                    </xsl:if>
-                                                    <td>
-                                                        <a>
-                                                            <xsl:attribute name="href" select="concat('?tab=', @id)"/>
-                                                            <xsl:value-of select="m:label"/>
-                                                        </a>
-                                                    </td>
-                                                </tr>
-                                            </xsl:for-each>
-                                        </tbody>
-                                        <tfoot>
-                                            <tr>
-                                                <td>
-                                                    <a target="reading-room">
-                                                        <xsl:attribute name="href" select="$reading-room-path"/>
-                                                        <xsl:value-of select="'Go to the 84000 Reading Room'"/>
-                                                    </a>
-                                                </td>
-                                            </tr>
-                                        </tfoot>
-                                    </table>
-                                    
-                                </div>
-                            </div>
-                            
-                            <div class="fixed-btn-container close-btn-container right">
-                                <button type="button" class="btn-round close" aria-label="Close">
-                                    <span aria-hidden="true">
-                                        <i class="fa fa-times"/>
-                                    </span>
-                                </button>
-                            </div>
-                            
-                        </div>
-                        
-                        <!-- Content -->
-                        <div class="tab-content">
-                            
-                            <xsl:choose>
-                                
-                                <!-- Search results -->
-                                <xsl:when test="/m:response/m:request/@tab eq 'search'">
-                                    
-                                    <div class="alert alert-warning small text-center">
-                                        <p>
-                                            <xsl:value-of select="'Use the form below to search for terms, phrases, titles, and so forth in published and nearly-published 84000 translations. Search results link directly to passages in the Reading Room.'"/>
-                                        </p>
-                                    </div>
-                                    
-                                    <xsl:call-template name="search">
-                                        <xsl:with-param name="action" select="'index.html?tab=search'"/>
-                                    </xsl:call-template>
-                                    
-                                </xsl:when>
-                                
-                                <!-- Cumulative Glossary -->
-                                <xsl:when test="/m:response/m:request/@tab eq 'glossary'">
-                                    <xsl:call-template name="glossary"/>
-                                </xsl:when>
-                                
-                                <!-- Tibetan Search -->
-                                <xsl:when test="/m:response/m:request/@tab eq 'tm-search'">
-                                    
-                                    <xsl:call-template name="tm-search"/>
-                                    
-                                </xsl:when>
-                                
-                                <!-- Translations list -->
-                                <xsl:when test="/m:response/m:request/@tab eq 'translations'">
-                                    <xsl:call-template name="translations"/>
-                                </xsl:when>
-                                
-                                <xsl:otherwise>
-                                    <xsl:copy-of select="xhtml:article/*"/>
-                                </xsl:otherwise>
-                                
-                            </xsl:choose>
-                            
-                        </div>
-                        
-                    </div>
-                    
                 </div>
+            </div>
+            
+            <!-- Content -->
+            <div class="content-band">
+                <div class="container">
+                    <div class="tab-content">
+                        
+                        <xsl:choose>
+                            
+                            <!-- Search results -->
+                            <xsl:when test="/m:response/m:request/@tab eq 'search'">
+                                
+                                <div class="alert alert-warning small text-center">
+                                    <p>
+                                        <xsl:value-of select="'Use the form below to search for terms, phrases, titles, and so forth in published and nearly-published 84000 translations. Search results link directly to passages in the Reading Room.'"/>
+                                    </p>
+                                </div>
+                                
+                                <xsl:call-template name="search">
+                                    <xsl:with-param name="action" select="'index.html?tab=search'"/>
+                                </xsl:call-template>
+                                
+                            </xsl:when>
+                            
+                            <!-- Cumulative Glossary -->
+                            <xsl:when test="/m:response/m:request/@tab eq 'glossary'">
+                                <xsl:call-template name="glossary"/>
+                            </xsl:when>
+                            
+                            <!-- Tibetan Search -->
+                            <xsl:when test="/m:response/m:request/@tab eq 'tm-search'">
+                                
+                                <xsl:call-template name="tm-search"/>
+                                
+                            </xsl:when>
+                            
+                            <!-- Translations list -->
+                            <xsl:when test="/m:response/m:request/@tab eq 'translations'">
+                                <xsl:call-template name="translations"/>
+                            </xsl:when>
+                            
+                            <xsl:otherwise>
+                                <xsl:copy-of select="xhtml:article/*"/>
+                            </xsl:otherwise>
+                            
+                        </xsl:choose>
+                        
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Sidebar -->
+            <div id="navigation-sidebar" class="fixed-sidebar collapse width hidden-print">
+                <div class="fix-width">
+                    <div class="sidebar-content">
+                        
+                        <h4 class="uppercase">
+                            <xsl:value-of select="'84000 Community'"/>
+                        </h4>
+                        
+                        <table class="table table-hover no-border">
+                            <tbody>
+                                <xsl:for-each select="m:tabs/m:tab">
+                                    <tr>
+                                        <xsl:if test="/m:response/m:request/@tab eq @id">
+                                            <xsl:attribute name="class" select="'active'"/>
+                                        </xsl:if>
+                                        <td>
+                                            <a>
+                                                <xsl:attribute name="href" select="concat('?tab=', @id)"/>
+                                                <xsl:value-of select="m:label"/>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                </xsl:for-each>
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <td>
+                                        <a target="reading-room">
+                                            <xsl:attribute name="href" select="$reading-room-path"/>
+                                            <xsl:value-of select="'Go to the 84000 Reading Room'"/>
+                                        </a>
+                                    </td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                        
+                    </div>
+                </div>
+                
+                <div class="fixed-btn-container close-btn-container right">
+                    <button type="button" class="btn-round close" aria-label="Close">
+                        <span aria-hidden="true">
+                            <i class="fa fa-times"/>
+                        </span>
+                    </button>
+                </div>
+                
             </div>
             
             <!-- Link to top of page -->
@@ -304,7 +308,7 @@
                                     </div>
                                     <div class="col-sm-6 text-right">
                                         <a target="_self">
-                                            <xsl:attribute name="href" select="concat('glossary-items.html?term=', fn:encode-for-uri(m:main-term/text()), '&amp;lang=', m:main-term/@xml:lang)"/>
+                                            <xsl:attribute name="href" select="concat('glossary-items.html?term=', fn:encode-for-uri(m:main-term/text()), '&amp;lang=', m:main-term/@xml:lang, '#glossary-items')"/>
                                             <xsl:attribute name="data-ajax-target" select="concat('#occurrences-', position())"/>
                                             <xsl:choose>
                                                 <xsl:when test="xs:integer(@count-items) gt 1">

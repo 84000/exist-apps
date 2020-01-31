@@ -77,6 +77,7 @@
         <head>
             
             <meta charset="utf-8"/>
+            <meta http-equiv="Content-Type" content="text/html;charset=utf-8"/>
             <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
             <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=0"/>
             <meta name="description" content="84000 is a non-profit global initiative to translate the words of the Buddha and make them available to everyone."/>
@@ -215,7 +216,7 @@
             
             <body id="top">
                 
-                <xsl:attribute name="class" select="$page-class"/>
+                <xsl:attribute name="class" select="concat('reading-room ', $page-class)"/>
                 
                 <!-- Environment alert -->
                 <xsl:if test="$environment/m:label/text()">
@@ -272,7 +273,7 @@
             
             <body id="top">
                 
-                <xsl:attribute name="class" select="$page-class"/>
+                <xsl:attribute name="class" select="concat('reading-room ', $page-class)"/>
                 
                 <!-- Environment alert -->
                 <xsl:if test="$environment/m:label/text()">
@@ -404,6 +405,29 @@
             </body>
         </html>
         
+    </xsl:template>
+    
+    <xsl:template name="bookmarks-sidebar">
+        <div id="bookmarks-sidebar" class="fixed-sidebar collapse width hidden-print">
+            <div class="fix-width">
+                <div class="sidebar-content">
+                    <h4>
+                        <xsl:value-of select="'Bookmarks'"/>
+                    </h4>
+                    <table id="bookmarks-list" class="contents-table">
+                        <tbody/>
+                        <tfoot/>
+                    </table>
+                </div>
+            </div>
+            <div class="fixed-btn-container close-btn-container right">
+                <button type="button" class="btn-round close" aria-label="Close">
+                    <span aria-hidden="true">
+                        <i class="fa fa-times"/>
+                    </span>
+                </button>
+            </div>
+        </div>
     </xsl:template>
     
     

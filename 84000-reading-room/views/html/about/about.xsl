@@ -10,105 +10,99 @@
         
         <xsl:param name="sub-content"/>
         
+        <xsl:param name="side-content"/>
+        
         <!-- Content variable -->
         <xsl:variable name="content">
-            <div class="container">
-                <div class="row">
-                    <div class="col-md-9 col-md-merge-right">
-                        <div class="panel panel-default panel-about main-panel foreground">
-                            
-                            <div class="panel-img-header thumbnail">
-                                
-                                <xsl:variable name="page-title">
-                                    <xsl:call-template name="local-text">
-                                        <xsl:with-param name="local-key" select="'page-title'"/>
-                                    </xsl:call-template>
-                                </xsl:variable>
-                                
-                                <xsl:variable name="header-img-src">
-                                    <xsl:call-template name="local-text">
-                                        <xsl:with-param name="local-key" select="'header-img-src'"/>
-                                    </xsl:call-template>
-                                </xsl:variable>
-                                
-                                <xsl:if test="$header-img-src gt ''">
-                                    <xsl:attribute name="class" select="'panel-img-header has-img thumbnail'"/>
-                                    <img class="stretch">
-                                        <xsl:attribute name="src" select="concat($front-end-path, $header-img-src)"/>
-                                        <xsl:attribute name="alt" select="concat($page-title, ' page header image')"/>
-                                    </img>
-                                </xsl:if>
-                                
-                                <h1>
-                                    <xsl:choose>
-                                        <xsl:when test="$page-title">
-                                            <xsl:value-of select="$page-title"/>
-                                        </xsl:when>
-                                        <xsl:otherwise>
-                                            <xsl:value-of select="'[Error: missing title]'"/>
-                                        </xsl:otherwise>
-                                    </xsl:choose>
-                                </h1>
-                            </div>
-                            
-                            <div class="panel-body">
-                                
-                                <xsl:variable name="page-quote">
-                                    <xsl:call-template name="local-text">
-                                        <xsl:with-param name="local-key" select="'page-quote'"/>
-                                    </xsl:call-template>
-                                </xsl:variable>
-                                <xsl:variable name="page-quote-author">
-                                    <xsl:call-template name="local-text">
-                                        <xsl:with-param name="local-key" select="'page-quote-author'"/>
-                                    </xsl:call-template>
-                                </xsl:variable>
-                                
-                                <xsl:if test="$page-quote gt ''">
-                                    <blockquote>
-                                        <xsl:value-of select="$page-quote"/>
-                                        <xsl:if test="$page-quote-author">
-                                            <footer>
-                                                <xsl:value-of select="$page-quote-author"/>
-                                            </footer>
-                                        </xsl:if>
-                                    </blockquote>
-                                </xsl:if>
-                                
-                                <!-- Passed content -->
-                                <div id="main-content">
-                                    <xsl:copy-of select="$sub-content"/>
-                                </div>
-                                
-                            </div>
-                            
-                            <!-- Social sharing -->
-                            <!-- TO DO: add these urls! -->
-                            <div class="panel-footer sharing">
+            
+            <div class="title-band">
+                <div class="container">
+                    <h1>
+                        <xsl:call-template name="local-text">
+                            <xsl:with-param name="local-key" select="'page-title'"/>
+                        </xsl:call-template>
+                    </h1>
+                </div>
+            </div>
+            
+            <xsl:variable name="page-quote">
+                <xsl:call-template name="local-text">
+                    <xsl:with-param name="local-key" select="'page-quote'"/>
+                </xsl:call-template>
+            </xsl:variable>
+            
+            <xsl:variable name="header-img-src">
+                <xsl:call-template name="local-text">
+                    <xsl:with-param name="local-key" select="'header-img-src'"/>
+                </xsl:call-template>
+            </xsl:variable>
+            
+            <xsl:if test="$page-quote gt ''">
+                <div class="page-header-band">
+                    <div class="container">
+                        
+                        <blockquote>
+                            <p>
+                                <xsl:value-of select="$page-quote"/>
+                            </p>
+                            <footer>
                                 <xsl:call-template name="local-text">
-                                    <xsl:with-param name="local-key" select="'sharing-label'"/>
+                                    <xsl:with-param name="local-key" select="'page-quote-author'"/>
                                 </xsl:call-template>
-                                <a href="#" target="_blank">
-                                    <i class="fa fa-facebook-square" aria-hidden="true"/>
-                                </a>
-                                <a href="#" target="_blank">
-                                    <i class="fa fa-twitter-square" aria-hidden="true"/>
-                                </a>
-                                <a href="#" target="_blank">
-                                    <i class="fa fa-google-plus-square" aria-hidden="true"/>
-                                </a>
+                            </footer>
+                        </blockquote>
+                        
+                        <xsl:if test="$header-img-src gt ''">
+                            <img class="img-responsive">
+                                <xsl:attribute name="src" select="concat($front-end-path, $header-img-src)"/>
+                            </img>
+                        </xsl:if>
+                        
+                    </div>
+                </div>
+            </xsl:if>
+            
+            <div class="content-band">
+                <div class="container">
+                    <div class="row">
+                        <article class="col-md-8 col-lg-9">
+                            <h1 class="sr-only">
+                                <xsl:call-template name="local-text">
+                                    <xsl:with-param name="local-key" select="'page-title'"/>
+                                </xsl:call-template>
+                            </h1>
+                            <!-- Passed content -->
+                            <xsl:copy-of select="$sub-content"/>
+                        </article>
+                        
+                        <div class="col-md-4 col-lg-3">
+                            
+                            <!-- Passed content -->
+                            <xsl:copy-of select="$side-content"/>
+                            
+                            <div class="panel panel-default">
+                                <div class="panel-body sharing">
+                                    <xsl:call-template name="local-text">
+                                        <xsl:with-param name="local-key" select="'sharing-label'"/>
+                                    </xsl:call-template>
+                                    <a href="https://www.facebook.com/sharer/sharer.php?u={ concat($reading-room-path, m:request/@sharing-url) }" target="_blank">
+                                        <i class="fa fa-facebook-square" aria-hidden="true"/>
+                                    </a>
+                                    <a href="https://twitter.com/home?status={ concat($reading-room-path, m:request/@sharing-url) }" target="_blank">
+                                        <i class="fa fa-twitter-square" aria-hidden="true"/>
+                                    </a>
+                                </div>
+                            </div>
+                            
+                            <div id="project-progress">
+                                <!-- Project Progress, get from ajax -->
+                                <xsl:attribute name="data-onload-replace" select="concat('{&#34;#project-progress&#34;:&#34;', $reading-room-path,'/widget/progress-panel.html#panel&#34;}')"/>                            
+                                <div class="panel panel-default">
+                                    <div class="panel-body loading"/>
+                                </div>
                             </div>
                             
                         </div>
-                    </div>
-                    <div class="col-md-3 col-md-merge-left col-md-pad-top">
-                        
-                        <!-- Project Progress, get from ajax -->
-                        <xsl:attribute name="data-onload-replace" select="concat('{&#34;#project-progress-loading&#34;:&#34;', $reading-room-path,'/widget/progress-panel.html&#34;}')"/>
-                        <div class="panel panel-default" id="project-progress-loading">
-                            <div class="panel-body loading"/>
-                        </div>
-                        
                     </div>
                 </div>
             </div>

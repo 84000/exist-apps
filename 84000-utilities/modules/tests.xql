@@ -308,10 +308,10 @@ declare function tests:outline-context($tei as element(), $resource-id as xs:str
             <title>Outline test: The text has a context in the outline.</title>
             <details>
             { 
-                for $ancestor in $ancestors//parent
+                for $ancestor in $ancestors//m:parent
                 order by $ancestor/@nesting descending
                 return 
-                    <detail>{$ancestor/title/text()}</detail>
+                    <detail>{ $ancestor/m:titles/m:title[@xml:lang eq 'en']/text() }</detail>
             }
             </details>
         </test>

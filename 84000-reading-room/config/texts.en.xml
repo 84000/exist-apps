@@ -93,6 +93,9 @@
     <item key="about.common.translation-count-after-label">
         Pages in Translation
     </item>
+    <item key="about.common.translated-count-after-label">
+        Pages Translated
+    </item>
     <item key="about.common.published-count-after-label">
         Pages Published
     </item>
@@ -100,7 +103,7 @@
         Sponsor a page now
     </item>
     <item key="about.common.sponsor-button-link">
-        http://84000.co/page-onetime
+        https://84000.co/how-you-can-help/sponsor-a-page
     </item>
     <item key="about.common.sharing-label">
         Share this page:
@@ -439,7 +442,8 @@
             <strong>Sponsor A Sutra</strong> is an opportunity to support the translation of a
             major text. Some of the long, important sutras require a sizeable amount of funding
             to ensure the translation continues through to completion. Your support is needed
-            for the successful translation of these texts. </p>
+            for the successful translation of these texts.
+        </p>        
         <h4>
             How much does it cost to sponsor?
         </h4>
@@ -462,7 +466,8 @@
             their goals of translation and global access efficiently and effectively. Please
             note that per sutra suggested donation amounts are approximations only, and the
             actual cost may be greater or lesser when the overall costs of translation,
-            editorial work, publication, and project management are taken into account.</p>
+            editorial work, publication, and project management are taken into account.
+        </p>
         <h4>
             How will the funds be used?
         </h4>

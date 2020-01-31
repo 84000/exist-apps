@@ -174,7 +174,7 @@
                             <a class="ref log-click">
                                 <!-- define an anchor so we can link back to this point -->
                                 <xsl:attribute name="id" select="concat('source-link-', @folio-index)"/>
-                                <xsl:attribute name="href" select="concat('/source/', /m:response/m:translation/m:source/@key, '.html?page=', @folio-index)"/>
+                                <xsl:attribute name="href" select="concat('/source/', /m:response/m:translation/m:source/@key, '.html?page=', @folio-index, '#ajax-content')"/>
                                 <xsl:attribute name="data-ajax-target" select="'#popup-footer-source .data-container'"/>
                                 <xsl:value-of select="concat('[', @cRef, ']')"/>
                             </a>

@@ -7,13 +7,9 @@
     
     <xsl:template match="/m:response">
         
-        <xsl:variable name="environment" select="doc(/m:response/@environment-path)/m:environment"/>
-        <xsl:variable name="reading-room-path" select="$environment/m:url[@id eq 'reading-room']/text()"/>
-        
         <xsl:variable name="content">
             
             <xsl:call-template name="operations-page">
-                <xsl:with-param name="reading-room-path" select="$reading-room-path"/>
                 <xsl:with-param name="active-tab" select="@model-type"/>
                 <xsl:with-param name="page-content">
                     <div class="well well-sm center-vertical full-width bottom-margin">
@@ -81,13 +77,15 @@
                                                 <div>
                                                     <xsl:attribute name="id" select="concat('team-contributors-', $team-id)"/>
                                                     <xsl:attribute name="class" select="'relative preview-list render-in-viewport'"/>
-                                                    <xsl:for-each select="m:person">
-                                                        <xsl:variable name="translator" select="."/>
-                                                        <div>
-                                                            <xsl:value-of select="$translator/m:label"/>
-                                                            <xsl:value-of select="concat(' (', $translator/@xml:id, ')')"/>
-                                                        </div>
-                                                    </xsl:for-each>
+                                                    <ul>
+                                                        <xsl:for-each select="m:person">
+                                                            <xsl:variable name="translator" select="."/>
+                                                            <li>
+                                                                <xsl:value-of select="$translator/m:label"/>
+                                                                <xsl:value-of select="concat(' (', $translator/@xml:id, ')')"/>
+                                                            </li>
+                                                        </xsl:for-each>
+                                                    </ul>
                                                 </div>
                                             </section>
                                         </div>

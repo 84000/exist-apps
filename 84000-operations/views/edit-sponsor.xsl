@@ -7,12 +7,8 @@
     
     <xsl:template match="/m:response">
         
-        <xsl:variable name="environment" select="doc(/m:response/@environment-path)/m:environment"/>
-        <xsl:variable name="reading-room-path" select="$environment/m:url[@id eq 'reading-room']/text()"/>
-        
         <xsl:variable name="content">
             <xsl:call-template name="operations-page">
-                <xsl:with-param name="reading-room-path" select="$reading-room-path"/>
                 <xsl:with-param name="active-tab" select="@model-type"/>
                 <xsl:with-param name="page-content">
                     
@@ -35,6 +31,7 @@
                                 </xsl:otherwise>
                             </xsl:choose>
                         </input>
+                        
                         <div class="row">
                             <div class="col-sm-6">
                                 
@@ -130,8 +127,8 @@
                                     </xsl:call-template>
                                 </div>
                             </section>
+                            
                         </div>
-                        
                     </form>
                 </xsl:with-param>
             </xsl:call-template>

@@ -19,13 +19,15 @@ declare variable $tei-content:text-statuses :=
         <status status-id="2" group="translated" marked-up="true">Marked up, awaiting final proofing</status>
         <status status-id="2.a" group="translated" marked-up="true">Markup in process</status>
         <status status-id="2.b" group="translated">Awaiting markup</status>
-        <status status-id="2.c" group="translated">Copyedited and awaiting post-copyedit checking</status>
-        <status status-id="2.d" group="translated">Being copyedited</status>
-        <status status-id="2.e" group="in-translation">Reviewed but awaiting final revision and /or approval before copyediting</status>
-        <status status-id="2.f" group="in-translation">In review</status>
-        <status status-id="2.g" group="in-translation">Approaching or awaiting review</status>
+        <status status-id="2.c" group="translated">Awaiting editor's OK for markup</status>
+        <status status-id="2.d" group="translated">Copyediting complete. Preparation for markup</status>
+        <status status-id="2.e" group="translated">Being copyedited</status>
+        <status status-id="2.f" group="translated">Review complete. Awaiting copyediting</status>
+        <status status-id="2.g" group="translated">In editorial review</status>
+        <status status-id="2.h" group="translated">Awaiting review</status>
         <status status-id="3" group="in-translation">Current translation projects</status>
     </text-statuses>;
+
 declare variable $tei-content:published-status-ids := $tei-content:text-statuses/m:status[@group = ('published')]/@status-id;
 declare variable $tei-content:in-progress-status-ids := $tei-content:text-statuses/m:status[@group = ('translated', 'in-translation')]/@status-id;
 declare variable $tei-content:marked-up-status-ids := $tei-content:text-statuses/m:status[@marked-up = 'true']/@status-id;

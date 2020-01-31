@@ -129,7 +129,7 @@ declare function glossary:glossary-terms($type as xs:string*, $lang as xs:string
                     [@xml:lang eq $valid-lang]
                     [not(@type = ('definition','alternative'))]
         
-        (: All terms for cummulative glossary :)
+        (: All terms for cumulative glossary :)
         else if($type eq 'all') then
             $glossary:translations//tei:back//tei:gloss/tei:term
                 [not(@type = ('definition','alternative'))]
@@ -327,22 +327,27 @@ declare function glossary:glossary-items($term as xs:string, $lang as xs:string)
     </glossary>
 };
 
-declare function glossary:cumulative-glossary() as element() {
+declare function glossary:cumulative-glossary($chunk as xs:integer) as element() {
 
-    let $cummulative-terms := glossary:glossary-terms('all', '', '', false())//m:term
+    let $cumulative-terms := glossary:glossary-terms('all', '', '', false())//m:term
+    let $count := count($cumulative-terms)
+    let $chunk-length := 5000
+    let $first := (($chunk - 1) * $chunk-length) + 1
+    let $last := if((($first + $chunk-length) - 1) gt $count) then $count else ($first + $chunk-length) - 1
     
     return
-        <cumulative-glossary xmlns="http://read.84000.co/ns/1.0" terms-count="{ count($cummulative-terms) }">
+        <cumulative-glossary xmlns="http://read.84000.co/ns/1.0" 
+            terms-count="{ $count }" 
+            chunk="{ $chunk }" first-listing="{ $first }" last-listing="{ $last }">
             <disclaimer>
             {
                 common:local-text('cumulative-glossary.disclaimer', 'en')
             }
             </disclaimer>
             {
-                for $term in $cummulative-terms (: subsequence($cummulative-terms, 1000, 1999) :)
-                    order by $term/m:normalized-term
+                for $term at $position in subsequence($cumulative-terms, $first, $chunk-length)
                 return
-                    <term>
+                    <term listing-number="{ ($first + $position) - 1 }">
                     {
                         glossary:glossary-items($term/m:main-term, $term/m:main-term/@xml:lang)/*
                     }

@@ -10,6 +10,8 @@ common:response(
     "about/impact", 
     $common:app-id,
     (
+        <request xmlns="http://read.84000.co/ns/1.0" 
+            sharing-url="/about/impact.html"/>,
         (: Calculated strings :)
         <replace-text xmlns="http://read.84000.co/ns/1.0">
             <value key="#visitorsPerWeekFormatted">{ common:format-number(250) }</value>

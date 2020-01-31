@@ -72,7 +72,7 @@
                                         </a>
                                     </div>
                                     
-                                    <div class="col-sm-11 col-sm-offset-1 col-md-2 col-md-offset-0 text-md-right">
+                                    <div class="col-sm-11 col-sm-offset-1 col-md-2 col-md-offset-0 text-right-md">
                                         <xsl:choose>
                                             <xsl:when test="$tei[@type = 'section']">
                                                 <span class="label label-danger">
