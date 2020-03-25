@@ -10,7 +10,6 @@ import module namespace common="http://read.84000.co/common" at "common.xql";
 import module namespace tei-content="http://read.84000.co/tei-content" at "tei-content.xql";
 import module namespace translation="http://read.84000.co/translation" at "translation.xql";
 import module namespace sponsors="http://read.84000.co/sponsors" at "sponsors.xql";
-import module namespace translation-status="http://read.84000.co/translation-status" at "translation-status.xql";
 import module namespace sponsorship="http://read.84000.co/sponsorship" at "sponsorship.xql";
 import module namespace source="http://read.84000.co/source" at "source.xql";
 import module namespace functx="http://www.functx.com";
@@ -218,10 +217,9 @@ declare function translations:filtered-texts($work as xs:string, $status as xs:s
         
         (: count of texts :)
         let $texts-count := count($texts)
+        
         (: count of pages :)
         let $texts-pages-count := sum($texts/tei:bibl/tei:location/@count-pages ! common:integer(.))
-        (: count of words :)
-        let $texts-words-count := sum($texts/@word-count)
         
         (: Max 1024 results in a set - this is an underlying restriction in eXist :)
         let $texts :=
@@ -234,7 +232,6 @@ declare function translations:filtered-texts($work as xs:string, $status as xs:s
             <texts xmlns="http://read.84000.co/ns/1.0"
                 count="{ $texts-count }" 
                 count-pages="{ $texts-pages-count }"  
-                count-words="{ $texts-words-count }"  
                 work="{ $work }" 
                 status="{ $status }" 
                 sort="{ $sort }" 
@@ -293,8 +290,9 @@ declare function translations:filtered-text($tei as element(tei:TEI), $toh-key a
             attribute page-url { translation:canonical-html($toh/@key) },
             attribute status { tei-content:translation-status($tei) },
             attribute status-group { tei-content:translation-status-group($tei) },
+            (: ~ translation-status module moved to operations
             attribute word-count { translation-status:word-count($tei) },
-            attribute glossary-count { translation-status:glossary-count($tei) },
+            attribute glossary-count { translation-status:glossary-count($tei) },:)
             $toh,
             translation:titles($tei),
             translation:title-variants($tei),
@@ -331,15 +329,17 @@ declare function translations:translations($text-statuses as xs:string*, $resour
     return
         <translations xmlns="http://read.84000.co/ns/1.0">
         {
+            (: Return the status ids :)
             for $text-status-id in $text-statuses
             return
-                <text-status id="{ $text-status-id }"/>
-        }
-        {
+                <text-status id="{ $text-status-id }"/>,
+                
+            (: Return texts with this status :)
             for $toh-key in $translations//tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl/@key
                 let $tei := $translations[tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl[@key eq lower-case($toh-key)]]
             return
                 translations:filtered-text($tei, $toh-key, false(), $include-downloads, $include-folios)
+                
         }
         </translations>
     

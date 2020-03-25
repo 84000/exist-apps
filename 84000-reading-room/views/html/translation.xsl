@@ -431,7 +431,7 @@
                 <div class="fix-height">
                     <div class="container">
                         <div class="row">
-                            <div class="col-sm-offset-1 col-sm-10 col-lg-offset-2 col-lg-8">
+                            <div class="col-md-offset-1 col-md-10 col-lg-offset-2 col-lg-8">
                                 <div class="data-container">
                                     <!-- Ajax data here -->
                                 </div>
@@ -490,7 +490,7 @@
         <!-- Pass the content to the page -->
         <xsl:call-template name="reading-room-page">
             <xsl:with-param name="page-url" select="m:translation/@page-url"/>
-            <xsl:with-param name="page-class" select="concat('translation ', if(m:request/@view-mode eq 'editor') then 'editor-mode' else '')"/>
+            <xsl:with-param name="page-class" select="concat('reading-room translation ', if(m:request/@view-mode eq 'editor') then 'editor-mode' else '')"/>
             <xsl:with-param name="page-title" select="concat('84000 Reading Room | ', m:translation/m:titles/m:title[@xml:lang eq 'en']/text())"/>
             <xsl:with-param name="page-description" select="normalize-space(data(m:translation/m:summary/tei:p[1]))"/>
             <xsl:with-param name="content" select="$content"/>
@@ -750,7 +750,7 @@
             <td>
                 
                 <xsl:if test="$expand-id">
-                    <a role="button" data-toggle="collapse" aria-expanded="true" class="small collapsed">
+                    <a role="button" data-toggle="collapse" aria-expanded="true" class="small collapsed hidden-print">
                         <xsl:attribute name="href" select="concat('#', $expand-id)"/>
                         <xsl:attribute name="aria-controls" select="$expand-id"/>
                         <span class="collapsed-show">
@@ -952,7 +952,7 @@
                 <xsl:attribute name="download" select="@filename"/>
                 <xsl:attribute name="class" select="'btn-round log-click'"/>
                 <xsl:if test="@type = ('pdf', 'epub', 'azw3')">
-                    <xsl:attribute name="data-download-dana" select="$translation/m:titles/m:title[@xml:lang eq 'en']/text()"/>
+                    <xsl:attribute name="data-page-alert" select="common:internal-link('/widget/download-dana.html', concat('resource-id=', $translation/m:source/@key), '#dana-description', /m:response/@lang)"/>
                 </xsl:if>
                 <xsl:call-template name="download-icon">
                     <xsl:with-param name="type" select="@type"/>
@@ -1043,6 +1043,20 @@
             <xsl:apply-templates select="$translation/m:titles/m:title[@xml:lang eq 'en']"/>
         </h4>
         <div class="data-container bottom-margin"/>
+        <h4>
+            <xsl:value-of select="'Search this translation'"/>
+        </h4>
+        <form action="/search.html" method="post" class="form-horizontal bottom-margin">
+            <input type="hidden" name="resource-id" value="{ $translation/@id }"/>
+            <div class="input-group">
+                <input type="text" name="search" id="search" class="form-control" placeholder="Search" required="required" value=""/>
+                <span class="input-group-btn">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fa fa-search"/>
+                    </button>
+                </span>
+            </div>
+        </form>
         <xsl:if test="m:translation/@status = $render-status">
             <h4>
                 <xsl:value-of select="'Download Options'"/>
@@ -1090,7 +1104,7 @@
                                     <xsl:attribute name="href" select="@url"/>
                                     <xsl:attribute name="download" select="@filename"/>
                                     <xsl:attribute name="class" select="'log-click'"/>
-                                    <xsl:attribute name="data-download-dana" select="$translation/m:titles/m:title[@xml:lang eq 'en']/text()"/>
+                                    <xsl:attribute name="data-page-alert" select="common:internal-link('/widget/download-dana.html', concat('resource-id=', $translation/m:source/@key), '#dana-description', /m:response/@lang)"/>
                                     <xsl:call-template name="download-label">
                                         <xsl:with-param name="type" select="@type"/>
                                     </xsl:call-template>

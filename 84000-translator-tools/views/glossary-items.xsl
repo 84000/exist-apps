@@ -16,13 +16,13 @@
                     </div>
                     <div class="panel-body">
                         <div id="glossary-items">
-                            <xsl:for-each select="m:glossary/m:instance">
+                            <xsl:for-each select="m:glossary/m:item">
                                 <div class="glossary-item">
                                     <div class="title">
                                         <xsl:value-of select="'in '"/>
                                         <a>
-                                            <xsl:attribute name="href" select="@uri"/>
-                                            <xsl:apply-templates select="m:translation/m:title/text()"/>
+                                            <xsl:attribute name="href" select="m:text/@uri"/>
+                                            <xsl:apply-templates select="m:text/m:title/text()"/>
                                         </a>
                                         <label class="label label-default pull-right">
                                             <xsl:choose>
@@ -38,7 +38,7 @@
                                         <xsl:if test="m:term">
                                             <div class="col-sm-6">
                                                 <ul>
-                                                    <xsl:for-each select="(m:term | m:alternatives/m:alternative)">
+                                                    <xsl:for-each select="(m:term | m:alternative)">
                                                         <xsl:if test="normalize-space(text())">
                                                             <li>
                                                                 <span>
@@ -49,7 +49,7 @@
                                                                     <xsl:choose>
                                                                         <xsl:when test="self::m:alternative">
                                                                             <span class="text-muted">
-                                                                                <xsl:value-of select="'Also: '"/>
+                                                                                <xsl:value-of select="'Also spelled: '"/>
                                                                                 <xsl:apply-templates select="text()"/>
                                                                             </span>
                                                                         </xsl:when>
@@ -64,9 +64,9 @@
                                                 </ul>
                                             </div>
                                         </xsl:if>
-                                        <xsl:if test="m:definitions/m:definition">
+                                        <xsl:if test="m:definition">
                                             <div class="col-sm-6">
-                                                <xsl:for-each select="m:definitions/m:definition">
+                                                <xsl:for-each select="m:definition">
                                                     <p class="text-muted small">
                                                         <xsl:apply-templates select="node()"/>
                                                     </p>
@@ -85,7 +85,7 @@
         
         <xsl:call-template name="widget-page">
             <xsl:with-param name="page-url" select="'http://translator-tools.84000.co/glossary-items.html'"/>
-            <xsl:with-param name="page-class" select="''"/>
+            <xsl:with-param name="page-class" select="'utilities'"/>
             <xsl:with-param name="page-title" select="'84000 | Glossary Items'"/>
             <xsl:with-param name="page-description" select="'Items from the 84000 glossary'"/>
             <xsl:with-param name="content" select="$content"/>

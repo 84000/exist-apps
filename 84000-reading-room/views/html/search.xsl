@@ -22,13 +22,15 @@
                                     </a>
                                 </li>
                                 <li>
-                                    <xsl:value-of select="'Search'"/>
+                                    <h1>
+                                        <xsl:value-of select="'Search'"/>
+                                    </h1>
                                 </li>
                             </ul>
                         </div>
                         
                         <div>
-                            <div class="center-vertical pull-right">
+                            <div class="center-vertical pull-right-md">
                                 
                                 <div>
                                     <a class="center-vertical">
@@ -94,7 +96,7 @@
         <!-- Compile with page template -->
         <xsl:call-template name="website-page">
             <xsl:with-param name="page-url" select="concat('http://read.84000.co/search.html?s=', m:search/m:request/text())"/>
-            <xsl:with-param name="page-class" select="'section'"/>
+            <xsl:with-param name="page-class" select="'reading-room section'"/>
             <xsl:with-param name="page-title" select="concat('84000 Reading Room | Search results for ', m:search/m:request/text())"/>
             <xsl:with-param name="page-description" select="''"/>
             <xsl:with-param name="content" select="$content"/>

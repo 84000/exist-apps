@@ -261,22 +261,21 @@
                         </div>
                     </form>
                 </div>
-                <!-- 
-                    Removed as it takes too long.
-                    This needs another solution.
                 <div>
                     <div class="pull-right">
-                        <a href="cumulative-glossary.zip" class="download-link center-vertical">
+                        <a href="/84000-data/translator-tools/data/84000_Cumulative_Glossary-current-full.xlsx" class="download-link center-vertical">
                             <span>
-                                <i class="fa fa-cloud-download"/>
+                                <span class="btn-round sml">
+                                    <i class="fa fa-cloud-download"/>
+                                </span>
                             </span>
-                            <span>
-                                <xsl:value-of select="'Download All (.xml)'"/>
+                            <span class="btn-round-text">
+                                <xsl:value-of select="'Full Glossary (.xslx)'"/>
                             </span>
                         </a>
                     </div>
                 </div>
-                 -->
+                
             </div>
             
             <ul class="nav nav-tabs sml-tabs top-margin" role="tablist">
@@ -295,7 +294,7 @@
                 </xsl:for-each>
             </ul>
             
-            <div class="div-list top-margin">
+            <div class="div-list no-border-top">
                 <xsl:choose>
                     <xsl:when test="m:glossary/m:term">
                         
@@ -318,7 +317,6 @@
                                                     <xsl:value-of select="concat(@count-items, ' match')"/>
                                                 </xsl:otherwise>
                                             </xsl:choose>
-                                            
                                         </a>
                                     </div>
                                 </div>

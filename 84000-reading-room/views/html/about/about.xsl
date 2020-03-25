@@ -9,25 +9,15 @@
     <xsl:template name="about">
         
         <xsl:param name="sub-content"/>
-        
         <xsl:param name="side-content"/>
+        <xsl:param name="page-class"/>
         
         <!-- Content variable -->
         <xsl:variable name="content">
             
-            <div class="title-band">
-                <div class="container">
-                    <h1>
-                        <xsl:call-template name="local-text">
-                            <xsl:with-param name="local-key" select="'page-title'"/>
-                        </xsl:call-template>
-                    </h1>
-                </div>
-            </div>
-            
-            <xsl:variable name="page-quote">
+            <xsl:variable name="page-title">
                 <xsl:call-template name="local-text">
-                    <xsl:with-param name="local-key" select="'page-quote'"/>
+                    <xsl:with-param name="local-key" select="'page-title'"/>
                 </xsl:call-template>
             </xsl:variable>
             
@@ -37,48 +27,74 @@
                 </xsl:call-template>
             </xsl:variable>
             
-            <xsl:if test="$page-quote gt ''">
-                <div class="page-header-band">
-                    <div class="container">
-                        
-                        <blockquote>
-                            <p>
-                                <xsl:value-of select="$page-quote"/>
-                            </p>
-                            <footer>
-                                <xsl:call-template name="local-text">
-                                    <xsl:with-param name="local-key" select="'page-quote-author'"/>
-                                </xsl:call-template>
-                            </footer>
-                        </blockquote>
-                        
-                        <xsl:if test="$header-img-src gt ''">
-                            <img class="img-responsive">
-                                <xsl:attribute name="src" select="concat($front-end-path, $header-img-src)"/>
-                            </img>
-                        </xsl:if>
-                        
-                    </div>
+            <xsl:variable name="page-quote">
+                <xsl:call-template name="local-text">
+                    <xsl:with-param name="local-key" select="'page-quote'"/>
+                </xsl:call-template>
+            </xsl:variable>
+            
+            <div class="title-band">
+                <div class="container">
+                    <h1>
+                        <xsl:value-of select="$page-title"/>
+                    </h1>
                 </div>
-            </xsl:if>
+            </div>
             
             <div class="content-band">
                 <div class="container">
                     <div class="row">
-                        <article class="col-md-8 col-lg-9">
-                            <h1 class="sr-only">
-                                <xsl:call-template name="local-text">
-                                    <xsl:with-param name="local-key" select="'page-title'"/>
-                                </xsl:call-template>
-                            </h1>
-                            <!-- Passed content -->
-                            <xsl:copy-of select="$sub-content"/>
-                        </article>
+                        <div class="col-md-8 col-lg-9">
+                            
+                            <xsl:if test="$page-quote gt ''">
+                                <aside class="panel panel-default panel-header-image">
+                                    
+                                    <xsl:if test="$header-img-src gt ''">
+                                        <img>
+                                            <xsl:attribute name="src" select="concat($front-end-path, $header-img-src)"/>
+                                        </img>
+                                    </xsl:if>
+                                    
+                                    <blockquote>
+                                        <p>
+                                            <xsl:value-of select="$page-quote"/>
+                                        </p>
+                                        <footer>
+                                            <xsl:call-template name="local-text">
+                                                <xsl:with-param name="local-key" select="'page-quote-author'"/>
+                                            </xsl:call-template>
+                                        </footer>
+                                    </blockquote>
+                                    
+                                </aside>
+                            </xsl:if>
+                            
+                            <article class="top-margin">
+                                
+                                <h1 class="sr-only">
+                                    <xsl:value-of select="$page-title"/>
+                                </h1>
+                                
+                                <!-- Passed content -->
+                                <xsl:copy-of select="$sub-content"/>
+                                
+                            </article>
+                            
+                        </div>
                         
-                        <div class="col-md-4 col-lg-3">
+                        <aside class="col-md-4 col-lg-3">
                             
                             <!-- Passed content -->
                             <xsl:copy-of select="$side-content"/>
+                            
+                            <xsl:variable name="nav-sidebar">
+                                <m:nav-category>
+                                    <xsl:copy-of select="$eft-header/m:navigation[@xml:lang eq $lang]/m:item/m:item[m:item[@url eq $active-url]]"/>
+                                </m:nav-category>
+                            </xsl:variable>
+                            <div class="nav-sidebar">
+                                <xsl:apply-templates select="$nav-sidebar"/>
+                            </div>
                             
                             <div class="panel panel-default">
                                 <div class="panel-body sharing">
@@ -102,7 +118,7 @@
                                 </div>
                             </div>
                             
-                        </div>
+                        </aside>
                     </div>
                 </div>
             </div>
@@ -115,10 +131,9 @@
             </xsl:call-template>
         </xsl:variable>
         
-        
         <xsl:call-template name="website-page">
             <xsl:with-param name="page-url" select="concat('http://read.84000.co/', /m:response/@model-type, '.html')"/>
-            <xsl:with-param name="page-class" select="'about'"/>
+            <xsl:with-param name="page-class" select="$page-class"/>
             <xsl:with-param name="page-title" select="concat('84000 | ', $page-title)"/>
             <xsl:with-param name="page-description" select="''"/>
             <xsl:with-param name="content" select="$content"/>
@@ -511,6 +526,8 @@
         
         <xsl:param name="sponsorship-status" required="no" as="element(m:sponsorship-status)?"/>
         
+        <xsl:variable name="cost-group" select="/m:response/m:cost-groups/m:cost-group[xs:integer(@page-upper) ge xs:integer($sponsorship-status/m:cost/@pages)][1]"/>
+        
         <xsl:if test="$sponsorship-status/m:status[@id eq 'reserved']">
             <hr/>
             <p class="italic text-danger">
@@ -520,51 +537,46 @@
             </p>
         </xsl:if>
         
-        <xsl:if test="count($sponsorship-status/m:cost/m:part) gt 1">
+        <!-- This text size is broken into multiple parts -->
+        <xsl:if test="xs:integer($cost-group/@parts) gt 1">
             <hr/>
             <div class="row">
-                <div class="col-sm-6">
-                    <div>
-                        <xsl:call-template name="local-text">
-                            <xsl:with-param name="local-key" select="'sponsor-part-label'"/>
-                        </xsl:call-template>
-                    </div>
-                    <div class="center-vertical together">
-                        <xsl:for-each-group select="$sponsorship-status/m:cost/m:part" group-by="@amount">
-                            <xsl:for-each select="current-group()">
+                
+                <!-- There are multiple parts -->
+                <xsl:if test="count($sponsorship-status/m:cost/m:part) gt 1">
+                    <div class="col-sm-6">
+                        <div>
+                            <xsl:call-template name="local-text">
+                                <xsl:with-param name="local-key" select="'sponsor-part-label'"/>
+                            </xsl:call-template>
+                        </div>
+                        <div class="center-vertical align-left">
+                            <xsl:for-each-group select="$sponsorship-status/m:cost/m:part" group-by="@amount">
+                                
+                                <xsl:for-each select="current-group()">
+                                    <span>
+                                        <xsl:choose>
+                                            <xsl:when test="@status eq 'sponsored'">
+                                                <span class="btn-round sml gray">
+                                                    <i class="fa fa-male"/>
+                                                </span>
+                                            </xsl:when>
+                                            <xsl:otherwise>
+                                                <span class="btn-round sml orange">
+                                                    <i class="fa fa-male"/>
+                                                </span>
+                                            </xsl:otherwise>
+                                        </xsl:choose>
+                                    </span>
+                                </xsl:for-each>
+                                
                                 <span>
-                                    <xsl:choose>
-                                        <xsl:when test="@status eq 'sponsored'">
-                                            <img>
-                                                <xsl:attribute name="src" select="concat($front-end-path, '/imgs/orange_person.png')"/>
-                                                <xsl:attribute name="alt">
-                                                    <xsl:value-of select="'Icon for: '"/>
-                                                    <xsl:call-template name="local-text">
-                                                        <xsl:with-param name="local-key" select="'orange-person-label'"/>
-                                                    </xsl:call-template>
-                                                </xsl:attribute>
-                                            </img>
-                                        </xsl:when>
-                                        <xsl:otherwise>
-                                            <img>
-                                                <xsl:attribute name="src" select="concat($front-end-path, '/imgs/blue_person.png')"/>
-                                                <xsl:attribute name="alt">
-                                                    <xsl:value-of select="'Icon for: '"/>
-                                                    <xsl:call-template name="local-text">
-                                                        <xsl:with-param name="local-key" select="'blue-person-label'"/>
-                                                    </xsl:call-template>
-                                                </xsl:attribute>
-                                            </img>
-                                        </xsl:otherwise>
-                                    </xsl:choose>
+                                    <xsl:value-of select="concat(count(current-group()), ' x ', 'US$',format-number(@amount, '#,###'))"/>
                                 </span>
-                            </xsl:for-each>
-                            <span>
-                                <xsl:value-of select="concat(count(current-group()), ' x ', 'US$',format-number(@amount, '#,###'))"/>
-                            </span>
-                        </xsl:for-each-group>
+                            </xsl:for-each-group>
+                        </div>
                     </div>
-                </div>
+                </xsl:if>
                 
                 <!-- If none of the parts are taken offer the whole -->
                 <xsl:if test="not($sponsorship-status/m:cost/m:part[@status eq 'sponsored'])">
@@ -574,17 +586,11 @@
                                 <xsl:with-param name="local-key" select="'sponsor-whole-label'"/>
                             </xsl:call-template>
                         </div>
-                        <div class="center-vertical together">
+                        <div class="center-vertical align-left">
                             <span>
-                                <img>
-                                    <xsl:attribute name="src" select="concat($front-end-path, '/imgs/blue_person.png')"/>
-                                    <xsl:attribute name="alt">
-                                        <xsl:value-of select="'Icon for: '"/>
-                                        <xsl:call-template name="local-text">
-                                            <xsl:with-param name="local-key" select="'blue-person-label'"/>
-                                        </xsl:call-template>
-                                    </xsl:attribute>
-                                </img>
+                                <span class="btn-round sml orange">
+                                    <i class="fa fa-male"/>
+                                </span>
                             </span>
                             <span>
                                 <xsl:value-of select="concat('US$',format-number($sponsorship-status/m:cost/@rounded-cost, '#,###'))"/>

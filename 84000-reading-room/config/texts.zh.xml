@@ -522,10 +522,10 @@
     <item key="about.sponsor-a-sutra.text-list-remainder-title">
         贊助佛典頁數: #pageLower頁以上
     </item>
-    <item key="about.sponsor-a-sutra.blue-person-label">
+    <item key="about.sponsor-a-sutra.part-icon-label-available">
         代表已被贊助
     </item>
-    <item key="about.sponsor-a-sutra.orange-person-label">
+    <item key="about.sponsor-a-sutra.part-icon-label-sponsored">
         代表仍有贊助名額
     </item>
     <item key="about.sponsor-a-sutra.reserved-label">
@@ -535,7 +535,7 @@
         Sponsor a part
     </item>
     <item key="about.sponsor-a-sutra.sponsor-whole-label">
-        Or the whole
+        Sponsor the whole
     </item>
     <item key="about.sponsor-a-sutra.no-texts-of-type">
         There are currently no texts of this type proposed for sponsorship.
@@ -545,4 +545,26 @@
             想了解更多詳情，請與<span class="underline">84000</span>執行長黃淨蕊聯繫: <a href="mailto:jingrui@84000.co">jingrui@84000.co</a>
         </p>
     </item>
+    
+    <item key="widget.download-dana.widget-title">
+        Download Dāna
+    </item>
+    <item key="widget.download-dana.icon-label">
+        You are downloading:
+    </item>
+    <item key="widget.download-dana.dana-description">
+        <p>
+            This is a free publication from 84000: Translating the Words of the Buddha, a non-profit organization sharing the gift of wisdom with the world.
+        </p>
+        <p>
+            The cultivation of generosity, or dāna—giving voluntarily with a view that something wholesome will come of it—is considered to be a fundamental Buddhist practice by all schools. The nature and quantity of the gift itself is often considered less important.
+        </p>
+    </item>
+    <item key="widget.download-dana.donate-form-link">
+        /how-you-can-help/download-dana
+    </item>
+    <item key="widget.download-dana.donate-form-link-label">
+        Click here to make a dāna donation
+    </item>
+    
 </texts>

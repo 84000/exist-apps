@@ -32,6 +32,9 @@ declare variable $common:import-data-path := concat('/db/apps', $common:import-d
 declare variable $common:environment-path := '/db/system/config/db/system/environment.xml';
 declare variable $common:environment := doc($common:environment-path)/m:environment;
 
+declare variable $common:diacritic-letters := 'āḍḥīḷḹṃṇñṅṛṝṣśṭūṁ';
+declare variable $common:diacritic-letters-without := 'adhillmnnnrrsstum';
+
 declare
     %test:assertEquals("84000-reading-room")
 function common:app-id() as xs:string {
@@ -71,7 +74,7 @@ function common:response($model-type as xs:string, $app-id as xs:string, $data a
         data-path="{ $common:data-path }" 
         environment-path="{ $common:environment-path }"
         user-name="{ common:user-name() }" 
-        lang="{ request:get-parameter('lang', 'en') }"
+        lang="{ if(request:exists()) then request:get-parameter('lang', 'en') else 'en' }"
         exist-version="{ system:get-version() }">
         {
             $data
@@ -98,17 +101,6 @@ function common:xml-lang($node as element()) as xs:string {
         "en"
     else
         $node/@lang/string()
-};
-
-declare 
-    %test:args('ṇñṅṛṝṣśṭūāḍḥīḷḹṃṁ') 
-    %test:assertEquals('nnnrrsstuadhillmm')
-function common:normalized-chars($string as xs:string) as xs:string {
-    let $in  := 'āḍḥīḷḹṃṁṇñṅṛṝṣśṭū'
-    let $out := 'adhillmmnnnrrsstu'
-    return 
-        (: translate(lower-case($string), $in, $out) :)
-        translate(lower-case(normalize-unicode($string)), $in, $out)
 };
 
 declare function common:normalize-space($nodes as node()*) as node()*{
@@ -307,54 +299,124 @@ declare function common:mark-nodes($nodes as node()*, $strings as xs:string*, $m
     
     for $node in $nodes
     return
-        if ($node instance of text()) then
+        if ($node instance of text() and $node[normalize-space()]) then
             common:mark-text($node, $strings, $mode)
         else if ($node instance of element()) then
             element { node-name($node) }{
                 $node/@*,
                 common:mark-nodes($node/node(), $strings, $mode)
-           }
+            }
         else
             $node
 };
 
 declare function common:mark-text($text as xs:string, $find as xs:string*, $mode as xs:string) as node()* {
     
-    let $find-escaped := $find ! common:normalize-unicode(.) ! lower-case(.) ! normalize-space(.) ! functx:escape-for-regex(.)
+    (: Standardise the input :)
+    let $find := $find ! common:normalized-chars(.) ! lower-case(.) ! normalize-space(.)
     
+    (: Tokenise the input (applying mode) :)
     let $find-tokenized :=
         if($mode = ('words')) then
-             tokenize($find-escaped, '\s+')
+             tokenize($find, '\s+')
         else if($mode = ('tibetan')) then
-             tokenize($find-escaped, '\s+') ! replace(., '།', '')
+             tokenize($find, '\s+') ! replace(., '།', '')
         else
-            $find-escaped
+            $find
     
-    (: Don't know why this is necessary but fixes something in 4.7.1 :)
-    let $text-replaced := replace($text, ' ', ' _')
+    (: A list of words with diacritics that are equivalent to a search term, so we can look for those too :)
+    let $find-diacritics := 
+        if($mode = ('words')) then
+            for $word in tokenize($text, '[^\w­]') (: Not alphanumeric or soft-hyphen (There's a soft-hyphen in there too i.e.[^\w-] !!!) :)
+            let $word-normalized := lower-case(common:normalized-chars($word))
+            (: If it's an input word and it's changed :)
+            where not(normalize-unicode($word) eq $word-normalized)
+            group by $word-normalized
+                for $find-match in $find-tokenized[starts-with(., substring($word-normalized, 1, string-length(.)))]
+                (:group by $find-match:)
+                return
+                    substring($word[1], 1, (string-length($find-match) + string-length(replace($word[1], '\w', ''))))
+        else
+            ()
     
+    (: Construct the regex :)
     let $regex := 
         if($mode = ('tibetan')) then
-            concat('(', string-join($find-tokenized[not(. = ('།'))], '|'),')')
+            concat('(', string-join($find-tokenized[not(. = ('།'))] ! functx:escape-for-regex(.), '|'),')')
         else
-            concat('(?:\W|^)(', string-join($find-tokenized, '|'),')(?:\W|$)')
-            
-    let $analyze-result := analyze-string(common:normalize-unicode($text-replaced), $regex, 'i')
+            concat('(?:\W)(', string-join(($find-tokenized, $find-diacritics) ! functx:escape-for-regex(.), '|'),')')
     
-    return 
-        for $text in $analyze-result//text()
-            (: Remove the underscore again :)
+    (: shrink multiple spaces to single :)
+    let $text := replace($text, '\s+', ' ')
+    
+    (: Look for matches :)
+    let $analyze-result := analyze-string($text, $regex, 'i')
+    
+    (: Output result :)
+    return (
+        (:text { 'Find: ' || string-join(($find-tokenized, $find-diacritics), '/') || ' :: ' },:)
+        for $analyze-result-text in $analyze-result//text()
         return
-            if($text[parent::xpath:group]) then
+            if($analyze-result-text[parent::xpath:group]) then
                 element exist:match {
-                    text { $text }
+                    text { $analyze-result-text }
                 }
             else
-                text { replace($text, '_', '') }
+                $analyze-result-text
+        (:,text { ' :: ' }:)
+    )
+        
+};
+
+declare function common:replace($node as node(), $replacements as element(m:replacement)*) {
+
+    typeswitch ($node)
+        case element() return 
+            element { node-name($node) } {
+                $node/@*,
+                for $sub in $node/node()
+                return 
+                    common:replace($sub, $replacements)
+            }
+        case text() return
+            common:replace-multi($node, $replacements, 1)
+        default return $node
+        
+};
+
+declare function common:replace-multi($string as xs:string, $replacements as element(m:replacement)* ,$position as xs:integer)  as xs:string? {
+
+    if($position le count($replacements)) then 
+        common:replace-multi(
+            replace(
+                $string, 
+                functx:escape-for-regex($replacements[$position]/@key),
+                $replacements[$position]/text()
+            ),
+            $replacements,
+            $position + 1
+        )
+    else 
+        $string
+   
 };
 
 declare function common:normalize-unicode($string as xs:string?) as xs:string? {
     normalize-unicode(replace($string, '­', ''))
+};
+
+declare 
+    %test:args('ṇñṅṛṝṣśṭūāḍḥīḷḹṃṁ') 
+    %test:assertEquals('nnnrrsstuadhillmm')
+function common:normalized-chars($string as xs:string?) as xs:string {
+    if($string) then
+        translate(
+            replace(normalize-unicode($string), '­'(: This is a soft-hyphen :), ''), 
+            string-join(($common:diacritic-letters, upper-case($common:diacritic-letters)), ''), 
+            string-join(($common:diacritic-letters-without, upper-case($common:diacritic-letters-without)), '')
+        )
+    else
+        ''
 };
 
 declare
@@ -424,6 +486,24 @@ declare function common:valid-lang($lang as xs:string) as xs:string {
         ''
 };
 
+declare function common:letter-variations($letter as xs:string) as xs:string* {
+    (: this shouldn't be necessary if collation were working!?? :)
+    let $letter := lower-case($letter)
+    return
+        if($letter eq 'a') then ('a','ā')
+        else if($letter eq 'd') then ('d','ḍ')
+        else if($letter eq 'h') then ('h','h','ḥ')
+        else if($letter eq 'i') then ('i','ī')
+        else if($letter eq 'l') then ('l','ḷ','ḹ')
+        else if($letter eq 'm') then ('m','ṃ','ṁ')
+        else if($letter eq 'n') then ('n','ṇ','ñ','ṅ')
+        else if($letter eq 'r') then ('r','ṛ','ṝ')
+        else if($letter eq 's') then ('s','ṣ','ś')
+        else if($letter eq 't') then ('t','ṭ')
+        else if($letter eq 'u') then ('u','ū')
+        else $letter
+};
+
 declare function common:local-text($key as xs:string, $lang as xs:string) {
     
     let $local-texts :=
@@ -449,20 +529,6 @@ declare function common:view-mode() as xs:string {
             $view-mode 
         else 
             ''
-};
-
-declare function common:replace($node as node(), $replacements as element()) {
-    typeswitch ($node)
-        case element() return 
-            element { node-name($node) } {
-                for $attribute in $node/@*
-                    return attribute {name($attribute)} {functx:replace-multi(string($attribute), $replacements/m:value/@key, $replacements/m:value/text())},
-                for $sub in $node/node()
-                    return common:replace($sub, $replacements)
-            }
-        case text() return
-            functx:replace-multi($node, $replacements/m:value/@key, $replacements/m:value/text())
-        default return $node
 };
 
 declare 

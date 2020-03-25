@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" version="2.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" version="2.0" exclude-result-prefixes="#all">
     
     <xsl:import href="../../84000-reading-room/xslt/tei-to-xhtml.xsl"/>
     
@@ -39,13 +39,16 @@
                         </td>
                     </tr>
                     <tr class="sub">
-                        <td colspan="2" class="small">
-                            File: 
+                        <td class="small">
+                            <xsl:value-of select="'File: '"/>
                             <a class="break">
                                 <xsl:attribute name="href" select="concat($reading-room-path ,'/translation/', @resource-id, '.tei')"/>
                                 <xsl:attribute name="target" select="concat(@resource-id, '.tei')"/>
                                 <xsl:value-of select="@uri"/>
                             </a>
+                        </td>
+                        <td class="small">
+                            <xsl:value-of select="concat(fn:format-number(xs:integer(m:source/m:location/@count-pages),'#,##0'), ' pages')"/>
                         </td>
                     </tr>
                 </xsl:for-each>

@@ -16,7 +16,7 @@
             
             <xsl:variable name="section-id" select="lower-case(m:section/@id)"/>
             
-            <div class="title-band">
+            <div class="title-band hidden-print">
                 <div class="container">
                     <div class="center-vertical-sm full-width">
                         
@@ -35,14 +35,16 @@
                                 <xsl:copy-of select="common:breadcrumb-items(m:section/m:parent | m:section/m:parent//m:parent, /m:response/@lang)"/>
                                 
                                 <li>
-                                    <xsl:value-of select="m:section/m:titles/m:title[@xml:lang = 'en']"/>
+                                    <h1>
+                                        <xsl:value-of select="m:section/m:titles/m:title[@xml:lang = 'en']"/>
+                                    </h1>
                                 </li>
                                 
                             </ul>
                         </div>
                         
                         <div>
-                            <div class="center-vertical pull-right">
+                            <div class="center-vertical pull-right-md">
                                 
                                 <xsl:if test="not($section-id eq 'all-translated')">
                                     <div>
@@ -112,7 +114,7 @@
                     <xsl:if test="not($section-id = ('lobby', 'all-translated')) and ($show-texts or m:section/m:section or m:section/m:about/*)">
                         
                         <!-- Content tabs (sections/texts/summary) -->
-                        <div class="tabs-container-center">
+                        <div class="tabs-container-center hidden-print">
                             <ul class="nav nav-tabs" role="tablist">
                                 
                                 <xsl:if test="$show-texts">
@@ -138,53 +140,18 @@
                                 </xsl:if>
                                 
                             </ul>
-                            
                         </div>
+                        
                     </xsl:if>
                     
                     <!-- Tab content -->
                     <div class="tab-content">
                         
-                        <!-- Texts -->
-                        <div role="tabpanel" id="texts" class="hidden">
-                            
-                            <xsl:if test="$show-texts">
-                                <xsl:attribute name="class" select="'tab-pane fade in active'"/>
-                            </xsl:if>
-                            
-                            <xsl:call-template name="section-texts">
-                                <xsl:with-param name="section" select="m:section"/>
-                            </xsl:call-template>
-                            
-                        </div>
-                        
-                        <!-- Sections -->
-                        <div role="tabpanel" id="sections" class="hidden">
-                            
-                            <xsl:choose>
-                                <xsl:when test="$show-texts">
-                                    <xsl:attribute name="class" select="'tab-pane fade'"/>
-                                </xsl:when>
-                                <xsl:when test="m:section/m:section[not(@type eq 'grouping')]">
-                                    <xsl:attribute name="class" select="'tab-pane fade in active'"/>
-                                </xsl:when>
-                            </xsl:choose>
-                            
-                            <div class="row sections">
-                                
-                                <!-- Sub-sections -->
-                                <xsl:call-template name="sub-sections">
-                                    <xsl:with-param name="section" select="m:section"/>
-                                </xsl:call-template>
-                                
-                            </div>
-                        </div>
-                        
                         <!-- Summary -->
                         <div role="tabpanel" id="summary" class="hidden">
                             
                             <xsl:if test="m:section/m:about/*">
-                                <xsl:attribute name="class" select="'tab-pane fade'"/>
+                                <xsl:attribute name="class" select="'tab-pane fade print-collapse-override'"/>
                             </xsl:if>
                             
                             <div class="row">
@@ -195,11 +162,49 @@
                             
                         </div>
                         
+                        <!-- Sections -->
+                        <div role="tabpanel" id="sections" class="hidden">
+                            
+                            <xsl:choose>
+                                <xsl:when test="$show-texts">
+                                    <xsl:attribute name="class" select="'tab-pane fade print-collapse-override'"/>
+                                </xsl:when>
+                                <xsl:when test="m:section/m:section[not(@type eq 'grouping')]">
+                                    <xsl:attribute name="class" select="'tab-pane fade in active'"/>
+                                </xsl:when>
+                            </xsl:choose>
+                            
+                            <xsl:call-template name="sub-sections">
+                                <xsl:with-param name="section" select="m:section"/>
+                            </xsl:call-template>
+                            
+                        </div>
+                        
+                        <!-- Texts -->
+                        <div role="tabpanel" id="texts" class="hidden">
+                            
+                            <xsl:if test="$show-texts">
+                                <xsl:attribute name="class" select="'tab-pane fade in active print-collapse-override'"/>
+                            </xsl:if>
+                            
+                            <xsl:call-template name="section-texts">
+                                <xsl:with-param name="section" select="m:section"/>
+                            </xsl:call-template>
+                            
+                        </div>
+                        
+                        <div class="visible-print-block">
+                            <div class="small italic text-center">
+                                <xsl:value-of select="concat('~ ', common:date-user-string('Page generated', current-dateTime(), /m:response/@user-name), ' ~')"/>
+                            </div>
+                        </div>
+                        
                     </div>
                     
-                    <hr/>
+                    <hr class="hidden-print"/>
                     
-                    <div class="row">
+                    <!-- Footer options -->
+                    <div class="row hidden-print">
                         <div class="col-md-offset-2 col-md-8">
                             <div class="row">
                                 <div class="col-sm-4 bottom-margin-xs">
@@ -238,12 +243,13 @@
                             </div>
                         </div>
                     </div>
+                    
                 </div>
             </div>
             
             <xsl:call-template name="bookmarks-sidebar"/>
             
-            <div class="modal fade" tabindex="-1" role="dialog" id="ebook-help" aria-labelledby="ebook-help-label">
+            <div class="modal fade hidden-print" tabindex="-1" role="dialog" id="ebook-help" aria-labelledby="ebook-help-label">
                 <div class="modal-dialog" role="document">
                     <div class="modal-content">
                         <div class="modal-header">
@@ -272,7 +278,7 @@
         <!-- Compile with page template -->
         <xsl:call-template name="website-page">
             <xsl:with-param name="page-url" select="concat('http://read.84000.co/section/', m:section/@id, '.html')"/>
-            <xsl:with-param name="page-class" select="'section'"/>
+            <xsl:with-param name="page-class" select="'reading-room section'"/>
             <xsl:with-param name="page-title" select="concat('84000 Reading Room | ', m:section/m:titles/m:title[@xml:lang = 'en'])"/>
             <xsl:with-param name="page-description" select="normalize-space(m:section/m:abstract/tei:p[1]/text())"/>
             <xsl:with-param name="content" select="$content"/>
@@ -438,8 +444,14 @@
         
         <div class="text-list">
             
+            <xsl:if test="$section/m:texts/m:text">
+                <h2 class="visible-print-block">
+                    <xsl:value-of select="'Texts in this Section'"/>
+                </h2>
+            </xsl:if>
+            
             <!-- Row headers -->
-            <div class="row table-headers">
+            <div class="row table-headers hidden-print">
                 <div class="col-md-1 hidden-xs hidden-sm">
                     <xsl:value-of select="'Toh'"/>
                 </div>
@@ -454,7 +466,7 @@
                     <xsl:choose>
                         <xsl:when test="lower-case($section/@id) eq 'all-translated'">
                             <!-- Form to sort translated -->
-                            <form method="post" class="filter-form form-inline col-sm-pull-right">
+                            <form method="post" class="filter-form form-inline col-sm-pull-right hidden-print">
                                 <div class="form-group">
                                     <label class="sr-only">
                                         <xsl:value-of select="'Sort translations'"/>
@@ -479,7 +491,7 @@
                         </xsl:when>
                         <xsl:otherwise>
                             <!-- Form to filter translated -->
-                            <form method="post" class="filter-form col-sm-pull-right">
+                            <form method="post" class="filter-form col-sm-pull-right hidden-print">
                                 <div class="checkbox">
                                     <label>
                                         <input type="checkbox" name="published-only" value="1">
@@ -495,6 +507,35 @@
                     </xsl:choose>
                 </div>
             </div>
+            
+            <!-- Print header -->
+            <xsl:choose>
+                <xsl:when test="lower-case($section/@id) eq 'all-translated'">
+                    <div class="visible-print-block text-italic">
+                        <xsl:choose>
+                            <xsl:when test="m:request/@translations-order eq 'latest'">
+                                <xsl:value-of select="'Sorted by most recent publications'"/>
+                            </xsl:when>
+                            <xsl:otherwise>
+                                <xsl:value-of select="'Sorted by Tohoku number'"/>
+                            </xsl:otherwise>
+                        </xsl:choose>
+                    </div>
+                </xsl:when>
+                <xsl:otherwise>
+                    <div class="visible-print-block italic">
+                        <xsl:choose>
+                            <xsl:when test="m:section/m:texts/@published-only eq '1'">
+                                <xsl:value-of select="'Listing published translations only'"/>
+                            </xsl:when>
+                            <xsl:otherwise>
+                                <xsl:value-of select="'Listing all texts'"/>
+                            </xsl:otherwise>
+                        </xsl:choose>
+                    </div>
+                </xsl:otherwise>
+            </xsl:choose>
+            
             
             <!-- Text rows -->
             <!-- Texts can either be direct children of the section or a sub-section which is a grouping -->
@@ -522,6 +563,8 @@
                         <xsl:sort select="number(m:toh/@chapter-number)"/>
                         <xsl:sort select="m:toh/@chapter-letter"/>
                         
+                        <xsl:variable name="toh-key" select="m:toh/@key"/>
+                        
                         <div class="row list-item">
                             
                             <xsl:attribute name="id" select="@resource-id"/>
@@ -536,8 +579,28 @@
                                     <xsl:value-of select="concat(' / ', m:base)"/>
                                 </xsl:for-each>
                                 
-                                <span class="visible-xs-inline visible-sm-inline col-sm-pull-right">
-                                    <xsl:copy-of select="common:translation-status(@status-group)"/>
+                                <span class="visible-xs-inline visible-sm-inline col-sm-pull-right italic small">
+                                    <xsl:choose>
+                                        <xsl:when test="@status-group eq 'published'">
+                                            <xsl:choose>
+                                                <xsl:when test="m:translation/m:publication-date/text()">
+                                                    <xsl:value-of select="concat(' Published ', format-date(m:translation/m:publication-date, '[FNn,*-3], [D1o] [MNn,*-3] [Y]'))"/>
+                                                </xsl:when>
+                                                <xsl:otherwise>
+                                                    <xsl:value-of select="' Published'"/>
+                                                </xsl:otherwise>
+                                            </xsl:choose>
+                                        </xsl:when>
+                                        <xsl:when test="@status-group eq 'translated'">
+                                            <xsl:value-of select="' Translation in progress'"/>
+                                        </xsl:when>
+                                        <xsl:when test="@status-group eq 'in-translation'">
+                                             <xsl:value-of select="' Translation in progress'"/>
+                                        </xsl:when>
+                                        <xsl:otherwise>
+                                            <xsl:value-of select="' Translation not Started'"/>
+                                        </xsl:otherwise>
+                                    </xsl:choose>
                                 </span>
                                 
                                 <hr class="visible-xs-block visible-sm-block"/>
@@ -574,7 +637,7 @@
                                 <xsl:if test="lower-case($section/@id) = 'all-translated'">
                                     <hr/>
                                     <div class="text-muted small">
-                                        <xsl:value-of select="'in'"/>
+                                        <xsl:value-of select="'in '"/>
                                         <ul class="breadcrumb">
                                             <xsl:copy-of select="common:breadcrumb-items(m:parent | m:parent//m:parent, /m:response/@lang)"/>
                                         </ul>
@@ -616,28 +679,32 @@
                                 <!-- Summary and title variants -->
                                 <xsl:if test="m:summary/tei:p or m:title-variants/m:title/text()">
                                     
-                                    <hr/>
+                                    <hr class="hidden-print"/>
                                     
-                                    <a class="summary-link collapsed" role="button" data-toggle="collapse" aria-expanded="false">
-                                        <xsl:attribute name="href" select="concat('#summary-detail-', m:toh/@key)"/>
-                                        <xsl:attribute name="aria-controls" select="concat('summary-detail-', m:toh/@key)"/>
+                                    <a class="summary-link collapsed hidden-print" role="button" data-toggle="collapse" aria-expanded="false">
+                                        <xsl:attribute name="href" select="concat('#summary-detail-', $toh-key)"/>
+                                        <xsl:attribute name="aria-controls" select="concat('summary-detail-', $toh-key)"/>
                                         <i class="fa fa-chevron-down"/>
                                         <xsl:value-of select="' Summary &amp; variant titles'"/>
                                     </a>
                                     
-                                    <div class="collapse summary-detail">
-                                        <xsl:attribute name="id" select="concat('summary-detail-', m:toh/@key)"/>
+                                    <div class="collapse summary-detail print-collapse-override">
+                                        <xsl:attribute name="id" select="concat('summary-detail-', $toh-key)"/>
                                         <div class="well well-sm">
                                             
                                             <xsl:if test="m:summary/tei:p">
-                                                <h4>Summary</h4>
+                                                <h4>
+                                                    <xsl:value-of select="'Summary'"/>
+                                                </h4>
                                                 <xsl:apply-templates select="m:summary/tei:p"/>
                                             </xsl:if>
                                             
                                             <xsl:if test="m:title-variants/m:title/text()">
-                                                <h4>Title variants</h4>
+                                                <h4>
+                                                    <xsl:value-of select="'Title variants'"/>
+                                                </h4>
                                                 <ul class="list-unstyled">
-                                                    <xsl:attribute name="id" select="concat(m:toh/@key, '-title-variants')"/>
+                                                    <xsl:attribute name="id" select="concat($toh-key, '-title-variants')"/>
                                                     <xsl:for-each select="m:title-variants/m:title">
                                                         <li>
                                                             <span>
@@ -689,7 +756,7 @@
                                                                 <xsl:attribute name="target" select="'_blank'"/>
                                                                 <xsl:attribute name="download" select="@filename"/>
                                                                 <xsl:attribute name="class" select="'log-click'"/>
-                                                                <xsl:attribute name="data-download-dana" select="$title-en"/>
+                                                                <xsl:attribute name="data-page-alert" select="common:internal-link('/widget/download-dana.html', concat('resource-id=', $toh-key), '#dana-description', /m:response/@lang)"/>
                                                             </xsl:otherwise>
                                                         </xsl:choose>
                                                         <xsl:call-template name="download-icon">
@@ -702,7 +769,7 @@
                                                 </li>
                                             </xsl:for-each>
                                             <xsl:if test="m:downloads/m:download[@type = ('epub', 'azw3')]">
-                                                <li>
+                                                <li class="hidden-print">
                                                     <a data-toggle="modal" href="#ebook-help" data-target="#ebook-help" class="visible-scripts text-muted">
                                                         <i class="fa fa-info-circle" aria-hidden="true"/>
                                                         <span class="small">
@@ -745,239 +812,261 @@
         <xsl:param name="section"/>
         
         <xsl:variable name="count-sections" select="count($section/m:section[not(@type eq 'grouping')])"/>
-        <xsl:for-each select="$section/m:section[not(@type eq 'grouping')]">
-            <xsl:sort select="number(@sort-index)"/>
-            <xsl:variable name="sub-section-id" select="@id"/>
-            <div>
+        
+        <div class="row sections">
+            
+            <xsl:if test="m:section/m:section[not(@type eq 'grouping')]">
+                <h2 class="visible-print-block">
+                    <xsl:value-of select="'Sub-sections'"/>
+                </h2>
+            </xsl:if>
+            
+            <xsl:for-each select="$section/m:section[not(@type eq 'grouping')]">
                 
-                <xsl:variable name="col-offset-2">
-                    <xsl:choose>
-                        <xsl:when test="($count-sections mod 2) eq 1 and (position() mod 2) eq 1 and position() &gt; ($count-sections - 2)">
-                            <!-- 1 left over in rows of 2 -->
-                            <xsl:value-of select="'col-sm-6 col-sm-offset-3'"/>
-                        </xsl:when>
-                        <xsl:otherwise>
-                            <xsl:value-of select="'col-sm-6 col-sm-offset-0'"/>
-                        </xsl:otherwise>
-                    </xsl:choose>
-                </xsl:variable>
+                <xsl:sort select="number(@sort-index)"/>
                 
-                <xsl:variable name="col-offset-3">
-                    <xsl:choose>
-                        <xsl:when test="position() &gt; (floor($count-sections div 3) * 3)">
-                            <!-- In the last row of rows of 3 -->
+                <xsl:variable name="sub-section-id" select="@id"/>
+                
+                    <div>
+                        
+                        <xsl:variable name="col-offset-2">
                             <xsl:choose>
-                                <xsl:when test="($count-sections mod 3) eq 2">
-                                    <!-- 2 left over -->
-                                    <xsl:choose>
-                                        <xsl:when test="(position() mod 3) eq 1">
-                                            <!-- first in the row -->
-                                            <xsl:value-of select="'col-md-4 col-md-offset-2'"/>
-                                        </xsl:when>
-                                        <xsl:otherwise>
-                                            <xsl:value-of select="'col-md-4 col-md-offset-0'"/>
-                                        </xsl:otherwise>
-                                    </xsl:choose>
+                                <xsl:when test="($count-sections mod 2) eq 1 and (position() mod 2) eq 1 and position() &gt; ($count-sections - 2)">
+                                    <!-- 1 left over in rows of 2 -->
+                                    <xsl:value-of select="'col-sm-6 col-sm-offset-3'"/>
                                 </xsl:when>
-                                <xsl:when test="($count-sections mod 3) eq 1">
-                                    <!-- 1 left over -->
+                                <xsl:otherwise>
+                                    <xsl:value-of select="'col-sm-6 col-sm-offset-0'"/>
+                                </xsl:otherwise>
+                            </xsl:choose>
+                        </xsl:variable>
+                        
+                        <xsl:variable name="col-offset-3">
+                            <xsl:choose>
+                                <xsl:when test="position() &gt; (floor($count-sections div 3) * 3)">
+                                    <!-- In the last row of rows of 3 -->
                                     <xsl:choose>
-                                        <xsl:when test="(position() mod 3) eq 1">
-                                            <!-- first in the row -->
-                                            <xsl:value-of select="'col-md-4 col-md-offset-4'"/>
+                                        <xsl:when test="($count-sections mod 3) eq 2">
+                                            <!-- 2 left over -->
+                                            <xsl:choose>
+                                                <xsl:when test="(position() mod 3) eq 1">
+                                                    <!-- first in the row -->
+                                                    <xsl:value-of select="'col-md-4 col-md-offset-2'"/>
+                                                </xsl:when>
+                                                <xsl:otherwise>
+                                                    <xsl:value-of select="'col-md-4 col-md-offset-0'"/>
+                                                </xsl:otherwise>
+                                            </xsl:choose>
+                                        </xsl:when>
+                                        <xsl:when test="($count-sections mod 3) eq 1">
+                                            <!-- 1 left over -->
+                                            <xsl:choose>
+                                                <xsl:when test="(position() mod 3) eq 1">
+                                                    <!-- first in the row -->
+                                                    <xsl:value-of select="'col-md-4 col-md-offset-4'"/>
+                                                </xsl:when>
+                                                <xsl:otherwise>
+                                                    <xsl:value-of select="'col-md-4 col-md-offset-0'"/>
+                                                </xsl:otherwise>
+                                            </xsl:choose>
                                         </xsl:when>
                                         <xsl:otherwise>
+                                            <!-- 0 left over -->
                                             <xsl:value-of select="'col-md-4 col-md-offset-0'"/>
                                         </xsl:otherwise>
                                     </xsl:choose>
                                 </xsl:when>
                                 <xsl:otherwise>
-                                    <!-- 0 left over -->
+                                    <!-- Not in the last row -->
                                     <xsl:value-of select="'col-md-4 col-md-offset-0'"/>
                                 </xsl:otherwise>
                             </xsl:choose>
-                        </xsl:when>
-                        <xsl:otherwise>
-                            <!-- Not in the last row -->
-                            <xsl:value-of select="'col-md-4 col-md-offset-0'"/>
-                        </xsl:otherwise>
-                    </xsl:choose>
-                </xsl:variable>
-                
-                
-                <xsl:variable name="col-offset-4">
-                    <xsl:choose>
-                        <xsl:when test="position() &gt; (floor($count-sections div 4) * 4)">
-                            <!-- In the last row of rows of 4 -->
+                        </xsl:variable>
+                        
+                        
+                        <xsl:variable name="col-offset-4">
                             <xsl:choose>
-                                <xsl:when test="($count-sections mod 4) eq 3">
-                                    <!-- 3 left over -->
-                                    <xsl:value-of select="'col-lg-4 col-lg-offset-0'"/>
-                                </xsl:when>
-                                <xsl:when test="($count-sections mod 4) eq 2">
-                                    <!-- 2 left over -->
+                                <xsl:when test="position() &gt; (floor($count-sections div 4) * 4)">
+                                    <!-- In the last row of rows of 4 -->
                                     <xsl:choose>
-                                        <xsl:when test="(position() mod 4) eq 1">
-                                            <!-- first in the row -->
-                                            <xsl:value-of select="'col-lg-4 col-lg-offset-2'"/>
+                                        <xsl:when test="($count-sections mod 4) eq 3">
+                                            <!-- 3 left over -->
+                                            <xsl:value-of select="'col-lg-4 col-lg-offset-0'"/>
+                                        </xsl:when>
+                                        <xsl:when test="($count-sections mod 4) eq 2">
+                                            <!-- 2 left over -->
+                                            <xsl:choose>
+                                                <xsl:when test="(position() mod 4) eq 1">
+                                                    <!-- first in the row -->
+                                                    <xsl:value-of select="'col-lg-4 col-lg-offset-2'"/>
+                                                </xsl:when>
+                                                <xsl:otherwise>
+                                                    <xsl:value-of select="'col-lg-4 col-lg-offset-0'"/>
+                                                </xsl:otherwise>
+                                            </xsl:choose>
+                                        </xsl:when>
+                                        <xsl:when test="($count-sections mod 4) eq 1">
+                                            <!-- 1 left over -->
+                                            <xsl:choose>
+                                                <xsl:when test="(position() mod 4) eq 1">
+                                                    <!-- first in the row -->
+                                                    <xsl:value-of select="'col-lg-4 col-lg-offset-4'"/>
+                                                </xsl:when>
+                                                <xsl:otherwise>
+                                                    <xsl:value-of select="'col-lg-4 col-lg-offset-0'"/>
+                                                </xsl:otherwise>
+                                            </xsl:choose>
                                         </xsl:when>
                                         <xsl:otherwise>
-                                            <xsl:value-of select="'col-lg-4 col-lg-offset-0'"/>
-                                        </xsl:otherwise>
-                                    </xsl:choose>
-                                </xsl:when>
-                                <xsl:when test="($count-sections mod 4) eq 1">
-                                    <!-- 1 left over -->
-                                    <xsl:choose>
-                                        <xsl:when test="(position() mod 4) eq 1">
-                                            <!-- first in the row -->
-                                            <xsl:value-of select="'col-lg-4 col-lg-offset-4'"/>
-                                        </xsl:when>
-                                        <xsl:otherwise>
-                                            <xsl:value-of select="'col-lg-4 col-lg-offset-0'"/>
+                                            <!-- 0 left over -->
+                                            <xsl:value-of select="'col-lg-3 col-lg-offset-0'"/>
                                         </xsl:otherwise>
                                     </xsl:choose>
                                 </xsl:when>
                                 <xsl:otherwise>
-                                    <!-- 0 left over -->
+                                    <!-- Not in the last row -->
                                     <xsl:value-of select="'col-lg-3 col-lg-offset-0'"/>
                                 </xsl:otherwise>
                             </xsl:choose>
-                        </xsl:when>
-                        <xsl:otherwise>
-                            <!-- Not in the last row -->
-                            <xsl:value-of select="'col-lg-3 col-lg-offset-0'"/>
-                        </xsl:otherwise>
-                    </xsl:choose>
-                </xsl:variable>
-                
-                <xsl:attribute name="class" select="normalize-space(concat($col-offset-2, ' ', $col-offset-3, ' ', $col-offset-4, ' '))"/>
-                
-                <div class="section-panel">
-                    
-                    <xsl:if test="@type eq 'pseudo-section'">
-                        <xsl:attribute name="class" select="'section-panel pseudo-section'"/>
-                    </xsl:if>
-                    
-                    <div data-match-height="outline-section" data-match-height-media=".sm,.md,.lg">
+                        </xsl:variable>
                         
-                        <a target="_self" class="block-link">
-                            <xsl:attribute name="href" select="common:internal-link(concat('/section/', @id/string(), '.html'), (), '', /m:response/@lang)"/>
-                            <h3>
-                                <xsl:value-of select="m:titles/m:title[@xml:lang='en']/text()"/> 
-                            </h3>
-                            <xsl:if test="m:titles/m:title[@xml:lang='bo']/text()">
-                                <h4 class="text-bo">
-                                    <xsl:value-of select="m:titles/m:title[@xml:lang='bo']/text()"/>
-                                </h4>
-                            </xsl:if>
-                            <xsl:if test="m:titles/m:title[@xml:lang='bo-ltn']/text()">
-                                <h4 class="text-wy">
-                                    <xsl:value-of select="m:titles/m:title[@xml:lang='bo-ltn']/text()"/>
-                                </h4>
-                            </xsl:if>
-                            <xsl:if test="m:titles/m:title[@xml:lang='sa-ltn']/text()">
-                                <h4 class="text-sa">
-                                    <xsl:value-of select="m:titles/m:title[@xml:lang='sa-ltn']/text()"/>
-                                </h4>
-                            </xsl:if>
-                        </a>
+                        <xsl:attribute name="class" select="normalize-space(string-join(($col-offset-2, $col-offset-3, $col-offset-4, 'print-centered-margins'), ' '))"/>
                         
-                        <div class="notes">
-                            <xsl:apply-templates select="m:abstract/*"/>
+                        <div class="section-panel">
+                            
+                            <xsl:if test="@type eq 'pseudo-section'">
+                                <xsl:attribute name="class" select="'section-panel pseudo-section'"/>
+                            </xsl:if>
+                            
+                            <div data-match-height="outline-section" data-match-height-media=".sm,.md,.lg">
+                                
+                                <a target="_self" class="block-link printable">
+                                    <xsl:attribute name="href" select="common:internal-link(concat('/section/', @id/string(), '.html'), (), '', /m:response/@lang)"/>
+                                    <h3>
+                                        <xsl:value-of select="m:titles/m:title[@xml:lang='en']/text()"/> 
+                                    </h3>
+                                    <xsl:if test="m:titles/m:title[@xml:lang='bo']/text()">
+                                        <h4 class="text-bo">
+                                            <xsl:value-of select="m:titles/m:title[@xml:lang='bo']/text()"/>
+                                        </h4>
+                                    </xsl:if>
+                                    <xsl:if test="m:titles/m:title[@xml:lang='bo-ltn']/text()">
+                                        <h4 class="text-wy">
+                                            <xsl:value-of select="m:titles/m:title[@xml:lang='bo-ltn']/text()"/>
+                                        </h4>
+                                    </xsl:if>
+                                    <xsl:if test="m:titles/m:title[@xml:lang='sa-ltn']/text()">
+                                        <h4 class="text-sa">
+                                            <xsl:value-of select="m:titles/m:title[@xml:lang='sa-ltn']/text()"/>
+                                        </h4>
+                                    </xsl:if>
+                                </a>
+                                
+                                <div class="notes">
+                                    <xsl:apply-templates select="m:abstract/*"/>
+                                </div>
+                                
+                                <xsl:if test="m:warning/tei:p">
+                                    <xsl:call-template name="tantra-warning">
+                                        <xsl:with-param name="id" select="$sub-section-id"/>
+                                        <xsl:with-param name="node" select="m:warning"/>
+                                    </xsl:call-template>
+                                </xsl:if>
+                                
+                            </div>
+                            
+                            <div class="footer">
+                                <xsl:variable name="count-texts" as="xs:integer" select="$section/m:section[@id eq $sub-section-id]/m:text-stats/m:stat[@type eq 'count-text-descendants']/@value"/>
+                                <xsl:variable name="count-published" as="xs:integer" select="$section/m:section[@id eq $sub-section-id]/m:text-stats/m:stat[@type eq 'count-published-descendants']/@value"/>
+                                <xsl:variable name="count-in-progress" as="xs:integer" select="$section/m:section[@id eq $sub-section-id]/m:text-stats/m:stat[@type eq 'count-in-progress-descendants']/@value"/>
+                                <table class="table print-centered-margins">
+                                    <tbody>
+                                        <tr>
+                                            <th>
+                                                <xsl:value-of select="'Texts'"/>
+                                            </th>
+                                            <td>
+                                                <xsl:value-of select="format-number($count-texts, '#,###')"/>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <th>
+                                                <xsl:value-of select="'Translated'"/>
+                                            </th>
+                                            <td>
+                                                <xsl:value-of select="format-number($count-published, '#,###')"/>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <th>
+                                                <xsl:value-of select="'In Progress'"/>
+                                            </th>
+                                            <td>
+                                                <xsl:value-of select="format-number($count-in-progress, '#,###')"/>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <th>
+                                                <xsl:value-of select="'Not begun'"/>
+                                            </th>
+                                            <td>
+                                                <xsl:value-of select="format-number($count-texts - ($count-published + $count-in-progress), '#,###')"/>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            
                         </div>
-                        
-                        <xsl:if test="m:warning/tei:p">
-                            <xsl:call-template name="tantra-warning">
-                                <xsl:with-param name="id" select="$sub-section-id"/>
-                                <xsl:with-param name="node" select="m:warning"/>
-                            </xsl:call-template>
-                        </xsl:if>
-                        
                     </div>
-                    
-                    <div class="footer">
-                        <xsl:variable name="count-texts" as="xs:integer" select="$section/m:section[@id eq $sub-section-id]/m:text-stats/m:stat[@type eq 'count-text-descendants']/@value"/>
-                        <xsl:variable name="count-published" as="xs:integer" select="$section/m:section[@id eq $sub-section-id]/m:text-stats/m:stat[@type eq 'count-published-descendants']/@value"/>
-                        <xsl:variable name="count-in-progress" as="xs:integer" select="$section/m:section[@id eq $sub-section-id]/m:text-stats/m:stat[@type eq 'count-in-progress-descendants']/@value"/>
-                        <table class="table">
-                            <tbody>
-                                <tr>
-                                    <th>
-                                        <xsl:value-of select="'Texts'"/>
-                                    </th>
-                                    <td>
-                                        <xsl:value-of select="format-number($count-texts, '#,###')"/>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <th>
-                                        <xsl:value-of select="'Translated'"/>
-                                    </th>
-                                    <td>
-                                        <xsl:value-of select="format-number($count-published, '#,###')"/>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <th>
-                                        <xsl:value-of select="'In Progress'"/>
-                                    </th>
-                                    <td>
-                                        <xsl:value-of select="format-number($count-in-progress, '#,###')"/>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <th>
-                                        <xsl:value-of select="'Not begun'"/>
-                                    </th>
-                                    <td>
-                                        <xsl:value-of select="format-number($count-texts - ($count-published + $count-in-progress), '#,###')"/>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                    
-                </div>
-            </div>
-        </xsl:for-each>
-        
+                
+            </xsl:for-each>
+        </div>
     </xsl:template>
     
     <xsl:template name="tantra-warning">
         <xsl:param name="id"/>
         <xsl:param name="node"/>
         
-        <a data-toggle="modal" class="warning">
-            <xsl:attribute name="href" select="concat('#tantra-warning-', $id)"/>
-            <xsl:attribute name="data-target" select="concat('#tantra-warning-', $id)"/>
-            <i class="fa fa-exclamation-circle" aria-hidden="true"/>
-            <xsl:value-of select="' Tantra Text Warning'"/>
-        </a>
-        
-        <div class="modal fade warning" tabindex="-1" role="dialog">
-            <xsl:attribute name="id" select="concat('tantra-warning-', $id)"/>
-            <xsl:attribute name="aria-labelledby" select="concat('tantra-warning-label-', $id)"/>
-            <div class="modal-dialog" role="document">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                            <span aria-hidden="true">
-                                <i class="fa fa-times"/>
-                            </span>
-                        </button>
-                        <h4 class="modal-title">
-                            <xsl:attribute name="id" select="concat('tantra-warning-label-', $id)"/>
-                            <i class="fa fa-exclamation-circle" aria-hidden="true"/>
-                            <xsl:value-of select="' Tantra Text Warning'"/>
-                        </h4>
-                    </div>
-                    <div class="modal-body">
-                        <xsl:apply-templates select="$node"/>
+        <div class="hidden-print top-margin">
+            
+            <a data-toggle="modal" class="warning">
+                <xsl:attribute name="href" select="concat('#tantra-warning-', $id)"/>
+                <xsl:attribute name="data-target" select="concat('#tantra-warning-', $id)"/>
+                <i class="fa fa-exclamation-circle" aria-hidden="true"/>
+                <xsl:value-of select="' Tantra Text Warning'"/>
+            </a>
+            
+            <div class="modal fade warning" tabindex="-1" role="dialog">
+                <xsl:attribute name="id" select="concat('tantra-warning-', $id)"/>
+                <xsl:attribute name="aria-labelledby" select="concat('tantra-warning-label-', $id)"/>
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">
+                                    <i class="fa fa-times"/>
+                                </span>
+                            </button>
+                            <h4 class="modal-title">
+                                <xsl:attribute name="id" select="concat('tantra-warning-label-', $id)"/>
+                                <i class="fa fa-exclamation-circle" aria-hidden="true"/>
+                                <xsl:value-of select="' Tantra Text Warning'"/>
+                            </h4>
+                        </div>
+                        <div class="modal-body">
+                            <xsl:apply-templates select="$node"/>
+                        </div>
                     </div>
                 </div>
             </div>
+            
         </div>
+        
+        <div class="visible-print-block small">
+            <xsl:apply-templates select="$node"/>
+        </div>
+        
     </xsl:template>
     
 </xsl:stylesheet>

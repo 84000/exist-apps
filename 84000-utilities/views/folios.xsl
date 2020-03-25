@@ -33,185 +33,232 @@
                 </p>
             </div>
             
-            <table class="table table-icons table-responsive">
-                <thead>
-                    <tr>
-                        <th>Toh</th>
-                        <th>Status</th>
-                        <th>Title</th>
-                        <th>Start</th>
-                        <th>End</th>
-                        <th>Pages</th>
-                        <th colspan="2">Issues</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <xsl:for-each select="m:translations/m:text">
-                        <xsl:sort select="number(m:toh/@number)"/>
-                        <xsl:sort select="m:toh/m:base"/>
-                        <xsl:variable name="toh-key" select="m:toh/@key"/>
-                        <xsl:variable name="text-row-id" select="concat('text-', position())"/>
+            <form action="/folios.html" method="post" class="center-vertical">
+                
+                <div class="radio">
+                    <label>
+                        <input type="radio" name="text-statuses" value="published">
+                            <xsl:if test="m:request/m:parameter[@name eq 'text-statuses']/text() = ('published', '')">
+                                <xsl:attribute name="checked" select="'checked'"/>
+                            </xsl:if>
+                        </input>
+                        <xsl:value-of select="'Published only'"/>
+                    </label>
+                </div>
+                
+                <div class="radio">
+                    <label>
+                        <input type="radio" name="text-statuses" value="in-markup">
+                            <xsl:if test="m:request/m:parameter[@name eq 'text-statuses']/text() eq 'in-markup'">
+                                <xsl:attribute name="checked" select="'checked'"/>
+                            </xsl:if>
+                        </input>
+                        <xsl:value-of select="'In mark-up only'"/>
+                    </label>
+                </div>
+                
+                <div class="radio">
+                    <label>
+                        <input type="radio" name="text-statuses" value="marked-up">
+                            <xsl:if test="m:request/m:parameter[@name eq 'text-statuses']/text() eq 'marked-up'">
+                                <xsl:attribute name="checked" select="'checked'"/>
+                            </xsl:if>
+                        </input>
+                        <xsl:value-of select="'All marked-up texts'"/>
+                    </label>
+                </div>
+                
+                <div>
+                    <button class="btn btn-default" type="submit">
+                        <i class="fa fa-refresh"/>
+                    </button>
+                </div>
+                
+            </form>
+            
+            <div class="tests">
+                <table class="table table-icons table-responsive">
+                    <thead>
                         <tr>
-                            <td>
-                                <xsl:value-of select="m:toh/m:base"/>
-                            </td>
-                            <td>
-                                <span>
-                                    <xsl:choose>
-                                        <xsl:when test="@status-group eq 'published'">
-                                            <xsl:attribute name="class" select="'label label-success'"/>
-                                        </xsl:when>
-                                        <xsl:when test="@status-group eq 'translated'">
-                                            <xsl:attribute name="class" select="'label label-primary'"/>
-                                        </xsl:when>
-                                        <xsl:when test="@status-group eq 'in-translation'">
-                                            <xsl:attribute name="class" select="'label label-warning'"/>
-                                        </xsl:when>
-                                        <xsl:otherwise>
-                                            <xsl:attribute name="class" select="'label label-default'"/>
-                                        </xsl:otherwise>
-                                    </xsl:choose>
-                                    <xsl:attribute name="title" select="@status-group"/>
-                                    <xsl:value-of select="if(@status) then @status else '0'"/>
-                                </span>
-                            </td>
-                            <td>
-                                <xsl:value-of select="m:titles/m:title[@xml:lang eq 'en']"/>
-                            </td>
-                            <td class="nowrap small">
-                                <xsl:value-of select="concat('Vol. ', m:location/m:volume[1]/@number, ', page ', m:location/m:volume[1]/@start-page)"/>
-                            </td>
-                            <td class="nowrap small">
-                                <xsl:value-of select="concat('Vol. ', m:location/m:volume[last()]/@number, ', page ', m:location/m:volume[last()]/@end-page)"/>
-                            </td>
-                            <td class="nowrap">
-                                <a class="collapsed underline" role="button" data-toggle="collapse" aria-expanded="false">
-                                    <xsl:attribute name="href" select="concat('#', $text-row-id, '-sub')"/>
-                                    <xsl:attribute name="aria-controls" select="concat($text-row-id, '-sub')"/>
-                                    <xsl:value-of select="m:folios/@count-pages"/>
-                                </a>
-                            </td>
-                            <td class="icon">
-                                <xsl:choose>
-                                    <xsl:when test="m:folios[@count-pages ne @count-refs]">
-                                        <i class="fa fa-times-circle"/>
-                                    </xsl:when>
-                                    <xsl:when test="m:folios/m:folio[not(@tei-folio = (@folio-in-volume, @folio-consecutive))]">
-                                        <i class="fa fa-exclamation-circle"/>
-                                    </xsl:when>
-                                </xsl:choose>
-                            </td>
-                            <td class="nowrap text-danger small">
-                                <xsl:if test="m:folios[@count-pages ne @count-refs]">
-                                    <xsl:value-of select="concat(m:folios/@count-refs, ' found')"/>
-                                </xsl:if>
-                            </td>
+                            <th>Toh</th>
+                            <th>Status</th>
+                            <th>Title</th>
+                            <th>Start</th>
+                            <th>End</th>
+                            <th>Pages</th>
+                            <th colspan="2">Issues</th>
                         </tr>
-                        <tr class="sub collapse">
-                            <xsl:attribute name="id" select="concat($text-row-id, '-sub')"/>
-                            <td colspan="8">
-                                <table class="table table-responsive no-top-margin">
-                                    <thead>
-                                        <tr>
-                                            <th>Ref</th>
-                                            <th>Page</th>
-                                            <th colspan="2">@cRef</th>
-                                            <th>Links</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <xsl:for-each select="m:folios/m:folio">
-                                            <xsl:variable name="folio-row-id" select="concat($text-row-id, '-folio-', position())"/>
+                    </thead>
+                    <tbody>
+                        <xsl:for-each select="m:translations/m:text">
+                            <xsl:sort select="number(m:toh/@number)"/>
+                            <xsl:sort select="m:toh/m:base"/>
+                            <xsl:variable name="toh-key" select="m:toh/@key"/>
+                            <xsl:variable name="text-row-id" select="concat('text-', position())"/>
+                            <tr>
+                                <td>
+                                    <xsl:value-of select="m:toh/m:base"/>
+                                </td>
+                                <td>
+                                    <span>
+                                        <xsl:choose>
+                                            <xsl:when test="@status-group eq 'published'">
+                                                <xsl:attribute name="class" select="'label label-success'"/>
+                                            </xsl:when>
+                                            <xsl:when test="@status-group eq 'translated'">
+                                                <xsl:attribute name="class" select="'label label-primary'"/>
+                                            </xsl:when>
+                                            <xsl:when test="@status-group eq 'in-translation'">
+                                                <xsl:attribute name="class" select="'label label-warning'"/>
+                                            </xsl:when>
+                                            <xsl:otherwise>
+                                                <xsl:attribute name="class" select="'label label-default'"/>
+                                            </xsl:otherwise>
+                                        </xsl:choose>
+                                        <xsl:attribute name="title" select="@status-group"/>
+                                        <xsl:value-of select="if(@status) then @status else '0'"/>
+                                    </span>
+                                </td>
+                                <td>
+                                    <xsl:value-of select="m:titles/m:title[@xml:lang eq 'en']"/>
+                                </td>
+                                <td class="nowrap small">
+                                    <xsl:value-of select="concat('Vol. ', m:location/m:volume[1]/@number, ', page ', m:location/m:volume[1]/@start-page)"/>
+                                </td>
+                                <td class="nowrap small">
+                                    <xsl:value-of select="concat('Vol. ', m:location/m:volume[last()]/@number, ', page ', m:location/m:volume[last()]/@end-page)"/>
+                                </td>
+                                <td class="nowrap">
+                                    <a class="collapsed underline" role="button" data-toggle="collapse" aria-expanded="false">
+                                        <xsl:attribute name="href" select="concat('#', $text-row-id, '-sub')"/>
+                                        <xsl:attribute name="aria-controls" select="concat($text-row-id, '-sub')"/>
+                                        <xsl:value-of select="m:folios/@count-pages"/>
+                                    </a>
+                                </td>
+                                <td class="icon">
+                                    <xsl:choose>
+                                        <xsl:when test="m:folios[@count-pages ne @count-refs]">
+                                            <i class="fa fa-times-circle"/>
+                                        </xsl:when>
+                                        <xsl:when test="m:folios/m:folio[not(@tei-folio = (@folio-in-volume, @folio-consecutive))]">
+                                            <i class="fa fa-exclamation-circle"/>
+                                        </xsl:when>
+                                    </xsl:choose>
+                                </td>
+                                <td class="nowrap text-danger small">
+                                    <xsl:if test="m:folios[@count-pages ne @count-refs]">
+                                        <xsl:value-of select="concat(m:folios/@count-refs, ' found')"/>
+                                    </xsl:if>
+                                </td>
+                            </tr>
+                            <tr class="sub collapse">
+                                <xsl:attribute name="id" select="concat($text-row-id, '-sub')"/>
+                                <td>↳</td>
+                                <td colspan="7">
+                                    <table class="table table-responsive no-top-margin">
+                                        <thead>
                                             <tr>
-                                                <td>
-                                                    <xsl:value-of select="@page-in-text"/>.
-                                                </td>
-                                                <td>
-                                                    <xsl:value-of select="concat('Vol.', @volume, ' p.', @page-in-volume)"/> 
-                                                </td>
-                                                <td>
-                                                    <xsl:choose>
-                                                        <xsl:when test="@tei-folio gt ''">
-                                                            <xsl:value-of select="@tei-folio"/>
-                                                        </xsl:when>
-                                                    </xsl:choose>
-                                                </td>
-                                                <td>
-                                                    <xsl:variable name="preceding-style" as="xs:string?">
-                                                        <xsl:variable name="preceding-folio" select="preceding-sibling::m:folio[@tei-folio = (@folio-in-volume, @folio-consecutive)][1]"/>
+                                                <th>#</th>
+                                                <th>Page</th>
+                                                <th colspan="2">@cRef</th>
+                                                <th>Links</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <xsl:for-each select="m:folios/m:folio">
+                                                <!--<xsl:sort select="@resource-index" data-type="number"/>-->
+                                                <xsl:sort select="@resource-index" data-type="number"/>
+                                                <xsl:variable name="folio-row-id" select="concat($text-row-id, '-folio-', position())"/>
+                                                <tr>
+                                                    <td>
+                                                        <xsl:value-of select="concat(@resource-index, '.')"/>
+                                                    </td>
+                                                    <td>
+                                                        <xsl:value-of select="concat('Vol.', @volume, ' p.', @page-in-volume)"/> 
+                                                    </td>
+                                                    <td>
                                                         <xsl:choose>
-                                                            <xsl:when test="$preceding-folio[@tei-folio eq @folio-in-volume]">
-                                                                <xsl:value-of select="'parallel'"/>
+                                                            <xsl:when test="@tei-folio gt ''">
+                                                                <xsl:value-of select="@tei-folio"/>
                                                             </xsl:when>
-                                                            <xsl:when test="$preceding-folio[@tei-folio eq @folio-consecutive]">
-                                                                <xsl:value-of select="'consecutive'"/>
-                                                            </xsl:when>
-                                                            <xsl:otherwise>
-                                                                <xsl:value-of select="'none'"/>
-                                                            </xsl:otherwise>
                                                         </xsl:choose>
-                                                    </xsl:variable>
-                                                    <xsl:choose>
-                                                        <xsl:when test="not(@tei-folio = (@folio-in-volume, @folio-consecutive))">
+                                                    </td>
+                                                    <td>
+                                                        <xsl:variable name="preceding-style" as="xs:string?">
+                                                            <xsl:variable name="preceding-folio" select="preceding-sibling::m:folio[@tei-folio = (@folio-in-volume, @folio-consecutive)][1]"/>
                                                             <xsl:choose>
-                                                                <xsl:when test="@tei-folio eq ''">
-                                                                    <xsl:attribute name="class" select="'small text-danger'"/>
-                                                                    <xsl:value-of select="'Folio missing'"/>
+                                                                <xsl:when test="$preceding-folio[@tei-folio eq @folio-in-volume]">
+                                                                    <xsl:value-of select="'parallel'"/>
                                                                 </xsl:when>
-                                                                <xsl:when test="$preceding-style eq 'consecutive'">
-                                                                    <xsl:attribute name="class" select="'small text-warning'"/>
-                                                                    <xsl:value-of select="concat('Logically ', @folio-consecutive)"/>
+                                                                <xsl:when test="$preceding-folio[@tei-folio eq @folio-consecutive]">
+                                                                    <xsl:value-of select="'consecutive'"/>
                                                                 </xsl:when>
-                                                                <!-- <xsl:when test="$preceding-style eq 'parallel'">
-                                                                    <xsl:value-of select="concat('Expected ', @folio-in-volume)"/>
-                                                                </xsl:when> -->
                                                                 <xsl:otherwise>
-                                                                    <xsl:attribute name="class" select="'small text-warning'"/>
-                                                                    <!-- <xsl:value-of select="concat('Expected ', @folio-in-volume, ' or ', @folio-consecutive)"/> -->
-                                                                    <xsl:value-of select="concat('Logically ', @folio-in-volume)"/>
+                                                                    <xsl:value-of select="'none'"/>
                                                                 </xsl:otherwise>
                                                             </xsl:choose>
-                                                        </xsl:when>
-                                                    </xsl:choose>
-                                                </td>
-                                                <td>
-                                                    <a>
-                                                        <xsl:attribute name="target" select="'check-folios'"/>
-                                                        <xsl:attribute name="href" select="concat(m:url[@format eq 'html'][@xml:lang eq 'bo'], '#ajax-content')"/>
-                                                        <!-- TO DO: Using ajax popup requires CORS and Auth -->
-                                                        <xsl:attribute name="data-ajax-target" select="'#popup-footer-source .data-container'"/>
-                                                        <xsl:value-of select="'Tibetan (pop-up)'"/>
-                                                    </a>
-                                                    <xsl:value-of select="' | '"/>
-                                                    <a>
-                                                        <xsl:attribute name="target" select="'check-folios'"/>
-                                                        <xsl:attribute name="href" select="m:url[@format eq 'xml'][@xml:lang eq 'bo']"/>
-                                                        <xsl:value-of select="'Bilingual (XML)'"/>
-                                                    </a>
-                                                    <xsl:value-of select="' | '"/>
-                                                    <a>
-                                                        <xsl:attribute name="target" select="'check-folios'"/>
-                                                        <xsl:attribute name="href" select="concat($reading-room-path, '/translation/', $toh-key, '.html', '#source-link-', @page-in-text)"/>
-                                                        <xsl:value-of select="'Reading Room (link)'"/>
-                                                    </a>
-                                                </td>
-                                            </tr>
-                                        </xsl:for-each>
-                                    </tbody>
-                                </table>
+                                                        </xsl:variable>
+                                                        <xsl:choose>
+                                                            <xsl:when test="not(@tei-folio = (@folio-in-volume, @folio-consecutive))">
+                                                                <xsl:choose>
+                                                                    <xsl:when test="@tei-folio eq ''">
+                                                                        <xsl:attribute name="class" select="'small text-danger'"/>
+                                                                        <xsl:value-of select="'Folio missing'"/>
+                                                                    </xsl:when>
+                                                                    <xsl:when test="$preceding-style eq 'consecutive'">
+                                                                        <xsl:attribute name="class" select="'small text-warning'"/>
+                                                                        <xsl:value-of select="concat('Logically ', @folio-consecutive)"/>
+                                                                    </xsl:when>
+                                                                    <!-- <xsl:when test="$preceding-style eq 'parallel'">
+                                                                    <xsl:value-of select="concat('Expected ', @folio-in-volume)"/>
+                                                                </xsl:when> -->
+                                                                    <xsl:otherwise>
+                                                                        <xsl:attribute name="class" select="'small text-warning'"/>
+                                                                        <!-- <xsl:value-of select="concat('Expected ', @folio-in-volume, ' or ', @folio-consecutive)"/> -->
+                                                                        <xsl:value-of select="concat('Logically ', @folio-in-volume)"/>
+                                                                    </xsl:otherwise>
+                                                                </xsl:choose>
+                                                            </xsl:when>
+                                                        </xsl:choose>
+                                                    </td>
+                                                    <td>
+                                                        <a>
+                                                            <xsl:attribute name="target" select="'check-folios'"/>
+                                                            <xsl:attribute name="href" select="concat(m:url[@format eq 'html'][@xml:lang eq 'bo'], '#ajax-content')"/>
+                                                            <xsl:attribute name="data-ajax-target" select="'#popup-footer-source .data-container'"/>
+                                                            <xsl:value-of select="'Tibetan (pop-up)'"/>
+                                                        </a>
+                                                        <xsl:value-of select="' | '"/>
+                                                        <a>
+                                                            <xsl:attribute name="target" select="'check-folios'"/>
+                                                            <xsl:attribute name="href" select="m:url[@format eq 'xml'][@xml:lang eq 'bo']"/>
+                                                            <xsl:value-of select="'Bilingual (XML)'"/>
+                                                        </a>
+                                                        <xsl:value-of select="' | '"/>
+                                                        <a>
+                                                            <xsl:attribute name="target" select="'check-folios'"/>
+                                                            <xsl:attribute name="href" select="concat($reading-room-path, '/translation/', $toh-key, '.html', '#source-link-', @page-in-text)"/>
+                                                            <xsl:value-of select="'Reading Room (link)'"/>
+                                                        </a>
+                                                    </td>
+                                                </tr>
+                                            </xsl:for-each>
+                                        </tbody>
+                                    </table>
+                                </td>
+                            </tr>
+                        </xsl:for-each>
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <th colspan="5" class="text-right">Total</th>
+                            <td colspan="3">
+                                <xsl:value-of select="format-number(count(m:translations/m:text/m:folios/m:folio), '#,###')"/>
                             </td>
                         </tr>
-                    </xsl:for-each>
-                </tbody>
-                <tfoot>
-                    <tr>
-                        <th colspan="5" class="text-right">Total</th>
-                        <td colspan="3">
-                            <xsl:value-of select="format-number(count(m:translations/m:text/m:folios/m:folio), '#,###')"/>
-                        </td>
-                    </tr>
-                </tfoot>
-            </table>
+                    </tfoot>
+                </table>
+            </div>
             
         </xsl:variable>
         

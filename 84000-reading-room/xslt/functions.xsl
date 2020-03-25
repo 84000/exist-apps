@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" version="2.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:functx="http://www.functx.com" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" version="2.0" exclude-result-prefixes="#all">
     
     <!-- 
         Converts other xml to valid xhtml
@@ -49,12 +49,20 @@
     
     <xsl:function name="common:integer" as="xs:integer">
         <xsl:param name="value"/>
-        <xsl:value-of select="replace(concat('0',$value), '\D', '')"/>
+        <xsl:sequence select="xs:integer(replace(concat('0',$value[1]), '\D', ''))"/>
     </xsl:function>
     
     <xsl:function name="common:is-a-number" as="xs:boolean">
         <xsl:param name="value"/>
-        <xsl:value-of select="string(number(concat('', $value))) != 'NaN'"/>
+        <xsl:sequence select="string(number(concat('', $value[1]))) != 'NaN'"/>
+    </xsl:function>
+    
+    <xsl:function name="common:sort" as="item()*">
+        <xsl:param name="sequence" as="item()*"/>
+        <xsl:for-each select="$sequence">
+            <xsl:sort select="."/>
+            <xsl:copy-of select="."/>
+        </xsl:for-each>
     </xsl:function>
     
     <xsl:function name="common:standardized-sa" as="xs:string*">
@@ -219,7 +227,7 @@
         <xsl:for-each select="$parents">
             <xsl:sort select="@nesting" order="descending"/>
             <li>
-                <a>
+                <a class="printable">
                     <xsl:choose>
                         <xsl:when test="@type eq 'grouping'">
                             <xsl:attribute name="href" select="common:internal-link(concat('/section/', m:parent/@id, '.html'), (), concat('#grouping-', @id), /m:response/@lang)"/>
@@ -288,7 +296,7 @@
     </xsl:function>
     
     <!-- 
-    Deprecated in favour of concat('folio-', @folio-index)
+    Deprecated in favour of concat('folio-', @ref-index)
     <xsl:function name="common:folio-id" as="xs:string">
         <xsl:param name="folio-str" as="xs:string"/>
         <xsl:value-of select="concat('ref-', lower-case(replace($folio-str, '\.', '-')))"/>
@@ -298,9 +306,9 @@
     <!-- Localization helpers -->
     <xsl:function name="common:internal-link">
         <xsl:param name="url" required="yes"/>
-        <xsl:param name="attributes" required="yes"/>
+        <xsl:param name="attributes" required="yes" as="xs:string*"/>
         <xsl:param name="fragment-id" required="yes" as="xs:string"/>
-        <xsl:param name="lang" required="yes"/>
+        <xsl:param name="lang" as="xs:string" required="yes"/>
         <xsl:variable name="lang-attribute" select="if($lang = ('zh')) then concat('lang=', $lang) else ()"/>
         <xsl:variable name="attributes-with-lang" select="($attributes, $lang-attribute)"/>
         <xsl:value-of select="concat($url, if(count($attributes-with-lang) gt 0) then concat('?', string-join($attributes-with-lang, '&amp;')) else '', $fragment-id)"/>
@@ -327,6 +335,24 @@
                 <xsl:attribute name="value" select="$lang"/>
             </input>
         </xsl:if>
+    </xsl:function>
+    
+    <xsl:function name="functx:replace-multi" as="xs:string?">
+        
+        <xsl:param name="arg" as="xs:string?"/>
+        <xsl:param name="changeFrom" as="xs:string*"/>
+        <xsl:param name="changeTo" as="xs:string*"/>
+        
+        <xsl:sequence select="             if (count($changeFrom) &gt; 0)                 then                      functx:replace-multi(                         replace($arg, $changeFrom[1],                             functx:if-absent($changeTo[1],'')                         ),                         $changeFrom[position() &gt; 1],                         $changeTo[position() &gt; 1]                     )                 else $arg             "/>
+        
+    </xsl:function>
+    
+    <xsl:function name="functx:if-absent" as="item()*">
+        <xsl:param name="arg" as="item()*"/>
+        <xsl:param name="value" as="item()*"/>
+        
+        <xsl:sequence select="             if (exists($arg))                 then $arg                 else $value             "/>
+        
     </xsl:function>
     
 </xsl:stylesheet>

@@ -18,18 +18,33 @@ declare option exist:serialize "method=xml indent=no";
 (: the id of the text :)
 let $resource-id := request:get-parameter('resource-id', '')
 let $resource-suffix := request:get-parameter('resource-suffix', '')
+let $ref-index := request:get-parameter('ref-index', '')
+let $folio := request:get-parameter('folio', '')
+let $page := request:get-parameter('page', '')
+
 let $tei := tei-content:tei($resource-id, 'translation')
 let $tei-location := translation:location($tei, $resource-id)
 
-(: accept a folio and convert to a page number :)
-let $folio := request:get-parameter('folio', '')
-
-(: prefer a page number :)
-let $page := 
-    if(functx:is-a-number(request:get-parameter('page', '0'))) then
-        xs:integer(request:get-parameter('page', '0'))
-    else if($folio gt '') then
+(: Prefer ref-index parameter :)
+let $ref-resource-index := 
+    if(functx:is-a-number($ref-index)) then
+        xs:integer($ref-index)
+    
+    (: legacy links using page parameter :)
+    else if(functx:is-a-number($page)) then
+        xs:integer($page)
+    
+    (: Accept a folio ref e.g. F.1.a, and convert that into a page number :)
+    else if ($folio gt '') then
         source:folio-to-page($tei, $resource-id, $folio)
+    
+    else
+        0
+
+(: Convert the ref-index, which is effectively the index of the ref in the TEI, into the source page :)
+let $ref-sort-index := 
+    if($ref-resource-index gt 0) then
+        translation:folio-sort-index($tei, $resource-id, $ref-resource-index)
     else
         0
 
@@ -44,26 +59,27 @@ return
             <request 
                 xmlns="http://read.84000.co/ns/1.0" 
                 resource-id="{ $resource-id }" 
-                page="{ $page }"
-                folio="{ $folio }"/>,
+                ref-index="{ $ref-index }"
+                folio="{ $folio }"
+                page="{ $page }"/>,
             
-            if($page gt 0) then
+            if($ref-sort-index gt 0) then
             (
                 (: Get a page :)
-                source:etext-page($tei-location, $page, false()),
+                source:etext-page($tei-location, $ref-sort-index, false()),
                 
                 <translation 
                     xmlns="http://read.84000.co/ns/1.0" 
                     id="{ tei-content:id($tei) }"
                     status="{ tei-content:translation-status($tei) }"
                     status-group="{ tei-content:translation-status-group($tei) }">
-                    { translation:folio-content($tei, $resource-id, $page) }
+                    { translation:folio-content($tei, $resource-id, $ref-resource-index) }
                 </translation>,
                 
                 (: Include back link to the passage in the text :)
                 <back-link 
                     xmlns="http://read.84000.co/ns/1.0"
-                    url="{ concat($reading-room-path, '/translation/', $resource-id, '.html#', translation:source-link-id($page)) }">
+                    url="{ concat($reading-room-path, '/translation/', $resource-id, '.html#', translation:source-link-id($ref-resource-index)) }">
                     <title>{ tei-content:title($tei) }</title>
                 </back-link>
             )

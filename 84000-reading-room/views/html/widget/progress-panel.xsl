@@ -32,7 +32,7 @@
                                                     <xsl:with-param name="node-name" select="'th'"/>
                                                 </xsl:call-template>
                                                 <td>
-                                                    <xsl:value-of select="format-number(/m:response/m:outline-summary/m:tohs/m:pages/@published, '#,###')"/>
+                                                    <xsl:value-of select="format-number(m:outline-summary/m:tohs/m:pages/@published, '#,###')"/>
                                                 </td>
                                                 <xsl:call-template name="local-text-if-exists">
                                                     <xsl:with-param name="local-key" select="'published-count-after-label'"/>
@@ -46,7 +46,7 @@
                                                     <xsl:with-param name="node-name" select="'th'"/>
                                                 </xsl:call-template>
                                                 <td>
-                                                    <xsl:value-of select="format-number(/m:response/m:outline-summary/m:tohs/m:pages/@translated, '#,###')"/>
+                                                    <xsl:value-of select="format-number(m:outline-summary/m:tohs/m:pages/@translated, '#,###')"/>
                                                 </td>
                                                 <xsl:call-template name="local-text-if-exists">
                                                     <xsl:with-param name="local-key" select="'translated-count-after-label'"/>
@@ -59,7 +59,7 @@
                                                     <xsl:with-param name="node-name" select="'th'"/>
                                                 </xsl:call-template>
                                                 <td>
-                                                    <xsl:value-of select="format-number(/m:response/m:outline-summary/m:tohs/m:pages/@in-translation, '#,###')"/>
+                                                    <xsl:value-of select="format-number(m:outline-summary/m:tohs/m:pages/@in-translation, '#,###')"/>
                                                 </td>
                                                 <xsl:call-template name="local-text-if-exists">
                                                     <xsl:with-param name="local-key" select="'translation-count-after-label'"/>
@@ -72,7 +72,7 @@
                                                     <xsl:with-param name="node-name" select="'th'"/>
                                                 </xsl:call-template>
                                                 <td>
-                                                    <xsl:value-of select="format-number(/m:response/m:outline-summary/m:tohs/m:pages/@count, '#,###')"/>
+                                                    <xsl:value-of select="format-number(m:outline-summary/m:tohs/m:pages/@count, '#,###')"/>
                                                 </td>
                                                 <xsl:call-template name="local-text-if-exists">
                                                     <xsl:with-param name="local-key" select="'kangyur-count-after-label'"/>
@@ -100,7 +100,7 @@
                                                 <xsl:with-param name="local-key" select="'donate-instructions-link'"/>
                                             </xsl:call-template>
                                         </xsl:variable>
-                                        <xsl:if test="$donate-instructions-link">
+                                        <xsl:if test="$donate-instructions-link gt ''">
                                             <div class="sml-margin top">
                                                 <a target="_blank">
                                                     <xsl:attribute name="href" select="$donate-instructions-link"/>

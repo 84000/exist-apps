@@ -72,55 +72,64 @@
             <item url="https://84000.co/resources/translator-training">
                 <label>Translator Training</label>
             </item>
-            <item url="https://84000.co/resources/tools-and-resources">
+            <item url="https://84000.co/resources/translator-resources">
+                <label>Translator Resources</label>
+            </item>
+            <!--<item url="https://84000.co/resources/tools-and-resources">
                 <label>Translators' Tools</label>
             </item>
             <item url="https://84000.co/resources/other-resources">
                 <label>Web Resources</label>
-            </item>
+            </item>-->
             <item url="https://84000.co/resources/quotes">
                 <label>Quotes</label>
             </item>
         </item>
         <item class="about" url="#about">
             <label>About</label>
-            <item url="#story">
-                <label>Our Story</label>
+            <item url="#work">
+                <label>Our Work</label>
+                <description>With a strong in-house editorial team, we award text-specific grants to teams of translators and continually integrate new technologies in order to make the 230,000 pages of the Tibetan Buddhist Canon freely available in modern languages within 100 years.</description>
                 <item url="https://84000.co/about/vision">
-                    <label>Vision</label>
-                </item>
-                <item url="https://84000.co/about/urgency">
-                    <label>Urgency</label>
+                    <label>What We Do</label>
                 </item>
                 <item url="https://84000.co/about/origin">
-                    <label>Origin</label>
+                    <label>How We Began</label>
                 </item>
-                <item url="https://read.84000.co/about/progress.html">
-                    <label>Progress</label>
-                </item>
-            </item>
-            <item url="#activities">
-                <label>What We Do</label>
                 <item url="https://84000.co/about/grants">
                     <label>Grants</label>
                 </item>
                 <item url="https://84000.co/about/work-flow">
                     <label>Work Flow</label>
                 </item>
-                <item url="https://84000.co/about/impact">
-                    <label>Impact</label>
-                </item>
                 <item url="https://84000.co/about/copyright">
                     <label>Copyright</label>
                 </item>
             </item>
+            <item url="#impact">
+                <label>Our Impact</label>
+                <description>As of 2010, only 5% of the Tibetan Buddhist Canon had been translated out of Classical Tibetan, a language facing a serious threat to its survival. We’ve raised that number to almost 30%, and our online Reading Room sees over 2,500 visits per week.</description>
+                <item url="https://read.84000.co/about/progress.html">
+                    <label>Translation Progress</label>
+                </item>
+                <item url="https://read.84000.co/about/engagement.html">
+                    <label>Reader Engagement</label>
+                </item>
+                <item url="https://84000.co/about/achievements">
+                    <label>Achievements</label>
+                </item>
+                <item url="https://84000.co/about/milestones">
+                    <label>Milestones</label>
+                </item>
+            </item>
             <item url="#people">
-                <label>Who We Are</label>
+                <label>Our People</label>
+                <description>Our work relies upon the dedicated and collaborative effort of scholars, professionals, volunteers, advisors, and sponsors around the world. We work together to produce accepted and accurate translations and to make them engagingly available to you, for free.</description>
                 <item url="https://84000.co/about/team">
-                    <label>Team</label>
+                    <label>84000 Team</label>
                 </item>
                 <item url="https://read.84000.co/about/translators.html">
-                    <label>Translators</label>
+                    <label>Translation Teams</label>
                 </item>
                 <item url="https://read.84000.co/about/sponsors.html">
                     <label>Sponsors</label>
@@ -141,14 +150,14 @@
         </item>        
         <item class="how-to-help" url="#how-to-help">
             <label>How You Can Help</label>
-            <item url="https://84000.co/how-you-can-help/download-dana">
-                <label>Download Dāna</label>
-            </item>
             <item url="https://84000.co/how-you-can-help/sponsor-a-page">
                 <label>Sponsor a Page</label>
             </item>
             <item url="https://read.84000.co/about/sponsor-a-sutra.html">
                 <label>Sponsor a Sūtra</label>
+            </item>
+            <item url="https://84000.co/how-you-can-help/download-dana">
+                <label>Download Dāna</label>
             </item>
             <item url="https://84000.co/how-you-can-help/shop-n-give">
                 <label>Shop and Give</label>
@@ -209,13 +218,16 @@
             <item url="https://84000.co/ch-resources/ch-resources-training">
                 <label>譯者培訓</label>
             </item>
+            <item url="https://84000.co/ch-resources/ch-translator-resources-chinese">
+                <label>Translator Resources</label>
+            </item>
             <!-- No Chinese page
             <item url="https://84000.co/ch-resources/ch-tools-and-resources">
                 <label>譯者工具</label>
             </item> -->
-            <item url="https://84000.co/ch-resources/ch-resources-other">
+            <!--<item url="https://84000.co/ch-resources/ch-resources-other">
                 <label>其他資源</label>
-            </item>
+            </item>-->
             <!-- No Chinese page
             <item url="https://84000.co/ch-resources/ch-quotes">
                 <label>智慧語錄</label>
@@ -279,14 +291,14 @@
         </item>
         <item class="how-to-help" url="#ch-howhelp">
             <label>如何參與</label>
-            <item url="https://84000.co/ch-how-you-can-help/ch-download-dana">
-                <label>八萬四千緣</label>
-            </item>
             <item url="https://84000.co/ch-how-you-can-help/ch-sponsor-a-page">
                 <label>贊助一頁佛經</label>
             </item>
             <item url="https://read.84000.co/about/sponsor-a-sutra?lang=zh">
                 <label>贊助一部佛典</label>
+            </item>
+            <item url="https://84000.co/ch-how-you-can-help/ch-download-dana">
+                <label>隨喜贊助</label>
             </item>
             <!-- No Chinese page
             <item url="https://84000.co/ch-how-you-can-help/ch-shop-n-give">

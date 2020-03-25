@@ -102,18 +102,18 @@
     
     <xsl:template match="tei:ref">
         
-        <!-- See if this cRef has a valid ref -->
-        <xsl:variable name="valid-ref" select="$folio-refs[@cRef = current()/@cRef]"/>
-        <!-- Dervive the index for the valid ref -->
-        <xsl:variable name="folio-index" select="if($valid-ref) then common:index-of-node($folio-refs, .) else 0"/>
+        <xsl:variable name="current-ref" select="current()"/>
+        
+        <!-- Just set the index -->
+        <xsl:variable name="ref-index" select="common:index-of-node($folio-refs, $current-ref)"/>
         
         <xsl:choose>
             
             <!-- Add the index of the folio -->
-            <xsl:when test="$folio-index">
+            <xsl:when test="$ref-index">
                 <ref xmlns="http://www.tei-c.org/ns/1.0">
                     <xsl:copy-of select="@*"/>
-                    <xsl:attribute name="folio-index" select="$folio-index"/>
+                    <xsl:attribute name="ref-index" select="$ref-index"/>
                     <xsl:copy-of select="node()"/>
                 </ref>
             </xsl:when>

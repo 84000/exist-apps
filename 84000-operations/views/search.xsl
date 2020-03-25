@@ -216,9 +216,13 @@
                                         </strong>
                                         <xsl:value-of select="' pages / '"/>
                                         <strong>
-                                            <xsl:value-of select="format-number(m:texts/@count-words, '#,###')"/>
+                                            <xsl:value-of select="format-number(sum(/m:response/m:translation-status/m:text/@word-count ! xs:integer(.)), '#,###')"/>
                                         </strong>
-                                        <xsl:value-of select="' words'"/>
+                                        <xsl:value-of select="' words / '"/>
+                                        <strong>
+                                            <xsl:value-of select="format-number(sum(/m:response/m:translation-status/m:text/@glossary-count ! xs:integer(.)), '#,###')"/>
+                                        </strong>
+                                        <xsl:value-of select="' glossaries'"/>
                                     </div>
                                 </xsl:if>
                             </div>
@@ -248,11 +252,12 @@
                             </thead>
                             <tbody>
                                 <xsl:for-each select="m:texts/m:text">
+                                    
                                     <xsl:variable name="text-id" select="@id"/>
                                     <xsl:variable name="status-id" as="xs:string">
                                         <xsl:choose>
                                             <xsl:when test="/m:response/m:text-statuses/m:status[@status-id eq xs:string(current()/@status)]">
-                                                <xsl:value-of select="/m:response/m:text-statuses/m:status[@status-id eq xs:string(current()/@status)]/@status-id"/>
+                                                <xsl:value-of select="/m:response/m:text-statuses/m:status[@status-id eq xs:string(current()/@status)][1]/@status-id"/>
                                             </xsl:when>
                                             <xsl:otherwise>
                                                 <xsl:value-of select="'0'"/>
@@ -263,14 +268,16 @@
                                     <xsl:variable name="preceding-status-id" as="xs:string">
                                         <xsl:choose>
                                             <xsl:when test="/m:response/m:text-statuses/m:status[@status-id eq xs:string($preceding-text/@status)]">
-                                                <xsl:value-of select="/m:response/m:text-statuses/m:status[@status-id eq xs:string($preceding-text/@status)]/@status-id"/>
+                                                <xsl:value-of select="/m:response/m:text-statuses/m:status[@status-id eq xs:string($preceding-text/@status)][1]/@status-id"/>
                                             </xsl:when>
                                             <xsl:otherwise>
                                                 <xsl:value-of select="'0'"/>
                                             </xsl:otherwise>
                                         </xsl:choose>
                                     </xsl:variable>
-                                    <xsl:variable name="status" select="/m:response/m:text-statuses/m:status[@status-id eq $status-id]"/>
+                                    <xsl:variable name="status" select="/m:response/m:text-statuses/m:status[@status-id eq $status-id][1]"/>
+                                    <xsl:variable name="translation-status" select="/m:response/m:translation-status/m:text[@text-id eq $text-id][1]"/>
+                                    
                                     <xsl:if test="/m:response/m:texts[@sort eq 'status'] and not($status-id eq $preceding-status-id)">
                                         <tr class="header">
                                             <td colspan="6">
@@ -279,6 +286,7 @@
                                             </td>
                                         </tr>
                                     </xsl:if>
+                                    
                                     <tr>
                                         <td>
                                             <xsl:choose>
@@ -350,6 +358,12 @@
                                                         <xsl:value-of select="'Edit sponsorship'"/>
                                                     </a>
                                                 </li>
+                                                <!--<li>
+                                                    <a class="small">
+                                                        <xsl:attribute name="href" select="concat('/glossary.html?resource-id=', $text-id)"/>
+                                                        <xsl:value-of select="'Edit glossary'"/>
+                                                    </a>
+                                                </li>-->
                                                 <xsl:if test="@status-group eq 'published' and m:downloads[@tei-version != m:download/@version]">
                                                     <li>
                                                         <span class="small text-danger">
@@ -359,10 +373,19 @@
                                                     </li>
                                                 </xsl:if>
                                             </ul>
-                                            <xsl:if test="xs:integer(@word-count) gt 0">
-                                                <div class="small text-muted sml-margin top hidden-print">
-                                                    <xsl:value-of select="concat(format-number(@word-count, '#,###'), ' words translated')"/>
-                                                </div>
+                                            <xsl:if test="@status-group eq 'published'">
+                                                <ul class="list-inline inline-dots sml-margin top small text-muted hidden-print">
+                                                    <xsl:if test="$translation-status/@word-count ! xs:integer(.) gt 0">
+                                                        <li>
+                                                            <xsl:value-of select="concat(format-number($translation-status/@word-count, '#,###'), ' words translated')"/>
+                                                        </li>
+                                                    </xsl:if>
+                                                    <xsl:if test="$translation-status/@glossary-count ! xs:integer(.) gt 0">
+                                                        <li>
+                                                            <xsl:value-of select="concat(format-number($translation-status/@glossary-count, '#,###'), ' glossaries')"/>
+                                                        </li>
+                                                    </xsl:if>
+                                                </ul>
                                             </xsl:if>
                                         </td>
                                         <td class="nowrap small">
@@ -370,12 +393,12 @@
                                         </td>
                                         <td class="nowrap small hidden-print">
                                             <xsl:variable name="start-volume-number" select="min(tei:bibl/tei:location/tei:volume/@number)"/>
-                                            <xsl:variable name="start-volume" select="tei:bibl/tei:location/tei:volume[xs:integer(@number) eq $start-volume-number]"/>
+                                            <xsl:variable name="start-volume" select="tei:bibl/tei:location/tei:volume[xs:integer(@number) eq $start-volume-number][1]"/>
                                             <xsl:value-of select="concat('vol. ' , $start-volume/@number, ', p. ', $start-volume/@start-page)"/>
                                         </td>
                                         <td class="nowrap small hidden-print">
                                             <xsl:variable name="end-volume-number" select="max(tei:bibl/tei:location/tei:volume/@number)"/>
-                                            <xsl:variable name="end-volume" select="tei:bibl/tei:location/tei:volume[xs:integer(@number) eq $end-volume-number]"/>
+                                            <xsl:variable name="end-volume" select="tei:bibl/tei:location/tei:volume[xs:integer(@number) eq $end-volume-number][1]"/>
                                             <xsl:value-of select="concat('vol. ' , $end-volume/@number, ', p. ', $end-volume/@end-page)"/>
                                         </td>
                                         <td>
@@ -403,6 +426,7 @@
                                             </ul>
                                         </td>
                                     </tr>
+                                    
                                     <xsl:if test="m:sponsors/tei:div[@type eq 'acknowledgment']/tei:p">
                                         <tr class="sub">
                                             <td colspan="2">
@@ -431,7 +455,7 @@
                                             </td>
                                         </tr>
                                     </xsl:if>
-                                    <xsl:variable name="translation-status" select="/m:response/m:translation-status/m:text[@text-id eq $text-id]"/>
+                                    
                                     <xsl:if test="$translation-status/m:*[self::m:action-note | self::m:progress-note | self::m:text-note]/text() | $translation-status/m:task[not(@checked-off)]">
                                         <tr class="sub">
                                             <td colspan="2">
@@ -466,6 +490,7 @@
                                             </td>
                                         </tr>
                                     </xsl:if>
+                                    
                                 </xsl:for-each>
                             </tbody>
                         </table>
@@ -480,9 +505,8 @@
                     </xsl:if>
                     
                     <hr/>
-                    
-                    <div class="text-muted small">
-                        <xsl:value-of select="common:date-user-string('Report generated', current-dateTime(), /m:response/@user-name)"/>
+                    <div class="small text-center">
+                        <xsl:value-of select="concat('~ ', common:date-user-string('Report generated', current-dateTime(), /m:response/@user-name), ' ~')"/>
                     </div>
                 </xsl:with-param>
             </xsl:call-template>

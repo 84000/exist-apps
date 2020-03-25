@@ -83,7 +83,11 @@
                         </xsl:choose>
                         <div>
                             <a href="#add-nodes" class="add-nodes">
-                                <span class="monospace">+</span> add a title </a>
+                                <span class="monospace">
+                                    <xsl:value-of select="'+'"/>
+                                </span>
+                                <xsl:value-of select="' add a title'"/>
+                            </a>
                         </div>
                     </div>
                     <div class="pull-right">
@@ -472,9 +476,14 @@
                     
                     <div class="alert alert-warning small text-center">
                         <p>
-                            <xsl:value-of select="'Updating the version number will commit the new version to the Github repository.'"/>
+                            <xsl:value-of select="'Updating the version number will commit the new version to the '"/>
+                            <a target="_blank" class="alert-link">
+                                <xsl:attribute name="href" select="concat('https://github.com/84000/data-tei/commits/master/', substring-after(m:translation/@document-url, concat(/m:response/@data-path, '/tei/')))"/>
+                                <xsl:value-of select="'Github repository'"/>
+                            </a>
+                            <xsl:value-of select="'. '"/>
                             <xsl:if test="m:translation/@status eq '1'">
-                                <xsl:value-of select="' Associated files (pdfs, ebooks) will be generated for published texts. This can take some time.'"/>
+                                <xsl:value-of select="'Associated files (pdfs, ebooks) will be generated for published texts. This can take some time.'"/>
                             </xsl:if>
                         </p>
                     </div>

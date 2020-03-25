@@ -44,7 +44,7 @@
                     </div>
                     
                     <div class="row">
-                        <div class="col-items div-list">
+                        <div class="col-items div-list no-border-top">
                             
                             <xsl:for-each select="m:contributor-persons/m:person">
                                 
@@ -107,7 +107,7 @@
                             
                         </div>
                         
-                        <div id="affix-nav" class="col-nav">
+                        <div class="col-nav affix-container">
                             <xsl:copy-of select="common:marker-nav(m:contributor-persons/m:person)"/>
                         </div>
                         

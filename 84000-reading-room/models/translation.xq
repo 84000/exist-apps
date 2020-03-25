@@ -13,6 +13,7 @@ declare namespace m="http://read.84000.co/ns/1.0";
 import module namespace common="http://read.84000.co/common" at "../modules/common.xql";
 import module namespace tei-content="http://read.84000.co/tei-content" at "../modules/tei-content.xql";
 import module namespace translation="http://read.84000.co/translation" at "../modules/translation.xql";
+import module namespace search="http://read.84000.co/search" at "../modules/search.xql";
 
 declare option exist:serialize "method=xml indent=no";
 
@@ -41,8 +42,8 @@ let $translation-data :=
             translation:summary($tei),
             translation:acknowledgment($tei),
             if(not($resource-suffix = ('rdf', 'json'))) then(
-                tei-content:ancestors($tei, $resource-id, 1),
-                translation:downloads($tei, $resource-id, 'any-version'),
+                tei-content:ancestors($tei, $source/@key, 1),
+                translation:downloads($tei, $source/@key, 'any-version'),
                 translation:preface($tei),
                 translation:introduction($tei),
                 translation:prologue($tei),
@@ -59,14 +60,18 @@ let $translation-data :=
         )}
     </translation>
 
-(: Parse the milestones, refs and pointers :)
+(: Parse the milestones :)
+let $translation-data-milestones := 
+    transform:transform(
+        $translation-data,
+        doc(concat($common:app-path, "/xslt/milestones.xsl")), 
+        <parameters/>
+    )
+
+(: Parse the refs and pointers :)
 let $translation-data-internal-refs := 
     transform:transform(
-        transform:transform(
-            $translation-data, 
-            doc(concat($common:app-path, "/xslt/milestones.xsl")), 
-            <parameters/>
-        ),
+        $translation-data-milestones,
         doc(concat($common:app-path, "/xslt/internal-refs.xsl")), 
         <parameters/>
     )

@@ -9,11 +9,27 @@ declare namespace m = "http://read.84000.co/ns/1.0";
 
 declare option exist:serialize "method=xml indent=no";
 
-common:response(
-    'utilities/folios',
-    'utilities',
-    (
-        local:request(),
-        translations:translations($tei-content:marked-up-status-ids, (), '', true())
+let $text-statuses := request:get-parameter('text-statuses', 'published')
+
+let $text-status-ids :=
+    if($text-statuses eq 'published') then
+        $tei-content:published-status-ids
+    else if($text-statuses eq 'in-markup') then
+        $tei-content:marked-up-status-ids[not(string() = $tei-content:published-status-ids/string())]
+    else if($text-statuses eq 'marked-up') then
+        $tei-content:marked-up-status-ids
+    else
+        ()
+
+return
+    common:response(
+        'utilities/folios',
+        'utilities',
+        (
+            local:request(),
+            translations:translations($text-status-ids, (), '', true())(:,
+            for $text-status-id in $text-status-ids
+            return
+                $text-status-id/string():)
+        )
     )
-)

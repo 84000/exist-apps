@@ -8,11 +8,11 @@
         <xsl:call-template name="about">
             <xsl:with-param name="sub-content">
                 
-                <h2>
+                <!--<h2>
                     <xsl:call-template name="local-text">
                         <xsl:with-param name="local-key" select="'lists-title'"/>
                     </xsl:call-template>
-                </h2>
+                </h2>-->
                 
                 <div class="row">
                     <div class="col-sm-8">
@@ -219,6 +219,9 @@
                     </div>
                 </div>
             </xsl:with-param>
+            
+            <xsl:with-param name="page-class" select="'about'"/>
+            
         </xsl:call-template>
         
     </xsl:template>

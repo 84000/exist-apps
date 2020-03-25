@@ -22,6 +22,14 @@
         </milestone>
     </xsl:template>
     
+    <!--<xsl:template match="tei:p |  tei:q |  tei:lg |  tei:list |  tei:table |  tei:label |  tei:trailer">
+        <xsl:copy>
+            <xsl:copy-of select="@*"/>
+            <xsl:attribute name="nearest-milestone" select="ancestor-or-self::*[preceding-sibling::tei:milestone[@xml:id]][1]/preceding-sibling::tei:milestone[@xml:id][1]/@xml:id"/>
+            <xsl:copy-of select="node()"/>
+        </xsl:copy>
+    </xsl:template>-->
+    
     <!-- Supress warning -->
     <xsl:template match="m:dummy">
         <!-- ignore -->

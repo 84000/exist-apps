@@ -6,11 +6,10 @@ declare namespace rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#";
 
 import module namespace common="http://read.84000.co/common" at "../../84000-reading-room/modules/common.xql";
 import module namespace source="http://read.84000.co/source" at "../../84000-reading-room/modules/source.xql";
-import module namespace tei-content="http://read.84000.co/tei-content" at "../../84000-reading-room/modules/tei-content.xql";
 import module namespace translations="http://read.84000.co/translations" at "../../84000-reading-room/modules/translations.xql";
-import module namespace translation="http://read.84000.co/translation" at "../../84000-reading-room/modules/translation.xql";
-import module namespace translation-status="http://read.84000.co/translation-status" at "../../84000-reading-room/modules/translation-status.xql";
-import module namespace store="http://read.84000.co/store" at "../../84000-reading-room/modules/store.xql";
+(:import module namespace translation="http://read.84000.co/translation" at "../../84000-reading-room/modules/translation.xql";:)
+(:import module namespace translation-status="http://read.84000.co/translation-status" at "../../84000-reading-room/modules/translation-status.xql";:)
+(:import module namespace store="http://read.84000.co/store" at "../../84000-reading-room/modules/store.xql";:)
 
 let $work := $source:ekangyur-work
 let $teis := translations:work-tei($work)

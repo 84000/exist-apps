@@ -91,6 +91,9 @@
                     <xsl:when test="$page-type = ('communications')">
                         <xsl:attribute name="href" select="concat($front-end-path, '/css/84000-comms.css', '?v=', $app-version)"/>
                     </xsl:when>
+                    <xsl:when test="$page-type = ('utilities')">
+                        <xsl:attribute name="href" select="concat($front-end-path, '/css/84000-utilities.css', '?v=', $app-version)"/>
+                    </xsl:when>
                     <xsl:otherwise>
                         <xsl:attribute name="href" select="concat($front-end-path, '/css/84000-reading-room.css', '?v=', $app-version)"/>
                     </xsl:otherwise>
@@ -216,7 +219,7 @@
             
             <body id="top">
                 
-                <xsl:attribute name="class" select="concat('reading-room ', $page-class)"/>
+                <xsl:attribute name="class" select="$page-class"/>
                 
                 <!-- Environment alert -->
                 <xsl:if test="$environment/m:label/text()">
@@ -267,13 +270,13 @@
                 <xsl:with-param name="page-url" select="$page-url"/>
                 <xsl:with-param name="page-title" select="$page-title"/>
                 <xsl:with-param name="page-description" select="$page-description"/>
-                <xsl:with-param name="page-type" select="'reading-room'"/>
+                <xsl:with-param name="page-type" select="if(contains($page-class, 'utilities')) then 'utilities' else 'reading-room'"/>
                 <xsl:with-param name="additional-links" select="$additional-links"/>
             </xsl:call-template>
             
             <body id="top">
                 
-                <xsl:attribute name="class" select="concat('reading-room ', $page-class)"/>
+                <xsl:attribute name="class" select="$page-class"/>
                 
                 <!-- Environment alert -->
                 <xsl:if test="$environment/m:label/text()">
@@ -301,7 +304,7 @@
         
     </xsl:template>
     
-    <!-- Modal page -->
+    <!-- Modal page - Unused??? -->
     <xsl:template name="modal-page">
         
         <xsl:param name="page-title" required="yes" as="xs:string"/>

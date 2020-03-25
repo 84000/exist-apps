@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" version="1.0" exclude-result-prefixes="xs m">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:eft="http://read.84000.co/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="1.0" exclude-result-prefixes="xs eft">
     
     <!-- 
         NOTE:
@@ -16,7 +16,7 @@
     
     <xsl:output method="html" indent="no" omit-xml-declaration="yes"/>
     
-    <xsl:template match="m:eft-header">
+    <xsl:template match="eft:eft-header">
         <nav class="navbar navbar-default">
             
             <div class="brand-header">
@@ -75,18 +75,22 @@
                     
                     <!-- Main navigation -->
                     <ul class="nav navbar-nav">
-                        <xsl:for-each select="m:navigation[@xml:lang = $lang]/m:item">
+                        <xsl:for-each select="eft:navigation[@xml:lang = $lang]/eft:item">
                             <li>
                                 <xsl:choose>
                                     
                                     <!-- Has child items -->
-                                    <xsl:when test="m:item">
+                                    <xsl:when test="eft:item">
+                                        
                                         <xsl:attribute name="class">
                                             <xsl:choose>
                                                 <xsl:when test="@url = $active-url">
                                                     <xsl:value-of select="concat(@class,' dropdown-toggle-container', ' active')"/>
                                                 </xsl:when>
-                                                <xsl:when test="m:item[@url = $active-url]">
+                                                <xsl:when test="eft:item[@url = $active-url]">
+                                                    <xsl:value-of select="concat(@class,' dropdown-toggle-container', ' active')"/>
+                                                </xsl:when>
+                                                <xsl:when test="eft:item[eft:item/@url = $active-url]">
                                                     <xsl:value-of select="concat(@class,' dropdown-toggle-container', ' active')"/>
                                                 </xsl:when>
                                                 <xsl:otherwise>
@@ -102,7 +106,7 @@
                                                     <xsl:with-param name="url" select="@url"/>
                                                 </xsl:call-template>
                                             </xsl:attribute>
-                                            <xsl:value-of select="m:label"/>
+                                            <xsl:value-of select="eft:label"/>
                                             <span>
                                                 <i class="fa fa-plus"/>
                                                 <i class="fa fa-minus"/>
@@ -111,25 +115,40 @@
                                         
                                         <!-- Dropdown sub-nav -->
                                         <ul class="dropdown-menu">
-                                            <xsl:for-each select="m:item">
+                                            <xsl:for-each select="eft:item">
                                                 <li>
                                                     <xsl:choose>
-                                                        <xsl:when test="m:item">
-                                                            <div class="top-vertical together subnav">
+                                                        <xsl:when test="eft:item">
+                                                            <div>
+                                                                <xsl:attribute name="class">
+                                                                    <xsl:choose>
+                                                                        <xsl:when test="eft:item[@url = $active-url]">
+                                                                            <xsl:value-of select="'top-vertical together subnav active'"/>
+                                                                        </xsl:when>
+                                                                        <xsl:otherwise>
+                                                                            <xsl:value-of select="'top-vertical together subnav'"/>
+                                                                        </xsl:otherwise>
+                                                                    </xsl:choose>
+                                                                </xsl:attribute>
                                                                 <div class="title">
-                                                                    <xsl:value-of select="m:label"/>
+                                                                    <xsl:value-of select="eft:label"/>
                                                                 </div>
                                                                 <div class="links">
                                                                     <ul>
-                                                                        <xsl:for-each select="m:item">
+                                                                        <xsl:for-each select="eft:item">
                                                                             <li>
+                                                                                <xsl:attribute name="class">
+                                                                                    <xsl:if test="@url = $active-url">
+                                                                                        <xsl:value-of select="'active'"/>
+                                                                                    </xsl:if>
+                                                                                </xsl:attribute>
                                                                                 <a>
                                                                                     <xsl:attribute name="href">
                                                                                         <xsl:call-template name="local-url">
                                                                                             <xsl:with-param name="url" select="@url"/>
                                                                                         </xsl:call-template>
                                                                                     </xsl:attribute>
-                                                                                    <xsl:value-of select="m:label"/>
+                                                                                    <xsl:value-of select="eft:label"/>
                                                                                 </a>
                                                                             </li>
                                                                         </xsl:for-each>
@@ -143,14 +162,13 @@
                                                                     <xsl:value-of select="'active'"/>
                                                                 </xsl:attribute>
                                                             </xsl:if>
-                                                            
                                                             <a>
                                                                 <xsl:attribute name="href">
                                                                     <xsl:call-template name="local-url">
                                                                         <xsl:with-param name="url" select="@url"/>
                                                                     </xsl:call-template>
                                                                 </xsl:attribute>
-                                                                <xsl:value-of select="m:label"/>
+                                                                <xsl:value-of select="eft:label"/>
                                                             </a>
                                                         </xsl:otherwise>
                                                     </xsl:choose>
@@ -178,7 +196,7 @@
                                                     <xsl:with-param name="url" select="@url"/>
                                                 </xsl:call-template>
                                             </xsl:attribute>
-                                            <xsl:value-of select="m:label"/>
+                                            <xsl:value-of select="eft:label"/>
                                         </a>
                                     </xsl:otherwise>
                                     
@@ -209,7 +227,7 @@
                                         <xsl:with-param name="text-node" select="false()"/>
                                     </xsl:call-template>
                                 </span>
-                                <xsl:for-each select="m:social[@xml:lang = $lang]/m:item">
+                                <xsl:for-each select="eft:social[@xml:lang = $lang]/eft:item">
                                     <a target="_blank">
                                         <xsl:choose>
                                             <xsl:when test="starts-with(@url, '#')">
@@ -227,7 +245,7 @@
                                             </xsl:call-template>
                                         </xsl:attribute>
                                         <xsl:attribute name="title">
-                                            <xsl:value-of select="m:label/text()"/>
+                                            <xsl:value-of select="eft:label/text()"/>
                                         </xsl:attribute>
                                         <i aria-hidden="true">
                                             <xsl:attribute name="class">
@@ -244,7 +262,7 @@
                 </div>
             </div>
             
-            <xsl:if test="m:social[@xml:lang = $lang]/m:item[@url = '#wechat-qcode']">
+            <xsl:if test="eft:social[@xml:lang = $lang]/eft:item[@url = '#wechat-qcode']">
                 <div class="modal fade" tabindex="-1" role="dialog" id="wechat-qcode">
                     <div class="modal-dialog" role="document">
                         <div class="modal-content">
@@ -268,7 +286,7 @@
         </nav>
     </xsl:template>
     
-    <xsl:template match="m:eft-footer">
+    <xsl:template match="eft:eft-footer">
         
         <!-- Page footer -->
         <footer class="hidden-print">
@@ -387,6 +405,34 @@
         
     </xsl:template>
     
+    <xsl:template match="eft:nav-category[eft:item/eft:item]">
+        <div>
+            <h2>
+                <xsl:value-of select="eft:item/eft:label"/>
+            </h2>
+            <p data-match-height="homepage-categories">
+                <xsl:value-of select="eft:item/eft:description"/>
+            </p>
+            <div class="list-group">
+                <xsl:for-each select="eft:item/eft:item">
+                    <a class="list-group-item">
+                        <xsl:attribute name="href">
+                            <xsl:call-template name="local-url">
+                                <xsl:with-param name="url" select="@url"/>
+                            </xsl:call-template>
+                        </xsl:attribute>
+                        <xsl:if test="@url = $active-url">
+                            <xsl:attribute name="class">
+                                <xsl:value-of select="'list-group-item active'"/>
+                            </xsl:attribute>
+                        </xsl:if>
+                        <xsl:value-of select="eft:label"/>
+                    </a>
+                </xsl:for-each>
+            </div>
+        </div>
+    </xsl:template>
+    
     <xsl:template name="local-url">
         <xsl:param name="url"/>
         <xsl:variable name="standard-comms-url" select="'https://84000.co'"/>
@@ -408,14 +454,14 @@
         <xsl:param name="translation-id"/>
         <xsl:param name="lang" select="'en'"/>
         <xsl:param name="text-node" select="true()"/>
-        <xsl:variable name="translation" select="m:translation[@id = $translation-id]"/>
+        <xsl:variable name="translation" select="eft:translation[@id = $translation-id]"/>
         <xsl:variable name="text">
             <xsl:choose>
-                <xsl:when test="$translation/m:text[@xml:lang = $lang]">
-                    <xsl:value-of select="$translation/m:text[@xml:lang = $lang]/text()"/>
+                <xsl:when test="$translation/eft:text[@xml:lang = $lang]">
+                    <xsl:value-of select="$translation/eft:text[@xml:lang = $lang]/text()"/>
                 </xsl:when>
                 <xsl:otherwise>
-                    <xsl:value-of select="$translation/m:text[@xml:lang = 'en']/text()"/>
+                    <xsl:value-of select="$translation/eft:text[@xml:lang = 'en']/text()"/>
                 </xsl:otherwise>
             </xsl:choose>
         </xsl:variable>

@@ -3,7 +3,7 @@ xquery version "3.0";
 module namespace file-upload="http://operations.84000.co/file-upload";
 
 import module namespace common="http://read.84000.co/common" at "../../84000-reading-room/modules/common.xql";
-import module namespace translation-status="http://read.84000.co/translation-status" at "../../84000-reading-room/modules/translation-status.xql";
+import module namespace translation-status="http://read.84000.co/translation-status" at "../modules/translation-status.xql";
 import module namespace functx="http://www.functx.com";
 
 declare namespace m="http://read.84000.co/ns/1.0";

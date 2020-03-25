@@ -20,7 +20,7 @@
                     </span>
                     <span>
                         <h1>
-                            <xsl:value-of select="'Publication Management'"/>
+                            <xsl:value-of select="'Project Management'"/>
                         </h1>
                     </span>
                     <span class="text-right">
@@ -98,6 +98,23 @@
                     <xsl:value-of select="'Translations'"/>
                 </a>
             </li>
+            <!--<li role="presentation">
+                <xsl:if test="$active-tab eq 'operations/glossary'">
+                    <xsl:attribute name="class" select="'active'"/>
+                </xsl:if>
+                <a>
+                    <xsl:choose>
+                        <xsl:when test="/m:response/m:request/@resource-id gt ''">
+                            <xsl:attribute name="href" select="concat('/glossary.html?resource-id=', /m:response/m:request/@resource-id, '&start-letter=', /m:response/m:request/@start-letter)"/>
+                        </xsl:when>
+                        <xsl:otherwise>
+                            <xsl:attribute name="href" select="'/glossary.html'"/>
+                        </xsl:otherwise>
+                    </xsl:choose>
+                    
+                    <xsl:value-of select="'Glossary'"/>
+                </a>
+            </li>-->
             <!--<li role="presentation">
                 <xsl:if test="$active-tab eq 'operations/sections'">
                     <xsl:attribute name="class" select="'active'"/>

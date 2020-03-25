@@ -75,6 +75,9 @@
     
     <xsl:template name="utilities-page">
         <xsl:param name="content"/>
+        <xsl:param name="page-alert"/>
+        
+        <xsl:copy-of select="$page-alert"/>
         
         <div class="title-band">
             <div class="container">

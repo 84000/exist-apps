@@ -35,7 +35,7 @@
         </xsl:if>
     </xsl:template>
     
-    <xsl:template match="tei:title" xml:space="default">
+    <xsl:template match="tei:title">
         <span>
             <xsl:call-template name="class-attribute">
                 <xsl:with-param name="base-classes" select="'title'"/>
@@ -164,17 +164,17 @@
         <xsl:if test="(not(@rend) or not(@rend eq 'hidden'))">
             <xsl:choose>
                 
-                <!-- @cRef designates an encoded (folio) link and will also have been assigned a @folio-index -->
+                <!-- @cRef designates an encoded (folio) link and will also have been assigned a @ref-index -->
                 <xsl:when test="@cRef">
                     <xsl:choose>
                         
                         <!-- If it's html then add a link -->
-                        <xsl:when test="/m:response/m:request/@doc-type eq 'html' and @folio-index">
+                        <xsl:when test="/m:response/m:request/@doc-type eq 'html' and @ref-index">
                             
                             <a class="ref log-click">
                                 <!-- define an anchor so we can link back to this point -->
-                                <xsl:attribute name="id" select="concat('source-link-', @folio-index)"/>
-                                <xsl:attribute name="href" select="concat('/source/', /m:response/m:translation/m:source/@key, '.html?page=', @folio-index, '#ajax-content')"/>
+                                <xsl:attribute name="id" select="concat('source-link-', @ref-index)"/>
+                                <xsl:attribute name="href" select="concat('/source/', /m:response/m:translation/m:source/@key, '.html?ref-index=', @ref-index, '#ajax-content')"/>
                                 <xsl:attribute name="data-ajax-target" select="'#popup-footer-source .data-container'"/>
                                 <xsl:value-of select="concat('[', @cRef, ']')"/>
                             </a>
@@ -235,6 +235,9 @@
                             </xsl:otherwise>
                         </xsl:choose>
                     </xsl:attribute>
+                </xsl:when>
+                <xsl:when test="/m:response[@model-type eq 'operations/glossary']">
+                    <xsl:value-of select="@target"/>
                 </xsl:when>
                 <xsl:otherwise>
                     <xsl:attribute name="href" select="@target"/>
@@ -599,7 +602,7 @@
             <!-- An about section header -->
             <xsl:when test="@type = ('about')">
                 <h1 class="text-center">
-                    <xsl:value-of select="text()"/>
+                    <xsl:apply-templates select="node()"/>
                 </h1>
             </xsl:when>
             
@@ -612,7 +615,7 @@
                                 <xsl:with-param name="node" select="."/>
                             </xsl:call-template>
                             <h2>
-                                <xsl:value-of select="text()"/>
+                                <xsl:apply-templates select="node()"/>
                             </h2>
                         </div>
                     </xsl:with-param>
@@ -643,7 +646,7 @@
                                 <xsl:if test="@type eq 'chapter'">
                                     <xsl:attribute name="class" select="'chapter-number'"/>
                                 </xsl:if>
-                                <xsl:value-of select="text()"/>
+                                <xsl:apply-templates select="node()"/>
                             </h4>
                         </div>
                     </xsl:with-param>
@@ -660,12 +663,32 @@
         </sub>
     </xsl:template>
     
+    <xsl:template match="tei:hi[@rend eq 'superscript']">
+        <sup>
+            <xsl:apply-templates select="node()"/>
+        </sup>
+    </xsl:template>
+    
     <xsl:template match="tei:hi[@rend eq 'small-caps']">
         <xsl:copy-of select="translate(text(), 'abcdefghijklmnopqrstuvwxyz', 'ᴀʙᴄᴅᴇꜰɢʜɪᴊᴋʟᴍɴᴏᴘǫʀsᴛᴜᴠᴡxʏᴢ')"/>
     </xsl:template>
     
     <xsl:template match="exist:match">
         <span class="mark">
+            <xsl:apply-templates select="node()"/>
+        </span>
+    </xsl:template>
+    
+    <xsl:template match="tei:match[@requested-glossary eq 'true']">
+        <span class="mark">
+            <xsl:attribute name="data-glossary-id" select="@glossary-id"/>
+            <xsl:apply-templates select="node()"/>
+        </span>
+    </xsl:template>
+    
+    <xsl:template match="tei:match">
+        <span class="underline">
+            <xsl:attribute name="data-glossary-id" select="@glossary-id"/>
             <xsl:apply-templates select="node()"/>
         </span>
     </xsl:template>
@@ -705,7 +728,7 @@
         <xsl:param name="row-type" required="yes"/>
         
         <xsl:choose>
-            <xsl:when test="/m:response/m:translation">
+            <xsl:when test="/m:response/m:translation | /m:response/m:expressions">
                 <div class="rw">
                     
                     <!-- Set the class -->
@@ -735,10 +758,19 @@
                         <div class="gtr">
                             <xsl:choose>
                                 
-                                <!-- show a link -->
+                                <!-- show a relative link -->
                                 <xsl:when test="/m:response/m:request/@doc-type eq 'html'">
                                     <a class="milestone from-tei" title="Bookmark this section">
                                         <xsl:attribute name="href" select="concat('#', $milestone/@xml:id)"/>
+                                        <xsl:attribute name="id" select="$milestone/@xml:id"/>
+                                        <xsl:value-of select="$milestone/@label"/>
+                                    </a>
+                                </xsl:when>
+                                
+                                <!-- show an absolute link -->
+                                <xsl:when test="/m:response/m:expressions">
+                                    <a title="Go to this section" target="reading-room">
+                                        <xsl:attribute name="href" select="concat(/m:response/m:expressions/@page-url, '#', $milestone/@xml:id)"/>
                                         <xsl:attribute name="id" select="$milestone/@xml:id"/>
                                         <xsl:value-of select="$milestone/@label"/>
                                     </a>

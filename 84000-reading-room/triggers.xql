@@ -75,6 +75,8 @@ declare function local:permanent-ids($doc) {
         | $doc//*[@type="notes"]//tei:item[not(@xml:id) or @xml:id eq '']
         | $doc//*[@type='listBibl']//tei:bibl[not(@xml:id) or @xml:id eq '']
         | $doc//*[@type='glossary']//tei:gloss[not(@xml:id) or @xml:id eq '']
+        (: Populate any empty @xml:id :)
+        | $doc//*[@xml:id eq '']
     let $new-id := concat($translation-id, '-', xs:string(sum(($max-id, $index))))
     return
         update insert attribute xml:id { $new-id } into $element

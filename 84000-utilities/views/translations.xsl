@@ -54,22 +54,6 @@
                     </div>
                 </div>
                 
-                <xsl:if test="m:updated">
-                    <div class="alert alert-success alert-temporary" role="alert">
-                        <xsl:if test="m:updated//m:error">
-                            <xsl:attribute name="class" select="'alert alert-danger'"/>
-                        </xsl:if>
-                        <xsl:value-of select="concat('Updated: ', m:updated)"/>
-                        <xsl:if test="m:translations/m:text[m:toh/@key = /m:response/m:updated/@resource-id]">
-                            <xsl:value-of select="' | '"/>
-                            <a class="scroll-to-anchor alert-link">
-                                <xsl:attribute name="href" select="concat('#', /m:response/m:updated/@resource-id)"/>
-                                <xsl:value-of select="'Go to this row'"/>
-                            </a>
-                        </xsl:if>
-                    </div>
-                </xsl:if>
-                
                 <table class="table table-responsive">
                     <thead>
                         <tr>
@@ -78,9 +62,6 @@
                             </th>
                             <th>
                                 <xsl:value-of select="'Title'"/>
-                            </th>
-                            <th>
-                                <xsl:value-of select="'Stats'"/>
                             </th>
                         </tr>
                     </thead>
@@ -103,13 +84,24 @@
                                     <xsl:value-of select="m:toh/m:base"/>
                                 </td>
                                 <td>
-                                    <div class="sml-margin bottom break">
-                                        <a>
+                                    <div class="sml-margin bottom center-vertical full-width">
+                                        <a class="break">
                                             <xsl:attribute name="href" select="concat($reading-room-path ,'/translation/', $toh/@key, '.html')"/>
                                             <xsl:attribute name="target" select="concat($toh/@key, '.html')"/>
                                             <xsl:attribute name="title" select="'View this text in the Reading Room'"/>
                                             <xsl:value-of select="m:titles/m:title[@xml:lang eq 'en']"/>
+                                            <small>
+                                                <xsl:value-of select="concat(' / ', $text-id)"/>
+                                            </small>
                                         </a>
+                                        <span class="text-right">
+                                            <span class="label label-warning">
+                                                <xsl:if test="$status-id eq '1'">
+                                                    <xsl:attribute name="class" select="'label label-success'"/>
+                                                </xsl:if>
+                                                <xsl:value-of select="$status-id"/>
+                                            </span>
+                                        </span>
                                     </div>
                                     <ul class="list-inline inline-dots sml-margin bottom small">
                                         <xsl:if test="$reading-room-no-cache-path">
@@ -172,35 +164,6 @@
                                     <div class="sml-margin bottom small text-muted break">
                                         <xsl:value-of select="@uri"/>
                                     </div>
-                                </td>
-                                <td rowspan="2" class="nowrap">
-                                    
-                                    <div>
-                                        <xsl:value-of select="$text-id"/>
-                                        <div class="label label-warning pull-right">
-                                            <xsl:if test="$status-id eq '1'">
-                                                <xsl:attribute name="class" select="'label label-success pull-right'"/>
-                                            </xsl:if>
-                                            <xsl:value-of select="$status-id"/>
-                                        </div>
-                                    </div>
-                                    <div class="row sml-margin top">
-                                        <div class="col-sm-6">                                                
-                                            <span class="text-muted small nowrap">
-                                                <xsl:value-of select="'Translated words:'"/>
-                                            </span>
-                                            <br/>
-                                            <xsl:value-of select="fn:format-number(xs:integer(@word-count),'#,##0')"/>
-                                        </div>
-                                        <div class="col-sm-6">      
-                                            <span class="text-muted small nowrap">
-                                                <xsl:value-of select="'Glossary items:'"/>
-                                            </span>
-                                            <br/>
-                                            <xsl:value-of select="fn:format-number(xs:integer(@glossary-count),'#,##0')"/>
-                                        </div>
-                                    </div>
-                                    
                                 </td>
                             </tr>
                             
@@ -347,7 +310,7 @@
                                                             <!-- Versions don't match so offer create option -->
                                                             <xsl:if test="compare($file-version, $tei-version) ne 0 and $tei-version gt ''">
                                                                 <a>
-                                                                    <xsl:attribute name="href" select="concat('/translations.html?store=', $toh/@key, '.', $file-format, if($texts-status) then concat('&amp;texts-status=', $texts-status) else '')"/>
+                                                                    <xsl:attribute name="href" select="concat('/translations.html?store=', $toh/@key, '.', $file-format, if($texts-status) then concat('&amp;texts-status=', $texts-status) else '', '#', $toh/@key)"/>
                                                                     <xsl:attribute name="title" select="'Create this file'"/>
                                                                     <span class="label label-warning">
                                                                         <xsl:value-of select="concat('Create ', upper-case($file-format))"/>
@@ -372,7 +335,7 @@
                                                             <!-- If outdated then offer to get from master -->
                                                             <xsl:when test="compare($master-downloads/@tei-version, $tei-version) ne 0 and $master-downloads/@tei-version gt ''">
                                                                 <a>
-                                                                    <xsl:attribute name="href" select="concat('/translations.html?store=', $toh/@key, '.tei', if($texts-status) then concat('&amp;texts-status=', $texts-status) else '')"/>
+                                                                    <xsl:attribute name="href" select="concat('/translations.html?store=', $toh/@key, '.tei', if($texts-status) then concat('&amp;texts-status=', $texts-status) else '', '#', $toh/@key)"/>
                                                                     <span class="label label-danger">
                                                                         <xsl:value-of select="concat('Get ', $master-downloads/@tei-version)"/>
                                                                     </span>
@@ -409,7 +372,7 @@
                                                                 <!-- If outdated then offer to get from master -->
                                                                 <xsl:when test="compare($file-version, $master-downloads/@tei-version) ne 0">
                                                                     <a>
-                                                                        <xsl:attribute name="href" select="concat('/translations.html?store=', $toh/@key, '.', $file-format, if($texts-status) then concat('&amp;texts-status=', $texts-status) else '')"/>
+                                                                        <xsl:attribute name="href" select="concat('/translations.html?store=', $toh/@key, '.', $file-format, if($texts-status) then concat('&amp;texts-status=', $texts-status) else '', '#', $toh/@key)"/>
                                                                         <xsl:attribute name="title" select="'Update this file'"/>
                                                                         <span class="label label-danger">
                                                                             <xsl:value-of select="concat('Get ', $master-downloads/@tei-version)"/>
@@ -438,7 +401,7 @@
                             
                         </xsl:for-each>
                     </tbody>
-                    <xsl:if test="$environment/m:store-conf[not(@type eq 'client')] or not($diff)">
+                    <xsl:if test="$environment/m:store-conf[not(@type eq 'client')] or not($diff) and count(m:translations/m:text) gt 0">
                         <tfoot>
                             <tr>
                                 <td/>
@@ -448,31 +411,33 @@
                                     </small>
                                     <xsl:value-of select="fn:format-number(count(m:translations/m:text),'#,##0')"/>
                                 </td>
-                                <td>
-                                    <div class="row">
-                                        <div class="col-sm-6">
-                                            <small class="text-muted">
-                                                <xsl:value-of select="'Total words: '"/>
-                                            </small>
-                                            <br/>
-                                            <xsl:value-of select="fn:format-number(xs:integer(sum(m:translations/m:text/@word-count)),'#,##0')"/>
-                                        </div>
-                                        <div class="col-sm-6">
-                                            <small class="text-muted">
-                                                <xsl:value-of select="'Total items: '"/>
-                                            </small>
-                                            <br/>
-                                            <xsl:value-of select="fn:format-number(xs:integer(sum(m:translations/m:text/@glossary-count)),'#,##0')"/>
-                                        </div>
-                                    </div>
-                                </td>
                             </tr>
                         </tfoot>
                     </xsl:if>
                 </table>
                 
             </div>
-            
+        </xsl:variable>
+        
+        <xsl:variable name="page-alert">
+            <xsl:if test="m:updated">
+                <div id="page-alert" class="collapse in info" role="alert">
+                    <xsl:if test="m:updated//m:error">
+                        <xsl:attribute name="class" select="'collapse in danger'"/>
+                    </xsl:if>
+                    <h2 class="sml-margin top bottom">
+                        <xsl:value-of select="'File updated'"/>
+                    </h2>
+                    <xsl:value-of select="m:updated"/>
+                    <!--<xsl:if test="m:translations/m:text[m:toh/@key = /m:response/m:updated/@resource-id]">
+                        <xsl:value-of select="' | '"/>
+                        <a class="scroll-to-anchor alert-link">
+                            <xsl:attribute name="href" select="concat('#', /m:response/m:updated/@resource-id)"/>
+                            <xsl:value-of select="'Go to this row'"/>
+                        </a>
+                    </xsl:if>-->
+                </div>
+            </xsl:if>
         </xsl:variable>
         
         <xsl:call-template name="reading-room-page">
@@ -483,6 +448,7 @@
             <xsl:with-param name="content">
                 <xsl:call-template name="utilities-page">
                     <xsl:with-param name="content" select="$content"/>
+                    <xsl:with-param name="page-alert" select="$page-alert"/>
                 </xsl:call-template>
             </xsl:with-param>
         </xsl:call-template>

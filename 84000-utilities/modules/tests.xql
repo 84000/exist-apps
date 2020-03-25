@@ -73,6 +73,9 @@ declare function tests:translations($translation-id as xs:string) as item(){
                         tests:duplicate-ids($tei)
                     }
                     {
+                        tests:scoped-ids($tei)
+                    }
+                    {
                         tests:valid-pointers($tei)
                     }
                     {
@@ -175,6 +178,9 @@ declare function tests:sections($section-id as xs:string) as item(){
                         tests:duplicate-ids($tei)
                     }
                     {
+                        tests:scoped-ids($tei)
+                    }
+                    {
                         tests:outline-context($tei, $resource-id)
                     }
                     {
@@ -192,7 +198,7 @@ declare function tests:sections($section-id as xs:string) as item(){
         </results>
 };
 
-declare function tests:validate-schema($tei as element(), $schema as node()) as item() {
+declare function tests:validate-schema($tei as element(tei:TEI), $schema as document-node()) as item() {
 
    let $validation-report := validation:jing-report($tei, $schema)
    
@@ -211,7 +217,7 @@ declare function tests:validate-schema($tei as element(), $schema as node()) as 
        </test>
 };
 
-declare function tests:duplicate-ids($tei as element()) as item() {
+declare function tests:duplicate-ids($tei as element(tei:TEI)) as item() {
 
     let $ids := $tei//@xml:id/string()
     let $count-ids := count($ids)
@@ -222,22 +228,42 @@ declare function tests:duplicate-ids($tei as element()) as item() {
         <test xmlns="http://read.84000.co/ns/1.0"
             id="duplicate-ids"
             pass="{ if($count-ids eq $count-distinct-ids) then 1 else 0 }">
-            <title>ID test: The text has no duplicate ids.</title>
+            <title>Duplicate ID test: The text has no duplicate ids.</title>
             <details>
                 {
                     if($count-ids ne $count-distinct-ids) then
                         for $id in $distinct-ids
+                        where $ids[. = $id][2]
                         return
-                            if($ids[. = $id][2]) then
-                                <detail type="debug">{$ids[. = $id][2]} is duplicated</detail>
-                            else ()
+                            <detail type="debug">{$ids[. = $id][2]} is duplicated</detail>
                     else ()
                 }
             </details>
         </test>
 };
 
-declare function tests:valid-pointers($tei as element()) as item() {
+declare function tests:scoped-ids($tei as element(tei:TEI)) as item() {
+
+    let $ids := $tei//@xml:id/string()
+    let $text-id := tei-content:id($tei)
+    let $out-of-scope-ids := $ids[not(starts-with(., $text-id))]
+    
+    return
+        <test xmlns="http://read.84000.co/ns/1.0"
+            id="duplicate-ids"
+            pass="{ if(count($out-of-scope-ids) eq 0) then 1 else 0 }">
+            <title>ID scope test: All xml:id attributes are in the scope of the text id e.g. begin with the same UT number.</title>
+            <details>
+                {
+                    for $id in $out-of-scope-ids
+                    return
+                        <detail type="debug">{$id} does not begin with { $text-id }</detail>
+                }
+            </details>
+        </test>
+};
+
+declare function tests:valid-pointers($tei as element(tei:TEI)) as item() {
 
     let $invalid-ptrs := $tei//tei:ptr[empty(text())]/@target[not(substring-after(., '#') = ($tei//*/@xml:id))]
     
@@ -256,7 +282,7 @@ declare function tests:valid-pointers($tei as element()) as item() {
         </test>
 };
 
-declare function tests:titles($toh-html as element(), $tei as element()) as item() {
+declare function tests:titles($toh-html as element(), $tei as element(tei:TEI)) as item() {
     
     (: Bo-Ltn can be derived from bo or vice versa :)
     (: Max 3: 'en', 'Sa-Ltn' and either 'Bo-Ltn' or  'bo' :)
@@ -297,7 +323,7 @@ declare function tests:titles($toh-html as element(), $tei as element()) as item
         </test>
 };
 
-declare function tests:outline-context($tei as element(), $resource-id as xs:string) as item() {
+declare function tests:outline-context($tei as element(tei:TEI), $resource-id as xs:string) as item() {
 
     let $ancestors := tei-content:ancestors($tei, $resource-id, 1)
     
@@ -430,7 +456,7 @@ declare function tests:test-section($section-tei as element()*, $section-html as
         </test>
 };
 
-declare function tests:notes($tei as element()*, $html as element()*) as item() {
+declare function tests:notes($tei as element(tei:TEI)*, $html as element()*) as item() {
 
     let $notes-count-html := count($html//*[@id eq 'notes']/*/*[common:contains-class(@class, 'footnote')])
     let $notes-count-tei := count($tei//tei:text//tei:note[@place eq 'end'])
@@ -447,7 +473,7 @@ declare function tests:notes($tei as element()*, $html as element()*) as item() 
         </test>
 };
 
-declare function tests:abbreviations($tei as element()*, $html as element()*) as item() {
+declare function tests:abbreviations($tei as element(tei:TEI)*, $html as element()*) as item() {
 
     let $abbreviations-count-html := count($html//*[@id eq 'abbreviations']//xhtml:tr)
     let $abbreviations-count-tei := count($tei//tei:back//tei:list[@type='abbreviations']/tei:item/tei:abbr)
@@ -463,7 +489,7 @@ declare function tests:abbreviations($tei as element()*, $html as element()*) as
         </test>
 };
 
-declare function tests:bibliography($tei as element()*, $html as element()*) as item() {
+declare function tests:bibliography($tei as element(tei:TEI)*, $html as element()*) as item() {
 
     let $biblography-count-html := count($html//*[@id eq 'bibliography']//xhtml:p)
     let $biblography-count-tei := count($tei//tei:back/tei:div[@type='listBibl']//tei:bibl)
@@ -479,7 +505,7 @@ declare function tests:bibliography($tei as element()*, $html as element()*) as 
         </test>
 };
 
-declare function tests:section-tantra-warning($tei as element()*, $html as element()*) as item() {
+declare function tests:section-tantra-warning($tei as element(tei:TEI)*, $html as element()*) as item() {
 
     let $tantra-warning-count-html := count($html//*[@id eq 'tantra-warning-title']//xhtml:p)
     let $tantra-warning-count-tei := count($tei//tei:front/tei:div[@type='warning']//tei:p)
@@ -495,7 +521,7 @@ declare function tests:section-tantra-warning($tei as element()*, $html as eleme
         </test>
 };
 
-declare function tests:translation-tantra-warning($tei as element()*, $html as element()*) as item() {
+declare function tests:translation-tantra-warning($tei as element(tei:TEI)*, $html as element()*) as item() {
 
     let $tantra-warning-count-html := count($html//*[@id eq 'tantric-warning']//xhtml:p)
     let $tantra-warning-count-tei := count($tei//tei:teiHeader//tei:availability/tei:p[@type eq 'tantricRestriction'])
@@ -511,7 +537,7 @@ declare function tests:translation-tantra-warning($tei as element()*, $html as e
         </test>
 };
 
-declare function tests:glossary($tei as element()*, $html as element()*) as item() {
+declare function tests:glossary($tei as element(tei:TEI)*, $html as element()*) as item() {
     
     let $glossary-count-html := count($html//*[@id eq 'glossary']//*[common:contains-class(@class, 'glossary-item')])
     let $glossary-count-tei := count($tei//tei:back/tei:div[@type='glossary']//tei:gloss)
@@ -557,7 +583,7 @@ declare function tests:glossary($tei as element()*, $html as element()*) as item
 };
 
 
-declare function tests:refs($tei as element()*, $html as element()*, $toh-key as xs:string){
+declare function tests:refs($tei as element(tei:TEI)*, $html as element()*, $toh-key as xs:string){
     
     let $tei-folios := translation:folios($tei, $toh-key)//m:folio
     let $html-refs := $html//*[@id = ('prologue', 'translation', 'colophon')]//xhtml:a[common:contains-class(@class, 'ref')]

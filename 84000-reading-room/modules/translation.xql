@@ -11,6 +11,7 @@ import module namespace sponsors="http://read.84000.co/sponsors" at "sponsors.xq
 import module namespace contributors="http://read.84000.co/contributors" at "contributors.xql";
 import module namespace download="http://read.84000.co/download" at "download.xql";
 import module namespace source="http://read.84000.co/source" at "source.xql";
+import module namespace glossary="http://read.84000.co/glossary" at "glossary.xql";
 import module namespace functx="http://www.functx.com";
 
 declare function translation:titles($tei as element(tei:TEI)) as element() {
@@ -379,6 +380,7 @@ declare function translation:nested-section($section as element()?, $nesting as 
                 attribute type { $sub-section/@type },
                 attribute nesting { $nesting },
                 attribute section-id { $section-id },
+                attribute section-uid { $sub-section/@xml:id },
                 translation:nested-section($sub-section, $nesting + 1, $section-id)
             }
     )
@@ -598,49 +600,49 @@ declare function translation:bibliography($tei as element(tei:TEI)) as element()
     </bibliography>
 };
 
+(:Glossary from TEI:)
 declare function translation:glossary($tei as element(tei:TEI)) as element() {
     <glossary xmlns="http://read.84000.co/ns/1.0" prefix="g">
     {
-        for $gloss in $tei//tei:back//tei:div[@type eq 'glossary']//tei:gloss
-            let $main-term := $gloss/tei:term[not(@xml:lang) or @xml:lang eq 'en'][not(@type)][1]/text()
-        where $main-term
+        for $gloss in $tei//tei:back//tei:div[@type eq 'glossary']//tei:gloss[
+            (: Check it has a base term :)
+            tei:term
+                [not(@type)]
+                [not(@xml:lang) or @xml:lang eq 'en']
+        ]
         return
-            <item 
-                uid="{ $gloss/@xml:id/string() }" 
-                type="{ $gloss/@type/string() }" 
-                mode="{ $gloss/@mode/string() }">
-                <term xml:lang="en">{ functx:capitalize-first(normalize-space($main-term)) }</term>
-                {
-                    for $item in $gloss/tei:term[(@xml:lang and not(@xml:lang eq 'en')) or @type](:[not(text() eq $main-term)]:)
-                    return 
-                        if($item[@type eq 'definition']) then
-                            <definition>
-                            { 
-                                $item/node() 
-                            }
-                            </definition>
-                        else if ($item[@type eq 'alternative']) then
-                            <alternative xml:lang="{ lower-case($item/@xml:lang) }">
-                            { 
-                                normalize-space(string($item)) 
-                            }
-                            </alternative>
-                        else
-                            <term xml:lang="{ if($item/@xml:lang) then lower-case($item/@xml:lang) else 'en' }">
-                            {
-                                if (not($item/text())) then
-                                    common:local-text(concat('glossary.term-empty-', lower-case($item/@xml:lang)), 'en')
-                                else if ($item/@xml:lang eq 'Bo-Ltn') then 
-                                    common:bo-ltn($item/text())
-                                else 
-                                    $item/text() 
-                            }
-                            </term>
-                 }
-                 <sort-term>{ common:alphanumeric(common:normalized-chars($main-term)) }</sort-term>
-            </item>
+            glossary:item($gloss)
     }
     </glossary>
+};
+
+(:Glossary from TEI filtered by start letter:)
+declare function translation:glossary($tei as element(tei:TEI), $start-letter as xs:string) as element() {
+
+    <glossary xmlns="http://read.84000.co/ns/1.0" prefix="g" start-letter="{ $start-letter }">
+    {
+        for $gloss in 
+            $tei//tei:back//tei:div[@type eq 'glossary']//tei:gloss[
+                (: Check base term matches letter :)
+                tei:term
+                    [not(@type)]
+                    [not(@xml:lang) or @xml:lang eq 'en']
+                    [
+                        matches(
+                            ., 
+                            concat(
+                                '^(\d*\s+|The\s+|A\s+)?(', 
+                                string-join(common:letter-variations($start-letter), '|'), ').*'
+                            ), 
+                            'i'
+                         )
+                     ]
+            ]
+        return
+            glossary:item($gloss)
+    }
+    </glossary>
+    
 };
 
 declare function translation:word-count($tei as element(tei:TEI)) as xs:integer {
@@ -677,25 +679,96 @@ declare function translation:count-volume-pages($location as element(m:location)
     sum($location/m:volume ! (xs:integer(@end-page) - (xs:integer(@start-page) - 1)))
 };
 
-declare function translation:folio-refs($tei as element(tei:TEI), $resource-id as xs:string){
-    let $toh-key := translation:toh-key($tei, $resource-id)
-    return
-        $tei//tei:body//tei:ref[@type eq 'folio'][not(@rend) or not(@rend eq 'hidden')][not(@key) or @key eq $toh-key][not(ancestor::tei:note)]
+(: 
+    Move folio logic into a seperate module
+    Get folio data per $tei or per list of $resource-ids
+    Use xquery to build map of folios -> volumes -> sort order
+    Inject the map into the xslt to lookup the sort order
+:)
+
+declare function translation:folio-refs($tei as element(tei:TEI), $resource-id as xs:string) as element(tei:ref)* {
+    
+    (: Get the relevant folio refs refs :)
+    translation:refs($tei, $resource-id, ('folio'))
+    
 };
 
-declare function translation:folios($tei as element(tei:TEI), $resource-id as xs:string) as element() {
+declare function translation:refs($tei as element(tei:TEI), $resource-id as xs:string, $types as xs:string*) as element(tei:ref)* {
+    
+    (: Get the relevant refs :)
+    let $toh-key := translation:toh-key($tei, $resource-id)
+    return
+        $tei//tei:body//tei:ref[@type = $types][not(@rend) or not(@rend eq 'hidden')][not(@key) or @key eq $toh-key][not(ancestor::tei:note)]
+    
+};
+
+declare function translation:folio-refs-sorted($tei as element(tei:TEI), $resource-id as xs:string) as element(tei:ref)* {
+    
+    (: Get the relevant refs :)
+    let $refs-for-resource := translation:refs($tei, $resource-id, ('folio', 'volume'))
+    
+    (: Get the volume refs :)
+    let $volume-refs := 
+        for $ref in $refs-for-resource[@type = ('volume')]
+        return
+            element { node-name($ref) } {
+                $ref/@*,
+                attribute index-in-resource { functx:index-of-node($refs-for-resource, $ref) },
+                attribute sort-volume { replace($ref/@cRef, '\D', '') },
+                $ref/node()
+            }
+    
+    (: Add sort attributes to the folio refs :)
+    let $folio-refs := 
+        for $ref in $refs-for-resource[@type = ('folio')]
+            let $index-in-resource := functx:index-of-node($refs-for-resource, $ref)
+            let $preceding-volume-index-in-resource := max(($volume-refs[xs:integer(@index-in-resource) lt $index-in-resource]/@index-in-resource ! xs:integer(.), 0))
+            let $preceding-volume-ref := $volume-refs[xs:integer(@index-in-resource) eq $preceding-volume-index-in-resource]
+            let $cref-tokenized := tokenize($ref/@cRef, '\.')
+            let $sort-volume := if($preceding-volume-ref) then $preceding-volume-ref/@sort-volume else 0
+            let $sort-number := if(count($cref-tokenized) gt 1) then replace($cref-tokenized[2], '\D', '') else 0
+            let $sort-letter := if(count($cref-tokenized) gt 2) then $cref-tokenized[3] else ''
+            order by 
+                number($sort-volume),
+                number($sort-number),
+                $sort-letter
+        return
+            element { node-name($ref) } {
+                $ref/@*,
+                attribute index-in-resource { $index-in-resource },
+                attribute cRef-volume { $preceding-volume-ref/@cRef },
+                $ref/node()
+            }
+    
+    (: Return sorted with the sort index stored :)
+    return
+        for $ref at $index-in-sort in $folio-refs
+            order by number($ref/@index-in-resource)
+        return
+            element { node-name($ref) } {
+                $ref/@*,
+                attribute index-in-sort { $index-in-sort },
+                $ref/node()
+            }
+};
+
+declare function translation:folios($tei as element(tei:TEI), $resource-id as xs:string) as element(m:folios) {
     
     let $location := translation:location($tei, $resource-id)
     let $work := $location/@work
     let $reading-room-path := $common:environment/m:url[@id eq 'reading-room']/text()
-    let $folio-refs := translation:folio-refs($tei, $resource-id)
+    let $folio-refs := translation:folio-refs-sorted($tei, $resource-id)
+    (:let $folio-refs := translation:folio-refs($tei, $resource-id):)
     
     return
         element { QName('http://read.84000.co/ns/1.0', 'folios') } {
+        
             attribute toh-key { $location/@key },
             attribute count-pages { translation:count-volume-pages($location) },
             attribute count-refs { count($folio-refs) },
+            
             for $volume in $location/m:volume
+            
                 let $volume-number := xs:integer($volume/@number)
                 let $preceding-volumes := $location/m:volume[xs:integer(@number) lt $volume-number]
                 let $pages-in-preceding-volumes := sum($preceding-volumes ! (xs:integer(@end-page) - (xs:integer(@start-page) - 1)))
@@ -708,45 +781,50 @@ declare function translation:folios($tei as element(tei:TEI), $resource-id as xs
                 
             return
                 for $page-in-volume at $page-index in xs:integer($volume/@start-page) to xs:integer($volume/@end-page)
+                
                     let $page-in-text := $pages-in-preceding-volumes + $page-index
-                    let $tei-folio := $folio-refs[$page-in-text]/@cRef
-                    let $folio-in-volume := concat('F.', source:page-to-folio($page-in-volume))
-                    let $folio-consecutive := concat('F.', source:page-to-folio($page-in-text + $count-title-pages + $count-trailing-pages))
+                    let $folio-ref := $folio-refs[xs:integer(@index-in-sort) eq $page-in-text]
+                    (:let $folio-ref := $folio-refs[$page-in-text]:)
+                    
                 return
                     element folio {
+                    
                         attribute volume { $volume-number },
                         attribute page-in-volume { $page-in-volume },
                         attribute page-in-text { $page-in-text },
-                        attribute tei-folio { $tei-folio },
-                        attribute folio-in-volume { $folio-in-volume },
-                        attribute folio-consecutive { $folio-consecutive },
+                        attribute sort-index { if($folio-ref) then $folio-ref/@index-in-sort else 0 },
+                        attribute resource-index { if($folio-ref) then $folio-ref/@index-in-resource else 0 },
+                        attribute tei-folio { if($folio-ref) then $folio-ref/@cRef else '' },
+                        attribute folio-in-volume { concat('F.', source:page-to-folio($page-in-volume)) },
+                        attribute folio-consecutive { concat('F.', source:page-to-folio($page-in-text + $count-title-pages + $count-trailing-pages)) },
+                        
                         element url {
                             attribute format { 'xml' },
                             attribute xml:lang { 'bo' },
-                            text { concat($reading-room-path,'/source/', $location/@key, '.xml?page=', $page-in-text) }
+                            text { concat($reading-room-path,'/source/', $location/@key, '.xml?ref-index=', $folio-ref/@index-in-resource) }
                         },
                         element url {
                             attribute format { 'html' },
                             attribute xml:lang { 'bo' },
-                            text { concat($reading-room-path,'/source/', $location/@key, '.html?page=', $page-in-text) }
+                            text { concat($reading-room-path,'/source/', $location/@key, '.html?ref-index=', $folio-ref/@index-in-resource) }
                         },
                         element url {
                             attribute format { 'xml' },
                             attribute xml:lang { 'en' },
-                            text { concat($reading-room-path,'/translation/', $location/@key, '.xml?page=', $page-in-text) }
+                            text { concat($reading-room-path,'/translation/', $location/@key, '.xml?ref-index=', $folio-ref/@index-in-resource) }
                         }
+                        
                    }
             }
 };
 
-declare function translation:folio-content($tei as element(tei:TEI), $resource-id as xs:string, $page as xs:integer) as element()* {
+declare function translation:folio-content($tei as element(tei:TEI), $resource-id as xs:string, $index-in-resource as xs:integer) as element()* {
     
     (: Get all the <ref/>s in the doc :)
     let $refs := translation:folio-refs($tei, $resource-id)
-    (: Locate the <ref/> we are interested in :)
-    let $start-ref := $refs[$page]
-    (: Locate the next <ref/> after that :)
-    let $end-ref := $refs[$page + 1]
+    let $start-ref := $refs[$index-in-resource]
+    let $end-ref := $refs[$index-in-resource + 1]
+    
     (: Get all sections that may have a <ref/>. They must be siblings so get direct children of section. :)
     let $translation-paragraphs := $tei//tei:body//tei:div[@type='translation']//tei:div[@type = ('prologue', 'section', 'chapter', 'colophon')]/*[self::tei:head | self::tei:p | self::tei:ab | self::tei:q | self::tei:lg | self::tei:list| self::tei:table | self::tei:trailer]
     
@@ -788,8 +866,18 @@ declare function translation:folio-content($tei as element(tei:TEI), $resource-i
         }
 };
 
-declare function translation:source-link-id($page as xs:integer){
-    concat('source-link-', $page)
+declare function translation:folio-sort-index($tei as element(tei:TEI), $resource-id as xs:string, $index-in-resource as xs:integer) as xs:integer? {
+    
+    (: Convert the index of the folio in the resource into the index of the folio when sorted :)
+    let $refs-sorted := translation:folio-refs-sorted($tei, $resource-id)
+    let $ref := $refs-sorted[xs:integer(@index-in-resource) eq $index-in-resource]
+    return
+        xs:integer($ref/@index-in-sort)
+    
+};
+
+declare function translation:source-link-id($index-in-resource as xs:integer){
+    concat('source-link-', $index-in-resource)
 };
 
 declare function translation:sponsors($tei as element(tei:TEI), $include-acknowledgements as xs:boolean) as element() {
@@ -906,3 +994,4 @@ declare function translation:contributors($tei as element(tei:TEI), $include-ack
         )}
         </contributors>
 };
+

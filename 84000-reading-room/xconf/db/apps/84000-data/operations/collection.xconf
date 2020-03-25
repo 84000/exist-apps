@@ -26,6 +26,17 @@
                 <field name="part-status" match="@status" type="xs:string"/>
             </create>
             
+            <!-- entities.xml -->
+            <create qname="m:definition">
+                <field name="definition-id" match="@id" type="xs:string"/>
+            </create>
+            <create qname="m:definition">
+                <field name="definition-type" match="@type" type="xs:string"/>
+            </create>
+            <create qname="m:type">
+                <field name="type-type" match="@type" type="xs:string"/>
+            </create>
+            
         </range>
         
     </index>

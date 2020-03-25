@@ -99,47 +99,40 @@
                     <xsl:with-param name="title" select="replace($remainder-title-app-text, '#pageLower', xs:string($remainder-page-lower))"/>
                     <xsl:with-param name="show-count" select="count($remainder-texts)"/>
                     <xsl:with-param name="content">
-                        <div class="top-margin">
-                            <div class="center-vertical">
-                                <span>
-                                    <img>
-                                        <xsl:attribute name="src" select="concat($front-end-path, '/imgs/blue_person.png')"/>
-                                        <xsl:attribute name="alt">
-                                            <xsl:value-of select="'Icon for: '"/>
-                                            <xsl:call-template name="local-text">
-                                                <xsl:with-param name="local-key" select="'blue-person-label'"/>
-                                            </xsl:call-template>
-                                        </xsl:attribute>
-                                    </img>
-                                </span>
-                                <span>
-                                    <xsl:call-template name="local-text">
-                                        <xsl:with-param name="local-key" select="'blue-person-label'"/>
-                                    </xsl:call-template>
-                                </span>
-                                <span>
-                                    <img>
-                                        <xsl:attribute name="src" select="concat($front-end-path, '/imgs/orange_person.png')"/>
-                                        <xsl:attribute name="alt">
-                                            <xsl:value-of select="'Icon for: '"/>
-                                            <xsl:call-template name="local-text">
-                                                <xsl:with-param name="local-key" select="'orange-person-label'"/>
-                                            </xsl:call-template>
-                                        </xsl:attribute>
-                                    </img>
-                                </span>
-                                <span>
-                                    <xsl:call-template name="local-text">
-                                        <xsl:with-param name="local-key" select="'orange-person-label'"/>
-                                    </xsl:call-template>
-                                </span>
+                        
+                        <div class="row top-margin">
+                            <div class="col-sm-12">
+                                <div class="center-vertical">
+                                    <span>
+                                        <span class="btn-round sml gray">
+                                            <i class="fa fa-male"/>
+                                        </span>
+                                    </span>
+                                    <span>
+                                        <xsl:call-template name="local-text">
+                                            <xsl:with-param name="local-key" select="'part-icon-label-sponsored'"/>
+                                        </xsl:call-template>
+                                    </span>
+                                    <span>
+                                        <span class="btn-round sml orange">
+                                            <i class="fa fa-male"/>
+                                        </span>
+                                    </span>
+                                    <span>
+                                        <xsl:call-template name="local-text">
+                                            <xsl:with-param name="local-key" select="'part-icon-label-available'"/>
+                                        </xsl:call-template>
+                                    </span>
+                                </div>
                             </div>
                         </div>
+                        
                         <xsl:call-template name="text-list">
                             <xsl:with-param name="texts" select="$remainder-texts"/>
                             <xsl:with-param name="grouping" select="'sponsorship'"/>
                             <xsl:with-param name="show-sponsorship" select="true()"/>
                         </xsl:call-template>
+                        
                     </xsl:with-param>
                 </xsl:call-template>
             </div>
@@ -152,6 +145,7 @@
 
         <xsl:call-template name="about">
             <xsl:with-param name="sub-content" select="$content"/>
+            <xsl:with-param name="page-class" select="'how-you-can-help'"/>
         </xsl:call-template>
 
     </xsl:template>

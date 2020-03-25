@@ -25,7 +25,7 @@ declare function local:parse-content($content) {
             else
             (
                 (: These are the nodes we want to include :)
-                for $node at $position in ($group//text()[not(ancestor::tei:note)][normalize-space(.) gt ''] | $group//tei:milestone | $group//tei:ref[@folio-index] | $group//tei:note[@index])
+                for $node at $position in ($group//text()[not(ancestor::tei:note)][normalize-space(.) gt ''] | $group//tei:milestone | $group//tei:ref[@ref-index] | $group//tei:note[@index])
                 return
                 (
                     (: Add a space before all nodes except the first, unless it's punctuation or followed by punctuation :)
@@ -39,8 +39,8 @@ declare function local:parse-content($content) {
                         text { '{{milestone:' || $node/@xml:id || '}}' }
                     
                     (: Output refs with cRef :)
-                    else if($node[self::tei:ref][@folio-index]) then
-                        text { '{{page:{number:' || $node/@folio-index || ',folio:' || $node/@cRef || '}}}' }
+                    else if($node[self::tei:ref][@ref-index]) then
+                        text { '{{page:{number:' || $node/@ref-index || ',folio:' || $node/@cRef || '}}}' }
                     
                     (: Output notes :)
                     else if($node[self::tei:note][@index]) then

@@ -51,7 +51,6 @@ let $store-file :=
 (: If this is a client get translations in MASTER database to compare versions :)
 let $translations-master := 
     if($store-conf[@type eq 'client']) then
-        (:let $resource-ids-str := string-join($translations-local/m:text/m:toh/@key, ','):)
         let $translations-master-request := concat($store-conf/m:translations-master-host, '/downloads.xml?resource-ids=versioned')
         let $request := <hc:request href="{ $translations-master-request }" method="GET"/>
         let $response := hc:send-request($request)
@@ -69,11 +68,11 @@ let $translations-local :=
         (: Filter out all the texts with a different version from master :)
         <translations xmlns="http://read.84000.co/ns/1.0">
         {
-            let $translations-local := translations:translations((), $translations-master//m:translations/m:text/m:downloads/@resource-id/string(), 'all', false())
+            let $translations-local := translations:translations((), $translations-master//m:translations/m:text/m:downloads/@resource-id, 'all', false())
             for $translation-local in $translations-local/m:text
                 let $translation-local-toh := $translation-local/m:toh/@key/string()
                 let $translation-local-version := $translation-local/m:downloads/@tei-version/string()
-                let $master-version := $translations-master/m:translations/m:text/m:downloads[@resource-id = $translation-local-toh]/@tei-version
+                let $master-version := $translations-master/m:translations/m:text/m:downloads[@resource-id eq $translation-local-toh]/@tei-version
             where not($translation-local-version eq $master-version)
             return
                 $translation-local

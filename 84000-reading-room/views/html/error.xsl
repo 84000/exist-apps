@@ -14,7 +14,7 @@
             
             <div class="title-band">
                 <div class="container">
-                    <div class="center-vertical full-width">
+                    <div class="center-vertical-sm full-width">
                         <div>
                             <ul class="breadcrumb">
                                 <li>
@@ -24,12 +24,14 @@
                                     </a>
                                 </li>
                                 <li>
-                                    <xsl:value-of select="'Error'"/>
+                                    <h1>
+                                        <xsl:value-of select="'Error'"/>
+                                    </h1>
                                 </li>
                             </ul>
                         </div>
                         <div>
-                            <div class="center-vertical pull-right">
+                            <div class="center-vertical pull-right-md">
                                 <div>
                                     <a class="center-vertical">
                                         <xsl:attribute name="href" select="common:internal-link('/section/all-translated.html', (), '', ((/m:response/@lang), '')[1])"/>
@@ -98,7 +100,7 @@
         <!-- Compile with page template -->
         <xsl:call-template name="website-page">
             <xsl:with-param name="page-url" select="''"/>
-            <xsl:with-param name="page-class" select="'error'"/>
+            <xsl:with-param name="page-class" select="'reading-room error'"/>
             <xsl:with-param name="page-title" select="'84000 | Error'"/>
             <xsl:with-param name="page-description" select="'Sorry, there was an error.'"/>
             <xsl:with-param name="content" select="$content"/>

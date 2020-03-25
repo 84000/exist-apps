@@ -159,6 +159,7 @@ declare function source:etext-page($work as xs:string, $volume-number as xs:inte
             attribute folio-in-etext { $page/@data-orig-n },
             attribute etext-id { $etext-id },
             element language {
+            
                 attribute xml:lang {'bo'},
                 
                 (: Context around the page, in case page break comes in the middle of a passage :)
@@ -186,22 +187,26 @@ declare function source:etext-page($work as xs:string, $volume-number as xs:inte
 };
 
 declare function source:etext-volumes($work as xs:string, $pages-for-volume as xs:integer?) as element() {
-    <volumes xmlns="http://read.84000.co/ns/1.0">
-    { 
+
+    element { QName('http://read.84000.co/ns/1.0','volumes') }  {
         let $volumes := collection(source:etext-path($work))
         for $volume at $volume-index in $volumes//tei:TEI
             let $long-id := $volume//tei:idno[@type eq "TBRC_TEXT_RID"]/text()
         return
-            <volume id="{ $long-id }" number="{ $volume-index }" page-count="{ count($volume//tei:p) }" >
-            {
+            element { QName('http://read.84000.co/ns/1.0','volume') } {
+                attribute id { $long-id },
+                attribute number { $volume-index },
+                attribute page-count { count($volume//tei:p) },
                 if($pages-for-volume gt 0 and $volume-index eq $pages-for-volume) then
                     for $p at $page-index in $volume//tei:p
                     return
-                        <page index="{ $page-index }" number="{ $p/@n }" folio="{ $p/@data-orig-n }"/>
+                        element { QName('http://read.84000.co/ns/1.0','page') } {
+                            attribute index { $page-index },
+                            attribute number { $p/@n },
+                            attribute folio { $p/@data-orig-n }
+                        }
                 else
                     ()
             }
-            </volume>
     }
-    </volumes>
 };

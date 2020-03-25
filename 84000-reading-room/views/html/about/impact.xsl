@@ -118,6 +118,7 @@
         
         <xsl:call-template name="about">
             <xsl:with-param name="sub-content" select="$content"/>
+            <xsl:with-param name="page-class" select="'about'"/>
         </xsl:call-template>
         
     </xsl:template>
