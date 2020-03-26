@@ -151,9 +151,9 @@
     <xsl:template name="headline-stat">
         <xsl:param name="colour-class" required="yes" as="xs:string"/>
         <xsl:param name="label-text" required="yes" as="xs:string"/>
-        <xsl:param name="pages-value" required="yes" as="xs:integer"/>
-        <xsl:param name="texts-value" required="yes" as="xs:integer"/>
-        <xsl:param name="percentage-value" required="yes" as="xs:double"/>
+        <xsl:param name="pages-value" as="xs:integer" select="0"/>
+        <xsl:param name="texts-value" as="xs:integer" select="0"/>
+        <xsl:param name="percentage-value" as="xs:double" select="0"/>
         <div>
             <xsl:attribute name="class" select="concat('stat ', $colour-class)"/>
             <div class="heading">

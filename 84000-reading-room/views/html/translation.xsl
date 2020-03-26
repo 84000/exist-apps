@@ -886,8 +886,8 @@
                     </xsl:choose>
                     <br/>
                     <xsl:choose>
-                        <xsl:when test="$translation/m:translation/m:edition/tei:date gt ''">
-                            <xsl:value-of select="concat('Current version ', $translation/m:translation/m:edition/text()[1], '(', $translation/m:translation/m:edition/tei:date, ')')"/>
+                        <xsl:when test="$translation/m:translation/m:edition/tei:date[1] gt ''">
+                            <xsl:value-of select="concat('Current version ', $translation/m:translation/m:edition/text()[1], '(', $translation/m:translation/m:edition/tei:date[1], ')')"/>
                         </xsl:when>
                         <xsl:otherwise>
                             <xsl:value-of select="'Invalid version'"/>

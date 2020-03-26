@@ -231,8 +231,8 @@
                                                         <xsl:value-of select="$tei-version"/>
                                                     </xsl:when>
                                                     <xsl:otherwise>
-                                                        <xsl:attribute name="class" select="'col-sm-2 text-muted'"/>
-                                                        <xsl:value-of select="'None'"/>
+                                                        <xsl:attribute name="class" select="'col-sm-2'"/>
+                                                        <xsl:value-of select="'[No version]'"/>
                                                     </xsl:otherwise>
                                                 </xsl:choose>
                                             </div>
