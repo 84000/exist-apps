@@ -34,6 +34,7 @@ declare variable $common:environment := doc($common:environment-path)/m:environm
 
 declare variable $common:diacritic-letters := 'āḍḥīḷḹṃṇñṅṛṝṣśṭūṁ';
 declare variable $common:diacritic-letters-without := 'adhillmnnnrrsstum';
+declare variable $common:line-ws := '&#10;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;';
 
 declare
     %test:assertEquals("84000-reading-room")

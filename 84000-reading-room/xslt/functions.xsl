@@ -315,8 +315,33 @@
     </xsl:function>
     
     <xsl:function name="common:homepage-link">
+        <xsl:param name="dir" as="xs:string?"/>
         <xsl:param name="lang" required="yes"/>
-        <xsl:value-of select="if($lang eq 'zh') then 'http://84000.co/ch' else 'http://84000.co'"/>
+        <xsl:variable name="url-params">
+            <xsl:choose>
+                <xsl:when test="$lang eq 'zh'">
+                    <xsl:choose>
+                        <xsl:when test="$dir gt ''">
+                            <xsl:value-of select="concat('/ch', '-', $dir)"/>
+                        </xsl:when>
+                        <xsl:otherwise>
+                            <xsl:value-of select="'/ch'"/>
+                        </xsl:otherwise>
+                    </xsl:choose>
+                </xsl:when>
+                <xsl:otherwise>
+                    <xsl:choose>
+                        <xsl:when test="$dir gt ''">
+                            <xsl:value-of select="concat('/', $dir)"/>
+                        </xsl:when>
+                        <xsl:otherwise>
+                            <xsl:value-of select="''"/>
+                        </xsl:otherwise>
+                    </xsl:choose>
+                </xsl:otherwise>
+            </xsl:choose>
+        </xsl:variable>
+        <xsl:value-of select="concat('http://84000.co', $url-params)"/>
     </xsl:function>
     
     <xsl:function name="common:override-href">

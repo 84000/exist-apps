@@ -1123,13 +1123,13 @@
                 <tr>
                     <td>
                         <a>
-                            <xsl:attribute name="href" select="common:homepage-link(/m:response/@lang)"/>
+                            <xsl:attribute name="href" select="common:homepage-link('', /m:response/@lang)"/>
                             <i class="fa fa-home"/>
                         </a>
                     </td>
                     <td>
                         <a>
-                            <xsl:attribute name="href" select="common:homepage-link(/m:response/@lang)"/>
+                            <xsl:attribute name="href" select="common:homepage-link('', /m:response/@lang)"/>
                             <xsl:value-of select="'84000 Homepage'"/>
                         </a>
                     </td>
@@ -1173,6 +1173,20 @@
                         <a href="/search.html">
                             <xsl:attribute name="href" select="common:internal-link('/search.html', (), '', /m:response/@lang)"/>
                             <xsl:value-of select="'Search the Reading Room'"/>
+                        </a>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <a>
+                            <xsl:attribute name="href" select="common:homepage-link('sponsors', /m:response/@lang)"/>
+                            <i class="fa fa-heart"/>
+                        </a>
+                    </td>
+                    <td>
+                        <a href="/search.html">
+                            <xsl:attribute name="href" select="common:homepage-link('sponsors',/m:response/@lang)"/>
+                            <xsl:value-of select="'Our Sponsors'"/>
                         </a>
                     </td>
                 </tr>
