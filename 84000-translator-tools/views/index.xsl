@@ -397,7 +397,7 @@
                             <xsl:value-of select="'Use your mouse to select any passage from the text below and search for any relevant translations.'"/>
                         </p>
                     </div>
-                    <form action="index.html" method="post" class="form-inline filter-form">
+                    <form action="index.html" method="post" class="form-inline filter-form bottom-margin">
                         
                         <input type="hidden" name="tab" value="tm-search"/>
                         <input type="hidden" name="type" value="folio"/>
