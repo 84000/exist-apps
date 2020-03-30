@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <eft-header xmlns="http://read.84000.co/ns/1.0">
-    <!-- Updated 01.08.2019 -->
+    <!-- Updated 30.03.2020 -->
     <translation id="tag-line">
         <text xml:lang="en">Translating the words of the Buddha</text>
         <text xml:lang="zh">八萬四千 • 佛典傳譯</text>
@@ -90,10 +90,10 @@
             <item url="#work">
                 <label>Our Work</label>
                 <description>With a strong in-house editorial team, we award text-specific grants to teams of translators and continually integrate new technologies in order to make the 230,000 pages of the Tibetan Buddhist Canon freely available in modern languages within 100 years.</description>
-                <item url="https://84000.co/about/vision">
+                <item url="https://84000.co/about/what-we-do">
                     <label>What We Do</label>
                 </item>
-                <item url="https://84000.co/about/origin">
+                <item url="https://84000.co/about/how-we-began">
                     <label>How We Began</label>
                 </item>
                 <item url="https://84000.co/about/grants">
@@ -112,7 +112,7 @@
                 <item url="https://read.84000.co/about/progress.html">
                     <label>Translation Progress</label>
                 </item>
-                <item url="https://read.84000.co/about/engagement.html">
+                <item url="https://read.84000.co/about/impact.html">
                     <label>Reader Engagement</label>
                 </item>
                 <item url="https://84000.co/about/achievements">

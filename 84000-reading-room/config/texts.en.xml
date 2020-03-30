@@ -152,7 +152,12 @@
         Dzigar Kongtrül Rinpoche
     </item>
     <item key="about.progress.page-intro">
-        The translation of the 70,000 pages that comprise the Kangyur is the first step in our 100 year vision, which includes the subsequent translation of the 161,800 pages in the Tengyur.
+        <p>
+            In 2009, it was determined that only 5% of the Canon had ever been translated into a language spoken today. We have raised that figure substantially, and are on track to reach our 2035 target for the complete translation and publication of the Kangyur in English. 
+        </p>
+        <p>
+            We are on track to complete the translation and online publication of the 70,000 pages of the Kangyur by 2035, before dedicating the remaining 75 years of our project to the translation and online publication of the 161,800 pages of the Tengyur. 
+        </p>
     </item>
     <item key="about.progress.translations-published-label">
         Published Translations
@@ -166,6 +171,21 @@
     <item key="about.progress.context-label">
         of the Kangyur
     </item>
+    <item key="about.progress.related-pages">
+        <h3>Other Related Pages</h3>
+        <ul class="list-unstyled">
+            <li>
+                <a href="https://84000.co/about/work-flow">
+                    Learn more about what it takes to produce a page of translation
+                </a>
+            </li>
+            <li>
+                <a href="https://84000.co/facts-and-figures-about-kangyur-and-tengyur/">
+                    Learn more about the Kangyur, the Tengyur, and their contents
+                </a>
+            </li>
+        </ul>
+    </item>
     
     
     <!-- Impact -->
@@ -173,7 +193,7 @@
         /imgs/about-headers/IMPACT-1400.jpg
     </item>
     <item key="about.impact.page-title">
-        Impact
+        Reader Engagement
     </item>
     <item key="about.impact.page-quote">
         “It’s not just the heritage of one tradition, one
@@ -318,6 +338,14 @@
     <item key="about.sponsors.page-quote-author">
         Tri Ralpachen (one of the three Dharma kings of Tibet)
     </item>
+    <item key="about.sponsors.lists-title">
+        Our Sponsors
+    </item>
+    <item key="about.sponsors.page-intro">
+        <p>
+            84000 relies on the support of thousands of individual donors, and we appreciate every donation, no matter the size, as a drop in the ocean is no less important than the wave. We are especially owe a debt of gratitude to our Founding Sponsors, without whose trust this project would not have been possible; our Sūtra Sponsors who sponsor the translation of specific texts in their entirety; and our Matching Funds Donors who have generously pledged to match all recurring donations made online by our friends and supporters. 
+        </p>
+    </item>
     <item key="about.sponsors.matching-funds-title">
         Matching Funds Sponsors
     </item>
@@ -385,6 +413,11 @@
     </item>
     <item key="about.translators.page-quote-author">
         Dzigar Kongtrül Rinpoche
+    </item>
+    <item key="about.translators.page-intro">
+        <p>
+            84000 awards project-specific grants to teams of translators, editors, and consultants in order to facilitate the efficient translation of texts in the Tibetan Buddhist Canon. These teams are external grantees of 84000 whose work is considered integral to the fulfillment of our vision. 
+        </p>
     </item>
     <item key="about.translators.lists-title">
         84000 Translators

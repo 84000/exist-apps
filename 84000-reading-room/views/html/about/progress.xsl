@@ -6,11 +6,9 @@
     <xsl:template match="/m:response">
         <xsl:variable name="content">
             
-            <p>
-                <xsl:call-template name="local-text">
-                    <xsl:with-param name="local-key" select="'page-intro'"/>
-                </xsl:call-template>
-            </p>
+            <xsl:call-template name="local-text">
+                <xsl:with-param name="local-key" select="'page-intro'"/>
+            </xsl:call-template>
             
             <div class="row about-stats">
                 <div class="col-sm-6 col-lg-8">
@@ -137,6 +135,12 @@
                     </xsl:with-param>
                 </xsl:call-template>
                 
+            </div>
+            
+            <div>
+                <xsl:call-template name="local-text">
+                    <xsl:with-param name="local-key" select="'related-pages'"/>
+                </xsl:call-template>
             </div>
             
         </xsl:variable>

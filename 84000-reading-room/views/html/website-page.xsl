@@ -11,7 +11,8 @@
     <xsl:variable name="reading-room-path" select="$environment/m:url[@id eq 'reading-room']/text()" as="xs:string"/>
     <xsl:variable name="communications-site-path" select="$environment/m:url[@id eq 'communications-site']/text()" as="xs:string"/>
     <xsl:variable name="ga-tracking-id" select="$environment/m:google-analytics/@tracking-id" as="xs:string"/>
-    <xsl:variable name="app-version" select="if(/m:response/@app-version) then /m:response/@app-version else 'unknown'" as="xs:string"/>
+    <xsl:variable name="app-version" select="if(/m:response/@app-version) then /m:response/@app-version else ''" as="xs:string"/>
+    <xsl:variable name="app-version-url-attribute" select="if($app-version gt '') then concat('?v=', $app-version) else ''" as="xs:string"/>
     
     <!-- get shared html -->
     <xsl:variable name="eft-header" select="doc('../../xslt/84000-header.xml')/m:eft-header" as="element(m:eft-header)"/>
@@ -89,13 +90,13 @@
             <link rel="stylesheet" type="text/css">
                 <xsl:choose>
                     <xsl:when test="$page-type = ('communications')">
-                        <xsl:attribute name="href" select="concat($front-end-path, '/css/84000-comms.css', '?v=', $app-version)"/>
+                        <xsl:attribute name="href" select="concat($front-end-path, '/css/84000-comms.css', $app-version-url-attribute)"/>
                     </xsl:when>
                     <xsl:when test="$page-type = ('utilities')">
-                        <xsl:attribute name="href" select="concat($front-end-path, '/css/84000-utilities.css', '?v=', $app-version)"/>
+                        <xsl:attribute name="href" select="concat($front-end-path, '/css/84000-utilities.css', $app-version-url-attribute)"/>
                     </xsl:when>
                     <xsl:otherwise>
-                        <xsl:attribute name="href" select="concat($front-end-path, '/css/84000-reading-room.css', '?v=', $app-version)"/>
+                        <xsl:attribute name="href" select="concat($front-end-path, '/css/84000-reading-room.css', $app-version-url-attribute)"/>
                     </xsl:otherwise>
                 </xsl:choose>
             </link>
@@ -168,7 +169,7 @@
             <script>
                 function downloadJSAtOnload() {
                 var element = document.createElement("script");
-                element.src = "<xsl:value-of select="concat($front-end-path, '/js/84000-fe.min.js', '?v=', $app-version)"/>";
+                element.src = "<xsl:value-of select="concat($front-end-path, '/js/84000-fe.min.js', $app-version-url-attribute)"/>";
                 document.body.appendChild(element);
                 }
                 if (window.addEventListener)
@@ -326,7 +327,7 @@
                 
                 <!-- Styles -->
                 <link rel="stylesheet" type="text/css">
-                    <xsl:attribute name="href" select="concat($front-end-path, '/css/84000-reading-room.css', '?v=', $app-version)"/>
+                    <xsl:attribute name="href" select="concat($front-end-path, '/css/84000-reading-room.css', $app-version-url-attribute)"/>
                 </link>
                 <link rel="stylesheet" type="text/css">
                     <xsl:attribute name="href" select="concat($front-end-path, '/css/ie10-viewport-bug-workaround.css')"/>
@@ -359,7 +360,7 @@
                     <script type="text/javascript">
                         function downloadJSAtOnload() {
                         var element = document.createElement("script");
-                        element.src = "<xsl:value-of select="concat($front-end-path, '/js/84000-fe.min.js', '?v=', $app-version)"/>";
+                        element.src = "<xsl:value-of select="concat($front-end-path, '/js/84000-fe.min.js', $app-version-url-attribute)"/>";
                         document.body.appendChild(element);
                         }
                         if (window.addEventListener)

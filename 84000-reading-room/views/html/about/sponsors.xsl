@@ -6,6 +6,18 @@
     <xsl:template match="/m:response">
         <xsl:variable name="content">
             
+            <h2>
+                <xsl:call-template name="local-text">
+                    <xsl:with-param name="local-key" select="'lists-title'"/>
+                </xsl:call-template>
+            </h2>
+            
+            <div>
+                <xsl:call-template name="local-text">
+                    <xsl:with-param name="local-key" select="'page-intro'"/>
+                </xsl:call-template>
+            </div>
+            
             <h3>
                 <xsl:call-template name="local-text">
                     <xsl:with-param name="local-key" select="'matching-funds-title'"/>

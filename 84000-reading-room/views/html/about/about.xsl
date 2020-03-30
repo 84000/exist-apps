@@ -41,35 +41,35 @@
                 </div>
             </div>
             
+            <xsl:if test="$page-quote gt ''">
+                <aside class="panel-header-image">
+                    
+                    <xsl:if test="$header-img-src gt ''">
+                        <xsl:attribute name="style" select="concat('background-image:url(', $front-end-path, $header-img-src), ');'"/>
+                    </xsl:if>
+                    
+                    <blockquote>
+                        <div class="container">
+                            <p>
+                                <xsl:value-of select="$page-quote"/>
+                            </p>
+                            <footer>
+                                <xsl:call-template name="local-text">
+                                    <xsl:with-param name="local-key" select="'page-quote-author'"/>
+                                </xsl:call-template>
+                            </footer>
+                        </div>
+                    </blockquote>
+                    
+                </aside>
+            </xsl:if>
+            
             <div class="content-band">
                 <div class="container">
                     <div class="row">
                         <div class="col-md-8 col-lg-9">
                             
-                            <xsl:if test="$page-quote gt ''">
-                                <aside class="panel panel-default panel-header-image">
-                                    
-                                    <xsl:if test="$header-img-src gt ''">
-                                        <img>
-                                            <xsl:attribute name="src" select="concat($front-end-path, $header-img-src)"/>
-                                        </img>
-                                    </xsl:if>
-                                    
-                                    <blockquote>
-                                        <p>
-                                            <xsl:value-of select="$page-quote"/>
-                                        </p>
-                                        <footer>
-                                            <xsl:call-template name="local-text">
-                                                <xsl:with-param name="local-key" select="'page-quote-author'"/>
-                                            </xsl:call-template>
-                                        </footer>
-                                    </blockquote>
-                                    
-                                </aside>
-                            </xsl:if>
-                            
-                            <article class="top-margin">
+                            <article>
                                 
                                 <h1 class="sr-only">
                                     <xsl:value-of select="$page-title"/>
