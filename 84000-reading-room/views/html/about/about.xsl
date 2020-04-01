@@ -134,7 +134,7 @@
         <xsl:call-template name="website-page">
             <xsl:with-param name="page-url" select="concat('http://read.84000.co/', /m:response/@model-type, '.html')"/>
             <xsl:with-param name="page-class" select="$page-class"/>
-            <xsl:with-param name="page-title" select="concat('84000 | ', $page-title)"/>
+            <xsl:with-param name="page-title" select="concat($page-title, ' | 84000 Translating the Words of the Buddha')"/>
             <xsl:with-param name="page-description" select="''"/>
             <xsl:with-param name="content" select="$content"/>
         </xsl:call-template>

@@ -127,7 +127,7 @@
         <xsl:call-template name="widget-page">
             <xsl:with-param name="page-url" select="'http://read.84000.co/widget/progress.html'"/>
             <xsl:with-param name="page-class" select="''"/>
-            <xsl:with-param name="page-title" select="'84000 | Progress Overview'"/>
+            <xsl:with-param name="page-title" select="'Progress Summary | 84000 Translating the Words of the Buddha'"/>
             <xsl:with-param name="page-description" select="'Overview of the current status of the 84000 project'"/>
             <xsl:with-param name="content" select="$content"/>
         </xsl:call-template>

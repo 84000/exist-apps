@@ -721,7 +721,7 @@ declare function translation:folio-refs-sorted($tei as element(tei:TEI), $resour
     (: Add sort attributes to the folio refs :)
     let $folio-refs := 
         for $ref in $refs-for-resource[@type = ('folio')]
-            let $index-in-resource := functx:index-of-node($refs-for-resource, $ref)
+            let $index-in-resource := functx:index-of-node($refs-for-resource[@type = ('folio')], $ref)
             let $preceding-volume-index-in-resource := max(($volume-refs[xs:integer(@index-in-resource) lt $index-in-resource]/@index-in-resource ! xs:integer(.), 0))
             let $preceding-volume-ref := $volume-refs[xs:integer(@index-in-resource) eq $preceding-volume-index-in-resource]
             let $cref-tokenized := tokenize($ref/@cRef, '\.')
