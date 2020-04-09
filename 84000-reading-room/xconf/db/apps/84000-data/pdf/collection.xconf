@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<collection xmlns="http://exist-db.org/collection-config/1.0">
+    
+    <!-- /db/apps/84000-data/pdf/ -->
+    
+    <index xmlns:m="http://read.84000.co/ns/1.0">
+        
+        <!-- Range indexes -->
+        <range>
+            
+            <!-- file-versions.xml -->
+            <create qname="m:file-version">
+                <field name="file-version-file-name" match="@file-name" type="xs:string"/>
+            </create>
+            
+            <create qname="m:file-version">
+                <field name="file-version-version" match="@version" type="xs:string"/>
+            </create>
+            
+        </range>
+        
+    </index>
+</collection>

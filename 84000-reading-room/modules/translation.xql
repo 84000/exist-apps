@@ -721,7 +721,7 @@ declare function translation:folio-refs-sorted($tei as element(tei:TEI), $resour
     (: Add sort attributes to the folio refs :)
     let $folio-refs := 
         for $ref in $refs-for-resource[@type = ('folio')]
-            let $index-in-resource := functx:index-of-node($refs-for-resource[@type = ('folio')], $ref)
+            let $index-in-resource := functx:index-of-node($refs-for-resource, $ref)
             let $preceding-volume-index-in-resource := max(($volume-refs[xs:integer(@index-in-resource) lt $index-in-resource]/@index-in-resource ! xs:integer(.), 0))
             let $preceding-volume-ref := $volume-refs[xs:integer(@index-in-resource) eq $preceding-volume-index-in-resource]
             let $cref-tokenized := tokenize($ref/@cRef, '\.')
@@ -735,7 +735,7 @@ declare function translation:folio-refs-sorted($tei as element(tei:TEI), $resour
         return
             element { node-name($ref) } {
                 $ref/@*,
-                attribute index-in-resource { $index-in-resource },
+                attribute index-in-resource { functx:index-of-node($refs-for-resource[@type = ('folio')], $ref) },
                 attribute cRef-volume { $preceding-volume-ref/@cRef },
                 $ref/node()
             }
@@ -750,6 +750,16 @@ declare function translation:folio-refs-sorted($tei as element(tei:TEI), $resour
                 attribute index-in-sort { $index-in-sort },
                 $ref/node()
             }
+};
+
+declare function translation:folio-sort-index($tei as element(tei:TEI), $resource-id as xs:string, $index-in-resource as xs:integer) as xs:integer? {
+    
+    (: Convert the index of the folio in the resource into the index of the folio when sorted :)
+    let $refs-sorted := translation:folio-refs-sorted($tei, $resource-id)
+    let $ref := $refs-sorted[xs:integer(@index-in-resource) eq $index-in-resource]
+    return
+        xs:integer($ref/@index-in-sort)
+    
 };
 
 declare function translation:folios($tei as element(tei:TEI), $resource-id as xs:string) as element(m:folios) {
@@ -826,10 +836,10 @@ declare function translation:folio-content($tei as element(tei:TEI), $resource-i
     let $end-ref := $refs[$index-in-resource + 1]
     
     (: Get all sections that may have a <ref/>. They must be siblings so get direct children of section. :)
-    let $translation-paragraphs := $tei//tei:body//tei:div[@type='translation']//tei:div[@type = ('prologue', 'section', 'chapter', 'colophon')]/*[self::tei:head | self::tei:p | self::tei:ab | self::tei:q | self::tei:lg | self::tei:list| self::tei:table | self::tei:trailer]
+    let $translation-paragraphs := $tei//tei:body//tei:div[@type='translation']//tei:div[@type = ('prologue', 'section', 'chapter', 'colophon')]/tei:*[self::tei:head | self::tei:p | self::tei:ab | self::tei:q | self::tei:lg | self::tei:list| self::tei:table | self::tei:trailer]
     
     (: Find the container of the start <ref/> and it's index :)
-    let $start-ref-paragraph := $start-ref/ancestor::*[. = $translation-paragraphs]
+    let $start-ref-paragraph := $start-ref/ancestor::*[. = $translation-paragraphs][1]
     let $start-ref-paragraph-index := 
         if($start-ref-paragraph) then
             functx:index-of-node($translation-paragraphs, $start-ref-paragraph)
@@ -837,8 +847,13 @@ declare function translation:folio-content($tei as element(tei:TEI), $resource-i
             0
     
     (: Find the container of the end <ref/> and it's index :)
-    let $end-ref-paragraph :=  if($end-ref) then $end-ref/ancestor::*[. = $translation-paragraphs] else $translation-paragraphs[last()]
-    let $end-ref-paragraph-index := functx:index-of-node($translation-paragraphs, $end-ref-paragraph)
+    let $end-ref-paragraph :=  $end-ref/ancestor::*[. = $translation-paragraphs][1]
+    let $end-ref-paragraph-index := 
+        if($end-ref-paragraph) then
+            functx:index-of-node($translation-paragraphs, $end-ref-paragraph)
+        else
+            count($translation-paragraphs)
+            
     (: Get paragraphs including and between these 2 points :)
     let $folio-paragraphs := 
         if($start-ref-paragraph) then
@@ -864,16 +879,6 @@ declare function translation:folio-content($tei as element(tei:TEI), $resource-i
             attribute end-ref { $end-ref/@cRef },
             $folio-content-spaced
         }
-};
-
-declare function translation:folio-sort-index($tei as element(tei:TEI), $resource-id as xs:string, $index-in-resource as xs:integer) as xs:integer? {
-    
-    (: Convert the index of the folio in the resource into the index of the folio when sorted :)
-    let $refs-sorted := translation:folio-refs-sorted($tei, $resource-id)
-    let $ref := $refs-sorted[xs:integer(@index-in-resource) eq $index-in-resource]
-    return
-        xs:integer($ref/@index-in-sort)
-    
 };
 
 declare function translation:source-link-id($index-in-resource as xs:integer){

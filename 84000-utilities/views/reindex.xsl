@@ -14,21 +14,21 @@
             <div class="container">
                 <div class="row">
                     <div class="col-sm-6 col-sm-offset-3">
-                
-                        <xsl:if test="m:request/m:parameter[@name eq 'collection'] gt ''">
+                        
+                        <xsl:for-each select="m:result/m:collection">
                             <div role="alert">
                                 <xsl:choose>
-                                    <xsl:when test="m:result/@reindexed eq 'true'">
+                                    <xsl:when test="@reindexed eq 'true'">
                                         <xsl:attribute name="class" select="'alert alert-success small text-center'"/>
-                                        <xsl:value-of select="concat('Re-indexed: ', m:result/@collection)"/>
+                                        <xsl:value-of select="concat('Re-indexed: ', @path)"/>
                                     </xsl:when>
                                     <xsl:otherwise>
                                         <xsl:attribute name="class" select="'alert alert-danger small text-center'"/>
-                                        <xsl:value-of select="concat('Re-index failed: ', m:result/@collection)"/>
+                                        <xsl:value-of select="concat('Re-index failed: ', @path)"/>
                                     </xsl:otherwise>
                                 </xsl:choose>
                             </div>
-                        </xsl:if>
+                        </xsl:for-each>
                         
                         <div class="alert alert-info small text-center">
                             <p>Re-index database collections if the index is missing items or the config is updated.</p>
@@ -61,6 +61,9 @@
                             </li>
                             <li>
                                 <a href="?collection=reading-room-config">Reading Room config</a>
+                            </li>
+                            <li>
+                                <a href="?collection=file-versions">File versions</a>
                             </li>
                         </ul>
                         

@@ -34,6 +34,7 @@ declare variable $common:environment := doc($common:environment-path)/m:environm
 
 declare variable $common:diacritic-letters := 'āḍḥīḷḹṃṇñṅṛṝṣśṭūṁ';
 declare variable $common:diacritic-letters-without := 'adhillmnnnrrsstum';
+declare variable $common:node-ws := '&#10;&#32;&#32;&#32;&#32;';
 declare variable $common:line-ws := '&#10;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;';
 
 declare
@@ -329,9 +330,9 @@ declare function common:mark-text($text as xs:string, $find as xs:string*, $mode
     let $find-diacritics := 
         if($mode = ('words')) then
             for $word in tokenize($text, '[^\w­]') (: Not alphanumeric or soft-hyphen (There's a soft-hyphen in there too i.e.[^\w-] !!!) :)
-            let $word-normalized := lower-case(common:normalized-chars($word))
-            (: If it's an input word and it's changed :)
-            where not(normalize-unicode($word) eq $word-normalized)
+                let $word-normalized := lower-case(common:normalized-chars($word))
+                (: If it's an input word and it's changed :)
+                where not(normalize-unicode($word) eq $word-normalized)
             group by $word-normalized
                 for $find-match in $find-tokenized[starts-with(., substring($word-normalized, 1, string-length(.)))]
                 (:group by $find-match:)
@@ -355,7 +356,6 @@ declare function common:mark-text($text as xs:string, $find as xs:string*, $mode
     
     (: Output result :)
     return (
-        (:text { 'Find: ' || string-join(($find-tokenized, $find-diacritics), '/') || ' :: ' },:)
         for $analyze-result-text in $analyze-result//text()
         return
             if($analyze-result-text[parent::xpath:group]) then
@@ -364,7 +364,6 @@ declare function common:mark-text($text as xs:string, $find as xs:string*, $mode
                 }
             else
                 $analyze-result-text
-        (:,text { ' :: ' }:)
     )
         
 };
@@ -580,14 +579,12 @@ declare function common:update($request-parameter as xs:string, $existing-value 
     else 
         
         (: Add a return character before elements so it's not too unreadable :)
-        let $add-return-char :=
-            if(not($new-value instance of xs:anyAtomicType) and functx:node-kind($new-value) eq 'element' and not($existing-value)) then
-                if(functx:node-kind($insert-following) eq 'element') then
-                    update insert text {'&#10;'} following $insert-following
-                else if(functx:node-kind($insert-into) eq 'element') then
-                    update insert text {'&#10;'} into $insert-into
-                else
-                    ()
+        let $padding-ws :=
+            if(
+                not($new-value instance of xs:anyAtomicType)
+                and functx:node-kind($new-value) eq 'element'
+            ) then
+                text { $common:node-ws }
             else
                 ()
         
@@ -603,12 +600,12 @@ declare function common:update($request-parameter as xs:string, $existing-value 
             
                     if($insert-following) then                      (: Insert following :)
                     (
-                        update insert $new-value following $insert-following,
+                        update insert ($padding-ws, $new-value) following $insert-following,
                         attribute update { 'insert' }
                     )
                     else if($insert-into) then                      (: Insert wherever :)
                     (
-                        update insert $new-value into $insert-into,
+                        update insert ($padding-ws, $new-value) into $insert-into,
                         attribute update { 'insert' }
                     )
                     else

@@ -311,7 +311,8 @@
         <xsl:param name="lang" as="xs:string" required="yes"/>
         <xsl:variable name="lang-attribute" select="if($lang = ('zh')) then concat('lang=', $lang) else ()"/>
         <xsl:variable name="attributes-with-lang" select="($attributes, $lang-attribute)"/>
-        <xsl:value-of select="concat($url, if(count($attributes-with-lang) gt 0) then concat('?', string-join($attributes-with-lang, '&amp;')) else '', $fragment-id)"/>
+        <xsl:variable name="url-append" select="if(contains($url, '?')) then '&amp;' else '?'"/>
+        <xsl:value-of select="concat($url, if(count($attributes-with-lang) gt 0) then concat($url-append, string-join($attributes-with-lang, '&amp;')) else '', $fragment-id)"/>
     </xsl:function>
     
     <xsl:function name="common:homepage-link">

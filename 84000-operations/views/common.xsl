@@ -10,7 +10,7 @@
         <xsl:param name="active-tab"/>
         <xsl:param name="page-content" required="yes"/>
         
-        <div class="title-band">
+        <div class="title-band hidden-print">
             <div class="container">
                 <div class="center-vertical full-width">
                     <span class="logo">

@@ -27,8 +27,7 @@
                     
                     <xsl:call-template name="alert-updated"/>
                     
-                    <xsl:variable name="submission" select="m:translation-status/m:submission[compare(./@id, /m:response/m:request/@submission-id) eq 0]"/>
-                    <xsl:variable name="latest-submission" select="common:index-of-node(m:translation-status/m:submission[compare(./@file-type, $submission/@file-type) eq 0], $submission) eq 1"/>
+                    <xsl:variable name="submission" select="m:submission"/>
                     
                     <div class="center-vertical full-width">
                         <span>
@@ -116,7 +115,7 @@
                                 <div class="checkbox">
                                     <label>
                                         <input type="checkbox" value="latest" disabled="disabled">
-                                            <xsl:if test="$latest-submission">
+                                            <xsl:if test="$submission/@latest eq 'true'">
                                                 <xsl:attribute name="checked" select="'checked'"/>
                                             </xsl:if>
                                         </input>

@@ -56,8 +56,7 @@ let $commit-version :=
     if($store:conf and not(translation-status:is-current-version($tei-version-str, $current-version-str))) then (
         
         (: Commit to GitHub :)
-        (:deploy:commit-data('sync', tei-content:document-url($tei), ''),:)
-        deploy:push('data-tei', (), (), tei-content:document-url($tei)),
+        deploy:push('data-tei', (), concat($text-id, ' / ', $tei-version-str), tei-content:document-url($tei)),
         
         (: Store associated files :)
         if(tei-content:translation-status-group($tei) eq 'published')then
@@ -116,21 +115,15 @@ return
                     translation:contributors($tei, true())
                 }
             </translation>,
+            element { QName('http://read.84000.co/ns/1.0', 'translation-status') } {
+                translation-status:texts($text-id, true())
+            },
             tei-content:text-statuses-selected(tei-content:translation-status($tei)),
             contributors:persons(false()),
             contributors:teams(true(), false(), false()),
             $tei-content:title-types,
             doc('../config/contributor-types.xml'),
-            doc('../config/publication-tasks.xml'),
-            doc('../config/submission-checklist.xml'),
-            <translation-status xmlns="http://read.84000.co/ns/1.0" >
-            {
-                translation-status:notes($text-id),
-                translation-status:tasks($text-id),
-                translation-status:submissions($text-id),
-                translation-status:status-updates($tei)
-            }
-            </translation-status>
+            doc('../config/submission-checklist.xml')
         )
     )
     

@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <publication-tasks xmlns="http://read.84000.co/ns/1.0">
+    <!--Original tasks-->
     <task id="final-translation">Submit final translation</task>
     <task id="final-glossary">Submit final glossary</task>
     <task id="generate-tei-translation">Generate translation TEI</task>
@@ -10,4 +11,11 @@
     <task id="chief-editor-review">Chief editor review</task>
     <task id="team-review">Team review</task>
     <task id="chief-editor-approval">Chief editor approval</task>
+    <!--<!-\-New Tasks-\->
+    <task id="final-translation">Complete draft and ancillaries submitted</task>
+    <task id="editorial-review-completed">Editorial review completed</task>
+    <task id="copyediting-completed">Copyediting completed</task>
+    <task id="markup-completed">Markup completed</task>
+    <task id="proofing-completed">Final proofing completed</task>
+    <task id="publication">Publication</task>-->
 </publication-tasks>

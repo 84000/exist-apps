@@ -52,7 +52,7 @@
                             <!-- Search results -->
                             <xsl:when test="/m:response/m:request/@tab eq 'search'">
                                 
-                                <div class="alert alert-warning small text-center">
+                                <div class="alert alert-info small text-center">
                                     <p>
                                         <xsl:value-of select="'Use the form below to search for terms, phrases, titles, and so forth in published and nearly-published 84000 translations. Search results link directly to passages in the Reading Room.'"/>
                                     </p>
@@ -71,9 +71,7 @@
                             
                             <!-- Tibetan Search -->
                             <xsl:when test="/m:response/m:request/@tab eq 'tm-search'">
-                                
                                 <xsl:call-template name="tm-search"/>
-                                
                             </xsl:when>
                             
                             <!-- Translations list -->
@@ -342,8 +340,10 @@
     
     <xsl:template name="tm-search">
         
-        <div class="alert alert-warning small text-center">
-            <p>This page searches translation memories created from published 84000 translations. It will additionally return any results from 84000's cumulative glossary. Search for a term or phrase by entering Tibetan, Wylie or English into the search fields, or search larger passages of Tibetan in the <b>select</b> tab.</p>
+        <div class="alert alert-info small text-center">
+            <p>
+                <xsl:value-of select="'This page searches translation memories created from published 84000 translations. It will additionally return any results from the 84000 cumulative glossary. Search for a term or phrase by entering Tibetan, Wylie or English into the search fields, or search larger passages of Tibetan in the select tab.'"/>
+            </p>
         </div>
        
         <div id="search-container">
@@ -671,8 +671,10 @@
     </xsl:template>
     
     <xsl:template name="translations">
-        <div class="alert alert-warning small text-center">
-            <p>This page lists all current translations and some meta data. The <strong>editor mode</strong> links open the translations with all sections expanded, this is convenient for searching, and an embedded annotation tool. For more information about using this tool please contact us.</p>
+        <div class="alert alert-info small text-center">
+            <p>
+                <xsl:value-of select="'This page lists all current translations and some meta data. The editor mode links open the translations with all sections expanded, this is convenient for searching, and an embedded annotation tool. For more information about using this tool please contact us.'"/>
+            </p>
         </div>
         <table class="table table-responsive">
             <thead>

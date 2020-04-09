@@ -51,9 +51,7 @@ return
                     translation:toh($tei,'')
                 }
             </translation>,
-            doc('../config/submission-checklist.xml'),
-            element { QName('http://read.84000.co/ns/1.0', 'translation-status') } {
-                translation-status:submissions($text-id)
-            }
+            translation-status:submission($text-id, $submission-id),
+            doc('../config/submission-checklist.xml')
         )
     )

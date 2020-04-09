@@ -14,7 +14,7 @@ import module namespace sponsorship="http://read.84000.co/sponsorship" at "spons
 import module namespace source="http://read.84000.co/source" at "source.xql";
 import module namespace functx="http://www.functx.com";
 
-declare variable $translations:page-size-ranges := doc(concat($common:app-config, '/', 'page-size-ranges.xml'));
+(:declare variable $translations:page-size-ranges := doc(concat($common:app-config, '/', 'page-size-ranges.xml'));:)
 
 declare function translations:work-tei($work as xs:string) as element()* {
     if($work eq 'all') then
@@ -113,22 +113,43 @@ declare function translations:summary($work as xs:string) as element() {
         </outline-summary>
 };
 
-declare function translations:filtered-texts($work as xs:string, $status as xs:string*, $sort as xs:string, $range as xs:string, $sponsorship-group as xs:string, $search-toh as xs:string, $deduplicate as xs:string) as element()? {
+declare function translations:filtered-texts($work as xs:string, $status as xs:string*, $sort as xs:string, $pages-min as xs:string, $pages-max as xs:string, $sponsorship-group as xs:string, $toh-min as xs:string, $toh-max as xs:string, $deduplicate as xs:string) as element(m:texts)? {
     
     (: Status parameter :)
     let $selected-statuses := $tei-content:text-statuses//m:status[@status-id = $status]/@status-id
     
     (: Range parameter :)
-    let $selected-range := $translations:page-size-ranges//m:range[@id = $range]
+    let $pages-min :=
+        if(functx:is-a-number($pages-min)) then
+            xs:integer($pages-min)
+        else
+            0
+    
+    let $pages-upper := 10000
+    let $pages-max :=
+        if(functx:is-a-number($pages-max)) then
+            xs:integer($pages-max)
+        else
+            $pages-upper
     
     (: Sponsorship parameter :)
     let $selected-sponsorship-group := $sponsorship:sponsorship-groups/m:group[@id eq $sponsorship-group]
     
-    (: Search parameter :)
-    let $search-toh := normalize-space($search-toh)
+    (: Toh range :)
+    let $toh-min := 
+        if(functx:is-a-number($toh-min)) then
+            xs:integer($toh-min)
+        else
+            0
+    
+    let $toh-max := 
+        if(functx:is-a-number($toh-max)) then
+            xs:integer($toh-max)
+        else
+            $toh-min
     
     (: Check there is some parameter set so we are not getting everything :)
-    where $selected-statuses or $selected-range or $selected-sponsorship-group or $search-toh gt ''
+    where $selected-statuses or $pages-min gt 0 or $pages-max lt $pages-upper or $selected-sponsorship-group or $toh-min gt 0
     return
         (: All tei in this section :)
         let $teis := translations:work-tei($work)
@@ -151,7 +172,8 @@ declare function translations:filtered-texts($work as xs:string, $status as xs:s
         
         (: Filter by page sizes :)
         let $teis :=
-            if($selected-range) then
+            if($pages-min gt 0 or $pages-max lt $pages-upper) then
+            
                 (: Some texts are combined into projects so we need the combined page count :)
                 if($deduplicate eq 'sponsorship') then
                     for $tei in $teis
@@ -164,15 +186,15 @@ declare function translations:filtered-texts($work as xs:string, $status as xs:s
                                 $tei/tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl[1]/tei:location/@count-pages
                                 
                         where 
-                            xs:integer($count-pages) ge xs:integer($selected-range/@min)
-                            and xs:integer($count-pages) le xs:integer($selected-range/@max)
+                            xs:integer($count-pages) ge $pages-min
+                            and xs:integer($count-pages) le $pages-max
                         
                     return
                         $tei
                 else
                     $teis[
                         tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl
-                            [tei:location/@count-pages gt '0']/tei:location[@count-pages >= xs:integer($selected-range/@min)][@count-pages <= xs:integer($selected-range/@max)]
+                            [tei:location/@count-pages gt '0']/tei:location[@count-pages >= $pages-min][@count-pages <= $pages-max]
                     ]
             else
                 $teis
@@ -195,8 +217,17 @@ declare function translations:filtered-texts($work as xs:string, $status as xs:s
         
         (: Filter by Toh:)
         let $teis :=
-            if($search-toh gt '') then
-                $teis[tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl/@key eq concat('toh', $search-toh)]
+            if($toh-min gt 0) then
+                for $tei in $teis
+                    let $toh-in-range :=
+                        for $toh-key in $tei/tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl/@key
+                            let $toh := translation:toh($tei, $toh-key)
+                            let $toh-number := $toh/@number ! xs:integer(.)
+                        where $toh-number ge $toh-min and $toh-number le $toh-max
+                        return
+                            $toh
+                    where $toh-in-range
+                return $tei
             else
                 $teis
         
@@ -215,35 +246,28 @@ declare function translations:filtered-texts($work as xs:string, $status as xs:s
                     return
                         translations:filtered-text($tei, $bibl/@key, $include-sponsors, $include-downloads, false())
         
-        (: count of texts :)
-        let $texts-count := count($texts)
-        
-        (: count of pages :)
-        let $texts-pages-count := sum($texts/tei:bibl/tei:location/@count-pages ! common:integer(.))
-        
         (: Max 1024 results in a set - this is an underlying restriction in eXist :)
         let $texts :=
-            if($texts-count gt 1024) then
+            if(count($texts) gt 1024) then
                 subsequence($texts, 1, 1024)
             else
                 $texts
         
         return 
-            <texts xmlns="http://read.84000.co/ns/1.0"
-                count="{ $texts-count }" 
-                count-pages="{ $texts-pages-count }"  
-                work="{ $work }" 
-                status="{ $status }" 
-                sort="{ $sort }" 
-                range="{ $range }" 
-                sponsorship-group="{ $sponsorship-group }"
-                search-toh="{ $search-toh }"
-                deduplicate="{ $deduplicate }">
-                {
-                    (: Sort the result, the sort may be based on the text detail :)
-                    translations:sorted-texts($texts, $sort)
-                }
-            </texts>
+            element { QName('http://read.84000.co/ns/1.0', 'texts') } {
+                attribute work { $work },
+                attribute status { $status },
+                attribute sort { $sort },
+                attribute pages-min { $pages-min },
+                attribute pages-max { $pages-max },
+                attribute sponsorship-group { $sponsorship-group },
+                attribute toh-min { $toh-min },
+                attribute toh-max { $toh-max },
+                attribute deduplicate { $deduplicate },
+                
+                (: Sort the result, the sort may be based on the text detail :)
+                translations:sorted-texts($texts, $sort)
+            }
 };
 
 declare function translations:sorted-texts($texts as element(m:text)*, $sort as xs:string) as element()* {
@@ -335,8 +359,9 @@ declare function translations:translations($text-statuses as xs:string*, $resour
                 <text-status id="{ $text-status-id }"/>,
                 
             (: Return texts with this status :)
-            for $toh-key in $translations//tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl/@key
-                let $tei := $translations[tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl[@key eq lower-case($toh-key)]]
+            for $bibl in $translations//tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl
+                let $toh-key := $bibl/@key
+                let $tei := $bibl/ancestor::tei:TEI
             return
                 translations:filtered-text($tei, $toh-key, false(), $include-downloads, $include-folios)
                 

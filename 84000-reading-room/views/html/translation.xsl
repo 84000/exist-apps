@@ -414,7 +414,7 @@
                 </div>
                 
                 <div id="link-to-trans-top-container" class="fixed-btn-container">
-                    <a href="#top" class="btn-round scroll-to-anchor" title="top">
+                    <a href="#top" class="btn-round scroll-to-anchor link-to-top" title="top">
                         <i class="fa fa-arrow-up" aria-hidden="true"/>
                     </a>
                 </div>

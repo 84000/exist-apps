@@ -10,6 +10,7 @@
     <!-- Accordion panel -->
     <xsl:template name="panel">
         <xsl:param name="type" required="yes"/>
+        <xsl:param name="title" required="yes"/>
         <xsl:param name="form" required="yes"/>
         <xsl:param name="flag"/>
         <xsl:param name="active"/>
@@ -26,7 +27,7 @@
                     <div class="center-vertical full-width">
                         <span>
                             <span class="h3 panel-title">
-                                <xsl:value-of select="concat($type, ' ')"/>
+                                <xsl:value-of select="concat($title, ' ')"/>
                                 <xsl:copy-of select="$flag"/>
                             </span>
                         </span>
@@ -55,6 +56,7 @@
         <xsl:param name="active"/>
         <xsl:call-template name="panel">
             <xsl:with-param name="type" select="'Titles'"/>
+            <xsl:with-param name="title" select="'Titles'"/>
             <xsl:with-param name="active" select="$active"/>
             <xsl:with-param name="form">
                 <form method="post" class="form-horizontal form-update" id="titles-form">
@@ -161,6 +163,7 @@
         <xsl:param name="active"/>
         <xsl:call-template name="panel">
             <xsl:with-param name="type" select="'Locations'"/>
+            <xsl:with-param name="title" select="'Locations'"/>
             <xsl:with-param name="active" select="$active"/>
             <xsl:with-param name="form">
                 <form method="post" class="form-horizontal form-update" id="locations-form">
@@ -235,6 +238,7 @@
         <xsl:param name="active"/>
         <xsl:call-template name="panel">
             <xsl:with-param name="type" select="'Contributors'"/>
+            <xsl:with-param name="title" select="'Contributors'"/>
             <xsl:with-param name="active" select="$active"/>
             <xsl:with-param name="form">
                 <form method="post" class="form-horizontal form-update" id="contributors-form">
@@ -464,7 +468,8 @@
     <xsl:template name="translation-status-form-panel">
         <xsl:param name="active"/>
         <xsl:call-template name="panel">
-            <xsl:with-param name="type" select="'Status'"/>
+            <xsl:with-param name="type" select="'PublicationStatus'"/>
+            <xsl:with-param name="title" select="'Publication Status'"/>
             <xsl:with-param name="active" select="$active"/>
             <xsl:with-param name="form">
                 <form method="post" class="form-horizontal form-update" id="publication-status-form">
@@ -489,11 +494,33 @@
                     </div>
                     
                     <div class="row">
-                        <!-- <div class="col-sm-12"> -->
-                        <div class="col-sm-8">
+                        
+                        <div class="col-sm-8 match-this-height" data-match-height="status-form">
+                            
+                            <!--Contract details-->
+                            <div class="form-group">
+                                <label class="control-label col-sm-3" for="contract-number">
+                                    <xsl:value-of select="'Contract number:'"/>
+                                </label>
+                                <div class="col-sm-3">
+                                    <input type="text" name="contract-number" id="contract-number" class="form-control" placeholder="">
+                                        <xsl:attribute name="value" select="normalize-space(m:translation-status/m:text/m:contract/@number)"/>
+                                    </input>
+                                </div>
+                                <label class="control-label col-sm-3" for="contract-date">
+                                    <xsl:value-of select="'Contract date:'"/>
+                                </label>
+                                <div class="col-sm-3">
+                                    <input type="date" name="contract-date" id="contract-date" class="form-control">
+                                        <xsl:attribute name="value" select="m:translation-status/m:text/m:contract/@date"/>
+                                    </input>
+                                </div>
+                            </div>
+                            
+                            <!--Translation Status-->
                             <div class="form-group">
                                 <label class="control-label col-sm-3" for="translation-status">
-                                    <xsl:value-of select="'Translation Status'"/>
+                                    <xsl:value-of select="'Translation Status:'"/>
                                 </label>
                                 <div class="col-sm-9">
                                     <select class="form-control" name="translation-status" id="translation-status">
@@ -511,11 +538,13 @@
                                     </select>
                                 </div>
                             </div>
+                            
+                            <!--Publication Date-->
                             <div class="form-group">
                                 <label class="control-label col-sm-3" for="publication-date">
-                                    <xsl:value-of select="'Publication Date'"/>
+                                    <xsl:value-of select="'Publication Date:'"/>
                                 </label>
-                                <div class="col-sm-4">
+                                <div class="col-sm-3">
                                     <input type="date" name="publication-date" id="publication-date" class="form-control">
                                         <xsl:attribute name="value" select="m:translation/m:translation/m:publication-date"/>
                                         <xsl:if test="m:text-statuses/m:status[@selected eq 'selected']/@value eq '1'">
@@ -524,9 +553,11 @@
                                     </input>
                                 </div>
                             </div>
+                            
+                            <!--Version-->
                             <div class="form-group">
                                 <label class="control-label col-sm-3" for="text-version">
-                                    <xsl:value-of select="'Version'"/>
+                                    <xsl:value-of select="'Version:'"/>
                                 </label>
                                 <div class="col-sm-2">
                                     <input type="text" name="text-version" id="text-version" class="form-control" placeholder="e.g. v 1.0">
@@ -567,154 +598,168 @@
                                     <input type="text" name="update-notes" id="update-notes" class="form-control" placeholder="Add a note about this version"/>
                                 </div>
                             </div>
-                            <!--  -->
+                            
+                            <!-- Action note -->
                             <div class="form-group">
                                 <label class="control-label col-sm-3" for="progress-notes">
                                     <xsl:value-of select="'Awaiting action from:'"/>
                                 </label>
-                                <div class="col-sm-4">
+                                <div class="col-sm-3">
                                     <input type="text" class="form-control" name="action-note" id="action-note" placeholder="e.g. Konchog">
-                                        <xsl:attribute name="value" select="normalize-space(m:translation-status/m:action-note)"/>
+                                        <xsl:attribute name="value" select="normalize-space(m:translation-status/m:text/m:action-note)"/>
                                     </input>
                                 </div>
                             </div>
+                            
+                            <!-- Progress note -->
                             <div class="form-group">
                                 <label class="control-label col-sm-3" for="progress-note">
                                     <xsl:value-of select="'Progress notes:'"/>
                                 </label>
                                 <div class="col-sm-9">
-                                    <textarea class="form-control" rows="5" name="progress-note" id="progress-note" placeholder="Notes about the status of the translation...">
-                                        <xsl:copy-of select="normalize-space(m:translation-status/m:progress-note)"/>
+                                    <textarea class="form-control" rows="4" name="progress-note" id="progress-note" placeholder="Notes about the status of the translation...">
+                                        <xsl:copy-of select="normalize-space(m:translation-status/m:text/m:progress-note)"/>
                                     </textarea>
-                                    <xsl:if test="m:translation-status/m:progress-note/@last-edited">
+                                    <xsl:if test="m:translation-status/m:text/m:progress-note/@last-edited">
                                         <div class="small text-muted sml-margin top">
-                                            <xsl:value-of select="common:date-user-string('Last updated', m:translation-status/m:progress-note/@last-edited, m:translation-status/m:progress-note/@last-edited-by)"/>
+                                            <xsl:value-of select="common:date-user-string('Last updated', m:translation-status/m:text/m:progress-note/@last-edited, m:translation-status/m:text/m:progress-note/@last-edited-by)"/>
                                         </div>
                                     </xsl:if>
                                 </div>
                             </div>
+                            
+                            <!-- Text note -->
                             <div class="form-group">
                                 <label class="control-label col-sm-3" for="text-note">
                                     <xsl:value-of select="'Text notes:'"/>
                                 </label>
                                 <div class="col-sm-9">
-                                    <textarea class="form-control" rows="5" name="text-note" id="text-note" placeholder="Notes about the text itself...">
-                                        <xsl:copy-of select="normalize-space(m:translation-status/m:text-note)"/>
+                                    <textarea class="form-control" rows="4" name="text-note" id="text-note" placeholder="Notes about the text itself...">
+                                        <xsl:copy-of select="normalize-space(m:translation-status/m:text/m:text-note)"/>
                                     </textarea>
-                                    <xsl:if test="m:translation-status/m:text-note/@last-edited">
+                                    <xsl:if test="m:translation-status/m:text/m:text-note/@last-edited">
                                         <div class="small text-muted sml-margin top">
-                                            <xsl:value-of select="common:date-user-string('Last updated', m:translation-status/m:text-note/@last-edited, m:translation-status/m:text-note/@last-edited-by)"/>
+                                            <xsl:value-of select="common:date-user-string('Last updated', m:translation-status/m:text/m:text-note/@last-edited, m:translation-status/m:text/m:text-note/@last-edited-by)"/>
                                         </div>
                                     </xsl:if>
                                 </div>
                             </div>
+                            
+                            <!-- Target dates -->
+                            <xsl:variable name="target-dates" select="m:translation-status/m:text/m:target-date"/>
+                            <xsl:variable name="actual-dates" select="m:translation-status/m:text/m:status-update[@update eq 'translation-status']"/>
+                            <div class="form-group">
+                                <label class="control-label col-sm-3 top-margin" for="text-note">
+                                    <xsl:value-of select="'Target dates:'"/>
+                                </label>
+                                <div class="col-sm-9 tests">
+                                    <table class="table table-responsive table-icons no-border">
+                                        <thead>
+                                            <tr>
+                                                <th>
+                                                    <xsl:value-of select="'Status'"/>
+                                                </th>
+                                                <th>
+                                                    <xsl:value-of select="'Target date'"/>
+                                                </th>
+                                                <th colspan="2">
+                                                    <xsl:value-of select="'Actual date'"/>
+                                                </th>
+                                                <th>
+                                                    <xsl:value-of select="''"/>
+                                                </th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <xsl:for-each select="m:text-statuses/m:status[@target-date eq 'true']">
+                                                
+                                                <xsl:variable name="status-id" select="@status-id"/>
+                                                <xsl:variable name="status-surpassed" select="@selected eq 'selected' or preceding-sibling::m:status[@selected eq 'selected']"/>
+                                                <xsl:variable name="target-date" select="$target-dates[@status-id eq $status-id]"/>
+                                                
+                                                <xsl:variable name="actual-date" select="if($status-surpassed) then $actual-dates[@value eq $status-id] else ()"/>
+                                                <xsl:variable name="target-date-hit" select="($target-date[@date-time] and $actual-date[@date-time] and xs:dateTime($target-date/@date-time) ge xs:dateTime($actual-date/@date-time))"/>
+                                                <xsl:variable name="target-date-miss" select="($target-date[@date-time] and (xs:dateTime($target-date/@date-time) lt current-dateTime()) or ($actual-date[@date-time] and xs:dateTime($target-date/@date-time) lt xs:dateTime($actual-date/@date-time)))"/>
+                                                
+                                                <tr>
+                                                    <td class="small">
+                                                        <xsl:if test="$status-surpassed">
+                                                            <xsl:attribute name="class" select="'text-muted'"/>
+                                                        </xsl:if>
+                                                        <xsl:value-of select="common:limit-str(concat($status-id, ' / ', text()), 28)"/>
+                                                    </td>
+                                                    <td>
+                                                        <input type="date" class="form-control">
+                                                            <xsl:attribute name="name" select="concat('target-date-', @index)"/>
+                                                            <xsl:if test="$target-date">
+                                                                <xsl:attribute name="value" select="format-dateTime($target-date/@date-time, '[Y]-[M01]-[D01]')"/>
+                                                            </xsl:if>
+                                                            <xsl:if test="$status-surpassed">
+                                                                <xsl:attribute name="disabled" select="'disabled'"/>
+                                                            </xsl:if>
+                                                        </input>
+                                                    </td>
+                                                    <td class="icon">
+                                                        <xsl:choose>
+                                                            <xsl:when test="$target-date-hit">
+                                                                <i class="fa fa-check-circle"/>
+                                                            </xsl:when>
+                                                            <xsl:when test="$target-date-miss">
+                                                                <i class="fa fa-times-circle"/>
+                                                            </xsl:when>
+                                                            <xsl:when test="$target-date[@next eq 'true']">
+                                                                <i class="fa fa-exclamation-circle"/>
+                                                            </xsl:when>
+                                                            <xsl:when test="$status-surpassed">
+                                                                <i class="fa fa-question-circle"/>
+                                                            </xsl:when>
+                                                        </xsl:choose>
+                                                    </td>
+                                                    <td class="small">
+                                                        <xsl:choose>
+                                                            <xsl:when test="$actual-date[@date-time]">
+                                                                <xsl:value-of select="format-dateTime($actual-date/@date-time, '[D01] [MNn,*-3] [Y]')"/>
+                                                            </xsl:when>
+                                                            <xsl:when test="$target-date[@next eq 'true']">
+                                                                <xsl:choose>
+                                                                    <xsl:when test="xs:integer($target-date/@due-days) ge 0">
+                                                                        <xsl:value-of select="'Due in '"/>
+                                                                        <xsl:value-of select="$target-date/@due-days"/>
+                                                                        <xsl:value-of select="' days'"/>
+                                                                    </xsl:when>
+                                                                    <xsl:when test="xs:integer($target-date/@due-days) lt 0">
+                                                                        <xsl:value-of select="'Overdue '"/>
+                                                                        <xsl:value-of select="abs($target-date/@due-days)"/>
+                                                                        <xsl:value-of select="' days'"/>
+                                                                    </xsl:when>
+                                                                </xsl:choose>
+                                                            </xsl:when>
+                                                        </xsl:choose>
+                                                    </td>
+                                                </tr>
+                                            </xsl:for-each>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            
+                            
                         </div>
                         
-                        <!--  -->
+                        
                         <div class="col-sm-4">
-                            <h4 class="no-top-margin">
-                                <xsl:choose>
-                                    <xsl:when test="m:translation-status/m:task[not(@checked-off)][@added]">
-                                        <xsl:attribute name="class" select="'no-top-margin text-danger'"/>
-                                        <xsl:value-of select="'Current Tasks'"/>
-                                    </xsl:when>
-                                    <xsl:otherwise>
-                                        <xsl:value-of select="'No Current Tasks'"/>
-                                    </xsl:otherwise>
-                                </xsl:choose>
-                            </h4>
-                            <!-- This task/@id is in the history or in the current tasks -->
-                            <xsl:variable name="task-ids-in-use" select="m:translation-status/m:task/@task-id"/>
-                            <xsl:variable name="custom-task">
-                                <m:task/>
-                            </xsl:variable>
-                            <div>
-                                <xsl:for-each select="(m:translation-status/m:task[not(@checked-off)][@added] | m:publication-tasks/m:task | $custom-task)">
-                                    <xsl:sort select="if(@added) then 0 else 1"/>
-                                    <xsl:sort select="@added"/>
-                                    <div class="pull-quote red-quote">
-                                        <xsl:choose>
-                                            <xsl:when test="@added and @xml:id">
-                                                <div class="row">
-                                                    <div class="col-sm-9 sml-margin top">
-                                                        <xsl:value-of select="text()"/>
-                                                    </div>
-                                                    <div class="col-sm-3">
-                                                        <div class="checkbox">
-                                                            <label class="small">
-                                                                <input type="checkbox" name="task-check-off[]">
-                                                                    <xsl:attribute name="value" select="@xml:id"/>
-                                                                </input>
-                                                                <xsl:value-of select="'Done'"/>
-                                                            </label>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </xsl:when>
-                                            <xsl:otherwise>
-                                                <xsl:variable name="id" select="if(@id) then @id else 'custom'"/>
-                                                <xsl:variable name="label" select="if(@id) then text() else 'Custom task'"/>
-                                                <div class="collapse">
-                                                    <xsl:attribute name="id" select="concat('task-add-', $id)"/>
-                                                    <input type="text" class="form-control">
-                                                        <xsl:attribute name="name" select="concat('task-add-', $id)"/>
-                                                        <xsl:attribute name="value" select="text()"/>
-                                                        <xsl:attribute name="placeholder" select="$label"/>
-                                                    </input>
-                                                    <input type="checkbox" name="task-add[]" class="hidden">
-                                                        <xsl:attribute name="value" select="$id"/>
-                                                    </input>
-                                                </div>
-                                            </xsl:otherwise>
-                                        </xsl:choose>
-                                    </div>
-                                </xsl:for-each>
-                            </div>
-                            <a href="#task-add" class="collapsed text-color small" role="button" data-toggle="collapse" aria-controls="task-add" aria-expanded="false">
-                                <div class="center-vertical text-danger">
-                                    <span>
-                                        <i class="fa fa-chevron-down"/>
-                                    </span>
-                                    <span>
-                                        <xsl:value-of select="'Add to current tasks'"/>
-                                    </span>
-                                </div>
-                            </a>
-                            <div class="collapse" id="task-add">
-                                <p class="small text-muted">
-                                    <xsl:value-of select="'After selecting a standard task you can modify its label with your own text, however the task remains linked to its type. If you want to add an entirely different task type please add a &#34;Custom task&#34;.'"/>
-                                </p>
-                                <ol class="small">
-                                    <xsl:for-each select="m:publication-tasks/m:task | $custom-task">
-                                        <xsl:variable name="id" select="if(@id) then @id else 'custom'"/>
-                                        <xsl:variable name="label" select="if(@id) then text() else 'Custom task'"/>
-                                        <li>
-                                            <a data-toggle="collapse">
-                                                <xsl:attribute name="href" select="concat('#task-add-', $id)"/>
-                                                <xsl:variable name="onclick-set">
-                                                    {<xsl:value-of select="concat('&#34;#task-add-',$id, ' input[type=\&#34;checkbox\&#34;]&#34; : &#34;toggle&#34;')"/>}
-                                                </xsl:variable>
-                                                <xsl:attribute name="data-onclick-set" select="normalize-space($onclick-set)"/>
-                                                <span>
-                                                    <xsl:if test="$id = $task-ids-in-use">
-                                                        <xsl:attribute name="class" select="'line-through'"/>
-                                                    </xsl:if>
-                                                    <xsl:value-of select="$label"/>
-                                                </span>
-                                            </a>
-                                        </li>
-                                    </xsl:for-each>
-                                </ol>
-                            </div>
-                            <xsl:if test="m:translation-status/m:status-update[@date-time] | m:translation-status/m:task[@checked-off]">
-                                <hr class="sml-margin"/>
-                                <h4 class="no-top-margin no-bottom-margin">
-                                    <xsl:value-of select="'History'"/>
-                                </h4>
-                                <div class="max-height-220">
+                            
+                            <!-- History -->
+                            <xsl:if test="m:translation-status/m:text/m:status-update[@date-time]">
+                                
+                                <div class="match-height-overflow" data-match-height="status-form">
+                                    <h4 class="no-top-margin no-bottom-margin">
+                                        <xsl:value-of select="'History'"/>
+                                    </h4>
+                                    <hr class="sml-margin"/>
                                     <ul class="small list-unstyled">
-                                        <xsl:for-each select="m:translation-status/m:status-update[@date-time] | m:translation-status/m:task[@checked-off]">
-                                            <xsl:sort select="(@date-time | @checked-off)" order="descending"/>
+                                        <xsl:for-each select="m:translation-status/m:text/m:status-update[@date-time]">
+                                            <xsl:sort select="xs:dateTime(@date-time)" order="descending"/>
                                             <li>
                                                 <div class="text-bold">
                                                     <xsl:choose>
@@ -1317,15 +1362,95 @@
         <xsl:call-template name="panel">
             
             <xsl:with-param name="type" select="'Submissions'"/>
+            <xsl:with-param name="title" select="'Submissions'"/>
             <xsl:with-param name="active" select="$active"/>
             
             <xsl:with-param name="flag">
                 <span class="badge badge-notification">
-                    <xsl:value-of select="count(m:translation-status/m:submission)"/>
+                    <xsl:value-of select="count(m:translation-status/m:text/m:submission)"/>
                 </span>
             </xsl:with-param>
             
             <xsl:with-param name="form">
+                
+                <xsl:for-each select="m:translation-status/m:text/m:submission">
+                    <xsl:variable name="submission" select="."/>
+                    
+                    <div class="row">
+                        <div class="col-sm-8">
+                            <a>
+                                <xsl:attribute name="href" select="concat('/edit-text-submission.html?text-id=', /m:response/m:translation/@id,'&amp;submission-id=', $submission/@id)"/>
+                                <xsl:value-of select="$submission/@file-name"/>
+                            </a>
+                        </div>
+                        <div class="col-sm-4 text-right text-muted italic small">
+                            <xsl:value-of select="common:date-user-string('Submited', $submission/@date-time, $submission/@user)"/>
+                        </div>
+                        <div class="col-sm-12">
+                            <xsl:choose>
+                                
+                                <xsl:when test="$submission/@file-type eq 'spreadsheet'">
+                                    <xsl:if test="$submission/@latest eq 'true'">
+                                        <span class="label label-success">
+                                            <i class="fa fa-check"/>
+                                            <xsl:value-of select="' Latest spreadsheet'"/>
+                                        </span>
+                                    </xsl:if>
+                                    <xsl:for-each select="/m:response/m:submission-checklist/m:spreadsheet/m:item">
+                                        <xsl:variable name="item" select="."/>
+                                        <span class="label label-default">
+                                            <xsl:if test="$submission/m:item-checked[@item-id eq $item/@id]">
+                                                <xsl:if test="$submission/@latest eq 'true'">
+                                                    <xsl:attribute name="class" select="'label label-success'"/>
+                                                </xsl:if>
+                                                <i class="fa fa-check"/>
+                                            </xsl:if>
+                                            <xsl:value-of select="concat(' ', $item/text())"/>
+                                        </span>
+                                    </xsl:for-each>
+                                </xsl:when>
+                                
+                                <xsl:when test="$submission/@file-type eq 'document'">
+                                    <xsl:if test="$submission/@latest eq 'true'">
+                                        <span class="label label-primary">
+                                            <i class="fa fa-check"/>
+                                            <xsl:value-of select="' Latest document'"/>
+                                        </span> 
+                                    </xsl:if>
+                                    <xsl:for-each select="/m:response/m:submission-checklist/m:document/m:item">
+                                        <xsl:variable name="item" select="."/>
+                                        <span class="label label-default">
+                                            <xsl:if test="$submission/m:item-checked[@item-id eq $item/@id]">
+                                                <xsl:if test="$submission/@latest eq 'true'">
+                                                    <xsl:attribute name="class" select="'label label-primary'"/>
+                                                </xsl:if>
+                                                <i class="fa fa-check"/>
+                                            </xsl:if>
+                                            <xsl:value-of select="concat(' ', $item/text())"/>
+                                        </span>
+                                    </xsl:for-each>
+                                </xsl:when>
+                            </xsl:choose>
+                            
+                            <span class="label label-default">
+                                <xsl:if test="$submission/m:tei-file/@file-exists eq 'true'">
+                                    <xsl:choose>
+                                        <xsl:when test="$submission/@latest eq 'true' and $submission/@file-type eq 'spreadsheet'">
+                                            <xsl:attribute name="class" select="'label label-success'"/>
+                                        </xsl:when>
+                                        <xsl:when test="$submission/@latest eq 'true' and $submission/@file-type eq 'document'">
+                                            <xsl:attribute name="class" select="'label label-primary'"/>
+                                        </xsl:when>
+                                    </xsl:choose>
+                                    <i class="fa fa-check"/>
+                                </xsl:if>
+                                <xsl:value-of select="'Generate TEI'"/>
+                            </span>
+                            
+                        </div>
+                    </div>
+                    <hr class="sml-margin"/>
+                </xsl:for-each>
                 
                 <form method="post" enctype="multipart/form-data" class="form-horizontal form-update" id="submissions-form">
                     <xsl:attribute name="action" select="'edit-text-header.html#submissions-form'"/>
@@ -1348,86 +1473,6 @@
                         </div>
                     </div>
                 </form>
-                
-                <xsl:for-each select="m:translation-status/m:submission">
-                    <xsl:variable name="submission" select="."/>
-                    <xsl:variable name="latest-document" select="common:index-of-node(/m:response/m:translation-status/m:submission[@file-type eq 'document'], $submission) eq 1"/>
-                    <xsl:variable name="latest-spreadsheet" select="common:index-of-node(/m:response/m:translation-status/m:submission[@file-type eq 'spreadsheet'], $submission) eq 1"/>
-                    <hr class="sml-margin"/>
-                    <div class="row">
-                        <div class="col-sm-8">
-                            <a>
-                                <xsl:attribute name="href" select="concat('/edit-text-submission.html?text-id=', /m:response/m:translation/@id,'&amp;submission-id=', $submission/@id)"/>
-                                <xsl:value-of select="$submission/@file-name"/>
-                            </a>
-                        </div>
-                        <div class="col-sm-4 text-right text-muted italic small">
-                            <xsl:value-of select="common:date-user-string('Submited', $submission/@date-time, $submission/@user)"/>
-                        </div>
-                        <div class="col-sm-12">
-                            <xsl:choose>
-                                
-                                <xsl:when test="$submission/@file-type eq 'spreadsheet'">
-                                    <xsl:if test="$latest-spreadsheet">
-                                        <span class="label label-success">
-                                            <i class="fa fa-check"/>
-                                            <xsl:value-of select="' Latest spreadsheet'"/>
-                                        </span>
-                                    </xsl:if>
-                                    <xsl:for-each select="/m:response/m:submission-checklist/m:spreadsheet/m:item">
-                                        <xsl:variable name="item" select="."/>
-                                        <span class="label label-default">
-                                            <xsl:if test="$submission/m:item-checked[@item-id eq $item/@id]">
-                                                <xsl:if test="$latest-spreadsheet">
-                                                    <xsl:attribute name="class" select="'label label-success'"/>
-                                                </xsl:if>
-                                                <i class="fa fa-check"/>
-                                            </xsl:if>
-                                            <xsl:value-of select="concat(' ', $item/text())"/>
-                                        </span>
-                                    </xsl:for-each>
-                                </xsl:when>
-                                
-                                <xsl:when test="$submission/@file-type eq 'document'">
-                                    <xsl:if test="$latest-document">
-                                        <span class="label label-primary">
-                                            <i class="fa fa-check"/>
-                                            <xsl:value-of select="' Latest document'"/>
-                                        </span> 
-                                    </xsl:if>
-                                    <xsl:for-each select="/m:response/m:submission-checklist/m:document/m:item">
-                                        <xsl:variable name="item" select="."/>
-                                        <span class="label label-default">
-                                            <xsl:if test="$submission/m:item-checked[@item-id eq $item/@id]">
-                                                <xsl:if test="$latest-document">
-                                                    <xsl:attribute name="class" select="'label label-primary'"/>
-                                                </xsl:if>
-                                                <i class="fa fa-check"/>
-                                            </xsl:if>
-                                            <xsl:value-of select="concat(' ', $item/text())"/>
-                                        </span>
-                                    </xsl:for-each>
-                                </xsl:when>
-                            </xsl:choose>
-                            
-                            <span class="label label-default">
-                                <xsl:if test="$submission/m:tei-file/@file-exists eq 'true'">
-                                    <xsl:choose>
-                                        <xsl:when test="$latest-spreadsheet">
-                                            <xsl:attribute name="class" select="'label label-success'"/>
-                                        </xsl:when>
-                                        <xsl:when test="$latest-document">
-                                            <xsl:attribute name="class" select="'label label-primary'"/>
-                                        </xsl:when>
-                                    </xsl:choose>
-                                    <i class="fa fa-check"/>
-                                </xsl:if>
-                                <xsl:value-of select="'Generate TEI'"/>
-                            </span>
-                            
-                        </div>
-                    </div>
-                </xsl:for-each>
                 
             </xsl:with-param>
         </xsl:call-template>

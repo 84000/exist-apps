@@ -34,6 +34,7 @@ let $lang := request:get-parameter('lang', if($tab eq 'tm-search') then 'bo' els
 let $work := request:get-parameter('work', $source:ekangyur-work)
 let $volume := request:get-parameter('volume', 1)
 let $page := request:get-parameter('page', 1)
+let $resource-id := request:get-parameter('resource-id', '')
 
 let $first-record := 
     if(functx:is-a-number(request:get-parameter('first-record', 1))) then
@@ -61,7 +62,7 @@ return
             </request>,
             $tabs,
             if($tab eq 'search' and compare($search, '') gt 0) then 
-                search:search($search, $first-record, 15)
+                search:search($search, $resource-id, $first-record, 15)
             else if($tab eq 'glossary') then 
                 glossary:glossary-terms($type, $lang, $search, true())
             else if($tab eq 'tm-search') then 

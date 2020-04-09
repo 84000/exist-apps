@@ -14,17 +14,17 @@ declare variable $tei-content:sections-collection := collection($common:sections
 declare variable $tei-content:text-statuses := 
     <text-statuses xmlns="http://read.84000.co/ns/1.0">
         <status status-id="0" group="not-started">Not started</status>
-        <status status-id="1" group="published" marked-up="true">Published</status>
-        <status status-id="1.a" group="published" marked-up="true">Ready to publish</status>
-        <status status-id="2" group="translated" marked-up="true">Marked up, awaiting final proofing</status>
+        <status status-id="1" group="published" marked-up="true" target-date="true">Published</status>
+        <status status-id="1.a" group="published" marked-up="true" target-date="true">Ready to publish</status>
+        <status status-id="2" group="translated" marked-up="true" target-date="true">Marked up, awaiting final proofing</status>
         <status status-id="2.a" group="translated" marked-up="true">Markup in process</status>
         <status status-id="2.b" group="translated">Awaiting markup</status>
         <status status-id="2.c" group="translated">Awaiting editor's OK for markup</status>
-        <status status-id="2.d" group="translated">Copyediting complete. Preparation for markup</status>
+        <status status-id="2.d" group="translated" target-date="true">Copyediting complete. Preparation for markup</status>
         <status status-id="2.e" group="translated">Being copyedited</status>
-        <status status-id="2.f" group="translated">Review complete. Awaiting copyediting</status>
+        <status status-id="2.f" group="translated" target-date="true">Review complete. Awaiting copyediting</status>
         <status status-id="2.g" group="translated">In editorial review</status>
-        <status status-id="2.h" group="translated">Awaiting review</status>
+        <status status-id="2.h" group="translated" target-date="true">Awaiting review</status>
         <status status-id="3" group="in-translation">Current translation projects</status>
     </text-statuses>;
 
@@ -61,24 +61,26 @@ declare function tei-content:tei($resource-id as xs:string, $resource-type as xs
     :)
     
     let $collection := 
-        if($resource-type eq 'translation')then
-            $tei-content:translations-collection
-        else if($resource-type = ('section', 'pseudo-section')) then
+        if($resource-type = ('section', 'pseudo-section')) then
             $tei-content:sections-collection
-        else
-            ()
+        else 
+            $tei-content:translations-collection
     
     (: based on Tohoku number :)
     let $tei := 
-        if($resource-type eq 'translation')then
-            $collection//tei:TEI[tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl[@key eq lower-case($resource-id)]][1]
+        if($resource-type eq 'translation') then
+            let $resource-id := lower-case($resource-id)
+            return
+                $collection//tei:sourceDesc/tei:bibl[@key eq $resource-id][1]/ancestor::tei:TEI
         else
             ()
     
     return
         if(not($tei)) then
             (: Fallback to UT number :)
-            $collection//tei:TEI[tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:idno[@xml:id eq upper-case($resource-id)]]
+            let $resource-id := upper-case($resource-id)
+            return
+                $collection//tei:publicationStmt[tei:idno/@xml:id eq $resource-id]/ancestor::tei:TEI
         else
             $tei
     
@@ -166,7 +168,13 @@ declare function tei-content:title-set($tei as element(tei:TEI), $type as xs:str
 
 declare function tei-content:translation-status($tei as element(tei:TEI)) as xs:string {
     (: Returns the status of the text :)
-    let $status := $tei//tei:teiHeader//tei:publicationStmt/@status
+    let $status := $tei//tei:teiHeader//tei:publicationStmt/@status/string()
+    let $status := 
+        if($status le '')then
+            '0'
+        else
+            $status
+    
     return
         if($status) then
             $status
@@ -179,21 +187,55 @@ declare function tei-content:translation-status-group($tei as element(tei:TEI)) 
     string($tei-content:text-statuses/m:status[@status-id eq tei-content:translation-status($tei)]/@group)
 };
 
-declare function tei-content:text-statuses-selected($selected-ids as xs:string*) as element() {
-    <text-statuses xmlns="http://read.84000.co/ns/1.0">
-    {
-        for $status in $tei-content:text-statuses/m:status
+declare function tei-content:text-statuses-sorted() as element(m:text-statuses) {
+
+    element { QName('http://read.84000.co/ns/1.0', 'text-statuses') } { 
+        let $sorted-statuses :=
+            for $status in $tei-content:text-statuses/m:status
+                let $status-tokenized := tokenize($status/@status-id, '\.')
+                order by 
+                    if($status/@status-id eq '0') then
+                        1
+                    else
+                        0, 
+                    if(count($status-tokenized) gt 0 and functx:is-a-number($status-tokenized[1])) then 
+                        xs:integer($status-tokenized[1])
+                    else
+                        99,
+                    if(count($status-tokenized) gt 1) then 
+                        $status-tokenized[2]
+                    else
+                        ''
+            return 
+                $status
+        
+        for $status at $status-index in $sorted-statuses
         return 
-            element status
-            { 
+            element { node-name($status) } { 
                 $status/@*,
-                attribute value { $status/@status-id },
-                if ($status/@status-id = $selected-ids) then attribute selected { 'selected' } else '',
-                text { $status/text() }
-                
+                attribute index { $status-index },
+                $status/node()
             }
     }
-    </text-statuses>
+    
+};
+
+declare function tei-content:text-statuses-selected($selected-ids as xs:string*) as element(m:text-statuses) {
+
+    element { QName('http://read.84000.co/ns/1.0', 'text-statuses') } { 
+        for $status in tei-content:text-statuses-sorted()/m:status
+        return 
+            element { node-name($status) } { 
+                $status/@*,
+                attribute value { $status/@status-id },
+                if ($status/@status-id = $selected-ids) then 
+                    attribute selected { 'selected' } 
+                else 
+                    (),
+                $status/node()
+            }
+    }
+    
 };
 
 declare function tei-content:source-bibl($tei as element(tei:TEI), $resource-id as xs:string) as node()? {

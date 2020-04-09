@@ -28,7 +28,7 @@
                 <p>
                     <xsl:text>
                         When validating folio references it is only vital that the start/end pages in the TEI location header match the start/end pages in the eKangyur edition. Then check that each reference links to the correct Tibetan page. 
-                        Folio references may vary while remaining valid e.g. Vol.90, p.124 is correctly expressed as F.63.a although F.62.b is expected. This valid variation.
+                        Folio references may vary while remaining valid e.g. Vol.90, p.124 is correctly expressed as F.63.a although F.62.b is expected.
                     </xsl:text>
                 </p>
             </div>
@@ -38,7 +38,7 @@
                 <div class="radio">
                     <label>
                         <input type="radio" name="text-statuses" value="published">
-                            <xsl:if test="m:request/m:parameter[@name eq 'text-statuses']/text() = ('published', '')">
+                            <xsl:if test="not(m:request/m:parameter[@name eq 'text-statuses']) or m:request/m:parameter[@name eq 'text-statuses']/text() eq 'published'">
                                 <xsl:attribute name="checked" select="'checked'"/>
                             </xsl:if>
                         </input>

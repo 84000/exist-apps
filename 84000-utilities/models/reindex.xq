@@ -6,7 +6,7 @@ import module namespace source="http://read.84000.co/source" at "../../84000-rea
 
 declare option exist:serialize "method=xml indent=no";
 
-let $reindex-collection as xs:string := 
+let $reindex-collections as xs:string* := 
     
     if(request:get-parameter('collection', '') eq 'tests') then
         concat($common:data-path, '/config/tests')
@@ -26,14 +26,14 @@ let $reindex-collection as xs:string :=
         $source:source-data-path
     else if(request:get-parameter('collection', '') eq 'reading-room-config') then
         $common:app-config
+    else if(request:get-parameter('collection', '') eq 'file-versions') then (
+        concat($common:data-path, '/azw3'),
+        concat($common:data-path, '/epub'),
+        concat($common:data-path, '/pdf'),
+        concat($common:data-path, '/rdf')
+    )
     else 
-        ''
-
-let $reindex := 
-    if(common:user-in-group('dba') and $reindex-collection gt '') then
-        xmldb:reindex($reindex-collection)
-    else 
-        ''
+        ()
 
 return
     common:response(
@@ -41,7 +41,19 @@ return
         'utilities',
         (
             local:request(),
-            <result xmlns="http://read.84000.co/ns/1.0" collection="{ $reindex-collection }" reindexed="{ $reindex }" />
+            <result xmlns="http://read.84000.co/ns/1.0">
+            {
+                if(common:user-in-group('dba')) then
+                    for $collection in $reindex-collections
+                    return
+                        element { QName('http://read.84000.co/ns/1.0', 'collection') } {
+                            attribute path { $collection },
+                            attribute reindexed { xmldb:reindex($collection) }
+                        }
+                        
+                else 
+                    ()
+            }
+            </result>
         )
-        
     )
