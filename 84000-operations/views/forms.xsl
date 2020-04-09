@@ -675,9 +675,9 @@
                                                 
                                                 <xsl:variable name="status-id" select="@status-id"/>
                                                 <xsl:variable name="status-surpassed" select="@selected eq 'selected' or preceding-sibling::m:status[@selected eq 'selected']"/>
-                                                <xsl:variable name="target-date" select="$target-dates[@status-id eq $status-id]"/>
+                                                <xsl:variable name="target-date" select="$target-dates[@status-id eq $status-id][1]"/>
                                                 
-                                                <xsl:variable name="actual-date" select="if($status-surpassed) then $actual-dates[@value eq $status-id] else ()"/>
+                                                <xsl:variable name="actual-date" select="if($status-surpassed) then $actual-dates[@value eq $status-id][1] else ()"/>
                                                 <xsl:variable name="target-date-hit" select="($target-date[@date-time] and $actual-date[@date-time] and xs:dateTime($target-date/@date-time) ge xs:dateTime($actual-date/@date-time))"/>
                                                 <xsl:variable name="target-date-miss" select="($target-date[@date-time] and (xs:dateTime($target-date/@date-time) lt current-dateTime()) or ($actual-date[@date-time] and xs:dateTime($target-date/@date-time) lt xs:dateTime($actual-date/@date-time)))"/>
                                                 
