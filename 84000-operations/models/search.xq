@@ -13,6 +13,7 @@ import module namespace functx="http://www.functx.com";
 
 declare option exist:serialize "method=xml indent=no";
 
+(: Request parameters :)
 let $work := request:get-parameter('work', 'UT4CZ5369')
 let $status := local:get-status-parameter()
 let $sort := request:get-parameter('sort', '')
@@ -23,9 +24,26 @@ let $deduplicate := request:get-parameter('deduplicate', '')
 let $toh-min := request:get-parameter('toh-min', '')
 let $toh-max := request:get-parameter('toh-max', '')
 
+(: Get tei data :)
 let $filtered-texts := translations:filtered-texts($work, $status, $sort, $pages-min, $pages-max, $sponsorship-group, $toh-min, $toh-max, $deduplicate)
 
-let $filtered-texts-ids := $filtered-texts/m:text/@id
+(: Get operations data :)
+let $translation-statuses := translation-status:texts($filtered-texts/m:text/@id)
+
+(:Sort based on operations data needs to be done here:)
+let $filtered-texts :=
+    if($sort eq 'due-date') then
+        element { node-name($filtered-texts) }{
+            $filtered-texts/@*,
+            for $filtered-text in $filtered-texts/m:text
+                let $due-days := $translation-statuses[@text-id eq $filtered-text/@id]/m:target-date[@next eq 'true'][1]/@due-days ! xs:integer(.)
+            order by if($due-days) then $due-days else 0
+            return
+                $filtered-text
+        }
+        
+    else
+        $filtered-texts
 
 return
     common:response(
@@ -46,7 +64,7 @@ return
             ,
             $filtered-texts,
             element { QName('http://read.84000.co/ns/1.0', 'translation-status') } {
-                translation-status:texts($filtered-texts-ids)
+                $translation-statuses
             },
             tei-content:text-statuses-selected($status),
             $sponsorship:sponsorship-groups,

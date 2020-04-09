@@ -246,6 +246,12 @@
                                                 </xsl:if>
                                                 <xsl:value-of select="'Sort by status'"/>
                                             </option>
+                                            <option value="due-date">
+                                                <xsl:if test="m:texts/@sort eq 'due-date'">
+                                                    <xsl:attribute name="selected" select="'selected'"/>
+                                                </xsl:if>
+                                                <xsl:value-of select="'Sort by due date'"/>
+                                            </option>
                                             <option value="longest">
                                                 <xsl:if test="m:texts/@sort eq 'longest'">
                                                     <xsl:attribute name="selected" select="'selected'"/>
@@ -268,6 +274,9 @@
                                         </xsl:when>
                                         <xsl:when test="m:texts/@sort eq 'status'">
                                             <xsl:value-of select="'Sorted by: status'"/>
+                                        </xsl:when>
+                                        <xsl:when test="m:texts/@sort eq 'due-date'">
+                                            <xsl:value-of select="'Sorted by: due date'"/>
                                         </xsl:when>
                                         <xsl:when test="m:texts/@sort eq 'longest'">
                                             <xsl:value-of select="'Sorted by: longest first'"/>
