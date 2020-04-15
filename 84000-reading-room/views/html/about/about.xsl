@@ -12,14 +12,14 @@
         <xsl:param name="side-content"/>
         <xsl:param name="page-class"/>
         
+        <xsl:variable name="page-title">
+            <xsl:call-template name="local-text">
+                <xsl:with-param name="local-key" select="'page-title'"/>
+            </xsl:call-template>
+        </xsl:variable>
+        
         <!-- Content variable -->
         <xsl:variable name="content">
-            
-            <xsl:variable name="page-title">
-                <xsl:call-template name="local-text">
-                    <xsl:with-param name="local-key" select="'page-title'"/>
-                </xsl:call-template>
-            </xsl:variable>
             
             <xsl:variable name="header-img-src">
                 <xsl:call-template name="local-text">
@@ -123,12 +123,6 @@
                 </div>
             </div>
             
-        </xsl:variable>
-        
-        <xsl:variable name="page-title" as="xs:string">
-            <xsl:call-template name="local-text">
-                <xsl:with-param name="local-key" select="'page-title'"/>
-            </xsl:call-template>
         </xsl:variable>
         
         <xsl:call-template name="website-page">

@@ -235,7 +235,9 @@ declare function glossary:item($gloss as element(tei:gloss), $include-context as
             element { QName('http://read.84000.co/ns/1.0','sort-term') }{
                 common:alphanumeric(
                     common:normalized-chars(
-                        $gloss/tei:term[not(@xml:lang) or @xml:lang eq 'en'][not(@type)][1]/text()
+                        lower-case(
+                            $gloss/tei:term[not(@xml:lang) or @xml:lang eq 'en'][not(@type)][1]/text()
+                        )
                     )
                 )
             },

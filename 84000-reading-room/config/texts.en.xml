@@ -343,10 +343,7 @@
     </item>
     <item key="about.sponsors.page-intro">
         <p class="h3">
-            84000 relies on the support of thousands of individual donors, and we appreciate every donation, no matter the size, as a drop in the ocean is no less important than the wave. 
-        </p>
-        <p>
-            We are especially owe a debt of gratitude to our Founding Sponsors, without whose trust this project would not have been possible; our Sūtra Sponsors who sponsor the translation of specific texts in their entirety; and our Matching Funds Donors who have generously pledged to match all recurring donations made online by our friends and supporters.
+            84000 is dependent on the kind and generous support of thousands of donors, many of whom give through our <a href="https://84000.co/sponsor-a-page">Sponsor a Page</a> and <a href="https://84000.co/download-dana">Download Dāna</a> streams, as well as through the programs listed below. We are grateful for every offering and believe each to be a gift that is an equally meritorious drop in in the ocean of our activity.
         </p>
     </item>
     <item key="about.sponsors.matching-funds-title">
@@ -373,7 +370,7 @@
     </item>
     <item key="about.sponsors.sutras-description">
         <p>
-            Every year, we commission a new batch of translations. Some of the designated texts are long, important sūtras that require a sizeable amount of funding in order to see the translation process through to completion. We would like to thank our sponsors for their generous support of the <a href="http://84000.co/how-you-can-help/sponsor-a-sutra">“Sponsor A Sūtra”</a> program.
+            Every year, we commission a new batch of translations. Some of the designated texts are long, important sūtras that require a sizeable amount of funding in order to see the translation process through to completion. We would like to thank our sponsors for their generous support of the <a href="https://84000.co/how-you-can-help/sponsor-a-sutra">“Sponsor A Sūtra”</a> program.
         </p>
     </item>
     <item key="about.sponsors.sutras-list-title">
@@ -616,4 +613,10 @@
     <item key="widget.download-dana.donate-form-link-label">
         Click here to make a dāna donation
     </item>
+    
+    <!-- Audio test -->
+    <item key="about.audio-test.page-title">
+        Audio test
+    </item>
+    
 </texts>

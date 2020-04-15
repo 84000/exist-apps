@@ -16,10 +16,13 @@
                     <xsl:with-param name="text" select="normalize-space($text-item)"/>
                 </xsl:call-template>
             </xsl:when>
-            <xsl:otherwise>
+            <xsl:when test="not(empty($text-item))">
                 <xsl:call-template name="normalize-nodes-space">
                     <xsl:with-param name="nodes" select="$text-item"/>
                 </xsl:call-template>
+            </xsl:when>
+            <xsl:otherwise>
+                <xsl:value-of select="''"/>
             </xsl:otherwise>
         </xsl:choose>
     </xsl:template>
