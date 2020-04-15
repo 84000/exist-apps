@@ -14,6 +14,7 @@ declare option exist:serialize "method=xml indent=no";
 
 (: Get config :)
 let $store-conf := $common:environment/m:store-conf
+let $utilities-url := $common:environment/m:url[@id eq 'utilities']
 
 (: If client then default to diff view :)
 let $default-status := 
@@ -31,7 +32,7 @@ let $texts-status := $tei-content:text-statuses/m:status[xs:string(@status-id) =
 (: Store a file if requested :)
 let $store-file-name := request:get-parameter('store', '')
 let $store-file := 
-    if($store-file-name gt '') then
+    if($store-file-name gt '') then(
         if($store-conf[@type eq 'client']/m:translations-master-host) then
             store:download-master($store-file-name, $store-conf/m:translations-master-host)
         else if($store-conf[@type eq 'master']) then
@@ -45,6 +46,12 @@ let $store-file :=
         )
         else
             ()
+        ,
+        if($utilities-url) then
+            response:redirect-to(xs:anyURI(concat($utilities-url, '/translations.html?texts-status=',$request-status)))
+        else
+            ()
+    )
     else
         ()
 

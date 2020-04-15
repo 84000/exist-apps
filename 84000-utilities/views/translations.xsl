@@ -312,6 +312,7 @@
                                                                 <a>
                                                                     <xsl:attribute name="href" select="concat('/translations.html?store=', $toh/@key, '.', $file-format, if($texts-status) then concat('&amp;texts-status=', $texts-status) else '', '#', $toh/@key)"/>
                                                                     <xsl:attribute name="title" select="'Create this file'"/>
+                                                                    <xsl:attribute name="data-loading" select="'Creating file...'"/>
                                                                     <span class="label label-warning">
                                                                         <xsl:value-of select="concat('Create ', upper-case($file-format))"/>
                                                                     </span>
@@ -336,6 +337,8 @@
                                                             <xsl:when test="compare($master-downloads/@tei-version, $tei-version) ne 0 and $master-downloads/@tei-version gt ''">
                                                                 <a>
                                                                     <xsl:attribute name="href" select="concat('/translations.html?store=', $toh/@key, '.tei', if($texts-status) then concat('&amp;texts-status=', $texts-status) else '', '#', $toh/@key)"/>
+                                                                    <xsl:attribute name="title" select="'Update this file'"/>
+                                                                    <xsl:attribute name="data-loading" select="'Getting file...'"/>
                                                                     <span class="label label-danger">
                                                                         <xsl:value-of select="concat('Get ', $master-downloads/@tei-version)"/>
                                                                     </span>
@@ -374,6 +377,7 @@
                                                                     <a>
                                                                         <xsl:attribute name="href" select="concat('/translations.html?store=', $toh/@key, '.', $file-format, if($texts-status) then concat('&amp;texts-status=', $texts-status) else '', '#', $toh/@key)"/>
                                                                         <xsl:attribute name="title" select="'Update this file'"/>
+                                                                        <xsl:attribute name="data-loading" select="'Creating file'"/>
                                                                         <span class="label label-danger">
                                                                             <xsl:value-of select="concat('Get ', $master-downloads/@tei-version)"/>
                                                                         </span>

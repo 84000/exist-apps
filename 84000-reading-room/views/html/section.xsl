@@ -277,7 +277,7 @@
         
         <!-- Compile with page template -->
         <xsl:call-template name="website-page">
-            <xsl:with-param name="page-url" select="concat('http://read.84000.co/section/', m:section/@id, '.html')"/>
+            <xsl:with-param name="page-url" select="concat('https://read.84000.co/section/', m:section/@id, '.html')"/>
             <xsl:with-param name="page-class" select="'reading-room section'"/>
             <xsl:with-param name="page-title" select="concat(m:section/m:titles/m:title[@xml:lang = 'en'], ' | 84000 Reading Room')"/>
             <xsl:with-param name="page-description" select="normalize-space(m:section/m:abstract/tei:p[1]/text())"/>
