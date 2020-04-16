@@ -69,7 +69,7 @@ declare function translations:summary($work as xs:string) as element() {
     let $commissioned-toh-count := count($commissioned-fileDesc/tei:sourceDesc/tei:bibl)
     let $not-started-toh-count := $all-toh-count - $commissioned-toh-count
     
-    let $all-toh-page-count := sum($fileDescs/tei:sourceDesc/tei:bibl/tei:location/@count-pages ! common:integer(.))
+    let $all-toh-page-count := 70000(:sum($fileDescs/tei:sourceDesc/tei:bibl/tei:location/@count-pages ! common:integer(.)):)
     let $commissioned-toh-page-count := sum($commissioned-fileDesc/tei:sourceDesc/tei:bibl/tei:location/@count-pages ! common:integer(.))
     let $not-started-toh-page-count := $all-toh-page-count - $commissioned-toh-page-count
     

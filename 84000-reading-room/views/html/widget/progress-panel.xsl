@@ -10,7 +10,7 @@
         <xsl:variable name="content">
             <div class="container">
                 <div class="row">
-                    <div class="col-sm-offset-4 col-sm-4">
+                    <div class="col-sm-offset-4 col-sm-4 top-margin">
                         <div id="panel" class="panel panel-default">
                             <div class="panel-heading">
                                 <h3 class="panel-title">
@@ -84,7 +84,7 @@
                                     </table>
                                     <div class="text-center">
                                         <div>
-                                            <a class="btn btn-primary">
+                                            <a class="btn btn-warning btn-lg uppercase">
                                                 <xsl:attribute name="href">
                                                     <xsl:call-template name="local-text">
                                                         <xsl:with-param name="local-key" select="'sponsor-button-link'"/>
@@ -125,7 +125,7 @@
         </xsl:variable>
         
         <xsl:call-template name="widget-page">
-            <xsl:with-param name="page-url" select="'http://read.84000.co/widget/progress.html'"/>
+            <xsl:with-param name="page-url" select="'https://read.84000.co/widget/progress.html'"/>
             <xsl:with-param name="page-class" select="''"/>
             <xsl:with-param name="page-title" select="'Progress Summary | 84000 Translating the Words of the Buddha'"/>
             <xsl:with-param name="page-description" select="'Overview of the current status of the 84000 project'"/>

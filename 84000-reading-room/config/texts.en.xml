@@ -82,7 +82,7 @@
     </item>
     <item key="about.common.support-description">
         <p>
-            With the help of our <a href="http://84000.co/about/sponsors">108 founding sponsors</a> and thousands of individual donors,
+            With the help of our <a href="#commsSiteUrl/about/sponsors">108 founding sponsors</a> and thousands of individual donors,
             we provide funding to the translators who are working to safeguard these important teachings
             for future generations.
         </p>
@@ -103,7 +103,7 @@
         Sponsor a page now
     </item>
     <item key="about.common.sponsor-button-link">
-        https://84000.co/how-you-can-help/sponsor-a-page
+        #commsSiteUrl/how-you-can-help/sponsor-a-page
     </item>
     <item key="about.common.sharing-label">
         Share this page:

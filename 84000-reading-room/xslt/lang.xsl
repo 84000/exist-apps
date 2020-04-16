@@ -11,12 +11,7 @@
         <xsl:variable name="global-key" select="string-join((tokenize(/m:response/@model-type, '/'), $local-key), '.')"/>
         <xsl:variable name="text-item" select="$text-items[@key = ($global-key, $common-key)][1]/node()"/>
         <xsl:choose>
-            <xsl:when test="$text-item instance of text()">
-                <xsl:call-template name="replace-text">
-                    <xsl:with-param name="text" select="normalize-space($text-item)"/>
-                </xsl:call-template>
-            </xsl:when>
-            <xsl:when test="not(empty($text-item))">
+            <xsl:when test="$text-item">
                 <xsl:call-template name="normalize-nodes-space">
                     <xsl:with-param name="nodes" select="$text-item"/>
                 </xsl:call-template>
@@ -65,7 +60,7 @@
                                 <xsl:call-template name="replace-text">
                                     <xsl:with-param name="text" select="."/>
                                 </xsl:call-template>
-                            </xsl:attribute>    
+                            </xsl:attribute>
                         </xsl:for-each>
                         <xsl:call-template name="normalize-nodes-space">
                             <xsl:with-param name="nodes" select="./node()"/>
