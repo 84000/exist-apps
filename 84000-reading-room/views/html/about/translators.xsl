@@ -60,6 +60,7 @@
                                     <span>
                                         <xsl:value-of select="format-number(count(m:contributor-teams/m:team), '#,###')"/>
                                     </span>
+                                    <xsl:value-of select="' '"/>
                                     <xsl:call-template name="local-text">
                                         <xsl:with-param name="local-key" select="'teams-label'"/>
                                     </xsl:call-template>
@@ -77,6 +78,7 @@
                                     <span>
                                         <xsl:value-of select="format-number(count(distinct-values(//m:team/m:person/@xml:id)), '#,###')"/>
                                     </span>
+                                    <xsl:value-of select="' '"/>
                                     <xsl:call-template name="local-text">
                                         <xsl:with-param name="local-key" select="'translators-label'"/>
                                     </xsl:call-template>
@@ -102,6 +104,7 @@
                                             <xsl:value-of select="m:stat[@type eq 'contributor-percentage']/@value"/>
                                             <xsl:value-of select="'%'"/>
                                         </span>
+                                        <xsl:value-of select="' '"/>
                                         <xsl:call-template name="local-text">
                                             <xsl:with-param name="local-key" select="'affiliation-label'"/>
                                         </xsl:call-template>
@@ -133,21 +136,23 @@
                             <script>
                                 var ctx = document.getElementById("affiliation-pie").getContext('2d');
                                 var data = {
-                                datasets: [{
-                                data: [<xsl:value-of select="normalize-space($institution-types-chart-data)"/>],
-                                backgroundColor: [<xsl:value-of select="normalize-space($institution-types-chart-colours)"/>]
-                                }],
-                                labels: [<xsl:value-of select="normalize-space($institution-types-chart-labels)"/>]
+                                    datasets: [{
+                                        data: [<xsl:value-of select="normalize-space($institution-types-chart-data)"/>],
+                                        backgroundColor: [<xsl:value-of select="normalize-space($institution-types-chart-colours)"/>]
+                                    }],
+                                    labels: [<xsl:value-of select="normalize-space($institution-types-chart-labels)"/>]
                                 };
                                 var options = { 
-                                legend: { display: false, position: 'right' },
-                                tooltips: { callbacks: {
-                                label: function(tooltipItem, data) {
-                                var i = tooltipItem.index;
-                                var val = data.datasets[0].data[tooltipItem.index];
-                                return val.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + "% " + data.labels[i];
-                                }}
-                                }
+                                    legend: { display: false, position: 'right' },
+                                    tooltips: { 
+                                        callbacks: {
+                                            label: function(tooltipItem, data) {
+                                                var i = tooltipItem.index;
+                                                var val = data.datasets[0].data[tooltipItem.index];
+                                                return val.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + "% " + data.labels[i];
+                                            }
+                                         }
+                                    }
                                 };
                                 var myPieChart = new Chart(ctx,{ type: 'pie', data: data, options: options });
                             </script>
@@ -171,6 +176,7 @@
                                             <xsl:value-of select="m:stat[@type eq 'contributor-percentage']/@value"/>
                                             <xsl:value-of select="'%'"/>
                                         </span>
+                                        <xsl:value-of select="' '"/>
                                         <xsl:call-template name="local-text">
                                             <xsl:with-param name="local-key" select="'region-label'"/>
                                         </xsl:call-template>
@@ -202,21 +208,23 @@
                             <script>
                                 var ctx = document.getElementById("region-pie").getContext('2d');
                                 var data = {
-                                datasets: [{
-                                data: [<xsl:value-of select="normalize-space($region-chart-data)"/>],
-                                backgroundColor: [<xsl:value-of select="normalize-space($region-chart-colours)"/>]
-                                }],
-                                labels: [<xsl:value-of select="normalize-space($region-chart-labels)"/>]
+                                    datasets: [{
+                                        data: [<xsl:value-of select="normalize-space($region-chart-data)"/>],
+                                        backgroundColor: [<xsl:value-of select="normalize-space($region-chart-colours)"/>]
+                                    }],
+                                    labels: [<xsl:value-of select="normalize-space($region-chart-labels)"/>]
                                 };
                                 var options = { 
-                                legend: { display: false, position: 'right' },
-                                tooltips: { callbacks: {
-                                label: function(tooltipItem, data) {
-                                var i = tooltipItem.index;
-                                var val = data.datasets[0].data[tooltipItem.index];
-                                return val.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + "% " + data.labels[i];
-                                }}
-                                }
+                                    legend: { display: false, position: 'right' },
+                                    tooltips: { 
+                                        callbacks: {
+                                            label: function(tooltipItem, data) {
+                                                var i = tooltipItem.index;
+                                                var val = data.datasets[0].data[tooltipItem.index];
+                                                return val.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + "% " + data.labels[i];
+                                            }
+                                        }
+                                    }
                                 };
                                 var myPieChart = new Chart(ctx,{ type: 'pie', data: data, options: options });
                             </script>

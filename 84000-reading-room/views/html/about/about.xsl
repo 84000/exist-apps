@@ -33,13 +33,12 @@
                 </xsl:call-template>
             </xsl:variable>
             
-            <div class="title-band">
-                <div class="container">
-                    <h1>
-                        <xsl:value-of select="$page-title"/>
-                    </h1>
-                </div>
-            </div>
+            <xsl:variable name="title-band">
+                <m:title-band>
+                    <xsl:copy-of select="$eft-header/m:navigation[@xml:lang eq $lang]/m:item/m:item[@url eq $active-url or m:item[@url eq $active-url]]"/>
+                </m:title-band>
+            </xsl:variable>
+            <xsl:apply-templates select="$title-band"/>
             
             <xsl:if test="$page-quote gt ''">
                 <aside class="panel-header-image">

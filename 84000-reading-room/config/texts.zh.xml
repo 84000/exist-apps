@@ -2,569 +2,278 @@
 <texts xmlns="http://read.84000.co/ns/1.0" xml:lang="zh">
     <item key="glossary.term-empty-sa-ltn">—</item>
     <item key="glossary.term-empty-bo-ltn">—</item>
-    <item key="cumulative-glossary.disclaimer">
-        Please bear in mind that we are constantly revising
-        the glossaries and we will continue to add more glossaries as we publish translations. To
-        keep up to date please regularly download the latest version from the website.
-    </item>
-    <item key="source.folio.ekangyur-description-title">
-        About the eKangyur
-    </item>
+    <item key="cumulative-glossary.disclaimer">Please bear in mind that we are constantly revising the glossaries and we will continue to
+        add more glossaries as we publish translations. To keep up to date please regularly download the latest version from the website.</item>
+    <item key="source.folio.ekangyur-description-title">About the eKangyur</item>
     <item key="source.folio.ekangyur-description-content">
-        <p>
-            The Tibetan page displayed here is from the eKangyur, a digital input version made
-            by the University of Virginia and the British Library, with help from Esukhia, from
-            scans of the Degé Kangyur held in the U.S. Library of Congress. This post <foreign xml:lang="Bo-Ltn">par phud</foreign> print (<a href="https://www.tbrc.org/#!rid=W4CZ5369" target="_blank">BDRC catalogue no.
-                W4CZ5369</a>) was purchased in Beijing and brought to the U.S. by William
-            Rockhill in 1908-9.
-        </p>
-        <p>
-            Note that 84000 translations are made from a variety of sources, and readings may
-            not always follow this particular version exactly. For details of the readings used
-            in this translation, see Introduction and Notes; for the eKangyur, see the <a href="http://www.thlib.org/encyclopedias/literary/canons/about/wiki/tibetan%20canons%20introduction.html#!essay=/stanley/tibcanons/s/b3/" target="_blank">Tibetan and Himalayan Library</a>.
-        </p>
+        <p>The Tibetan page displayed here is from the eKangyur, a digital input version made by the University of Virginia and the British
+            Library, with help from Esukhia, from scans of the Degé Kangyur held in the U.S. Library of Congress. This post <foreign xml:lang="Bo-Ltn">par phud</foreign> print (<a href="https://www.tbrc.org/#!rid=W4CZ5369" target="_blank">BDRC catalogue no.
+                W4CZ5369</a>) was purchased in Beijing and brought to the U.S. by William Rockhill in 1908-9.</p>
+        <p>Note that 84000 translations are made from a variety of sources, and readings may not always follow this particular version
+            exactly. For details of the readings used in this translation, see Introduction and Notes; for the eKangyur, see the <a href="http://www.thlib.org/encyclopedias/literary/canons/about/wiki/tibetan%20canons%20introduction.html#!essay=/stanley/tibcanons/s/b3/" target="_blank">Tibetan and Himalayan Library</a>.</p>
     </item>
     <item key="source.folio.backlink-label">
-        <span>
-            The English translation of this folio by <span class="title">84000 - Translating the words of the Buddha</span> can be found at:
-        </span>
+        <span>The English translation of this folio by <span class="title">84000 - Translating the words of the Buddha</span> can be found
+            at:</span>
     </item>
     <item key="translation.print-version">
-        <p>
-            This print version was generated at
-            #CurrentDateTime from the online version of the text available on that date. If some
-            time has elapsed since then, this version may have been superseded, as most of 84000’s
-            published translations undergo significant updates from time to time. For the latest
-            online version, with bilingual display, interactive glossary entries and notes, and a
-            variety of further download options, please see <a href="#LinkToPage" class="printable">#LinkToPage</a>.
-        </p>
+        <p>This print version was generated at #CurrentDateTime from the online version of the text available on that date. If some time
+            has elapsed since then, this version may have been superseded, as most of 84000’s published translations undergo significant
+            updates from time to time. For the latest online version, with bilingual display, interactive glossary entries and notes, and a
+            variety of further download options, please see <a href="#LinkToPage" class="printable">#LinkToPage</a>.</p>
     </item>
-    <item key="section.ebook-help-title">
-        Help for downloading eBooks
-    </item>
+    <item key="section.ebook-help-title">Help for downloading eBooks</item>
     <item key="section.ebook-help-body">
-        <p>
-            There are many ways to get eBooks onto eReader
-            devices. If you already have a reliable method for this, please simply download the
-            texts.
-        </p>
-        <p>
-            However, some devices, such as Amazon Kindle, are
-            optimised for downloading books from their associated store, and getting free books from
-            other sources on to them can be tricky. Most eReaders have a built in web-browser and we
-            have found this to be the simplest way to get free eBooks on to our devices.
-        </p>
+        <p>There are many ways to get eBooks onto eReader devices. If you already have a reliable method for this, please simply download
+            the texts.</p>
+        <p>However, some devices, such as Amazon Kindle, are optimised for downloading books from their associated store, and getting free
+            books from other sources on to them can be tricky. Most eReaders have a built in web-browser and we have found this to be the
+            simplest way to get free eBooks on to our devices.</p>
         <ol>
-            <li>
-                Open the browser on your device. (On a Kindle this is “Beta-Browser” under the main menu).
-            </li>
-            <li>
-                Use the browser to go to http://read.84000.co
-            </li>
-            <li>
-                Select “View All Translated Texts.”
-            </li>
-            <li>
-                Select the “Download AZW3” option for the text you would like to read.
-            </li>
+            <li> Open the browser on your device. (On a Kindle this is “Beta-Browser” under the main menu). </li>
+            <li> Use the browser to go to http://read.84000.co </li>
+            <li> Select “View All Translated Texts.” </li>
+            <li> Select the “Download AZW3” option for the text you would like to read. </li>
         </ol>
-        <p>
-            Unfortunately we cannot test our publications on
-            every device. We try to ensure our texts are readable on as many devices as possible by
-            complying with open standards. If you have any feedback about this functionality, or
-            tips for reading them on your device, please contact us at <a href="mailto:info@84000.co">info@84000.co</a>.
-        </p>
+        <p> Unfortunately we cannot test our publications on every device. We try to ensure our texts are readable on as many devices as
+            possible by complying with open standards. If you have any feedback about this functionality, or tips for reading them on your
+            device, please contact us at <a href="mailto:info@84000.co">info@84000.co</a>. </p>
     </item>
-    
+
     <!-- About -->
-    <item key="about.common.support-label">
-        護持【八萬四千•佛典傳譯】
-    </item>
+    <item key="about.common.support-label">護持【八萬四千•佛典傳譯】</item>
     <item key="about.common.support-description">
-        <p>
-            我們在108位創始贊助人和數千位捐助者的幫助下，持續資助佛典的翻譯。共七萬頁的《甘珠爾》經文，仍需要您的發心贊助，請加入我們的行列。
-        </p>
+        <p>我們在108位創始贊助人和數千位捐助者的幫助下，持續資助佛典的翻譯。共七萬頁的《甘珠爾》經文，仍需要您的發心贊助，請加入我們的行列。</p>
     </item>
-    <item key="about.common.kangyur-count-before-label">
-        《甘珠爾》總頁數
-    </item>
-    <item key="about.common.translation-count-before-label">
-        翻譯中頁數
-    </item>
-    <item key="about.common.translated-count-before-label">
-        已翻譯頁數
-    </item>
-    <item key="about.common.published-count-before-label">
-        翻譯中頁數
-    </item>
-    <item key="about.common.sponsor-button-label">
-        線上捐款
-    </item>
-    <item key="about.common.sponsor-button-link">
-        #commsSiteUrl/ch-how-you-can-help/ch-howhelp-subscribe/
-    </item>
-    <item key="about.common.donate-instructions-link">
-        #commsSiteUrl/media/ch_donate_instructions.pdf
-    </item>
-    <item key="about.common.donate-instructions-label">
-        幫助
-    </item>
-    <item key="about.common.donate-instructions-link-title">
-        如何線上捐款
-    </item>
-    <item key="about.common.sharing-label">
-        Share this page:
-    </item>
-    <item key="about.common.summary-label">
-        大綱
-    </item>
-    <item key="about.common.no-results-label">
-        There are currently not texts in this list
-    </item>
-    <item key="about.common.column-toh-label">
-        Toh
-    </item>
-    <item key="about.common.column-title-label">
-        Title
-    </item>
-    <item key="about.common.column-status-label">
-        Status
-    </item>
-    <item key="about.common.column-pages-label">
-        Pages
-    </item>
-    <item key="about.common.page-total-label">
-        Total pages:
-    </item>
-    <item key="about.common.pages-label">
-        pages
-    </item>
-    <item key="about.common.texts-label">
-        texts
-    </item>
-    
-    <!-- Prototype -->
-    <item key="about.prototype.page-title">
-        Prototype
-    </item>
-    
+    <item key="about.common.kangyur-count-before-label">《甘珠爾》總頁數</item>
+    <item key="about.common.translation-count-before-label">翻譯中頁數</item>
+    <item key="about.common.translated-count-before-label">已翻譯頁數</item>
+    <item key="about.common.published-count-before-label">翻譯中頁數</item>
+    <item key="about.common.sponsor-button-label">線上捐款</item>
+    <item key="about.common.sponsor-button-link">#commsSiteUrl/ch-how-you-can-help/ch-howhelp-subscribe</item>
+    <item key="about.common.donate-instructions-link">#commsSiteUrl/media/ch_donate_instructions.pdf</item>
+    <item key="about.common.donate-instructions-label">幫助</item>
+    <item key="about.common.donate-instructions-link-title">如何線上捐款</item>
+    <item key="about.common.sharing-label">Share this page:</item>
+    <item key="about.common.summary-label">大綱</item>
+    <item key="about.common.no-results-label">There are currently not texts in this list</item>
+    <item key="about.common.column-toh-label">Toh</item>
+    <item key="about.common.column-title-label">Title</item>
+    <item key="about.common.column-status-label">Status</item>
+    <item key="about.common.column-pages-label">Pages</item>
+    <item key="about.common.page-total-label">Total pages:</item>
+    <item key="about.common.pages-label">pages</item>
+    <item key="about.common.texts-label">texts</item>
+
     <!-- Progress -->
-    <item key="about.progress.header-img-src">
-        /imgs/about-headers/PROGRESS-1400.jpg
+    <item key="about.progress.header-img-src">/imgs/about-headers/PROGRESS-1400.jpg</item>
+    <item key="about.progress.page-title">工作進度</item>
+    <item key="about.progress.page-quote">「佛法如何助益 你… 你都應當有親身體會。若能持此心念, 透過佛典翻譯向外開展這份善念, 必將能讓世界有所改變。」</item>
+    <item key="about.progress.page-quote-author">吉噶康楚仁波切</item>
+    <item key="about.progress.page-intro">【八萬四千．佛典傳譯】百年願景的第一部份，是將《甘珠爾》的70,000頁翻譯成英文，之後再開始《丹珠爾》161,800頁的翻譯工作。翻譯作品列表</item>
+    <item key="about.progress.translations-published-label">Published Translations</item>
+    <item key="about.progress.translations-awaiting-label">Translations Awaiting Publication</item>
+    <item key="about.progress.translations-remaining-label">Other Translations In Progress</item>
+    <item key="about.progress.context-label">of the Kangyur</item>
+    <item key="about.progress.related-pages">
+        <h3>Other Related Pages</h3>
+        <ul class="list-unstyled">
+            <li>
+                <a href="#commsSiteUrl/about/work-flow">Learn more about what it takes to produce a page of translation</a>
+            </li>
+            <li>
+                <a href="#commsSiteUrl/facts-and-figures-about-kangyur-and-tengyur/">Learn more about the Kangyur, the Tengyur, and their
+                    contents</a>
+            </li>
+        </ul>
     </item>
-    <item key="about.progress.page-title">
-        工作進度
-    </item>
-    <item key="about.progress.page-quote">
-        「佛法如何助益 你… 你都應當有親身體會。若能持此心念, 透過佛典翻譯向外開展這份善念, 必將能讓世界有所改變。」
-    </item>
-    <item key="about.progress.page-quote-author">
-        吉噶康楚仁波切
-    </item>
-    <item key="about.progress.page-intro">
-        【八萬四千．佛典傳譯】百年願景的第一部份，是將《甘珠爾》的70,000頁翻譯成英文，之後再開始《丹珠爾》161,800頁的翻譯工作。翻譯作品列表
-    </item>
-    <item key="about.progress.translations-published-label">
-        Published Translations
-    </item>
-    <item key="about.progress.translations-awaiting-label">
-        Translations Awaiting Publication
-    </item>
-    <item key="about.progress.translations-remaining-label">
-        Other Translations In Progress
-    </item>
-    <item key="about.progress.context-label">
-        of the Kangyur
-    </item>
-    
+
     <!-- Impact -->
-    <item key="about.impact.header-img-src">
-        /imgs/about-headers/IMPACT-1400.jpg
-    </item>
-    <item key="about.impact.page-title">
-        全球影響
-    </item>
-    <item key="about.impact.page-quote">
-        「《甘珠爾》與《丹珠爾》並不僅是一個傳統、一個文明時代或一個國家的遺產,而是整個世界的珍貴遺產。」
-    </item>
-    <item key="about.impact.page-quote-author">
-        祖古貝馬望買仁波切
-    </item>
-    <item key="about.impact.map-img-src">
-        /imgs/2016.09.15-Readers-from-the-world-zh.jpg
-    </item>
-    <item key="about.impact.map-img-alt">
-        World map showing 84000 readership
-    </item>
-    <item key="about.impact.page-subtitle">
-        Our Global Impact
-    </item>
+    <item key="about.impact.header-img-src">/imgs/about-headers/IMPACT-1400.jpg</item>
+    <item key="about.impact.page-title">全球影響</item>
+    <item key="about.impact.page-quote">「《甘珠爾》與《丹珠爾》並不僅是一個傳統、一個文明時代或一個國家的遺產,而是整個世界的珍貴遺產。」</item>
+    <item key="about.impact.page-quote-author">祖古貝馬望買仁波切</item>
+    <item key="about.impact.map-img-src">/imgs/2016.09.15-Readers-from-the-world-zh.jpg</item>
+    <item key="about.impact.map-img-alt">World map showing 84000 readership</item>
+    <item key="about.impact.page-subtitle">Our Global Impact</item>
     <item key="about.impact.page-introduction">
-        <p>
-            【八萬四千．佛典傳譯】的兩項主要任務分別是：<strong>佛經翻譯</strong>以及<strong>全球流通</strong>。
-        </p>
-        <p>
-            除了翻譯佛陀言教之外，我們需要建立與維護一個易於使用、技術穩定的公眾平台（即<a href="/">84000[crr]</a>），俾使人人都能輕易地接觸到這些珍貴法教。
-        </p>
-        <p>
-            以下的數字是我們共同創造的全球影響力。請您<a href="#commsSiteUrl/ch-donate" target="_blank">繼續護持</a>84000，幫助我們將佛陀的言教流通全世界。
-        </p>
+        <p>【八萬四千．佛典傳譯】的兩項主要任務分別是：<strong>佛經翻譯</strong>以及<strong>全球流通</strong>。</p>
+        <p>除了翻譯佛陀言教之外，我們需要建立與維護一個易於使用、技術穩定的公眾平台（即<a href="/">84000[crr]</a>），俾使人人都能輕易地接觸到這些珍貴法教。</p>
+        <p>以下的數字是我們共同創造的全球影響力。請您<a href="#commsSiteUrl/ch-donate" target="_blank">繼續護持</a>84000，幫助我們將佛陀的言教流通全世界。</p>
     </item>
     <item key="about.impact.visitors-per-week-stat">
-        <div class="heading">
-            每週瀏覽次數
-        </div>
+        <div class="heading">每週瀏覽次數</div>
         <div class="data">
-            <span>
-                #visitorsPerWeekFormatted
-            </span>
+            <span>#visitorsPerWeekFormatted</span>
         </div>
     </item>
     <item key="about.impact.visitors-description">
-        <p>
-            每週，我們的網站都有2500位來自世界各地的訪客。[crr]已出版的41部經文提供三種不同格式的下載，相信很多法友下載後也在線下繼續進行研讀。
-        </p>
+        <p>每週，我們的網站都有2500位來自世界各地的訪客。[crr]已出版的41部經文提供三種不同格式的下載，相信很多法友下載後也在線下繼續進行研讀。</p>
     </item>
     <item key="about.impact.reach-countries-stat">
-        <div class="heading">
-            國家／地區
-        </div>
+        <div class="heading">國家／地區</div>
         <div class="data">
-            <span>
-                #reachCountriesFormatted
-            </span>
+            <span>#reachCountriesFormatted</span>
         </div>
     </item>
     <item key="about.impact.reach-description">
-        <p>
-            目前【八萬四千 • 佛典傳譯】有來自242個國家／地區的訪客。
-        </p>
+        <p>目前【八萬四千 • 佛典傳譯】有來自242個國家／地區的訪客。</p>
     </item>
     <item key="about.impact.engagement-minutes-stat">
-        <div class="heading">
-            閱覽超過10分鐘的
-            <br/>
-            人數
-        </div>
+        <div class="heading">閱覽超過10分鐘的 <br/> 人數</div>
         <div class="data">
-            <span>
-                #engagementMinutesFormatted
-            </span>
+            <span>#engagementMinutesFormatted</span>
         </div>
     </item>
     <item key="about.impact.engagement-description">
-        <p>
-            我們的讀者在[crr]花的時間比以往更多，有6000多人閱覽至少10分鐘，也有1378人停留超過半小時。我們先進的[crr]提供讀者們前所未有的經典閱讀體驗。
-        </p>
+        <p>我們的讀者在[crr]花的時間比以往更多，有6000多人閱覽至少10分鐘，也有1378人停留超過半小時。我們先進的[crr]提供讀者們前所未有的經典閱讀體驗。</p>
     </item>
     <item key="about.impact.popular-views-stat">
-        <div class="heading">
-            熱門經典的
-            <br/>
-            閱覽次數
-        </div>
+        <div class="heading">熱門經典的 <br/> 閱覽次數</div>
         <div class="data">
-            <span>
-                #topTextViewsFormatted
-            </span>
+            <span>#topTextViewsFormatted</span>
         </div>
     </item>
     <item key="about.impact.popular-description">
-        <p>
-            2018年裡，[crr]已被瀏覽150000次，而最受歡迎的5部經典共被閱覽43610次。這5部經文為：
-        </p>
+        <p>2018年裡，[crr]已被瀏覽150000次，而最受歡迎的5部經典共被閱覽43610次。這5部經文為：</p>
         <ol>
             <li>
-                <a href="/translation/UT22084-055-001.html?lang=zh">
-                    《三摩地王經》
-                </a>
+                <a href="/translation/UT22084-055-001.html?lang=zh">《三摩地王經》</a>
             </li>
             <li>
-                <a href="/translation/UT22084-031-002.html?lang=zh">
-                    《般若波羅蜜多萬頌》
-                </a>
+                <a href="/translation/UT22084-031-002.html?lang=zh">《般若波羅蜜多萬頌》</a>
             </li>
             <li>
-                <a href="/translation/UT22084-060-005.html?lang=zh">
-                    《維摩詰所說經》
-                </a>
+                <a href="/translation/UT22084-060-005.html?lang=zh">《維摩詰所說經》</a>
             </li>
             <li>
-                <a href="/translation/UT22084-062-010.html?lang=zh">
-                    《佛說稻芉經》
-                </a>
+                <a href="/translation/UT22084-062-010.html?lang=zh">《佛說稻芉經》</a>
             </li>
             <li>
-                <a href="/translation/UT22084-062-012.html?lang=zh">
-                    《緣起經》
-                </a>
+                <a href="/translation/UT22084-062-012.html?lang=zh">《緣起經》</a>
             </li>
         </ol>
-        <p>
-            我們目前有21000頁經文正在翻譯中，期望近期能夠出版更多經典供您免費閱讀。
-        </p>
+        <p>我們目前有21000頁經文正在翻譯中，期望近期能夠出版更多經典供您免費閱讀。</p>
     </item>
-    <item key="about.impact.countries-title">
-        讀者來源:
-    </item>
-    <item key="about.impact.countries-legend">
-        *備註：以上圖案僅列出部分讀者所處國家與地區，並非全數。
-    </item>
-    <item key="about.impact.countries-timestamp">
-        最後更新日期：2018年8月5日
-    </item>
-    
+    <item key="about.impact.countries-title">讀者來源:</item>
+    <item key="about.impact.countries-legend">*備註：以上圖案僅列出部分讀者所處國家與地區，並非全數。</item>
+    <item key="about.impact.countries-timestamp">最後更新日期：2018年8月5日</item>
+
     <!-- Sponsors -->
-    <item key="about.sponsors.header-img-src">
-        /imgs/about-headers/SPONSORS-1400.jpg
-    </item>
-    <item key="about.sponsors.page-title">
-        贊助人
-    </item>
-    <item key="about.sponsors.page-quote">
-       「無論是慷慨的施主，或是學識淵博且經驗豐富的譯者們，都能因彼此之間相輔相成的因緣，而圓滿福慧二種資糧的積累。」
-    </item>
-    <item key="about.sponsors.page-quote-author">
-        赤熱巴巾（又稱赤祖德贊王）
-    </item>
-    <item key="about.sponsors.matching-funds-title">
-        對等基金贊助人
-    </item>
-    <item key="about.sponsors.sutras-title">
-        「一部佛典」贊助人
-    </item>
-    <item key="about.sponsors.founding-title">
-        創始贊助人
-    </item>
+    <item key="about.sponsors.header-img-src">/imgs/about-headers/SPONSORS-1400.jpg</item>
+    <item key="about.sponsors.page-title">贊助人</item>
+    <item key="about.sponsors.page-quote">「無論是慷慨的施主，或是學識淵博且經驗豐富的譯者們，都能因彼此之間相輔相成的因緣，而圓滿福慧二種資糧的積累。」</item>
+    <item key="about.sponsors.page-quote-author">赤熱巴巾（又稱赤祖德贊王）</item>
+    <item key="about.sponsors.matching-funds-title">對等基金贊助人</item>
+    <item key="about.sponsors.sutras-title">「一部佛典」贊助人</item>
+    <item key="about.sponsors.founding-title">創始贊助人</item>
     <item key="about.sponsors.matching-funds-description">
-        <p>
-            對等捐贈項目旨在鼓勵更多人成為定期的捐贈者，所定期捐獻的每一元善款都將得到加倍，這將為護持84000佛典翻譯的工作提供長期穩定的經濟支柱。非常感激所有參與對等基金的贊助者，他們的慷慨贊助，能讓所有的定期定額捐贈者，都能感受到自己的貢獻對翻譯《大藏經》這個項目產生了重大影響。
-        </p>
+        <p>對等捐贈項目旨在鼓勵更多人成為定期的捐贈者，所定期捐獻的每一元善款都將得到加倍，這將為護持84000佛典翻譯的工作提供長期穩定的經濟支柱。非常感激所有參與對等基金的贊助者，他們的慷慨贊助，能讓所有的定期定額捐贈者，都能感受到自己的貢獻對翻譯《大藏經》這個項目產生了重大影響。</p>
     </item>
     <item key="about.sponsors.matching-funds-list-title">
-        <p>
-            對等基金贊助人
-        </p>
+        <p>對等基金贊助人</p>
     </item>
-    <item key="about.sponsors.sponsor-sutras-link">
-        #commsSiteUrl/ch-how-you-can-help/ch-sponsor-a-sutra
-    </item>
+    <item key="about.sponsors.sponsor-sutras-link">#commsSiteUrl/ch-how-you-can-help/ch-sponsor-a-sutra</item>
     <item key="about.sponsors.sutras-description">
-        <p>
-            我們每年都會挑選出一些長篇幅的重要經典，加入<a href="#commsSiteUrl/ch-how-you-can-help/ch-sponsor-a-sutra">「贊助一部佛典」</a>計畫之中。為了圓滿完成優質的翻譯，需要進行大量的研究與諮詢，因此需要較多的贊助經費。我們非常感謝所有贊助人的慷慨支持。
-        </p>
+        <p>我們每年都會挑選出一些長篇幅的重要經典，加入<a href="#commsSiteUrl/ch-how-you-can-help/ch-sponsor-a-sutra">「贊助一部佛典」</a>計畫之中。為了圓滿完成優質的翻譯，需要進行大量的研究與諮詢，因此需要較多的贊助經費。我們非常感謝所有贊助人的慷慨支持。</p>
     </item>
     <item key="about.sponsors.sutras-list-title">
-        <p>
-            「一部佛典」贊助人
-        </p>
+        <p>「一部佛典」贊助人</p>
     </item>
     <item key="about.sponsors.founding-description">
-        <p>
-            我們要特別感謝108位創始贊助人如此慷慨地提供首批資金，以幫助【八萬四千•佛典傳譯】開始進行翻譯佛陀言教的任務。為了促使該計畫得以起航，每位捐助者都承諾在五年內資助50,000-250,000美元。除了作為首輪翻譯項目所提供的資金之外，這筆基金也分配運用在為評審、編輯和出版前各項工作創建的基礎設施；開發翻譯工作所需的工具和資源、培訓翻譯和編輯、初期規畫成本以及當前和即將進行的行政管理運營成本。
-        </p>
-        <p>
-            正因為這些慷慨且有遠見的創始贊助人，84000計畫才得以成功地開展，並於短期內完成了大量佛陀言教的翻譯任務，進展顯著。我們衷心感謝所有捐助者，使我們能夠保護無價的世界文化遺產，從而流通後代為普世所共享。
-        </p>
-        <p>
-            84000計畫的主席宗薩欽哲仁波切給108位創始贊助者寫下一段話。<a href="#commsSiteUrl/?p=5089/">點擊此處查看仁波切的開示。</a>
+        <p>我們要特別感謝108位創始贊助人如此慷慨地提供首批資金，以幫助【八萬四千•佛典傳譯】開始進行翻譯佛陀言教的任務。為了促使該計畫得以起航，每位捐助者都承諾在五年內資助50,000-250,000美元。除了作為首輪翻譯項目所提供的資金之外，這筆基金也分配運用在為評審、編輯和出版前各項工作創建的基礎設施；開發翻譯工作所需的工具和資源、培訓翻譯和編輯、初期規畫成本以及當前和即將進行的行政管理運營成本。</p>
+        <p>正因為這些慷慨且有遠見的創始贊助人，84000計畫才得以成功地開展，並於短期內完成了大量佛陀言教的翻譯任務，進展顯著。我們衷心感謝所有捐助者，使我們能夠保護無價的世界文化遺產，從而流通後代為普世所共享。</p>
+        <p>84000計畫的主席宗薩欽哲仁波切給108位創始贊助者寫下一段話。<a href="#commsSiteUrl/?p=5089/">點擊此處查看仁波切的開示。</a>
         </p>
     </item>
     <item key="about.sponsors.founding-list-title">
-        <p>
-            108位創始贊助人
-        </p>
+        <p>108位創始贊助人</p>
     </item>
-    <item key="about.sponsors.text-sponsorship-link-label">
-        還有一個贊助機會
-    </item>
-    
+    <item key="about.sponsors.text-sponsorship-link-label">還有一個贊助機會</item>
+
     <!-- Translators -->
-    <item key="about.translators.header-img-src">
-        /imgs/about-headers/TRANSLATORS-1400.jpg
-    </item>
-    <item key="about.translators.page-title">
-        翻譯人員
-    </item>
-    <item key="about.translators.page-quote">
-        「譯者們必須真正團結起來, 形成一個和諧的群體, 一起為當代及未來的世代而努力, 這是非常重要的。」
-    </item>
-    <item key="about.translators.page-quote-author">
-        吉噶康楚仁波切
-    </item>
-    <item key="about.translators.lists-title">
-        84000 翻譯人員
-    </item>
-    <item key="about.translators.summary-title">
-        Summary
-    </item>
-    <item key="about.translators.team-count-label">
-        Number of Teams
-    </item>
-    <item key="about.translators.teams-label">
-         teams
-    </item>
-    <item key="about.translators.translator-count-label">
-        Number of Translators, Editors, and Consultants
-    </item>
-    <item key="about.translators.translators-label">
-         people
-    </item>
-    <item key="about.translators.affiliation-title">
-        Translators by affiliation
-    </item>
-    <item key="about.translators.affiliation-label">
-         of translators
-    </item>
-    <item key="about.translators.region-title">
-        Translators by region
-    </item>
-    <item key="about.translators.region-label">
-         of translators
-    </item>
-    
+    <item key="about.translators.header-img-src">/imgs/about-headers/TRANSLATORS-1400.jpg</item>
+    <item key="about.translators.page-title">翻譯人員</item>
+    <item key="about.translators.page-quote">「譯者們必須真正團結起來, 形成一個和諧的群體, 一起為當代及未來的世代而努力, 這是非常重要的。」</item>
+    <item key="about.translators.page-quote-author">吉噶康楚仁波切</item>
+    <item key="about.translators.lists-title">84000 翻譯人員</item>
+    <item key="about.translators.summary-title">Summary</item>
+    <item key="about.translators.team-count-label">Number of Teams</item>
+    <item key="about.translators.teams-label">teams</item>
+    <item key="about.translators.translator-count-label">Number of Translators, Editors, and Consultants</item>
+    <item key="about.translators.translators-label">people</item>
+    <item key="about.translators.affiliation-title">Translators by affiliation</item>
+    <item key="about.translators.affiliation-label">of translators</item>
+    <item key="about.translators.region-title">Translators by region</item>
+    <item key="about.translators.region-label">of translators</item>
+
     <!-- Sponsor a Sutra -->
-    <item key="about.sponsor-a-sutra.header-img-src">
-        /imgs/about-headers/SPONSOR-SUTRA-1024x514.jpg
-    </item>
-    <item key="about.sponsor-a-sutra.page-quote">
-        “Sutras teach us the Dharma. The sutras are much more precious, much more important than the image of the Buddha.”
-    </item>
-    <item key="about.sponsor-a-sutra.page-quote-author">
-        H.E. Garchen Rinpoche
-    </item>
-    <item key="about.sponsor-a-sutra.page-title">
-        贊助一部佛典
-    </item>
-    <item key="about.sponsor-a-sutra.page-heading">
-        相關資料:
-    </item>
+    <item key="about.sponsor-a-sutra.header-img-src">/imgs/about-headers/SPONSOR-SUTRA-1024x514.jpg</item>
+    <item key="about.sponsor-a-sutra.page-quote">“Sutras teach us the Dharma. The sutras are much more precious, much more important than
+        the image of the Buddha.”</item>
+    <item key="about.sponsor-a-sutra.page-quote-author">H.E. Garchen Rinpoche</item>
+    <item key="about.sponsor-a-sutra.page-title">贊助一部佛典</item>
+    <item key="about.sponsor-a-sutra.page-heading">相關資料:</item>
     <item key="about.sponsor-a-sutra.page-intro">
-        <p>
-            某些長篇重要經典需要較多經費才能完成，「贊助一部佛典」計劃， 提供個人/家族或團體（機構、僧團、寺院等）一個共同集資供養一部長篇佛典翻譯的機會，也確保我們有足夠的經費來完成這些佛陀言教的翻譯。我們需要您的鼎力支持。
-        </p>
-        <h4>
-            如何贊助一部佛典？
-        </h4>
-        <p>
-            可供選擇贊助的頁數:
-        </p>
+        <p>某些長篇重要經典需要較多經費才能完成，「贊助一部佛典」計劃， 提供個人/家族或團體（機構、僧團、寺院等）一個共同集資供養一部長篇佛典翻譯的機會，也確保我們有足夠的經費來完成這些佛陀言教的翻譯。我們需要您的鼎力支持。</p>
+        <h4>如何贊助一部佛典？</h4>
+        <p>可供選擇贊助的頁數:</p>
         <ul>
-            <li>
-                100頁 (贊助金額: $25,000美元)
-            </li>
-            <li>
-                150頁 (贊助金額: $37,500美元)
-            </li>
-            <li>
-                200頁 (贊助金額: $50,000美元)或以上
-            </li>
+            <li>100頁 (贊助金額: $25,000美元)</li>
+            <li>150頁 (贊助金額: $37,500美元)</li>
+            <li>200頁 (贊助金額: $50,000美元)或以上</li>
         </ul>
-        <h4>
-            贊助金將用於何處？
-        </h4>
+        <h4>贊助金將用於何處？</h4>
+        <p>您的贊助將涵蓋研究、諮詢、翻譯與編輯，使翻譯這部經典的團隊工作能如期順利進行。每部經典所籌募之經費如有結餘，將用以資助後續的出版工作。</p>
+        <h4>如何贊助？</h4>
+        <p>有意贊助者可以個人、家族、公司或組織/團體、僧團、寺院等名義參加。若有多位贊助人時，需指定一位為主要聯絡人，以接收84000的感謝函或贈禮。</p>
+        <h4>贊助者如何列名？</h4>
+        <p>在佛典譯經完成後，將於「致謝」章節中，刊登護持譯經贊助人姓名以為感謝</p>
+        <p>每年的捐助者芳名錄都會於宗薩寺的印度祈願法會呈報給仁波切並作功德迴向。</p>
         <p>
-            您的贊助將涵蓋研究、諮詢、翻譯與編輯，使翻譯這部經典的團隊工作能如期順利進行。每部經典所籌募之經費如有結餘，將用以資助後續的出版工作。
-        </p>
-        <h4>
-            如何贊助？
-        </h4>
-        <p>
-            有意贊助者可以個人、家族、公司或組織/團體、僧團、寺院等名義參加。若有多位贊助人時，需指定一位為主要聯絡人，以接收84000的感謝函或贈禮。
-        </p>
-        <h4>
-            贊助者如何列名？
-        </h4>
-        <p>
-            在佛典譯經完成後，將於「致謝」章節中，刊登護持譯經贊助人姓名以為感謝
-        </p>
-        <p>
-            每年的捐助者芳名錄都會於宗薩寺的印度祈願法會呈報給仁波切並作功德迴向。
-        </p>
-        <p>
-            <a href="#commsSiteUrl/ch-about/ch-sponsors">
-                請點擊此處瀏覽目前已獲贊助的長篇經典
-            </a>
+            <a href="#commsSiteUrl/ch-about/ch-sponsors">請點擊此處瀏覽目前已獲贊助的長篇經典</a>
         </p>
     </item>
-    <item key="about.sponsor-a-sutra.donate-label">
-        Donate online
-    </item>
+    <item key="about.sponsor-a-sutra.donate-label">Donate online</item>
     <item key="about.sponsor-a-sutra.pull-out">
         <p>可供選擇贊助的頁數:</p>
         <ul>
-            <li>
-                100頁 (贊助金額: $25,000美元)
-            </li>
-            <li>
-                150頁 (贊助金額: $37,500美元)
-            </li>
-            <li>
-                200頁 (贊助金額: $50,000美元)或以上
-            </li>
+            <li>100頁 (贊助金額: $25,000美元)</li>
+            <li>150頁 (贊助金額: $37,500美元)</li>
+            <li>200頁 (贊助金額: $50,000美元)或以上</li>
         </ul>
-        <p>
-            All sponsors will be acknowledged in the sponsored sutra within 30 words.
-        </p>
+        <p>All sponsors will be acknowledged in the sponsored sutra within 30 words.</p>
     </item>
-    <item key="about.sponsor-a-sutra.text-list-title">
-        今年可供贊助的佛典：
-    </item>
-    <item key="about.sponsor-a-sutra.priority-title">
-        精選佛典
-    </item>
-    <item key="about.sponsor-a-sutra.priority-description">
-        下列為84000希望優先翻譯和出版之經文，您若有意願護持佛典傳譯，請考慮贊助以下其中一部。
-    </item>
-    <item key="about.sponsor-a-sutra.text-list-section-title">
-        贊助佛典頁數: #pageUpper頁 (贊助金額: $#groupCost美元)
-    </item>
-    <item key="about.sponsor-a-sutra.text-list-remainder-title">
-        贊助佛典頁數: #pageLower頁以上
-    </item>
-    <item key="about.sponsor-a-sutra.part-icon-label-available">
-        代表已被贊助
-    </item>
-    <item key="about.sponsor-a-sutra.part-icon-label-sponsored">
-        代表仍有贊助名額
-    </item>
-    <item key="about.sponsor-a-sutra.reserved-label">
-        已預留
-    </item>
-    <item key="about.sponsor-a-sutra.sponsor-part-label">
-        Sponsor a part
-    </item>
-    <item key="about.sponsor-a-sutra.sponsor-whole-label">
-        Sponsor the whole
-    </item>
-    <item key="about.sponsor-a-sutra.no-texts-of-type">
-        There are currently no texts of this type proposed for sponsorship.
-    </item>
+    <item key="about.sponsor-a-sutra.text-list-title">今年可供贊助的佛典：</item>
+    <item key="about.sponsor-a-sutra.priority-title">精選佛典</item>
+    <item key="about.sponsor-a-sutra.priority-description">下列為84000希望優先翻譯和出版之經文，您若有意願護持佛典傳譯，請考慮贊助以下其中一部。</item>
+    <item key="about.sponsor-a-sutra.text-list-section-title">贊助佛典頁數: #pageUpper頁 (贊助金額: $#groupCost美元)</item>
+    <item key="about.sponsor-a-sutra.text-list-remainder-title">贊助佛典頁數: #pageLower頁以上</item>
+    <item key="about.sponsor-a-sutra.part-icon-label-available">代表已被贊助</item>
+    <item key="about.sponsor-a-sutra.part-icon-label-sponsored">代表仍有贊助名額</item>
+    <item key="about.sponsor-a-sutra.reserved-label">已預留</item>
+    <item key="about.sponsor-a-sutra.sponsor-part-label">Sponsor a part</item>
+    <item key="about.sponsor-a-sutra.sponsor-whole-label">Sponsor the whole</item>
+    <item key="about.sponsor-a-sutra.no-texts-of-type">There are currently no texts of this type proposed for sponsorship.</item>
     <item key="about.sponsor-a-sutra.footer">
-        <p>
-            想了解更多詳情，請與<span class="underline">84000</span>執行長黃淨蕊聯繫: <a href="mailto:jingrui@84000.co">jingrui@84000.co</a>
+        <p>想了解更多詳情，請與<span class="underline">84000</span>執行長黃淨蕊聯繫: <a href="mailto:jingrui@84000.co">jingrui@84000.co</a>
         </p>
     </item>
-    
-    <item key="widget.download-dana.widget-title">
-        Download Dāna
-    </item>
-    <item key="widget.download-dana.icon-label">
-        You are downloading:
-    </item>
+
+    <!-- Download dana -->
+    <item key="widget.download-dana.widget-title">Download Dāna</item>
+    <item key="widget.download-dana.icon-label">You are downloading:</item>
     <item key="widget.download-dana.dana-description">
-        <p>
-            This is a free publication from 84000: Translating the Words of the Buddha, a non-profit organization sharing the gift of wisdom with the world.
-        </p>
-        <p>
-            The cultivation of generosity, or dāna—giving voluntarily with a view that something wholesome will come of it—is considered to be a fundamental Buddhist practice by all schools. The nature and quantity of the gift itself is often considered less important.
-        </p>
+        <p>This is a free publication from 84000: Translating the Words of the Buddha, a non-profit organization sharing the gift of wisdom
+            with the world.</p>
+        <p>The cultivation of generosity, or dāna—giving voluntarily with a view that something wholesome will come of it—is considered to
+            be a fundamental Buddhist practice by all schools. The nature and quantity of the gift itself is often considered less
+            important.</p>
     </item>
-    <item key="widget.download-dana.donate-form-link">
-        /how-you-can-help/download-dana
-    </item>
-    <item key="widget.download-dana.donate-form-link-label">
-        Click here to make a dāna donation
-    </item>
+    <item key="widget.download-dana.donate-form-link">/how-you-can-help/download-dana</item>
+    <item key="widget.download-dana.donate-form-link-label">Click here to make a dāna donation</item>
     
+    <!-- Audio test -->
+    <item key="about.audio-test.page-title">Audio test</item>
+
 </texts>

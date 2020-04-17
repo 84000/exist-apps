@@ -2,602 +2,316 @@
 <texts xmlns="http://read.84000.co/ns/1.0" xml:lang="en">
     <item key="glossary.term-empty-sa-ltn">—</item>
     <item key="glossary.term-empty-bo-ltn">—</item>
-    <item key="cumulative-glossary.disclaimer">
-        Please bear in mind that we are constantly revising
-        the glossaries and we will continue to add more glossaries as we publish translations. To
-        keep up to date please regularly download the latest version from the website.
-    </item>
-    <item key="source.folio.ekangyur-description-title">
-        About the eKangyur
-    </item>
+    <item key="cumulative-glossary.disclaimer">Please bear in mind that we are constantly revising the glossaries and we will continue to
+        add more glossaries as we publish translations. To keep up to date please regularly download the latest version from the website. </item>
+    <item key="source.folio.ekangyur-description-title">About the eKangyur</item>
     <item key="source.folio.ekangyur-description-content">
-        <p>
-            The Tibetan page displayed here is from the eKangyur, a digital input version made
-            by the University of Virginia and the British Library, with help from Esukhia, from
-            scans of the Degé Kangyur held in the U.S. Library of Congress. This post <foreign xml:lang="Bo-Ltn">par phud</foreign> print (<a href="https://www.tbrc.org/#!rid=W4CZ5369" target="_blank">BDRC catalogue no.
-                W4CZ5369</a>) was purchased in Beijing and brought to the U.S. by William
-            Rockhill in 1908-9.
-        </p>
-        <p>
-            Note that 84000 translations are made from a variety of sources, and readings may
-            not always follow this particular version exactly. For details of the readings used
-            in this translation, see Introduction and Notes; for the eKangyur, see the <a href="http://www.thlib.org/encyclopedias/literary/canons/about/wiki/tibetan%20canons%20introduction.html#!essay=/stanley/tibcanons/s/b3/" target="_blank">Tibetan and Himalayan Library</a>.
-        </p>
+        <p>The Tibetan page displayed here is from the eKangyur, a digital input version made by the University of Virginia and the British
+            Library, with help from Esukhia, from scans of the Degé Kangyur held in the U.S. Library of Congress. This post <foreign xml:lang="Bo-Ltn">par phud</foreign> print (<a href="https://www.tbrc.org/#!rid=W4CZ5369" target="_blank">BDRC catalogue no.
+                    W4CZ5369</a>) was purchased in Beijing and brought to the U.S. by William Rockhill in 1908-9.</p>
+        <p>Note that 84000 translations are made from a variety of sources, and readings may not always follow this particular version
+            exactly. For details of the readings used in this translation, see Introduction and Notes; for the eKangyur, see the <a href="http://www.thlib.org/encyclopedias/literary/canons/about/wiki/tibetan%20canons%20introduction.html#!essay=/stanley/tibcanons/s/b3/" target="_blank">Tibetan and Himalayan Library</a>.</p>
     </item>
     <item key="source.folio.backlink-label">
-        <span>
-            The English translation of this folio by <span class="title">84000 - Translating the words of the Buddha</span> can be found at:
-        </span>
+        <span>The English translation of this folio by <span class="title">84000 - Translating the words of the Buddha</span> can be found
+            at:</span>
     </item>
     <item key="translation.print-version">
-        <p>
-            This print version was generated at
-            #CurrentDateTime from the online version of the text available on that date. If some
-            time has elapsed since then, this version may have been superseded, as most of 84000’s
-            published translations undergo significant updates from time to time. For the latest
-            online version, with bilingual display, interactive glossary entries and notes, and a
-            variety of further download options, please see <a href="#LinkToPage" class="printable">#LinkToPage</a>.
-        </p>
+        <p>This print version was generated at #CurrentDateTime from the online version of the text available on that date. If some time has
+            elapsed since then, this version may have been superseded, as most of 84000’s published translations undergo significant updates
+            from time to time. For the latest online version, with bilingual display, interactive glossary entries and notes, and a variety
+            of further download options, please see <a href="#LinkToPage" class="printable">#LinkToPage</a>.</p>
     </item>
-    <item key="section.ebook-help-title">
-        Help for downloading eBooks
-    </item>
+    <item key="section.ebook-help-title">Help for downloading eBooks</item>
     <item key="section.ebook-help-body">
-        <p>
-            There are many ways to get eBooks onto eReader
-            devices. If you already have a reliable method for this, please simply download the
-            texts.
-        </p>
-        <p>
-            However, some devices, such as Amazon Kindle, are
-            optimised for downloading books from their associated store, and getting free books from
-            other sources on to them can be tricky. Most eReaders have a built in web-browser and we
-            have found this to be the simplest way to get free eBooks on to our devices.
-        </p>
+        <p>There are many ways to get eBooks onto eReader devices. If you already have a reliable method for this, please simply download
+            the texts.</p>
+        <p>However, some devices, such as Amazon Kindle, are optimised for downloading books from their associated store, and getting free
+            books from other sources on to them can be tricky. Most eReaders have a built in web-browser and we have found this to be the
+            simplest way to get free eBooks on to our devices.</p>
         <ol>
-            <li>
-                Open the browser on your device. (On a Kindle this is “Beta-Browser” under the main menu).
-            </li>
-            <li>
-                Use the browser to go to http://read.84000.co
-            </li>
-            <li>
-                Select “View All Translated Texts.”
-            </li>
-            <li>
-                Select the “Download AZW3” option for the text you would like to read.
-            </li>
+            <li>Open the browser on your device. (On a Kindle this is “Beta-Browser” under the main menu).</li>
+            <li>Use the browser to go to http://read.84000.co</li>
+            <li>Select “View All Translated Texts.”</li>
+            <li>Select the “Download AZW3” option for the text you would like to read.</li>
         </ol>
-        <p>
-            Unfortunately we cannot test our publications on
-            every device. We try to ensure our texts are readable on as many devices as possible by
-            complying with open standards. If you have any feedback about this functionality, or
-            tips for reading them on your device, please contact us at <a href="mailto:info@84000.co">info@84000.co</a>.
-        </p>
+        <p>Unfortunately we cannot test our publications on every device. We try to ensure our texts are readable on as many devices as
+            possible by complying with open standards. If you have any feedback about this functionality, or tips for reading them on your
+            device, please contact us at <a href="mailto:info@84000.co">info@84000.co</a>.</p>
     </item>
-    
+
     <!-- About -->
-    <item key="about.common.support-label">
-        Join Us
-    </item>
+    <item key="about.common.support-label">Join Us</item>
     <item key="about.common.support-description">
-        <p>
-            With the help of our <a href="#commsSiteUrl/about/sponsors">108 founding sponsors</a> and thousands of individual donors,
-            we provide funding to the translators who are working to safeguard these important teachings
-            for future generations.
-        </p>
+        <p>With the help of our <a href="#commsSiteUrl/about/sponsors">108 founding sponsors</a> and thousands of individual donors, we
+            provide funding to the translators who are working to safeguard these important teachings for future generations.</p>
     </item>
-    <item key="about.common.kangyur-count-after-label">
-        Total Kangyur Pages
-    </item>
-    <item key="about.common.translation-count-after-label">
-        Pages in Translation
-    </item>
-    <item key="about.common.translated-count-after-label">
-        Pages Translated
-    </item>
-    <item key="about.common.published-count-after-label">
-        Pages Published
-    </item>
-    <item key="about.common.sponsor-button-label">
-        Sponsor a page now
-    </item>
-    <item key="about.common.sponsor-button-link">
-        #commsSiteUrl/how-you-can-help/sponsor-a-page
-    </item>
-    <item key="about.common.sharing-label">
-        Share this page:
-    </item>
-    <item key="about.common.summary-label">
-        Summary
-    </item>
-    <item key="about.common.no-results-label">
-        There are currently not texts in this list
-    </item>
-    <item key="about.common.column-toh-label">
-        Toh
-    </item>
-    <item key="about.common.column-title-label">
-        Title
-    </item>
-    <item key="about.common.column-status-label">
-        Status
-    </item>
-    <item key="about.common.column-pages-label">
-        Pages
-    </item>
-    <item key="about.common.page-total-label">
-        Total pages:
-    </item>
-    <item key="about.common.pages-label">
-        pages
-    </item>
-    <item key="about.common.texts-label">
-        texts
-    </item>
-    
+    <item key="about.common.kangyur-count-after-label">Total Kangyur Pages</item>
+    <item key="about.common.translation-count-after-label">Pages in Translation</item>
+    <item key="about.common.translated-count-after-label">Pages Translated</item>
+    <item key="about.common.published-count-after-label">Pages Published</item>
+    <item key="about.common.sponsor-button-label">Sponsor a page now </item>
+    <item key="about.common.sponsor-button-link">#commsSiteUrl/how-you-can-help/sponsor-a-page</item>
+    <item key="about.common.sharing-label">Share this page:</item>
+    <item key="about.common.summary-label">Summary</item>
+    <item key="about.common.no-results-label">There are currently not texts in this list</item>
+    <item key="about.common.column-toh-label">Toh</item>
+    <item key="about.common.column-title-label">Title</item>
+    <item key="about.common.column-status-label">Status</item>
+    <item key="about.common.column-pages-label">Pages</item>
+    <item key="about.common.page-total-label">Total pages:</item>
+    <item key="about.common.pages-label">pages</item>
+    <item key="about.common.texts-label">texts</item>
+
     <!-- Progress -->
-    <item key="about.progress.header-img-src">
-        /imgs/about-headers/PROGRESS-1400.jpg
-    </item>
-    <item key="about.progress.page-title">
-        Progress
-    </item>
-    <item key="about.progress.page-quote">
-        "You should know first hand how Dharma helps
-        you… With this mind if you extend your intention to reach out with your translation…it’ll
-        really make a difference in the world, and it already does."
-    </item>
-    <item key="about.progress.page-quote-author">
-        Dzigar Kongtrül Rinpoche
-    </item>
+    <item key="about.progress.header-img-src">/imgs/about-headers/PROGRESS-1400.jpg</item>
+    <item key="about.progress.page-title">Progress</item>
+    <item key="about.progress.page-quote">"You should know first hand how Dharma helps you… With this mind if you extend your intention to
+        reach out with your translation…it’ll really make a difference in the world, and it already does."</item>
+    <item key="about.progress.page-quote-author">Dzigar Kongtrül Rinpoche</item>
     <item key="about.progress.page-intro">
-        <p class="h3">
-            In 2009, it was determined that only 5% of the Canon had ever been translated into a language spoken today. We have raised that figure substantially, and are on track to reach our 2035 target for the complete translation and publication of the Kangyur in English. 
-        </p>
-        <p>
-            We are on track to complete the translation and online publication of the 70,000 pages of the Kangyur by 2035, before dedicating the remaining 75 years of our project to the translation and online publication of the 161,800 pages of the Tengyur. 
-        </p>
+        <p class="h3">In 2009, it was determined that only 5% of the Canon had ever been translated into a language spoken today. We have
+            raised that figure substantially, and are on track to reach our 2035 target for the complete translation and publication of the
+            Kangyur in English.</p>
+        <p>We are on track to complete the translation and online publication of the 70,000 pages of the Kangyur by 2035, before dedicating
+            the remaining 75 years of our project to the translation and online publication of the 161,800 pages of the Tengyur.</p>
     </item>
-    <item key="about.progress.translations-published-label">
-        Published Translations
-    </item>
-    <item key="about.progress.translations-awaiting-label">
-        Translations Awaiting Publication
-    </item>
-    <item key="about.progress.translations-remaining-label">
-        Other Translations In Progress
-    </item>
-    <item key="about.progress.context-label">
-        of the Kangyur
-    </item>
+    <item key="about.progress.translations-published-label">Published Translations</item>
+    <item key="about.progress.translations-awaiting-label">Translations Awaiting Publication</item>
+    <item key="about.progress.translations-remaining-label">Other Translations In Progress</item>
+    <item key="about.progress.context-label">of the Kangyur</item>
     <item key="about.progress.related-pages">
         <h3>Other Related Pages</h3>
         <ul class="list-unstyled">
             <li>
-                <a href="#commsSiteUrl/about/work-flow">
-                    Learn more about what it takes to produce a page of translation
-                </a>
+                <a href="#commsSiteUrl/about/work-flow">Learn more about what it takes to produce a page of translation</a>
             </li>
             <li>
-                <a href="#commsSiteUrl/facts-and-figures-about-kangyur-and-tengyur/">
-                    Learn more about the Kangyur, the Tengyur, and their contents
-                </a>
+                <a href="#commsSiteUrl/facts-and-figures-about-kangyur-and-tengyur/">Learn more about the Kangyur, the Tengyur, and their
+                    contents</a>
             </li>
         </ul>
     </item>
-    
-    
+
     <!-- Impact -->
-    <item key="about.impact.header-img-src">
-        /imgs/about-headers/IMPACT-1400.jpg
-    </item>
-    <item key="about.impact.page-title">
-        Reader Engagement
-    </item>
-    <item key="about.impact.page-quote">
-        “It’s not just the heritage of one tradition, one
-        civilization or one nation – it’s the heritage of the world. The Kangyur and Tengyur will
-        really contribute to the happiness, peace and freedom of all mankind.”
-    </item>
-    <item key="about.impact.page-quote-author">
-        Tulku Pema Wangyal Rinpoche
-    </item>
-    <item key="about.impact.map-img-src">
-        /imgs/2016.09.15-Readers-from-the-world-en.jpg
-    </item>
-    <item key="about.impact.map-img-alt">
-        World map showing 84000 readership
-    </item>
-    <item key="about.impact.page-subtitle">
-        Our Global Impact
-    </item>
+    <item key="about.impact.header-img-src">/imgs/about-headers/IMPACT-1400.jpg</item>
+    <item key="about.impact.page-title">Reader Engagement</item>
+    <item key="about.impact.page-quote">“It’s not just the heritage of one tradition, one civilization or one nation – it’s the heritage of
+        the world. The Kangyur and Tengyur will really contribute to the happiness, peace and freedom of all mankind.”</item>
+    <item key="about.impact.page-quote-author">Tulku Pema Wangyal Rinpoche</item>
+    <item key="about.impact.map-img-src">/imgs/2016.09.15-Readers-from-the-world-en.jpg</item>
+    <item key="about.impact.map-img-alt">World map showing 84000 readership</item>
+    <item key="about.impact.page-subtitle">Our Global Impact</item>
     <item key="about.impact.page-introduction">
-        <p class="h3">
-            84000’s twin goals are: <strong>Translation</strong> and <strong>Global Access</strong>.
-        </p>
-        <p>
-            Besides translating the words of the Buddha, we need to build and maintain a user-friendly and technologically robust mass publication platform (our online Reading Room) that will allow everyone in the world to have easy access to these texts.
-        </p>
-        <p>
-            The figures below provide an overview of the global impact we have created together with your generous support. Your continued support will provide global access to the words of the Buddha.
-        </p>
+        <p class="h3">84000’s twin goals are: <strong>Translation</strong> and <strong>Global Access</strong>.</p>
+        <p>Besides translating the words of the Buddha, we need to build and maintain a user-friendly and technologically robust mass
+            publication platform (our online Reading Room) that will allow everyone in the world to have easy access to these texts.</p>
+        <p>The figures below provide an overview of the global impact we have created together with your generous support. Your continued
+            support will provide global access to the words of the Buddha.</p>
     </item>
     <item key="about.impact.visitors-per-week-stat">
-        <div class="heading">
-            Visitors
-        </div>
+        <div class="heading">Visitors</div>
         <div class="data">
-            <span>
-                #visitorsPerWeekFormatted
-            </span> per week
-        </div>
+            <span>#visitorsPerWeekFormatted </span> per week</div>
     </item>
     <item key="about.impact.visitors-description">
-        <p>
-            We are thrilled to welcome visitors from around the world to our website 2,500 times per week. Given that the 41 sūtras in our online Reading Room are downloadable in three formats, we hope many more are reading these sūtras offline.
-        </p>
+        <p>We are thrilled to welcome visitors from around the world to our website 2,500 times per week. Given that the 41 sūtras in our
+            online Reading Room are downloadable in three formats, we hope many more are reading these sūtras offline.</p>
     </item>
     <item key="about.impact.reach-countries-stat">
-        <div class="heading">
-            Reach
-        </div>
+        <div class="heading">Reach</div>
         <div class="data">
-            <span>
-                #reachCountriesFormatted
-            </span> countries
-        </div>
+            <span>#reachCountriesFormatted </span> countries</div>
     </item>
     <item key="about.impact.reach-description">
-        <p>
-            84000: Translating the Words of the Buddha has been accessed in 242 countries and regions around the world!
-        </p>
+        <p>84000: Translating the Words of the Buddha has been accessed in 242 countries and regions around the world!</p>
     </item>
     <item key="about.impact.engagement-minutes-stat">
-        <div class="heading">
-            Engagement
-        </div>
+        <div class="heading">Engagement</div>
         <div class="data">
-            <span>
-                #engagementMinutesFormatted
-            </span> spent over 10 mins on the site
-        </div>
+            <span>#engagementMinutesFormatted</span> spent over 10 mins on the site</div>
     </item>
     <item key="about.impact.engagement-description">
-        <p>
-            It is so encouraging to see that visitors are spending longer durations on our site than ever before, with over 6,000 people spending a minimum of ten minutes on our site and 1,378 spending well over half an hour. The functions available in our state-of-the-art online Reading Room offer readers the most intuitive and supportive experience in which to study the sūtras.
-        </p>
+        <p>It is so encouraging to see that visitors are spending longer durations on our site than ever before, with over 6,000 people
+            spending a minimum of ten minutes on our site and 1,378 spending well over half an hour. The functions available in our
+            state-of-the-art online Reading Room offer readers the most intuitive and supportive experience in which to study the sūtras.</p>
     </item>
     <item key="about.impact.popular-views-stat">
-        <div class="heading">
-            Most popular
-        </div>
+        <div class="heading">Most popular</div>
         <div class="data">
-            <span>
-                #topTextViewsFormatted
-            </span> views of the top 5 sutras
-        </div>
+            <span>#topTextViewsFormatted</span> views of the top 5 sutras</div>
     </item>
     <item key="about.impact.popular-description">
-        <p>
-            To date in 2018, the following five sūtras have received a combined 43,610 views, out of the almost 150,000 views of our Reading Room this year:
-        </p>
+        <p>To date in 2018, the following five sūtras have received a combined 43,610 views, out of the almost 150,000 views of our Reading
+            Room this year:</p>
         <ol>
             <li>
-                <a href="/translation/UT22084-055-001.html">
-                    The King of Samādhis Sūtra
-                </a>
+                <a href="/translation/UT22084-055-001.html">The King of Samādhis Sūtra</a>
             </li>
             <li>
-                <a href="/translation/UT22084-031-002.html">
-                    The Transcendent Perfection of Wisdom in Ten Thousand Lines
-                </a>
+                <a href="/translation/UT22084-031-002.html">The Transcendent Perfection of Wisdom in Ten Thousand Lines</a>
             </li>
             <li>
-                <a href="/translation/UT22084-060-005.html">
-                    The Teaching of Vimalakīrti
-                </a>
+                <a href="/translation/UT22084-060-005.html">The Teaching of Vimalakīrti</a>
             </li>
             <li>
-                <a href="/translation/UT22084-062-010.html">
-                    The Rice Seedling
-                </a>
+                <a href="/translation/UT22084-062-010.html">The Rice Seedling</a>
             </li>
             <li>
-                <a href="/translation/UT22084-062-012.html">
-                    The Sūtra on Dependent Arising
-                </a>
+                <a href="/translation/UT22084-062-012.html">The Sūtra on Dependent Arising</a>
             </li>
         </ol>
-        <p>
-            With over 21,000 pages currently in translation, we look forward to giving free access to, and easy readability of, more sūtras to you soon.
-        </p>
+        <p>With over 21,000 pages currently in translation, we look forward to giving free access to, and easy readability of, more sūtras
+            to you soon.</p>
     </item>
-    <item key="about.impact.countries-title">
-        Countries where our readers come from
-    </item>
-    <item key="about.impact.countries-legend">
-        *The flags above are selected examples of the countries where our readers come from. The list is not exhaustive.
-    </item>
-    <item key="about.impact.countries-timestamp">
-        Information updated on: Aug 5, 2018
-    </item>
-    
+    <item key="about.impact.countries-title">Countries where our readers come from</item>
+    <item key="about.impact.countries-legend">*The flags above are selected examples of the countries where our readers come from. The list
+        is not exhaustive.</item>
+    <item key="about.impact.countries-timestamp">Information updated on: Aug 5, 2018</item>
+
     <!-- Sponsors -->
-    <item key="about.sponsors.header-img-src">
-        /imgs/about-headers/SPONSORS-1400.jpg
-    </item>
-    <item key="about.sponsors.page-title">
-        Sponsors
-    </item>
-    <item key="about.sponsors.page-quote">
-        “Both the very generous benefactors and also the
-        very knowledgeable and experienced translators will be able to perfect their two
-        accumulations of virtue through their interdependent connection.”
-    </item>
-    <item key="about.sponsors.page-quote-author">
-        Tri Ralpachen (one of the three Dharma kings of Tibet)
-    </item>
-    <item key="about.sponsors.lists-title">
-        Our Sponsors
-    </item>
+    <item key="about.sponsors.header-img-src">/imgs/about-headers/SPONSORS-1400.jpg</item>
+    <item key="about.sponsors.page-title">Sponsors</item>
+    <item key="about.sponsors.page-quote">“Both the very generous benefactors and also the very knowledgeable and experienced translators
+        will be able to perfect their two accumulations of virtue through their interdependent connection.”</item>
+    <item key="about.sponsors.page-quote-author">Tri Ralpachen (one of the three Dharma kings of Tibet)</item>
+    <item key="about.sponsors.lists-title">Our Sponsors</item>
     <item key="about.sponsors.page-intro">
-        <p class="h3">
-            84000 is dependent on the kind and generous support of thousands of donors, many of whom give through our <a href="#commsSiteUrl/sponsor-a-page">Sponsor a Page</a> and <a href="#commsSiteUrl/download-dana">Download Dāna</a> streams, as well as through the programs listed below. We are grateful for every offering and believe each to be a gift that is an equally meritorious drop in in the ocean of our activity.
-        </p>
+        <p class="h3">84000 is dependent on the kind and generous support of thousands of donors, many of whom give through our <a href="#commsSiteUrl/sponsor-a-page">Sponsor a Page</a> and <a href="#commsSiteUrl/download-dana">Download Dāna</a> streams,
+            as well as through the programs listed below. We are grateful for every offering and believe each to be a gift that is an
+            equally meritorious drop in in the ocean of our activity.</p>
     </item>
-    <item key="about.sponsors.matching-funds-title">
-        Matching Funds Sponsors
-    </item>
-    <item key="about.sponsors.sutras-title">
-        Sūtra Sponsors
-    </item>
-    <item key="about.sponsors.founding-title">
-        Founding Sponsors
-    </item>
+    <item key="about.sponsors.matching-funds-title">Matching Funds Sponsors</item>
+    <item key="about.sponsors.sutras-title">Sūtra Sponsors</item>
+    <item key="about.sponsors.founding-title">Founding Sponsors</item>
     <item key="about.sponsors.matching-funds-description">
-        <p>
-            The Matching Funds Program is designed to incentivize small-dollar donors to give to 84000 on a recurring basis by offering to match those donations dollar-for-dollar. We would like to thank the following Matching Funds sponsors for their gift to 84000 and their generosity in allowing small-dollar donors to feel their contribution is making a more significant impact on the progress of the translation of the Tibetan Buddhist canon.
-        </p>
+        <p>The Matching Funds Program is designed to incentivize small-dollar donors to give to 84000 on a recurring basis by offering to
+            match those donations dollar-for-dollar. We would like to thank the following Matching Funds sponsors for their gift to 84000
+            and their generosity in allowing small-dollar donors to feel their contribution is making a more significant impact on the
+            progress of the translation of the Tibetan Buddhist canon.</p>
     </item>
     <item key="about.sponsors.matching-funds-list-title">
-        <p>
-            Our Matching Funds Sponsors
-        </p>
+        <p>Our Matching Funds Sponsors</p>
     </item>
-    <item key="about.sponsors.sponsor-sutras-link">
-        #commsSiteUrl/how-you-can-help/sponsor-a-sutra
-    </item>
+    <item key="about.sponsors.sponsor-sutras-link">#commsSiteUrl/how-you-can-help/sponsor-a-sutra</item>
     <item key="about.sponsors.sutras-description">
-        <p>
-            Every year, we commission a new batch of translations. Some of the designated texts are long, important sūtras that require a sizeable amount of funding in order to see the translation process through to completion. We would like to thank our sponsors for their generous support of the <a href="#commsSiteUrl/how-you-can-help/sponsor-a-sutra">“Sponsor A Sūtra”</a> program.
-        </p>
+        <p>Every year, we commission a new batch of translations. Some of the designated texts are long, important sūtras that require a
+            sizeable amount of funding in order to see the translation process through to completion. We would like to thank our sponsors
+            for their generous support of the <a href="#commsSiteUrl/how-you-can-help/sponsor-a-sutra">“Sponsor A Sūtra”</a> program.</p>
     </item>
     <item key="about.sponsors.sutras-list-title">
-        <p>
-            Our Sūtra Sponsors
-        </p>
+        <p>Our Sūtra Sponsors</p>
     </item>
     <item key="about.sponsors.founding-description">
-        <p>
-            We would like to thank the 108 Founding Sponsors who so generously provided the seed funding to help 84000 get started with its task of translating the words of the Buddha. Each of these sponsors gave or pledged to give between $50,000-$250,000 to help us begin our journey. In addition to providing the funding for the initial rounds of translations, the funds are being used or have been used to: create the infrastructure for reviewing, editing, and pre-publication work; develop the tools and resources necessary for translation work; train translators and editors; and offset both the costs of the initial planning, and the current and ongoing administrative and operating costs.
-        </p>
-        <p>
-            With the vision and generosity of these Founding Sponsors, 84000 has been able to successfully launch and significantly progress with the immense task of translating the words of the Buddha. We offer our heartfelt thanks to all our Founding Sponsors for enabling us to safeguard this invaluable world heritage, and making it available for generations to come.
-        </p>
-        <p>
-            Dzongsar Khyentse Rinpoche, chairperson of 84000, has written <a href="#commsSiteUrl/message-to-founding-sponsors/">a message addressed to all 108 Founding Sponsors</a>.
-        </p>
+        <p>We would like to thank the 108 Founding Sponsors who so generously provided the seed funding to help 84000 get started with its
+            task of translating the words of the Buddha. Each of these sponsors gave or pledged to give between $50,000-$250,000 to help us
+            begin our journey. In addition to providing the funding for the initial rounds of translations, the funds are being used or have
+            been used to: create the infrastructure for reviewing, editing, and pre-publication work; develop the tools and resources
+            necessary for translation work; train translators and editors; and offset both the costs of the initial planning, and the
+            current and ongoing administrative and operating costs.</p>
+        <p>With the vision and generosity of these Founding Sponsors, 84000 has been able to successfully launch and significantly progress
+            with the immense task of translating the words of the Buddha. We offer our heartfelt thanks to all our Founding Sponsors for
+            enabling us to safeguard this invaluable world heritage, and making it available for generations to come.</p>
+        <p>Dzongsar Khyentse Rinpoche, chairperson of 84000, has written <a href="#commsSiteUrl/message-to-founding-sponsors/">a message
+                addressed to all 108 Founding Sponsors</a>.</p>
     </item>
     <item key="about.sponsors.founding-list-title">
-        <p>
-            Our 108 Founding Sponsors
-        </p>
+        <p>Our 108 Founding Sponsors</p>
     </item>
-    <item key="about.sponsors.text-sponsorship-link-label">
-        There are further sponsorship opportunities for this translation
-    </item>
-    
-    
+    <item key="about.sponsors.text-sponsorship-link-label">There are further sponsorship opportunities for this translation</item>
+
+
     <!-- Translators -->
-    <item key="about.translators.header-img-src">
-        /imgs/about-headers/TRANSLATORS-1400.jpg
-    </item>
-    <item key="about.translators.page-title">
-        Translators
-    </item>
-    <item key="about.translators.page-quote">
-        “It’s very important that translators really
-        come together as one harmonious unit to do the work for the present time and also for future
-        generations.”
-    </item>
-    <item key="about.translators.page-quote-author">
-        Dzigar Kongtrül Rinpoche
-    </item>
+    <item key="about.translators.header-img-src">/imgs/about-headers/TRANSLATORS-1400.jpg</item>
+    <item key="about.translators.page-title">Translator Teams</item>
+    <item key="about.translators.page-quote">“It’s very important that translators really come together as one harmonious unit to do the
+        work for the present time and also for future generations.”</item>
+    <item key="about.translators.page-quote-author">Dzigar Kongtrül Rinpoche</item>
     <item key="about.translators.page-intro">
-        <p class="h3">
-            84000 awards project-specific grants to teams of translators, editors, and consultants in order to facilitate the efficient translation of texts in the Tibetan Buddhist Canon. These teams are external grantees of 84000 whose work is considered integral to the fulfillment of our vision. 
-        </p>
+        <p class="h3">84000 awards project-specific grants to teams of translators, editors, and consultants in order to facilitate the
+            efficient translation of texts in the Tibetan Buddhist Canon. These teams are external grantees of 84000 whose work is
+            considered integral to the fulfillment of our vision.</p>
     </item>
-    <item key="about.translators.lists-title">
-        84000 Translators
-    </item>
-    <item key="about.translators.summary-title">
-        Summary
-    </item>
-    <item key="about.translators.team-count-label">
-        Number of Teams
-    </item>
-    <item key="about.translators.teams-label">
-         teams
-    </item>
-    <item key="about.translators.translator-count-label">
-        Number of Translators, Editors, and Consultants
-    </item>
-    <item key="about.translators.translators-label">
-         people
-    </item>
-    <item key="about.translators.affiliation-title">
-        Translators by affiliation
-    </item>
-    <item key="about.translators.affiliation-label">
-         of translators
-    </item>
-    <item key="about.translators.region-title">
-        Translators by region
-    </item>
-    <item key="about.translators.region-label">
-         of translators
-    </item>
-    
+    <item key="about.translators.lists-title">84000 Translators</item>
+    <item key="about.translators.summary-title">Summary</item>
+    <item key="about.translators.team-count-label">Number of Teams</item>
+    <item key="about.translators.teams-label">teams</item>
+    <item key="about.translators.translator-count-label">Number of Translators, Editors, and Consultants</item>
+    <item key="about.translators.translators-label">people</item>
+    <item key="about.translators.affiliation-title">Translators by affiliation</item>
+    <item key="about.translators.affiliation-label">of translators</item>
+    <item key="about.translators.region-title">Translators by region</item>
+    <item key="about.translators.region-label">of translators</item>
+
     <!-- Sponsor a Sutra -->
-    <item key="about.sponsor-a-sutra.header-img-src">
-        /imgs/about-headers/SPONSOR-SUTRA-1024x514.jpg
-    </item>
-    <item key="about.sponsor-a-sutra.page-quote">
-        “Sutras teach us the Dharma. The sutras are much more precious, much more important than the image of the Buddha.”
-    </item>
-    <item key="about.sponsor-a-sutra.page-quote-author">
-        H.E. Garchen Rinpoche
-    </item>
-    <item key="about.sponsor-a-sutra.page-title">
-        Sponsor a Sutra
-    </item>
-    <item key="about.sponsor-a-sutra.page-heading">
-        General Information
-    </item>
+    <item key="about.sponsor-a-sutra.header-img-src">/imgs/about-headers/SPONSOR-SUTRA-1024x514.jpg</item>
+    <item key="about.sponsor-a-sutra.page-quote">“Sutras teach us the Dharma. The sutras are much more precious, much more important than
+        the image of the Buddha.”</item>
+    <item key="about.sponsor-a-sutra.page-quote-author">H.E. Garchen Rinpoche</item>
+    <item key="about.sponsor-a-sutra.page-title">Sponsor a Sutra</item>
+    <item key="about.sponsor-a-sutra.page-heading">General Information</item>
     <item key="about.sponsor-a-sutra.page-intro">
+        <p>84000: Translating the Words of the Buddha aims to <strong>translate</strong> all of the Buddha’s words into modern languages,
+            and <strong>make them available</strong> to everyone.</p>
         <p>
-            84000: Translating the Words of the Buddha aims to <strong>translate</strong> all of
-            the Buddha’s words into modern languages, and <strong>make them available</strong>
-            to everyone.</p>
-        <p>
-            <strong>Sponsor A Sutra</strong> is an opportunity to support the translation of a
-            major text. Some of the long, important sutras require a sizeable amount of funding
-            to ensure the translation continues through to completion. Your support is needed
-            for the successful translation of these texts.
-        </p>        
-        <h4>
-            How much does it cost to sponsor?
-        </h4>
-        <p>
-            Sponsorship opportunities are now available in sections of:
-        </p>
+            <strong>Sponsor A Sutra</strong> is an opportunity to support the translation of a major text. Some of the long, important
+            sutras require a sizeable amount of funding to ensure the translation continues through to completion. Your support is needed
+            for the successful translation of these texts.</p>
+        <h4>How much does it cost to sponsor?</h4>
+        <p>Sponsorship opportunities are now available in sections of:</p>
         <ul>
-            <li>
-                100 pages (US$25,000)
-            </li>
-            <li>
-                150 pages (US$37,500)
-            </li>
-            <li>
-                200 pages (US$50,000) or more.
-            </li>
+            <li>100 pages (US$25,000)</li>
+            <li>150 pages (US$37,500)</li>
+            <li>200 pages (US$50,000) or more.</li>
         </ul>
-        <p>
-            All donations are considered unrestricted contributions, enabling 84000 to carry out
-            their goals of translation and global access efficiently and effectively. Please
-            note that per sutra suggested donation amounts are approximations only, and the
-            actual cost may be greater or lesser when the overall costs of translation,
-            editorial work, publication, and project management are taken into account.
-        </p>
-        <h4>
-            How will the funds be used?
-        </h4>
-        <p>
-            The funds will be used to cover the costs of translation, editorial work,
-            publication, and project management. Please see <a href="#commsSiteUrl/about/work-flow/">"What It Takes To Produce A Page of
-                Translation"</a> to learn more about the many stages required for high quality
-            translation.
-        </p>
-        <h4>
-            Who can sponsor?
-        </h4>
-        <p>
-            Anyone can make a sponsorship as an individual or family. Sponsorships can also be
-            made in the name of a group (such as a company, sangha or temple), with the
-            requirement that the group assigns a single contact person, and that one person will
-            be designated as the sole recipient of any acknowledgement letters or gifts from
-            84000.
-        </p>
-        <h4>
-            How will donors be acknowledged?
-        </h4>
-        <p>
-            Donors will be recognized in the acknowledgements section of the text.
-        </p>
-        <p>
-            In appreciation of your generous support, all the names and the dedication messages
-            will be offered for prayers during the Dzongsar Monlam prayer festivals held
-            biennially in Bodhgaya, India.
-        </p>
+        <p>All donations are considered unrestricted contributions, enabling 84000 to carry out their goals of translation and global
+            access efficiently and effectively. Please note that per sutra suggested donation amounts are approximations only, and the
+            actual cost may be greater or lesser when the overall costs of translation, editorial work, publication, and project management
+            are taken into account.</p>
+        <h4>How will the funds be used?</h4>
+        <p>The funds will be used to cover the costs of translation, editorial work, publication, and project management. Please see <a href="#commsSiteUrl/about/work-flow/">"What It Takes To Produce A Page of Translation"</a> to learn more about the many
+            stages required for high quality translation.</p>
+        <h4>Who can sponsor?</h4>
+        <p>Anyone can make a sponsorship as an individual or family. Sponsorships can also be made in the name of a group (such as a
+            company, sangha or temple), with the requirement that the group assigns a single contact person, and that one person will be
+            designated as the sole recipient of any acknowledgement letters or gifts from 84000.</p>
+        <h4>How will donors be acknowledged?</h4>
+        <p>Donors will be recognized in the acknowledgements section of the text.</p>
+        <p>In appreciation of your generous support, all the names and the dedication messages will be offered for prayers during the
+            Dzongsar Monlam prayer festivals held biennially in Bodhgaya, India.</p>
     </item>
-    <item key="about.sponsor-a-sutra.donate-label">
-        Donate online
-    </item>
-    <item key="about.sponsor-a-sutra.text-list-title">
-        Texts Available for Sponsorship
-    </item>
-    <item key="about.sponsor-a-sutra.priority-title">
-        Priority Texts
-    </item>
-    <item key="about.sponsor-a-sutra.priority-description">
-        The sponsorship, translation, and publication of texts in this section are considered a priority for 84000.
-    </item>
-    <item key="about.sponsor-a-sutra.text-list-section-title">
-        Sponsorship of up to #pageUpper pages (USD$#groupCost)
-    </item>
-    <item key="about.sponsor-a-sutra.text-list-remainder-title">
-        Sponsorship of more than #pageLower pages
-    </item>
-    <item key="about.sponsor-a-sutra.part-icon-label-available">
-        sponsorship opportunity available
-    </item>
-    <item key="about.sponsor-a-sutra.part-icon-label-sponsored">
-        sponsorship opportunity taken
-    </item>
-    <item key="about.sponsor-a-sutra.reserved-label">
-        Already reserved for sponsorship
-    </item>
-    <item key="about.sponsor-a-sutra.sponsor-part-label">
-        Sponsor a part
-    </item>
-    <item key="about.sponsor-a-sutra.sponsor-whole-label">
-        Sponsor the whole
-    </item>
-    <item key="about.sponsor-a-sutra.no-texts-of-type">
-        There are currently no texts of this type proposed for sponsorship.
-    </item>
+    <item key="about.sponsor-a-sutra.donate-label">Donate online</item>
+    <item key="about.sponsor-a-sutra.text-list-title">Texts Available for Sponsorship</item>
+    <item key="about.sponsor-a-sutra.priority-title">Priority Texts</item>
+    <item key="about.sponsor-a-sutra.priority-description">The sponsorship, translation, and publication of texts in this section are
+        considered a priority for 84000.</item>
+    <item key="about.sponsor-a-sutra.text-list-section-title">Sponsorship of up to #pageUpper pages (USD$#groupCost)</item>
+    <item key="about.sponsor-a-sutra.text-list-remainder-title">Sponsorship of more than #pageLower pages</item>
+    <item key="about.sponsor-a-sutra.part-icon-label-available">sponsorship opportunity available</item>
+    <item key="about.sponsor-a-sutra.part-icon-label-sponsored">sponsorship opportunity taken</item>
+    <item key="about.sponsor-a-sutra.reserved-label">Already reserved for sponsorship</item>
+    <item key="about.sponsor-a-sutra.sponsor-part-label">Sponsor a part</item>
+    <item key="about.sponsor-a-sutra.sponsor-whole-label">Sponsor the whole</item>
+    <item key="about.sponsor-a-sutra.no-texts-of-type">There are currently no texts of this type proposed for sponsorship. </item>
     <item key="about.sponsor-a-sutra.footer">
-        <p>
-            For more information, please contact Huang Jing Rui, executive director, at: <a href="mailto:jingrui@84000.co">jingrui@84000.co</a>
+        <p>For more information, please contact Huang Jing Rui, executive director, at: <a href="mailto:jingrui@84000.co">jingrui@84000.co</a>
         </p>
     </item>
     
-    <item key="widget.download-dana.widget-title">
-        Download Dāna
-    </item>
-    <item key="widget.download-dana.icon-label">
-        You are downloading:
-    </item>
+    <!-- Download dana -->
+    <item key="widget.download-dana.widget-title">Download Dāna</item>
+    <item key="widget.download-dana.icon-label">You are downloading:</item>
     <item key="widget.download-dana.dana-description">
-        <p>
-            This is a free publication from 84000: Translating the Words of the Buddha, a non-profit organization sharing the gift of wisdom with the world.
-        </p>
-        <p>
-            The cultivation of generosity, or dāna—giving voluntarily with a view that something wholesome will come of it—is considered to be a fundamental Buddhist practice by all schools. The nature and quantity of the gift itself is often considered less important.
-        </p>
+        <p>This is a free publication from 84000: Translating the Words of the Buddha, a non-profit organization sharing the gift of wisdom
+            with the world.</p>
+        <p>The cultivation of generosity, or dāna—giving voluntarily with a view that something wholesome will come of it—is considered to
+            be a fundamental Buddhist practice by all schools. The nature and quantity of the gift itself is often considered less
+            important.</p>
     </item>
-    <item key="widget.download-dana.donate-form-link">
-        /how-you-can-help/download-dana
-    </item>
-    <item key="widget.download-dana.donate-form-link-label">
-        Click here to make a dāna donation
-    </item>
-    
+    <item key="widget.download-dana.donate-form-link">/how-you-can-help/download-dana</item>
+    <item key="widget.download-dana.donate-form-link-label">Click here to make a dāna donation</item>
+
     <!-- Audio test -->
-    <item key="about.audio-test.page-title">
-        Audio test
-    </item>
-    
+    <item key="about.audio-test.page-title">Audio test</item>
+
 </texts>

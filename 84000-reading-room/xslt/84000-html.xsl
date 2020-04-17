@@ -465,6 +465,33 @@
         </div>
     </xsl:template>
     
+    <xsl:template match="eft:title-band[eft:item]">
+        <div class="title-band">
+            <div class="container">
+                <xsl:choose>
+                    <xsl:when test="eft:item/eft:item[@url = $active-url]">
+                        <ul class="breadcrumb">
+                            <li>
+                                <xsl:value-of select="eft:item/eft:label"/>
+                            </li>
+                            <li>
+                                <h1>
+                                    <xsl:value-of select="eft:item/eft:item[@url = $active-url]/eft:label"/>
+                                </h1>
+                            </li>
+                        </ul>
+                    </xsl:when>
+                    <xsl:otherwise>
+                        <h1>
+                            <xsl:value-of select="eft:item[@url = $active-url]/eft:label"/>
+                        </h1>
+                    </xsl:otherwise>
+                </xsl:choose>
+                
+            </div>
+        </div>
+    </xsl:template>
+    
     <xsl:template name="local-url">
         <xsl:param name="url"/>
         <xsl:variable name="standard-comms-url" select="'https://84000.co'"/>
