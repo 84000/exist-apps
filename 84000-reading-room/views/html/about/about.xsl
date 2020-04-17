@@ -88,9 +88,9 @@
                             <xsl:copy-of select="$side-content"/>
                             
                             <xsl:variable name="nav-sidebar">
-                                <m:nav-category>
+                                <m:nav-sidebar>
                                     <xsl:copy-of select="$eft-header/m:navigation[@xml:lang eq $lang]/m:item/m:item[m:item[@url eq $active-url]]"/>
-                                </m:nav-category>
+                                </m:nav-sidebar>
                             </xsl:variable>
                             <div class="nav-sidebar">
                                 <xsl:apply-templates select="$nav-sidebar"/>

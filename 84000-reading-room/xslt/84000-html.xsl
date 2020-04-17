@@ -433,6 +433,38 @@
         </div>
     </xsl:template>
     
+    <xsl:template match="eft:nav-sidebar[eft:item/eft:item]">
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h3 class="panel-title">
+                    <xsl:value-of select="concat('More About ', eft:item/eft:label)"/>
+                </h3>
+            </div>
+            <div class="panel-body">
+                <p data-match-height="homepage-categories">
+                    <xsl:value-of select="eft:item/eft:description"/>
+                </p>
+            </div>
+            <div class="list-group">
+                <xsl:for-each select="eft:item/eft:item">
+                    <a class="list-group-item">
+                        <xsl:attribute name="href">
+                            <xsl:call-template name="local-url">
+                                <xsl:with-param name="url" select="@url"/>
+                            </xsl:call-template>
+                        </xsl:attribute>
+                        <xsl:if test="@url = $active-url">
+                            <xsl:attribute name="class">
+                                <xsl:value-of select="'list-group-item active'"/>
+                            </xsl:attribute>
+                        </xsl:if>
+                        <xsl:value-of select="eft:label"/>
+                    </a>
+                </xsl:for-each>
+            </div>
+        </div>
+    </xsl:template>
+    
     <xsl:template name="local-url">
         <xsl:param name="url"/>
         <xsl:variable name="standard-comms-url" select="'https://84000.co'"/>

@@ -19,7 +19,7 @@
                     <xsl:variable name="in-translation-pages" select="m:outline-summary/m:tohs/m:pages/@in-translation"/>
                     
                     <xsl:call-template name="headline-stat">
-                        <xsl:with-param name="colour-class" select="'green'"/>
+                        <xsl:with-param name="colour-class" select="'blue'"/>
                         <xsl:with-param name="label-text">
                             <xsl:call-template name="local-text">
                                 <xsl:with-param name="local-key" select="'translations-published-label'"/>
@@ -31,7 +31,7 @@
                     </xsl:call-template>
                     
                     <xsl:call-template name="headline-stat">
-                        <xsl:with-param name="colour-class" select="'blue'"/>
+                        <xsl:with-param name="colour-class" select="'orange'"/>
                         <xsl:with-param name="label-text">
                             <xsl:call-template name="local-text">
                                 <xsl:with-param name="local-key" select="'translations-awaiting-label'"/>
@@ -43,7 +43,7 @@
                     </xsl:call-template>
                     
                     <xsl:call-template name="headline-stat">
-                        <xsl:with-param name="colour-class" select="'orange'"/>
+                        <xsl:with-param name="colour-class" select="'red'"/>
                         <xsl:with-param name="label-text">
                             <xsl:call-template name="local-text">
                                 <xsl:with-param name="local-key" select="'translations-remaining-label'"/>
@@ -69,7 +69,7 @@
                                     <xsl:value-of select="m:outline-summary/m:tohs/m:pages/@in-translation"/>, 
                                     <xsl:value-of select="m:outline-summary/m:tohs/m:pages/@not-started"/>
                                 ],
-                                backgroundColor: ['#4d6253','#566e90','#b76c1e','#bbbbbb']
+                                backgroundColor: ['#566e90','#b76c1e','#752d28','#4d6253']
                             }],
                             labels: ['published', 'translated', 'in progress','not started']
                         };
