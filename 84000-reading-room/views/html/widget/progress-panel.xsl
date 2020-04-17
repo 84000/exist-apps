@@ -24,7 +24,7 @@
                                     <xsl:call-template name="local-text">
                                         <xsl:with-param name="local-key" select="'support-description'"/>
                                     </xsl:call-template>
-                                    <table id="translation-stats">
+                                    <table class="translation-stats">
                                         <tbody>
                                             <tr>
                                                 <xsl:call-template name="local-text-if-exists">

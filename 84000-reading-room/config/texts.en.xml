@@ -175,12 +175,12 @@
         <h3>Other Related Pages</h3>
         <ul class="list-unstyled">
             <li>
-                <a href="https://84000.co/about/work-flow">
+                <a href="#commsSiteUrl/about/work-flow">
                     Learn more about what it takes to produce a page of translation
                 </a>
             </li>
             <li>
-                <a href="https://84000.co/facts-and-figures-about-kangyur-and-tengyur/">
+                <a href="#commsSiteUrl/facts-and-figures-about-kangyur-and-tengyur/">
                     Learn more about the Kangyur, the Tengyur, and their contents
                 </a>
             </li>
@@ -284,27 +284,27 @@
         </p>
         <ol>
             <li>
-                <a href="https://read.84000.co/translation/UT22084-055-001.html">
+                <a href="/translation/UT22084-055-001.html">
                     The King of Samādhis Sūtra
                 </a>
             </li>
             <li>
-                <a href="https://read.84000.co/translation/UT22084-031-002.html">
+                <a href="/translation/UT22084-031-002.html">
                     The Transcendent Perfection of Wisdom in Ten Thousand Lines
                 </a>
             </li>
             <li>
-                <a href="https://read.84000.co/translation/UT22084-060-005.html">
+                <a href="/translation/UT22084-060-005.html">
                     The Teaching of Vimalakīrti
                 </a>
             </li>
             <li>
-                <a href="https://read.84000.co/translation/UT22084-062-010.html">
+                <a href="/translation/UT22084-062-010.html">
                     The Rice Seedling
                 </a>
             </li>
             <li>
-                <a href="https://read.84000.co/translation/UT22084-062-012.html">
+                <a href="/translation/UT22084-062-012.html">
                     The Sūtra on Dependent Arising
                 </a>
             </li>
@@ -343,7 +343,7 @@
     </item>
     <item key="about.sponsors.page-intro">
         <p class="h3">
-            84000 is dependent on the kind and generous support of thousands of donors, many of whom give through our <a href="https://84000.co/sponsor-a-page">Sponsor a Page</a> and <a href="https://84000.co/download-dana">Download Dāna</a> streams, as well as through the programs listed below. We are grateful for every offering and believe each to be a gift that is an equally meritorious drop in in the ocean of our activity.
+            84000 is dependent on the kind and generous support of thousands of donors, many of whom give through our <a href="#commsSiteUrl/sponsor-a-page">Sponsor a Page</a> and <a href="#commsSiteUrl/download-dana">Download Dāna</a> streams, as well as through the programs listed below. We are grateful for every offering and believe each to be a gift that is an equally meritorious drop in in the ocean of our activity.
         </p>
     </item>
     <item key="about.sponsors.matching-funds-title">
@@ -366,11 +366,11 @@
         </p>
     </item>
     <item key="about.sponsors.sponsor-sutras-link">
-        http://84000.co/how-you-can-help/sponsor-a-sutra
+        #commsSiteUrl/how-you-can-help/sponsor-a-sutra
     </item>
     <item key="about.sponsors.sutras-description">
         <p>
-            Every year, we commission a new batch of translations. Some of the designated texts are long, important sūtras that require a sizeable amount of funding in order to see the translation process through to completion. We would like to thank our sponsors for their generous support of the <a href="https://84000.co/how-you-can-help/sponsor-a-sutra">“Sponsor A Sūtra”</a> program.
+            Every year, we commission a new batch of translations. Some of the designated texts are long, important sūtras that require a sizeable amount of funding in order to see the translation process through to completion. We would like to thank our sponsors for their generous support of the <a href="#commsSiteUrl/how-you-can-help/sponsor-a-sutra">“Sponsor A Sūtra”</a> program.
         </p>
     </item>
     <item key="about.sponsors.sutras-list-title">
@@ -386,7 +386,7 @@
             With the vision and generosity of these Founding Sponsors, 84000 has been able to successfully launch and significantly progress with the immense task of translating the words of the Buddha. We offer our heartfelt thanks to all our Founding Sponsors for enabling us to safeguard this invaluable world heritage, and making it available for generations to come.
         </p>
         <p>
-            Dzongsar Khyentse Rinpoche, chairperson of 84000, has written <a href="http://84000.co/message-to-founding-sponsors/">a message addressed to all 108 Founding Sponsors</a>.
+            Dzongsar Khyentse Rinpoche, chairperson of 84000, has written <a href="#commsSiteUrl/message-to-founding-sponsors/">a message addressed to all 108 Founding Sponsors</a>.
         </p>
     </item>
     <item key="about.sponsors.founding-list-title">
@@ -506,7 +506,7 @@
         </h4>
         <p>
             The funds will be used to cover the costs of translation, editorial work,
-            publication, and project management. Please see <a href="http://84000.co/about/work-flow/">"What It Takes To Produce A Page of
+            publication, and project management. Please see <a href="#commsSiteUrl/about/work-flow/">"What It Takes To Produce A Page of
                 Translation"</a> to learn more about the many stages required for high quality
             translation.
         </p>
@@ -534,25 +534,6 @@
     </item>
     <item key="about.sponsor-a-sutra.donate-label">
         Donate online
-    </item>
-    <item key="about.sponsor-a-sutra.pull-out">
-        <p>
-            You can sponsor the translation of a major sutra, in sections of: 
-        </p>
-        <ul>
-            <li>
-                100 pages (US$25,000)
-            </li>
-            <li>
-                150 pages (US$37,500)
-            </li>
-            <li>
-                200 pages (US$50,000) or more.
-            </li>
-        </ul>
-        <p>
-            All sponsors will be acknowledged in the sponsored sutra within 30 words.
-        </p>
     </item>
     <item key="about.sponsor-a-sutra.text-list-title">
         Texts Available for Sponsorship

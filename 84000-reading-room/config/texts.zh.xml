@@ -101,10 +101,10 @@
         線上捐款
     </item>
     <item key="about.common.sponsor-button-link">
-        https://84000.co/ch-how-you-can-help/ch-howhelp-subscribe/
+        #commsSiteUrl/ch-how-you-can-help/ch-howhelp-subscribe/
     </item>
     <item key="about.common.donate-instructions-link">
-        http://84000.co/media/ch_donate_instructions.pdf
+        #commsSiteUrl/media/ch_donate_instructions.pdf
     </item>
     <item key="about.common.donate-instructions-label">
         幫助
@@ -207,7 +207,7 @@
             除了翻譯佛陀言教之外，我們需要建立與維護一個易於使用、技術穩定的公眾平台（即<a href="/">84000[crr]</a>），俾使人人都能輕易地接觸到這些珍貴法教。
         </p>
         <p>
-            以下的數字是我們共同創造的全球影響力。請您<a href="http://84000.co/ch-donate" target="_blank">繼續護持</a>84000，幫助我們將佛陀的言教流通全世界。
+            以下的數字是我們共同創造的全球影響力。請您<a href="#commsSiteUrl/ch-donate" target="_blank">繼續護持</a>84000，幫助我們將佛陀的言教流通全世界。
         </p>
     </item>
     <item key="about.impact.visitors-per-week-stat">
@@ -275,27 +275,27 @@
         </p>
         <ol>
             <li>
-                <a href="https://read.84000.co/translation/UT22084-055-001.html">
+                <a href="/translation/UT22084-055-001.html?lang=zh">
                     《三摩地王經》
                 </a>
             </li>
             <li>
-                <a href="https://read.84000.co/translation/UT22084-031-002.html">
+                <a href="/translation/UT22084-031-002.html?lang=zh">
                     《般若波羅蜜多萬頌》
                 </a>
             </li>
             <li>
-                <a href="https://read.84000.co/translation/UT22084-060-005.html">
+                <a href="/translation/UT22084-060-005.html?lang=zh">
                     《維摩詰所說經》
                 </a>
             </li>
             <li>
-                <a href="https://read.84000.co/translation/UT22084-062-010.html">
+                <a href="/translation/UT22084-062-010.html?lang=zh">
                     《佛說稻芉經》
                 </a>
             </li>
             <li>
-                <a href="https://read.84000.co/translation/UT22084-062-012.html">
+                <a href="/translation/UT22084-062-012.html?lang=zh">
                     《緣起經》
                 </a>
             </li>
@@ -347,11 +347,11 @@
         </p>
     </item>
     <item key="about.sponsors.sponsor-sutras-link">
-        http://84000.co/ch-how-you-can-help/ch-sponsor-a-sutra
+        #commsSiteUrl/ch-how-you-can-help/ch-sponsor-a-sutra
     </item>
     <item key="about.sponsors.sutras-description">
         <p>
-            我們每年都會挑選出一些長篇幅的重要經典，加入<a href="http://84000.co/ch-how-you-can-help/ch-sponsor-a-sutra">「贊助一部佛典」</a>計畫之中。為了圓滿完成優質的翻譯，需要進行大量的研究與諮詢，因此需要較多的贊助經費。我們非常感謝所有贊助人的慷慨支持。
+            我們每年都會挑選出一些長篇幅的重要經典，加入<a href="#commsSiteUrl/ch-how-you-can-help/ch-sponsor-a-sutra">「贊助一部佛典」</a>計畫之中。為了圓滿完成優質的翻譯，需要進行大量的研究與諮詢，因此需要較多的贊助經費。我們非常感謝所有贊助人的慷慨支持。
         </p>
     </item>
     <item key="about.sponsors.sutras-list-title">
@@ -367,7 +367,7 @@
             正因為這些慷慨且有遠見的創始贊助人，84000計畫才得以成功地開展，並於短期內完成了大量佛陀言教的翻譯任務，進展顯著。我們衷心感謝所有捐助者，使我們能夠保護無價的世界文化遺產，從而流通後代為普世所共享。
         </p>
         <p>
-            84000計畫的主席宗薩欽哲仁波切給108位創始贊助者寫下一段話。<a href="http://84000.co/?p=5089/">點擊此處查看仁波切的開示。</a>
+            84000計畫的主席宗薩欽哲仁波切給108位創始贊助者寫下一段話。<a href="#commsSiteUrl/?p=5089/">點擊此處查看仁波切的開示。</a>
         </p>
     </item>
     <item key="about.sponsors.founding-list-title">
@@ -482,7 +482,7 @@
             每年的捐助者芳名錄都會於宗薩寺的印度祈願法會呈報給仁波切並作功德迴向。
         </p>
         <p>
-            <a href="http://84000.co/ch-about/ch-sponsors">
+            <a href="#commsSiteUrl/ch-about/ch-sponsors">
                 請點擊此處瀏覽目前已獲贊助的長篇經典
             </a>
         </p>
