@@ -66,10 +66,10 @@
     <item key="about.common.texts-label">texts</item>
 
     <!-- Progress -->
+    <!--<item key="about.progress.page-title">工作進度</item>
     <item key="about.progress.header-img-src">/imgs/about-headers/PROGRESS-1400.jpg</item>
-    <item key="about.progress.page-title">工作進度</item>
     <item key="about.progress.page-quote">「佛法如何助益 你… 你都應當有親身體會。若能持此心念, 透過佛典翻譯向外開展這份善念, 必將能讓世界有所改變。」</item>
-    <item key="about.progress.page-quote-author">吉噶康楚仁波切</item>
+    <item key="about.progress.page-quote-author">吉噶康楚仁波切</item>-->
     <item key="about.progress.page-intro">【八萬四千．佛典傳譯】百年願景的第一部份，是將《甘珠爾》的70,000頁翻譯成英文，之後再開始《丹珠爾》161,800頁的翻譯工作。翻譯作品列表</item>
     <item key="about.progress.translations-published-label">Published Translations</item>
     <item key="about.progress.translations-awaiting-label">Translations Awaiting Publication</item>
@@ -89,10 +89,10 @@
     </item>
 
     <!-- Impact -->
+    <!--<item key="about.impact.page-title">全球影響</item>
     <item key="about.impact.header-img-src">/imgs/about-headers/IMPACT-1400.jpg</item>
-    <item key="about.impact.page-title">全球影響</item>
     <item key="about.impact.page-quote">「《甘珠爾》與《丹珠爾》並不僅是一個傳統、一個文明時代或一個國家的遺產,而是整個世界的珍貴遺產。」</item>
-    <item key="about.impact.page-quote-author">祖古貝馬望買仁波切</item>
+    <item key="about.impact.page-quote-author">祖古貝馬望買仁波切</item>-->
     <item key="about.impact.map-img-src">/imgs/2016.09.15-Readers-from-the-world-zh.jpg</item>
     <item key="about.impact.map-img-alt">World map showing 84000 readership</item>
     <item key="about.impact.page-subtitle">Our Global Impact</item>
@@ -160,10 +160,10 @@
     <item key="about.impact.countries-timestamp">最後更新日期：2018年8月5日</item>
 
     <!-- Sponsors -->
+    <!--<item key="about.sponsors.page-title">贊助人</item>
     <item key="about.sponsors.header-img-src">/imgs/about-headers/SPONSORS-1400.jpg</item>
-    <item key="about.sponsors.page-title">贊助人</item>
     <item key="about.sponsors.page-quote">「無論是慷慨的施主，或是學識淵博且經驗豐富的譯者們，都能因彼此之間相輔相成的因緣，而圓滿福慧二種資糧的積累。」</item>
-    <item key="about.sponsors.page-quote-author">赤熱巴巾（又稱赤祖德贊王）</item>
+    <item key="about.sponsors.page-quote-author">赤熱巴巾（又稱赤祖德贊王）</item>-->
     <item key="about.sponsors.matching-funds-title">對等基金贊助人</item>
     <item key="about.sponsors.sutras-title">「一部佛典」贊助人</item>
     <item key="about.sponsors.founding-title">創始贊助人</item>
@@ -192,10 +192,10 @@
     <item key="about.sponsors.text-sponsorship-link-label">還有一個贊助機會</item>
 
     <!-- Translators -->
+    <!--<item key="about.translators.page-title">翻譯人員</item>
     <item key="about.translators.header-img-src">/imgs/about-headers/TRANSLATORS-1400.jpg</item>
-    <item key="about.translators.page-title">翻譯人員</item>
     <item key="about.translators.page-quote">「譯者們必須真正團結起來, 形成一個和諧的群體, 一起為當代及未來的世代而努力, 這是非常重要的。」</item>
-    <item key="about.translators.page-quote-author">吉噶康楚仁波切</item>
+    <item key="about.translators.page-quote-author">吉噶康楚仁波切</item>-->
     <item key="about.translators.lists-title">84000 翻譯人員</item>
     <item key="about.translators.summary-title">Summary</item>
     <item key="about.translators.team-count-label">Number of Teams</item>
@@ -208,12 +208,12 @@
     <item key="about.translators.region-label">of translators</item>
 
     <!-- Sponsor a Sutra -->
+    <!--<item key="about.sponsor-a-sutra.page-title">贊助一部佛典</item>
     <item key="about.sponsor-a-sutra.header-img-src">/imgs/about-headers/SPONSOR-SUTRA-1024x514.jpg</item>
     <item key="about.sponsor-a-sutra.page-quote">“Sutras teach us the Dharma. The sutras are much more precious, much more important than
         the image of the Buddha.”</item>
     <item key="about.sponsor-a-sutra.page-quote-author">H.E. Garchen Rinpoche</item>
-    <item key="about.sponsor-a-sutra.page-title">贊助一部佛典</item>
-    <item key="about.sponsor-a-sutra.page-heading">相關資料:</item>
+    <item key="about.sponsor-a-sutra.page-heading">相關資料:</item>-->
     <item key="about.sponsor-a-sutra.page-intro">
         <p>某些長篇重要經典需要較多經費才能完成，「贊助一部佛典」計劃， 提供個人/家族或團體（機構、僧團、寺院等）一個共同集資供養一部長篇佛典翻譯的機會，也確保我們有足夠的經費來完成這些佛陀言教的翻譯。我們需要您的鼎力支持。</p>
         <h4>如何贊助一部佛典？</h4>

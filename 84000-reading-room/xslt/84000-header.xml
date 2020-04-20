@@ -60,7 +60,7 @@
         </item>
         <item class="resources" url="#resources">
             <label>Resources</label>
-            <item url="https://84000.co/resources/teachings-on-sutra/">
+            <item url="https://84000.co/resources/teachings-on-sutra">
                 <label>Teachings on Sūtra</label>
             </item>
             <item url="https://84000.co/resources/commentaries">
@@ -75,12 +75,6 @@
             <item url="https://84000.co/resources/translator-resources">
                 <label>Translator Resources</label>
             </item>
-            <!--<item url="https://84000.co/resources/tools-and-resources">
-                <label>Translators' Tools</label>
-            </item>
-            <item url="https://84000.co/resources/other-resources">
-                <label>Web Resources</label>
-            </item>-->
             <item url="https://84000.co/resources/quotes">
                 <label>Quotes</label>
             </item>
@@ -206,7 +200,7 @@
         </item>
         <item class="resources" url="#ch-resources">
             <label>資源分享</label>
-            <item url="https://84000.co/ch-resources/ch-teachings-on-sutra/">
+            <item url="https://84000.co/ch-resources/ch-teachings-on-sutra">
                 <label>八萬四千講經堂</label>
             </item>
             <item url="https://84000.co/ch-resources/ch-commentaries">
@@ -304,13 +298,13 @@
             <item url="https://84000.co/ch-how-you-can-help/ch-shop-n-give">
                 <label>購物捐獻</label>
             </item> -->
-            <item url="https://84000.co/ch-how-you-can-help/ch-howhelp-subscribe/">
+            <item url="https://84000.co/ch-how-you-can-help/ch-howhelp-subscribe">
                 <label>訂閱電子通訊</label>
             </item>
         </item>
     </navigation>
     <social xml:lang="en">
-        <item url="https://84000.co/how-you-can-help/spread-the-word/" icon-class="fa fa-envelope-square">
+        <item url="https://84000.co/how-you-can-help/spread-the-word" icon-class="fa fa-envelope-square">
             <label>Subscribe to our newsletter</label>
         </item>
         <item url="http://www.facebook.com/Translate84000" icon-class="fa fa-facebook-square">
@@ -324,7 +318,7 @@
         </item>
     </social>
     <social xml:lang="zh">
-        <item url="https://84000.co/how-you-can-help/spread-the-word/" icon-class="fa fa-envelope-square">
+        <item url="https://84000.co/how-you-can-help/spread-the-word" icon-class="fa fa-envelope-square">
             <label>電子通訊訂閱</label>
         </item>
         <item url="#wechat-qcode" icon-class="fa fa-weixin">

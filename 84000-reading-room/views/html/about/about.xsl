@@ -12,20 +12,24 @@
         <xsl:param name="side-content"/>
         <xsl:param name="page-class"/>
         
+        <xsl:variable name="title-band">
+            <m:title-band>
+                <xsl:copy-of select="$eft-header/m:navigation[@xml:lang eq $lang]/m:item/m:item[@url eq $active-url or m:item[@url eq $active-url]]"/>
+            </m:title-band>
+        </xsl:variable>
+        
         <xsl:variable name="page-title">
-            <xsl:call-template name="local-text">
+            <!--<xsl:call-template name="local-text">
                 <xsl:with-param name="local-key" select="'page-title'"/>
-            </xsl:call-template>
+            </xsl:call-template>-->
+            <xsl:value-of select="$eft-header/m:navigation[@xml:lang eq $lang]/m:item/m:item/m:item[@url eq $active-url]/m:label"/>
         </xsl:variable>
         
         <!-- Content variable -->
         <xsl:variable name="content">
             
-            <xsl:variable name="header-img-src">
-                <xsl:call-template name="local-text">
-                    <xsl:with-param name="local-key" select="'header-img-src'"/>
-                </xsl:call-template>
-            </xsl:variable>
+            
+            <xsl:apply-templates select="$title-band"/>
             
             <xsl:variable name="page-quote">
                 <xsl:call-template name="local-text">
@@ -33,12 +37,11 @@
                 </xsl:call-template>
             </xsl:variable>
             
-            <xsl:variable name="title-band">
-                <m:title-band>
-                    <xsl:copy-of select="$eft-header/m:navigation[@xml:lang eq $lang]/m:item/m:item[@url eq $active-url or m:item[@url eq $active-url]]"/>
-                </m:title-band>
+            <xsl:variable name="header-img-src">
+                <xsl:call-template name="local-text">
+                    <xsl:with-param name="local-key" select="'header-img-src'"/>
+                </xsl:call-template>
             </xsl:variable>
-            <xsl:apply-templates select="$title-band"/>
             
             <xsl:if test="$page-quote gt ''">
                 <aside class="panel-header-image">

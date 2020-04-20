@@ -7,11 +7,11 @@
 
         <xsl:variable name="content">
 
-            <h3>
+            <!--<h3>
                 <xsl:call-template name="local-text">
                     <xsl:with-param name="local-key" select="'page-heading'"/>
                 </xsl:call-template>
-            </h3>
+            </h3>-->
             
             <xsl:call-template name="local-text">
                 <xsl:with-param name="local-key" select="'page-intro'"/>

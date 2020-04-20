@@ -15,7 +15,7 @@ declare variable $contributors:person-prefixes := '(Dr\.|Prof\.|Ven\.)';
 declare variable $contributors:team-prefixes := '(Dr\.|The|Prof\.)';
 declare variable $contributors:institution-prefixes := '(The|University\sof)';
 
-declare function contributors:persons($include-acknowledgements as xs:boolean) as element() {
+declare function contributors:persons($include-acknowledgements as xs:boolean) as element(m:contributor-persons) {
     
     let $contributors := 
         for $contributor in $contributors:contributors/m:contributors/m:person
@@ -32,7 +32,7 @@ declare function contributors:persons($include-acknowledgements as xs:boolean) a
         </contributor-persons>
 };
 
-declare function contributors:person($id as xs:string, $include-acknowledgements as xs:boolean) as element() {
+declare function contributors:person($id as xs:string, $include-acknowledgements as xs:boolean) as element(m:person) {
     
     let $contributor := $contributors:contributors/m:contributors/m:person[@xml:id eq $id]
     
@@ -49,7 +49,7 @@ declare function contributors:person($id as xs:string, $include-acknowledgements
         }
 };
 
-declare function contributors:acknowledgements($uri as xs:string){
+declare function contributors:acknowledgements($uri as xs:string) as element(m:acknowledgement)* {
     
     for $tei in 
         $contributors:texts//tei:TEI[
@@ -82,7 +82,7 @@ declare function contributors:acknowledgements($uri as xs:string){
         contributors:acknowledgement($tei, $marked-paragraphs[exist:match])
 };
 
-declare function contributors:acknowledgement($tei as element(tei:TEI), $paragraphs as element()*) as element()* {
+declare function contributors:acknowledgement($tei as element(tei:TEI), $paragraphs as element()*) as element(m:acknowledgement)* {
 
     let $title := tei-content:title($tei)
     let $translation-id := tei-content:id($tei)
@@ -105,7 +105,7 @@ declare function contributors:acknowledgement($tei as element(tei:TEI), $paragra
         }
 };
 
-declare function contributors:teams($include-hidden as xs:boolean, $include-acknowledgements as xs:boolean, $include-persons as xs:boolean) as element(){
+declare function contributors:teams($include-hidden as xs:boolean, $include-acknowledgements as xs:boolean, $include-persons as xs:boolean) as element(m:contributor-teams){
     
     let $teams := 
         if($include-hidden) then
@@ -153,7 +153,7 @@ declare function contributors:team($id as xs:string, $include-acknowledgements a
         }
 };
 
-declare function contributors:regions($include-stats as xs:boolean) as element() {
+declare function contributors:regions($include-stats as xs:boolean) as element(m:contributor-regions) {
     
     let $region-ids := $contributors:contributors/m:contributors/m:region/@id
     let $regions-institution-xmlids := $contributors:contributors/m:contributors/m:institution[@region-id = $region-ids]/@xml:id
@@ -188,7 +188,7 @@ declare function contributors:regions($include-stats as xs:boolean) as element()
         </contributor-regions>
 };
 
-declare function contributors:institutions($include-persons as xs:boolean) as element() {
+declare function contributors:institutions($include-persons as xs:boolean) as element(m:contributor-institutions) {
     
     let $institutions := 
         for $institution in $contributors:contributors/m:contributors/m:institution
@@ -214,39 +214,56 @@ declare function contributors:institutions($include-persons as xs:boolean) as el
         </contributor-institutions>
 };
 
-declare function contributors:institution-types($include-stats as xs:boolean) as element() {
+declare function contributors:institution-types($include-stats as xs:boolean) as element(m:contributor-institution-types) {
 
-    let $institution-type-ids := $contributors:contributors/m:contributors/m:institution-type/@id
-    let $institution-types-institutions-xmlids := $contributors:contributors/m:contributors/m:institution[@institution-type-id = $institution-type-ids]/@xml:id
-    let $contributors-count := count($contributors:contributors/m:contributors/m:person[m:institution/@id = $institution-types-institutions-xmlids])
+    let $institution-types := 
+        for $institution-type in $contributors:contributors/m:contributors/m:institution-type
+            let $institution-type-id := $institution-type/@id
+            let $institution-type-institutions-ids := $contributors:contributors/m:contributors/m:institution[@institution-type-id eq $institution-type-id]/@xml:id ! string()
+            let $contributors := $contributors:contributors/m:contributors/m:person[m:institution/@id = $institution-type-institutions-ids]
+        return
+            element { node-name($institution-type) } {
+                $institution-type/@*,
+                $institution-type/*,
+                if($include-stats) then
+                    element affiliated-contributors {
+                        for $contributor in $contributors
+                        return (
+                            element contributor {
+                                attribute id { $contributor/@xml:id }
+                            }
+                         )
+                     }
+                else
+                    ()
+            }
+    
+    let $affiliated-contributors-count := count( distinct-values($institution-types//m:contributor/@id) )
     
     return
-        <contributor-institution-types xmlns="http://read.84000.co/ns/1.0">
-        {
-            for $institution-type in $contributors:contributors/m:contributors/m:institution-type
-                let $institution-type-institution-xmlids := $contributors:contributors/m:contributors/m:institution[@institution-type-id eq $institution-type/@id]/@xml:id
-            return
-                element { node-name($institution-type) } {
-                    $institution-type/@*,
-                    $institution-type/*,
-                    if($include-stats) then
-                        let $institution-type-contributor-count := count($contributors:contributors/m:contributors/m:person[m:institution/@id = $institution-type-institution-xmlids])
-                        return
-                            (
-                                element stat {
-                                    attribute type {'contributor-count' },
-                                    attribute value { $institution-type-contributor-count }
-                                },
-                                element stat {
-                                    attribute type {'contributor-percentage' },
-                                    attribute value { xs:integer(($institution-type-contributor-count div $contributors-count) * 100) }
-                                }
-                            )
-                    else
-                        ()
-                }
+        element { QName('http://read.84000.co/ns/1.0', 'contributor-institution-types') } {
+            attribute affiliated-contributors-count { $affiliated-contributors-count },
+            if($include-stats) then
+                for $institution-type in $institution-types
+                    let $institution-type-id := $institution-type/@id
+                    let $contributors-count := count($institution-type//m:contributor)
+                    let $contributors-percent := xs:integer(($contributors-count div $affiliated-contributors-count) * 100)
+                    let $affiliated-to-other-ids := $institution-types[not(@id eq $institution-type-id)]//m:contributor/@id
+                    let $contributors-this-type-only-count := count($institution-type//m:contributor[not(@id = $affiliated-to-other-ids)])
+                    let $contributors-this-type-only-percent := xs:integer(($contributors-this-type-only-count div $affiliated-contributors-count) * 100)
+                return
+                    element { node-name($institution-type) } {
+                        $institution-type/@*,
+                        attribute contributors-count { $contributors-count },
+                        attribute contributors-percent { $contributors-percent },
+                        attribute contributors-this-type-only-count { $contributors-this-type-only-count },
+                        attribute contributors-this-type-only-percent { $contributors-this-type-only-percent },
+                        $institution-type/node()(:,
+                        $affiliated-to-other-ids[. = ($institution-type//m:contributor/@id ! string())] ! string():)
+                    }
+            else
+                $institution-types
         }
-        </contributor-institution-types>
 };
 
 declare function contributors:next-id() as xs:integer {

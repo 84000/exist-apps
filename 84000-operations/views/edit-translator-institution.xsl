@@ -73,7 +73,7 @@
                                         </xsl:if>
                                         
                                         <button type="submit" class="btn btn-primary pull-right">
-                                            Save
+                                            <xsl:value-of select="'Save'"/>
                                         </button>
                                     </div>
                                     
@@ -81,7 +81,9 @@
                             </div>
                             
                             <div class="col-sm-6">
-                                <h4>Contributors</h4>
+                                <h4>
+                                    <xsl:value-of select="'Contributors'"/>
+                                </h4>
                                 <hr class="sml-margin"/>
                                 <xsl:choose>
                                     <xsl:when test="m:person">
@@ -99,7 +101,7 @@
                                     </xsl:when>
                                     <xsl:otherwise>
                                         <div class="text-muted italic">
-                                            No contributors
+                                            <xsl:value-of select="'No contributors'"/>
                                         </div>
                                     </xsl:otherwise>
                                 </xsl:choose>

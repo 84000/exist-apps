@@ -64,13 +64,13 @@
     <item key="about.common.texts-label">texts</item>
 
     <!-- Progress -->
+    <!--<item key="about.progress.page-title">Progress</item>
     <item key="about.progress.header-img-src">/imgs/about-headers/PROGRESS-1400.jpg</item>
-    <item key="about.progress.page-title">Progress</item>
     <item key="about.progress.page-quote">"You should know first hand how Dharma helps you… With this mind if you extend your intention to
         reach out with your translation…it’ll really make a difference in the world, and it already does."</item>
-    <item key="about.progress.page-quote-author">Dzigar Kongtrül Rinpoche</item>
+    <item key="about.progress.page-quote-author">Dzigar Kongtrül Rinpoche</item>-->
     <item key="about.progress.page-intro">
-        <p class="h3">In 2009, it was determined that only 5% of the Canon had ever been translated into a language spoken today. We have
+        <p class="intro">In 2009, it was determined that only 5% of the Canon had ever been translated into a language spoken today. We have
             raised that figure substantially, and are on track to reach our 2035 target for the complete translation and publication of the
             Kangyur in English.</p>
         <p>We are on track to complete the translation and online publication of the 70,000 pages of the Kangyur by 2035, before dedicating
@@ -94,16 +94,16 @@
     </item>
 
     <!-- Impact -->
+    <!--<item key="about.impact.page-title">Reader Engagement</item>
     <item key="about.impact.header-img-src">/imgs/about-headers/IMPACT-1400.jpg</item>
-    <item key="about.impact.page-title">Reader Engagement</item>
     <item key="about.impact.page-quote">“It’s not just the heritage of one tradition, one civilization or one nation – it’s the heritage of
         the world. The Kangyur and Tengyur will really contribute to the happiness, peace and freedom of all mankind.”</item>
-    <item key="about.impact.page-quote-author">Tulku Pema Wangyal Rinpoche</item>
+    <item key="about.impact.page-quote-author">Tulku Pema Wangyal Rinpoche</item>-->
     <item key="about.impact.map-img-src">/imgs/2016.09.15-Readers-from-the-world-en.jpg</item>
     <item key="about.impact.map-img-alt">World map showing 84000 readership</item>
     <item key="about.impact.page-subtitle">Our Global Impact</item>
     <item key="about.impact.page-introduction">
-        <p class="h3">84000’s twin goals are: <strong>Translation</strong> and <strong>Global Access</strong>.</p>
+        <p class="intro">84000’s twin goals are: <strong>Translation</strong> and <strong>Global Access</strong>.</p>
         <p>Besides translating the words of the Buddha, we need to build and maintain a user-friendly and technologically robust mass
             publication platform (our online Reading Room) that will allow everyone in the world to have easy access to these texts.</p>
         <p>The figures below provide an overview of the global impact we have created together with your generous support. Your continued
@@ -170,14 +170,14 @@
     <item key="about.impact.countries-timestamp">Information updated on: Aug 5, 2018</item>
 
     <!-- Sponsors -->
+    <!--<item key="about.sponsors.page-title">Sponsors</item>
     <item key="about.sponsors.header-img-src">/imgs/about-headers/SPONSORS-1400.jpg</item>
-    <item key="about.sponsors.page-title">Sponsors</item>
     <item key="about.sponsors.page-quote">“Both the very generous benefactors and also the very knowledgeable and experienced translators
         will be able to perfect their two accumulations of virtue through their interdependent connection.”</item>
-    <item key="about.sponsors.page-quote-author">Tri Ralpachen (one of the three Dharma kings of Tibet)</item>
+    <item key="about.sponsors.page-quote-author">Tri Ralpachen (one of the three Dharma kings of Tibet)</item>-->
     <item key="about.sponsors.lists-title">Our Sponsors</item>
     <item key="about.sponsors.page-intro">
-        <p class="h3">84000 is dependent on the kind and generous support of thousands of donors, many of whom give through our <a href="#commsSiteUrl/sponsor-a-page">Sponsor a Page</a> and <a href="#commsSiteUrl/download-dana">Download Dāna</a> streams,
+        <p class="intro">84000 is dependent on the kind and generous support of thousands of donors, many of whom give through our <a href="#commsSiteUrl/sponsor-a-page">Sponsor a Page</a> and <a href="#commsSiteUrl/download-dana">Download Dāna</a> streams,
             as well as through the programs listed below. We are grateful for every offering and believe each to be a gift that is an
             equally meritorious drop in in the ocean of our activity.</p>
     </item>
@@ -222,13 +222,13 @@
 
 
     <!-- Translators -->
+    <!--<item key="about.translators.page-title">Translator Teams</item>
     <item key="about.translators.header-img-src">/imgs/about-headers/TRANSLATORS-1400.jpg</item>
-    <item key="about.translators.page-title">Translator Teams</item>
     <item key="about.translators.page-quote">“It’s very important that translators really come together as one harmonious unit to do the
         work for the present time and also for future generations.”</item>
-    <item key="about.translators.page-quote-author">Dzigar Kongtrül Rinpoche</item>
+    <item key="about.translators.page-quote-author">Dzigar Kongtrül Rinpoche</item>-->
     <item key="about.translators.page-intro">
-        <p class="h3">84000 awards project-specific grants to teams of translators, editors, and consultants in order to facilitate the
+        <p class="intro">84000 awards project-specific grants to teams of translators, editors, and consultants in order to facilitate the
             efficient translation of texts in the Tibetan Buddhist Canon. These teams are external grantees of 84000 whose work is
             considered integral to the fulfillment of our vision.</p>
     </item>
@@ -244,14 +244,14 @@
     <item key="about.translators.region-label">of translators</item>
 
     <!-- Sponsor a Sutra -->
+    <!--<item key="about.sponsor-a-sutra.page-title">Sponsor a Sutra</item>
     <item key="about.sponsor-a-sutra.header-img-src">/imgs/about-headers/SPONSOR-SUTRA-1024x514.jpg</item>
     <item key="about.sponsor-a-sutra.page-quote">“Sutras teach us the Dharma. The sutras are much more precious, much more important than
         the image of the Buddha.”</item>
     <item key="about.sponsor-a-sutra.page-quote-author">H.E. Garchen Rinpoche</item>
-    <item key="about.sponsor-a-sutra.page-title">Sponsor a Sutra</item>
-    <item key="about.sponsor-a-sutra.page-heading">General Information</item>
+    <item key="about.sponsor-a-sutra.page-heading">General Information</item>-->
     <item key="about.sponsor-a-sutra.page-intro">
-        <p>84000: Translating the Words of the Buddha aims to <strong>translate</strong> all of the Buddha’s words into modern languages,
+        <p class="intro">84000: Translating the Words of the Buddha aims to <strong>translate</strong> all of the Buddha’s words into modern languages,
             and <strong>make them available</strong> to everyone.</p>
         <p>
             <strong>Sponsor A Sutra</strong> is an opportunity to support the translation of a major text. Some of the long, important

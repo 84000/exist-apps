@@ -14,11 +14,9 @@
                     </xsl:call-template>
                 </h2>-->
                 
-                <div>
-                    <xsl:call-template name="local-text">
-                        <xsl:with-param name="local-key" select="'page-intro'"/>
-                    </xsl:call-template>
-                </div>
+                <xsl:call-template name="local-text">
+                    <xsl:with-param name="local-key" select="'page-intro'"/>
+                </xsl:call-template>
                 
                 <div class="row">
                     <div class="col-sm-8">
@@ -93,15 +91,34 @@
                                 </xsl:call-template>
                             </h4>
                             
+                            <!-- Overlap -->
+                            <xsl:variable name="contributors-overlap-percent" select="100 - sum(m:contributor-institution-types/m:institution-type/@contributors-this-type-only-percent ! xs:integer(.))" as="xs:integer"/>
+                            <div>
+                                <xsl:attribute name="class" select="concat('stat ', common:position-to-color(1, 'id'))"/>
+                                <div class="heading">
+                                    <xsl:value-of select="concat('Both ', string-join(m:contributor-institution-types/m:institution-type/m:label, ' and '))"/>
+                                </div>
+                                <div class="data">
+                                    <span>
+                                        <xsl:value-of select="$contributors-overlap-percent"/>
+                                        <xsl:value-of select="'%'"/>
+                                    </span>
+                                    <xsl:value-of select="' '"/>
+                                    <xsl:call-template name="local-text">
+                                        <xsl:with-param name="local-key" select="'affiliation-label'"/>
+                                    </xsl:call-template>
+                                </div>
+                            </div>
+                            
                             <xsl:for-each select="m:contributor-institution-types/m:institution-type">
                                 <div>
-                                    <xsl:attribute name="class" select="concat('stat ', common:position-to-color((position() + 2), 'id'))"/>
+                                    <xsl:attribute name="class" select="concat('stat ', common:position-to-color(position() + 1, 'id'))"/>
                                     <div class="heading">
                                         <xsl:value-of select="m:label"/>
                                     </div>
                                     <div class="data">
                                         <span>
-                                            <xsl:value-of select="m:stat[@type eq 'contributor-percentage']/@value"/>
+                                            <xsl:value-of select="@contributors-this-type-only-percent"/>
                                             <xsl:value-of select="'%'"/>
                                         </span>
                                         <xsl:value-of select="' '"/>
@@ -113,24 +130,40 @@
                             </xsl:for-each>
                             
                             <xsl:variable name="count-institution-types" select="count(m:contributor-institution-types/m:institution-type)"/>
+                            
                             <xsl:variable name="institution-types-chart-data">
+                                <xsl:value-of select="$contributors-overlap-percent"/>
+                                <xsl:value-of select="','"/>
                                 <xsl:for-each select="m:contributor-institution-types/m:institution-type">
-                                    <xsl:value-of select="m:stat[@type eq 'contributor-percentage']/@value"/>
-                                    <xsl:if test="position() lt $count-institution-types">,</xsl:if>
+                                    <xsl:value-of select="@contributors-this-type-only-percent"/>
+                                    <xsl:if test="position() lt $count-institution-types">
+                                        <xsl:value-of select="','"/>
+                                    </xsl:if>
                                 </xsl:for-each>
                             </xsl:variable>
+                            
                             <xsl:variable name="institution-types-chart-labels">
+                                '<xsl:value-of select="'Both'"/>'
+                                <xsl:value-of select="','"/>
                                 <xsl:for-each select="m:contributor-institution-types/m:institution-type">
                                     '<xsl:value-of select="m:label"/>'
-                                    <xsl:if test="position() lt $count-institution-types">,</xsl:if>
+                                    <xsl:if test="position() lt $count-institution-types">
+                                        <xsl:value-of select="','"/>
+                                    </xsl:if>
                                 </xsl:for-each>
                             </xsl:variable>
+                            
                             <xsl:variable name="institution-types-chart-colours">
+                                '<xsl:value-of select="common:position-to-color(1, 'hex')"/>'
+                                <xsl:value-of select="','"/>
                                 <xsl:for-each select="m:contributor-institution-types/m:institution-type">
-                                    '<xsl:value-of select="common:position-to-color((position() + 2), 'hex')"/>'
-                                    <xsl:if test="position() lt $count-institution-types">,</xsl:if>
+                                    '<xsl:value-of select="common:position-to-color(position() + 1, 'hex')"/>'
+                                    <xsl:if test="position() lt $count-institution-types">
+                                        <xsl:value-of select="','"/>
+                                    </xsl:if>
                                 </xsl:for-each>
                             </xsl:variable>
+                            
                             <canvas id="affiliation-pie" style="width:100%;height:225px;"/>
                             <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.2/Chart.min.js"/>
                             <script>
