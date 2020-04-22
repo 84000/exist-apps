@@ -373,10 +373,12 @@
                     </xsl:if>
                     
                     <xsl:if test="$section/m:warning/tei:p">
-                        <xsl:call-template name="tantra-warning">
-                            <xsl:with-param name="id" select="'title'"/>
-                            <xsl:with-param name="node" select="$section/m:warning"/>
-                        </xsl:call-template>
+                        <div class="top-margin">
+                            <xsl:call-template name="tantra-warning">
+                                <xsl:with-param name="id" select="'title'"/>
+                                <xsl:with-param name="node" select="$section/m:warning"/>
+                            </xsl:call-template>
+                        </div>
                     </xsl:if>
                     
                 </div>
@@ -642,6 +644,15 @@
                                             <xsl:copy-of select="common:breadcrumb-items(m:parent | m:parent//m:parent, /m:response/@lang)"/>
                                         </ul>
                                     </div>
+                                    
+                                    <!-- Tantric warning -->
+                                    <xsl:if test="m:translation/m:tantric-restriction/tei:p">
+                                        <hr/>
+                                        <xsl:call-template name="tantra-warning">
+                                            <xsl:with-param name="id" select="@resource-id"/>
+                                            <xsl:with-param name="node" select="m:translation/m:tantric-restriction/tei:p"/>
+                                        </xsl:call-template>
+                                    </xsl:if>
                                     
                                 </xsl:if>
                                 
@@ -967,10 +978,12 @@
                                 </div>
                                 
                                 <xsl:if test="m:warning/tei:p">
-                                    <xsl:call-template name="tantra-warning">
-                                        <xsl:with-param name="id" select="$sub-section-id"/>
-                                        <xsl:with-param name="node" select="m:warning"/>
-                                    </xsl:call-template>
+                                    <div class="top-margin">
+                                        <xsl:call-template name="tantra-warning">
+                                            <xsl:with-param name="id" select="$sub-section-id"/>
+                                            <xsl:with-param name="node" select="m:warning"/>
+                                        </xsl:call-template>
+                                    </div>
                                 </xsl:if>
                                 
                             </div>
@@ -1028,7 +1041,7 @@
         <xsl:param name="id"/>
         <xsl:param name="node"/>
         
-        <div class="hidden-print top-margin">
+        <div class="hidden-print">
             
             <a data-toggle="modal" class="warning">
                 <xsl:attribute name="href" select="concat('#tantra-warning-', $id)"/>
