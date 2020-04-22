@@ -420,6 +420,12 @@
                     </xsl:if>
                 </table>
                 
+                <xsl:if test="count(m:translations/m:text) eq 0">
+                    <p class="text-muted italic">
+                        <xsl:value-of select="'No texts with this status'"/>
+                    </p>
+                </xsl:if>
+                
             </div>
         </xsl:variable>
         

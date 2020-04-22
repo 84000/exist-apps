@@ -130,7 +130,7 @@
                 </div>
                 
                 <div class="fixed-btn-container close-btn-container right">
-                    <button type="button" class="btn-round close" aria-label="Close">
+                    <button type="button" class="btn-round close close-collapse" aria-label="Close">
                         <span aria-hidden="true">
                             <i class="fa fa-times"/>
                         </span>
