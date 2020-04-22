@@ -83,7 +83,7 @@
                         <div class="col-md-4 col-lg-3">
                             <div id="project-progress">
                                 <!-- Project Progress, get from ajax -->
-                                <xsl:attribute name="data-onload-replace" select="concat('{&#34;#project-progress&#34;:&#34;', $reading-room-path,'/widget/progress-panel.html#panel&#34;}')"/>                            
+                                <xsl:attribute name="data-onload-replace" select="concat('{&#34;#project-progress&#34;:&#34;', $reading-room-path,'/widget/progress-panel.html#eft-progress-panel&#34;}')"/>                            
                                 <div class="panel panel-default">
                                     <div class="panel-body loading"/>
                                 </div>

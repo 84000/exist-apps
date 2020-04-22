@@ -114,7 +114,7 @@
                             
                             <div id="project-progress">
                                 <!-- Project Progress, get from ajax -->
-                                <xsl:attribute name="data-onload-replace" select="concat('{&#34;#project-progress&#34;:&#34;', $reading-room-path,'/widget/progress-panel.html#panel&#34;}')"/>                            
+                                <xsl:attribute name="data-onload-replace" select="concat('{&#34;#project-progress&#34;:&#34;', $reading-room-path,'/widget/progress-panel.html#eft-progress-panel&#34;}')"/>                            
                                 <div class="panel panel-default">
                                     <div class="panel-body loading"/>
                                 </div>
@@ -133,6 +133,9 @@
             <xsl:with-param name="page-title" select="concat($page-title, ' | 84000 Translating the Words of the Buddha')"/>
             <xsl:with-param name="page-description" select="''"/>
             <xsl:with-param name="content" select="$content"/>
+            <!--<xsl:with-param name="additional-links">
+                <script src="https://code.highcharts.com/highcharts.js"/>
+            </xsl:with-param>-->
         </xsl:call-template>
         
     </xsl:template>

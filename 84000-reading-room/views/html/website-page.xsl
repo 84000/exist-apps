@@ -168,14 +168,14 @@
         <xsl:if test="not($view-mode eq 'app')">
             <script>
                 function downloadJSAtOnload() {
-                var element = document.createElement("script");
-                element.src = "<xsl:value-of select="concat($front-end-path, '/js/84000-fe.min.js', $app-version-url-attribute)"/>";
-                document.body.appendChild(element);
+                    var element = document.createElement("script");
+                    element.src = "<xsl:value-of select="concat($front-end-path, '/js/84000-fe.min.js', $app-version-url-attribute)"/>";
+                    document.body.appendChild(element);
                 }
                 if (window.addEventListener)
-                window.addEventListener("load", downloadJSAtOnload, false);
+                    window.addEventListener("load", downloadJSAtOnload, false);
                 else if (window.attachEvent)
-                window.attachEvent("onload", downloadJSAtOnload);
+                    window.attachEvent("onload", downloadJSAtOnload);
                 else window.onload = downloadJSAtOnload;
             </script>
             
@@ -359,14 +359,14 @@
                     
                     <script type="text/javascript">
                         function downloadJSAtOnload() {
-                        var element = document.createElement("script");
-                        element.src = "<xsl:value-of select="concat($front-end-path, '/js/84000-fe.min.js', $app-version-url-attribute)"/>";
-                        document.body.appendChild(element);
+                            var element = document.createElement("script");
+                            element.src = "<xsl:value-of select="concat($front-end-path, '/js/84000-fe.min.js', $app-version-url-attribute)"/>";
+                            document.body.appendChild(element);
                         }
                         if (window.addEventListener)
-                        window.addEventListener("load", downloadJSAtOnload, false);
+                            window.addEventListener("load", downloadJSAtOnload, false);
                         else if (window.attachEvent)
-                        window.attachEvent("onload", downloadJSAtOnload);
+                            window.attachEvent("onload", downloadJSAtOnload);
                         else window.onload = downloadJSAtOnload;
                     </script>
                     
@@ -385,6 +385,7 @@
         <xsl:param name="page-title" required="yes" as="xs:string"/>
         <xsl:param name="page-description" required="yes" as="xs:string"/>
         <xsl:param name="content" required="no" as="node()*"/>
+        <xsl:param name="additional-links" required="no" as="node()*"/>
         
         <html>
             
@@ -397,6 +398,7 @@
                 <xsl:with-param name="page-title" select="$page-title"/>
                 <xsl:with-param name="page-description" select="$page-description"/>
                 <xsl:with-param name="page-type" select="'communications'"/>
+                <xsl:with-param name="additional-links" select="$additional-links"/>
             </xsl:call-template>
             
             <body id="top">
@@ -405,6 +407,19 @@
                 
                 <!-- Place content -->
                 <xsl:copy-of select="$content"/>
+                
+                <script type="text/javascript">
+                    function downloadJSAtOnload() {
+                        var element = document.createElement("script");
+                        element.src = "<xsl:value-of select="concat($front-end-path, '/js/84000-fe.min.js', $app-version-url-attribute)"/>";
+                        document.body.appendChild(element);
+                    }
+                    if (window.addEventListener)
+                        window.addEventListener("load", downloadJSAtOnload, false);
+                    else if (window.attachEvent)
+                        window.attachEvent("onload", downloadJSAtOnload);
+                    else window.onload = downloadJSAtOnload;
+                </script>
                 
             </body>
         </html>

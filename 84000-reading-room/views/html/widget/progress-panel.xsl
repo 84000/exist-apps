@@ -11,7 +11,7 @@
             <div class="container">
                 <div class="row">
                     <div class="col-sm-offset-4 col-sm-4 top-margin">
-                        <div id="panel" class="panel panel-default">
+                        <div id="eft-progress-panel" class="panel panel-default">
                             <div class="panel-heading">
                                 <h3 class="panel-title">
                                     <xsl:call-template name="local-text">
@@ -19,8 +19,8 @@
                                     </xsl:call-template>
                                 </h3>
                             </div>
-                            <div id="panel-body" class="panel-body">
-                                <div id="panel-content">
+                            <div id="eft-progress-panel-body" class="panel-body">
+                                <div id="eft-progress-panel-content">
                                     <xsl:call-template name="local-text">
                                         <xsl:with-param name="local-key" select="'support-description'"/>
                                     </xsl:call-template>
@@ -125,7 +125,7 @@
         </xsl:variable>
         
         <xsl:call-template name="widget-page">
-            <xsl:with-param name="page-url" select="'https://read.84000.co/widget/progress.html'"/>
+            <xsl:with-param name="page-url" select="'https://read.84000.co/widget/progress-panel.html'"/>
             <xsl:with-param name="page-class" select="''"/>
             <xsl:with-param name="page-title" select="'Progress Summary | 84000 Translating the Words of the Buddha'"/>
             <xsl:with-param name="page-description" select="'Overview of the current status of the 84000 project'"/>

@@ -5,11 +5,9 @@
     <xsl:variable name="replace-text" select="/m:response/m:replace-text/m:value"/>
     <xsl:variable name="text-items" select="doc(concat(/m:response/@app-config, '/', 'texts.', if($response-lang = ('en', 'zh')) then $response-lang else 'en', '.xml'))//m:item"/>
     
-    <xsl:template name="local-text">
-        <xsl:param name="local-key" as="xs:string" required="yes"/>
-        <xsl:variable name="common-key" select="string-join(('about', 'common', $local-key), '.')"/>
-        <xsl:variable name="global-key" select="string-join((tokenize(/m:response/@model-type, '/'), $local-key), '.')"/>
-        <xsl:variable name="text-item" select="$text-items[@key = ($global-key, $common-key)][1]/node()"/>
+    <xsl:template name="text">
+        <xsl:param name="global-key" as="xs:string*" required="yes"/>
+        <xsl:variable name="text-item" select="$text-items[@key = $global-key][1]/node()"/>
         <xsl:choose>
             <!--<xsl:when test="$text-item instance of text()">
                 <xsl:call-template name="replace-text">
@@ -30,6 +28,15 @@
                 <xsl:value-of select="''"/>
             </xsl:otherwise>
         </xsl:choose>
+    </xsl:template>
+    
+    <xsl:template name="local-text">
+        <xsl:param name="local-key" as="xs:string" required="yes"/>
+        <xsl:variable name="common-key" select="string-join(('about', 'common', $local-key), '.')"/>
+        <xsl:variable name="global-key" select="string-join((tokenize(/m:response/@model-type, '/'), $local-key), '.')"/>
+        <xsl:call-template name="text">
+            <xsl:with-param name="global-key" select="($global-key, $common-key)"/>
+        </xsl:call-template>
     </xsl:template>
     
     <xsl:template name="local-text-if-exists">
