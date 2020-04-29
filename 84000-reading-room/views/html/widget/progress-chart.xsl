@@ -45,7 +45,7 @@
                                                     <xsl:with-param name="outline-summary" select="m:outline-summary[@work eq 'UT4CZ5369']"/>
                                                 </xsl:call-template>
                                                 <p class="top-margin small">
-                                                    <xsl:value-of select="'Our 25 year goal is the translation of the Kangyur, the ancient Tibetan library of the Buddha''s Sūtras made up of approximately 70,000 pages.'"/>
+                                                    <xsl:value-of select="'Our 25 year goal is the translation of the Kangyur, the ancient Tibetan library of the Buddha''s sūtras made up of approximately 70,000 pages.'"/>
                                                 </p>
                                             </div>
                                             <div role="tabpanel" class="tab-pane" id="eft-progress-chart-combined-tab">
@@ -53,7 +53,7 @@
                                                     <xsl:with-param name="outline-summary" select="m:outline-summary"/>
                                                 </xsl:call-template>
                                                 <p class="top-margin small">
-                                                    <xsl:value-of select="'Our 100 year goal is the translation of the Kangyur and the Tengyur making up the full 240,000 pages of the Tibetan canon of sūtras and commentaries.'"/>
+                                                    <xsl:value-of select="'Our 100 year goal is the translation of the Kangyur and the Tengyur—the canonical commentaries—making a total of 240,000 pages of translation.'"/>
                                                 </p>
                                             </div>
                                         </div>

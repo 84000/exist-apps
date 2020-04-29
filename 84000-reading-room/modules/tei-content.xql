@@ -18,7 +18,7 @@ declare variable $tei-content:text-statuses :=
         <status status-id="1.a" group="published" marked-up="true" target-date="true">Ready to publish</status>
         <status status-id="2" group="translated" marked-up="true" target-date="true">Marked up, awaiting final proofing</status>
         <status status-id="2.a" group="translated" marked-up="true">Markup in process</status>
-        <status status-id="2.b" group="translated">Awaiting markup</status>
+        <status status-id="2.b" group="translated" target-date="true">Awaiting markup</status>
         <status status-id="2.c" group="translated">Awaiting editor's OK for markup</status>
         <status status-id="2.d" group="translated" target-date="true">Copyediting complete. Preparation for markup</status>
         <status status-id="2.e" group="translated">Being copyedited</status>

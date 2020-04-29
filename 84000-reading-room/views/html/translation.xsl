@@ -398,6 +398,7 @@
                 </div>
             </article>
             
+            <!-- Navigation controls -->
             <div class="nav-controls show-on-scroll-xs hidden-print">
                 
                 <div id="navigation-btn-container" class="fixed-btn-container">
@@ -426,7 +427,8 @@
                 </div>
                 
             </div>
-    
+            
+            <!-- General pop-up for notes and glossary -->
             <div id="popup-footer" class="fixed-footer collapse hidden-print">
                 <div class="fix-height">
                     <div class="container">
@@ -448,6 +450,7 @@
                 </div>
             </div>
             
+            <!-- Source pop-up -->
             <div id="popup-footer-source" class="fixed-footer collapse hidden-print">
                 <div class="fix-height">
                     <div class="data-container">
@@ -463,6 +466,7 @@
                 </div>
             </div>
             
+            <!-- Contents fly-out -->
             <div id="contents-sidebar" class="fixed-sidebar collapse width hidden-print">
                 
                 <div class="fix-width">
@@ -483,6 +487,7 @@
                 
             </div>
             
+            <!-- Bookmarks fly-out -->
             <xsl:call-template name="bookmarks-sidebar"/>
             
         </xsl:variable>

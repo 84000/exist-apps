@@ -440,6 +440,7 @@ declare function translations:downloads($resource-ids as xs:string*) as element(
                 attribute id { $text-id }, 
                 attribute uri { base-uri($tei) },
                 attribute file-name { util:unescape-uri(replace(base-uri($tei), ".+/(.+)$", "$1"), 'UTF-8') },
+                attribute translation-status { tei-content:translation-status($tei) },
                 for $resource-id in 
                     if($resource-ids eq 'versioned') then
                         $tei/tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl/@key

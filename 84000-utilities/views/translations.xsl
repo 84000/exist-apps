@@ -85,6 +85,7 @@
                                 </td>
                                 <td>
                                     <div class="sml-margin bottom center-vertical full-width">
+                                        
                                         <a class="break">
                                             <xsl:attribute name="href" select="concat($reading-room-path ,'/translation/', $toh/@key, '.html')"/>
                                             <xsl:attribute name="target" select="concat($toh/@key, '.html')"/>
@@ -94,6 +95,7 @@
                                                 <xsl:value-of select="concat(' / ', $text-id)"/>
                                             </small>
                                         </a>
+                                        
                                         <span class="text-right">
                                             <span class="label label-warning">
                                                 <xsl:if test="$status-id eq '1'">
@@ -213,6 +215,7 @@
                                             
                                             <!-- Location column -->
                                             <div class="col-sm-2 text-muted">
+                                                
                                                 <xsl:choose>
                                                     <xsl:when test="$environment/m:store-conf[@type eq 'client']">
                                                         <xsl:value-of select="'Local version:'"/>
@@ -327,7 +330,38 @@
                                                 <xsl:when test="$environment/m:store-conf[@type eq 'client']">
                                                     
                                                     <!-- Location column -->
-                                                    <div class="col-sm-2"/>
+                                                    <!-- Show if it's a status change -->
+                                                    <div class="col-sm-2">
+                                                        
+                                                        <xsl:variable name="master-status" select="$master-downloads/parent::m:text/@translation-status"/>
+                                                        
+                                                        <xsl:if test="not($status-id eq $master-status)">
+                                                            
+                                                            <div class="center-vertical">
+                                                                <span>
+                                                                    <span class="label label-warning">
+                                                                        <xsl:if test="$status-id eq '1'">
+                                                                            <xsl:attribute name="class" select="'label label-success'"/>
+                                                                        </xsl:if>
+                                                                        <xsl:value-of select="$status-id"/>
+                                                                    </span>
+                                                                </span>
+                                                                <span>
+                                                                    <i class="fa fa-angle-right"/>
+                                                                </span>
+                                                                <span>
+                                                                    <span class="label label-warning">
+                                                                        
+                                                                        <xsl:if test="$master-status eq '1'">
+                                                                            <xsl:attribute name="class" select="'label label-success'"/>
+                                                                        </xsl:if>
+                                                                        <xsl:value-of select="$master-status"/>
+                                                                    </span>
+                                                                </span>
+                                                            </div>
+                                                            
+                                                        </xsl:if>
+                                                    </div>
                                                     
                                                     <!-- TEI column -->
                                                     <div class="col-sm-2">
