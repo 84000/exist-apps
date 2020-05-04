@@ -487,9 +487,6 @@
                 
             </div>
             
-            <!-- Bookmarks fly-out -->
-            <xsl:call-template name="bookmarks-sidebar"/>
-            
         </xsl:variable>
         
         <!-- Pass the content to the page -->

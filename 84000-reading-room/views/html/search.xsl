@@ -89,8 +89,6 @@
                 </div>
             </div>
             
-            <xsl:call-template name="bookmarks-sidebar"/>
-            
         </xsl:variable>
         
         <!-- Compile with page template -->

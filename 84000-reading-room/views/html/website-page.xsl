@@ -294,6 +294,9 @@
                 <!-- Place content -->
                 <xsl:copy-of select="$content"/>
                 
+                <!-- Bookmarks fly-out -->
+                <xsl:call-template name="bookmarks-sidebar"/>
+                
                 <!-- Get the common <footer> -->
                 <xsl:call-template name="html-footer">
                     <xsl:with-param name="front-end-path" select="$front-end-path"/>

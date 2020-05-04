@@ -247,8 +247,6 @@
                 </div>
             </div>
             
-            <xsl:call-template name="bookmarks-sidebar"/>
-            
             <div class="modal fade hidden-print" tabindex="-1" role="dialog" id="ebook-help" aria-labelledby="ebook-help-label">
                 <div class="modal-dialog" role="document">
                     <div class="modal-content">

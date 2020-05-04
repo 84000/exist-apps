@@ -466,28 +466,77 @@
     </xsl:template>
     
     <xsl:template match="eft:title-band[eft:item]">
+        
         <div class="title-band">
             <div class="container">
-                <xsl:choose>
-                    <xsl:when test="eft:item/eft:item[@url = $active-url]">
-                        <ul class="breadcrumb">
-                            <li>
-                                <xsl:value-of select="eft:item/eft:label"/>
-                            </li>
-                            <li>
+                <div class="center-vertical-sm full-width">
+                    <div>
+                        <xsl:choose>
+                            <xsl:when test="eft:item/eft:item[@url = $active-url]">
+                                <ul class="breadcrumb">
+                                    <li>
+                                        <xsl:value-of select="eft:item/eft:label"/>
+                                    </li>
+                                    <li>
+                                        <h1>
+                                            <xsl:value-of select="eft:item/eft:item[@url = $active-url]/eft:label"/>
+                                        </h1>
+                                    </li>
+                                </ul>
+                            </xsl:when>
+                            <xsl:otherwise>
                                 <h1>
-                                    <xsl:value-of select="eft:item/eft:item[@url = $active-url]/eft:label"/>
+                                    <xsl:value-of select="eft:item[@url = $active-url]/eft:label"/>
                                 </h1>
-                            </li>
-                        </ul>
-                    </xsl:when>
-                    <xsl:otherwise>
-                        <h1>
-                            <xsl:value-of select="eft:item[@url = $active-url]/eft:label"/>
-                        </h1>
-                    </xsl:otherwise>
-                </xsl:choose>
-                
+                            </xsl:otherwise>
+                        </xsl:choose>
+                    </div>
+                    <div>
+                        <a href="#bookmarks-sidebar" id="bookmarks-btn" class="show-sidebar center-vertical pull-right" role="button" aria-haspopup="true" aria-expanded="false">
+                            <span>
+                                <span class="btn-round sml">
+                                    <i class="fa fa-bookmark"/>
+                                    <span class="badge badge-notification">0</span>
+                                </span>
+                            </span>
+                            <span class="btn-round-text">
+                                <xsl:value-of select="'Bookmarks'"/>
+                            </span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Include the bookmarks sidebar -->
+        <xsl:call-template name="bookmarks-sidebar"/>
+        
+    </xsl:template>
+    
+    <xsl:template match="eft:bookmarks-sidebar">
+        <!-- Bookmarks fly-out -->
+        <xsl:call-template name="bookmarks-sidebar"/>
+    </xsl:template>
+    
+    <xsl:template name="bookmarks-sidebar">
+        <div id="bookmarks-sidebar" class="fixed-sidebar collapse width hidden-print">
+            <div class="fix-width">
+                <div class="sidebar-content">
+                    <h4>
+                        <xsl:value-of select="'Bookmarks'"/>
+                    </h4>
+                    <table id="bookmarks-list" class="contents-table">
+                        <tbody/>
+                        <tfoot/>
+                    </table>
+                </div>
+            </div>
+            <div class="fixed-btn-container close-btn-container right">
+                <button type="button" class="btn-round close close-collapse" aria-label="Close">
+                    <span aria-hidden="true">
+                        <i class="fa fa-times"/>
+                    </span>
+                </button>
             </div>
         </div>
     </xsl:template>
