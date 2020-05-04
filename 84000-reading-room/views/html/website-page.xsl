@@ -294,9 +294,6 @@
                 <!-- Place content -->
                 <xsl:copy-of select="$content"/>
                 
-                <!-- Bookmarks fly-out -->
-                <xsl:call-template name="bookmarks-sidebar"/>
-                
                 <!-- Get the common <footer> -->
                 <xsl:call-template name="html-footer">
                     <xsl:with-param name="front-end-path" select="$front-end-path"/>
@@ -428,30 +425,6 @@
         </html>
         
     </xsl:template>
-    
-    <xsl:template name="bookmarks-sidebar">
-        <div id="bookmarks-sidebar" class="fixed-sidebar collapse width hidden-print">
-            <div class="fix-width">
-                <div class="sidebar-content">
-                    <h4>
-                        <xsl:value-of select="'Bookmarks'"/>
-                    </h4>
-                    <table id="bookmarks-list" class="contents-table">
-                        <tbody/>
-                        <tfoot/>
-                    </table>
-                </div>
-            </div>
-            <div class="fixed-btn-container close-btn-container right">
-                <button type="button" class="btn-round close close-collapse" aria-label="Close">
-                    <span aria-hidden="true">
-                        <i class="fa fa-times"/>
-                    </span>
-                </button>
-            </div>
-        </div>
-    </xsl:template>
-    
     
     <!-- Localization helpers -->
     <!-- Copied from functions.xsl to avoid duplicate include warning -->

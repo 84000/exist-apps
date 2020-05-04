@@ -63,6 +63,8 @@
                     </div>
                 </div>
             </div>
+            <xsl:call-template name="bookmarks-sidebar"/>
+            
             <div class="content-band">
                 <div class="container">
                     <div class="row">
@@ -92,6 +94,7 @@
                     </div>
                 </div>
             </div>
+            
         </xsl:variable>
         
         <!-- Compile with page template -->
