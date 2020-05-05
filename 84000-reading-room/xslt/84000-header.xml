@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <eft-header xmlns="http://read.84000.co/ns/1.0">
-    <!-- Updated 30.03.2020 -->
+    <!-- Updated 05.05.2020 -->
     <translation id="tag-line">
         <text xml:lang="en">Translating the words of the Buddha</text>
         <text xml:lang="zh">八萬四千 • 佛典傳譯</text>
@@ -16,10 +16,6 @@
     <translation id="button-search-comms">
         <text xml:lang="en">Search the Website</text>
         <text xml:lang="zh">網站檢索</text>
-    </translation>
-    <translation id="label-social-icons">
-        <text xml:lang="en">Follow our work:</text>
-        <text xml:lang="zh">關注我們</text>
     </translation>
     <navigation xml:lang="en">
         <item class="home" url="https://84000.co/">
@@ -160,6 +156,7 @@
                 <label>Subscribe to our Newsletter</label>
             </item>
         </item>
+        <label id="label-bookmarks">Bookmarks</label>
     </navigation>
     <navigation xml:lang="zh">
         <item class="home" url="https://84000.co/ch">
@@ -302,8 +299,10 @@
                 <label>訂閱電子通訊</label>
             </item>
         </item>
+        <label id="label-bookmarks">Bookmarks</label>
     </navigation>
     <social xml:lang="en">
+        <label>Follow our work:</label>
         <item url="https://84000.co/how-you-can-help/spread-the-word" icon-class="fa fa-envelope-square">
             <label>Subscribe to our newsletter</label>
         </item>
@@ -318,6 +317,7 @@
         </item>
     </social>
     <social xml:lang="zh">
+        <label>關注我們</label>
         <item url="https://84000.co/how-you-can-help/spread-the-word" icon-class="fa fa-envelope-square">
             <label>電子通訊訂閱</label>
         </item>
@@ -325,4 +325,25 @@
             <label>微信掃碼</label>
         </item>
     </social>
+    <sharing xml:lang="en">
+        <label>Share this page:</label>
+        <item url="https://www.facebook.com/sharer/sharer.php?u=" icon-class="fa fa-facebook-square">
+            <label>Post on Facebook</label>
+        </item>
+        <item url="https://twitter.com/home?status=" icon-class="fa fa-twitter-square">
+            <label>Tweet</label>
+        </item>
+        <item url="whatsapp://send?text=" icon-class="fa fa-whatsapp">
+            <label>Share with WhatsApp</label>
+        </item>
+    </sharing>
+    <sharing xml:lang="zh">
+        <label>Share this page:</label>
+        <item url="https://www.facebook.com/sharer/sharer.php?u=" icon-class="fa fa-facebook-square">
+            <label>Post on Facebook</label>
+        </item>
+        <item url="https://twitter.com/home?status=" icon-class="fa fa-twitter-square">
+            <label>Tweet</label>
+        </item>
+    </sharing>
 </eft-header>

@@ -14,7 +14,7 @@
         
         <xsl:variable name="title-band">
             <m:title-band>
-                <xsl:copy-of select="$eft-header/m:navigation[@xml:lang eq $lang]/m:item/m:item[@url eq $active-url or m:item[@url eq $active-url]]"/>
+                <xsl:copy-of select="$eft-header/m:navigation[@xml:lang eq $lang]/m:item/m:item[@url eq $active-url or m:item[@url eq $active-url]] | $eft-header/m:navigation[@xml:lang eq $lang]/m:label"/>
             </m:title-band>
         </xsl:variable>
         
@@ -98,19 +98,12 @@
                                 <xsl:apply-templates select="$nav-sidebar"/>
                             </div>
                             
-                            <div class="panel panel-default">
-                                <div class="panel-body sharing">
-                                    <xsl:call-template name="local-text">
-                                        <xsl:with-param name="local-key" select="'sharing-label'"/>
-                                    </xsl:call-template>
-                                    <a href="https://www.facebook.com/sharer/sharer.php?u={ concat($reading-room-path, m:request/@sharing-url) }" target="_blank">
-                                        <i class="fa fa-facebook-square" aria-hidden="true"/>
-                                    </a>
-                                    <a href="https://twitter.com/home?status={ concat($reading-room-path, m:request/@sharing-url) }" target="_blank">
-                                        <i class="fa fa-twitter-square" aria-hidden="true"/>
-                                    </a>
-                                </div>
-                            </div>
+                            <xsl:variable name="sharing-panel">
+                                <m:sharing-panel>
+                                    <xsl:copy-of select="$eft-header/m:sharing[@xml:lang eq $lang]/node()"/>
+                                </m:sharing-panel>
+                            </xsl:variable>
+                            <xsl:apply-templates select="$sharing-panel"/>
                             
                             <div id="project-progress">
                                 <!-- Project Progress, get from ajax -->

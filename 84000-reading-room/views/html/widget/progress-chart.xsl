@@ -33,14 +33,14 @@
                                                     <xsl:value-of select="'And Tengyur'"/>
                                                     <br/>
                                                     <small class="text-muted">
-                                                        <xsl:value-of select="'~240,000 pages'"/>
+                                                        <xsl:value-of select="'~230,000 pages'"/>
                                                         <!--<br/><xsl:value-of select="'In 100 years'"/>-->
                                                     </small>
                                                 </a>
                                             </li>
                                         </ul>
                                         <div class="tab-content">
-                                            <div role="tabpanel" class="tab-pane active" id="eft-progress-chart-kangyur-tab">
+                                            <div role="tabpanel" class="tab-pane fade in active" id="eft-progress-chart-kangyur-tab">
                                                 <xsl:call-template name="chart">
                                                     <xsl:with-param name="outline-summary" select="m:outline-summary[@work eq 'UT4CZ5369']"/>
                                                 </xsl:call-template>
@@ -48,7 +48,7 @@
                                                     <xsl:value-of select="'Our 25 year goal is the translation of the Kangyur, the ancient Tibetan library of the Buddha''s sūtras made up of approximately 70,000 pages.'"/>
                                                 </p>
                                             </div>
-                                            <div role="tabpanel" class="tab-pane" id="eft-progress-chart-combined-tab">
+                                            <div role="tabpanel" class="tab-pane fade" id="eft-progress-chart-combined-tab">
                                                 <xsl:call-template name="chart">
                                                     <xsl:with-param name="outline-summary" select="m:outline-summary"/>
                                                 </xsl:call-template>

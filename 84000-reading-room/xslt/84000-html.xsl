@@ -221,11 +221,10 @@
                         <li class="social">
                             <div id="social" class="center-vertical">
                                 <span>
-                                    <xsl:call-template name="translation">
-                                        <xsl:with-param name="translation-id" select="'label-social-icons'"/>
+                                    <xsl:call-template name="translation-lang-class">
                                         <xsl:with-param name="lang" select="$lang"/>
-                                        <xsl:with-param name="text-node" select="false()"/>
                                     </xsl:call-template>
+                                    <xsl:value-of select="eft:social[@xml:lang = $lang]/eft:label"/>
                                 </span>
                                 <xsl:for-each select="eft:social[@xml:lang = $lang]/eft:item">
                                     <a target="_blank">
@@ -437,7 +436,7 @@
         <div class="panel panel-default">
             <div class="panel-heading">
                 <h3 class="panel-title">
-                    <xsl:value-of select="concat('More About ', eft:item/eft:label)"/>
+                    <xsl:value-of select="eft:item/eft:label"/>
                 </h3>
             </div>
             <div class="panel-body">
@@ -500,7 +499,10 @@
                                 </span>
                             </span>
                             <span class="btn-round-text">
-                                <xsl:value-of select="'Bookmarks'"/>
+                                <xsl:call-template name="translation-lang-class">
+                                    <xsl:with-param name="lang" select="$lang"/>
+                                </xsl:call-template>
+                                <xsl:value-of select="eft:label[@id = 'label-bookmarks']"/>
                             </span>
                         </a>
                     </div>
@@ -510,6 +512,36 @@
         
         <!-- Include the bookmarks sidebar -->
         <xsl:call-template name="bookmarks-sidebar"/>
+        
+    </xsl:template>
+    
+    <xsl:template match="eft:sharing-panel[eft:item]">
+        
+        <div class="panel panel-default">
+            <div class="panel-body sharing">
+                <span>
+                    <xsl:call-template name="translation-lang-class">
+                        <xsl:with-param name="lang" select="$lang"/>
+                    </xsl:call-template>
+                    <xsl:value-of select="eft:label"/>
+                </span>
+                <xsl:for-each select="eft:item">
+                    <a target="_blank">
+                        <xsl:attribute name="href">
+                            <xsl:value-of select="concat(@url, $active-url)"/>
+                        </xsl:attribute>
+                        <xsl:attribute name="title">
+                            <xsl:value-of select="eft:label"/>
+                        </xsl:attribute>
+                        <i class="fa fa-facebook-square" aria-hidden="true">
+                            <xsl:attribute name="class">
+                                <xsl:value-of select="@icon-class"/>
+                            </xsl:attribute>
+                        </i>
+                    </a>
+                </xsl:for-each>
+            </div>
+        </div>
         
     </xsl:template>
     
@@ -523,7 +555,10 @@
             <div class="fix-width">
                 <div class="sidebar-content">
                     <h4>
-                        <xsl:value-of select="'Bookmarks'"/>
+                        <xsl:call-template name="translation-lang-class">
+                            <xsl:with-param name="lang" select="$lang"/>
+                        </xsl:call-template>
+                        <xsl:value-of select="eft:label[@id = 'label-bookmarks']"/>
                     </h4>
                     <table id="bookmarks-list" class="contents-table">
                         <tbody/>
@@ -580,21 +615,28 @@
                 </xsl:when>
                 <xsl:otherwise>
                     <span>
-                        <xsl:attribute name="class">
-                            <xsl:choose>
-                                <xsl:when test="$lang = 'zh'">
-                                    <xsl:value-of select="'text-zh'"/>
-                                </xsl:when>
-                                <xsl:otherwise>
-                                    <xsl:value-of select="'text-en'"/>
-                                </xsl:otherwise>
-                            </xsl:choose>
-                        </xsl:attribute>
+                        <xsl:call-template name="translation-lang-class">
+                            <xsl:with-param name="lang" select="$lang"/>
+                        </xsl:call-template>
                         <xsl:value-of select="$text"/>
                     </span>
                 </xsl:otherwise>
             </xsl:choose>
         </xsl:if>
+    </xsl:template>
+    
+    <xsl:template name="translation-lang-class">
+        <xsl:param name="lang" select="'en'"/>
+        <xsl:attribute name="class">
+            <xsl:choose>
+                <xsl:when test="$lang = 'zh'">
+                    <xsl:value-of select="'text-zh'"/>
+                </xsl:when>
+                <xsl:otherwise>
+                    <xsl:value-of select="'text-en'"/>
+                </xsl:otherwise>
+            </xsl:choose>
+        </xsl:attribute>
     </xsl:template>
     
     <xsl:template name="language-links">
