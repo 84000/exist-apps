@@ -44,7 +44,7 @@
                         </div>
                         
                         <div>
-                            <div class="center-vertical pull-right-md">
+                            <div class="center-vertical pull-right">
                                 
                                 <xsl:if test="not($section-id eq 'all-translated')">
                                     <div>

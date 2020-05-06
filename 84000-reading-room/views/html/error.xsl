@@ -31,7 +31,7 @@
                             </ul>
                         </div>
                         <div>
-                            <div class="center-vertical pull-right-md">
+                            <div class="center-vertical pull-right">
                                 <div>
                                     <a class="center-vertical">
                                         <xsl:attribute name="href" select="common:internal-link('/section/all-translated.html', (), '', ((/m:response/@lang), '')[1])"/>

@@ -30,7 +30,7 @@
                         </div>
                         
                         <div>
-                            <div class="center-vertical pull-right-md">
+                            <div class="center-vertical pull-right">
                                 
                                 <div>
                                     <a class="center-vertical">

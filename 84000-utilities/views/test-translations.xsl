@@ -94,7 +94,16 @@
         <xsl:variable name="content">
             <form action="/test-translations.html" method="get" class="form-inline filter-form">
                 <div class="form-group">
-                    <xsl:variable name="request-translation-id" select="/m:response/m:request/m:parameter[@name eq 'translation-id']" as="xs:string"/>
+                    <xsl:variable name="request-translation-id" as="xs:string">
+                        <xsl:choose>
+                            <xsl:when test="/m:response/m:request/m:parameter[@name eq 'translation-id']">
+                                <xsl:value-of select="/m:response/m:request/m:parameter[@name eq 'translation-id']"/>
+                            </xsl:when>
+                            <xsl:otherwise>
+                                <xsl:value-of select="''"/>
+                            </xsl:otherwise>
+                        </xsl:choose>
+                    </xsl:variable>
                     <select name="translation-id" id="translation-id" class="form-control">
                         <option value="all">
                             <xsl:if test="$request-translation-id eq 'all'">
