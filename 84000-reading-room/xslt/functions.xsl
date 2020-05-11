@@ -43,7 +43,7 @@
     
     <xsl:function name="common:index-of-node" as="xs:integer*">
         <xsl:param name="nodes" as="node()*"/>
-        <xsl:param name="nodeToFind" as="node()"/>
+        <xsl:param name="nodeToFind" as="node()?"/>
         <xsl:sequence select="for $seq in (1 to count($nodes)) return $seq[$nodes[$seq] is $nodeToFind]"/>
     </xsl:function>
     
