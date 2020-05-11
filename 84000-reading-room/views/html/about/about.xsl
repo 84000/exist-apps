@@ -529,70 +529,75 @@
             </p>
         </xsl:if>
         
-        <!-- This text size is broken into multiple parts -->
-        <xsl:if test="xs:integer($cost-group/@parts) gt 1">
-            <hr/>
-            <div class="row">
-                
-                <!-- There are multiple parts -->
-                <xsl:if test="count($sponsorship-status/m:cost/m:part) gt 1">
-                    <div class="col-sm-6">
-                        <div>
-                            <xsl:call-template name="local-text">
-                                <xsl:with-param name="local-key" select="'sponsor-part-label'"/>
-                            </xsl:call-template>
-                        </div>
-                        <div class="center-vertical align-left">
-                            <xsl:for-each-group select="$sponsorship-status/m:cost/m:part" group-by="@amount">
-                                
-                                <xsl:for-each select="current-group()">
+        <!-- 
+            If the text is broken into multiple parts show the parts
+            OR if it's a priority then it's not in cost bracket
+        -->
+        <xsl:choose>
+            <xsl:when test="xs:integer($cost-group/@parts) gt 1 or $sponsorship-status/m:cost/m:part[@status eq 'priority']">
+                <hr/>
+                <div class="row">
+                    
+                    <!-- There are multiple parts -->
+                    <xsl:if test="count($sponsorship-status/m:cost/m:part) gt 1">
+                        <div class="col-sm-6">
+                            <div>
+                                <xsl:call-template name="local-text">
+                                    <xsl:with-param name="local-key" select="'sponsor-part-label'"/>
+                                </xsl:call-template>
+                            </div>
+                            <div class="center-vertical align-left">
+                                <xsl:for-each-group select="$sponsorship-status/m:cost/m:part" group-by="@amount">
+                                    
+                                    <xsl:for-each select="current-group()">
+                                        <span>
+                                            <xsl:choose>
+                                                <xsl:when test="@status eq 'sponsored'">
+                                                    <span class="btn-round sml gray">
+                                                        <i class="fa fa-male"/>
+                                                    </span>
+                                                </xsl:when>
+                                                <xsl:otherwise>
+                                                    <span class="btn-round sml orange">
+                                                        <i class="fa fa-male"/>
+                                                    </span>
+                                                </xsl:otherwise>
+                                            </xsl:choose>
+                                        </span>
+                                    </xsl:for-each>
+                                    
                                     <span>
-                                        <xsl:choose>
-                                            <xsl:when test="@status eq 'sponsored'">
-                                                <span class="btn-round sml gray">
-                                                    <i class="fa fa-male"/>
-                                                </span>
-                                            </xsl:when>
-                                            <xsl:otherwise>
-                                                <span class="btn-round sml orange">
-                                                    <i class="fa fa-male"/>
-                                                </span>
-                                            </xsl:otherwise>
-                                        </xsl:choose>
+                                        <xsl:value-of select="concat(count(current-group()), ' x ', 'US$',format-number(@amount, '#,###'))"/>
                                     </span>
-                                </xsl:for-each>
-                                
+                                </xsl:for-each-group>
+                            </div>
+                        </div>
+                    </xsl:if>
+                    
+                    <!-- If none of the parts are taken offer the whole -->
+                    <xsl:if test="not($sponsorship-status/m:cost/m:part[@status eq 'sponsored'])">
+                        <div class="col-sm-6">
+                            <div>
+                                <xsl:call-template name="local-text">
+                                    <xsl:with-param name="local-key" select="'sponsor-whole-label'"/>
+                                </xsl:call-template>
+                            </div>
+                            <div class="center-vertical align-left">
                                 <span>
-                                    <xsl:value-of select="concat(count(current-group()), ' x ', 'US$',format-number(@amount, '#,###'))"/>
+                                    <span class="btn-round sml orange">
+                                        <i class="fa fa-male"/>
+                                    </span>
                                 </span>
-                            </xsl:for-each-group>
-                        </div>
-                    </div>
-                </xsl:if>
-                
-                <!-- If none of the parts are taken offer the whole -->
-                <xsl:if test="not($sponsorship-status/m:cost/m:part[@status eq 'sponsored'])">
-                    <div class="col-sm-6">
-                        <div>
-                            <xsl:call-template name="local-text">
-                                <xsl:with-param name="local-key" select="'sponsor-whole-label'"/>
-                            </xsl:call-template>
-                        </div>
-                        <div class="center-vertical align-left">
-                            <span>
-                                <span class="btn-round sml orange">
-                                    <i class="fa fa-male"/>
+                                <span>
+                                    <xsl:value-of select="concat('US$',format-number($sponsorship-status/m:cost/@rounded-cost, '#,###'))"/>
                                 </span>
-                            </span>
-                            <span>
-                                <xsl:value-of select="concat('US$',format-number($sponsorship-status/m:cost/@rounded-cost, '#,###'))"/>
-                            </span>
+                            </div>
                         </div>
-                    </div>
-                </xsl:if>
-                
-            </div>
-        </xsl:if>
+                    </xsl:if>
+                    
+                </div>
+            </xsl:when>
+        </xsl:choose>
         
     </xsl:template>
     
