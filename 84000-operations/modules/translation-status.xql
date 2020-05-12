@@ -115,12 +115,14 @@ declare function translation-status:texts($text-ids as xs:string*, $include-subm
 declare function translation-status:status-updates($tei as element()) as element(m:status-update)* {
     (: Returns notes of status updates :)
     for $status-update in $tei//tei:teiHeader//tei:notesStmt/tei:note[@update = ('text-version', 'translation-status')]
+    (:let $translation-status := tei-content:translation-status($tei):)
     return
         element { QName('http://read.84000.co/ns/1.0', 'status-update') }{ 
             $status-update/@update,
             $status-update/@value,
             $status-update/@date-time,
             $status-update/@user,
+            attribute days-from-now { days-from-duration(xs:dateTime($status-update/@date-time) - current-dateTime()) },
             $status-update/text()
         }
 };

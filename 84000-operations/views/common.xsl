@@ -95,7 +95,7 @@
                     <xsl:attribute name="class" select="'active'"/>
                 </xsl:if>
                 <a href="search.html">
-                    <xsl:value-of select="'Translations'"/>
+                    <xsl:value-of select="'Search'"/>
                 </a>
             </li>
             <!--<li role="presentation">

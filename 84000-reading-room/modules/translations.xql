@@ -256,7 +256,7 @@ declare function translations:filtered-texts($work as xs:string, $status as xs:s
         return 
             element { QName('http://read.84000.co/ns/1.0', 'texts') } {
                 attribute work { $work },
-                attribute status { $status },
+                attribute status { string-join($status, ',') },
                 attribute sort { $sort },
                 attribute pages-min { $pages-min },
                 attribute pages-max { $pages-max },
@@ -314,9 +314,6 @@ declare function translations:filtered-text($tei as element(tei:TEI), $toh-key a
             attribute page-url { translation:canonical-html($toh/@key) },
             attribute status { tei-content:translation-status($tei) },
             attribute status-group { tei-content:translation-status-group($tei) },
-            (: ~ translation-status module moved to operations
-            attribute word-count { translation-status:word-count($tei) },
-            attribute glossary-count { translation-status:glossary-count($tei) },:)
             $toh,
             translation:titles($tei),
             translation:title-variants($tei),
