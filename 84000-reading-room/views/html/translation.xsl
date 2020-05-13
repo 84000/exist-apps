@@ -70,7 +70,7 @@
                                 <aside id="contents" class="page">
                                     
                                     <xsl:call-template name="section-title">
-                                        <xsl:with-param name="id" select="'contents'"/>
+                                        <xsl:with-param name="bookmark-id" select="'contents'"/>
                                         <xsl:with-param name="prefix" select="'co'"/>
                                         <xsl:with-param name="title" select="'Contents'"/>
                                     </xsl:call-template>
@@ -92,7 +92,7 @@
                                 <section id="summary" class="page text glossarize-section">
                                     
                                     <xsl:call-template name="section-title">
-                                        <xsl:with-param name="id" select="'summary'"/>
+                                        <xsl:with-param name="bookmark-id" select="'summary'"/>
                                         <xsl:with-param name="prefix" select="m:translation/m:summary/@prefix"/>
                                         <xsl:with-param name="title" select="'Summary'"/>
                                     </xsl:call-template>
@@ -112,7 +112,7 @@
                                 <section id="acknowledgements" class="text">
                                     
                                     <xsl:call-template name="section-title">
-                                        <xsl:with-param name="id" select="'acknowledgements'"/>
+                                        <xsl:with-param name="bookmark-id" select="'acknowledgements'"/>
                                         <xsl:with-param name="prefix" select="m:translation/m:acknowledgment/@prefix"/>
                                         <xsl:with-param name="title" select="'Acknowledgements'"/>
                                     </xsl:call-template>
@@ -129,7 +129,7 @@
                                     <section id="preface" class="page text">
                                         
                                         <xsl:call-template name="section-title">
-                                            <xsl:with-param name="id" select="'preface'"/>
+                                            <xsl:with-param name="bookmark-id" select="'preface'"/>
                                             <xsl:with-param name="prefix" select="m:translation/m:preface/@prefix"/>
                                             <xsl:with-param name="title" select="'Preface'"/>
                                         </xsl:call-template>
@@ -149,7 +149,7 @@
                                 <section id="introduction" class="page text glossarize-section">
                                     
                                     <xsl:call-template name="section-title">
-                                        <xsl:with-param name="id" select="'introduction'"/>
+                                        <xsl:with-param name="bookmark-id" select="'introduction'"/>
                                         <xsl:with-param name="prefix" select="m:translation/m:introduction/@prefix"/>
                                         <xsl:with-param name="title" select="'Introduction'"/>
                                     </xsl:call-template>
@@ -176,7 +176,7 @@
                                     <section id="prologue" class="page text glossarize-section">
                                         
                                         <xsl:call-template name="section-title">
-                                            <xsl:with-param name="id" select="'prologue'"/>
+                                            <xsl:with-param name="bookmark-id" select="'prologue'"/>
                                             <xsl:with-param name="prefix" select="m:translation/m:prologue/@prefix"/>
                                             <xsl:with-param name="title" select="'Prologue'"/>
                                             <xsl:with-param name="title-tag" select="'h3'"/>
@@ -242,7 +242,7 @@
                                     <section id="colophon" class="text glossarize-section">
                                         
                                         <xsl:call-template name="section-title">
-                                            <xsl:with-param name="id" select="'colophon'"/>
+                                            <xsl:with-param name="bookmark-id" select="'colophon'"/>
                                             <xsl:with-param name="prefix" select="m:translation/m:colophon/@prefix"/>
                                             <xsl:with-param name="title" select="'Colophon'"/>
                                             <xsl:with-param name="title-tag" select="'h3'"/>
@@ -265,9 +265,10 @@
                                     <section id="appendix" class="page text glossarize-section">
                                         
                                         <xsl:call-template name="section-title">
-                                            <xsl:with-param name="id" select="'appendix'"/>
+                                            <xsl:with-param name="bookmark-id" select="'appendix'"/>
                                             <xsl:with-param name="prefix" select="m:translation/m:appendix/@prefix"/>
-                                            <xsl:with-param name="title" select="'Appendix'"/>
+                                            <xsl:with-param name="title" select="m:translation/m:appendix/m:title"/>
+                                            <xsl:with-param name="title-id" select="m:translation/m:appendix/m:title/@tid"/>
                                             <xsl:with-param name="title-tag" select="'h3'"/>
                                         </xsl:call-template>
                                         
@@ -307,7 +308,7 @@
                                     <section id="abbreviations" class="page">
                                         
                                         <xsl:call-template name="section-title">
-                                            <xsl:with-param name="id" select="'abbreviations'"/>
+                                            <xsl:with-param name="bookmark-id" select="'abbreviations'"/>
                                             <xsl:with-param name="prefix" select="m:translation/m:abbreviations/@prefix"/>
                                             <xsl:with-param name="title" select="'Abbreviations'"/>
                                         </xsl:call-template>
@@ -332,7 +333,7 @@
                                 <section id="notes" class="page glossarize-section">
                                     
                                     <xsl:call-template name="section-title">
-                                        <xsl:with-param name="id" select="'notes'"/>
+                                        <xsl:with-param name="bookmark-id" select="'notes'"/>
                                         <xsl:with-param name="prefix" select="m:translation/m:notes/@prefix"/>
                                         <xsl:with-param name="title" select="'Notes'"/>
                                     </xsl:call-template>
@@ -352,7 +353,7 @@
                                 <section id="bibliography" class="page">
                                     
                                     <xsl:call-template name="section-title">
-                                        <xsl:with-param name="id" select="'bibliography'"/>
+                                        <xsl:with-param name="bookmark-id" select="'bibliography'"/>
                                         <xsl:with-param name="prefix" select="m:translation/m:bibliography/@prefix"/>
                                         <xsl:with-param name="title" select="'Bibliography'"/>
                                     </xsl:call-template>
@@ -374,7 +375,7 @@
                                 <section id="glossary" class="page glossarize-section">
                                     
                                     <xsl:call-template name="section-title">
-                                        <xsl:with-param name="id" select="'glossary'"/>
+                                        <xsl:with-param name="bookmark-id" select="'glossary'"/>
                                         <xsl:with-param name="prefix" select="m:translation/m:glossary/@prefix"/>
                                         <xsl:with-param name="title" select="'Glossary'"/>
                                     </xsl:call-template>
@@ -652,7 +653,9 @@
                             <xsl:value-of select="concat($translation/m:appendix/@prefix, '.')"/>
                         </td>
                         <td>
-                            <a href="#appendix" class="scroll-to-anchor">Appendix</a>
+                            <a href="#appendix" class="scroll-to-anchor">
+                                <xsl:value-of select="$translation/m:appendix/m:title"/>
+                            </a>
                         </td>
                     </tr>
                     <xsl:if test="$translation/m:appendix/m:chapter">

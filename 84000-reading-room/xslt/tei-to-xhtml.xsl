@@ -900,10 +900,12 @@
     
     <!-- Section title -->
     <xsl:template name="section-title">
-        <xsl:param name="id" required="yes"/>
+        <xsl:param name="bookmark-id" required="yes"/>
         <xsl:param name="prefix" required="yes"/>
         <xsl:param name="title" required="yes"/>
         <xsl:param name="title-tag" select="'h3'" required="no"/>
+        <xsl:param name="title-id"/>
+        
         <div class="rw rw-section-title">
             <div class="gtr">
                 
@@ -912,7 +914,7 @@
                     <!-- show a link -->
                     <xsl:when test="/m:response/m:request/@doc-type eq 'html'">
                         <a title="Bookmark this section">
-                            <xsl:attribute name="href" select="concat('#', $id)"/>
+                            <xsl:attribute name="href" select="concat('#', $bookmark-id)"/>
                             <xsl:attribute name="class" select="concat('milestone', ' milestone-', $title-tag)"/>
                             <xsl:value-of select="concat($prefix, '.')"/>
                         </a>
@@ -927,27 +929,29 @@
                 
             </div>
             <div class="rw-heading">
+                
+                <xsl:if test="$title-id">
+                    <xsl:attribute name="id" select="concat('node-', $title-id)"/>
+                </xsl:if>
+                
                 <xsl:choose>
-                    
                     <xsl:when test="$title-tag eq 'h2'">
                         <h2>
                             <xsl:value-of select="$title"/>
                         </h2>
                     </xsl:when>
-                    
                     <xsl:when test="$title-tag eq 'h4'">
                         <h4>
                             <xsl:value-of select="$title"/>
                         </h4>
                     </xsl:when>
-                    
                     <xsl:otherwise>
                         <h3>
                             <xsl:value-of select="$title"/>
                         </h3>
                     </xsl:otherwise>
-                    
                 </xsl:choose>
+                
             </div>
         </div>
     </xsl:template>

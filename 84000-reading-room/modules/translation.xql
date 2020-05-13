@@ -460,42 +460,49 @@ declare function translation:colophon($tei as element(tei:TEI)) as element() {
 };
 
 declare function translation:appendix($tei as element(tei:TEI)) as element() {
-    <appendix xmlns="http://read.84000.co/ns/1.0" prefix="ap">
-    { 
-        let $count-prologue := count($tei//tei:back//*[@type eq 'appendix']/*[@type eq 'prologue'])
+
+    let $appendix := $tei//tei:back//*[@type eq 'appendix'][1]
+    let $appendix-title := $appendix/tei:head[@type = ('appendix')][1]
+    let $count-prologue := count($appendix/*[@type eq 'prologue'])
+    
+    return 
+        element { QName('http://read.84000.co/ns/1.0', 'appendix') } {
+        
+            attribute prefix { 'ap' },
             
-        for $chapter at $chapter-index in $tei//tei:back//*[@type eq 'appendix']/*[@type = ('section', 'chapter', 'prologue')]
-            let $chapter-number := xs:string($chapter-index - $count-prologue)
-            let $chapter-class := 
-                if($chapter/@type eq 'prologue')then
-                    'p'
+            element { QName('http://read.84000.co/ns/1.0', 'title') } {
+                $appendix-title/@tid,
+                if($appendix-title[normalize-space(text())]) then
+                    $appendix-title/text()
                 else
-                    $chapter-number
-        return
-            <chapter chapter-index="{ $chapter-class }" prefix="{ concat('ap', $chapter-class) }">
-                <title>
-                {
-                    attribute tid { $chapter/tei:head/@tid }
-                }
-                { 
-                    $chapter/tei:head[@type = ('section', 'chapter', 'prologue')]/text()
-                }
-                </title>
-                {
+                    'Appendix'
+            },
+            
+            for $chapter at $chapter-index in $appendix/*[@type = ('section', 'chapter', 'prologue')]
+                let $chapter-number := xs:string($chapter-index - $count-prologue)
+                let $chapter-class := 
+                    if($chapter/@type eq 'prologue')then
+                        'p'
+                    else
+                        $chapter-number
+            return
+                element { QName('http://read.84000.co/ns/1.0', 'chapter') } {
+                    attribute chapter-index { $chapter-class },
+                    attribute prefix { concat('ap', $chapter-class) },
+                    element { QName('http://read.84000.co/ns/1.0', 'title') } {
+                        attribute tid { $chapter/tei:head/@tid },
+                        $chapter/tei:head[@type = ('section', 'chapter', 'prologue')]/text()
+                    },
                     translation:nested-section(
-                        <div xmlns="http://www.tei-c.org/ns/1.0">
-                        {
+                        element { QName('http://www.tei-c.org/ns/1.0', 'div') } {
                             $chapter/@*, 
                             $chapter/*[not(self::tei:head)] 
-                        }
-                        </div>,
+                        },
                         0,
                         concat('ap', $chapter-class)
                     )
                 }
-            </chapter>
     }
-    </appendix>
 };
 
 declare function translation:abbreviations($tei as element(tei:TEI)) as element() {
