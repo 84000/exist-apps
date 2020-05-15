@@ -53,25 +53,14 @@ let $updated :=
 (: If it's a new version :)
 let $tei-version-str := translation:version-str($tei)
 let $commit-version := 
-    if($store:conf and not(translation-status:is-current-version($tei-version-str, $current-version-str))) then (
+    if($post-id and $store:conf and not(translation-status:is-current-version($tei-version-str, $current-version-str))) then (
         
-        (: Commit to GitHub :)
+        (: Commit new version to GitHub :)
         deploy:push('data-tei', (), concat($text-id, ' / ', $tei-version-str), tei-content:document-url($tei)),
         
         (: Store associated files :)
         if(tei-content:translation-status-group($tei) eq 'published')then
-            for $bibl in $tei//tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl
-            return
-                (   
-                    (: pdf :)
-                    store:create(concat($bibl/@key, '.pdf')),
-                    (: one ebook format does both :)
-                    store:create(concat($bibl/@key, '.epub')),
-                    (: rdf :)
-                    store:create(concat($bibl/@key, '.rdf')),
-                    (:deploy:commit-data('sync', 'rdf', concat('Sync ', $bibl/@key, '.rdf')):)
-                    deploy:push('data-rdf', (), concat('Sync ', $bibl/@key, '.rdf'), ())
-                )
+            store:create(concat($text-id, '.all'))
         else
             ()
     )

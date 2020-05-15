@@ -46,38 +46,40 @@ declare function deploy:admin-password-correct($admin-password as xs:string?) as
         false()
 };
 
-declare function deploy:push($repo-id as xs:string, $admin-password as xs:string?, $commit-msg as xs:string?, $resource as xs:string?) as element(m:result){
+declare function deploy:push($repo-id as xs:string, $admin-password as xs:string?, $commit-msg as xs:string?, $resource as xs:string?) as element(m:result)? {
     
     (: get the repo from the config :)
     let $repo := $deploy:git-config/m:push/m:repo[@id eq $repo-id]
     
-    (: validate the admin password :)
-    let $admin-password-correct := deploy:admin-password-correct($admin-password)
-    
-    let $exist-options := deploy:exist-options()
-    let $git-options := deploy:git-options($repo)
-    
-    let $commit-msg := 
-        if(not($commit-msg))then
-            concat('Sync ', $repo/m:label)
-        else
-            $commit-msg
-    
-    let $git-add := 
-        if($resource) then
-            let $sync := $repo/m:sync[starts-with($resource, @collection)][1]
-            let $sub-dir := 
-                if($sync/@sub-dir) then
-                    concat($sync/@sub-dir, '/')
-                else
-                    ''
-            let $resource-relative := substring-after($resource, concat($sync/@collection, '/'))
-            return
-                concat($sub-dir, $resource-relative)
-        else
-            '--all'
+    where $repo
+    return
+        (: validate the admin password :)
+        let $admin-password-correct := deploy:admin-password-correct($admin-password)
+        
+        let $exist-options := deploy:exist-options()
+        let $git-options := deploy:git-options($repo)
+        
+        let $commit-msg := 
+            if(not($commit-msg))then
+                concat('Sync ', $repo/m:label)
+            else
+                $commit-msg
+        
+        let $git-add := 
+            if($resource) then
+                let $sync := $repo/m:sync[starts-with($resource, @collection)][1]
+                let $sub-dir := 
+                    if($sync/@sub-dir) then
+                        concat($sync/@sub-dir, '/')
+                    else
+                        ''
+                let $resource-relative := substring-after($resource, concat($sync/@collection, '/'))
+                return
+                    concat($sub-dir, $resource-relative)
+            else
+                '--all'
             
-    where $repo and $git-add
+    where $git-add
     return
         <result xmlns="http://read.84000.co/ns/1.0" admin-password-correct="{ $admin-password-correct }">
         {

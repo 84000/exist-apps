@@ -76,7 +76,7 @@
                                     <a href="#" class="label label-danger">
                                         <xsl:choose>
                                             <xsl:when test="@version eq $tei-version">
-                                                <xsl:attribute name="href" select="concat($reading-room-path, '/data/', $resource-id, '.', @type)"/>
+                                                <xsl:attribute name="href" select="concat($reading-room-path, @url)"/>
                                                 <xsl:attribute name="class" select="'label label-info'"/>
                                                 <i class="fa fa-check"/>
                                                 <xsl:value-of select="concat(' ', $resource-id, '.', @type)"/>

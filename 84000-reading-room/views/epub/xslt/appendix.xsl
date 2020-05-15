@@ -52,7 +52,7 @@
                             
                             <div class="center header">
                                 <xsl:call-template name="section-title">
-                                    <xsl:with-param name="id" select="$section-id"/>
+                                    <xsl:with-param name="bookmark-id" select="$section-id"/>
                                     <xsl:with-param name="prefix" select="$section-prefix"/>
                                     <xsl:with-param name="title" select="$section-title"/>
                                 </xsl:call-template>

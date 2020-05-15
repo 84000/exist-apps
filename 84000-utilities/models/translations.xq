@@ -4,7 +4,7 @@ declare namespace m = "http://read.84000.co/ns/1.0";
 
 import module namespace local="http://utilities.84000.co/local" at "../modules/local.xql";
 import module namespace store="http://read.84000.co/store" at "../../84000-reading-room/modules/store.xql";
-import module namespace deploy="http://read.84000.co/deploy" at "../../84000-reading-room/modules/deploy.xql";
+
 import module namespace common="http://read.84000.co/common" at "../../84000-reading-room/modules/common.xql";
 import module namespace tei-content="http://read.84000.co/tei-content" at "../../84000-reading-room/modules/tei-content.xql";
 import module namespace translations="http://read.84000.co/translations" at "../../84000-reading-room/modules/translations.xql";
@@ -36,18 +36,11 @@ let $store-file :=
         if($store-conf[@type eq 'client']/m:translations-master-host) then
             store:download-master($store-file-name, $store-conf/m:translations-master-host)
         else if($store-conf[@type eq 'master']) then
-        (
-            store:create($store-file-name),
-            if(ends-with($store-file-name, '.rdf')) then
-                (:deploy:commit-data('sync', 'rdf', concat('Sync ', $store-file-name)):)
-                deploy:push('data-rdf', (), concat('Sync ', $store-file-name), ())
-            else
-                ()
-        )
+            store:create($store-file-name)
         else
             ()
         ,
-        if($utilities-url) then
+        if($utilities-url and matches(request:get-uri(), '.*/translations\.html.*')) then
             response:redirect-to(xs:anyURI(concat($utilities-url, '/translations.html?texts-status=',$request-status)))
         else
             ()
@@ -55,23 +48,16 @@ let $store-file :=
     else
         ()
 
-(: If this is a client get translations in MASTER database to compare versions :)
+(: If this is a client doing a version diff then first get translation versions in MASTER database for comparison :)
 let $translations-master := 
-    if($store-conf[@type eq 'client']) then
-        let $translations-master-request := concat($store-conf/m:translations-master-host, '/downloads.xml?resource-ids=versioned')
-        let $request := <hc:request href="{ $translations-master-request }" method="GET"/>
-        let $response := hc:send-request($request)
-        return
-            element {  QName('http://read.84000.co/ns/1.0', 'translations-master') } {
-                (: attribute url { $translations-master-request }, :)
-                $response[2]/m:response/m:translations
-            }
+    if($request-status eq 'diff' and $store-conf[@type eq 'client']) then
+        store:master-downloads-data(xs:anyURI(concat($store-conf/m:translations-master-host, '/downloads.xml?resource-ids=versioned')))
     else
         ()
 
 (: Get translations in LOCAL database :)
 let $translations-local := 
-    if($request-status eq 'diff') then
+    if($request-status eq 'diff' and $translations-master) then
         (: Filter out all the texts with a different version from master :)
         <translations xmlns="http://read.84000.co/ns/1.0">
         {
@@ -90,6 +76,13 @@ let $translations-local :=
         translations:translations($texts-status, (), 'all', false())
     else
         ()
+
+(: If this is a client listing by status then get translation versions for these texts in MASTER database for comparison :)
+let $translations-master := 
+    if(not($request-status eq 'diff') and $store-conf[@type eq 'client'] and $translations-local[m:text]) then
+        store:master-downloads-data(xs:anyURI(concat($store-conf/m:translations-master-host, '/downloads.xml?resource-ids=', string-join($translations-local/m:text/m:toh/@key, ','))))
+    else
+        $translations-master
 
 return
     common:response(

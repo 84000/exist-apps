@@ -425,13 +425,15 @@ declare function translations:downloads($resource-ids as xs:string*) as element(
     <translations xmlns="http://read.84000.co/ns/1.0">
     {
         for $tei in 
-            if($resource-ids eq 'versioned') then
+            if($resource-ids = 'versioned') then
                 $tei-content:translations-collection//tei:TEI[tei:teiHeader/tei:fileDesc/tei:editionStmt/tei:edition/text()]
-            else if($resource-ids gt '') then
+            else if(count($resource-ids) gt 0) then
                 $tei-content:translations-collection//tei:TEI[tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl[@key = $resource-ids]]
             else
                 ()
-            let $text-id := tei-content:id($tei)
+            
+        let $text-id := tei-content:id($tei)
+        where $text-id
         return
             element { QName('http://read.84000.co/ns/1.0', 'text') }{
                 attribute id { $text-id }, 
@@ -439,7 +441,7 @@ declare function translations:downloads($resource-ids as xs:string*) as element(
                 attribute file-name { util:unescape-uri(replace(base-uri($tei), ".+/(.+)$", "$1"), 'UTF-8') },
                 attribute translation-status { tei-content:translation-status($tei) },
                 for $resource-id in 
-                    if($resource-ids eq 'versioned') then
+                    if($resource-ids = 'versioned') then
                         $tei/tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl/@key
                     else
                         $tei/tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl[@key = $resource-ids]/@key

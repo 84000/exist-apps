@@ -297,6 +297,8 @@
                     <xsl:when test="m:glossary/m:term">
                         
                         <xsl:for-each select="m:glossary/m:term">
+                            <!--<xsl:sort select="@count-items ! xs:integer(.)" order="descending"/>-->
+                            <xsl:sort select="m:normalized-term ! lower-case(.)"/>
                             <div class="item">
                                 
                                 <div class="row">
