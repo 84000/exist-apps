@@ -50,6 +50,7 @@
                                 <xsl:with-param name="texts" select="$priority-texts"/>
                                 <xsl:with-param name="grouping" select="'sponsorship'"/>
                                 <xsl:with-param name="show-sponsorship" select="true()"/>
+                                <xsl:with-param name="show-sponsorship-cost" select="true()"/>
                             </xsl:call-template>
                         </xsl:with-param>
                     </xsl:call-template>
@@ -131,6 +132,7 @@
                             <xsl:with-param name="texts" select="$remainder-texts"/>
                             <xsl:with-param name="grouping" select="'sponsorship'"/>
                             <xsl:with-param name="show-sponsorship" select="true()"/>
+                            <xsl:with-param name="show-sponsorship-cost" select="true()"/>
                         </xsl:call-template>
                         
                     </xsl:with-param>
