@@ -22,6 +22,11 @@
                         </xsl:if>
                         <h1>
                             <xsl:apply-templates select="m:translation/m:body/m:main-title"/>
+                            <xsl:if test="m:translation/m:body/m:sub-title/text()">
+                                <small>
+                                    <xsl:apply-templates select="m:translation/m:body/m:sub-title"/>
+                                </small>
+                            </xsl:if>
                         </h1>
                     </div>
                 </section>

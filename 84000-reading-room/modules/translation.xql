@@ -408,23 +408,22 @@ declare function translation:body($tei as element(tei:TEI)) as element() {
     <body xmlns="http://read.84000.co/ns/1.0" prefix="tr">
         <honoration>{ data($tei//tei:body/tei:div[@type eq 'translation']/tei:head[@type eq 'titleHon']) }</honoration>
         <main-title>{ data($tei//tei:body/tei:div[@type eq 'translation']/tei:head[@type eq 'titleMain']) }</main-title>
+        <sub-title>{ data($tei//tei:body/tei:div[@type eq 'translation']/tei:head[@type eq 'sub']) }</sub-title>
         { 
             for $chapter at $chapter-index in $tei//tei:body//tei:div[@type eq 'translation']/tei:div[@type = ('section', 'chapter')]
             return
                 <chapter chapter-index="{ $chapter-index }" prefix="{ $chapter-index }">
                     <title>
                     {
-                        attribute tid { $chapter/tei:head[@type = ('chapterTitle', 'section')]/@tid }
-                    }
-                    { 
-                        $chapter/tei:head[@type = ('chapterTitle', 'section')]/text() 
+                        attribute tid { $chapter/tei:head[@type = ('chapterTitle', 'section')][1]/@tid },
+                        
+                        $chapter/tei:head[@type = ('chapterTitle', 'section')][1]/text() 
                     }
                     </title>
                     <title-number>
                     {
-                        attribute tid { $chapter/tei:head[@type eq 'chapter']/@tid }
-                    }
-                    {
+                        attribute tid { $chapter/tei:head[@type eq 'chapter']/@tid },
+                        
                         if($chapter/tei:head[@type eq 'chapter']/text())then
                             $chapter/tei:head[@type eq 'chapter']/text()
                         else if($chapter/tei:head[@type eq 'chapterTitle']/text())then

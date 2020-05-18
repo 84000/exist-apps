@@ -553,6 +553,12 @@
                 </xsl:if>
                 <h1>
                     <xsl:apply-templates select="$translation/m:body/m:main-title"/>
+                    <xsl:if test="$translation/m:body/m:sub-title/text()">
+                        <br/>
+                        <small>
+                            <xsl:apply-templates select="$translation/m:body/m:sub-title"/>
+                        </small>
+                    </xsl:if>
                 </h1>
             </div>
         </div>
