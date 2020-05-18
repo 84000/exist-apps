@@ -5,11 +5,15 @@
     <xsl:import href="../../84000-reading-room/xslt/tei-search.xsl"/>
     <xsl:import href="../../84000-reading-room/xslt/text-overlay.xsl"/>
     
+    <xsl:variable name="environment" select="doc(/m:response/@environment-path)/m:environment"/>
+    <xsl:variable name="reading-room-path" select="$environment/m:url[@id eq 'reading-room']/text()"/>
+    <xsl:variable name="request" select="/m:response/m:request"/>
+    <xsl:variable name="glossary" select="/m:response/m:glossary"/>
+    
+    
     <xsl:template match="/m:response">
         
-        <xsl:variable name="environment" select="doc(/m:response/@environment-path)/m:environment"/>
-        <xsl:variable name="reading-room-path" select="$environment/m:url[@id eq 'reading-room']/text()"/>
-        <xsl:variable name="tab-label" select="m:tabs/m:tab[@id eq /m:response/m:request/@tab]/m:label"/>
+        <xsl:variable name="tab-label" select="m:tabs/m:tab[@id eq $request/@tab]/m:label"/>
         
         <xsl:variable name="content">
             
@@ -50,7 +54,7 @@
                         <xsl:choose>
                             
                             <!-- Search results -->
-                            <xsl:when test="/m:response/m:request/@tab eq 'search'">
+                            <xsl:when test="$request/@tab eq 'search'">
                                 
                                 <div class="alert alert-info small text-center">
                                     <p>
@@ -65,17 +69,17 @@
                             </xsl:when>
                             
                             <!-- Cumulative Glossary -->
-                            <xsl:when test="/m:response/m:request/@tab eq 'glossary'">
+                            <xsl:when test="$request/@tab eq 'glossary'">
                                 <xsl:call-template name="glossary"/>
                             </xsl:when>
                             
                             <!-- Tibetan Search -->
-                            <xsl:when test="/m:response/m:request/@tab eq 'tm-search'">
+                            <xsl:when test="$request/@tab eq 'tm-search'">
                                 <xsl:call-template name="tm-search"/>
                             </xsl:when>
                             
                             <!-- Translations list -->
-                            <xsl:when test="/m:response/m:request/@tab eq 'translations'">
+                            <xsl:when test="$request/@tab eq 'translations'">
                                 <xsl:call-template name="translations"/>
                             </xsl:when>
                             
@@ -102,7 +106,7 @@
                             <tbody>
                                 <xsl:for-each select="m:tabs/m:tab">
                                     <tr>
-                                        <xsl:if test="/m:response/m:request/@tab eq @id">
+                                        <xsl:if test="$request/@tab eq @id">
                                             <xsl:attribute name="class" select="'active'"/>
                                         </xsl:if>
                                         <td>
@@ -162,10 +166,6 @@
     
     <xsl:template name="glossary">
         
-        <xsl:variable name="request-lang" select="if(m:glossary/@lang gt '') then m:glossary/@lang else 'en'"/>
-        <xsl:variable name="request-type" select="if(m:glossary/@type gt '') then m:glossary/@type else 'term'"/>
-        <xsl:variable name="request-search" select="/m:response/m:request/m:search"/>
-        
         <div id="cumulative-glossary">
             <div class="center-vertical full-width">
                 <div>
@@ -175,7 +175,11 @@
                                 <xsl:attribute name="class" select="'active'"/>
                             </xsl:if>
                             <a>
-                                <xsl:attribute name="href" select="concat('?tab=glossary&amp;type=term&amp;lang=', $request-lang,'&amp;search=', $request-search)"/>
+                                <xsl:attribute name="href">
+                                    <xsl:call-template name="link-to-self">
+                                        <xsl:with-param name="type" select="'term'"/>
+                                    </xsl:call-template>
+                                </xsl:attribute>
                                 <xsl:value-of select="'Terms'"/>
                             </a>
                         </li>
@@ -184,7 +188,11 @@
                                 <xsl:attribute name="class" select="'active'"/>
                             </xsl:if>
                             <a>
-                                <xsl:attribute name="href" select="concat('?tab=glossary&amp;type=person&amp;lang=', $request-lang,'&amp;search=', $request-search)"/>
+                                <xsl:attribute name="href">
+                                    <xsl:call-template name="link-to-self">
+                                        <xsl:with-param name="type" select="'person'"/>
+                                    </xsl:call-template>
+                                </xsl:attribute>
                                 <xsl:value-of select="'Persons'"/>
                             </a>
                         </li>
@@ -193,7 +201,11 @@
                                 <xsl:attribute name="class" select="'active'"/>
                             </xsl:if>
                             <a>
-                                <xsl:attribute name="href" select="concat('?tab=glossary&amp;type=place&amp;lang=', $request-lang,'&amp;search=', $request-search)"/>
+                                <xsl:attribute name="href">
+                                    <xsl:call-template name="link-to-self">
+                                        <xsl:with-param name="type" select="'place'"/>
+                                    </xsl:call-template>
+                                </xsl:attribute>
                                 <xsl:value-of select="'Places'"/>
                             </a>
                         </li>
@@ -202,7 +214,11 @@
                                 <xsl:attribute name="class" select="'active'"/>
                             </xsl:if>
                             <a>
-                                <xsl:attribute name="href" select="concat('?tab=glossary&amp;type=text&amp;lang=', $request-lang,'&amp;search=', $request-search)"/>
+                                <xsl:attribute name="href">
+                                    <xsl:call-template name="link-to-self">
+                                        <xsl:with-param name="type" select="'text'"/>
+                                    </xsl:call-template>
+                                </xsl:attribute>
                                 <xsl:value-of select="'Texts'"/>
                             </a>
                         </li>
@@ -215,7 +231,11 @@
                                 <xsl:attribute name="class" select="'active'"/>
                             </xsl:if>
                             <a>
-                                <xsl:attribute name="href" select="concat('?tab=glossary&amp;type=', $request-type,'&amp;lang=en','&amp;search=', $request-search)"/>
+                                <xsl:attribute name="href">
+                                    <xsl:call-template name="link-to-self">
+                                        <xsl:with-param name="lang" select="'en'"/>
+                                    </xsl:call-template>
+                                </xsl:attribute>
                                 <xsl:value-of select="'Translation'"/>
                             </a>
                         </li>
@@ -224,7 +244,11 @@
                                 <xsl:attribute name="class" select="'active'"/>
                             </xsl:if>
                             <a>
-                                <xsl:attribute name="href" select="concat('?tab=glossary&amp;type=', $request-type,'&amp;lang=Sa-Ltn','&amp;search=', $request-search)"/>
+                                <xsl:attribute name="href">
+                                    <xsl:call-template name="link-to-self">
+                                        <xsl:with-param name="lang" select="'Sa-Ltn'"/>
+                                    </xsl:call-template>
+                                </xsl:attribute>
                                 <xsl:value-of select="'Sanskrit'"/>
                             </a>
                         </li>
@@ -233,7 +257,11 @@
                                 <xsl:attribute name="class" select="'active'"/>
                             </xsl:if>
                             <a>
-                                <xsl:attribute name="href" select="concat('?tab=glossary&amp;type=', $request-type,'&amp;lang=Bo-Ltn','&amp;search=', $request-search)"/>
+                                <xsl:attribute name="href">
+                                    <xsl:call-template name="link-to-self">
+                                        <xsl:with-param name="lang" select="'Bo-Ltn'"/>
+                                    </xsl:call-template>
+                                </xsl:attribute>
                                 <xsl:value-of select="'Wylie'"/>
                             </a>
                         </li>
@@ -247,8 +275,8 @@
                         <input type="hidden" name="lang" value=""/>
                         <div id="search-controls" class="input-group">
                             <input type="text" name="search" class="form-control" placeholder="Search all types and languages...">
-                                <xsl:if test="/m:response/m:request/@type eq 'search'">
-                                    <xsl:attribute name="value" select="$request-search"/>
+                                <xsl:if test="$request/@type eq 'search'">
+                                    <xsl:attribute name="value" select="$request/m:search"/>
                                 </xsl:if>
                             </input>
                             <span class="input-group-btn">
@@ -281,11 +309,15 @@
                 <xsl:for-each select="1 to string-length($alphabet)">
                     <xsl:variable name="letter" select="substring($alphabet, ., 1)"/>
                     <li role="presentation">
-                        <xsl:if test="$letter eq upper-case($request-search)">
+                        <xsl:if test="$letter eq upper-case($request/m:search)">
                             <xsl:attribute name="class" select="'active'"/>
                         </xsl:if>
                         <a>
-                            <xsl:attribute name="href" select="concat('?tab=glossary&amp;type=', $request-type,'&amp;lang=', $request-lang,'&amp;search=', $letter)"/>
+                            <xsl:attribute name="href">
+                                <xsl:call-template name="link-to-self">
+                                    <xsl:with-param name="search" select="$letter"/>
+                                </xsl:call-template>
+                            </xsl:attribute>
                             <xsl:value-of select="$letter"/>
                         </a>
                     </li>
@@ -296,8 +328,33 @@
                 <xsl:choose>
                     <xsl:when test="m:glossary/m:term">
                         
+                        <div class="heading">
+                            <div class="row">
+                                <div class="col-sm-6">
+                                    <a>
+                                        <xsl:attribute name="href">
+                                            <xsl:call-template name="link-to-self">
+                                                <xsl:with-param name="glossary-sort" select="'name'"/>
+                                            </xsl:call-template>
+                                        </xsl:attribute>
+                                        <xsl:value-of select="'Term'"/>
+                                    </a>
+                                </div>
+                                <div class="col-sm-6 text-right">
+                                    <a>
+                                        <xsl:attribute name="href">
+                                            <xsl:call-template name="link-to-self">
+                                                <xsl:with-param name="glossary-sort" select="'matches'"/>
+                                            </xsl:call-template>
+                                        </xsl:attribute>
+                                        <xsl:value-of select="'Number of similar terms'"/>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        
                         <xsl:for-each select="m:glossary/m:term">
-                            <!--<xsl:sort select="@count-items ! xs:integer(.)" order="descending"/>-->
+                            <xsl:sort select="if($request/@glossary-sort eq 'matches') then @count-items ! xs:integer(.) else 0" order="descending"/>
                             <xsl:sort select="m:normalized-term ! lower-case(.)"/>
                             <div class="item">
                                 
@@ -309,14 +366,12 @@
                                         <a target="_self">
                                             <xsl:attribute name="href" select="concat('glossary-items.html?term=', fn:encode-for-uri(m:main-term/text()), '&amp;lang=', m:main-term/@xml:lang, '#glossary-items')"/>
                                             <xsl:attribute name="data-ajax-target" select="concat('#occurrences-', position())"/>
-                                            <xsl:choose>
-                                                <xsl:when test="xs:integer(@count-items) gt 1">
-                                                    <xsl:value-of select="concat(@count-items, ' matches')"/>
-                                                </xsl:when>
-                                                <xsl:otherwise>
-                                                    <xsl:value-of select="concat(@count-items, ' match')"/>
-                                                </xsl:otherwise>
-                                            </xsl:choose>
+                                            <span class="badge badge-notification">
+                                                <xsl:value-of select="@count-items"/>
+                                            </span>
+                                            <span class="badge-text">
+                                                <xsl:value-of select="' similar'"/>
+                                            </span>
                                         </a>
                                     </div>
                                 </div>
@@ -340,6 +395,17 @@
         </div>
     </xsl:template>
     
+    <xsl:template name="link-to-self">
+        
+        <xsl:param name="type" select="($glossary/@type[normalize-space()], 'term')[1]"/>
+        <xsl:param name="lang" select="($glossary/@lang[normalize-space()], 'en')[1] "/>
+        <xsl:param name="glossary-sort" select="($request/@glossary-sort, '')[1]"/>
+        <xsl:param name="search" select="($request/m:search, 'A')[1]"/>
+        
+        <xsl:value-of select="concat('?tab=glossary&amp;type=', $type,'&amp;lang=', $lang,'&amp;search=', $search, '&amp;glossary-sort=', $glossary-sort)"/>
+        
+    </xsl:template>
+    
     <xsl:template name="tm-search">
         
         <div class="alert alert-info small text-center">
@@ -355,7 +421,7 @@
                     
                     <!-- Folio tab -->
                     <li role="presentation">
-                        <xsl:if test="/m:response/m:request/@type = ('folio')">
+                        <xsl:if test="$request/@type = ('folio')">
                             <xsl:attribute name="class" select="'active'"/>
                         </xsl:if>
                         <a href="#folio-search" aria-controls="folio-search" role="tab" data-toggle="tab">Select a Passage</a>
@@ -363,7 +429,7 @@
                     
                     <!-- Tibetan tab -->
                     <li role="presentation">
-                        <xsl:if test="/m:response/m:request/@type = ('bo')">
+                        <xsl:if test="$request/@type = ('bo')">
                             <xsl:attribute name="class" select="'active'"/>
                         </xsl:if>
                         <a href="#tibetan-search" aria-controls="tibetan-search" role="tab" data-toggle="tab">Tibetan</a>
@@ -371,7 +437,7 @@
                     
                     <!-- Wylie tab -->
                     <li role="presentation">
-                        <xsl:if test="/m:response/m:request/@type = ('bo-ltn')">
+                        <xsl:if test="$request/@type = ('bo-ltn')">
                             <xsl:attribute name="class" select="'active'"/>
                         </xsl:if>
                         <a href="#wylie-search" aria-controls="wylie-search" role="tab" data-toggle="tab">Wylie</a>
@@ -379,7 +445,7 @@
                     
                     <!-- English tab -->
                     <li role="presentation">
-                        <xsl:if test="/m:response/m:request/@type = ('en')">
+                        <xsl:if test="$request/@type = ('en')">
                             <xsl:attribute name="class" select="'active'"/>
                         </xsl:if>
                         <a href="#english-search" aria-controls="english-search" role="tab" data-toggle="tab">English</a>
@@ -391,7 +457,7 @@
             
             <div class="tab-content">
                 <div role="tabpanel" id="folio-search" class="tab-pane fade">
-                    <xsl:if test="/m:response/m:request/@type = ('folio')">
+                    <xsl:if test="$request/@type = ('folio')">
                         <xsl:attribute name="class" select="'tab-pane fade in active'"/>
                     </xsl:if>
                     <div class="bottom-margin">
@@ -471,7 +537,7 @@
                 </div>
                 
                 <div role="tabpanel" id="tibetan-search" class="tab-pane fade">
-                    <xsl:if test="/m:response/m:request/@type eq 'bo'">
+                    <xsl:if test="$request/@type eq 'bo'">
                         <xsl:attribute name="class" select="'tab-pane fade in active'"/>
                     </xsl:if>
                     <xsl:call-template name="search-form">
@@ -480,7 +546,7 @@
                 </div>
                 
                 <div role="tabpanel" id="wylie-search" class="tab-pane fade">
-                    <xsl:if test="/m:response/m:request/@type eq 'bo-ltn'">
+                    <xsl:if test="$request/@type eq 'bo-ltn'">
                         <xsl:attribute name="class" select="'tab-pane fade in active'"/>
                     </xsl:if>
                     <xsl:call-template name="search-form">
@@ -489,7 +555,7 @@
                 </div>
                 
                 <div role="tabpanel" id="english-search" class="tab-pane fade">
-                    <xsl:if test="/m:response/m:request/@type eq 'en'">
+                    <xsl:if test="$request/@type eq 'en'">
                         <xsl:attribute name="class" select="'tab-pane fade in active'"/>
                     </xsl:if>
                     <xsl:call-template name="search-form">
@@ -576,7 +642,7 @@
                     
                     <!-- Pagination -->
                     <!-- To do: change this to a re-post of the form maybe? -->
-                    <xsl:copy-of select="common:pagination($results/@first-record, $results/@max-records, $results/@count-records, 'index.html?tab=tm-search', concat('&amp;type=', /m:response/m:request/@type, '&amp;search=', /m:response/m:request/m:search/text()/normalize-space(), '&amp;lang=', /m:response/m:request/@lang, '&amp;volume=', /m:response/m:request/@volume, '&amp;page=', /m:response/m:request/@page))"/>
+                    <xsl:copy-of select="common:pagination($results/@first-record, $results/@max-records, $results/@count-records, 'index.html?tab=tm-search', concat('&amp;type=', $request/@type, '&amp;search=', $request/m:search/text()/normalize-space(), '&amp;lang=', $request/@lang, '&amp;volume=', $request/@volume, '&amp;page=', $request/@page))"/>
                     
                     
                 </xsl:when>
@@ -626,10 +692,10 @@
                 <xsl:attribute name="value" select="$lang"/>
             </input>
             <input type="hidden" name="volume">
-                <xsl:attribute name="value" select="/m:response/m:request/@volume"/>
+                <xsl:attribute name="value" select="$request/@volume"/>
             </input>
             <input type="hidden" name="page">
-                <xsl:attribute name="value" select="/m:response/m:request/@page/xs:integer(.)"/>
+                <xsl:attribute name="value" select="$request/@page ! xs:integer(.)"/>
             </input>
             <label class="form-label">
                 <xsl:attribute name="for" select="concat('tm-search-', $type)"/>
@@ -660,7 +726,7 @@
                         </xsl:otherwise>
                     </xsl:choose>
                     <xsl:attribute name="value">
-                        <xsl:apply-templates select="/m:response/m:request[@type eq $type]/m:search"/>
+                        <xsl:apply-templates select="$request[@type eq $type]/m:search"/>
                     </xsl:attribute>
                 </input>
                 <div class="input-group-btn">
@@ -785,7 +851,7 @@
         <xsl:if test="$page-number le $page-count">
             <option>
                 <xsl:attribute name="value" select="$page-number"/>
-                <xsl:if test="$page-number eq /m:response/m:request/@page/xs:integer(.)">
+                <xsl:if test="$page-number eq $request/@page ! xs:integer(.)">
                     <xsl:attribute name="selected" select="'selected'"/>
                 </xsl:if>
                 <xsl:value-of select="concat('Page ', $page-number)"/>

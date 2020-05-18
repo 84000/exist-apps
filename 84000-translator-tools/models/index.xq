@@ -35,6 +35,7 @@ let $work := request:get-parameter('work', $source:ekangyur-work)
 let $volume := request:get-parameter('volume', 1)
 let $page := request:get-parameter('page', 1)
 let $resource-id := request:get-parameter('resource-id', '')
+let $glossary-sort := request:get-parameter('glossary-sort', '')
 
 let $first-record := 
     if(functx:is-a-number(request:get-parameter('first-record', 1))) then
@@ -57,7 +58,7 @@ return
         concat('translator-tools/', $tab),
         'translator-tools',
         (
-            <request xmlns="http://read.84000.co/ns/1.0" tab="{ $tab }" lang="{ $lang }" type="{ $type }" volume="{ $volume }" page="{ $page }">
+            <request xmlns="http://read.84000.co/ns/1.0" tab="{ $tab }" lang="{ $lang }" type="{ $type }" volume="{ $volume }" page="{ $page }" glossary-sort="{ $glossary-sort }">
                 <search>{ $search }</search>
             </request>,
             $tabs,
