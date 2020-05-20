@@ -7,7 +7,7 @@
     <xsl:template match="/m:response">
         
         <xsl:variable name="section-id" select="'appendix'"/>
-        <xsl:variable name="section-title" select="'Appendix'"/>
+        <xsl:variable name="section-title" select="m:translation/m:appendix/m:title"/>
         <xsl:variable name="section-prefix" select="m:translation/m:appendix/@prefix"/>
         <xsl:variable name="translation-title" select="m:translation/m:titles/m:title[@xml:lang eq 'en']"/>
         
@@ -20,9 +20,12 @@
                     <xsl:attribute name="id" select="$section-id"/>
                     
                     <xsl:choose>
-                        <xsl:when test="count(m:translation/m:appendix/m:chapter) gt 1">
+                        <xsl:when test="count(m:translation/m:appendix/m:chapter) gt 0">
                             
                             <div class="center header">
+                                <h4>
+                                    <xsl:value-of select="'Appendix'"/>
+                                </h4>
                                 <h3>
                                     <xsl:value-of select="$section-title"/>
                                 </h3>
