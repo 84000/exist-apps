@@ -65,7 +65,8 @@
             </div>
             <xsl:call-template name="bookmarks-sidebar"/>
             
-            <div class="content-band">
+            <!-- Include .client-error to do a client side error log -->
+            <div class="content-band client-error">
                 <div class="container">
                     <div class="row">
                         <div class="col-md-8 col-lg-9">
