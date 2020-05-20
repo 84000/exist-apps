@@ -22,7 +22,7 @@
             <!--<xsl:call-template name="local-text">
                 <xsl:with-param name="local-key" select="'page-title'"/>
             </xsl:call-template>-->
-            <xsl:value-of select="$eft-header/m:navigation[@xml:lang eq $lang]/m:item/m:item/m:item[@url eq $active-url]/m:label"/>
+            <xsl:value-of select="$eft-header/m:navigation[@xml:lang eq $lang]/m:item//m:item[@url eq $active-url]/m:label"/>
         </xsl:variable>
         
         <!-- Content variable -->
