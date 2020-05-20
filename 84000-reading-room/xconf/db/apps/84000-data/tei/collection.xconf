@@ -76,12 +76,9 @@
                 <field name="source-id" match="@source-id" type="xs:string"/>
             </create>
             
-            <create qname="tei:bibl">
-                <field name="translation-key" match="@key" type="xs:string"/>
-            </create>
-            
-            <create qname="tei:bibl">
-                <field name="translation-type" match="@type" type="xs:string"/>
+            <create qname="tei:sourceDesc">
+                <field name="translation-key" match="tei:bibl/@key" type="xs:string"/>
+                <field name="translation-type" match="tei:bibl/@type" type="xs:string"/>
             </create>
             
             <create qname="tei:location">
@@ -94,6 +91,12 @@
             
             <create qname="tei:fileDesc">
                 <field name="section-type" match="@type" type="xs:string"/>
+            </create>
+            
+            <create qname="tei:notesStmt">
+                <field name="audit-update" match="tei:note/@update" type="xs:string"/>
+                <field name="audit-value" match="tei:note/@value" type="xs:string"/>
+                <field name="audit-date-time" match="tei:note/@date-time" type="xs:dateTime"/>
             </create>
             
             <!-- 
@@ -128,27 +131,15 @@
             
             <create qname="tei:gloss">
                 <field name="gloss-type" match="@type" type="xs:string"/>
-            </create>
-            
-            <create qname="tei:term">
-                <field name="term-lang" match="@xml:lang" type="xs:string"/>
-            </create>
-            
-            <create qname="tei:term">
-                <field name="term-type" match="@type" type="xs:string"/>
+                <field name="term-lang" match="tei:term/@xml:lang" type="xs:string"/>
+                <field name="term-type" match="tei:term/@type" type="xs:string"/>
             </create>
             
             <create qname="tei:term" type="xs:string"/>
             
             <create qname="tei:ref">
                 <field name="ref-type" match="@type" type="xs:string"/>
-            </create>
-            
-            <create qname="tei:ref">
                 <field name="ref-rend" match="@rend" type="xs:string"/>
-            </create>
-            
-            <create qname="tei:ref">
                 <field name="ref-cref" match="@cRef" type="xs:string" case="no"/>
             </create>
             

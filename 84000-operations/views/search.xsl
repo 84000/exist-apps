@@ -216,12 +216,12 @@
                                                 </xsl:if>
                                                 <xsl:value-of select="'Target dates'"/>
                                             </option>
-                                            <!--<option value="status-date">
+                                            <option value="status-date">
                                                 <xsl:if test="m:request/@target-date-type eq 'status-date'">
                                                     <xsl:attribute name="selected" select="'selected'"/>
                                                 </xsl:if>
                                                 <xsl:value-of select="'Status achieved'"/>
-                                            </option>-->
+                                            </option>
                                         </select>
                                     </div>
                                     <div class="col-sm-4">
@@ -596,57 +596,66 @@
                                                 </div>
                                             </xsl:if>
                                             
-                                            <xsl:variable name="current-status" select="$translation-status/m:status-update[@update eq 'translation-status'][@value eq parent::m:text/@translation-status][1]"/>
-                                            <xsl:variable name="next-target-date" select="$translation-status/m:target-date[@next eq 'true'][1]"/>
                                             <hr/>
-                                            <div>
-                                                <xsl:choose>
-                                                    <xsl:when test="$next-target-date">
-                                                        
-                                                        <xsl:choose>
-                                                            <xsl:when test="xs:integer($next-target-date/@due-days) ge 0">
-                                                                <span class="label label-success">
-                                                                    <xsl:value-of select="concat($next-target-date/@due-days, ' days')"/>
+                                            <ul class="list-inline inline-dots no-bottom-margin">
+                                                <li>
+                                                    <xsl:variable name="next-target-date" select="$translation-status/m:target-date[@next eq 'true'][1]"/>
+                                                    <xsl:choose>
+                                                        <xsl:when test="$next-target-date">
+                                                            
+                                                            <xsl:choose>
+                                                                <xsl:when test="xs:integer($next-target-date/@due-days) ge 0">
+                                                                    <span class="label label-success">
+                                                                        <xsl:value-of select="concat($next-target-date/@due-days, ' days')"/>
+                                                                    </span>
+                                                                </xsl:when>
+                                                                <xsl:when test="xs:integer($next-target-date/@due-days) lt 0">
+                                                                    <span class="label label-danger">
+                                                                        <xsl:value-of select="concat(abs($next-target-date/@due-days), ' overdue')"/>
+                                                                    </span>
+                                                                </xsl:when>
+                                                            </xsl:choose>
+                                                            
+                                                            <span class="small italic">
+                                                                <xsl:value-of select="' '"/>
+                                                                <span class="text-danger">
+                                                                    <xsl:value-of select="concat('Target date for status ', $next-target-date/@status-id, ' is ', format-dateTime($next-target-date/@date-time, '[D01] [MNn,*-3] [Y]'))"/>
                                                                 </span>
-                                                            </xsl:when>
-                                                            <xsl:when test="xs:integer($next-target-date/@due-days) lt 0">
-                                                                <span class="label label-danger">
-                                                                    <xsl:value-of select="concat(abs($next-target-date/@due-days), ' overdue')"/>
-                                                                </span>
-                                                            </xsl:when>
-                                                        </xsl:choose>
-                                                        
-                                                        <span class="small italic">
-                                                            <xsl:value-of select="' '"/>
-                                                            <span class="text-danger">
-                                                                <xsl:value-of select="concat('Target date for status ', $next-target-date/@status-id, ' is ', format-dateTime($next-target-date/@date-time, '[D01] [MNn,*-3] [Y]'))"/>
                                                             </span>
-                                                            <xsl:value-of select="' / '"/>
-                                                        </span>
-                                                        
-                                                    </xsl:when>
-                                                    <xsl:otherwise>
-                                                        
+                                                            
+                                                        </xsl:when>
+                                                        <xsl:otherwise>
+                                                            
+                                                            <span class="small italic">
+                                                                <xsl:value-of select="'No target set'"/>
+                                                            </span>
+                                                            
+                                                        </xsl:otherwise>
+                                                    </xsl:choose>
+                                                </li>
+                                                
+                                                <xsl:variable name="status-date-start" select="/m:response/m:request/@target-date-start"/>
+                                                <xsl:variable name="status-date-end" select="/m:response/m:request/@target-date-end"/>
+                                                <xsl:variable name="status-updates-in-range">
+                                                    <xsl:choose>
+                                                        <xsl:when test="/m:response/m:request/@target-date-type eq 'status-date' and ($status-date-start gt '' or $status-date-end gt '')">
+                                                            <xsl:copy-of select="m:status-updates/m:status-update                                                                 [@update eq 'translation-status']                                                                 [if($status-date-start gt '') then @date-time ! xs:dateTime(.) ge xs:dateTime(xs:date($status-date-start)) else true()]                                                                 [if($status-date-end gt '') then @date-time ! xs:dateTime(.) le xs:dateTime(xs:date($status-date-end)) else true()]                                                                 "/>
+                                                        </xsl:when>
+                                                        <xsl:otherwise>
+                                                            <xsl:copy-of select="m:status-updates/m:status-update[@current-status eq 'true']"/>
+                                                        </xsl:otherwise>
+                                                    </xsl:choose>
+                                                </xsl:variable>
+                                                
+                                                <xsl:for-each select="$status-updates-in-range/m:status-update">
+                                                    <li>
                                                         <span class="small italic">
-                                                            <xsl:value-of select="'No target set'"/>
-                                                            <xsl:value-of select="' / '"/>
+                                                            <xsl:value-of select="concat('Status ', ./@value, ' set by ', @user, ' on ', format-dateTime(./@date-time, '[D01] [MNn,*-3] [Y]'))"/>
                                                         </span>
-                                                        
-                                                    </xsl:otherwise>
-                                                </xsl:choose>
-                                                <xsl:choose>
-                                                    <xsl:when test="$current-status">
-                                                        <span class="small italic">
-                                                            <xsl:value-of select="concat('Status set to ', $current-status/@value, ' on ', format-dateTime($current-status/@date-time, '[D01] [MNn,*-3] [Y]'))"/>
-                                                        </span>
-                                                    </xsl:when>
-                                                    <xsl:otherwise>
-                                                        <span class="small italic">
-                                                            <xsl:value-of select="'No history found for current status'"/>
-                                                        </span>
-                                                    </xsl:otherwise>
-                                                </xsl:choose>
-                                            </div>
+                                                    </li>
+                                                </xsl:for-each>
+                                                
+                                            </ul>
                                             
                                             <xsl:variable name="sponsorship-alerts">
                                                 <ul class="small list-inline list-dots no-bottom-margin">

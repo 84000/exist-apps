@@ -23,116 +23,112 @@ declare namespace m="http://read.84000.co/ns/1.0";
 declare namespace tei="http://www.tei-c.org/ns/1.0";
 
 declare variable $translation-status:data := doc(concat($common:data-path, '/local/translation-status.xml'));
-
-declare function translation-status:text($text-id as xs:string) as element(m:text)? {
-    if($text-id gt '') then
-        
-        (:let $add-text := 
-            if(not($translation-status:data/m:translation-status/m:text[@text-id eq $text-id])) then
-                translation-status:update($text-id)
-            else
-                ()
-        
-        return :)
-            $translation-status:data/m:translation-status/m:text[@text-id eq $text-id][1]
-    else
-        ()
-};
+declare variable $translation-status:text-statuses-sorted := tei-content:text-statuses-sorted();
 
 declare function translation-status:texts($text-ids as xs:string*) as element(m:text)* {
     translation-status:texts($text-ids, false())
 };
 
 declare function translation-status:texts($text-ids as xs:string*, $include-submissions as xs:boolean) as element(m:text)* {
+    
+    let $text-ids := distinct-values($text-ids)
+    where count($text-ids) gt 0
+    for $text in $translation-status:data/m:translation-status/m:text[@text-id = $text-ids]
+    return 
+        translation-status:text($text, $include-submissions)
+        
+};
 
-    for $text-id in distinct-values($text-ids)
+declare function translation-status:target-date-texts($date-start-str as xs:string, $date-end-str as xs:string) as element(m:text)* {
     
-        (: Filter by target due days :)
-        let $text := translation-status:text($text-id)
+    (: Return translation-status for texts with a target date in this range :)
     
-    where $text
-    
-        (: Get the translation status :)
-        let $tei := tei-content:tei($text-id, '')
-        let $translation-status := tei-content:translation-status($tei)
-        let $text-statuses-sorted := tei-content:text-statuses-sorted()
-        let $translation-status-index := $text-statuses-sorted/m:status[@status-id eq $translation-status]/@index ! xs:integer(.)
+    (: First triage to get only records with a relevant date :)
+    for $text in 
+        $translation-status:data/m:translation-status/m:text[
+            m:target-date
+                [if($date-start-str gt '') then @date-time ! xs:dateTime(.) ge xs:dateTime(xs:date($date-start-str)) else true()]
+                [if($date-end-str gt '') then @date-time ! xs:dateTime(.) le xs:dateTime(xs:date($date-end-str)) else true()]
+        ]
         
-        (: Get the next due date after now :)
-        let $status-surpassable := exists($text-statuses-sorted/m:status[@target-date][xs:integer(@index) lt $translation-status-index])
-        let $statuses-surpassed := $text-statuses-sorted/m:status[xs:integer(@index) ge $translation-status-index]/@status-id
-        let $next-not-surpassed-index := max($text-statuses-sorted/m:status[@status-id = $text/m:target-date[@date-time]/@status-id][not(@status-id = $statuses-surpassed)]/@index ! xs:integer(.))
-        let $next-not-surpassed-id := $text-statuses-sorted/m:status[xs:integer(@index) eq $next-not-surpassed-index]/@status-id
-        
+        (: Calculate other data :)
+        let $text-calculated := translation-status:text($text, false())
+    
+    (: Now return only where the next target is in the range :)
+    where 
+        $text-calculated/m:target-date
+            [@next eq 'true']
+            [if($date-start-str gt '') then @date-time ! xs:dateTime(.) ge xs:dateTime(xs:date($date-start-str)) else true()]
+            [if($date-end-str gt '') then @date-time ! xs:dateTime(.) le xs:dateTime(xs:date($date-end-str)) else true()]
+    return 
+        $text-calculated
+    
+};
+
+declare function translation-status:text($text as element(m:text), $include-submissions as xs:boolean) as element(m:text)? {
+    
+    (: Get the translation status :)
+    let $tei := tei-content:tei($text/@text-id, '')
+    let $translation-status := tei-content:translation-status($tei)
+    let $translation-status-index := $translation-status:text-statuses-sorted/m:status[@status-id eq $translation-status]/@index ! xs:integer(.)
+    
+    (: Get the next due date after now :)
+    let $status-surpassable := exists($translation-status:text-statuses-sorted/m:status[@target-date][xs:integer(@index) lt $translation-status-index])
+    let $statuses-surpassed := $translation-status:text-statuses-sorted/m:status[xs:integer(@index) ge $translation-status-index]/@status-id
+    let $next-not-surpassed-index := max($translation-status:text-statuses-sorted/m:status[@status-id = $text/m:target-date[@date-time]/@status-id][not(@status-id = $statuses-surpassed)]/@index ! xs:integer(.))
+    let $next-not-surpassed-id := $translation-status:text-statuses-sorted/m:status[xs:integer(@index) eq $next-not-surpassed-index]/@status-id
+    
+    where $tei
     return
+    
         (: Add due-days attribute to result :)
         element { node-name($text) } { 
             $text/@*,
             attribute translation-status { $translation-status },
             attribute status-surpassable { $status-surpassable },
-            for $text-node in $text/node()
+            
+            for $child-node in $text/node()
             return
                 
-                if( name($text-node) eq 'target-date' ) then
+                if( $child-node[self::m:target-date] ) then
                     
                     (: Process target dates :)
-                    let $status-surpassed := ($text-node/@status-id = $statuses-surpassed)
-                    let $next := ($text-node/@status-id = $next-not-surpassed-id)
-                    let $target-date-due-date := $text-node/@date-time ! xs:dateTime(.)
+                    let $status-surpassed := ($child-node/@status-id = $statuses-surpassed)
+                    let $next := ($child-node/@status-id = $next-not-surpassed-id)
+                    let $target-date-due-date := $child-node/@date-time ! xs:dateTime(.)
                     let $due-days := days-from-duration($target-date-due-date - current-dateTime())
                     
                     return
-                        element { node-name($text-node) } { 
-                            $text-node/@*,
+                        element { node-name($child-node) } { 
+                            $child-node/@*,
                             attribute status-surpassed { $status-surpassed },
                             attribute next { $next },
                             attribute due-days { $due-days },
-                            $text-node/node()
+                            $child-node/node()
                         }
-                else if( name($text-node) eq 'submission' ) then
-                
+                        
+                else if( $child-node[self::m:submission]) then
                     (: Process submissions separately :)
                     () 
                 else
-                    
                     (: Otherwise just copy the node :)
-                    $text-node
+                    $child-node
              ,
              
              (: Add submissions :)
              if($include-submissions) then
-                translation-status:submissions($text-id)
+                translation-status:submissions($text)
              else
                 ()
-             ,
-             
-             (: Add status updates :)
-             translation-status:status-updates($tei)
-        }
-        
-};
-
-declare function translation-status:status-updates($tei as element()) as element(m:status-update)* {
-    (: Returns notes of status updates :)
-    for $status-update in $tei//tei:teiHeader//tei:notesStmt/tei:note[@update = ('text-version', 'translation-status')]
-    (:let $translation-status := tei-content:translation-status($tei):)
-    return
-        element { QName('http://read.84000.co/ns/1.0', 'status-update') }{ 
-            $status-update/@update,
-            $status-update/@value,
-            $status-update/@date-time,
-            $status-update/@user,
-            attribute days-from-now { days-from-duration(xs:dateTime($status-update/@date-time) - current-dateTime()) },
-            $status-update/text()
         }
 };
 
 declare function translation-status:contract($text-id as xs:string) as element(m:contract)? {
-    translation-status:text($text-id)/m:contract
+    translation-status:texts($text-id)/m:contract
 };
 
 declare function translation-status:target-dates($text-id as xs:string) as element(m:target-date)* {
-    translation-status:text($text-id)/m:target-date
+    translation-status:texts($text-id)/m:target-date
 };
 
 declare function translation-status:file-name-normalized($string as xs:string) as xs:string {
@@ -164,10 +160,9 @@ declare function translation-status:tei-file-name($file-name as xs:string) as xs
     replace($file-name,'(\.xlsx|\.docx)$', '$1.tei.xml')
 };
 
-declare function translation-status:submissions($text-id as xs:string) as element(m:submission)* {
+declare function translation-status:submissions($text as element(m:text)) as element(m:submission)* {
     
-    let $text := translation-status:text($text-id)
-    let $files-collection := concat($common:import-data-path, '/', $text-id)
+    let $files-collection := concat($common:import-data-path, '/', $text/@text-id)
     let $file-names := 
         if(xmldb:collection-available($files-collection)) then
             xmldb:get-child-resources($files-collection)
@@ -208,7 +203,7 @@ declare function translation-status:submissions($text-id as xs:string) as elemen
                     $file-type
                 },
                 attribute text-id { 
-                    $text-id
+                    $text/@text-id
                 },
                 attribute file-collection { 
                     $files-collection
@@ -236,13 +231,14 @@ declare function translation-status:submissions($text-id as xs:string) as elemen
 };
 
 declare function translation-status:submission($text-id as xs:string, $submission-id as xs:string) as element(m:submission)? {
-    let $submissions := translation-status:submissions($text-id)
+    let $text := $translation-status:data/m:translation-status/m:text[@text-id eq $text-id][1]
+    let $submissions := translation-status:submissions($text)
     return 
-        $submissions[@id eq $submission-id]
+        $submissions[@id eq $submission-id][1]
 };
 
 declare function translation-status:tasks($text-id as xs:string) as element(m:task)* {
-    translation-status:text($text-id)/m:task
+    translation-status:texts($text-id)/m:task
 };
 
 declare function translation-status:next-task-id($text-id as xs:string, $position as xs:integer) as xs:string {
@@ -268,7 +264,7 @@ declare function local:translation-status-value($tei as element(tei:TEI), $name 
 
     let $text-id := tei-content:id($tei)
     let $tei-version-str := translation:version-str($tei)
-    let $translation-status := translation-status:text($text-id)
+    let $translation-status := translation-status:texts($text-id)
     let $cached-version-str := if($translation-status) then $translation-status/@version else ''
     let $is-current-version := translation-status:is-current-version($tei-version-str, $cached-version-str)
     
@@ -298,7 +294,7 @@ declare function local:translation-status-value($tei as element(tei:TEI), $name 
 
 declare function translation-status:update($text-id as xs:string) as element()? {
 
-    let $existing-value := translation-status:text($text-id)
+    let $existing-value := $translation-status:data/m:translation-status/m:text[@text-id eq $text-id]
     let $request-parameters := request:get-parameter-names()
     
     let $tei := tei-content:tei($text-id, 'translation')
@@ -469,10 +465,12 @@ declare function translation-status:update($text-id as xs:string) as element()? 
 };
 
 declare function translation-status:update-submission($text-id as xs:string, $submission-id as xs:string) as element()* {
+
+    (: Get record directly - cannot update in-memory elememt :)
+    let $text := $translation-status:data/m:translation-status/m:text[@text-id eq $text-id][1]
+    let $submission := $text/m:submission[@id eq $submission-id][1]
     
-    let $text-status := translation-status:text($text-id)
-    let $parent := $text-status/m:submission[@id eq $submission-id]
-    let $existing-values :=  $parent/m:item-checked
+    let $existing-values :=  $submission/m:item-checked
     let $new-values := 
         for $checked-item-id in request:get-parameter('checklist[]', '')
             where $checked-item-id gt '' and not($existing-values[@item-id eq $checked-item-id])
@@ -488,7 +486,7 @@ declare function translation-status:update-submission($text-id as xs:string, $su
     let $do-update := 
         for $new-value in $new-values
         return
-            common:update('update-submission', (), $new-value, $parent, ())
+            common:update('update-submission', (), $new-value, $submission, ())
     
     return
         element { QName('http://read.84000.co/ns/1.0', 'updated') }

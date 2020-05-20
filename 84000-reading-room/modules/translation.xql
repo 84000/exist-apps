@@ -1006,3 +1006,35 @@ declare function translation:contributors($tei as element(tei:TEI), $include-ack
         </contributors>
 };
 
+declare function translation:status-updates($tei as element()) as element(m:status-updates) {
+    
+    <status-updates xmlns="http://read.84000.co/ns/1.0" >
+    {
+        let $translation-status := tei-content:translation-status($tei)
+        let $tei-version-number-str := translation:version-number-str($tei)
+        (: Returns notes of status updates :)
+        for $status-update in $tei//tei:teiHeader//tei:notesStmt/tei:note[@update = ('text-version', 'translation-status')]
+            let $status-update-version-number-str := replace($status-update/@value,'[^0-9\.]','')
+        return
+            element { QName('http://read.84000.co/ns/1.0', 'status-update') }{ 
+                $status-update/@update,
+                $status-update/@value,
+                $status-update/@date-time,
+                $status-update/@user,
+                attribute days-from-now { days-from-duration(xs:dateTime($status-update/@date-time) - current-dateTime()) },
+                if($status-update[@update eq 'translation-status'] and $status-update[@value eq $translation-status]) then
+                    attribute current-status { true() }
+                else
+                    ()
+                ,
+                if($status-update[@update eq 'text-version'] and $status-update-version-number-str eq $tei-version-number-str) then
+                    attribute current-version { true() }
+                else
+                    ()
+                ,
+                $status-update/text()
+            }
+    }
+    </status-updates>
+};
+

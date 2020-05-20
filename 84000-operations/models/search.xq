@@ -27,93 +27,48 @@ let $target-date-type := request:get-parameter('target-date-type', 'target-date'
 let $target-date-start := request:get-parameter('target-date-start', '')
 let $target-date-end := request:get-parameter('target-date-end', '')
 
-(: 
-    If there are no statuses selected, and it's a date range then pass all positive statuses
-    Logically there will be no dates for zero statuses anyway
-:)
+(: Is it a date search? :)
+let $target-date-search := (($target-date-start gt '' or $target-date-end gt '') and $target-date-type = ('target-date'))
+
+(: List of statuses :)
 let $text-statuses-selected := tei-content:text-statuses-selected($status)
-let $status := 
-    if(count($text-statuses-selected//m:status[@selected eq 'selected']) eq 0 and ($target-date-start gt '' or $target-date-end gt '')) then
-        $text-statuses-selected//m:status[not(@group eq 'not-started')]/@status-id/string()
+
+(: If it's a date search then query translation-statuses based on the dates first :)
+let $translation-statuses := 
+    if($target-date-search) then
+        translation-status:target-date-texts($target-date-start, $target-date-end)
     else
-        $status
-(: Show these as selected as feedback to the user :)
-let $text-statuses-selected := 
-    if(count($text-statuses-selected//m:status[@selected eq 'selected']) eq 0 and count($status) gt 0) then
-        tei-content:text-statuses-selected($status)
+        ()
+
+(: Get tei data based on date query result or input parameters :)
+let $texts := 
+    if($target-date-search) then 
+        (: Persist the sort order  :)
+        translations:texts($status, $translation-statuses/@text-id, $sort, $deduplicate, '', false())
     else
-        $text-statuses-selected
+        translations:filtered-texts($work, $status, $sort, $pages-min, $pages-max, $sponsorship-group, $toh-min, $toh-max, $deduplicate, $target-date-start, $target-date-end)
 
-(: Get tei data :)
-let $filtered-texts := translations:filtered-texts($work, $status, $sort, $pages-min, $pages-max, $sponsorship-group, $toh-min, $toh-max, $deduplicate)
-
-(: Get operations data per tei :)
-let $translation-statuses := translation-status:texts($filtered-texts/m:text/@id)
-
-(: Sort / filter based on operations data :)
-let $target-date-start-days := 
-    if($target-date-start gt '') then
-        days-from-duration(xs:date($target-date-start) - current-date())
+(: If not a date query then get the translation-statuses retrospectively :)
+let $translation-statuses := 
+    if($target-date-search) then 
+        $translation-statuses
     else
-        if($target-date-type eq 'target-date') then
-            min($translation-statuses/m:target-date[@next eq 'true']/@due-days ! xs:integer(.))
-        else
-            min($translation-statuses/m:status-update[@update eq 'translation-status'][@value eq parent::m:text/@translation-status]/@days-from-now ! xs:integer(.))
+        translation-status:texts($texts/m:text/@id)
 
-let $target-date-end-days := 
-    if($target-date-end gt '') then
-        days-from-duration(xs:date($target-date-end) - current-date())
-    else
-        if($target-date-type eq 'target-date') then
-            max($translation-statuses/m:target-date[@next eq 'true']/@due-days ! xs:integer(.))
-        else
-            max($translation-statuses/m:status-update[@update eq 'translation-status'][@value eq parent::m:text/@translation-status]/@days-from-now ! xs:integer(.))
-
-let $filtered-texts :=
-    if($filtered-texts and ($sort eq 'due-date' or $target-date-start gt '' or $target-date-end gt '')) then
-        element { node-name($filtered-texts) }{
-            $filtered-texts/@*,
-            for $filtered-text in $filtered-texts/m:text
-                
-                (: Get the related translation-statuses node :)
-                let $translation-status := $translation-statuses[@text-id eq $filtered-text/@id]
-                
-                (: Derive the days to the next target :)
-                let $target-date-next := $translation-status/m:target-date[@next eq 'true'][1]
-                
-                (: Derive the days from when the translation status was reached :)
-                let $current-status := $translation-status/m:status-update[@update eq 'translation-status'][@value eq parent::m:text/@translation-status][1]
-                
-                let $current-status-days := 
-                    if($current-status[@days-from-now]) then
-                        xs:integer($current-status/@days-from-now)
-                    else
-                        (: If there is no date then consider it old :)
-                        $target-date-start-days - 1
-                
-            where (
-                    ( $target-date-type eq 'target-date' and $target-date-next[@due-days] )
-                    and ( if($target-date-start gt '') then ( $target-date-next/@due-days ! xs:integer(.) ge $target-date-start-days ) else true() )
-                    and ( if($target-date-end gt '') then ( $target-date-next/@due-days ! xs:integer(.) le $target-date-end-days ) else true() )
-                )
-                or (
-                    ( $target-date-type eq 'status-date' )
-                    and ( if($target-date-start gt '') then ( $current-status-days ge $target-date-start-days ) else true() )
-                    and ( if($target-date-end gt '') then ( $current-status-days le $target-date-end-days ) else true() )
-                )
-            order by if($sort eq 'due-date' and $target-date-next[@due-days]) then $target-date-next/@due-days ! xs:integer(.) else 0
+let $texts := 
+    if($sort eq 'due-date') then
+        
+        element { node-name($texts) } {
+            $texts/@*,
+            for $text in $texts/m:text
+                let $target-date-next := $translation-statuses[@text-id eq $text/@id]/m:target-date[@next eq 'true'][1]
+                order by ($target-date-next/@due-days ! xs:integer(.), 0)[1]
             return 
-                element { node-name($filtered-text) }{
-                    $filtered-text/@*,
-                    attribute current-status-days { $current-status-days },
-                    attribute target-date-start-days { $target-date-start-days },
-                    attribute target-date-end-days { $target-date-end-days },
-                    $filtered-text/node()
-                }
+                $text
         }
         
     else
-        $filtered-texts
+        $texts
 
 return
     common:response(
@@ -135,7 +90,7 @@ return
                 target-date-start="{ $target-date-start }"
                 target-date-end="{ $target-date-end }"/>
             ,
-            $filtered-texts,
+            $texts,
             element { QName('http://read.84000.co/ns/1.0', 'translation-status') } {
                 $translation-statuses
             },

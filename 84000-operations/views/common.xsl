@@ -61,10 +61,12 @@
             <div class="alert alert-success alert-temporary" role="alert">
                 <xsl:value-of select="'Updated'"/>
             </div>
-            <xsl:if test="not(m:updates/m:updated[@update][@node eq 'text-version'])">
-                <div class="alert alert-danger" role="alert">
-                    <xsl:value-of select="'To ensure these updates are deployed to the distribution server please update the version in the status section!!'"/>
-                </div>
+            <xsl:if test="/m:response/@model-type eq 'operations/edit-text-header'">
+                <xsl:if test="not(m:updates/m:updated[@update][@node eq 'text-version'])">
+                    <div class="alert alert-danger" role="alert">
+                        <xsl:value-of select="'To ensure these updates are deployed to the distribution server please update the version in the status section!!'"/>
+                    </div>
+                </xsl:if>
             </xsl:if>
         </xsl:if>
     </xsl:template>

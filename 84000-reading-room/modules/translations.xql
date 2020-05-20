@@ -113,7 +113,54 @@ declare function translations:summary($work as xs:string) as element() {
         </outline-summary>
 };
 
-declare function translations:filtered-texts($work as xs:string, $status as xs:string*, $sort as xs:string, $pages-min as xs:string, $pages-max as xs:string, $sponsorship-group as xs:string, $toh-min as xs:string, $toh-max as xs:string, $deduplicate as xs:string) as element(m:texts)? {
+declare function translations:texts($status as xs:string*, $resource-ids as xs:string*, $sort as xs:string, $deduplicate as xs:string, $include-downloads as xs:string, $include-folios as xs:boolean) as element() {
+
+    let $teis := 
+        $tei-content:translations-collection//tei:TEI[
+            tei:teiHeader/tei:fileDesc
+                [if(count($status[not(. = '')]) gt 0) then (tei:publicationStmt/@status = $status) else true()]
+                [if(count($resource-ids[not(. = '')]) gt 0) then (tei:publicationStmt/tei:idno/@xml:id | tei:sourceDesc/tei:bibl/@key = $resource-ids) else true()]
+        ]
+    
+    let $texts := 
+        for $tei in $teis
+            let $include-downloads := if ($include-downloads eq '' and tei-content:translation-status-group($tei) eq 'published') then 'all' else $include-downloads
+            (: If $sort = 'persist' then sort based on the $resource-ids :)
+        return
+            if($deduplicate = ('text', 'sponsorship')) then
+                translations:filtered-text($tei, '', false(), $include-downloads, $include-folios)
+            else
+                for $bibl in $tei/tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl
+                return
+                    translations:filtered-text($tei, $bibl/@key, false(), $include-downloads, $include-folios)
+    
+    return
+    
+        element { QName('http://read.84000.co/ns/1.0', 'texts') } {
+            attribute resource-ids { string-join($resource-ids, ',') },
+            attribute status { string-join($status, ',') },
+            attribute sort { $sort },
+            attribute deduplicate { $deduplicate },
+            
+            (: Sort the result, the sort may be based on the text detail :)
+            translations:sorted-texts($texts, $sort)
+        }
+
+};
+
+declare function translations:filtered-texts(
+        $work as xs:string, 
+        $status as xs:string*, 
+        $sort as xs:string, 
+        $pages-min as xs:string, 
+        $pages-max as xs:string, 
+        $sponsorship-group as xs:string, 
+        $toh-min as xs:string, 
+        $toh-max as xs:string, 
+        $deduplicate as xs:string, 
+        $status-date-start as xs:string, 
+        $status-date-end as xs:string
+    ) as element(m:texts)? {
     
     (: Status parameter :)
     let $selected-statuses := $tei-content:text-statuses//m:status[@status-id = $status]/@status-id
@@ -149,14 +196,32 @@ declare function translations:filtered-texts($work as xs:string, $status as xs:s
             $toh-min
     
     (: Check there is some parameter set so we are not getting everything :)
-    where $selected-statuses or $pages-min gt 0 or $pages-max lt $pages-upper or $selected-sponsorship-group or $toh-min gt 0
+    where 
+        $selected-statuses 
+        or $pages-min gt 0 
+        or $pages-max lt $pages-upper 
+        or $selected-sponsorship-group 
+        or $toh-min gt 0
+        or $status-date-start gt ''
+        or $status-date-end gt ''
+        
     return
         (: All tei in this section :)
         let $teis := translations:work-tei($work)
         
-        (: Filter by status :)
         let $teis := 
-            if($selected-statuses) then
+            (: Filter by status achieved date - NOTE: do not do normal status filter as status has a different function in this case :)
+            if($status-date-start gt '' or $status-date-end gt '') then
+                $teis[
+                    tei:teiHeader/tei:fileDesc/tei:notesStmt/tei:note
+                        [@update eq 'translation-status']
+                        [if($status-date-start gt '') then @date-time ! xs:dateTime(.) ge xs:dateTime(xs:date($status-date-start)) else true()]
+                        [if($status-date-end gt '') then @date-time ! xs:dateTime(.) le xs:dateTime(xs:date($status-date-end)) else true()]
+                        [if($selected-statuses) then (@value = $selected-statuses) else true()]
+                ]
+                
+            (: Filter by current status :)
+            else if($selected-statuses) then
                 (
                     (: Add tei with selected statuses :)
                     $teis[tei:teiHeader/tei:fileDesc/tei:publicationStmt[@status = $selected-statuses]],
@@ -167,6 +232,7 @@ declare function translations:filtered-texts($work as xs:string, $status as xs:s
                     else
                         ()
                 )
+                
             else
                 $teis
         
@@ -321,6 +387,7 @@ declare function translations:filtered-text($tei as element(tei:TEI), $toh-key a
             translation:location($tei, $toh-key),
             translation:translation($tei),
             translation:summary($tei, $lang),
+            translation:status-updates($tei),
             sponsorship:text-status($text-id, false()),
             if($include-sponsors) then
                 translation:sponsors($tei, true())
@@ -335,36 +402,6 @@ declare function translations:filtered-text($tei as element(tei:TEI), $toh-key a
             else
                 ()
         }
-};
-
-declare function translations:translations($text-statuses as xs:string*, $resource-ids as xs:string*, $include-downloads as xs:string, $include-folios as xs:boolean) as element() {
-
-    let $translations := 
-        if(count($text-statuses) gt 0) then
-            $tei-content:translations-collection//tei:TEI[tei:teiHeader/tei:fileDesc/tei:publicationStmt[@status = $text-statuses]]
-        else if(count($resource-ids) gt 0) then
-            $tei-content:translations-collection//tei:TEI[tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl[@key = $resource-ids]]
-        else
-            ()
-    
-    return
-        <translations xmlns="http://read.84000.co/ns/1.0">
-        {
-            (: Return the status ids :)
-            for $text-status-id in $text-statuses
-            return
-                <text-status id="{ $text-status-id }"/>,
-                
-            (: Return texts with this status :)
-            for $bibl in $translations//tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl
-                let $toh-key := $bibl/@key
-                let $tei := $bibl/ancestor::tei:TEI
-            return
-                translations:filtered-text($tei, $toh-key, false(), $include-downloads, $include-folios)
-                
-        }
-        </translations>
-    
 };
 
 declare function translations:versioned($include-downloads as xs:string, $include-folios as xs:boolean) as element() {
@@ -446,7 +483,8 @@ declare function translations:downloads($resource-ids as xs:string*) as element(
                     else
                         $tei/tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl[@key = $resource-ids]/@key
                 return
-                    translation:downloads($tei, $resource-id, 'all')
+                    translation:downloads($tei, $resource-id, 'all'),
+                    translation:status-updates($tei)
             }
     }
     </translations>

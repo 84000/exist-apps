@@ -27,9 +27,6 @@ return
         'utilities',
         (
             local:request(),
-            translations:translations($text-status-ids, (), '', true())(:,
-            for $text-status-id in $text-status-ids
-            return
-                $text-status-id/string():)
+            translations:texts($text-status-ids, (), '', '', '', true())
         )
     )

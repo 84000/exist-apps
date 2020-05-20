@@ -74,7 +74,7 @@ return
                 contributors:persons(false())
             )
             else if($tab eq 'translations') then 
-                translations:translations($tei-content:published-status-ids, (), '', false())
+                translations:texts($tei-content:published-status-ids, (), '', '', '', false())
             else
                 $xml-section
         )

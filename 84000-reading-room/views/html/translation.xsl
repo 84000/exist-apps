@@ -264,6 +264,10 @@
                                     
                                     <section id="appendix" class="page text glossarize-section">
                                         
+                                        <h4>
+                                            <xsl:value-of select="'Appendix'"/>
+                                        </h4>
+                                        
                                         <xsl:call-template name="section-title">
                                             <xsl:with-param name="bookmark-id" select="'appendix'"/>
                                             <xsl:with-param name="prefix" select="m:translation/m:appendix/@prefix"/>
@@ -524,10 +528,10 @@
                 <link rel="related" type="application/atom+xml;profile=opds-catalog;kind=navigation" href="/section/lobby.navigation.atom" title="The 84000 Reading Room"/>
                 <link rel="related" type="application/atom+xml;profile=opds-catalog;kind=acquisition" href="/section/all-translated.acquisition.atom" title="84000: All Translated Texts"/>
                 
-                <xsl:if test="m:request/@view-mode eq 'editor'">
-                    <!-- <script type="application/json" class="js-hypothesis-config">{"theme": "clean"}</script> -->
+                <!--<xsl:if test="m:request/@view-mode eq 'editor'">
+                    <!-\- <script type="application/json" class="js-hypothesis-config">{"theme": "clean"}</script> -\->
                     <script src="https://hypothes.is/embed.js" async="async"/>
-                </xsl:if>
+                </xsl:if>-->
                 
             </xsl:with-param>
         </xsl:call-template>

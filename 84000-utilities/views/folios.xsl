@@ -90,7 +90,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <xsl:for-each select="m:translations/m:text">
+                        <xsl:for-each select="m:texts/m:text">
                             <xsl:sort select="number(m:toh/@number)"/>
                             <xsl:sort select="m:toh/m:base"/>
                             <xsl:variable name="toh-key" select="m:toh/@key"/>
@@ -253,7 +253,7 @@
                         <tr>
                             <th colspan="5" class="text-right">Total</th>
                             <td colspan="3">
-                                <xsl:value-of select="format-number(count(m:translations/m:text/m:folios/m:folio), '#,###')"/>
+                                <xsl:value-of select="format-number(count(m:texts/m:text/m:folios/m:folio), '#,###')"/>
                             </td>
                         </tr>
                     </tfoot>

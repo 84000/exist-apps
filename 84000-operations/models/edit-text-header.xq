@@ -28,7 +28,7 @@ let $tei :=
         tei-content:tei($request-id, 'translation')
 
 let $text-id := tei-content:id($tei)
-let $translation-status := translation-status:text($text-id)
+let $translation-status := translation-status:texts($text-id)
 let $current-version-str := string($translation-status/@version)
 
 (: Delete a submission :)
@@ -101,7 +101,8 @@ return
                     },
                     tei-content:titles($tei),
                     translation:translation($tei),
-                    translation:contributors($tei, true())
+                    translation:contributors($tei, true()),
+                    translation:status-updates($tei)
                 }
             </translation>,
             element { QName('http://read.84000.co/ns/1.0', 'translation-status') } {

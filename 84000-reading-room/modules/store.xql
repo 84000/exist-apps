@@ -23,11 +23,11 @@ declare function store:master-downloads-data($translations-master-request as xs:
     
     let $request := <hc:request href="{ $translations-master-request }" method="GET"/>
     let $response := hc:send-request($request)
-    where $response[2]/m:response/m:translations
+    where $response[2]/m:response//m:text
     return
         element {  QName('http://read.84000.co/ns/1.0', 'translations-master') } {
             (: attribute url { $translations-master-request }, :)
-            $response[2]/m:response/m:translations
+            $response[2]/m:response//m:text
         }
 
 };

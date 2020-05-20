@@ -756,7 +756,7 @@
                 </tr>
             </thead>
             <tbody>
-                <xsl:for-each select="m:translations/m:text">
+                <xsl:for-each select="m:texts/m:text">
                     <xsl:sort select="number(m:toh/@number)"/>
                     <xsl:sort select="m:toh/m:base"/>
                     <xsl:variable name="row-id" select="concat('text-', position())"/>

@@ -645,7 +645,7 @@
                             
                             <!-- Target dates -->
                             <xsl:variable name="target-dates" select="m:translation-status/m:text/m:target-date"/>
-                            <xsl:variable name="actual-dates" select="m:translation-status/m:text/m:status-update[@update eq 'translation-status']"/>
+                            <xsl:variable name="actual-dates" select="m:translation/m:status-updates/m:status-update[@update eq 'translation-status']"/>
                             <div class="form-group">
                                 <label class="control-label col-sm-3 top-margin" for="text-note">
                                     <xsl:value-of select="'Target dates:'"/>
@@ -741,14 +741,12 @@
                                 </div>
                             </div>
                             
-                            
                         </div>
-                        
                         
                         <div class="col-sm-4">
                             
                             <!-- History -->
-                            <xsl:if test="m:translation-status/m:text/m:status-update[@date-time]">
+                            <xsl:if test="m:translation/m:status-updates/m:status-update[@date-time]">
                                 
                                 <div class="match-height-overflow" data-match-height="status-form">
                                     <h4 class="no-top-margin no-bottom-margin">
@@ -756,7 +754,7 @@
                                     </h4>
                                     <hr class="sml-margin"/>
                                     <ul class="small list-unstyled">
-                                        <xsl:for-each select="m:translation-status/m:text/m:status-update[@date-time]">
+                                        <xsl:for-each select="m:translation/m:status-updates/m:status-update[@date-time]">
                                             <xsl:sort select="xs:dateTime(@date-time)" order="descending"/>
                                             <li>
                                                 <div class="text-bold">

@@ -19,7 +19,8 @@ declare function file-upload:download-file-path() as xs:string {
     let $text-id := upper-case(request:get-parameter('text-id', ''))
     let $submission-id := lower-case(request:get-parameter('submission-id', ''))
     let $files-collection := concat($common:import-data-collection, '/', $text-id)
-    let $submissions := translation-status:submissions($text-id)
+    let $text := translation-status:texts($text-id)
+    let $submissions := translation-status:submissions($text)
     let $file-name := $submissions[@id eq $submission-id]/@file-name
     return
         if($file-name) then
@@ -71,7 +72,8 @@ declare function file-upload:process-upload($text-id as xs:string) as element()?
         let $upload-size as xs:double := request:get-uploaded-file-size('submit-translation-file')
         
         (: Check this file name doesn't exist. If so force a new one. :)
-        let $submissions := translation-status:submissions($text-id)
+        let $text := translation-status:texts($text-id)
+        let $submissions := translation-status:submissions($text)
         let $submission-id := translation-status:file-name-normalized(file-upload:unique-file-name($submissions, $upload-name))
         let $upload-name-unique as xs:string := xmldb:encode($submission-id)
         
@@ -117,18 +119,18 @@ declare function file-upload:delete-file($text-id as xs:string, $submission-id a
     return
         if($submission) then
         
-        (: Delete the TEI :)
-        let $remove-tei := 
-            if($submission/m:tei-file/@file-name gt '' and $submission/m:tei-file/@file-exists eq 'true') then
-                xmldb:remove($submission/@file-collection, xmldb:encode($submission/m:tei-file/@file-name))
-            else
-                ()
-        
-        (: Delete the file :)
-        let $remove-file := xmldb:remove($submission/@file-collection, xmldb:encode($submission/@file-name))
-        
-        return
-            <updated xmlns="http://read.84000.co/ns/1.0" update="delete-file" file-deleted="{ $submission/@file-name }" directory="{ $submission/@file-collection }" />
+            (: Delete the TEI :)
+            let $remove-tei := 
+                if($submission/m:tei-file/@file-name gt '' and $submission/m:tei-file/@file-exists eq 'true') then
+                    xmldb:remove($submission/@file-collection, xmldb:encode($submission/m:tei-file/@file-name))
+                else
+                    ()
+            
+            (: Delete the file :)
+            let $remove-file := xmldb:remove($submission/@file-collection, xmldb:encode($submission/@file-name))
+            
+            return
+                <updated xmlns="http://read.84000.co/ns/1.0" update="delete-file" file-deleted="{ $submission/@file-name }" directory="{ $submission/@file-collection }" />
      else
         ()
 };

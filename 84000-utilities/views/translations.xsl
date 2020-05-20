@@ -10,8 +10,8 @@
         <xsl:variable name="environment" select="doc(@environment-path)/m:environment"/>
         <xsl:variable name="reading-room-path" select="$environment/m:url[@id eq 'reading-room']/text()"/>
         <xsl:variable name="reading-room-no-cache-path" select="$environment/m:url[@id eq 'reading-room-no-cache']/text()"/>
-        <xsl:variable name="texts-status" select="m:translations/m:text-status[1]/@id"/>
-        <xsl:variable name="diff" select="not(/m:response/m:request/m:parameter[@name eq 'texts-status']) or /m:response/m:request/m:parameter[@name eq 'texts-status']/text() eq 'diff'"/>
+        <xsl:variable name="texts-status" select="/m:response/m:request/m:parameter[@name eq 'texts-status']/text()"/>
+        <xsl:variable name="diff" select="not($texts-status) or $texts-status eq 'diff'"/>
         
         <xsl:variable name="content">
             
@@ -48,7 +48,7 @@
                     
                     <div>
                         <span class="badge badge-notification">
-                            <xsl:value-of select="fn:format-number(count(distinct-values(m:translations/m:text/@id)),'#,##0')"/>
+                            <xsl:value-of select="fn:format-number(count(distinct-values(m:texts/m:text/@id)),'#,##0')"/>
                         </span>
                         <xsl:value-of select="' texts with this status'"/>
                     </div>
@@ -57,7 +57,7 @@
                 
                 <xsl:choose>
                     
-                    <xsl:when test="count(m:translations/m:text) gt 0">
+                    <xsl:when test="count(m:texts/m:text) gt 0">
                         <table class="table table-responsive">
                             <thead>
                                 <tr>
@@ -70,7 +70,7 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <xsl:for-each-group select="m:translations/m:text" group-by="@id">
+                                <xsl:for-each-group select="m:texts/m:text" group-by="@id">
                                     
                                     <xsl:sort select="number(m:toh[1]/@number)"/>
                                     <xsl:sort select="m:toh[1]/m:base"/>
@@ -80,7 +80,7 @@
                                     <xsl:variable name="group-toh" select="m:toh[1]"/>
                                     <xsl:variable name="group-titles" select="m:titles[1]"/>
                                     <xsl:variable name="group-tei-version" select="m:downloads[1]/@tei-version"/>
-                                    <xsl:variable name="group-master-downloads" select="/m:response/m:translations-master/m:translations/m:text/m:downloads[@resource-id eq $group-toh/@key]"/>
+                                    <xsl:variable name="group-master-downloads" select="/m:response/m:translations-master//m:text/m:downloads[@resource-id eq $group-toh/@key]"/>
                                     <xsl:variable name="text-marked-up" select="/m:response/m:text-statuses/m:status[@status-id eq $group-status-id][@marked-up eq 'true']"/>
                                     
                                     <xsl:variable name="text-links">
@@ -200,7 +200,7 @@
                                                             <xsl:value-of select="$group-tei-version"/>
                                                         </xsl:when>
                                                         <xsl:otherwise>
-                                                            <xsl:attribute name="class" select="'text-muted'"/>
+                                                            <xsl:attribute name="class" select="'small text-muted'"/>
                                                             <xsl:value-of select="'[No version]'"/>
                                                         </xsl:otherwise>
                                                     </xsl:choose>
@@ -255,7 +255,7 @@
                                                         <xsl:variable name="toh" select="m:toh"/>
                                                         <xsl:variable name="text-downloads" select="m:downloads/m:download"/>
                                                         <xsl:variable name="file-version" select="$text-downloads[@type eq $file-format]/@version"/>
-                                                        <xsl:variable name="master-downloads" select="/m:response/m:translations-master/m:translations/m:text/m:downloads[@resource-id eq $toh/@key]"/>
+                                                        <xsl:variable name="master-downloads" select="/m:response/m:translations-master//m:text/m:downloads[@resource-id eq $toh/@key]"/>
                                                         <xsl:variable name="master-file-version" select="$master-downloads/m:download[@type eq $file-format]/@version"/>
                                                         
                                                         <!-- Title / Link -->
@@ -384,8 +384,37 @@
                                             
                                             <div class="row">
                                                 
+                                                <xsl:variable name="master-status-id" select="$group-master-downloads/parent::m:text/@translation-status"/>
+                                                
+                                                <xsl:variable name="status-change">
+                                                    <!-- Show if it's a status change -->
+                                                    <xsl:if test="$environment/m:store-conf[@type eq 'client'] and not($group-status-id eq $master-status-id)">
+                                                        <div class="center-vertical align-right">
+                                                            <span>
+                                                                <span class="label label-warning">
+                                                                    <xsl:if test="$group-status-id eq '1'">
+                                                                        <xsl:attribute name="class" select="'label label-success'"/>
+                                                                    </xsl:if>
+                                                                    <xsl:value-of select="$group-status-id"/>
+                                                                </span>
+                                                            </span>
+                                                            <span>
+                                                                <i class="fa fa-angle-right"/>
+                                                            </span>
+                                                            <span>
+                                                                <span class="label label-warning">
+                                                                    <xsl:if test="$master-status-id eq '1'">
+                                                                        <xsl:attribute name="class" select="'label label-success'"/>
+                                                                    </xsl:if>
+                                                                    <xsl:value-of select="$master-status-id"/>
+                                                                </span>
+                                                            </span>
+                                                        </div>
+                                                    </xsl:if>
+                                                </xsl:variable>
+                                                
                                                 <div class="col-sm-10">
-                                                    <xsl:if test="$environment/m:store-conf[@type eq 'client']">
+                                                    <xsl:if test="$status-change">
                                                         <xsl:attribute name="class" select="'col-sm-8'"/>
                                                     </xsl:if>
                                                     
@@ -407,33 +436,11 @@
                                                     
                                                 </div>
                                                 
-                                                <!-- Show if it's a status change -->
-                                                <xsl:if test="$environment/m:store-conf[@type eq 'client']">
+                                                
+                                                <!-- Change of status -->
+                                                <xsl:if test="$status-change">
                                                     <div class="col-sm-2 sml-margin top">
-                                                        <xsl:variable name="master-status-id" select="$group-master-downloads/parent::m:text/@translation-status"/>
-                                                        <div class="center-vertical align-right">
-                                                            <span>
-                                                                <span class="label label-warning">
-                                                                    <xsl:if test="$group-status-id eq '1'">
-                                                                        <xsl:attribute name="class" select="'label label-success'"/>
-                                                                    </xsl:if>
-                                                                    <xsl:value-of select="$group-status-id"/>
-                                                                </span>
-                                                            </span>
-                                                            <xsl:if test="not($group-status-id eq $master-status-id)">
-                                                                <span>
-                                                                    <i class="fa fa-angle-right"/>
-                                                                </span>
-                                                                <span>
-                                                                    <span class="label label-warning">
-                                                                        <xsl:if test="$master-status-id eq '1'">
-                                                                            <xsl:attribute name="class" select="'label label-success'"/>
-                                                                        </xsl:if>
-                                                                        <xsl:value-of select="$master-status-id"/>
-                                                                    </span>
-                                                                </span>
-                                                            </xsl:if>
-                                                        </div>
+                                                        <xsl:copy-of select="$status-change"/>
                                                     </div>
                                                 </xsl:if>
                                                 
@@ -511,13 +518,6 @@
                         <xsl:value-of select="'File updated'"/>
                     </h2>
                     <xsl:value-of select="m:updated"/>
-                    <!--<xsl:if test="m:translations/m:text[m:toh/@key = /m:response/m:updated/@resource-id]">
-                        <xsl:value-of select="' | '"/>
-                        <a class="scroll-to-anchor alert-link">
-                            <xsl:attribute name="href" select="concat('#', /m:response/m:updated/@resource-id)"/>
-                            <xsl:value-of select="'Go to this row'"/>
-                        </a>
-                    </xsl:if>-->
                 </div>
             </xsl:if>
         </xsl:variable>

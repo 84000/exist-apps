@@ -57,23 +57,43 @@
                     <hr/>
                     
                     <h4>Preview data on the public site</h4>
-                    <ul>
-                        <li>
-                            Impact <a href="{ $reading-room-path }/about/impact.html" target="impact">en</a> | <a href="{ $reading-room-path }/about/impact.html?lang=zh" target="impact">zh</a>
-                        </li>
-                        <li>
-                            Progress <a href="{ $reading-room-path }/about/progress.html" target="translations">en</a> | <a href="{ $reading-room-path }/about/progress.html?lang=zh" target="translations">zh</a>
-                        </li>
-                        <li>
-                            Sponsor a Sutra <a href="{ $reading-room-path }/about/sponsor-a-sutra.html" target="sponsor-a-sutra">en</a> | <a href="{ $reading-room-path }/about/sponsor-a-sutra.html?lang=zh" target="sponsor-a-sutra">zh</a>
-                        </li>
-                        <li>
-                            Sponsors <a href="{ $reading-room-path }/about/sponsors.html" target="sponsors">en</a> | <a href="{ $reading-room-path }/about/sponsors.html?lang=zh" target="sponsors">zh</a>
-                        </li>
-                        <li>
-                            Translators <a href="{ $reading-room-path }/about/translators.html" target="translators">en</a> | <a href="{ $reading-room-path }/about/translators.html?lang=zh" target="translators">zh</a>
-                        </li>
-                    </ul>
+                    <div class="row">
+                        <div class="col-sm-4">
+                            <h5 class="text-bold">Pages:</h5>
+                            <ul class="list-unstyled">
+                                <li>
+                                    Impact <a href="{ $reading-room-path }/about/impact.html" target="impact">en</a> | <a href="{ $reading-room-path }/about/impact.html?lang=zh" target="impact">zh</a>
+                                </li>
+                                <li>
+                                    Progress <a href="{ $reading-room-path }/about/progress.html" target="translations">en</a> | <a href="{ $reading-room-path }/about/progress.html?lang=zh" target="translations">zh</a>
+                                </li>
+                                <li>
+                                    Sponsor a Sutra <a href="{ $reading-room-path }/about/sponsor-a-sutra.html" target="sponsor-a-sutra">en</a> | <a href="{ $reading-room-path }/about/sponsor-a-sutra.html?lang=zh" target="sponsor-a-sutra">zh</a>
+                                </li>
+                                <li>
+                                    Sponsors <a href="{ $reading-room-path }/about/sponsors.html" target="sponsors">en</a> | <a href="{ $reading-room-path }/about/sponsors.html?lang=zh" target="sponsors">zh</a>
+                                </li>
+                                <li>
+                                    Translators <a href="{ $reading-room-path }/about/translators.html" target="translators">en</a> | <a href="{ $reading-room-path }/about/translators.html?lang=zh" target="translators">zh</a>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="col-sm-4">
+                            <h5 class="text-bold">Widgets:</h5>
+                            <ul class="list-unstyled">
+                                <li>
+                                    Progress panel <a href="{ $reading-room-path }/widget/progress-panel.html" target="progress-panel">en</a> | <a href="{ $reading-room-path }/widget/progress-panel.html?lang=zh" target="progress-panel">zh</a>
+                                </li>
+                                <li>
+                                    Progress chart <a href="{ $reading-room-path }/widget/progress-chart.html" target="progress-chart">en</a> | <a href="{ $reading-room-path }/widget/progress-chart.html?lang=zh" target="progress-chart">zh</a>
+                                </li>
+                                <li>
+                                    Download dāna <a href="{ $reading-room-path }/widget/download-dana.html?resource-id=UT22084-001-001" target="download-dana">en</a> | <a href="{ $reading-room-path }/widget/download-dana.html?resource-id=UT22084-001-001&amp;lang=zh" target="download-dana">zh</a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    
                 </xsl:with-param>
             </xsl:call-template>
             

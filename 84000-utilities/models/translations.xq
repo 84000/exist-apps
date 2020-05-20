@@ -58,22 +58,26 @@ let $translations-master :=
 (: Get translations in LOCAL database :)
 let $translations-local := 
     if($request-status eq 'diff' and $translations-master) then
+    
         (: Filter out all the texts with a different version from master :)
-        <translations xmlns="http://read.84000.co/ns/1.0">
-        {
-            let $translations-local := translations:translations((), $translations-master//m:translations/m:text/m:downloads/@resource-id, 'all', false())
-            for $translation-local in $translations-local/m:text
-                let $translation-local-toh := $translation-local/m:toh/@key/string()
-                let $translation-local-version := $translation-local/m:downloads/@tei-version/string()
-                let $master-version := $translations-master/m:translations/m:text/m:downloads[@resource-id eq $translation-local-toh]/@tei-version
-            where not($translation-local-version eq $master-version)
-            return
-                $translation-local
-        }
-        </translations>
+        let $local-texts := translations:texts((), $translations-master//m:text/m:downloads/@resource-id, 'toh', '', 'all', false())
+        return
+            element { node-name($local-texts) } {
+                $local-texts/@*,
+                for $local-text in $local-texts/m:text
+                    let $translation-local-toh := $local-text/m:toh/@key/string()
+                    let $translation-local-version := $local-text/m:downloads/@tei-version/string()
+                    let $master-version := $translations-master/m:text/m:downloads[@resource-id eq $translation-local-toh]/@tei-version
+                where not($translation-local-version eq $master-version)
+                return
+                    $local-text
+            }
+    
     else if($texts-status) then
+    
         (: Get the texts with this status :)
-        translations:translations($texts-status, (), 'all', false())
+        translations:texts($texts-status, (), 'toh', '', 'all', false())
+        
     else
         ()
 
