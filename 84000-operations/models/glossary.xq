@@ -99,6 +99,7 @@ let $similar-entities :=
 let $text-id := tei-content:id($tei)
 let $source := tei-content:source($tei, $resource-id)
 let $page-url := translation:canonical-html($source/@key)
+
 (: Parse the glossary using the transformation :)
 let $translation-glossarized := 
     if($glossary-id) then

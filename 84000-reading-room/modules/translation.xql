@@ -354,7 +354,7 @@ declare function translation:preface($tei as element(tei:TEI)) as element()* {
     </preface>
 };
 
-declare function translation:nested-section($section as element()?, $nesting as xs:integer, $parent-id) as element()* {
+declare function translation:nested-section($section as element()?, $nesting as xs:integer, $parent-id) (:as element()*:) {
     if($section) then
     (
         (: Add direct children :)

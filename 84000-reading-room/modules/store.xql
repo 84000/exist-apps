@@ -53,17 +53,19 @@ declare function store:download-master($file-name as xs:string, $translations-ma
     
     (: Get local file versions :)
     let $local-downloads-data := translations:downloads($toh-keys)
-    let $local-text := $local-downloads-data/m:text[@id eq upper-case($resource-id)]
+    let $local-text := $local-downloads-data/m:text[@id eq upper-case($resource-id)][1]
     let $tei-local-version := $local-text/m:downloads[1]/@tei-version
+    let $tei-local-status := $local-text/@translation-status
     
     (: Get master file versions :)
     let $master-downloads-data := store:master-downloads-data(xs:anyURI(concat($translations-master-host, '/downloads.xml?resource-ids=', string-join($toh-keys, ','))))
-    let $master-text := $master-downloads-data//m:text[@id eq upper-case($resource-id)]
+    let $master-text := $master-downloads-data//m:text[@id eq upper-case($resource-id)][1]
     let $tei-master-version := $master-text/m:downloads[1]/@tei-version
+    let $tei-master-status := $master-text/@translation-status
     
     (: Download the tei from master if the vesrions differ :)
     let $download-tei :=
-        if($file-extension = ('tei', 'all') and $tei and $master-downloads-data and not(compare($tei-local-version, $tei-master-version) eq 0)) then
+        if($file-extension = ('tei', 'all') and $tei and $master-downloads-data and (not(compare($tei-local-version, $tei-master-version) eq 0) or (not(compare($tei-local-status, $tei-master-status) eq 0)))) then
             
             (: get the file name and location :)
             let $local-text-path := $local-text/@uri

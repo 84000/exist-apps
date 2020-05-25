@@ -163,7 +163,7 @@ declare function translations:filtered-texts(
     ) as element(m:texts)? {
     
     (: Status parameter :)
-    let $selected-statuses := $tei-content:text-statuses//m:status[@status-id = $status]/@status-id
+    let $selected-statuses := tei-content:text-statuses-selected($status)/m:status
     
     (: Range parameter :)
     let $pages-min :=
@@ -197,7 +197,7 @@ declare function translations:filtered-texts(
     
     (: Check there is some parameter set so we are not getting everything :)
     where 
-        $selected-statuses 
+        $selected-statuses[@selected eq 'selected'] 
         or $pages-min gt 0 
         or $pages-max lt $pages-upper 
         or $selected-sponsorship-group 
@@ -210,21 +210,28 @@ declare function translations:filtered-texts(
         let $teis := translations:work-tei($work)
         
         let $teis := 
+        
             (: Filter by status achieved date - NOTE: do not do normal status filter as status has a different function in this case :)
             if($status-date-start gt '' or $status-date-end gt '') then
-                $teis[
-                    tei:teiHeader/tei:fileDesc/tei:notesStmt/tei:note
+                for $tei in $teis 
+                    (: We must also weed out cases where the status goes backwards - therefore ignore statuses greater than the current :)
+                    let $tei-status := $tei/tei:teiHeader/tei:fileDesc/tei:publicationStmt/@status
+                    let $tei-selected-status := $selected-statuses[@status-id eq $tei-status]
+                    let $tei-selected-valid-status := $selected-statuses[@selected eq 'selected'][@index ! xs:integer(.) le $tei-selected-status/@index ! xs:integer(.)]
+                where 
+                    $tei/tei:teiHeader/tei:fileDesc/tei:notesStmt/tei:note
                         [@update eq 'translation-status']
-                        [if($status-date-start gt '') then @date-time ! xs:dateTime(.) ge xs:dateTime(xs:date($status-date-start)) else true()]
-                        [if($status-date-end gt '') then @date-time ! xs:dateTime(.) le xs:dateTime(xs:date($status-date-end)) else true()]
-                        [if($selected-statuses) then (@value = $selected-statuses) else true()]
-                ]
-                
+                        [if($status-date-start gt '') then (@date-time ! xs:dateTime(.) ge xs:dateTime(xs:date($status-date-start))) else true()]
+                        [if($status-date-end gt '') then (@date-time ! xs:dateTime(.) le xs:dateTime(xs:date($status-date-end))) else true()]
+                        [if($selected-statuses[@selected eq 'selected']) then (@value = $tei-selected-valid-status/@status-id) else true()]
+                return
+                    $tei
+            
             (: Filter by current status :)
-            else if($selected-statuses) then
+            else if($selected-statuses[@selected eq 'selected'] ) then
                 (
                     (: Add tei with selected statuses :)
-                    $teis[tei:teiHeader/tei:fileDesc/tei:publicationStmt[@status = $selected-statuses]],
+                    $teis[tei:teiHeader/tei:fileDesc/tei:publicationStmt[@status = $selected-statuses[@selected eq 'selected']/@status-id]],
                     
                     (: If status 0 (not started) is selected then add also @status = '' and not(@status) :)
                     if(functx:is-value-in-sequence('0', $status)) then
