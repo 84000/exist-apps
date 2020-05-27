@@ -411,8 +411,9 @@ declare function translation:body($tei as element(tei:TEI)) as element() {
         <sub-title>{ data($tei//tei:body/tei:div[@type eq 'translation']/tei:head[@type eq 'sub']) }</sub-title>
         { 
             for $chapter at $chapter-index in $tei//tei:body//tei:div[@type eq 'translation']/tei:div[@type = ('section', 'chapter')]
+                let $chapter-prefix := ($chapter/@prefix, $chapter-index)[1]
             return
-                <chapter chapter-index="{ $chapter-index }" prefix="{ $chapter-index }">
+                <chapter chapter-index="{ $chapter-index }" prefix="{ $chapter-prefix }">
                     <title>
                     {
                         attribute tid { $chapter/tei:head[@type = ('chapterTitle', 'section')][1]/@tid },
@@ -480,7 +481,9 @@ declare function translation:appendix($tei as element(tei:TEI)) as element() {
             for $chapter at $chapter-index in $appendix/*[@type = ('section', 'chapter', 'prologue')]
                 let $chapter-number := xs:string($chapter-index - $count-prologue)
                 let $chapter-class := 
-                    if($chapter/@type eq 'prologue')then
+                    if($chapter[@prefix])then
+                        $chapter/@prefix
+                    else if($chapter/@type eq 'prologue')then
                         'p'
                     else
                         $chapter-number
