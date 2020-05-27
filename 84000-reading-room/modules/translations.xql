@@ -14,6 +14,7 @@ import module namespace sponsorship="http://read.84000.co/sponsorship" at "spons
 import module namespace source="http://read.84000.co/source" at "source.xql";
 import module namespace functx="http://www.functx.com";
 
+declare variable $translations:total-kangyur-pages as xs:integer := 70000;
 (:declare variable $translations:page-size-ranges := doc(concat($common:app-config, '/', 'page-size-ranges.xml'));:)
 
 declare function translations:work-tei($work as xs:string) as element()* {
@@ -36,7 +37,7 @@ declare function translations:files($text-statuses as xs:string*) as element() {
                 attribute uri { $base-uri },
                 attribute file-name { $file-name },
                 attribute id { tei-content:id($tei) },
-                tei-content:title($tei)
+                concat(string-join($tei/tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl/tei:ref, ' / '), ' - ', tei-content:title($tei))
             }
     }
 };
@@ -69,9 +70,28 @@ declare function translations:summary($work as xs:string) as element() {
     let $commissioned-toh-count := count($commissioned-fileDesc/tei:sourceDesc/tei:bibl)
     let $not-started-toh-count := $all-toh-count - $commissioned-toh-count
     
-    let $all-toh-page-count := (:70000:)sum($fileDescs/tei:sourceDesc/tei:bibl/tei:location/@count-pages ! common:integer(.))
+    let $all-toh-page-count := sum($fileDescs/tei:sourceDesc/tei:bibl/tei:location/@count-pages ! common:integer(.))
     let $commissioned-toh-page-count := sum($commissioned-fileDesc/tei:sourceDesc/tei:bibl/tei:location/@count-pages ! common:integer(.))
     let $not-started-toh-page-count := $all-toh-page-count - $commissioned-toh-page-count
+    
+    (: Current the ekangyur doesn't represent the entire scope of Kangur pages we intend to translate, so we need to increase the totals :)
+    let $additional-pages := 
+        if($work eq $source:ekangyur-work) then
+            $translations:total-kangyur-pages - $all-toh-page-count
+        else
+            0
+    
+    let $all-text-page-count := 
+        if($work eq $source:ekangyur-work) then
+            $all-text-page-count + $additional-pages
+        else
+            $all-text-page-count
+            
+    let $all-toh-page-count := 
+        if($work eq $source:ekangyur-work) then
+            $translations:total-kangyur-pages
+        else
+            $all-toh-page-count
     
     return 
         <outline-summary xmlns="http://read.84000.co/ns/1.0" work="{ $work }">

@@ -145,7 +145,6 @@ declare function section:child-sections($tei as element(tei:TEI), $include-text-
                 else
                     sum($child-texts-fileDesc[tei:publicationStmt/@status = $tei-content:in-progress-status-ids]/tei:sourceDesc/tei:bibl/tei:location/@count-pages ! common:integer(.))
             
-            
             return
                 <text-stats xmlns="http://read.84000.co/ns/1.0">
                     <stat type="count-text-children" value="{ $count-text-children }"/>

@@ -292,9 +292,9 @@
                             </xsl:choose>
                         </xsl:with-param>
                         <xsl:with-param name="html-classes">
-                            <xsl:if test="not(ancestor-or-self::*[@rend = 'ignoreGlossary'])">
+                            <!--<xsl:if test="not(ancestor-or-self::*[@rend = 'ignoreGlossary'])">-->
                                 <xsl:value-of select="'glossarize'"/>
-                            </xsl:if>
+                            <!--</xsl:if>-->
                         </xsl:with-param>
                     </xsl:call-template>
                     <xsl:apply-templates select="node()"/>

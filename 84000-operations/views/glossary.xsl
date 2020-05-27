@@ -40,10 +40,9 @@
                         <xsl:value-of select="'Glossary'"/>
                     </h3>
                     
+                    <!-- Form: selects the text and start letter -->
                     <div class="row">
                         <div class="col-sm-12">
-                            
-                            <!-- Form: selects the text and start letter -->
                             <form action="/glossary.html#selected-entity" method="post" class="filter-form">
                                 
                                 <div class="center-vertical full-width">
@@ -82,13 +81,13 @@
                                                     <xsl:if test="@id eq $request-resource-id">
                                                         <xsl:attribute name="selected" select="'selected'"/>
                                                     </xsl:if>
-                                                    <xsl:value-of select="data(.)"/>
+                                                    <xsl:value-of select="common:limit-str(data(.), 80)"/>
                                                 </option>
                                             </xsl:for-each>
                                         </select>
                                     </div>
                                     <div>
-                                        <a target="reading-room">
+                                        <a target="reading-room underline">
                                             <xsl:attribute name="href" select="concat($reading-room-path, '/translation/', $request-resource-id, '.html')"/>
                                             <xsl:value-of select="'Open in the Reading Room'"/>
                                         </a>
@@ -100,10 +99,10 @@
                                     </div>
                                 </div>
                             </form>
-                            
                         </div>
                     </div>
                     
+                    <!-- Form for adding a new entry (hidden) -->
                     <div class="collapse" id="new-glossary">
                         <div class="well top-margin">
                             <xsl:call-template name="form">
@@ -119,6 +118,7 @@
                         </div>
                     </div>
                     
+                    <!-- Loop through each item -->
                     <div class="div-list top-margin">
                         
                         <xsl:for-each select="$sorted-items/m:item">
@@ -221,7 +221,7 @@
                                 
                                 <!-- Entity -->
                                 <xsl:if test="$loop-entity">
-                                    <p class="item-row text-muted">
+                                    <p class="item-row text-warning">
                                         <xsl:value-of select="concat($loop-entity/@xml:id, ' : &#34;', $loop-entity/m:label, '&#34; has ', count($loop-entity/m:definition), ' glossary item(s)')"/>
                                      </p>
                                 </xsl:if>
@@ -344,7 +344,6 @@
                                                                             <xsl:attribute name="value" select="m:item/@uid"/>
                                                                         </xsl:otherwise>
                                                                     </xsl:choose>
-                                                                    
                                                                 </input>
                                                             </xsl:for-each>
                                                             
@@ -353,7 +352,7 @@
                                                                     <xsl:value-of select="'Once you have confirmed that these are the correct expressions of this glossary entry please select the option to cache the locations. This will help us to perform fast and accurate analysis of the glossary.'"/>
                                                                 </div>
                                                                 <div>
-                                                                    <button type="submit" class="btn btn-danger pull-right">
+                                                                    <button type="submit" class="btn btn-danger btn-sm pull-right">
                                                                         <xsl:value-of select="'Cache locations'"/>
                                                                     </button>
                                                                 </div>
@@ -728,7 +727,7 @@
                                                     
                                                     <!-- Entity -->
                                                     <xsl:if test="$similar-entity">
-                                                        <p class="sml-margin bottom text-muted">
+                                                        <p class="sml-margin bottom text-warning">
                                                             <xsl:value-of select="concat($similar-entity/@xml:id, ' : &#34;', $similar-entity/m:label, '&#34; has ', count($similar-entity/m:definition), ' glossary item(s)')"/>
                                                         </p>
                                                     </xsl:if>
@@ -1169,7 +1168,7 @@
     <xsl:template name="definition">
         <xsl:param name="item"/>
         <xsl:if test="$item/m:definition[node()]">
-            <div class="text-info collapse-one-line">
+            <div class="text-muted collapse-one-line">
                 <xsl:for-each select="$item/m:definition[node()]">
                     <p>
                         <xsl:apply-templates select="node()"/>

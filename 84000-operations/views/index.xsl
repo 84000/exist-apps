@@ -169,7 +169,7 @@
                         <span class="small text-muted"> toh pages*</span>
                     </td>
                     <td>
-                        <xsl:value-of select="format-number(($published-pages div $total-pages) * 100, '###,##0')"/>%
+                        <xsl:value-of select="format-number($published-pages div $total-pages, '0.#%')"/>
                     </td>
                 </tr>
                 
@@ -199,7 +199,7 @@
                         <span class="small text-muted"> toh pages*</span>
                     </td>
                     <td>
-                        <xsl:value-of select="format-number(($translated-pages div $total-pages) * 100, '###,##0')"/>%
+                        <xsl:value-of select="format-number($translated-pages div $total-pages, '0.#%')"/>
                     </td>
                 </tr>
                 
@@ -229,7 +229,7 @@
                         <span class="small text-muted"> toh pages*</span>
                     </td>
                     <td>
-                        <xsl:value-of select="format-number(($in-translation-pages div $total-pages) * 100, '###,##0')"/>%
+                        <xsl:value-of select="format-number($in-translation-pages div $total-pages, '0.#%')"/>
                     </td>
                 </tr>
                 
@@ -258,7 +258,7 @@
                         <span class="small text-muted"> toh pages*</span>
                     </td>
                     <td>
-                        <xsl:value-of select="format-number(($not-started-pages div $total-pages) * 100, '###,##0')"/>%
+                        <xsl:value-of select="format-number($not-started-pages div $total-pages, '0.#%')"/>
                     </td>
                 </tr>
                 
@@ -287,7 +287,7 @@
                         <span class="small text-muted"> toh pages*</span>
                     </td>
                     <td>
-                        <xsl:value-of select="format-number(($sponsored-pages div $total-pages) * 100, '###,##0')"/>%
+                        <xsl:value-of select="format-number($sponsored-pages div $total-pages, '0.#%')"/>
                     </td>
                 </tr>
             </tbody>
