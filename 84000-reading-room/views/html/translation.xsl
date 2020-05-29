@@ -297,7 +297,7 @@
                                                     
                                                     <xsl:attribute name="id" select="concat('chapter-', @prefix)"/>
                                                     
-                                                    <xsl:if test="m:title[normalize-space(text())]">
+                                                    <xsl:if test="m:title[normalize-space(text())] | m:title-number[text()]">
                                                         <xsl:call-template name="chapter-title">
                                                             <xsl:with-param name="title" select="m:title"/>
                                                             <xsl:with-param name="title-number" select="m:title-number"/>

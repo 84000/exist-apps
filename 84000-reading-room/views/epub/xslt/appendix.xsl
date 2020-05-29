@@ -34,14 +34,16 @@
                             <xsl:for-each select="m:translation/m:appendix/m:chapter">
                                 <div class="new-page">
                                     
-                                    <div class="center header">
-                                        <xsl:call-template name="chapter-title">
-                                            <xsl:with-param name="title" select="m:title"/>
-                                            <xsl:with-param name="title-number" select="m:title-number"/>
-                                            <xsl:with-param name="chapter-index" select="@chapter-index/string()"/>
-                                            <xsl:with-param name="prefix" select="@prefix/string()"/>
-                                        </xsl:call-template>
-                                    </div>
+                                    <xsl:if test="m:title[normalize-space(text())] | m:title-number[text()]">
+                                        <div class="center header">
+                                            <xsl:call-template name="chapter-title">
+                                                <xsl:with-param name="title" select="m:title"/>
+                                                <xsl:with-param name="title-number" select="m:title-number"/>
+                                                <xsl:with-param name="chapter-index" select="@chapter-index/string()"/>
+                                                <xsl:with-param name="prefix" select="@prefix/string()"/>
+                                            </xsl:call-template>
+                                        </div>
+                                    </xsl:if>
                                     
                                     <div class="text">
                                         <xsl:apply-templates select="tei:*"/>
