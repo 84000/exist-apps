@@ -169,12 +169,25 @@
                     <xsl:choose>
                         
                         <!-- If it's html then add a link -->
-                        <xsl:when test="/m:response/m:request/@doc-type eq 'html' and @ref-index">
+                        <xsl:when test="/m:response/m:request[@doc-type eq 'html'] and @ref-index">
                             
                             <a class="ref log-click">
                                 <!-- define an anchor so we can link back to this point -->
                                 <xsl:attribute name="id" select="concat('source-link-', @ref-index)"/>
                                 <xsl:attribute name="href" select="concat('/source/', /m:response/m:translation/m:source/@key, '.html?ref-index=', @ref-index, '#ajax-content')"/>
+                                <xsl:attribute name="data-ajax-target" select="'#popup-footer-source .data-container'"/>
+                                <xsl:value-of select="concat('[', @cRef, ']')"/>
+                            </a>
+                            
+                        </xsl:when>
+                        
+                        <!-- show an absolute link -->
+                        <xsl:when test="/m:response/m:expressions[@reading-room-url][@toh-key] and @ref-index">
+                            
+                            <a class="ref log-click">
+                                <!-- define an anchor so we can link back to this point -->
+                                <xsl:attribute name="id" select="concat('source-link-', @ref-index)"/>
+                                <xsl:attribute name="href" select="concat(/m:response/m:expressions/@reading-room-url, '/source/', /m:response/m:expressions/@toh-key, '.html?ref-index=', @ref-index, '#ajax-content')"/>
                                 <xsl:attribute name="data-ajax-target" select="'#popup-footer-source .data-container'"/>
                                 <xsl:value-of select="concat('[', @cRef, ']')"/>
                             </a>
@@ -774,7 +787,7 @@
                                 <!-- show an absolute link -->
                                 <xsl:when test="/m:response/m:expressions">
                                     <a title="Go to this section" target="reading-room">
-                                        <xsl:attribute name="href" select="concat(/m:response/m:expressions/@page-url, '#', $milestone/@xml:id)"/>
+                                        <xsl:attribute name="href" select="concat(/m:response/m:expressions/@reading-room-url, '/translation/', /m:response/m:expressions/@text-id,'.html#', $milestone/@xml:id)"/>
                                         <xsl:attribute name="id" select="$milestone/@xml:id"/>
                                         <xsl:value-of select="$milestone/@label"/>
                                     </a>

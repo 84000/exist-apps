@@ -74,7 +74,9 @@
                         </xsl:if>
                         <xsl:if test="m:translation/m:appendix//tei:*">
                             <li>
-                                <a href="appendix.xhtml">Appendix</a>
+                                <a href="appendix.xhtml">
+                                    <xsl:value-of select="m:translation/m:appendix/m:title"/>
+                                </a>
                             </li>
                         </xsl:if>
                         <xsl:if test="m:translation/m:abbreviations//m:list/m:item">

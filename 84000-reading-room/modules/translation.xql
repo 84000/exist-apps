@@ -175,7 +175,8 @@ declare function translation:location($tei as element(tei:TEI), $resource-id as 
 };
 
 declare function translation:filename($tei as element(tei:TEI), $resource-id as xs:string) as xs:string {
-
+    (: Generate a filename for a text :)
+    
     let $diacritics  := 'āḍḥīḷḹṃṇñṅṛṝṣśṭūṁ'
     let $normalized := 'adhillmnnnrrsstum'
     
@@ -193,15 +194,16 @@ declare function translation:filename($tei as element(tei:TEI), $resource-id as 
     let $filename := replace($file-title, '\s', '-')    (: convert spaces to hyphen :)
     return
         $filename
+    
 };
 
-(: Just the version number part of the edition :)
+(: Just the version number part of the edition as string :)
 declare function translation:version-number-str($tei as element(tei:TEI)) as xs:string {
     (: Remove all but the numbers and points :)
     replace($tei//tei:editionStmt/tei:edition/text()[1],'[^0-9\.]','')
 };
 
-(: Just the version number part of the edition :)
+(: Just the version number part of the edition as numbers e.g. (1,2,3) :)
 declare function translation:version-number($tei as element(tei:TEI)) as xs:integer* {
     (: Remove all but the numbers and points :)
     let $version-number-str := translation:version-number-str($tei)

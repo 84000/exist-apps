@@ -100,7 +100,9 @@
                 <xsl:if test="m:translation/m:appendix//tei:*">
                     <navPoint id="appendix">
                         <navLabel>
-                            <text>Appendix</text>
+                            <text>
+                                <xsl:value-of select="m:translation/m:appendix/m:title"/>
+                            </text>
                         </navLabel>
                         <content src="appendix.xhtml"/>
                     </navPoint>

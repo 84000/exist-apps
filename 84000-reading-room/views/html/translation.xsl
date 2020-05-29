@@ -233,6 +233,7 @@
                                         </section>
                                         
                                     </xsl:for-each>
+                                
                                 </div>
                                 
                                 <xsl:if test="m:translation/m:colophon//tei:*">
@@ -264,9 +265,15 @@
                                     
                                     <section id="appendix" class="page text glossarize-section">
                                         
-                                        <h4>
-                                            <xsl:value-of select="'Appendix'"/>
-                                        </h4>
+                                        <xsl:call-template name="milestone">
+                                            <xsl:with-param name="content">
+                                                <h4>
+                                                    <xsl:value-of select="'Appendix'"/>
+                                                </h4>
+                                            </xsl:with-param>
+                                            <xsl:with-param name="row-type" select="'section-label'"/>
+                                        </xsl:call-template>
+                                        
                                         
                                         <xsl:call-template name="section-title">
                                             <xsl:with-param name="bookmark-id" select="'appendix'"/>
@@ -290,12 +297,14 @@
                                                     
                                                     <xsl:attribute name="id" select="concat('chapter-', @prefix)"/>
                                                     
-                                                    <xsl:call-template name="chapter-title">
-                                                        <xsl:with-param name="title" select="m:title"/>
-                                                        <xsl:with-param name="title-number" select="m:title-number"/>
-                                                        <xsl:with-param name="chapter-index" select="@chapter-index/string()"/>
-                                                        <xsl:with-param name="prefix" select="@prefix/string()"/>
-                                                    </xsl:call-template>
+                                                    <xsl:if test="m:title[normalize-space(text())]">
+                                                        <xsl:call-template name="chapter-title">
+                                                            <xsl:with-param name="title" select="m:title"/>
+                                                            <xsl:with-param name="title-number" select="m:title-number"/>
+                                                            <xsl:with-param name="chapter-index" select="@chapter-index/string()"/>
+                                                            <xsl:with-param name="prefix" select="@prefix/string()"/>
+                                                        </xsl:call-template>
+                                                    </xsl:if>
                                                     
                                                     <xsl:apply-templates select="tei:*"/>
                                                     
@@ -668,7 +677,7 @@
                             </a>
                         </td>
                     </tr>
-                    <xsl:if test="$translation/m:appendix/m:chapter">
+                    <xsl:if test="$translation/m:appendix/m:chapter[m:title/text()]">
                         <xsl:call-template name="table-of-contents-sub-chapters">
                             <xsl:with-param name="sub-chapters" select="$translation/m:appendix/m:chapter[m:title/text()]"/>
                             <xsl:with-param name="expand-id" select="'appendix-chapters'"/>
@@ -1216,7 +1225,7 @@
         </a>
     </xsl:template>
     
-    <!-- 
+    <!-- Donate sidebar
     <xsl:template name="donate-sidebar">
         <h2>Become a Friend of the Reading Room</h2>
         <p>84000’s mandate is both to translate and to make freely available the sūtras and shastras. If our translation efforts represent wisdom, 84000’s publication and provision of freely accessible texts represents its compassionate activity.</p>

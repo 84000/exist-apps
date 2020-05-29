@@ -30,6 +30,9 @@ let $resource-id :=
     else
         $resource-id
 
+(: Process the input :)
+(: Cache the glossary locations :)
+
 let $tei := tei-content:tei($resource-id, 'translation')
 
 let $selected-glossary-tei := $tei//tei:back//tei:list[@type eq 'glossary']/tei:item/tei:gloss[@xml:id eq $glossary-id]
@@ -98,35 +101,38 @@ let $similar-entities :=
 (: Compile the translation data :)
 let $text-id := tei-content:id($tei)
 let $source := tei-content:source($tei, $resource-id)
-let $page-url := translation:canonical-html($source/@key)
 
 (: Parse the glossary using the transformation :)
 let $translation-glossarized := 
     if($glossary-id) then
         transform:transform(
             transform:transform(
-                <translation 
-                    xmlns="http://read.84000.co/ns/1.0" 
-                    id="{ $text-id }"
-                    status="{ tei-content:translation-status($tei) }"
-                    status-group="{ tei-content:translation-status-group($tei) }"
-                    page-url="{ $page-url }">
-                    {(
-                        translation:titles($tei),
-                        $source,
-                        translation:preface($tei),
-                        translation:introduction($tei),
-                        translation:prologue($tei),
-                        translation:body($tei),
-                        translation:colophon($tei),
-                        translation:appendix($tei),
-                        translation:abbreviations($tei),
-                        translation:notes($tei),
-                        translation:glossary($tei)
-                    )}
-                </translation>,
-                doc(concat($common:app-path, "/xslt/milestones.xsl")), 
-                <parameters/>   
+                transform:transform(
+                    <translation 
+                        xmlns="http://read.84000.co/ns/1.0" 
+                        id="{ $text-id }"
+                        status="{ tei-content:translation-status($tei) }"
+                        status-group="{ tei-content:translation-status-group($tei) }"
+                        page-url="{ translation:canonical-html($source/@key) }">
+                        {(
+                            translation:titles($tei),
+                            $source,
+                            translation:preface($tei),
+                            translation:introduction($tei),
+                            translation:prologue($tei),
+                            translation:body($tei),
+                            translation:colophon($tei),
+                            translation:appendix($tei),
+                            translation:abbreviations($tei),
+                            translation:notes($tei),
+                            translation:glossary($tei)
+                        )}
+                    </translation>,
+                    doc(concat($common:app-path, "/xslt/milestones.xsl")), 
+                    <parameters/>
+                ),
+                doc(concat($common:app-path, "/xslt/internal-refs.xsl")), 
+                <parameters/>
             ),
             doc(concat($common:app-path, "/xslt/glossarize.xsl")), 
             <parameters>
@@ -139,38 +145,82 @@ let $translation-glossarized :=
 
 (: Extract nodes with marked elements :)
 let $expressions := 
-    element { QName('http://read.84000.co/ns/1.0', 'expressions') }{
-        attribute text-id {
-            $text-id
-        },
-        attribute page-url {
-            $page-url
-        },
+    element { QName('http://read.84000.co/ns/1.0', 'expressions') }{     
+    
+        (: Specify the context :)
+        attribute text-id { $text-id },
+        attribute toh-key { $source/@key },
+        attribute reading-room-url { $common:environment/m:url[@id eq 'reading-room']/text() },
+        
         (: Expression items :)
-        for $match at $position in $translation-glossarized//tei:match[@requested-glossary eq 'true']
+        for $match at $match-position in $translation-glossarized//tei:match[@requested-glossary eq 'true']
         
-        let $match-context := $match/ancestor-or-self::*[self::tei:p |  self::tei:q |  self::tei:lg |  self::tei:list |  self::tei:table |  self::tei:label |  self::tei:trailer][1]
-        
-        let $match-context := 
-            if(not($match-context))then
-                $match/ancestor-or-self::*[@uid][1]
-            else
-                $match-context
-        
-        group by $match-context
-        
-        order by $position[1]
+            (: Expand to the node containing the match :)
+            let $match-context := $match/ancestor-or-self::*[self::tei:p |  self::tei:q |  self::tei:lg |  self::tei:list |  self::tei:table |  self::tei:label |  self::tei:trailer][1]
+            
+            (: Also account for matches in glossary definitions :)
+            let $match-context := 
+                if(not($match-context))then
+                    $match/ancestor-or-self::*[@uid][1]
+                else
+                    $match-context
+            
+            (: Get the nearest milestone :)
+            let $nearest-milestone := $match-context/ancestor-or-self::*[preceding-sibling::tei:milestone[@xml:id]][1]/preceding-sibling::tei:milestone[@xml:id][1]
+            
+            (: Group by nearest id - either milestone or glossary id :)
+            let $nearest-xmlid := 
+                if($nearest-milestone) then
+                    $nearest-milestone/@xml:id
+                else
+                    $match-context/@uid
+            
+            (: Get the nearest milestone :)
+            let $nearest-ref := 
+                if($match-context[descendant::tei:ref[@ref-index]]) then
+                    (: It's already in the text :)
+                    (:$match-context/descendant::tei:ref[@ref-index][1]:)
+                    ()
+                else if($match-context/preceding-sibling::*[descendant::tei:ref[@ref-index]]) then
+                    $match-context/preceding-sibling::*[descendant::tei:ref[@ref-index]][1]/descendant::tei:ref[@ref-index][1]
+                else
+                    (: To do: find the preceding folio outside of the scope of this match-context :)
+                    ()
+            
+            group by $nearest-xmlid
+            
+            (: Retain the position :)
+            order by $match-position[1]
         
         return
-            if($match-context) then
-                element { QName('http://read.84000.co/ns/1.0', 'item') }{
-                    $match-context/ancestor-or-self::*[preceding-sibling::tei:milestone[@xml:id]][1]/preceding-sibling::tei:milestone[@xml:id][1],
-                    $match-context
-                }
-            else
-                element { QName('http://read.84000.co/ns/1.0', 'item') }{
-                    $match/ancestor-or-self::*[@uid][1]
-                }
+            
+            (: Return an item per nearest milestone :)
+            element { QName('http://read.84000.co/ns/1.0', 'item') }{
+                
+                (: Return the milestone :)
+                $nearest-milestone[1],
+                
+                (: Return the data - this needs grouping as a context may have multiple matches, but a milestone may have multiple contexts :)
+                for $match-context-single at $context-position in $match-context
+                    group by $match-context-single
+                    order by $context-position[1]
+                return
+                    element { node-name($match-context-single) } {
+                        $match-context-single/@*,
+                        
+                        (: prepend the preceding source ref :)
+                        if($context-position[1] eq 1) then (
+                            $nearest-ref[1],
+                            text { ' ' }
+                        )
+                        else ()
+                        ,
+                        
+                        $match-context-single/node()
+                    }
+                
+                
+            }
                 
     }
     

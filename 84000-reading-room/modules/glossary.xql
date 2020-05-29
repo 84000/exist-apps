@@ -226,12 +226,12 @@ declare function glossary:item($gloss as element(tei:gloss)) as element(m:item) 
 };
 
 declare function glossary:item($gloss as element(tei:gloss), $include-context as xs:boolean) as element(m:item) {
-(
     <item xmlns="http://read.84000.co/ns/1.0"
         uid="{ $gloss/@xml:id/string() }" 
         type="{ $gloss/@type/string() }" 
         mode="{ $gloss/@mode/string() }">
         {
+            (: Sort term :)
             element { QName('http://read.84000.co/ns/1.0','sort-term') }{
                 common:alphanumeric(
                     common:normalized-chars(
@@ -241,6 +241,8 @@ declare function glossary:item($gloss as element(tei:gloss), $include-context as
                     )
                 )
             },
+            
+            (: Terms and definition :)
             for $term in $gloss/tei:term
             return 
                  if($term[not(@type)][not(@xml:lang) or @xml:lang eq 'en']) then
@@ -288,6 +290,8 @@ declare function glossary:item($gloss as element(tei:gloss), $include-context as
                 else
                     ()
             ,
+            
+            (: Context :)
             if($include-context) then
             
                 let $tei := $gloss/ancestor::tei:TEI
@@ -344,7 +348,6 @@ declare function glossary:item($gloss as element(tei:gloss), $include-context as
                 ()
          }
     </item>
-)
 };
 
 declare function glossary:glossary-items($term as xs:string, $lang as xs:string) as element() {

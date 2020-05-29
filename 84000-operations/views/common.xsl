@@ -53,6 +53,22 @@
             </div>
         </div>
         
+        <!-- Source pop-up -->
+        <div id="popup-footer-source" class="fixed-footer collapse hidden-print">
+            <div class="fix-height">
+                <div class="data-container">
+                    <!-- Ajax data here -->
+                </div>
+            </div>
+            <div class="fixed-btn-container close-btn-container">
+                <button type="button" class="btn-round close close-collapse" aria-label="Close">
+                    <span aria-hidden="true">
+                        <i class="fa fa-times"/>
+                    </span>
+                </button>
+            </div>
+        </div>
+        
     </xsl:template>
     
     <!-- Generic alert -->

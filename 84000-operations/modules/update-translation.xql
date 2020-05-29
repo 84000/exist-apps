@@ -159,7 +159,17 @@ declare function update-translation:update($tei as element()) as element()* {
                         let $set-default := request:set-attribute('update-notes', $request-status)
                         return
                             attribute {'status'} { $request-status }
-                
+                    
+                    
+                    (: A glossary item :)
+                    else if($request-parameter = ('glossary-id')) then
+                        let $gloss-item := $tei//tei:back//tei:gloss[@xml:id eq request:get-parameter($request-parameter, '')]/parent::tei:item
+                        return
+                            element { QName("http://www.tei-c.org/ns/1.0", "item") }{
+                                $gloss-item/@*,
+                                $gloss-item/node()
+                            }
+                    
                 (: Default to a string value :)
                 else if(not(ends-with($request-parameter, '[]'))) then
                     request:get-parameter($request-parameter, '')
@@ -186,6 +196,8 @@ declare function update-translation:update($tei as element()) as element()* {
                     $tei//tei:fileDesc
                 else if($request-parameter = ('sponsorship-project-id')) then
                     $sponsorship:data/m:sponsorship
+                else if($request-parameter = ('glossary-id')) then
+                    $tei//tei:back//tei:list[@type eq 'glossary']
                 else
                     ()
             
@@ -216,6 +228,8 @@ declare function update-translation:update($tei as element()) as element()* {
                     $parent/tei:editionStmt
                 else if($request-parameter = ('sponsorship-project-id')) then
                     $parent/m:project[@id eq request:get-parameter('sponsorship-project-id', '')]
+                else if($request-parameter = ('glossary-id')) then
+                    $parent/tei:item[tei:gloss[@xml:id eq request:get-parameter($request-parameter, '')]]
                 else
                     ()
             
@@ -246,6 +260,8 @@ declare function update-translation:update($tei as element()) as element()* {
                     $parent/tei:idno[last()]
                 else if($request-parameter eq 'text-version') then
                     $parent/tei:titleStmt
+                else if($request-parameter = ('glossary-id')) then
+                    $existing-value/preceding-sibling::tei:item[1]
                 else
                     ()
             

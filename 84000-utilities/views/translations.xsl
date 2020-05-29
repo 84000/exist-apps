@@ -424,8 +424,8 @@
                                                                 <xsl:attribute name="href" select="concat('/translations.html?store=', $text-id, '.all', if($texts-status) then concat('&amp;texts-status=', $texts-status) else '', '#', $text-id)"/>
                                                                 <xsl:choose>
                                                                     <xsl:when test="$environment/m:store-conf[@type eq 'client']">
-                                                                        <xsl:attribute name="data-loading" select="'Getting new files...'"/>
-                                                                        <xsl:value-of select="'Get updates'"/>
+                                                                        <xsl:attribute name="data-loading" select="'Getting updated files...'"/>
+                                                                        <xsl:value-of select="'Get updated files'"/>
                                                                     </xsl:when>
                                                                     <xsl:when test="$environment/m:store-conf[@type eq 'master']">
                                                                         <xsl:attribute name="data-loading" select="'Creating new files...'"/>
