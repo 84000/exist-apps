@@ -17,6 +17,7 @@ declare option exist:serialize "method=xml indent=no";
 (: Request parameters :)
 let $request-id := request:get-parameter('id', '') (: in get :)
 let $post-id := request:get-parameter('post-id', '') (: in post :)
+let $form-action := request:get-parameter('form-action', '')
 let $tei := 
     if($post-id) then
         tei-content:tei($post-id, 'translation')
@@ -34,8 +35,11 @@ let $tei-locked-by-user := xmldb:document-has-lock(concat("xmldb:exist://", $doc
 
 (: Process input :)
 let $updated := 
-    if($post-id) then
-        update-translation:update($tei)
+    if($post-id and $tei and $text-id and $form-action eq 'update-sponsorship') then
+        (
+            update-translation:title-statement($tei),
+            update-translation:project($text-id)
+        )
      else
         ()
 

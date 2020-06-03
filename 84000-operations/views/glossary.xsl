@@ -12,7 +12,8 @@
     <xsl:variable name="request-item-tab" select="/m:response/m:request/@item-tab"/>
     <xsl:variable name="request-glossary" select="/m:response/m:selected-glossary"/>
     <xsl:variable name="request-entity" select="/m:response/m:entities/m:entity[m:definition/@id = $request-glossary/m:item/@uid][1]"/>
-    <xsl:variable name="page-url" select="/m:response/m:expressions/@page-url"/>
+    <xsl:variable name="reading-room-url" select="/m:response/m:expressions/@reading-room-url"/>
+    <xsl:variable name="toh-key" select="/m:response/m:expressions/@toh-key"/>
     
     <xsl:template match="/m:response">
         
@@ -341,7 +342,7 @@
                                                                             <xsl:attribute name="value" select="tei:milestone/@xml:id"/>
                                                                         </xsl:when>
                                                                         <xsl:otherwise>
-                                                                            <xsl:attribute name="value" select="m:item/@uid"/>
+                                                                            <xsl:attribute name="value" select="m:*/@uid"/>
                                                                         </xsl:otherwise>
                                                                     </xsl:choose>
                                                                 </input>
@@ -1178,18 +1179,21 @@
         </xsl:if>
     </xsl:template>
 
+    <!-- Items with text expressions -->
     <xsl:template match="m:expressions/m:item">
         <div class="item translation">
             <xsl:apply-templates select="node()"/>
         </div>
     </xsl:template>
     
+    <!-- Items with glossary expressions -->
     <xsl:template match="m:expressions/m:item/m:item[@uid]">
+        <xsl:variable name="uid" select="@uid"/>
         <div class="glossary-item rw">
             <div class="gtr">
-                <a>
-                    <xsl:attribute name="href" select="concat($page-url, '#', @uid)"/>
-                    <xsl:value-of select="concat('g.', '?')"/>  
+                <a target="reading-room" title="Go to this item">
+                    <xsl:attribute name="href" select="concat($reading-room-url, '/translation/', $toh-key, '.html#', $uid)"/>
+                    <xsl:value-of select="concat('g.', (@index, '?')[1])"/>  
                 </a>
             </div>
             <xsl:call-template name="glossary-item">
@@ -1198,12 +1202,13 @@
         </div>
     </xsl:template>
     
-    <xsl:template match="m:expressions/m:item/tei:note[@place eq 'end']">
+    <!-- Items with note expressions -->
+    <xsl:template match="m:expressions/m:item/m:note">
         <div class="rw">
             <div class="gtr">
-                <a>
-                    <xsl:attribute name="href" select="concat($page-url, '#', @xml:id)"/>
-                    <xsl:value-of select="concat('Note ', @index)"/>  
+                <a target="reading-room" title="Go to this note">
+                    <xsl:attribute name="href" select="concat($reading-room-url, '/translation/', $toh-key, '.html#', @uid)"/>
+                    <xsl:value-of select="concat('n.', @index)"/>  
                 </a>
             </div>
             <p>

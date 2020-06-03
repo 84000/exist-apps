@@ -61,6 +61,7 @@
             <xsl:with-param name="form">
                 <form method="post" class="form-horizontal form-update" id="titles-form">
                     <xsl:attribute name="action" select="'edit-text-header.html#titles-form'"/>
+                    <input type="hidden" name="form-action" value="update-titles"/>
                     <input type="hidden" name="post-id">
                         <xsl:attribute name="value" select="m:translation/@id"/>
                     </input>
@@ -168,6 +169,7 @@
             <xsl:with-param name="form">
                 <form method="post" class="form-horizontal form-update" id="locations-form">
                     <xsl:attribute name="action" select="'edit-text-header.html#locations-form'"/>
+                    <input type="hidden" name="form-action" value="update-locations"/>
                     <input type="hidden" name="post-id">
                         <xsl:attribute name="value" select="m:translation/@id"/>
                     </input>
@@ -243,6 +245,7 @@
             <xsl:with-param name="form">
                 <form method="post" class="form-horizontal form-update" id="contributors-form">
                     <xsl:attribute name="action" select="'edit-text-header.html#contributors-form'"/>
+                    <input type="hidden" name="form-action" value="update-contributors"/>
                     <input type="hidden" name="post-id">
                         <xsl:attribute name="value" select="m:translation/@id"/>
                     </input>
@@ -472,7 +475,7 @@
             <xsl:with-param name="form">
                 <form method="post" class="form-horizontal form-update" id="publication-status-form">
                     <xsl:attribute name="action" select="'edit-text-header.html'"/>
-                    
+                    <input type="hidden" name="form-action" value="update-publication-status"/>
                     <input type="hidden" name="post-id">
                         <xsl:attribute name="value" select="m:translation/@id"/>
                     </input>
@@ -812,6 +815,7 @@
     <xsl:template name="text-sponsors-form">
         <form method="post" class="form-horizontal form-update">
             <xsl:attribute name="action" select="'edit-text-sponsors.html'"/>
+            <input type="hidden" name="form-action" value="update-sponsorship"/>
             <input type="hidden" name="post-id">
                 <xsl:attribute name="value" select="m:translation/@id"/>
             </input>
@@ -1450,7 +1454,7 @@
                 
                 <form method="post" enctype="multipart/form-data" class="form-horizontal form-update" id="submissions-form">
                     <xsl:attribute name="action" select="'edit-text-header.html#submissions-form'"/>
-                    
+                    <input type="hidden" name="form-action" value="process-upload"/>
                     <input type="hidden" name="post-id">
                         <xsl:attribute name="value" select="m:translation/@id"/>
                     </input>

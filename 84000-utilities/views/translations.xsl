@@ -448,8 +448,8 @@
                                             <div class="row sml-margin bottom small">
                                                 
                                                 <!-- Location of tei file -->
-                                                <div class="col-sm-10">
-                                                    <xsl:value-of select="'TEI: '"/>
+                                                <div class="col-sm-10 text-muted">
+                                                    <xsl:value-of select="'TEI file: '"/>
                                                     <a class="break">
                                                         <xsl:attribute name="href" select="concat($reading-room-path, '/translation/', $text-id, '.tei')"/>
                                                         <xsl:attribute name="target" select="concat($text-id, '.tei')"/>

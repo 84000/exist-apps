@@ -178,7 +178,7 @@ declare function common:small-caps($string as xs:string) as xs:string {
 declare
     %test:args('0!123/4567ṃṁṇñṅ abcde?f*ghi-') 
     %test:assertEquals('01234567 abcdefghi-')
-function common:alphanumeric($string as xs:string) as xs:string* {
+function common:alphanumeric($string as xs:string?) as xs:string? {
     replace(normalize-space($string), '[^a-zA-Z0-9\s\-­]', '')
 };
 

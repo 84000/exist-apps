@@ -5,6 +5,8 @@ declare namespace tei = "http://www.tei-c.org/ns/1.0";
 declare namespace xhtml = "http://www.w3.org/1999/xhtml";
 
 import module namespace local="http://operations.84000.co/local" at "../modules/local.xql";
+import module namespace update-translation="http://operations.84000.co/update-translation" at "../modules/update-translation.xql";
+
 import module namespace common="http://read.84000.co/common" at "../../84000-reading-room/modules/common.xql";
 import module namespace tei-content="http://read.84000.co/tei-content" at "../../84000-reading-room/modules/tei-content.xql";
 import module namespace entities="http://read.84000.co/entities" at "../../84000-reading-room/modules/entities.xql";
@@ -30,12 +32,16 @@ let $resource-id :=
     else
         $resource-id
 
-(: Process the input :)
-(: Cache the glossary locations :)
-
 let $tei := tei-content:tei($resource-id, 'translation')
-
 let $selected-glossary-tei := $tei//tei:back//tei:list[@type eq 'glossary']/tei:item/tei:gloss[@xml:id eq $glossary-id]
+
+(: Process the input :)
+let $update-glossary := 
+    if($selected-glossary-tei and request:get-parameter('form-action', '') = ('cache-expressions')) then
+        update-translation:update-glossary($selected-glossary-tei)
+    else
+        ()
+
 let $selected-glossary-start-letter := upper-case(substring($selected-glossary-tei/tei:term[not(@type)][not(@xml:lang) or @xml:lang eq ''][1], 1, 1))
 let $start-letter := 
     if($start-letter eq '') then
@@ -218,7 +224,6 @@ let $expressions :=
                         
                         $match-context-single/node()
                     }
-                
                 
             }
                 

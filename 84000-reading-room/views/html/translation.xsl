@@ -293,7 +293,7 @@
                                                     <hr class="hidden-print"/>
                                                 </xsl:if>
                                                 
-                                                <div class="relative chapter">
+                                                <div class="chapter">
                                                     
                                                     <xsl:attribute name="id" select="concat('chapter-', @prefix)"/>
                                                     
@@ -1017,7 +1017,6 @@
     <xsl:template name="glossary">
         <xsl:param name="translation" required="yes"/>
         <xsl:for-each select="$translation/m:glossary/m:item">
-            <xsl:sort select="m:sort-term"/>
             <div class="glossary-item rw">
                 
                 <xsl:attribute name="id" select="@uid/string()"/>
@@ -1026,7 +1025,7 @@
                 <div class="gtr">
                     <a class="milestone" title="Bookmark this section">
                         <xsl:attribute name="href" select="concat('#', @uid/string())"/>
-                        <xsl:value-of select="concat('g.', position())"/>
+                        <xsl:value-of select="concat($translation/m:glossary/@prefix, '.', @index)"/>
                     </a>
                 </div>
                 
@@ -1038,7 +1037,7 @@
                             <xsl:attribute name="class" select="'col-md-12 print-width-override print-height-override'"/>
                         </xsl:if>
                         
-                        <xsl:attribute name="data-match-height" select="concat('g-', position())"/>
+                        <xsl:attribute name="data-match-height" select="concat('g-', @index)"/>
                         <xsl:attribute name="data-match-height-media" select="'.md,.lg'"/>
                         
                         <xsl:call-template name="glossary-item">
@@ -1049,7 +1048,7 @@
                     
                     <xsl:if test="not(/m:response/m:request/@view-mode = ('app'))">
                         <div class="col-md-4 occurences hidden-print match-height-overflow print-height-override">
-                            <xsl:attribute name="data-match-height" select="concat('g-', position())"/>
+                            <xsl:attribute name="data-match-height" select="concat('g-', @index)"/>
                             <xsl:attribute name="data-match-height-media" select="'.md,.lg'"/>
                             <hr class="visible-xs-block visible-sm-block"/>
                             <h6>

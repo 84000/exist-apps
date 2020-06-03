@@ -19,8 +19,7 @@ let $submission-id := request:get-parameter('submission-id', '')
 let $tei := tei-content:tei($text-id, 'translation')
 
 let $updated := 
-    if(not(request:get-parameter('checklist[]', '') = '')) then
-    (
+    if(not(request:get-parameter('checklist[]', '') = '')) then (
         file-upload:generate-tei($text-id, $submission-id),
         translation-status:update-submission($text-id, $submission-id)
     )

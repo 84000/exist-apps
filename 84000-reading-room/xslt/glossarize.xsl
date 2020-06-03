@@ -51,7 +51,7 @@
     </xsl:template>
     
     <!-- We don't want to parse some nodes, those we should just copy -->
-    <xsl:template match="         (: Just copy sections :)         m:titles | m:long-titles | m:source | m:summary | m:acknowledgment | m:bibliography | m:parent | m:downloads | m:abbreviations         (: Just copy m nodes :)         | m:term | m:sort-term | m:alternative         (: Just copy tei nodes :)         | tei:head | tei:note | tei:term[@type eq 'ignore'] | tei:match" priority="10">
+    <xsl:template match="         (: Just copy sections :)         m:titles | m:long-titles | m:source | m:summary | m:acknowledgment | m:bibliography | m:parent | m:downloads | m:abbreviations         (: Just copy m nodes :)         | m:term | m:sort-term | m:alternative         (: Just copy tei nodes :)         | tei:head | tei:note | tei:term[@type eq 'ignore'] | tei:match     " priority="10">
         <xsl:copy>
             <xsl:copy-of select="node()|@*"/>
         </xsl:copy>

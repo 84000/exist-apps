@@ -133,6 +133,23 @@
         </xsl:choose>
     </xsl:template>
     
+    <!-- Add indexes to glossaries -->
+    <xsl:template match="m:glossary">
+        <xsl:element name="{ node-name(.) }">
+            <xsl:copy-of select="@*"/>
+            <xsl:for-each select="m:item">
+                <xsl:sort select="m:sort-term"/>
+                <xsl:element name="{ node-name(.) }">
+                    <xsl:copy-of select="@*"/>
+                    <xsl:attribute name="index" select="position()"/>
+                    <xsl:copy-of select="node()"/>
+                </xsl:element>
+            </xsl:for-each>
+        </xsl:element>
+    </xsl:template>
+    
+    <!-- TO DO: Add indexes to notes -->
+    
     <!-- Supress warning -->
     <xsl:template match="m:dummy">
         <!-- ignore -->

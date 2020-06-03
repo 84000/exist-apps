@@ -687,7 +687,7 @@
     </xsl:template>
     
     <xsl:template match="tei:hi[@rend eq 'small-caps']">
-        <xsl:copy-of select="translate(text(), 'abcdefghijklmnopqrstuvwxyz', 'ᴀʙᴄᴅᴇꜰɢʜɪᴊᴋʟᴍɴᴏᴘǫʀsᴛᴜᴠᴡxʏᴢ')"/>
+        <xsl:copy-of select="translate(lower-case(text()), 'abcdefghijklmnopqrstuvwxyz', 'ᴀʙᴄᴅᴇꜰɢʜɪᴊᴋʟᴍɴᴏᴘǫʀsᴛᴜᴠᴡxʏᴢ')"/>
     </xsl:template>
     
     <xsl:template match="exist:match">
@@ -786,7 +786,7 @@
                                 
                                 <!-- show an absolute link -->
                                 <xsl:when test="/m:response/m:expressions">
-                                    <a title="Go to this section" target="reading-room">
+                                    <a target="reading-room" title="Go to this section">
                                         <xsl:attribute name="href" select="concat(/m:response/m:expressions/@reading-room-url, '/translation/', /m:response/m:expressions/@text-id,'.html#', $milestone/@xml:id)"/>
                                         <xsl:attribute name="id" select="$milestone/@xml:id"/>
                                         <xsl:value-of select="$milestone/@label"/>

@@ -21,6 +21,7 @@ declare option exist:serialize "method=xml indent=no";
 (: Request parameters :)
 let $request-id := request:get-parameter('id', '') (: in get :)
 let $post-id := request:get-parameter('post-id', '') (: in post :)
+let $form-action := request:get-parameter('form-action', '')
 let $tei := 
     if($post-id) then
         tei-content:tei($post-id, 'translation')
@@ -35,19 +36,28 @@ let $current-version-str := string($translation-status/@version)
 (: The parameter delete-submission also triggers translation-status:update :)
 let $delete-submission-id := request:get-parameter('delete-submission-id', '')
 let $delete-submission := 
-    if($delete-submission-id gt '') then
-        file-upload:delete-file($text-id, $delete-submission-id)
+    if($delete-submission-id gt '') then (
+        file-upload:delete-file($text-id, $delete-submission-id),
+        translation-status:update($text-id)
+    )
     else 
         ()
 
 (: Process input, if it's posted :)
 let $updated := 
-    if($post-id or $delete-submission-id) then (
-        update-translation:update($tei),
+    if($form-action = ('update-titles', 'update-contributors') and $tei) then
+        update-translation:title-statement($tei)
+    else if($form-action eq 'update-locations' and $tei) then
+        update-translation:locations($tei)
+    else if($form-action eq 'update-publication-status' and $tei) then (
+        update-translation:publication-status($tei),
+        translation-status:update($text-id)
+    )
+    else if($form-action eq 'process-upload' and $text-id gt '') then (
         file-upload:process-upload($text-id),
         translation-status:update($text-id)
-     )
-     else
+    )
+    else
         ()
 
 (: If it's a new version :)
