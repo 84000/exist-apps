@@ -135,18 +135,18 @@
                                             <xsl:for-each select="current-group()">
                                                 <li>
                                                     <a class="small">
-                                                        <xsl:attribute name="href" select="concat($reading-room-path, '/translation/', m:toh/@key, '.en.txt')"/>
+                                                        <xsl:attribute name="href" select="concat($reading-room-path, '/translation/', m:toh/@key, '-en.txt')"/>
                                                         <xsl:attribute name="title" select="'Download translation as a text file'"/>
-                                                        <xsl:value-of select="concat(m:toh/@key, '.en.txt')"/>
+                                                        <xsl:value-of select="concat(m:toh/@key, '-en.txt')"/>
                                                     </a>
                                                 </li>
                                             </xsl:for-each>
                                             <xsl:for-each select="current-group()">
                                                 <li>
                                                     <a class="small">
-                                                        <xsl:attribute name="href" select="concat($reading-room-path, '/source/', m:toh/@key, '.bo.txt')"/>
+                                                        <xsl:attribute name="href" select="concat($reading-room-path, '/source/', m:toh/@key, '-bo.txt')"/>
                                                         <xsl:attribute name="title" select="'Download the source as a text file'"/>
-                                                        <xsl:value-of select="concat(m:toh/@key, '.bo.txt')"/>
+                                                        <xsl:value-of select="concat(m:toh/@key, '-bo.txt')"/>
                                                     </a>
                                                 </li>
                                             </xsl:for-each>

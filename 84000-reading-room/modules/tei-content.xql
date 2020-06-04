@@ -60,8 +60,13 @@ declare function tei-content:tei($resource-id as xs:string, $resource-type as xs
             Will show variations for that Tohoku key.
     :)
     
+    (: accept an parameter for an archive :)
+    let $archive-path := request:get-parameter('archive-path', '')
+    
     let $collection := 
-        if($resource-type = ('section', 'pseudo-section')) then
+        if($archive-path gt '') then
+            collection($archive-path)
+        else if($resource-type = ('section', 'pseudo-section')) then
             $tei-content:sections-collection
         else 
             $tei-content:translations-collection

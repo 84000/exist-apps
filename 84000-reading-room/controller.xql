@@ -188,10 +188,10 @@ return
                         <add-parameter name="resource-suffix" value="epub"/>
                     </parameters>
                 )
-            else if (ends-with($resource-suffix,'.txt')) then (: Note: suffix will actually be en.txt :)
+            else if ($resource-suffix eq 'txt') then
                 local:dispatch("/models/translation.xq", "/views/txt/translation.xq",
                     <parameters xmlns="http://exist.sourceforge.net/NS/exist">
-                        <add-parameter name="resource-id" value="{$resource-id}"/>
+                        <add-parameter name="resource-id" value="{ replace($resource-id, '\-en$', '') }"/>
                         <add-parameter name="resource-suffix" value="txt"/>
                         <set-header name="Content-Type" value="text/plain"/>
                         <set-header name="Content-Disposition" value="attachment"/>
@@ -275,10 +275,10 @@ return
                         <add-parameter name="resource-suffix" value="json"/>
                     </parameters>
                 )
-            else if (ends-with($resource-suffix,'.txt')) then (: Note: suffix will actually be bo.txt :)
+            else if ($resource-suffix eq'txt') then
                 local:dispatch("/models/source.xq", "/views/txt/source.xq",
                     <parameters xmlns="http://exist.sourceforge.net/NS/exist">
-                        <add-parameter name="resource-id" value="{$resource-id}"/>
+                        <add-parameter name="resource-id" value="{ replace($resource-id, '\-bo$', '') }"/>
                         <add-parameter name="resource-suffix" value="txt"/>
                         <set-header name="Content-Type" value="text/plain"/>
                         <set-header name="Content-Disposition" value="attachment"/>
