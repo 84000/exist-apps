@@ -55,9 +55,7 @@ declare function tei-content:tei($resource-id as xs:string, $resource-type as xs
         from the controller and finding the document.
         Current options: 
         1.  UT Number e.g. translation/UT22084-061-013.html
-            For Tohoku variations this will default to the first.
         2.  Tohoku Number e.g. translation/toh739.html
-            Will show variations for that Tohoku key.
     :)
     
     (: accept an parameter for an archive :)
@@ -65,7 +63,7 @@ declare function tei-content:tei($resource-id as xs:string, $resource-type as xs
     
     let $collection := 
         if($archive-path gt '') then
-            collection($archive-path)
+            collection(concat($common:data-path, '/archived/', $archive-path))
         else if($resource-type = ('section', 'pseudo-section')) then
             $tei-content:sections-collection
         else 
