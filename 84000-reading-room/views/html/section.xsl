@@ -397,6 +397,7 @@
                     <xsl:variable name="count-texts" as="xs:integer" select="$section/m:text-stats/m:stat[@type eq 'count-text-descendants']/@value"/>
                     <xsl:variable name="count-published" as="xs:integer" select="$section/m:text-stats/m:stat[@type eq 'count-published-descendants']/@value"/>
                     <xsl:variable name="count-in-progress" as="xs:integer" select="$section/m:text-stats/m:stat[@type eq 'count-in-progress-descendants']/@value"/>
+                    <xsl:variable name="sum-published-pages" as="xs:integer" select="$section/m:text-stats/m:stat[@type eq 'sum-pages-published-descendants']/@value"/>
                     
                     <xsl:choose>
                         
@@ -405,7 +406,10 @@
                                 <tbody>
                                     <tr>
                                         <td>
-                                            <xsl:value-of select="concat('Published: ', format-number($count-published, '#,###'))"/>
+                                            <xsl:value-of select="concat('Publications: ', format-number($count-published, '#,###'))"/>
+                                        </td>
+                                        <td>
+                                            <xsl:value-of select="concat('Total Pages: ', format-number($sum-published-pages, '#,###'))"/>
                                         </td>
                                     </tr>
                                 </tbody>
@@ -481,9 +485,21 @@
                                         </option>
                                         <option value="latest">
                                             <xsl:if test="m:request/@translations-order eq 'latest'">
-                                                <xsl:attribute name="selected" select="'latest'"/>
+                                                <xsl:attribute name="selected" select="'selected'"/>
                                             </xsl:if>
                                             <xsl:value-of select="'Most recent publications'"/>
+                                        </option>
+                                        <option value="shortest">
+                                            <xsl:if test="m:request/@translations-order eq 'shortest'">
+                                                <xsl:attribute name="selected" select="'selected'"/>
+                                            </xsl:if>
+                                            <xsl:value-of select="'Shortest first'"/>
+                                        </option>
+                                        <option value="longest">
+                                            <xsl:if test="m:request/@translations-order eq 'longest'">
+                                                <xsl:attribute name="selected" select="'selected'"/>
+                                            </xsl:if>
+                                            <xsl:value-of select="'Longest first'"/>
                                         </option>
                                     </select>
                                 </div>
@@ -516,6 +532,12 @@
                         <xsl:choose>
                             <xsl:when test="m:request/@translations-order eq 'latest'">
                                 <xsl:value-of select="'Sorted by most recent publications'"/>
+                            </xsl:when>
+                            <xsl:when test="m:request/@translations-order eq 'shortest'">
+                                <xsl:value-of select="'Sorted by shortest first'"/>
+                            </xsl:when>
+                            <xsl:when test="m:request/@translations-order eq 'longest'">
+                                <xsl:value-of select="'Sorted by longest first'"/>
                             </xsl:when>
                             <xsl:otherwise>
                                 <xsl:value-of select="'Sorted by Tohoku number'"/>
@@ -558,7 +580,9 @@
                     <!-- loop through the texts -->
                     <xsl:for-each select="m:texts/m:text">
                         
-                        <xsl:sort select="if(/m:response/m:request/@translations-order eq 'latest') then m:translation/m:publication-date else ''" order="descending"/>
+                        <xsl:sort select="if(/m:response/m:request/@translations-order eq 'latest' and m:translation/m:publication-date) then xs:date(m:translation/m:publication-date) else ''" order="descending"/>
+                        <xsl:sort select="if(/m:response/m:request/@translations-order eq 'shortest' and m:source/m:location/@count-pages) then xs:integer(m:source/m:location/@count-pages) else ''" order="ascending"/>
+                        <xsl:sort select="if(/m:response/m:request/@translations-order eq 'longest' and m:source/m:location/@count-pages) then xs:integer(m:source/m:location/@count-pages) else ''" order="descending"/>
                         <xsl:sort select="number(m:toh/@number)"/>
                         <xsl:sort select="m:toh/@letter"/>
                         <xsl:sort select="number(m:toh/@chapter-number)"/>
@@ -736,16 +760,22 @@
                             <!-- Download options -->
                             <div class="col-md-4 col-lg-3">
                                 
+                                <hr class="visible-xs visible-sm sml-margin"/>
+                                
+                                <div class="small italic sml-margin bottom">
+                                    <xsl:call-template name="text-page-count"/>
+                                </div>
+                                
                                 <xsl:choose>
                                     <xsl:when test="@status-group eq 'published'">
                                         
-                                        <hr class="visible-xs visible-sm sml-margin"/>
-                                        
                                         <xsl:if test="m:translation/m:publication-date/text()">
-                                            <div class="small italic sml-margin bottom">
+                                            <div class="hidden-xs hidden-sm small italic sml-margin bottom">
                                                 <xsl:value-of select="concat('Published ', format-date(m:translation/m:publication-date, '[FNn,*-3], [D1o] [MNn,*-3] [Y]'))"/>
                                             </div>
                                         </xsl:if>
+                                        
+                                        <hr class="visible-xs visible-sm sml-margin"/>
                                         
                                         <ul class="translation-links">
                                             <xsl:variable name="title-en" select="m:titles/m:title[@xml:lang='en'][not(@type)]/text()" as="xs:string"/>
@@ -1079,6 +1109,18 @@
             <xsl:apply-templates select="$node"/>
         </div>
         
+    </xsl:template>
+    
+    <xsl:template name="text-page-count">
+        <xsl:value-of select="format-number(m:source/m:location/@count-pages, '#,###')"/>
+        <xsl:choose>
+            <xsl:when test="m:source/m:location/@work eq 'UT4CZ5369'">
+                <xsl:value-of select="' pages of the Degé Kangyur'"/>
+            </xsl:when>
+            <xsl:when test="m:source/m:location/@work eq 'UT23703'">
+                <xsl:value-of select="' pages of the Degé Tengyur'"/>
+            </xsl:when>
+        </xsl:choose>
     </xsl:template>
     
 </xsl:stylesheet>
