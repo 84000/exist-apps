@@ -74,46 +74,8 @@
                         </xsl:call-template>
                     </div>
                 </div>
-                <hr/>
             </div>
             
-            <h2>
-                <xsl:call-template name="local-text">
-                    <xsl:with-param name="local-key" select="'countries-title'"/>
-                </xsl:call-template>
-            </h2>
-            
-            <xsl:variable name="map-img-src">
-                <xsl:call-template name="local-text">
-                    <xsl:with-param name="local-key" select="'map-img-src'"/>
-                </xsl:call-template>
-            </xsl:variable>
-            
-            <xsl:if test="$map-img-src gt ''">
-                <div>
-                    <img class="aligncenter img-responsive">
-                        <xsl:attribute name="src" select="concat($front-end-path, $map-img-src)"/>
-                        <xsl:attribute name="alt">
-                            <xsl:call-template name="local-text">
-                                <xsl:with-param name="local-key" select="'map-img-alt'"/>
-                            </xsl:call-template>
-                        </xsl:attribute>
-                    </img>
-                </div>
-            </xsl:if>
-            
-            <div class="top-margin">
-                <p>
-                    <xsl:call-template name="local-text">
-                        <xsl:with-param name="local-key" select="'countries-legend'"/>
-                    </xsl:call-template>
-                </p>
-                <p class="small text-muted">
-                    <xsl:call-template name="local-text">
-                        <xsl:with-param name="local-key" select="'countries-timestamp'"/>
-                    </xsl:call-template>
-                </p>
-            </div>
         </xsl:variable>
         
         <xsl:call-template name="about">

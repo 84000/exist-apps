@@ -433,14 +433,36 @@
     </xsl:template>
     
     <xsl:template match="eft:nav-sidebar[eft:item/eft:item]">
+        <xsl:variable name="id" select="'nav-sidebar'"/>
         <div class="panel panel-default">
-            <div class="panel-heading">
-                <h3 class="panel-title">
-                    <xsl:value-of select="eft:item/eft:label"/>
-                </h3>
+            <div class="panel-heading" role="tab">
+                <a class="center-vertical full-width collapsed" role="button" data-toggle="collapse" aria-expanded="false">
+                    <xsl:attribute name="href">
+                        <xsl:value-of select="concat('#', $id, '-block')"/>
+                    </xsl:attribute>
+                    <xsl:attribute name="aria-controls">
+                        <xsl:value-of select="concat($id, '-block')"/>
+                    </xsl:attribute>
+                    <xsl:attribute name="id">
+                        <xsl:value-of select="concat($id, '-heading')"/>
+                    </xsl:attribute>
+                    <h3 class="panel-title">
+                        <xsl:value-of select="concat('More About ', eft:item/eft:label)"/>
+                    </h3>
+                    <span class="text-right">
+                        <i class="fa fa-plus collapsed-show"/>
+                        <i class="fa fa-minus collapsed-hide"/>
+                    </span>
+                </a>
             </div>
-            <div class="panel-body">
-                <p data-match-height="homepage-categories">
+            <div class="panel-body collapse" role="tabpanel" aria-expanded="false">
+                <xsl:attribute name="id">
+                    <xsl:value-of select="concat($id, '-block')"/>
+                </xsl:attribute>
+                <xsl:attribute name="aria-labelledby">
+                    <xsl:value-of select="concat($id, '-heading')"/>
+                </xsl:attribute>
+                <p>
                     <xsl:value-of select="eft:item/eft:description"/>
                 </p>
             </div>
@@ -736,6 +758,5 @@
             </div>
         </form>
     </xsl:template>
-
     
 </xsl:stylesheet>

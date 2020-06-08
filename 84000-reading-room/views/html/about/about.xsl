@@ -43,26 +43,29 @@
                 </xsl:call-template>
             </xsl:variable>
             
-            <xsl:if test="$page-quote gt ''">
-                <aside class="panel-header-image">
-                    
-                    <xsl:if test="$header-img-src gt ''">
-                        <xsl:attribute name="style" select="concat('background-image:url(', $front-end-path, $header-img-src), ');'"/>
-                    </xsl:if>
-                    
-                    <blockquote>
-                        <div class="container">
-                            <p>
-                                <xsl:value-of select="$page-quote"/>
-                            </p>
-                            <footer>
-                                <xsl:call-template name="local-text">
-                                    <xsl:with-param name="local-key" select="'page-quote-author'"/>
-                                </xsl:call-template>
-                            </footer>
+            <xsl:if test="$page-quote gt '' and $header-img-src gt ''">
+                <aside class="banner-band">
+                    <div class="container">
+                        <div class="center-vertical-md">
+                            <div>
+                                <blockquote>
+                                    <p>
+                                        <xsl:value-of select="$page-quote"/>
+                                    </p>
+                                    <footer>
+                                        <xsl:call-template name="local-text">
+                                            <xsl:with-param name="local-key" select="'page-quote-author'"/>
+                                        </xsl:call-template>
+                                    </footer>
+                                </blockquote>
+                            </div>
+                            <div>
+                                <img>
+                                    <xsl:attribute name="src" select="concat($front-end-path, $header-img-src)"/>
+                                </img>
+                            </div>
                         </div>
-                    </blockquote>
-                    
+                    </div>
                 </aside>
             </xsl:if>
             
@@ -89,6 +92,13 @@
                             <!-- Passed content -->
                             <xsl:copy-of select="$side-content"/>
                             
+                            <xsl:variable name="sharing-panel">
+                                <m:sharing-panel>
+                                    <xsl:copy-of select="$eft-header/m:sharing[@xml:lang eq $lang]/node()"/>
+                                </m:sharing-panel>
+                            </xsl:variable>
+                            <xsl:apply-templates select="$sharing-panel"/>
+                            
                             <xsl:variable name="nav-sidebar">
                                 <m:nav-sidebar>
                                     <xsl:copy-of select="$eft-header/m:navigation[@xml:lang eq $lang]/m:item/m:item[m:item[@url eq $active-url]]"/>
@@ -97,13 +107,6 @@
                             <div class="nav-sidebar">
                                 <xsl:apply-templates select="$nav-sidebar"/>
                             </div>
-                            
-                            <xsl:variable name="sharing-panel">
-                                <m:sharing-panel>
-                                    <xsl:copy-of select="$eft-header/m:sharing[@xml:lang eq $lang]/node()"/>
-                                </m:sharing-panel>
-                            </xsl:variable>
-                            <xsl:apply-templates select="$sharing-panel"/>
                             
                             <div id="project-progress">
                                 <!-- Project Progress, get from ajax -->

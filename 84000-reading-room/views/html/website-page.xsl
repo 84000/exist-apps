@@ -15,8 +15,8 @@
     <xsl:variable name="app-version-url-attribute" select="if($app-version gt '') then concat('?v=', $app-version) else ''" as="xs:string"/>
     
     <!-- get shared html -->
-    <xsl:variable name="eft-header" select="doc('../../xslt/84000-header.xml')/m:eft-header" as="element(m:eft-header)"/>
-    <xsl:variable name="eft-footer" select="doc('../../xslt/84000-footer.xml')/m:eft-footer" as="element(m:eft-footer)"/>
+    <xsl:variable name="eft-header" select="doc('../../config/84000-header.xml')/m:eft-header" as="element(m:eft-header)"/>
+    <xsl:variable name="eft-footer" select="doc('../../config/84000-footer.xml')/m:eft-footer" as="element(m:eft-footer)"/>
     
     <!-- language -->
     <xsl:variable name="lang" select="if(/m:response/@lang) then /m:response/@lang else 'en'" as="xs:string"/>

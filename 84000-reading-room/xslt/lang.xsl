@@ -9,16 +9,6 @@
         <xsl:param name="global-key" as="xs:string*" required="yes"/>
         <xsl:variable name="text-item" select="$text-items[@key = $global-key][1]/node()"/>
         <xsl:choose>
-            <!--<xsl:when test="$text-item instance of text()">
-                <xsl:call-template name="replace-text">
-                    <xsl:with-param name="text" select="normalize-space($text-item)"/>
-                </xsl:call-template>
-            </xsl:when>
-            <xsl:when test="not(empty($text-item))">
-                <xsl:call-template name="normalize-nodes-space">
-                    <xsl:with-param name="nodes" select="$text-item"/>
-                </xsl:call-template>
-            </xsl:when>-->
             <xsl:when test="$text-item">
                 <xsl:call-template name="normalize-nodes-space">
                     <xsl:with-param name="nodes" select="$text-item"/>

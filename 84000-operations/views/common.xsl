@@ -242,6 +242,14 @@
                     </a>
                 </li>
             </xsl:if>
+            <li role="presentation">
+                <xsl:if test="$active-tab eq 'operations/sys-config'">
+                    <xsl:attribute name="class" select="'active'"/>
+                </xsl:if>
+                <a href="sys-config.html">
+                    <xsl:value-of select="'System Config'"/>
+                </a>
+            </li>
         </ul>
         
     </xsl:template>

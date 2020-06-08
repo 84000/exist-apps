@@ -1,0 +1,314 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<eft-header xmlns="http://read.84000.co/ns/1.0">
+    <!-- Updated 05.06.2020 -->
+    <translation id="tag-line">
+        <text xml:lang="en">Translating the words of the Buddha</text>
+        <text xml:lang="zh">八萬四千 • 佛典傳譯</text>
+    </translation>
+    <translation id="placeholder-search">
+        <text xml:lang="en">Search...</text>
+        <text xml:lang="zh">網站檢索</text>
+    </translation>
+    <translation id="button-search-reading-room">
+        <text xml:lang="en">Search the Reading Room</text>
+        <text xml:lang="zh">雲端藏經閣檢索</text>
+    </translation>
+    <translation id="button-search-comms">
+        <text xml:lang="en">Search the Website</text>
+        <text xml:lang="zh">網站檢索</text>
+    </translation>
+    <navigation xml:lang="en">
+        <item class="home" url="https://84000.co/">
+            <label key="label-home">Home</label>
+        </item>
+        <item class="news" url="#news">
+            <label key="label-news">News</label>
+            <item url="https://84000.co/news">
+                <label key="label-news-all">All News</label>
+            </item>
+            <item url="https://84000.co/category/announcements">
+                <label key="label-news-announcements">Announcements</label>
+            </item>
+            <item url="https://84000.co/category/events">
+                <label key="label-news-events">Events</label>
+            </item>
+            <item url="https://84000.co/category/people">
+                <label key="label-news-people">People</label>
+            </item>
+            <item url="https://84000.co/category/in-depth">
+                <label key="label-news-in-depth">In Depth</label>
+            </item>
+            <item url="https://84000.co/category/newsletters">
+                <label key="label-newsletters">Newsletters</label>
+            </item>
+        </item>
+        <item class="reading-room" url="#reading-room">
+            <label key="label-reading-room">Reading Room</label>
+            <item url="https://read.84000.co/section/lobby.html">
+                <label key="label-lobby">The Collection</label>
+            </item>
+            <item url="https://read.84000.co/section/all-translated.html">
+                <label key="label-all-translated">All Published Translations</label>
+            </item>
+            <item url="https://read.84000.co/search.html">
+                <label key="label-search">Search The Reading Room</label>
+            </item>
+        </item>
+        <item class="resources" url="#resources">
+            <label key="label-resources">Resources</label>
+            <item url="https://84000.co/resources/teachings-on-sutra">
+                <label key="label-teachings-on-sutra">Teachings on Sūtra</label>
+            </item>
+            <item url="https://84000.co/resources/commentaries">
+                <label key="label-commentaries">Commentaries</label>
+            </item>
+            <item url="https://84000.co/resources/resounding">
+                <label key="label-resounding">Resoundings</label>
+            </item>
+            <item url="https://84000.co/resources/translator-training">
+                <label key="label-translator-training">Translator Training</label>
+            </item>
+            <item url="https://84000.co/resources/translator-resources">
+                <label key="label-translator-resources">Translator Resources</label>
+            </item>
+            <item url="https://84000.co/resources/quotes">
+                <label key="label-quotes">Quotes</label>
+            </item>
+        </item>
+        <item class="about" url="#about">
+            <label key="label-about">About</label>
+            <item url="#work">
+                <label key="label-our-work">Our Work</label>
+                <description key="description-our-work">With a strong editorial team, we award text-specific grants to translation teams around the world, working collaboratively to ensure accurate and credible publications of Classical Tibetan Buddhist texts that will form a cohesive Canon upon completion. We integrate new publication technologies in order to deliver these 231,800 pages of the wisdom to you, in English, online, for free.</description>
+                <item url="https://84000.co/about/what-we-do">
+                    <label key="label-what-we-do">What We Do</label>
+                </item>
+                <item url="https://84000.co/about/how-we-began">
+                    <label key="label-origin">How We Began</label>
+                </item>
+                <item url="https://84000.co/about/grants">
+                    <label key="label-grants">Grants</label>
+                </item>
+                <item url="https://84000.co/about/work-flow">
+                    <label key="label-workflow">Workflow</label>
+                </item>
+                <item url="https://84000.co/about/copyright">
+                    <label key="label-copyright">Copyright</label>
+                </item>
+            </item>
+            <item url="#impact">
+                <label key="label-impact-group">Our Impact</label>
+                <description key="description-impact">As of 2010, only 5% of the Tibetan Buddhist Canon has been translated out of Classical Tibetan - a language facing a serious threat to its survival. In ten years, we’ve raised that number to almost 10%, not only making deeper international academic inquiry possible, but as our readership grows around the world, we put wisdom at the fingertips of readers like you.</description>
+                <item url="https://read.84000.co/about/progress.html">
+                    <label key="label-progress">Translation Progress</label>
+                </item>
+                <item url="https://read.84000.co/about/impact.html">
+                    <label key="label-impact">Reader Engagement</label>
+                </item>
+                <item url="https://84000.co/about/achievements">
+                    <label key="label-achievements">Achievements</label>
+                </item>
+                <item url="https://84000.co/about/milestones">
+                    <label key="label-milestones">Milestones</label>
+                </item>
+            </item>
+            <item url="#people">
+                <label key="label-people">Our People</label>
+                <description key="description-people">Our work relies upon the dedicated and collaborative effort of scholars, professionals, volunteers, advisors, and sponsors around the world. We work remotely and online, across timezones and continents, and we greatly value each and every member of our team. This virtual teamwork has been a major source of both pride and humility as we produce credible and accurate translations and make them available to you online, for free.</description>
+                <item url="https://84000.co/about/team">
+                    <label key="label-team">84000 Team</label>
+                </item>
+                <item url="https://read.84000.co/about/translators.html">
+                    <label key="label-translators">Translation Teams</label>
+                </item>
+                <item url="https://read.84000.co/about/sponsors.html">
+                    <label key="label-sponsors">Sponsors</label>
+                </item>
+                <item url="https://84000.co/about/partnerships">
+                    <label key="label-partnerships">Partnerships</label>
+                </item>
+                <item url="https://84000.co/about/endorsements">
+                    <label key="label-endorsements">Endorsements</label>
+                </item>
+            </item>
+            <item url="https://84000.co/about/faq">
+                <label key="label-faq">FAQ</label>
+            </item>
+            <item url="https://84000.co/about/contact">
+                <label key="label-contact">Contact</label>
+            </item>
+        </item>        
+        <item class="how-to-help" url="#how-to-help">
+            <label key="label-how-to-help">How You Can Help</label>
+            <item url="https://84000.co/how-you-can-help/sponsor-a-page">
+                <label key="label-sponsor-a-page">Sponsor a Page</label>
+            </item>
+            <item url="https://read.84000.co/about/sponsor-a-sutra.html">
+                <label key="label-sponsor-a-sutra">Sponsor a Sūtra</label>
+            </item>
+            <item url="https://84000.co/how-you-can-help/download-dana">
+                <label key="label-download-dana">Download Dāna</label>
+            </item>
+            <item url="https://84000.co/how-you-can-help/shop-n-give">
+                <label key="label-shop-n-give">Shop and Give</label>
+            </item>
+            <item url="https://84000.co/how-you-can-help/spread-the-word">
+                <label key="label-subscribe">Subscribe to our Newsletter</label>
+            </item>
+        </item>
+        <label key="label-bookmarks" id="label-bookmarks">Bookmarks</label>
+    </navigation>
+    <navigation xml:lang="zh">
+        <item class="home" url="https://84000.co/ch">
+            <label key="label-home">首頁</label>
+        </item>
+        <item class="news" url="#ch-news">
+            <label key="label-news">最新訊息</label>
+            <item url="https://84000.co/ch-news">
+                <label key="label-news-all">最新訊息</label>
+            </item>
+            <item url="https://84000.co/category/公告">
+                <label key="label-news-announcements">公告</label>
+            </item>
+            <item url="https://84000.co/category/活動">
+                <label key="label-news-events">活動</label>
+            </item>
+            <item url="https://84000.co/category/人物">
+                <label key="label-news-people">人物</label>
+            </item>
+            <item url="https://84000.co/category/話題">
+                <label key="label-news-in-depth">話題</label>
+            </item>
+            <item url="https://84000.co/category/電子通訊">
+                <label key="label-newsletters">電子通訊</label>
+            </item>
+        </item>
+        <item class="reading-room" url="#reading-room">
+            <label key="label-reading-room">雲端藏經閣</label>
+            <item url="https://read.84000.co/section/lobby.html?lang=zh">
+                <label key="label-lobby">經藏</label>
+            </item>
+            <item url="https://read.84000.co/section/all-translated.html?lang=zh">
+                <label key="label-all-translated">已翻譯經典</label>
+            </item>
+            <item url="https://read.84000.co/search.html?lang=zh">
+                <label key="label-search">雲端藏經閣檢索</label>
+            </item>
+        </item>
+        <item class="resources" url="#ch-resources">
+            <label key="label-resources">資源分享</label>
+            <item url="https://84000.co/ch-resources/ch-teachings-on-sutra">
+                <label key="label-teachings-on-sutra">八萬四千講經堂</label>
+            </item>
+            <item url="https://84000.co/ch-resources/ch-commentaries">
+                <label key="label-commentaries">論著</label>
+            </item>
+            <item url="https://84000.co/ch-resources/ch-resounding">
+                <label key="label-resounding">經典迴響</label>
+            </item>
+            <item url="https://84000.co/ch-resources/ch-resources-training">
+                <label key="label-translator-training">譯者培訓</label>
+            </item>
+            <item url="https://84000.co/ch-resources/ch-translator-resources-chinese">
+                <label key="label-translator-resources">Translator Resources</label>
+            </item>
+        </item>
+        <item class="about" url="#ch-about">
+            <label key="label-about">關於我們</label>
+            <item url="https://84000.co/ch-about/ch-about-origin">
+                <label key="label-origin">成立緣起</label>
+            </item>
+            <item url="https://read.84000.co/about/progress.html?lang=zh">
+                <label key="label-progress">工作進度</label>
+            </item>
+            <item url="https://84000.co/ch-about/ch-about-impact">
+                <label key="label-impact">全球影響</label>
+            </item>
+            <item url="https://84000.co/ch-about/ch-about-workflow">
+                <label key="label-workflow">工作流程</label>
+            </item>
+            <item url="https://84000.co/ch-about/ch-about-copyright">
+                <label key="label-copyright">關於版權</label>
+            </item>
+            <item url="https://84000.co/ch-about/ch-about-team">
+                <label key="label-team">我們的團隊</label>
+            </item>
+            <item url="https://read.84000.co/about/translators.html?lang=zh">
+                <label key="label-translators">翻譯人員</label>
+            </item>
+            <item url="https://read.84000.co/about/sponsors.html?lang=zh">
+                <label key="label-sponsors">贊助人</label>
+            </item>
+            <item url="https://84000.co/ch-about/ch-partnerships">
+                <label key="label-partnerships">合作夥伴</label>
+            </item>
+            <item url="https://84000.co/ch-about/ch-about-contact">
+                <label key="label-contact">聯繫方式</label>
+            </item>
+            <item url="https://84000.co/ch-about/ch-faq">
+                <label key="label-faq">常見問題</label>
+            </item>
+        </item>
+        <item class="how-to-help" url="#ch-howhelp">
+            <label key="label-how-to-help">如何參與</label>
+            <item url="https://84000.co/ch-how-you-can-help/ch-sponsor-a-page">
+                <label key="label-sponsor-a-page">贊助一頁佛經</label>
+            </item>
+            <item url="https://read.84000.co/about/sponsor-a-sutra.html?lang=zh">
+                <label key="label-sponsor-a-sutra">贊助一部佛典</label>
+            </item>
+            <item url="https://84000.co/ch-how-you-can-help/ch-download-dana">
+                <label key="label-download-dana">隨喜贊助</label>
+            </item>
+            <item url="https://84000.co/ch-how-you-can-help/ch-howhelp-subscribe">
+                <label key="label-subscribe">訂閱電子通訊</label>
+            </item>
+        </item>
+        <label key="label-bookmarks" id="label-bookmarks">Bookmarks</label>
+    </navigation>
+    <social xml:lang="en">
+        <label key="label-social">Follow our work:</label>
+        <item url="https://84000.co/how-you-can-help/spread-the-word" icon-class="fa fa-envelope-square">
+            <label key="label-social-spread-the-word">Subscribe to our newsletter</label>
+        </item>
+        <item url="http://www.facebook.com/Translate84000" icon-class="fa fa-facebook-square">
+            <label key="label-social-facebook">Follow us on Facebook</label>
+        </item>
+        <item url="https://twitter.com/Translate84000" icon-class="fa fa-twitter-square">
+            <label key="label-social-twitter">Follow us on Twitter</label>
+        </item>
+        <item url="http://www.youtube.com/Translate84000" icon-class="fa fa-youtube-square">
+            <label key="label-social-youtube">Subscribe to our Youtube channel</label>
+        </item>
+    </social>
+    <social xml:lang="zh">
+        <label key="label-social">關注我們</label>
+        <item url="https://84000.co/how-you-can-help/spread-the-word" icon-class="fa fa-envelope-square">
+            <label key="label-social-spread-the-word">電子通訊訂閱</label>
+        </item>
+        <item url="#wechat-qcode" icon-class="fa fa-weixin">
+            <label key="label-social-wechat">微信掃碼</label>
+        </item>
+    </social>
+    <sharing xml:lang="en">
+        <label key="label-sharing">Share this page:</label>
+        <item url="https://www.facebook.com/sharer/sharer.php?u=" icon-class="fa fa-facebook-square">
+            <label key="label-sharing-facebook">Post on Facebook</label>
+        </item>
+        <item url="https://twitter.com/home?status=" icon-class="fa fa-twitter-square">
+            <label key="label-sharing-twitter">Tweet</label>
+        </item>
+        <item url="whatsapp://send?text=" icon-class="fa fa-whatsapp">
+            <label key="label-sharing-whatsapp">Share with WhatsApp</label>
+        </item>
+    </sharing>
+    <sharing xml:lang="zh">
+        <label key="label-sharing">Share this page:</label>
+        <item url="https://www.facebook.com/sharer/sharer.php?u=" icon-class="fa fa-facebook-square">
+            <label key="label-sharing-facebook">Post on Facebook</label>
+        </item>
+        <item url="https://twitter.com/home?status=" icon-class="fa fa-twitter-square">
+            <label key="label-sharing-twitter">Tweet</label>
+        </item>
+    </sharing>
+</eft-header>

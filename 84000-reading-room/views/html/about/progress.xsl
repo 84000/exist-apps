@@ -6,9 +6,11 @@
     <xsl:template match="/m:response">
         <xsl:variable name="content">
             
-            <xsl:call-template name="local-text">
-                <xsl:with-param name="local-key" select="'page-intro'"/>
-            </xsl:call-template>
+            <div class="bottom-margin">
+                <xsl:call-template name="local-text">
+                    <xsl:with-param name="local-key" select="'page-intro'"/>
+                </xsl:call-template>
+            </div>
             
             <div class="row about-stats">
                 <div class="col-sm-6 col-lg-8">
@@ -88,6 +90,10 @@
                     
                 </div>
             </div>
+            
+            <xsl:call-template name="local-text">
+                <xsl:with-param name="local-key" select="'outlook'"/>
+            </xsl:call-template>
             
             <hr class="no-margin"/>
             

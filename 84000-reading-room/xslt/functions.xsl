@@ -206,16 +206,16 @@
         <xsl:param name="position" as="xs:integer"/>
         <xsl:param name="format" as="xs:string"/>
         
-        <xsl:variable name="colour-map" select="document('colour-map.xml')"/>
-        <xsl:variable name="max-position" select="count($colour-map/m:colours/m:colour)"/>
+        <xsl:variable name="colour-map" select="document('../config/colour-map.xml')"/>
+        <xsl:variable name="max-position" select="count($colour-map/m:colour-map/m:colour)"/>
         <xsl:variable name="position-bounded" select="if($position gt $max-position) then $max-position else $position"/>
         
         <xsl:choose>
             <xsl:when test="$format eq 'hex'">
-                <xsl:value-of select="$colour-map/m:colours/m:colour[$position-bounded]/@hex"/>
+                <xsl:value-of select="$colour-map/m:colour-map/m:colour[$position-bounded]/@hex"/>
             </xsl:when>
             <xsl:otherwise>
-                <xsl:value-of select="$colour-map/m:colours/m:colour[$position-bounded]/@id"/>
+                <xsl:value-of select="$colour-map/m:colour-map/m:colour[$position-bounded]/@id"/>
             </xsl:otherwise>
         </xsl:choose>
         
