@@ -87,9 +87,9 @@
                             
                             <xsl:variable name="affiliations-count-all" select="count(distinct-values(//m:team/m:person[m:affiliation]/@xml:id))" as="xs:integer"/>
                             <xsl:variable name="affiliations-count-academic" select="count(distinct-values(//m:team/m:person[count(m:affiliation) eq 1][m:affiliation[@type eq 'academic']]/@xml:id))" as="xs:integer"/>
-                            <xsl:variable name="affiliations-percent-academic" select="xs:integer(($affiliations-count-academic div $affiliations-count-all) * 100)"/>
+                            <xsl:variable name="affiliations-percent-academic" select="if($affiliations-count-all gt 0) then xs:integer(($affiliations-count-academic div $affiliations-count-all) * 100) else 0"/>
                             <xsl:variable name="affiliations-count-practitioner" select="count(distinct-values(//m:team/m:person[count(m:affiliation) eq 1][m:affiliation[@type eq 'practitioner']]/@xml:id))" as="xs:integer"/>
-                            <xsl:variable name="affiliations-percent-practitioner" select="xs:integer(($affiliations-count-practitioner div $affiliations-count-all) * 100)"/>
+                            <xsl:variable name="affiliations-percent-practitioner" select="if($affiliations-count-all gt 0) then xs:integer(($affiliations-count-practitioner div $affiliations-count-all) * 100) else 0"/>
                             <xsl:variable name="affiliations-map">
                                 <m:entry key="both">
                                     <xsl:attribute name="count" select="$affiliations-count-all - ($affiliations-count-academic + $affiliations-count-practitioner)"/>
@@ -194,35 +194,16 @@
                                 </div>
                             </xsl:for-each>
                             
-                            <xsl:variable name="count-regions" select="count(m:contributor-regions/m:region)"/>
-                            <xsl:variable name="region-chart-data">
-                                <xsl:for-each select="m:contributor-regions/m:region">
-                                    <xsl:value-of select="m:stat[@type eq 'contributor-percentage']/@value"/>
-                                    <xsl:if test="position() lt $count-regions">,</xsl:if>
-                                </xsl:for-each>
-                            </xsl:variable>
-                            <xsl:variable name="region-chart-labels">
-                                <xsl:for-each select="m:contributor-regions/m:region">
-                                    '<xsl:value-of select="m:label"/>'
-                                    <xsl:if test="position() lt $count-regions">,</xsl:if>
-                                </xsl:for-each>
-                            </xsl:variable>
-                            <xsl:variable name="region-chart-colours">
-                                <xsl:for-each select="m:contributor-regions/m:region">
-                                    '<xsl:value-of select="common:position-to-color(position(), 'hex')"/>'
-                                    <xsl:if test="position() lt $count-regions">,</xsl:if>
-                                </xsl:for-each>
-                            </xsl:variable>
                             <canvas id="region-pie" style="width:100%;height:225px;"/>
                             <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.2/Chart.min.js"/>
                             <script>
                                 var ctx = document.getElementById("region-pie").getContext('2d');
                                 var data = {
                                     datasets: [{
-                                        data: [<xsl:value-of select="normalize-space($region-chart-data)"/>],
-                                        backgroundColor: [<xsl:value-of select="normalize-space($region-chart-colours)"/>]
+                                        data: [<xsl:value-of select="string-join(m:contributor-regions/m:region/m:stat[@type eq 'contributor-percentage']/@value, ',')"/>],
+                                backgroundColor: [<xsl:value-of select="string-join(m:contributor-regions/m:region ! concat('&#34;', common:position-to-color(position(), 'hex'), '&#34;'), ',')"/>]
                                     }],
-                                    labels: [<xsl:value-of select="normalize-space($region-chart-labels)"/>]
+                                    labels: [<xsl:value-of select="string-join(m:contributor-regions/m:region/m:label ! concat('&#34;', ., '&#34;'), ',')"/>]
                                 };
                                 var options = { 
                                     legend: { display: false, position: 'right' },

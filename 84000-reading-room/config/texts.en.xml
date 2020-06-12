@@ -220,13 +220,13 @@
     <item key="about.translators.teams-label">teams</item>
     <item key="about.translators.translator-count-label">Number of Translators, Editors, and Consultants</item>
     <item key="about.translators.translators-label">people</item>
-    <item key="about.translators.affiliation-title">Translators by affiliation</item>
+    <item key="about.translators.affiliation-title">Contributors by affiliation</item>
     <item key="about.translators.affiliation-both-label">Affiliated with both Academia and Dharma Centers</item>
     <item key="about.translators.affiliation-academic-label">Affiliated with Academia</item>
     <item key="about.translators.affiliation-practitioner-label">Affiliated with Dharma Centers</item>
-    <item key="about.translators.affiliation-label">of translators</item>
-    <item key="about.translators.region-title">Translators by region</item>
-    <item key="about.translators.region-label">of translators</item>
+    <item key="about.translators.affiliation-label">of contributors</item>
+    <item key="about.translators.region-title">Contributors by region</item>
+    <item key="about.translators.region-label">of contributors</item>
 
     <!-- Sponsor a Sutra -->
     <!--<item key="about.sponsor-a-sutra.page-title">Sponsor a Sūtra</item>-->
