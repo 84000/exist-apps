@@ -16,6 +16,7 @@
             
             <!-- Copy all the current attributes -->
             <xsl:copy-of select="@*"/>
+            <xsl:attribute name="debug" select="''"/>
             
             <!-- Set / update the following attributes -->
             <!-- @target is the id of the node referenced e.g. UT22084-051-001-389 -->
@@ -142,7 +143,7 @@
                 <xsl:element name="{ node-name(.) }">
                     <xsl:copy-of select="@*"/>
                     <xsl:attribute name="index" select="position()"/>
-                    <xsl:copy-of select="node()"/>
+                    <xsl:apply-templates select="node()"/>
                 </xsl:element>
             </xsl:for-each>
         </xsl:element>
@@ -151,8 +152,8 @@
     <!-- TO DO: Add indexes to notes -->
     
     <!-- Supress warning -->
-    <xsl:template match="m:dummy">
-        <!-- ignore -->
-    </xsl:template>
+    <!--<xsl:template match="m:dummy">
+        <!-\- ignore -\->
+    </xsl:template>-->
     
 </xsl:stylesheet>

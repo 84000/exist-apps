@@ -40,13 +40,42 @@
                                     <legend>
                                         <xsl:choose>
                                             <xsl:when test="$person-id">
-                                                ID: <xsl:value-of select="$person-id"/>
+                                                <xsl:value-of select="concat('ID: ', $person-id)"/>
                                             </xsl:when>
-                                            <xsl:otherwise>New contributor</xsl:otherwise>
+                                            <xsl:otherwise>
+                                                <xsl:value-of select="'New contributor'"/>
+                                            </xsl:otherwise>
                                         </xsl:choose>
                                     </legend>
                                     
                                     <xsl:copy-of select="m:text-input('Name','name', m:person/m:label, 9, 'required')"/>
+                                    
+                                    <div class="form-group">
+                                        <div class="col-sm-offset-3 col-sm-4">
+                                            <div class="checkbox">
+                                                <label>
+                                                    <input type="checkbox" name="affiliation[]" value="academic">
+                                                        <xsl:if test="m:person/m:affiliation[@type eq 'academic']">
+                                                            <xsl:attribute name="checked" select="'checked'"/>
+                                                        </xsl:if>
+                                                    </input>
+                                                    <xsl:value-of select="' Academic'"/>
+                                                </label>
+                                            </div>
+                                        </div>
+                                        <div class="col-sm-4">
+                                            <div class="checkbox">
+                                                <label>
+                                                    <input type="checkbox" name="affiliation[]" value="practitioner">
+                                                        <xsl:if test="m:person/m:affiliation[@type eq 'practitioner']">
+                                                            <xsl:attribute name="checked" select="'checked'"/>
+                                                        </xsl:if>
+                                                    </input>
+                                                    <xsl:value-of select="' Practitioner'"/>
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
                                     
                                     <div class="add-nodes-container">
                                         <xsl:choose>
@@ -66,7 +95,10 @@
                                         <div class="form-group">
                                             <div class="col-sm-offset-3 col-sm-9">
                                                 <a href="#add-nodes" class="add-nodes">
-                                                    <span class="monospace">+</span> add a team
+                                                    <span class="monospace">
+                                                        <xsl:value-of select="'+'"/>
+                                                    </span>
+                                                    <xsl:value-of select="' add a team'"/>
                                                 </a>
                                             </div>
                                         </div>
@@ -90,7 +122,10 @@
                                         <div class="form-group">
                                             <div class="col-sm-offset-3 col-sm-9">
                                                 <a href="#add-nodes" class="add-nodes">
-                                                    <span class="monospace">+</span> add an institution
+                                                    <span class="monospace">
+                                                        <xsl:value-of select="'+'"/>
+                                                    </span>
+                                                    <xsl:value-of select="' add an institution'"/>
                                                 </a>
                                             </div>
                                         </div>

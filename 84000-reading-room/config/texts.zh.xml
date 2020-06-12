@@ -41,14 +41,6 @@
     </item>
 
     <!-- About -->
-    <item key="about.common.support-label">護持【八萬四千•佛典傳譯】</item>
-    <item key="about.common.support-description">
-        <p>我們在108位創始贊助人和數千位捐助者的幫助下，持續資助佛典的翻譯。共七萬頁的《甘珠爾》經文，仍需要您的發心贊助，請加入我們的行列。</p>
-    </item>
-    <item key="about.common.kangyur-count-before-label">《甘珠爾》總頁數</item>
-    <item key="about.common.translation-count-before-label">翻譯中頁數</item>
-    <item key="about.common.translated-count-before-label">已翻譯頁數</item>
-    <item key="about.common.published-count-before-label">翻譯中頁數</item>
     <item key="about.common.sponsor-button-label">線上捐款</item>
     <item key="about.common.sponsor-button-link">#commsSiteUrl/ch-how-you-can-help/ch-howhelp-subscribe</item>
     <item key="about.common.donate-instructions-link">#commsSiteUrl/media/ch_donate_instructions.pdf</item>
@@ -211,6 +203,9 @@
     <item key="about.translators.translator-count-label">Number of Translators, Editors, and Consultants</item>
     <item key="about.translators.translators-label">people</item>
     <item key="about.translators.affiliation-title">Translators by affiliation</item>
+    <item key="about.translators.affiliation-both-label">Affiliated with both Academia and Dharma Centers</item>
+    <item key="about.translators.affiliation-academic-label">Affiliated with Academia</item>
+    <item key="about.translators.affiliation-practitioner-label">Affiliated with Dharma Centers</item>
     <item key="about.translators.affiliation-label">of translators</item>
     <item key="about.translators.region-title">Translators by region</item>
     <item key="about.translators.region-label">of translators</item>
@@ -258,6 +253,16 @@
         <p>想了解更多詳情，請與<span class="underline">84000</span>執行長黃淨蕊聯繫: <a href="mailto:jingrui@84000.co">jingrui@84000.co</a>
         </p>
     </item>
+    
+    <!-- Progress chart widget -->
+    <item key="widget.progress-panel.support-label">護持【八萬四千•佛典傳譯】</item>
+    <item key="widget.progress-panel.support-description">
+        <p>我們在108位創始贊助人和數千位捐助者的幫助下，持續資助佛典的翻譯。共七萬頁的《甘珠爾》經文，仍需要您的發心贊助，請加入我們的行列。</p>
+    </item>
+    <item key="widget.progress-panel.kangyur-count-before-label">《甘珠爾》總頁數</item>
+    <item key="widget.progress-panel.translation-count-before-label">翻譯中頁數</item>
+    <item key="widget.progress-panel.translated-count-before-label">已翻譯頁數</item>
+    <item key="widget.progress-panel.published-count-before-label">翻譯中頁數</item>
 
     <!-- Download dana -->
     <item key="widget.download-dana.widget-title">Download Dāna</item>

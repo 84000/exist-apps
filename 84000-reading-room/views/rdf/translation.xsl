@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:skos="http://www.w3.org/2004/02/skos/core#" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" exclude-result-prefixes="xsl xs tei m" version="3.0">
+<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:bf="http://id.loc.gov/ontologies/bibframe/" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:skos="http://www.w3.org/2004/02/skos/core#" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" exclude-result-prefixes="xsl xs tei m" version="3.0">
 
     <!-- Use this output header to return xml for debugging -->
     <xsl:output method="xml" indent="no" encoding="UTF-8" media-type="application/xml"/>
@@ -14,6 +14,7 @@
         <!-- Get additional collection data -->
         <xsl:variable name="source-work" select="m:translation/m:source/m:location/@work" as="xs:string"/>
         <xsl:variable name="collection-refs" select="$collections//m:collection[@work eq $source-work]"/>
+        
         <xsl:variable name="collection-id" select="$collection-refs/@key" as="xs:string"/>
         
         <!-- Get additional text data -->
@@ -69,118 +70,121 @@
                 <xsl:when test="$collection-id eq 'WKangyurD'">
                     <xsl:comment>- The Derge Kangyur</xsl:comment>
                     <rdf:Description rdf:about="http://purl.84000.co/resource/core/WKangyurD">
-                        <owl:sameAs rdf:resource="http://purl.bdrc.io/resource/W4CZ5369"/>
-                        <adm:sameAsBDRC rdf:resource="http://purl.bdrc.io/resource/W4CZ5369"/>
-                        <bdo:workLangScript rdf:resource="http://purl.bdrc.io/resource/BoDbuCan"/>
+                        <owl:sameAs rdf:resource="http://purl.bdrc.io/resource/MW22084"/>
+                        <bdo:script rdf:resource="http://purl.bdrc.io/resource/ScriptDbuCan"/>
                         <skos:prefLabel xml:lang="en">
                             <xsl:value-of select="$collection-refs/m:label"/>
                         </skos:prefLabel>
-                        <rdf:type rdf:resource="http://purl.bdrc.io/ontology/core/Work"/>
+                        <rdf:type rdf:resource="http://purl.bdrc.io/ontology/core/Instance"/>
                         <adm:canonicalHtml rdf:resource="http://read.84000.co/section/O1JC11494.html"/>
                     </rdf:Description>
                 </xsl:when>
             </xsl:choose>
             
-            <xsl:comment>The abstract work of the Indic text</xsl:comment>
-            <rdf:Description rdf:about="{ 'http://purl.84000.co/resource/core/' || $eft-indic-id }">
-                <rdf:type rdf:resource="http://purl.bdrc.io/ontology/core/Work"/>
-                <rdf:type rdf:resource="http://purl.bdrc.io/ontology/core/AbstractWork"/>
-                <xsl:if test="$bdrc-work-id">
-                    <owl:sameAs rdf:resource="{ $bdrc-work-id }"/>
-                    <adm:sameAsBDRC rdf:resource="{ $bdrc-work-id }"/>
-                </xsl:if>
-                <bdo:workLangScript rdf:resource="http://purl.bdrc.io/resource/Inc"/>
-                <bdo:workHasTranslation rdf:resource="{ 'http://purl.84000.co/resource/core/' || $eft-english-id }"/>
-                <bdo:workHasTranslation rdf:resource="{ 'http://purl.84000.co/resource/core/' || $eft-tibetan-id }"/>
-                <xsl:call-template name="translation-titles">
-                    <xsl:with-param name="lang" select="'sa-ltn'"/>
-                </xsl:call-template>
-                <xsl:call-template name="translation-titles">
-                    <xsl:with-param name="lang" select="'en'"/>
-                </xsl:call-template>
-                <adm:canonicalHtml rdf:resource="{ m:translation/@page-url }"/>
-            </rdf:Description>
-            
-            <xsl:comment>The Derge edition of the Tibetan translation</xsl:comment>
-            <rdf:Description rdf:about="{ 'http://purl.84000.co/resource/core/' || $eft-derge-id }">
-                <rdf:type rdf:resource="http://purl.bdrc.io/ontology/core/Work"/>
-                <xsl:if test="$bdrc-derge-id">
-                    <owl:sameAs rdf:resource="{ $bdrc-derge-id }"/>
-                    <adm:sameAsBDRC rdf:resource="{ $bdrc-derge-id }"/>
-                </xsl:if>
-                <bdo:workLangScript rdf:resource="http://purl.bdrc.io/resource/BoDbuCan"/>
-                <xsl:if test="$collection-id">
-                    <bdo:workPartOf rdf:resource="{ 'http://purl.84000.co/resource/core/' || $collection-id }"/>
-                </xsl:if>
-                <bdo:workExpressionOf rdf:resource="{ 'http://purl.84000.co/resource/core/' || $eft-tibetan-id }"/>
-                <xsl:call-template name="translation-titles">
-                    <xsl:with-param name="lang" select="'bo'"/>
-                </xsl:call-template>
-                <adm:canonicalHtml rdf:resource="{ m:translation/@page-url }"/>
-            </rdf:Description>
-            
-            <xsl:comment>The original Tibetan translation</xsl:comment>
-            <rdf:Description rdf:about="{ 'http://purl.84000.co/resource/core/' || $eft-tibetan-id }">
-                <rdf:type rdf:resource="http://purl.bdrc.io/ontology/core/Work"/>
-                <rdf:type rdf:resource="http://purl.bdrc.io/ontology/core/AbstractWork"/>
-                <xsl:if test="$bdrc-tibetan-id">
-                    <owl:sameAs rdf:resource="{ $bdrc-tibetan-id }"/>
-                    <adm:sameAsBDRC rdf:resource="{ $bdrc-tibetan-id }"/>
-                </xsl:if>
-                <bdo:workLangScript rdf:resource="http://purl.bdrc.io/resource/Bo"/>
-                <bdo:workHasExpression rdf:resource="{ 'http://purl.84000.co/resource/core/' || $eft-derge-id }"/>
-                <bdo:workTranslationOf rdf:resource="{ 'http://purl.84000.co/resource/core/' || $eft-indic-id }"/>
-                <xsl:call-template name="translation-titles">
-                    <xsl:with-param name="lang" select="'bo'"/>
-                </xsl:call-template>
-                <xsl:if test="$text-refs/m:ref[@type eq 'rkts-work-id']">
-                    <bdo:workRefrKTsK rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">
-                        <xsl:value-of select="$text-refs/m:ref[@type eq 'rkts-work-id']/@value"/>
-                    </bdo:workRefrKTsK>
-                </xsl:if>
-                <adm:canonicalHtml rdf:resource="{ m:translation/@page-url }"/>
-            </rdf:Description>
-            
-            <xsl:if test="m:translation/@status-group eq 'published'">
-                <xsl:comment>The English translation</xsl:comment>
-                <rdf:Description rdf:about="{ 'http://purl.84000.co/resource/core/' || $eft-english-id }">
+            <!-- Check the refs are found in the config -->
+            <xsl:if test="$text-refs">
+                
+                <xsl:comment>The abstract work of the Indic text</xsl:comment>
+                <rdf:Description rdf:about="{ 'http://purl.84000.co/resource/core/' || $eft-indic-id }">
                     <rdf:type rdf:resource="http://purl.bdrc.io/ontology/core/Work"/>
-                    <rdf:type rdf:resource="http://purl.bdrc.io/ontology/core/AbstractWork"/>
-                    <bdo:workTranslationOf rdf:resource="{ 'http://purl.84000.co/resource/core/' || $eft-indic-id }"/>
-                    <bdo:workLangScript rdf:resource="http://purl.bdrc.io/resource/En"/>
+                    <xsl:if test="$bdrc-work-id">
+                        <owl:sameAs rdf:resource="{ $bdrc-work-id }"/>
+                    </xsl:if>
+                    <bdo:language rdf:resource="http://purl.bdrc.io/resource/LangInc"/>
+                    <bdo:workHasTranslation rdf:resource="{ 'http://purl.84000.co/resource/core/' || $eft-english-id }"/>
+                    <bdo:workHasTranslation rdf:resource="{ 'http://purl.84000.co/resource/core/' || $eft-tibetan-id }"/>
+                    <xsl:call-template name="translation-titles">
+                        <xsl:with-param name="lang" select="'sa-ltn'"/>
+                    </xsl:call-template>
                     <xsl:call-template name="translation-titles">
                         <xsl:with-param name="lang" select="'en'"/>
                     </xsl:call-template>
                     <adm:canonicalHtml rdf:resource="{ m:translation/@page-url }"/>
-                    <xsl:if test="m:translation/m:translation/m:contributors/m:author[@role = 'translatorEng']">
-                        <xsl:comment>Creators</xsl:comment>
-                        <xsl:for-each select="m:translation/m:translation/m:contributors/m:author[@role = 'translatorEng']">
-                            <xsl:variable name="contributor-id" select="substring-after(@ref, 'contributors.xml#')"/>
-                            <xsl:variable name="contributor" select="$contributors//m:person[@xml:id eq $contributor-id]"/>
-                            <xsl:if test="$contributor">
-                                <bdo:creator>
-                                    <bdo:AgentAsCreator>
-                                        <bdo:agent>
-                                            <bdo:Person>
-                                                <xsl:attribute name="rdf:about" select="concat('http://purl.84000.co/resource/core/', $contributor/@xml:id)"/>
-                                                <skos:prefLabel xml:lang="en">
-                                                    <xsl:value-of select="$contributor/m:label"/>
-                                                </skos:prefLabel>
-                                                <xsl:if test="$contributor/m:ref[@type eq 'viaf']">
-                                                    <bdo:sameAsVIAF>
-                                                        <xsl:attribute name="rdf:resource" select="$contributor/m:ref[@type eq 'viaf']/@uri"/>
-                                                    </bdo:sameAsVIAF>
-                                                </xsl:if>
-                                            </bdo:Person>
-                                        </bdo:agent>
-                                        <bdo:role rdf:resource="http://purl.bdrc.io/resource/R0ER0017"/>
-                                    </bdo:AgentAsCreator>
-                                </bdo:creator>
-                            </xsl:if>
-                        </xsl:for-each>
-                    </xsl:if>
                 </rdf:Description>
+                
+                <xsl:comment>The Derge edition of the Tibetan translation</xsl:comment>
+                <rdf:Description rdf:about="{ 'http://purl.84000.co/resource/core/' || $eft-derge-id }">
+                    <rdf:type rdf:resource="http://purl.bdrc.io/ontology/core/Instance"/>
+                    <xsl:if test="$bdrc-derge-id">
+                        <owl:sameAs rdf:resource="{ $bdrc-derge-id }"/>
+                    </xsl:if>
+                    <bdo:script rdf:resource="http://purl.bdrc.io/resource/ScriptDbuCan"/>
+                    <xsl:if test="$collection-id">
+                        <bdo:partOf rdf:resource="{ 'http://purl.84000.co/resource/core/' || $collection-id }"/>
+                    </xsl:if>
+                    <bdo:instanceOf rdf:resource="{ 'http://purl.84000.co/resource/core/' || $eft-tibetan-id }"/>
+                    <xsl:call-template name="translation-titles">
+                        <xsl:with-param name="lang" select="'bo'"/>
+                    </xsl:call-template>
+                    <adm:canonicalHtml rdf:resource="{ m:translation/@page-url }"/>
+                </rdf:Description>
+                
+                <xsl:comment>The original Tibetan translation</xsl:comment>
+                <rdf:Description rdf:about="{ 'http://purl.84000.co/resource/core/' || $eft-tibetan-id }">
+                    <rdf:type rdf:resource="http://purl.bdrc.io/ontology/core/Work"/>
+                    <xsl:if test="$bdrc-tibetan-id">
+                        <owl:sameAs rdf:resource="{ $bdrc-tibetan-id }"/>
+                    </xsl:if>
+                    <bdo:language rdf:resource="http://purl.bdrc.io/resource/LangBo"/>
+                    <bdo:workHasInstance rdf:resource="{ 'http://purl.84000.co/resource/core/' || $eft-derge-id }"/>
+                    <bdo:workTranslationOf rdf:resource="{ 'http://purl.84000.co/resource/core/' || $eft-indic-id }"/>
+                    <xsl:call-template name="translation-titles">
+                        <xsl:with-param name="lang" select="'bo'"/>
+                    </xsl:call-template>
+                    <xsl:if test="$text-refs/m:ref[@type eq 'rkts-work-id']">
+                        <bf:identifiedBy>
+                            <bdr:RefrKTsK>
+                                <rdf:value>
+                                    <xsl:value-of select="$text-refs/m:ref[@type eq 'rkts-work-id']/@value"/>
+                                </rdf:value>
+                            </bdr:RefrKTsK>
+                        </bf:identifiedBy>
+                    </xsl:if>
+                    <adm:canonicalHtml rdf:resource="{ m:translation/@page-url }"/>
+                </rdf:Description>
+                
+                <xsl:if test="m:translation/@status-group eq 'published'">
+                    <xsl:comment>The English translation</xsl:comment>
+                    <rdf:Description rdf:about="{ 'http://purl.84000.co/resource/core/' || $eft-english-id }">
+                        <rdf:type rdf:resource="http://purl.bdrc.io/ontology/core/Work"/>
+                        <bdo:workTranslationOf rdf:resource="{ 'http://purl.84000.co/resource/core/' || $eft-indic-id }"/>
+                        <bdo:language rdf:resource="http://purl.bdrc.io/resource/LangEn"/>
+                        <xsl:call-template name="translation-titles">
+                            <xsl:with-param name="lang" select="'en'"/>
+                        </xsl:call-template>
+                        <adm:canonicalHtml rdf:resource="{ m:translation/@page-url }"/>
+                        <xsl:if test="m:translation/m:translation/m:contributors/m:author[@role = 'translatorEng']">
+                            <xsl:comment>Creators</xsl:comment>
+                            <xsl:for-each select="m:translation/m:translation/m:contributors/m:author[@role = 'translatorEng']">
+                                <xsl:variable name="contributor-id" select="substring-after(@ref, 'contributors.xml#')"/>
+                                <xsl:variable name="contributor" select="$contributors//m:person[@xml:id eq $contributor-id]"/>
+                                <xsl:if test="$contributor">
+                                    <bdo:creator>
+                                        <bdo:AgentAsCreator>
+                                            <bdo:agent>
+                                                <bdo:Person>
+                                                    <xsl:attribute name="rdf:about" select="concat('http://purl.84000.co/resource/core/', $contributor/@xml:id)"/>
+                                                    <skos:prefLabel xml:lang="en">
+                                                        <xsl:value-of select="$contributor/m:label"/>
+                                                    </skos:prefLabel>
+                                                    <xsl:if test="$contributor/m:ref[@type eq 'viaf']">
+                                                        <bdo:sameAsVIAF>
+                                                            <xsl:attribute name="rdf:resource" select="$contributor/m:ref[@type eq 'viaf']/@uri"/>
+                                                        </bdo:sameAsVIAF>
+                                                    </xsl:if>
+                                                </bdo:Person>
+                                            </bdo:agent>
+                                            <bdo:role rdf:resource="http://purl.bdrc.io/resource/R0ER0017"/>
+                                        </bdo:AgentAsCreator>
+                                    </bdo:creator>
+                                </xsl:if>
+                            </xsl:for-each>
+                        </xsl:if>
+                    </rdf:Description>
+                </xsl:if>
+                
             </xsl:if>
+            
             
         </rdf:RDF>
 

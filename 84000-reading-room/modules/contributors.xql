@@ -282,22 +282,31 @@ declare function contributors:update-person($person as element(m:person)?) as xs
     
     let $new-value := 
         <person xmlns="http://read.84000.co/ns/1.0" 
-            xml:id="{ $person-id }">
-            <label>{  request:get-parameter('name', '') }</label>
-            {
+            xml:id="{ $person-id }">{
+            
+                $common:line-ws,
+                <label>{  request:get-parameter('name', '') }</label>,
+                
                 for $request-parameter-name in $request-parameter-names
                 return
-                    if(starts-with($request-parameter-name, 'institution-id-') and request:get-parameter($request-parameter-name, '') gt '') then
+                    if(starts-with($request-parameter-name, 'institution-id-') and request:get-parameter($request-parameter-name, '') gt '') then (
+                        $common:line-ws,
                         <institution id="{ request:get-parameter($request-parameter-name, '') }"/>
-                    else
-                        ()
-                ,
-                for $request-parameter-name in $request-parameter-names
-                return
-                    if(starts-with($request-parameter-name, 'team-id-') and request:get-parameter($request-parameter-name, '') gt '') then
+                    )
+                    else if(starts-with($request-parameter-name, 'team-id-') and request:get-parameter($request-parameter-name, '') gt '') then (
+                        $common:line-ws,
                         <team id="{ request:get-parameter($request-parameter-name, '') }"/>
+                    )
+                    else if($request-parameter-name eq 'affiliation[]') then
+                        for $affiliation in request:get-parameter('affiliation[]', '')
+                        return (
+                            $common:line-ws,
+                            <affiliation type="{ $affiliation }"/>
+                        )
                     else
                         ()
+                 ,
+                 $common:node-ws
             }
         </person>
     

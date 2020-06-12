@@ -16,7 +16,6 @@ common:response(
         <request xmlns="http://read.84000.co/ns/1.0" 
             sharing-url="/about/translators.html"/>,
         contributors:teams(false(), false(), true()),
-        contributors:regions(true()),
-        contributors:institution-types(true())
+        contributors:regions(true())
     )
 )

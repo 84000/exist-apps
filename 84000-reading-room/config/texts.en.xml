@@ -41,15 +41,6 @@
     </item>
 
     <!-- About -->
-    <item key="about.common.support-label">Join Us</item>
-    <item key="about.common.support-description">
-        <p>With the help of our <a href="#commsSiteUrl/about/sponsors">108 founding sponsors</a> and thousands of individual donors, we
-            provide funding to the translators who are working to safeguard these important teachings for future generations.</p>
-    </item>
-    <item key="about.common.kangyur-count-after-label">Total Kangyur Pages</item>
-    <item key="about.common.translation-count-after-label">Pages in Translation</item>
-    <item key="about.common.translated-count-after-label">Pages Translated</item>
-    <item key="about.common.published-count-after-label">Pages Published</item>
     <item key="about.common.sponsor-button-label">Sponsor a page now </item>
     <item key="about.common.sponsor-button-link">#commsSiteUrl/how-you-can-help/sponsor-a-page</item>
     <item key="about.common.sharing-label">Share this page:</item>
@@ -230,6 +221,9 @@
     <item key="about.translators.translator-count-label">Number of Translators, Editors, and Consultants</item>
     <item key="about.translators.translators-label">people</item>
     <item key="about.translators.affiliation-title">Translators by affiliation</item>
+    <item key="about.translators.affiliation-both-label">Affiliated with both Academia and Dharma Centers</item>
+    <item key="about.translators.affiliation-academic-label">Affiliated with Academia</item>
+    <item key="about.translators.affiliation-practitioner-label">Affiliated with Dharma Centers</item>
     <item key="about.translators.affiliation-label">of translators</item>
     <item key="about.translators.region-title">Translators by region</item>
     <item key="about.translators.region-label">of translators</item>
@@ -274,8 +268,7 @@
     <item key="about.sponsor-a-sutra.donate-label">Donate online</item>
     <item key="about.sponsor-a-sutra.text-list-title">Texts Available for Sponsorship</item>
     <item key="about.sponsor-a-sutra.priority-title">Priority Texts</item>
-    <item key="about.sponsor-a-sutra.priority-description">The sponsorship, translation, and publication of texts in this section are
-        considered a priority for 84000.</item>
+    <item key="about.sponsor-a-sutra.priority-description">The sponsorship, translation, and publication of texts in this section are considered a priority for 84000.</item>
     <item key="about.sponsor-a-sutra.text-list-section-title">Sponsorship of up to #pageUpper pages (USD$#groupCost)</item>
     <item key="about.sponsor-a-sutra.text-list-remainder-title">Sponsorship of more than #pageLower pages</item>
     <item key="about.sponsor-a-sutra.part-icon-label-available">sponsorship opportunity available</item>
@@ -288,6 +281,16 @@
         <p>For more information, please contact Huang Jing Rui, executive director, at: <a href="mailto:jingrui@84000.co">jingrui@84000.co</a>
         </p>
     </item>
+    
+    <!-- Progress chart widget -->
+    <item key="widget.progress-panel.support-label">Join Us</item>
+    <item key="widget.progress-panel.support-description">
+        <p>With the help of our <a href="#commsSiteUrl/about/sponsors">108 founding sponsors</a> and thousands of individual donors, we provide funding to the translators who are working to safeguard these important teachings for future generations.</p>
+    </item>
+    <item key="widget.progress-panel.kangyur-count-after-label">Total Kangyur Pages</item>
+    <item key="widget.progress-panel.translation-count-after-label">Pages in Translation</item>
+    <item key="widget.progress-panel.translated-count-after-label">Pages Translated</item>
+    <item key="widget.progress-panel.published-count-after-label">Pages Published</item>
     
     <!-- Download dana -->
     <item key="widget.download-dana.widget-title">Download Dāna</item>

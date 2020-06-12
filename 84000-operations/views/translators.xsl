@@ -65,6 +65,18 @@
                                             <span class="small text-muted">
                                                 <xsl:value-of select="concat(' / ', $person-id)"/>
                                             </span>
+                                            <ul class="list-inline inline-dots small">
+                                                <xsl:if test="m:affiliation[@type eq 'academic']">
+                                                    <li class="text-success">
+                                                        <xsl:value-of select="'Academic'"/>
+                                                    </li>
+                                                </xsl:if>
+                                                <xsl:if test="m:affiliation[@type eq 'practitioner']">
+                                                    <li class="text-warning">
+                                                        <xsl:value-of select="'Practitioner'"/>
+                                                    </li>
+                                                </xsl:if>
+                                            </ul>
                                         </div>
                                         <div class="col-sm-3">
                                             <xsl:if test="m:team">
