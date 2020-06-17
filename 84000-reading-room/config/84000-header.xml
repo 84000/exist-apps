@@ -162,7 +162,7 @@
         <item class="home" url="https://84000.co/ch">
             <label key="label-home">首頁</label>
         </item>
-        <item class="news" url="#ch-news">
+        <item class="news" url="#news">
             <label key="label-news">最新訊息</label>
             <item url="https://84000.co/ch-news">
                 <label key="label-news-all">最新訊息</label>
@@ -195,7 +195,7 @@
                 <label key="label-search">雲端藏經閣檢索</label>
             </item>
         </item>
-        <item class="resources" url="#ch-resources">
+        <item class="resources" url="#resources">
             <label key="label-resources">資源分享</label>
             <item url="https://84000.co/ch-resources/ch-teachings-on-sutra">
                 <label key="label-teachings-on-sutra">八萬四千講經堂</label>
@@ -213,7 +213,7 @@
                 <label key="label-translator-resources">Translator Resources</label>
             </item>
         </item>
-        <item class="about" url="#ch-about">
+        <item class="about" url="#about">
             <label key="label-about">關於我們</label>
             <item url="https://84000.co/ch-about/ch-about-origin">
                 <label key="label-origin">成立緣起</label>
@@ -249,7 +249,7 @@
                 <label key="label-faq">常見問題</label>
             </item>
         </item>
-        <item class="how-to-help" url="#ch-howhelp">
+        <item class="how-to-help" url="#how-to-help">
             <label key="label-how-to-help">如何參與</label>
             <item url="https://84000.co/ch-how-you-can-help/ch-sponsor-a-page">
                 <label key="label-sponsor-a-page">贊助一頁佛經</label>

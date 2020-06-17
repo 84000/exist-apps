@@ -26,6 +26,7 @@
         </xsl:variable>
         
         <xsl:variable name="entities" select="m:entities/m:entity"/>
+        <xsl:variable name="cached-expressions" select="m:cached-expressions/m:item"/>
         <xsl:variable name="expressions" select="m:expressions/m:item"/>
         <xsl:variable name="matched-glossary-items" select="m:matched-glossaries/m:item"/>
         <xsl:variable name="similar-glossary-items" select="m:similar-glossaries/m:item"/>
@@ -239,16 +240,16 @@
                                             </xsl:if>
                                             <a href="#expressions" aria-controls="expressions" role="tab" data-toggle="tab" aria-expanded="false">
                                                 <xsl:value-of select="'Expressions '"/>
-                                                <xsl:if test="not($request-test-alternative gt '')">
+                                                <!--<xsl:if test="not($request-test-alternative gt '')">-->
                                                     <span class="badge">
                                                         <xsl:value-of select="count($expressions)"/>
                                                         <!--<xsl:value-of select="'/'"/>
                                                         <xsl:value-of select="count($expressions//tei:match[@requested-glossary eq 'true'])"/>-->
                                                     </span>
-                                                </xsl:if>
+                                                <!--</xsl:if>-->
                                             </a>
                                         </li>
-                                        <li role="presentation">
+                                        <!--<li role="presentation">
                                             <xsl:if test="$request-item-tab eq 'test-alternatives'">
                                                 <xsl:attribute name="class" select="'active'"/>
                                             </xsl:if>
@@ -257,12 +258,12 @@
                                                 <xsl:if test="$request-test-alternative gt ''">
                                                     <span class="badge">
                                                         <xsl:value-of select="count($expressions)"/>
-                                                        <!--<xsl:value-of select="'/'"/>
-                                                        <xsl:value-of select="count($expressions//tei:match[@requested-glossary eq 'true'])"/>-->
+                                                        <!-\-<xsl:value-of select="'/'"/>
+                                                        <xsl:value-of select="count($expressions//tei:match[@requested-glossary eq 'true'])"/>-\->
                                                     </span>
                                                 </xsl:if>
                                             </a>
-                                        </li>
+                                        </li>-->
                                         <li role="presentation">
                                             <xsl:if test="$request-item-tab eq 'glossary-form'">
                                                 <xsl:attribute name="class" select="'active'"/>
@@ -390,14 +391,14 @@
                                             
                                         </div>
                                         
-                                        <!-- Tab for testing alternative spellings -->
+                                        <!--<!-\- Tab for testing alternative spellings -\->
                                         <div id="test-alternatives" class="tab-pane fade" role="tabpanel">
                                             
                                             <xsl:if test="$request-item-tab eq 'test-alternatives'">
                                                 <xsl:attribute name="class" select="'tab-pane fade in active'"/>
                                             </xsl:if>
                                             
-                                            <!-- Form: for searching the text -->
+                                            <!-\- Form: for searching the text -\->
                                             <xsl:call-template name="form">
                                                 <xsl:with-param name="tab-id" select="'test-alternatives'"/>
                                                 <xsl:with-param name="form-class" select="'form-inline bottom-margin'"/>
@@ -447,7 +448,7 @@
                                                 </xsl:when>
                                                 
                                             </xsl:choose>
-                                        </div>
+                                        </div>-->
                                         
                                         <!-- Tab: A form for editing the glossary -->
                                         <div id="glossary-form" class="tab-pane fade" role="tabpanel">

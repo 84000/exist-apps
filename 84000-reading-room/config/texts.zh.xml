@@ -263,6 +263,14 @@
     <item key="widget.progress-panel.translation-count-before-label">翻譯中頁數</item>
     <item key="widget.progress-panel.translated-count-before-label">已翻譯頁數</item>
     <item key="widget.progress-panel.published-count-before-label">翻譯中頁數</item>
+    
+    <!-- Progress panel widget -->
+    <item key="widget.progress-chart.tab-title-kangyur">Kangyur</item>
+    <item key="widget.progress-chart.tab-subtitle-kangyur">~70,000 pages</item>
+    <item key="widget.progress-chart.tab-description-kangyur">With your support, we are on track to meet our 25 year goal to translate and make freely available the Kangyur by the year 2035.</item>
+    <item key="widget.progress-chart.tab-title-combined">And Tengyur</item>
+    <item key="widget.progress-chart.tab-subtitle-combined">~230,000 pages</item>
+    <item key="widget.progress-chart.tab-description-combined">Our 100 year goal is the translation and free accessibility of all 231,800 pages of the Tibetan Buddhist Canon.</item>
 
     <!-- Download dana -->
     <item key="widget.download-dana.widget-title">Download Dāna</item>

@@ -409,26 +409,30 @@
             <h2>
                 <xsl:value-of select="eft:item/eft:label"/>
             </h2>
-            <p data-match-height="homepage-categories">
+            <p data-match-height="nav-category-description">
                 <xsl:value-of select="eft:item/eft:description"/>
             </p>
-            <div class="list-group">
-                <xsl:for-each select="eft:item/eft:item">
-                    <a class="list-group-item">
-                        <xsl:attribute name="href">
-                            <xsl:call-template name="local-url">
-                                <xsl:with-param name="url" select="@url"/>
-                            </xsl:call-template>
+            <xsl:call-template name="nav-category-items"/>
+        </div>
+    </xsl:template>
+    
+    <xsl:template match="eft:nav-category-items[eft:item/eft:item]" name="nav-category-items">
+        <div class="list-group">
+            <xsl:for-each select="eft:item/eft:item">
+                <a class="list-group-item">
+                    <xsl:attribute name="href">
+                        <xsl:call-template name="local-url">
+                            <xsl:with-param name="url" select="@url"/>
+                        </xsl:call-template>
+                    </xsl:attribute>
+                    <xsl:if test="@url = $active-url">
+                        <xsl:attribute name="class">
+                            <xsl:value-of select="'list-group-item active'"/>
                         </xsl:attribute>
-                        <xsl:if test="@url = $active-url">
-                            <xsl:attribute name="class">
-                                <xsl:value-of select="'list-group-item active'"/>
-                            </xsl:attribute>
-                        </xsl:if>
-                        <xsl:value-of select="eft:label"/>
-                    </a>
-                </xsl:for-each>
-            </div>
+                    </xsl:if>
+                    <xsl:value-of select="eft:label"/>
+                </a>
+            </xsl:for-each>
         </div>
     </xsl:template>
     

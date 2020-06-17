@@ -167,12 +167,12 @@
                                     <label for="pages-min" class="col-sm-4 control-label text-left">
                                         <xsl:value-of select="'Number of pages:'"/>
                                     </label>
-                                    <div class="col-sm-3">
+                                    <div class="col-sm-4">
                                         <input type="number" name="pages-min" id="pages-min" class="form-control" placeholder="min.">
                                             <xsl:attribute name="value" select="m:request/@pages-min"/>
                                         </input>
                                     </div>
-                                    <div class="col-sm-offset-1 col-sm-3">
+                                    <div class="col-sm-4">
                                         <input type="number" name="pages-max" id="pages-max" class="form-control" placeholder="max.">
                                             <xsl:attribute name="value" select="m:request/@pages-max"/>
                                         </input>
@@ -189,12 +189,12 @@
                                     <label for="toh-min" class="col-sm-4 control-label text-left">
                                         <xsl:value-of select="'Tohoku numbers:'"/>
                                     </label>
-                                    <div class="col-sm-3">
+                                    <div class="col-sm-4">
                                         <input type="number" name="toh-min" id="toh-min" class="form-control" placeholder="min.">
                                             <xsl:attribute name="value" select="m:request/@toh-min"/>
                                         </input>
                                     </div>
-                                    <div class="col-sm-offset-1 col-sm-3">
+                                    <div class="col-sm-4">
                                         <input type="number" name="toh-max" id="toh-max" class="form-control" placeholder="max.">
                                             <xsl:attribute name="value" select="m:request/@toh-max"/>
                                         </input>
@@ -268,7 +268,7 @@
                                     <label for="sort" class="col-sm-4 control-label text-left">
                                         <xsl:value-of select="'Sort order:'"/>
                                     </label>
-                                    <div class="col-sm-8 print-width-override">
+                                    <div class="col-sm-6 print-width-override">
                                         <select name="sort" id="sort" class="form-control">
                                             <option value="toh">
                                                 <xsl:if test="m:texts/@sort eq 'toh'">
@@ -323,9 +323,12 @@
                                     </xsl:choose>
                                 </div>
                                 
-                                <!-- De-duplication -->
+                                <!-- Grouping -->
                                 <div class="form-group hidden-print">
-                                    <div class="col-sm-9">
+                                    <label for="sort" class="col-sm-4 control-label text-left">
+                                        <xsl:value-of select="'Grouping:'"/>
+                                    </label>
+                                    <div class="col-sm-6">
                                         <select name="deduplicate" class="form-control">
                                             <option value="toh">
                                                 <xsl:if test="m:texts/@deduplicate eq 'toh'">
@@ -347,7 +350,7 @@
                                             </option>
                                         </select>
                                     </div>
-                                    <div class="col-sm-3">
+                                    <div class="col-sm-2">
                                         <input type="submit" value="Search" class="btn btn-primary pull-right"/>
                                     </div>
                                 </div>

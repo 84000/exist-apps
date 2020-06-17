@@ -18,46 +18,57 @@
                                     <div class="tabs-container">
               
                                         <ul class="nav nav-tabs" role="tablist">
-                                            <li role="presentation" class="active">
-                                                <a href="#eft-progress-chart-kangyur-tab" aria-controls="eft-progress-chart-kangyur-tab" role="tab" data-toggle="tab">
-                                                    <xsl:value-of select="'Kangyur'"/>
-                                                    <br/>
-                                                    <small class="text-muted">
-                                                        <xsl:value-of select="'~70,000 pages'"/>
-                                                        <!--<br/><xsl:value-of select="'In 25 years'"/>-->
-                                                    </small>
-                                                </a>
-                                            </li>
-                                            <li role="presentation">
-                                                <a href="#eft-progress-chart-combined-tab" aria-controls="eft-progress-chart-combined-tab" role="tab" data-toggle="tab">
-                                                    <xsl:value-of select="'And Tengyur'"/>
-                                                    <br/>
-                                                    <small class="text-muted">
-                                                        <xsl:value-of select="'~230,000 pages'"/>
-                                                        <!--<br/><xsl:value-of select="'In 100 years'"/>-->
-                                                    </small>
-                                                </a>
-                                            </li>
+                                            <xsl:for-each select="('kangyur', 'combined')">
+                                                <xsl:variable name="tab" select="." as="xs:string"/>
+                                                <li role="presentation">
+                                                    <xsl:if test="$tab eq 'kangyur'">
+                                                        <xsl:attribute name="class" select="'active'"/>
+                                                    </xsl:if>
+                                                    <a role="tab" data-toggle="tab">
+                                                        <xsl:attribute name="href" select="concat('#eft-progress-chart-', $tab ,'-tab')"/>
+                                                        <xsl:attribute name="aria-controls" select="concat('#eft-progress-chart-', $tab ,'-tab')"/>
+                                                        <xsl:call-template name="text">
+                                                            <xsl:with-param name="global-key" select="concat('widget.progress-chart.tab-title-', $tab)"/>
+                                                        </xsl:call-template>
+                                                        <br/>
+                                                        <small class="text-muted">
+                                                            <xsl:call-template name="text">
+                                                                <xsl:with-param name="global-key" select="concat('widget.progress-chart.tab-subtitle-', $tab)"/>
+                                                            </xsl:call-template>
+                                                        </small>
+                                                    </a>
+                                                </li>
+                                            </xsl:for-each>
                                         </ul>
                                         <div class="tab-content">
-                                            <div role="tabpanel" class="tab-pane fade in active" id="eft-progress-chart-kangyur-tab">
-                                                <xsl:call-template name="chart">
-                                                    <xsl:with-param name="outline-summary" select="m:outline-summary[@work eq 'UT4CZ5369']"/>
-                                                </xsl:call-template>
-                                                <p class="top-margin small">
-                                                    <xsl:value-of select="'Our 25 year goal is the translation of the Kangyur, the ancient Tibetan library of the Buddha''s sūtras made up of approximately 70,000 pages.'"/>
-                                                </p>
-                                            </div>
-                                            <div role="tabpanel" class="tab-pane fade" id="eft-progress-chart-combined-tab">
-                                                <xsl:call-template name="chart">
-                                                    <xsl:with-param name="outline-summary" select="m:outline-summary"/>
-                                                </xsl:call-template>
-                                                <p class="top-margin small">
-                                                    <xsl:value-of select="'Our 100 year goal is the translation of the Kangyur and the Tengyur—the canonical commentaries—making a total of 240,000 pages of translation.'"/>
-                                                </p>
-                                            </div>
+                                            <xsl:variable name="outline-summary" select="m:outline-summary"/>
+                                            <xsl:for-each select="('kangyur', 'combined')">
+                                                <xsl:variable name="tab" select="." as="xs:string"/>
+                                                <div role="tabpanel" class="tab-pane fade">
+                                                    <xsl:attribute name="id" select="concat('eft-progress-chart-', $tab ,'-tab')"/>
+                                                    <xsl:if test="$tab eq 'kangyur'">
+                                                        <xsl:attribute name="class" select="'tab-pane fade in active'"/>
+                                                    </xsl:if>
+                                                    <xsl:choose>
+                                                        <xsl:when test="$tab eq 'kangyur'">
+                                                            <xsl:call-template name="chart">
+                                                                <xsl:with-param name="outline-summary" select="$outline-summary[@work eq 'UT4CZ5369']"/>
+                                                            </xsl:call-template>
+                                                        </xsl:when>
+                                                        <xsl:when test="$tab eq 'combined'">
+                                                            <xsl:call-template name="chart">
+                                                                <xsl:with-param name="outline-summary" select="$outline-summary"/>
+                                                            </xsl:call-template>
+                                                        </xsl:when>
+                                                    </xsl:choose>
+                                                    <p class="top-margin small">
+                                                        <xsl:call-template name="text">
+                                                            <xsl:with-param name="global-key" select="concat('widget.progress-chart.tab-description-', $tab)"/>
+                                                        </xsl:call-template>
+                                                    </p>
+                                                </div>
+                                            </xsl:for-each>
                                         </div>
-              
                                     </div>
                                     
                                     <div class="text-center top-margin">
@@ -125,7 +136,7 @@
         <xsl:variable name="percent-in-translation" select="xs:integer((sum($outline-summary/m:tohs/m:pages/@in-translation ! xs:integer(.)) div sum($outline-summary/m:tohs/m:pages/@count ! xs:integer(.))) * 100)" as="xs:integer"/>
         <xsl:variable name="percent-remaining" select="100 - ($percent-in-translation + $percent-published + $percent-translated)" as="xs:integer"/>
         
-        <div style="height:300px;">
+        <div style="height:270px;">
             <xsl:attribute name="id" select="$chart-id"/>
         </div>
         

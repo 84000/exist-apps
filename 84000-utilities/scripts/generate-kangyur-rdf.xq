@@ -14,6 +14,7 @@ import module namespace store="http://read.84000.co/store" at "../../84000-readi
 (:  NOTE: 
     - To run switch environment store-conf/@type to master
     - Remove nodes in 84000-data/rdf/file-versions for each file to be created
+      OR comment out where clause to do all
 :)
 
 let $work := $source:ekangyur-work
@@ -27,17 +28,17 @@ return (
     concat('Count tohs: ', count($kangyur-toh-keys)),
     concat('Count rdf files: ', count($rdf-collection//rdf:RDF)),
     concat('Count rdf version elements: ', count($rdf-file-versions//m:file-version)),
-    concat('Missing rdf files: ', string-join($kangyur-toh-keys[not(concat(., '.rdf') = $rdf-file-versions//m:file-version/@file-name)], ', '))(:,
+    (:concat('Missing rdf files: ', string-join($kangyur-toh-keys[not(concat(., '.rdf') = $rdf-file-versions//m:file-version/@file-name)], ', ')),:)
     '------------------------------------------------',
     (# exist:batch-transaction #) {
-        for $toh-key at $position in $kangyur-toh-keys[. eq 'toh1-1']
-            (\:let $text-ref := $text-refs//m:text[@key eq $tei-toh-key]:\)
+        for $toh-key at $position in $kangyur-toh-keys(:[. eq 'toh1-1']:)
+            (:let $text-ref := $text-refs//m:text[@key eq $tei-toh-key]:)
             let $file-name := concat($toh-key, '.rdf')
             let $file-path := concat($common:data-path, '/rdf/', $file-name)
             let $tei := $teis[tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl[@key eq $toh-key]]
             let $tei-version-str := translation:version-str($tei)
             let $rdf-version-str := $rdf-file-versions//m:file-version[@file-name eq $file-name]/@version
-            where not($rdf-version-str) or not(translation-status:is-current-version($tei-version-str, $rdf-version-str))(\::\)
+            where not($rdf-version-str) or not(translation-status:is-current-version($tei-version-str, $rdf-version-str))
             order by $toh-key
         return 
             string-join((
@@ -45,7 +46,7 @@ return (
                 xs:string($file-name),
                 xs:string($tei-version-str),
                 xs:string($rdf-version-str),
-                store:store-new-rdf($file-path, $tei-version-str)(\::\)
+                store:store-new-rdf($file-path, $tei-version-str)
             ), ' : ')
-    }:)
+    }(::)
 )

@@ -20,7 +20,7 @@ declare option exist:serialize "method=xml indent=no";
 let $resource-id := request:get-parameter('resource-id', '')
 let $start-letter := request:get-parameter('start-letter', '')
 let $glossary-id := request:get-parameter('glossary-id', '')
-let $test-alternative := request:get-parameter('test-alternative', '')
+(:let $test-alternative := request:get-parameter('test-alternative', ''):)
 let $item-tab := request:get-parameter('tab-id', 'expressions')
 let $form-action := request:get-parameter('form-action', '')
 
@@ -143,7 +143,7 @@ let $translation-glossarized :=
             doc(concat($common:app-path, "/xslt/glossarize.xsl")), 
             <parameters>
                 <param name="glossary-id" value="{ $glossary-id }"/>
-                <param name="additional-term" value="{ $test-alternative }"/>
+                <!--<param name="additional-term" value="{ $test-alternative }"/>-->
             </parameters>
         )
     else
@@ -234,13 +234,13 @@ return
         'operations/glossary',
         'operations',
         (
-            <request 
-                xmlns="http://read.84000.co/ns/1.0" 
-                resource-id="{ $resource-id }"
-                start-letter="{ $start-letter }"
-                glossary-id="{ $glossary-id }"
-                test-alternative="{ $test-alternative }"
-                item-tab="{ $item-tab }"/>,
+            element { QName('http://read.84000.co/ns/1.0', 'request') }{
+                attribute resource-id { $resource-id },
+                attribute start-letter { $start-letter },
+                attribute glossary-id { $glossary-id },
+                (: attribute test-alternative { $test-alternative }, :)
+                attribute item-tab { $item-tab }
+            },
             $translation-glossary,
             $selected-glossary-item,
             $entities,

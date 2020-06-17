@@ -416,30 +416,42 @@ declare function update-translation:update-glossary($gloss as element(tei:gloss)
     (: Find the item in the TEI :)
     let $existing-value := $gloss/parent::tei:item
     
-    let $new-value :=
-    element {node-name($existing-value)} {
-        $existing-value/@*,
-        element {node-name($existing-value/tei:gloss)} {
-            $existing-value/tei:gloss/@*,
-            if (count($request-expression-locations) gt 0) then
-                (
-                $existing-value/tei:gloss/node()[not(self::tei:expression)],
-                for $expression-location in $request-expression-locations
-                return
-                    element expression {
-                        attribute location {$expression-location}
-                    }
+    let $item-ws := "&#10;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;"
+    let $gloss-ws := "&#10;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;"
+    let $term-ws := "&#10;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;"
+    
+    let $new-value := 
+        element {node-name($existing-value)} {
+            $existing-value/@*,
+            $gloss-ws,
+            element {node-name($existing-value/tei:gloss)} {
+                $existing-value/tei:gloss/@*,
+                if (count($request-expression-locations) gt 0) then (
+                    for $node in $existing-value/tei:gloss/*[not(self::tei:expression)]
+                    return (
+                        $term-ws,
+                        $node
+                    ),
+                    for $expression-location in $request-expression-locations
+                    return (
+                        $term-ws,
+                        element expression {
+                            attribute location {$expression-location}
+                        }
+                    ),
+                    $gloss-ws
                 )
-            else
-                $existing-value/tei:gloss/node()
+                else
+                    $existing-value/tei:gloss/node()
+            },
+            $item-ws
         }
-    }
     
     let $parent := $existing-value/parent::tei:list[@type eq 'glossary']
     
     let $insert-following := $existing-value/preceding-sibling::tei:item[1]
         
-        where $existing-value or $new-value
+    where $existing-value or $new-value
     return
         (: Do the update :)
         common:update('glossary-item', $existing-value, $new-value, $parent, $insert-following)
