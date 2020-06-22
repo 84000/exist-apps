@@ -11,6 +11,7 @@ declare namespace tei="http://www.tei-c.org/ns/1.0";
 import module namespace common="http://read.84000.co/common" at "common.xql";
 import module namespace tei-content="http://read.84000.co/tei-content" at "tei-content.xql";
 import module namespace translation="http://read.84000.co/translation" at "translation.xql";
+import module namespace entities="http://read.84000.co/entities" at "entities.xql";
 import module namespace functx="http://www.functx.com";
 
 declare variable $glossary:translations := 
@@ -21,6 +22,7 @@ declare variable $glossary:translations :=
         ];
 
 declare variable $glossary:types := ('term', 'person', 'place', 'text');
+declare variable $glossary:modes := ('match', 'marked');
 
 declare function glossary:lookup-options() as element() {
     <options>
@@ -236,13 +238,23 @@ declare function glossary:sort-term($gloss as element(tei:gloss)) as xs:string? 
 };
 
 declare function glossary:item($gloss as element(tei:gloss), $include-context as xs:boolean) as element(m:item) {
-    <item xmlns="http://read.84000.co/ns/1.0"
-        uid="{ $gloss/@xml:id/string() }" 
-        type="{ $gloss/@type/string() }" 
-        mode="{ $gloss/@mode/string() }">
-        {
+    
+    (: Get the shared entity :)
+    let $entity := entities:entities($gloss/@xml:id)//m:entity[1]
+    
+    return
+        element { QName('http://read.84000.co/ns/1.0', 'item') } {
+            
+            (: TO DO: revert this to @xml:id? Don't know why we rename the attribute here :)
+            attribute uid { $gloss/@xml:id },
+            
+            $gloss/@mode,
+            
+            (: TO BE DEPRECATED - use entity types instead :)
+            $gloss/@type,
+            
             (: Sort term :)
-            element { QName('http://read.84000.co/ns/1.0','sort-term') }{
+            element sort-term {
                 glossary:sort-term($gloss)
             },
             
@@ -288,12 +300,18 @@ declare function glossary:item($gloss as element(tei:gloss), $include-context as
                 else if($term[@type eq 'definition']) then
                     <definition>
                     { 
-                        $term/node() 
+                        $term/node()
                     }
                     </definition>
                 else
                     ()
             ,
+            
+            (: Include the entity :)
+            $entity,
+            
+            (: Include the cache :)
+            $gloss/m:cache,
             
             (: Context :)
             if($include-context) then
@@ -351,7 +369,6 @@ declare function glossary:item($gloss as element(tei:gloss), $include-context as
             else
                 ()
          }
-    </item>
 };
 
 declare function glossary:glossary-items($term as xs:string, $lang as xs:string) as element() {

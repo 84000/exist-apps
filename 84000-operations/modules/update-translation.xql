@@ -5,6 +5,7 @@ import module namespace tei-content = "http://read.84000.co/tei-content" at "../
 import module namespace sponsors = "http://read.84000.co/sponsors" at "../../84000-reading-room/modules/sponsors.xql";
 import module namespace contributors = "http://read.84000.co/contributors" at "../../84000-reading-room/modules/contributors.xql";
 import module namespace sponsorship = "http://read.84000.co/sponsorship" at "../../84000-reading-room/modules/sponsorship.xql";
+import module namespace glossary = "http://read.84000.co/glossary" at "../../84000-reading-room/modules/glossary.xql";
 import module namespace functx = "http://www.functx.com";
 
 declare namespace m = "http://read.84000.co/ns/1.0";
@@ -156,7 +157,7 @@ declare function update-translation:title-statement($tei as element(tei:TEI)) as
             if($form-action eq 'update-titles') then
             
                 (: Add all the titles from the request :)
-                for $title-text-param at $loop-index in common:sort-trailing-number-in-string(request:get-parameter-names()[starts-with(., 'title-text-')], '-')
+                for $title-text-param in common:sort-trailing-number-in-string(request:get-parameter-names()[starts-with(., 'title-text-')], '-')
                     let $title-index := substring-after($title-text-param, 'title-text-')
                     let $title-text := request:get-parameter($title-text-param, '')
                     let $title-type := request:get-parameter(concat('title-type-', $title-index), '')
@@ -208,7 +209,7 @@ declare function update-translation:title-statement($tei as element(tei:TEI)) as
                 ,
 
                 (: Add other contributors from the request :)
-                for $contributor-id-param at $loop-index in common:sort-trailing-number-in-string(request:get-parameter-names()[starts-with(., 'contributor-id-')], '-')
+                for $contributor-id-param in common:sort-trailing-number-in-string(request:get-parameter-names()[starts-with(., 'contributor-id-')], '-')
                     
                     let $contributor-id := request:get-parameter($contributor-id-param, '')
                     let $contributor-index := substring-after($contributor-id-param, 'contributor-id-')
@@ -248,7 +249,7 @@ declare function update-translation:title-statement($tei as element(tei:TEI)) as
             if($form-action eq 'update-sponsorship') then (
                 
                 (: Add all the sponsors from the request :)
-                for $sponsor-id-param at $loop-index in common:sort-trailing-number-in-string(request:get-parameter-names()[starts-with(., 'sponsor-id-')], '-')
+                for $sponsor-id-param in common:sort-trailing-number-in-string(request:get-parameter-names()[starts-with(., 'sponsor-id-')], '-')
                     
                     let $sponsor-index := substring-after($sponsor-id-param, 'sponsor-id-')
                     let $sponsor-id := request:get-parameter($sponsor-id-param, '')
@@ -409,54 +410,166 @@ declare function update-translation:locations($tei as element(tei:TEI)) as eleme
 
 };
 
-declare function update-translation:update-glossary($gloss as element(tei:gloss)) as element()* {
+
+declare function update-translation:update-glossary($tei as element(tei:TEI), $glossary-id as xs:string) as element()* {
     
-    let $request-expression-locations := request:get-parameter('expression-location[]', '')
+    (: To create a new item pass a $glossary-id that is unused :)
     
-    (: Find the item in the TEI :)
-    let $existing-value := $gloss/parent::tei:item
+    let $parent := $tei//tei:back//tei:list[@type eq 'glossary']
     
-    let $item-ws := "&#10;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;"
-    let $gloss-ws := "&#10;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;"
-    let $term-ws := "&#10;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;"
+    (: Look for an existing item :)
+    let $existing-value := $parent/tei:item[tei:gloss/@xml:id eq $glossary-id]
     
+    (: Only construct the new value if there's an id :)
     let $new-value := 
-        element {node-name($existing-value)} {
-            $existing-value/@*,
-            $gloss-ws,
-            element {node-name($existing-value/tei:gloss)} {
-                $existing-value/tei:gloss/@*,
-                if (count($request-expression-locations) gt 0) then (
-                    for $node in $existing-value/tei:gloss/*[not(self::tei:expression)]
-                    return (
-                        $term-ws,
-                        $node
-                    ),
-                    for $expression-location in $request-expression-locations
-                    return (
-                        $term-ws,
-                        element expression {
-                            attribute location {$expression-location}
-                        }
-                    ),
-                    $gloss-ws
-                )
-                else
-                    $existing-value/tei:gloss/node()
-            },
-            $item-ws
-        }
-    
-    let $parent := $existing-value/parent::tei:list[@type eq 'glossary']
+        if(
+            (: Only construct the new value if it's existing or it's a valid id :)
+            $existing-value or tei-content:valid-xml-id($tei, $glossary-id)
+            
+            (: If it's an update and the main term is '' then don't construct the new value e.g. delete existing :)
+            and not(request:get-parameter('form-action', '') eq 'update-glossary' and request:get-parameter('term-main-text-1', '') eq '')
+        ) then
+            element { QName('http://www.tei-c.org/ns/1.0', 'item') } {
+                $existing-value/@*,
+                common:ws(6),
+                element { QName('http://www.tei-c.org/ns/1.0', 'gloss') } {
+                    
+                    (: Update glossary item :)
+                    if (request:get-parameter('form-action', '') eq 'update-glossary') then (
+                        
+                        (: @xml:id :)
+                        attribute xml:id { $glossary-id },
+                        
+                        (: @type :)
+                        if(request:get-parameter('glossary-type', '') = $glossary:types) then 
+                            attribute type { request:get-parameter('glossary-type', '') }
+                        else
+                            $existing-value/tei:gloss/@type
+                        ,
+                        
+                        (: @mode :)
+                        if(request:get-parameter('glossary-mode', '') = $glossary:modes) then 
+                            attribute mode { request:get-parameter('glossary-mode', '') }
+                        else
+                            $existing-value/tei:gloss/@mode
+                        ,
+                        
+                        (: Get the terms from the request :)
+                        for $term-param in common:sort-trailing-number-in-string(request:get-parameter-names()[starts-with(., 'term-main-text-')], '-')
+                        let $term-index := substring-after($term-param, 'term-main-text-')
+                        let $term-text := request:get-parameter($term-param, '')
+                        let $term-lang := common:valid-lang(request:get-parameter(concat('term-main-lang-', $term-index), ''))
+                        where $term-text gt ''
+                        return (
+                            common:ws(7),
+                            element { QName('http://www.tei-c.org/ns/1.0', 'term') } {(
+                                if($term-lang gt '' and not($term-lang eq 'en')) then
+                                    attribute xml:lang { $term-lang }
+                                else ()
+                                ,
+                                text{ $term-text }
+                            )}
+                        ),
+                        
+                        (: Get the alternatives from the request :)
+                        for $term-param in common:sort-trailing-number-in-string(request:get-parameter-names()[starts-with(., 'term-alternative-text-')], '-')
+                        let $term-index := substring-after($term-param, 'term-alternative-text-')
+                        let $term-text := request:get-parameter($term-param, '')
+                        let $term-lang := common:valid-lang(request:get-parameter(concat('term-alternative-lang-', $term-index), ''))
+                        where $term-text gt ''
+                        return (
+                            common:ws(7),
+                            element { QName('http://www.tei-c.org/ns/1.0', 'term') } {(
+                                attribute type { 'alternative' },
+                                if($term-lang gt '' and not($term-lang eq 'en')) then
+                                    attribute xml:lang { $term-lang }
+                                else ()
+                                ,
+                                text{ $term-text }
+                            )}
+                        ),
+                        
+                        (: Get the definitions from the request :)
+                        for $term-param in common:sort-trailing-number-in-string(request:get-parameter-names()[starts-with(., 'term-definition-text-')], '-')
+                        let $term-text := request:get-parameter($term-param, '')
+                        let $term-text-markup := common:markup($term-text, 'http://www.tei-c.org/ns/1.0')
+                        where $term-text gt '' and $term-text-markup
+                        return (
+                            common:ws(7),
+                            element { QName('http://www.tei-c.org/ns/1.0', 'term') } {(
+                                attribute type { 'definition' },
+                                $term-text-markup
+                            )}
+                        ),
+                        
+                        (: Copy other nodes :)
+                        for $node in $existing-value/tei:gloss/*[not(self::tei:term)]
+                        return (
+                            common:ws(7),
+                            $node
+                        ),
+                        
+                        (: end of gloss :)
+                        common:ws(6)
+                    )
+                    
+                    (: Update cache (expression locations) :)
+                    else if (request:get-parameter('form-action', '') eq 'cache-expressions') then (
+                        
+                        (: Copy other nodes :)
+                        $existing-value/tei:gloss/@*,
+                        for $node in $existing-value/tei:gloss/*[not(self::m:cache)]
+                        return (
+                            common:ws(7),
+                            $node
+                        ),
+                        
+                        (: Add an eft:cache node :)
+                        (
+                            common:ws(7),
+                            element { QName('http://read.84000.co/ns/1.0', 'cache') } {(
+                            
+                                (: Add each expression-location from the request :)
+                                for $expression-location in request:get-parameter('expression-location[]', '')
+                                return (
+                                    common:ws(8),
+                                    element expression {
+                                        attribute location {$expression-location}
+                                    }
+                                ),
+                                
+                                (: end of cache :)
+                                common:ws(7)
+                                
+                            )}
+                        ),
+                        
+                        (: end of gloss :)
+                        common:ws(6)
+                    )
+                    
+                    (: Default: copy :)
+                    else (
+                        $existing-value/tei:gloss/@*,
+                        $existing-value/tei:gloss/node()
+                    )
+                        
+                },
+                
+                (: end of item :)
+                common:ws(5)
+            }
+        else ()
     
     let $insert-following := $existing-value/preceding-sibling::tei:item[1]
-        
+    
     where $existing-value or $new-value
     return
         (: Do the update :)
         common:update('glossary-item', $existing-value, $new-value, $parent, $insert-following)
         
         (:element update-debug {
+            attribute glossary-id { $glossary-id },
             element existing-value { $existing-value }, 
             element new-value { $new-value }, 
             element parent { $parent }, 

@@ -104,8 +104,7 @@ return
                             return
                                 element value {
                                     attribute key { $lang },
-                                    
-                                    replace(serialize($string/node()), functx:escape-for-regex('xmlns="http://read.84000.co/ns/1.0"'), '')
+                                    common:markdown($string/node(), 'http://read.84000.co/ns/1.0')
                                     (:functx:change-element-ns-deep(
                                         $string/node(),
                                         'http://www.w3.org/1999/xhtml',

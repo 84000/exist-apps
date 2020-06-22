@@ -71,7 +71,7 @@
                             
                         </form>
                         
-                        <div class="well well-sm top-margin">
+                        <div class="well well-sm well-code top-margin">
                             <code class="small">
                                 <xsl:for-each select="//execution">
                                     <strong>

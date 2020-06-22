@@ -34,8 +34,10 @@ declare variable $common:environment := doc($common:environment-path)/m:environm
 
 declare variable $common:diacritic-letters := 'āḍḥīḷḹṃṇñṅṛṝṣśṭūṁ';
 declare variable $common:diacritic-letters-without := 'adhillmnnnrrsstum';
-declare variable $common:node-ws := '&#10;&#32;&#32;&#32;&#32;';
-declare variable $common:line-ws := '&#10;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;';
+declare variable $common:chr-nl := '&#10;';
+declare variable $common:chr-tab := '&#32;&#32;&#32;&#32;';
+declare variable $common:node-ws := $common:chr-nl || $common:chr-tab;
+declare variable $common:line-ws := $common:chr-nl || $common:chr-tab || $common:chr-tab;
 
 declare
     %test:assertEquals("84000-reading-room")
@@ -125,6 +127,23 @@ declare function common:normalize-space($nodes as node()*) as node()*{
            }
         else
             ()
+};
+
+(: Create xml whitespace to prettify updates :)
+declare function common:ws($indent as xs:integer) as xs:string {
+    concat($common:chr-nl, functx:repeat-string($common:chr-tab, $indent))
+};
+
+(: Markup string :)
+(: TO DO: replace with proper markup function :)
+declare function common:markup($markdown as xs:string, $namespace as xs:string) as node()* {
+    functx:change-element-ns-deep(<nodes>{common:unescape($markdown)}</nodes>, $namespace, '')/node()
+};
+
+(: Markdown nodes :)
+(: TO DO: replace with proper markdown function :)
+declare function common:markdown($nodes as node()*, $namespace as xs:string) as xs:string {
+    common:normalize-space( text { replace(serialize($nodes), concat('\s', functx:escape-for-regex(concat('xmlns="', $namespace, '"'))), '') } )
 };
 
 (: Strips ids from content to avoid duplicates where multiple documents are merged :)

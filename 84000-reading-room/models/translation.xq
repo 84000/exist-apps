@@ -61,7 +61,7 @@ let $translation-data :=
     </translation>
 
 (: Parse the milestones :)
-let $translation-data-milestones := 
+let $translation-data := 
     transform:transform(
         $translation-data,
         doc(concat($common:app-path, "/xslt/milestones.xsl")), 
@@ -69,12 +69,20 @@ let $translation-data-milestones :=
     )
 
 (: Parse the refs and pointers :)
-let $translation-data-internal-refs := 
+let $translation-data := 
     transform:transform(
-        $translation-data-milestones,
+        $translation-data,
         doc(concat($common:app-path, "/xslt/internal-refs.xsl")), 
         <parameters/>
     )
+
+(:(\: Parse the glossary :\)
+let $translation-data := 
+    transform:transform(
+        $translation-data,
+        doc(concat($common:app-path, "/xslt/glossarize.xsl")), 
+        <parameters/>
+    ):)
 
 return
     common:response(
@@ -93,7 +101,7 @@ return
                 <value key="#LinkToPage">{ translation:canonical-html($source/@key) }</value>
             </replace-text>,
             (: Include translation data :)
-            $translation-data-internal-refs
+            $translation-data
         )
     )
 

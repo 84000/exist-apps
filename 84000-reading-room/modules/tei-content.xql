@@ -341,3 +341,24 @@ declare function tei-content:last-updated($fileDesc as element()?) as xs:dateTim
     xs:dateTime(($fileDesc/tei:notesStmt/tei:note[@type eq "lastUpdated"][@date-time gt ''][1]/@date-time, '2010-01-01T00:00:00')[1])
 };
 
+declare function tei-content:valid-xml-id($tei as element(tei:TEI), $xml-id as xs:string) as xs:boolean {
+
+    let $translation-id := tei-content:id($tei)
+    let $leading-string := concat($translation-id, '-')
+    let $trailing-integer := substring-after($xml-id, $leading-string)
+    return (
+        starts-with($xml-id, $leading-string)
+        and functx:is-a-number($trailing-integer)
+    )
+    
+};
+
+declare function tei-content:next-xml-id($tei as element(tei:TEI)) as xs:string {
+
+    let $translation-id := tei-content:id($tei)
+    let $max-id := max($tei//@xml:id ! substring-after(., $translation-id) ! substring(., 2) ! common:integer(.))
+    return
+        string-join(($translation-id, xs:string(sum(($max-id, 1)))), '-')
+    
+};
+

@@ -523,12 +523,14 @@
                                                         <xsl:value-of select="'Edit sponsorship'"/>
                                                     </a>
                                                 </li>
-                                                <!--<li>
-                                                    <a>
-                                                        <xsl:attribute name="href" select="concat('/glossary.html?resource-id=', $text-id)"/>
-                                                        <xsl:value-of select="'Edit glossary'"/>
-                                                    </a>
-                                                </li>-->
+                                                <xsl:if test="$status/@marked-up eq 'true'">
+                                                    <li>
+                                                        <a>
+                                                            <xsl:attribute name="href" select="concat('/glossary.html?resource-id=', $text-id)"/>
+                                                            <xsl:value-of select="'Edit glossary'"/>
+                                                        </a>
+                                                    </li>
+                                                </xsl:if>
                                                 <xsl:if test="@status-group eq 'published' and m:downloads[@tei-version != m:download/@version]">
                                                     <li>
                                                         <span class="text-danger">

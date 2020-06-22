@@ -105,8 +105,8 @@
                 <item url="https://read.84000.co/about/impact.html">
                     <label key="label-impact">Reader Engagement</label>
                 </item>
-                <item url="https://84000.co/about/achievements">
-                    <label key="label-achievements">Achievements</label>
+                <item url="https://84000.co/about/media">
+                    <label key="label-achievements">Media</label>
                 </item>
                 <item url="https://84000.co/about/milestones">
                     <label key="label-milestones">Milestones</label>
@@ -139,7 +139,7 @@
             </item>
         </item>        
         <item class="how-to-help" url="#how-to-help">
-            <label key="label-how-to-help">How You Can Help</label>
+            <label key="label-how-to-help">Support Us</label>
             <item url="https://84000.co/how-you-can-help/sponsor-a-page">
                 <label key="label-sponsor-a-page">Sponsor a Page</label>
             </item>
@@ -167,19 +167,19 @@
             <item url="https://84000.co/ch-news">
                 <label key="label-news-all">最新訊息</label>
             </item>
-            <item url="https://84000.co/category/公告">
+            <item url="https://84000.co/category/ch-announcements">
                 <label key="label-news-announcements">公告</label>
             </item>
-            <item url="https://84000.co/category/活動">
+            <item url="https://84000.co/category/ch-events">
                 <label key="label-news-events">活動</label>
             </item>
-            <item url="https://84000.co/category/人物">
+            <item url="https://84000.co/category/ch-people">
                 <label key="label-news-people">人物</label>
             </item>
-            <item url="https://84000.co/category/話題">
+            <item url="https://84000.co/category/ch-in-depth">
                 <label key="label-news-in-depth">話題</label>
             </item>
-            <item url="https://84000.co/category/電子通訊">
+            <item url="https://84000.co/category/ch-newsletter">
                 <label key="label-newsletters">電子通訊</label>
             </item>
         </item>

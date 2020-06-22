@@ -12,6 +12,7 @@
     
     <!-- Parse milestones adding @label -->
     <xsl:template match="tei:milestone">
+        <xsl:variable name="this-milestone" select="."/>
         <milestone xmlns="http://www.tei-c.org/ns/1.0">
             <xsl:copy-of select="@*"/>
             <!-- Get the prefix of the ancestor -->
@@ -22,13 +23,12 @@
         </milestone>
     </xsl:template>
     
-    <!--<xsl:template match="tei:p |  tei:q |  tei:lg |  tei:list |  tei:table |  tei:label |  tei:trailer">
+    <xsl:template match="tei:*[not(self::tei:milestone)][preceding-sibling::tei:milestone[@xml:id]]">
         <xsl:copy>
-            <xsl:copy-of select="@*"/>
-            <xsl:attribute name="nearest-milestone" select="ancestor-or-self::*[preceding-sibling::tei:milestone[@xml:id]][1]/preceding-sibling::tei:milestone[@xml:id][1]/@xml:id"/>
-            <xsl:copy-of select="node()"/>
+            <xsl:attribute name="nearest-milestone" select="preceding-sibling::tei:milestone[@xml:id][1]/@xml:id"/>
+            <xsl:apply-templates select="node()|@*"/>
         </xsl:copy>
-    </xsl:template>-->
+    </xsl:template>
     
     <!-- Supress warning -->
     <xsl:template match="m:dummy">

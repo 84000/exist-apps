@@ -227,7 +227,7 @@
                                     <xsl:value-of select="eft:social[@xml:lang = $lang]/eft:label"/>
                                 </span>
                                 <xsl:for-each select="eft:social[@xml:lang = $lang]/eft:item">
-                                    <a target="_blank">
+                                    <a>
                                         <xsl:choose>
                                             <xsl:when test="starts-with(@url, '#')">
                                                 <xsl:attribute name="data-toggle">
@@ -235,6 +235,11 @@
                                                 </xsl:attribute>
                                                 <xsl:attribute name="data-target">
                                                     <xsl:value-of select="@url"/>
+                                                </xsl:attribute>
+                                            </xsl:when>
+                                            <xsl:when test="not(starts-with(@url, 'https://84000.co'))">
+                                                <xsl:attribute name="target">
+                                                    <xsl:value-of select="'_blank'"/>
                                                 </xsl:attribute>
                                             </xsl:when>
                                         </xsl:choose>

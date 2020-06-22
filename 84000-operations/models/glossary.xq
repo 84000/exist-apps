@@ -18,76 +18,63 @@ import module namespace search="http://read.84000.co/search" at "../../84000-rea
 declare option exist:serialize "method=xml indent=no";
 
 let $resource-id := request:get-parameter('resource-id', '')
-let $start-letter := request:get-parameter('start-letter', '')
 let $glossary-id := request:get-parameter('glossary-id', '')
-(:let $test-alternative := request:get-parameter('test-alternative', ''):)
+let $start-letter := request:get-parameter('start-letter', '')
 let $item-tab := request:get-parameter('tab-id', 'expressions')
 let $form-action := request:get-parameter('form-action', '')
 
-let $translation-files := translations:files($tei-content:marked-up-status-ids)
-
 let $resource-id := 
     if(not($resource-id)) then
-        $translation-files/m:file[1]/@id
+        translations:files($tei-content:marked-up-status-ids)/m:file[1]/@id
     else
         $resource-id
 
 let $tei := tei-content:tei($resource-id, 'translation')
-let $selected-glossary-tei := $tei//tei:back//tei:list[@type eq 'glossary']/tei:item/tei:gloss[@xml:id eq $glossary-id]
+
+(: Get the next xml:id :)
+let $glossary-id := 
+    if($glossary-id eq '') then
+        tei-content:next-xml-id($tei)
+    else
+        $glossary-id
 
 (: Process the input :)
 let $update-glossary := 
-    if($selected-glossary-tei and request:get-parameter('form-action', '') = ('cache-expressions')) then
-        update-translation:update-glossary($selected-glossary-tei)
+    if($form-action = ('update-glossary', 'cache-expressions')) then
+        update-translation:update-glossary($tei, $glossary-id)
     else
         ()
 
-let $selected-glossary-start-letter := upper-case(substring($selected-glossary-tei/tei:term[not(@type)][not(@xml:lang) or @xml:lang eq ''][1], 1, 1))
+(: Get the glossary from the tei :)
+let $selected-glossary-tei := $tei//tei:back//tei:list[@type eq 'glossary']/tei:item/tei:gloss[@xml:id eq $glossary-id]
+(: Validate there is a record :)
+let $glossary-id := $selected-glossary-tei/@xml:id
+
+(: Set a start letter :)
 let $start-letter := 
     if($start-letter eq '') then
-        if($selected-glossary-start-letter gt '') then
-            $selected-glossary-start-letter
+        if($selected-glossary-tei) then
+            upper-case(substring(glossary:sort-term($selected-glossary-tei), 1, 1))
         else
             'A'
     else
         $start-letter
 
+(: Get all the glossaries for the page :)
 let $translation-glossary := 
     if($tei) then
         translation:glossary($tei, $start-letter)
     else
         ()
 
-let $entities := entities:entities($translation-glossary/m:item/@uid/string())
-
-let $entity-id := 
-    if($glossary-id gt '') then
-        $entities/m:entity[m:definition/@id = $glossary-id]/@xml:id/string()
-    else
-        ''
-
-let $matched-glossary-ids := 
-    if($entity-id gt '') then
-        $entities/m:entity[@xml:id eq $entity-id]/m:definition/@id/string()
-    else
-        ()
-
+(: Get glossaries with the same entity :)
+let $matched-glossary-ids := $translation-glossary/m:item[@uid eq $glossary-id]/m:entity/m:definition/@id/string()
 let $matched-glossaries := 
     element { QName('http://read.84000.co/ns/1.0', 'matched-glossaries') }{
         glossary:items(($matched-glossary-ids, $glossary-id), true())
     }
 
-let $selected-glossary-item :=
-    element { QName('http://read.84000.co/ns/1.0', 'selected-glossary') }{
-        if($glossary-id gt '') then
-        (
-            $matched-glossaries/m:item[@uid eq $glossary-id],
-            $selected-glossary-tei
-        )
-        else
-            ()
-    }
-
+(: Get similar glossaries using data accross matches :)
 let $similar-glossaries := 
     element { QName('http://read.84000.co/ns/1.0', 'similar-glossaries') }{
         if($matched-glossaries/m:item) then
@@ -96,17 +83,29 @@ let $similar-glossaries :=
             ()
     }
 
-let $similar-entities := 
-    element { QName('http://read.84000.co/ns/1.0', 'similar-entities') }{
-        if($matched-glossaries/m:item) then
-            entities:entities($similar-glossaries/m:item/@uid/string())/m:entity
+(: Add extra data about the selected glossary - markdown :)
+let $selected-glossary-item :=
+    element { QName('http://read.84000.co/ns/1.0', 'selected-glossary') }{
+        if($glossary-id gt '') then
+        (
+            $matched-glossaries/m:item[@uid eq $glossary-id],
+            element markdown {
+                for $definition in $matched-glossaries/m:item[@uid eq $glossary-id]/m:definition
+                return 
+                    element { node-name($definition) }{
+                        $definition/@*,
+                        common:markdown($definition/node(), 'http://www.tei-c.org/ns/1.0')
+                    }
+            }
+        )
         else
             ()
     }
 
-(: Compile the translation data :)
+(: Compile the translation data - we need text-id and toh-key :)
 let $text-id := tei-content:id($tei)
 let $source := tei-content:source($tei, $resource-id)
+let $toh-key := $source/@key
 
 (: Parse the glossary using the transformation :)
 let $translation-glossarized := 
@@ -119,7 +118,7 @@ let $translation-glossarized :=
                         id="{ $text-id }"
                         status="{ tei-content:translation-status($tei) }"
                         status-group="{ tei-content:translation-status-group($tei) }"
-                        page-url="{ translation:canonical-html($source/@key) }">
+                        page-url="{ translation:canonical-html($toh-key) }">
                         {(
                             translation:titles($tei),
                             $source,
@@ -143,7 +142,7 @@ let $translation-glossarized :=
             doc(concat($common:app-path, "/xslt/glossarize.xsl")), 
             <parameters>
                 <param name="glossary-id" value="{ $glossary-id }"/>
-                <!--<param name="additional-term" value="{ $test-alternative }"/>-->
+                <param name="use-cache" value="false"/>
             </parameters>
         )
     else
@@ -155,31 +154,17 @@ let $expressions :=
     
         (: Specify the context :)
         attribute text-id { $text-id },
-        attribute toh-key { $source/@key },
+        attribute toh-key { $toh-key },
         attribute reading-room-url { $common:environment/m:url[@id eq 'reading-room']/text() },
         
         (: Expression items :)
         for $match at $match-position in $translation-glossarized//tei:match[@requested-glossary eq 'true']
         
             (: Expand to the node containing the match :)
-            let $match-context := $match/ancestor-or-self::*[self::tei:p |  self::tei:q |  self::tei:lg |  self::tei:list |  self::tei:table |  self::tei:label |  self::tei:trailer][1]
-            
-            (: Also account for matches in glossary definitions :)
-            let $match-context := 
-                if(not($match-context))then
-                    $match/ancestor-or-self::*[@uid][1]
-                else
-                    $match-context
-            
-            (: Get the nearest milestone :)
-            let $nearest-milestone := $match-context/ancestor-or-self::*[preceding-sibling::tei:milestone[@xml:id]][1]/preceding-sibling::tei:milestone[@xml:id][1]
+            let $match-context := ($match/ancestor-or-self::*[@nearest-milestone][1], $match/ancestor-or-self::*[@uid][1])[1]
             
             (: Group by nearest id - either milestone or glossary id :)
-            let $nearest-xmlid := 
-                if($nearest-milestone) then
-                    $nearest-milestone/@xml:id
-                else
-                    $match-context/@uid
+            let $nearest-xml-id := ($match-context/@nearest-milestone, $match-context/@uid)[1]
             
             (: Get the nearest milestone :)
             let $nearest-ref := 
@@ -193,7 +178,7 @@ let $expressions :=
                     (: To do: find the preceding folio outside of the scope of this match-context :)
                     ()
             
-            group by $nearest-xmlid
+            group by $nearest-xml-id
             
             (: Retain the position :)
             order by $match-position[1]
@@ -203,8 +188,10 @@ let $expressions :=
             (: Return an item per nearest milestone :)
             element { QName('http://read.84000.co/ns/1.0', 'item') }{
                 
+                attribute nearest-xml-id { $nearest-xml-id },
+                
                 (: Return the milestone :)
-                $nearest-milestone[1],
+                $translation-glossarized//tei:milestone[@xml:id eq $nearest-xml-id],
                 
                 (: Return the data - this needs grouping as a context may have multiple matches, but a milestone may have multiple contexts :)
                 for $match-context-single at $context-position in $match-context
@@ -235,19 +222,23 @@ return
         'operations',
         (
             element { QName('http://read.84000.co/ns/1.0', 'request') }{
-                attribute resource-id { $resource-id },
-                attribute start-letter { $start-letter },
-                attribute glossary-id { $glossary-id },
-                (: attribute test-alternative { $test-alternative }, :)
-                attribute item-tab { $item-tab }
+                attribute resource-id { request:get-parameter('resource-id', '') },
+                attribute start-letter { request:get-parameter('start-letter', '') },
+                attribute glossary-id { request:get-parameter('glossary-id', '') },
+                attribute item-tab { request:get-parameter('tab-id', 'expressions') }
+            },
+            element { QName('http://read.84000.co/ns/1.0', 'text') }{
+                attribute id { $text-id },
+                attribute toh-key { $toh-key},
+                element { QName('http://read.84000.co/ns/1.0', 'title') }{
+                    tei-content:title($tei)
+                }
             },
             $translation-glossary,
             $selected-glossary-item,
-            $entities,
+            $expressions,
             $matched-glossaries,
             $similar-glossaries,
-            $similar-entities,
-            $expressions,
-            $translation-files
+            $update-glossary
         )
     )
