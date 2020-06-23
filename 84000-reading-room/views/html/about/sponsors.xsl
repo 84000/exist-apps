@@ -4,122 +4,152 @@
     <xsl:import href="about.xsl"/>
     
     <xsl:template match="/m:response">
-        <xsl:variable name="content">
-            
-            <div>
-                <xsl:call-template name="local-text">
-                    <xsl:with-param name="local-key" select="'page-intro'"/>
-                </xsl:call-template>
-            </div>
-            
-            <h3>
-                <xsl:call-template name="local-text">
-                    <xsl:with-param name="local-key" select="'matching-funds-title'"/>
-                </xsl:call-template>
-            </h3>
-            
-            <xsl:call-template name="local-text">
-                <xsl:with-param name="local-key" select="'matching-funds-description'"/>
-            </xsl:call-template>
-            
-            <hr class="no-margin"/>
-            
-            <div id="matching-funds" class="list-group accordion" role="tablist" aria-multiselectable="false">
-                
-                <xsl:call-template name="expand-item">
-                    <xsl:with-param name="id" select="'matching-funds-sponsors'"/>
-                    <xsl:with-param name="title">
-                        <xsl:call-template name="local-text">
-                            <xsl:with-param name="local-key" select="'matching-funds-list-title'"/>
-                        </xsl:call-template>
-                    </xsl:with-param>
-                    <xsl:with-param name="content">
-                        <ul>
-                            <xsl:for-each select="m:sponsors/m:sponsor[m:type[@id eq 'matching-funds']]">
-                                <li>
-                                    <xsl:value-of select="m:label"/>
-                                </li>
-                            </xsl:for-each>
-                        </ul>
-                    </xsl:with-param>
-                </xsl:call-template>
-            </div>
-            
-            <h3>
-                <xsl:call-template name="local-text">
-                    <xsl:with-param name="local-key" select="'sutras-title'"/>
-                    
-                </xsl:call-template>
-            </h3>
-            
-            <xsl:call-template name="local-text">
-                <xsl:with-param name="local-key" select="'sutras-description'"/>
-            </xsl:call-template>
-            
-            <hr class="no-margin"/>
-            
-            <div id="sutra" class="list-group accordion" role="tablist" aria-multiselectable="false">
-                <xsl:call-template name="expand-item">
-                    <xsl:with-param name="id" select="'sutra-sponsors'"/>
-                    <xsl:with-param name="title">
-                        <xsl:call-template name="local-text">
-                            <xsl:with-param name="local-key" select="'sutras-list-title'"/>
-                        </xsl:call-template>
-                    </xsl:with-param>
-                    <xsl:with-param name="content">
-                        <xsl:call-template name="text-list">
-                            <xsl:with-param name="texts" select="m:sponsored-texts/m:text"/>
-                            <xsl:with-param name="grouping" select="'sponsorship'"/>
-                            <xsl:with-param name="show-sponsors" select="true()"/>
-                        </xsl:call-template>
-                    </xsl:with-param>
-                </xsl:call-template>
-            </div>
-            
-            <h3>
-                <xsl:call-template name="local-text">
-                    <xsl:with-param name="local-key" select="'founding-title'"/>
-                </xsl:call-template>
-            </h3>
-            
-            <xsl:call-template name="local-text">
-                <xsl:with-param name="local-key" select="'founding-description'"/>
-            </xsl:call-template>
-            
-            <hr class="no-margin"/>
-            
-            <div id="founding" class="list-group accordion" role="tablist" aria-multiselectable="false">
-                <xsl:call-template name="expand-item">
-                    <xsl:with-param name="id" select="'founding-sponsors'"/>
-                    <xsl:with-param name="title">
-                        <xsl:call-template name="local-text">
-                            <xsl:with-param name="local-key" select="'founding-list-title'"/>
-                        </xsl:call-template>
-                    </xsl:with-param>
-                    <xsl:with-param name="content">
-                        <table class="table no-border">
-                            <xsl:for-each select="m:sponsors/m:sponsor[m:type[@id eq 'founding']]">
-                                <xsl:sort select="xs:integer(fn:substring-after(@xml:id, 'sponsor-'))"/>
-                                <tr>
-                                    <td class="nowrap">
-                                        <xsl:value-of select="concat(position(), '.')"/>
-                                    </td>
-                                    <td>
-                                        <xsl:value-of select="m:label"/>
-                                    </td>
-                                </tr>
-                            </xsl:for-each>
-                        </table>
-                    </xsl:with-param>
-                </xsl:call-template>
-                
-            </div>
-            
-        </xsl:variable>
         
         <xsl:call-template name="about">
-            <xsl:with-param name="sub-content" select="$content"/>
+            
+            <xsl:with-param name="sub-content">
+                <div>
+                    <xsl:call-template name="local-text">
+                        <xsl:with-param name="local-key" select="'page-intro'"/>
+                    </xsl:call-template>
+                </div>
+                
+                <h3>
+                    <xsl:call-template name="local-text">
+                        <xsl:with-param name="local-key" select="'matching-funds-title'"/>
+                    </xsl:call-template>
+                </h3>
+                
+                <xsl:call-template name="local-text">
+                    <xsl:with-param name="local-key" select="'matching-funds-description'"/>
+                </xsl:call-template>
+                
+                <hr class="no-margin"/>
+                
+                <div id="matching-funds" class="list-group accordion" role="tablist" aria-multiselectable="false">
+                    
+                    <xsl:call-template name="expand-item">
+                        <xsl:with-param name="id" select="'matching-funds-sponsors'"/>
+                        <xsl:with-param name="title">
+                            <xsl:call-template name="local-text">
+                                <xsl:with-param name="local-key" select="'matching-funds-list-title'"/>
+                            </xsl:call-template>
+                        </xsl:with-param>
+                        <xsl:with-param name="content">
+                            <ul>
+                                <xsl:for-each select="m:sponsors/m:sponsor[m:type[@id eq 'matching-funds']]">
+                                    <li>
+                                        <xsl:value-of select="m:label"/>
+                                    </li>
+                                </xsl:for-each>
+                            </ul>
+                        </xsl:with-param>
+                    </xsl:call-template>
+                </div>
+                
+                <h3>
+                    <xsl:call-template name="local-text">
+                        <xsl:with-param name="local-key" select="'sutras-title'"/>
+                        
+                    </xsl:call-template>
+                </h3>
+                
+                <xsl:call-template name="local-text">
+                    <xsl:with-param name="local-key" select="'sutras-description'"/>
+                </xsl:call-template>
+                
+                <hr class="no-margin"/>
+                
+                <div id="sutra" class="list-group accordion" role="tablist" aria-multiselectable="false">
+                    <xsl:call-template name="expand-item">
+                        <xsl:with-param name="id" select="'sutra-sponsors'"/>
+                        <xsl:with-param name="title">
+                            <xsl:call-template name="local-text">
+                                <xsl:with-param name="local-key" select="'sutras-list-title'"/>
+                            </xsl:call-template>
+                        </xsl:with-param>
+                        <xsl:with-param name="content">
+                            <xsl:call-template name="text-list">
+                                <xsl:with-param name="texts" select="m:sponsored-texts/m:text"/>
+                                <xsl:with-param name="grouping" select="'sponsorship'"/>
+                                <xsl:with-param name="show-sponsors" select="true()"/>
+                            </xsl:call-template>
+                        </xsl:with-param>
+                    </xsl:call-template>
+                </div>
+                
+                <h3>
+                    <xsl:call-template name="local-text">
+                        <xsl:with-param name="local-key" select="'founding-title'"/>
+                    </xsl:call-template>
+                </h3>
+                
+                <xsl:call-template name="local-text">
+                    <xsl:with-param name="local-key" select="'founding-description'"/>
+                </xsl:call-template>
+                
+                <hr class="no-margin"/>
+                
+                <div id="founding" class="list-group accordion" role="tablist" aria-multiselectable="false">
+                    <xsl:call-template name="expand-item">
+                        <xsl:with-param name="id" select="'founding-sponsors'"/>
+                        <xsl:with-param name="title">
+                            <xsl:call-template name="local-text">
+                                <xsl:with-param name="local-key" select="'founding-list-title'"/>
+                            </xsl:call-template>
+                        </xsl:with-param>
+                        <xsl:with-param name="content">
+                            <table class="table no-border">
+                                <xsl:for-each select="m:sponsors/m:sponsor[m:type[@id eq 'founding']]">
+                                    <xsl:sort select="xs:integer(fn:substring-after(@xml:id, 'sponsor-'))"/>
+                                    <tr>
+                                        <td class="nowrap">
+                                            <xsl:value-of select="concat(position(), '.')"/>
+                                        </td>
+                                        <td>
+                                            <xsl:value-of select="m:label"/>
+                                        </td>
+                                    </tr>
+                                </xsl:for-each>
+                            </table>
+                        </xsl:with-param>
+                    </xsl:call-template>
+                    
+                </div>
+            </xsl:with-param>
+            
+            <xsl:with-param name="side-content">
+                
+                <xsl:variable name="nav-sidebar">
+                    <m:nav-sidebar>
+                        <xsl:copy-of select="$eft-header/m:navigation[@xml:lang eq $lang]/m:item/m:item[m:item[@url eq $active-url]]"/>
+                    </m:nav-sidebar>
+                </xsl:variable>
+                <div class="nav-sidebar">
+                    <xsl:apply-templates select="$nav-sidebar"/>
+                </div>
+                
+                <div id="project-progress">
+                    <!-- Project Progress, get from ajax -->
+                    <xsl:attribute name="data-onload-replace">
+                        <xsl:choose>
+                            <xsl:when test="$lang eq 'zh'">
+                                <xsl:value-of select="concat('{&#34;#project-progress&#34;:&#34;', $reading-room-path,'/widget/progress-chart.html#eft-progress-chart-panel&#34;}')"/>
+                            </xsl:when>
+                            <xsl:otherwise>
+                                <xsl:value-of select="concat('{&#34;#project-progress&#34;:&#34;', $reading-room-path,'/widget/progress-chart.html?lang=', $lang ,'#eft-progress-chart-panel&#34;}')"/>
+                            </xsl:otherwise>
+                        </xsl:choose>
+                    </xsl:attribute>                            
+                    <div class="panel panel-default">
+                        <div class="panel-body loading"/>
+                    </div>
+                </div>
+                
+            </xsl:with-param>
+            
             <xsl:with-param name="page-class" select="'about'"/>
+            
         </xsl:call-template>
         
     </xsl:template>

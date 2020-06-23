@@ -63,13 +63,15 @@
     <item key="about.progress.page-intro">
         <p>In 2009, it was determined that only 5% of the Canon had ever been translated into a language spoken today. Working first on the Kangyur, we have raised that figure to almost 10%, and are on track to reach our 2035 target for the complete translation and publication of the Kangyur’s 70,000 pages.</p>
     </item>
+    <item key="about.progress.kangyur-summary-heading">Progress on our 25 year goal to translate the Kangyur</item>
+    <item key="about.progress.combined-summary-heading">Progress on our 100 year goal to translate the Kangyur and Tengyur</item>
     <item key="about.progress.outlook">
         <p>Once the Kangyur is complete, the remaining 75 years of our project will be dedicated to the translation and online publication of the 161,800 pages of the Tengyur.</p>
     </item>
     <item key="about.progress.translations-published-label">Published Translations</item>
     <item key="about.progress.translations-awaiting-label">Translations Awaiting Publication</item>
     <item key="about.progress.translations-remaining-label">Other Translations In Progress</item>
-    <item key="about.progress.context-label">of the Kangyur</item>
+    <item key="about.progress.context-label">completed</item>
     <item key="about.progress.related-pages">
         <h3>Other Related Pages</h3>
         <ul class="list-unstyled">

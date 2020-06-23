@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" version="3.0" exclude-result-prefixes="#all">
     
+    <xsl:import href="charts.xsl"/>
     <xsl:import href="../website-page.xsl"/>
     <xsl:import href="../../../xslt/lang.xsl"/>
     <xsl:import href="../../../xslt/functions.xsl"/>
@@ -51,13 +52,15 @@
                                                     </xsl:if>
                                                     <xsl:choose>
                                                         <xsl:when test="$tab eq 'kangyur'">
-                                                            <xsl:call-template name="chart">
+                                                            <xsl:call-template name="progress-pie-chart">
                                                                 <xsl:with-param name="outline-summary" select="$outline-summary[@work eq 'UT4CZ5369']"/>
+                                                                <xsl:with-param name="show-legend" select="true()"/>
                                                             </xsl:call-template>
                                                         </xsl:when>
                                                         <xsl:when test="$tab eq 'combined'">
-                                                            <xsl:call-template name="chart">
+                                                            <xsl:call-template name="progress-pie-chart">
                                                                 <xsl:with-param name="outline-summary" select="$outline-summary"/>
+                                                                <xsl:with-param name="show-legend" select="true()"/>
                                                             </xsl:call-template>
                                                         </xsl:when>
                                                     </xsl:choose>
@@ -124,97 +127,6 @@
             </xsl:with-param>
         </xsl:call-template>
         
-    </xsl:template>
-    
-    <xsl:template name="chart">
-        
-        <xsl:param name="outline-summary" as="element(m:outline-summary)*" required="yes"/>
-        
-        <xsl:variable name="chart-id" select="string-join(('eft-progress-chart', $outline-summary/@work ! string(.)), '-')"/>
-        <xsl:variable name="percent-published" select="xs:integer((sum($outline-summary/m:tohs/m:pages/@published ! xs:integer(.)) div sum($outline-summary/m:tohs/m:pages/@count ! xs:integer(.))) * 100)" as="xs:integer"/>
-        <xsl:variable name="percent-translated" select="xs:integer((sum($outline-summary/m:tohs/m:pages/@translated ! xs:integer(.)) div sum($outline-summary/m:tohs/m:pages/@count ! xs:integer(.))) * 100)" as="xs:integer"/>
-        <xsl:variable name="percent-in-translation" select="xs:integer((sum($outline-summary/m:tohs/m:pages/@in-translation ! xs:integer(.)) div sum($outline-summary/m:tohs/m:pages/@count ! xs:integer(.))) * 100)" as="xs:integer"/>
-        <xsl:variable name="percent-remaining" select="100 - ($percent-in-translation + $percent-published + $percent-translated)" as="xs:integer"/>
-        
-        <div style="height:270px;">
-            <xsl:attribute name="id" select="$chart-id"/>
-        </div>
-        
-        <script>
-            Highcharts.chart("<xsl:value-of select="$chart-id"/>", {
-                chart: {
-                    plotBackgroundColor: null,
-                    plotBorderWidth: null,
-                    plotShadow: false,
-                    type: 'pie'
-                },
-                title: {
-                    text: undefined
-                },
-                tooltip: {
-                    pointFormat: '{point.y}% {series.data.name}'
-                },
-                legend: {
-                    align: 'left',
-                    verticalAlign: 'top',
-                    layout: 'vertical',
-                    floating: true,
-                    backgroundColor: 'rgba(255,255,255,.7)',
-                    itemMarginBottom: 5,
-                    labelFormat: '{name}'
-                },
-                accessibility: {
-                    point: {
-                        valueSuffix: '%'
-                    }
-                },
-                plotOptions: {
-                    pie: {
-                        allowPointSelect: false,
-                        cursor: 'pointer',
-                        dataLabels: {
-                            enabled: true,
-                            format: '{point.y}%',
-                            distance: '-30%',
-                            style: {
-                                color: '#fff',
-                                fontSize: '12px',
-                                fontWeight: 'normal',
-                                textOutline: 'none'
-                            }
-                        },
-                        showInLegend: true,
-                        point: {
-                            events: {
-                                legendItemClick: function(){
-                                    return false;
-                                }
-                            }
-                        }
-                    }
-                },
-                series: [{
-                    name: 'Translation status',
-                    data: [{
-                        name: 'Published',
-                        y: <xsl:value-of select="$percent-published"/>,
-                        color: '#566e90'
-                    }, {
-                        name: 'Translated',
-                        y: <xsl:value-of select="$percent-translated"/>,
-                        color: '#b76c1e'
-                    }, {
-                        name: 'In translation',
-                        y: <xsl:value-of select="$percent-in-translation"/>,
-                        color: '#752d28'
-                    }, {
-                        name: 'Not started',
-                        y: <xsl:value-of select="$percent-remaining"/>,
-                        color: '#4d6253'
-                    }]
-                }]
-            });
-        </script>
     </xsl:template>
     
 </xsl:stylesheet>

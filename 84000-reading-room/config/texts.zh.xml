@@ -63,11 +63,13 @@
     <item key="about.progress.page-quote">「佛法如何助益 你… 你都應當有親身體會。若能持此心念, 透過佛典翻譯向外開展這份善念, 必將能讓世界有所改變。」</item>
     <item key="about.progress.page-quote-author">吉噶康楚仁波切</item>
     <item key="about.progress.page-intro">【八萬四千．佛典傳譯】百年願景的第一部份，是將《甘珠爾》的70,000頁翻譯成英文，之後再開始《丹珠爾》161,800頁的翻譯工作。翻譯作品列表</item>
+    <item key="about.progress.kangyur-summary-heading">Progress on our 25 year goal to translate the Kangyur</item>
+    <item key="about.progress.combined-summary-heading">Progress on our 100 year goal to translate the Kangyur and Tengyur</item>
     <item key="about.progress.outlook"/>
     <item key="about.progress.translations-published-label">Published Translations</item>
     <item key="about.progress.translations-awaiting-label">Translations Awaiting Publication</item>
     <item key="about.progress.translations-remaining-label">Other Translations In Progress</item>
-    <item key="about.progress.context-label">of the Kangyur</item>
+    <item key="about.progress.context-label">completed</item>
     <item key="about.progress.related-pages">
         <h3>Other Related Pages</h3>
         <ul class="list-unstyled">

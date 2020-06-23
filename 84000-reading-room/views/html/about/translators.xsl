@@ -225,6 +225,36 @@
                 </div>
             </xsl:with-param>
             
+            <xsl:with-param name="side-content">
+                
+                <xsl:variable name="nav-sidebar">
+                    <m:nav-sidebar>
+                        <xsl:copy-of select="$eft-header/m:navigation[@xml:lang eq $lang]/m:item/m:item[m:item[@url eq $active-url]]"/>
+                    </m:nav-sidebar>
+                </xsl:variable>
+                <div class="nav-sidebar">
+                    <xsl:apply-templates select="$nav-sidebar"/>
+                </div>
+                
+                <div id="project-progress">
+                    <!-- Project Progress, get from ajax -->
+                    <xsl:attribute name="data-onload-replace">
+                        <xsl:choose>
+                            <xsl:when test="$lang eq 'zh'">
+                                <xsl:value-of select="concat('{&#34;#project-progress&#34;:&#34;', $reading-room-path,'/widget/progress-chart.html#eft-progress-chart-panel&#34;}')"/>
+                            </xsl:when>
+                            <xsl:otherwise>
+                                <xsl:value-of select="concat('{&#34;#project-progress&#34;:&#34;', $reading-room-path,'/widget/progress-chart.html?lang=', $lang ,'#eft-progress-chart-panel&#34;}')"/>
+                            </xsl:otherwise>
+                        </xsl:choose>
+                    </xsl:attribute>                            
+                    <div class="panel panel-default">
+                        <div class="panel-body loading"/>
+                    </div>
+                </div>
+                
+            </xsl:with-param>
+            
             <xsl:with-param name="page-class" select="'about'"/>
             
         </xsl:call-template>
