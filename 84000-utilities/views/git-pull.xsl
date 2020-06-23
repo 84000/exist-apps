@@ -71,23 +71,21 @@
                             
                         </form>
                         
-                        <div class="well well-sm well-code top-margin">
-                            <code class="small">
-                                <xsl:for-each select="//execution">
-                                    <strong>
-                                        <xsl:value-of select="concat($environment/m:label, '$ ', commandline/text())"/>
-                                    </strong>
-                                    <br/>
-                                    <xsl:for-each select="stdout/line">
-                                        <xsl:value-of select="concat('  ', text())"/>
-                                        <br/>
-                                    </xsl:for-each>
-                                    <hr/>
-                                </xsl:for-each>
+                        <div class="well well-sm well-code top-margin small monospace">
+                            <xsl:for-each select="//execution">
                                 <strong>
-                                    <xsl:value-of select="concat($environment/m:label, '$ ...')"/>
+                                    <xsl:value-of select="concat($environment/m:label, '$ ', commandline/text())"/>
                                 </strong>
-                            </code>
+                                <br/>
+                                <xsl:for-each select="stdout/line">
+                                    <xsl:value-of select="concat('  ', text())"/>
+                                    <br/>
+                                </xsl:for-each>
+                                <hr/>
+                            </xsl:for-each>
+                            <strong>
+                                <xsl:value-of select="concat($environment/m:label, '$ ...')"/>
+                            </strong>
                         </div>
                         
                     </div>
