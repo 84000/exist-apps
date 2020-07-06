@@ -38,13 +38,13 @@ let $page-in-text := number($folio/@page-in-text)
 
 let $folio-translation := 
     if ($tei and $page-in-text gt 0) then
-        translation:folio-content($tei, $toh-key, $page-in-text, ())
+        translation:folio-content($tei, $toh-key, $page-in-text)
     else
         ()
 
 let $folio-source := 
     if ($location and $page-in-text gt 0) then
-        source:etext-page($location, $page-in-text, true())
+        source:etext-page($location, $page-in-text, true(), ())
     else
         ()
 

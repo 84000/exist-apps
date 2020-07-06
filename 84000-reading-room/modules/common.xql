@@ -373,6 +373,8 @@ declare function common:mark-text($text as xs:string, $find as xs:string*, $mode
     (: Look for matches :)
     let $analyze-result := analyze-string($text, $regex, 'i')
     
+    
+    where $find-tokenized
     (: Output result :)
     return (
         for $analyze-result-text in $analyze-result//text()

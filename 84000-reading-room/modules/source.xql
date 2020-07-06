@@ -99,7 +99,7 @@ declare function source:etext-full($location as element(m:location)) as element(
             for $volume in $location/m:volume
                 for $page-in-volume at $page-index in xs:integer($volume/@start-page) to xs:integer($volume/@end-page)
                 return
-                    source:etext-page($work, xs:integer($volume/@number), $page-in-volume, false())
+                    source:etext-page($work, xs:integer($volume/@number), $page-in-volume, false(), ())
         }
     
 };

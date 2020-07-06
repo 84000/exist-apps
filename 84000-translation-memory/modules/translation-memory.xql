@@ -90,7 +90,7 @@ declare function translation-memory:remember($translation-id as xs:string, $foli
                 '1'
         
         (: Locate the text string in the text so there is some order :)
-        let $folio-content := translation:folio-content($tei, $toh-key, $folio/@page-in-text, ())
+        let $folio-content := translation:folio-content($tei, $toh-key, $folio/@page-in-text)
         let $translation-str-index := functx:index-of-string-first(normalize-space(data($folio-content)), $translation-str)
         let $translation-str-index := 
             if(not($translation-str-index)) then

@@ -43,7 +43,7 @@ let $first-record :=
     else
         1
 
-let $etext-page :=  source:etext-page($work, $volume, $page, true())
+let $etext-page :=  source:etext-page($work, $volume, $page, true(), ())
 
 (:
 let $search := 
