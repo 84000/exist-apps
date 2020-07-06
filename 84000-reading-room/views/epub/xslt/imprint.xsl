@@ -5,6 +5,8 @@
     <xsl:import href="../../../xslt/lang.xsl"/>
     <xsl:import href="epub-page.xsl"/>
     
+    <!-- epub:types https://idpf.github.io/epub-vocabs/structure/ -->
+    
     <xsl:template match="/m:response">
         
         <xsl:variable name="page-title" select="'Imprint'"/>
@@ -15,7 +17,7 @@
             <xsl:with-param name="page-title" select="$page-title"/>
             <xsl:with-param name="content">
                 
-                <section class="imprint center">
+                <section class="imprint center" epub:type="imprint">
                     <div>
                         <p>
                             <xsl:value-of select="concat('First published ', format-date(m:translation/m:translation/m:publication-date, '[Y]'))"/>

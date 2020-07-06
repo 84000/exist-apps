@@ -25,8 +25,9 @@
     
     <xsl:template match="tei:*[not(self::tei:milestone)][preceding-sibling::tei:milestone[@xml:id]]">
         <xsl:copy>
+            <xsl:apply-templates select="@*"/>
             <xsl:attribute name="nearest-milestone" select="preceding-sibling::tei:milestone[@xml:id][1]/@xml:id"/>
-            <xsl:apply-templates select="node()|@*"/>
+            <xsl:apply-templates select="node()"/>
         </xsl:copy>
     </xsl:template>
     

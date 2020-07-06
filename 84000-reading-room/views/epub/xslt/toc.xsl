@@ -63,6 +63,14 @@
                         <content src="prologue.xhtml"/>
                     </navPoint>
                 </xsl:if>
+                <xsl:if test="m:translation/m:homage//tei:*">
+                    <navPoint id="homage">
+                        <navLabel>
+                            <text>Homage</text>
+                        </navLabel>
+                        <content src="homage.xhtml"/>
+                    </navPoint>
+                </xsl:if>
                 <navPoint id="body-title">
                     <navLabel>
                         <text>The Translation</text>

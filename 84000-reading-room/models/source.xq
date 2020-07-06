@@ -21,6 +21,7 @@ let $resource-suffix := request:get-parameter('resource-suffix', '')
 let $ref-index := request:get-parameter('ref-index', '')
 let $folio := request:get-parameter('folio', '')
 let $page := request:get-parameter('page', '')
+let $highlight := tokenize(request:get-parameter('highlight', ''), ',')
 
 let $tei := tei-content:tei($resource-id, 'translation')
 let $tei-location := translation:location($tei, $resource-id)
@@ -68,7 +69,7 @@ return
             if($ref-sort-index gt 0) then
             (
                 (: Get a page :)
-                source:etext-page($tei-location, $ref-sort-index, false()),
+                source:etext-page($tei-location, $ref-sort-index, false(), $highlight),
                 
                 <translation 
                     xmlns="http://read.84000.co/ns/1.0" 

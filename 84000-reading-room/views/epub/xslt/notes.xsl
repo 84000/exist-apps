@@ -4,6 +4,8 @@
     <xsl:import href="../../../xslt/tei-to-xhtml.xsl"/>
     <xsl:import href="epub-page.xsl"/>
     
+    <!-- epub:types https://idpf.github.io/epub-vocabs/structure/ -->
+    
     <xsl:template match="/m:response">
         
         <xsl:variable name="section-id" select="'notes'"/>
@@ -15,7 +17,7 @@
             <xsl:with-param name="translation-title" select="$translation-title"/>
             <xsl:with-param name="page-title" select="$section-title"/>
             <xsl:with-param name="content">
-                <aside>
+                <aside epub:type="endnotes">
                     
                     <xsl:attribute name="id" select="$section-id"/>
                     
@@ -30,7 +32,7 @@
                             
                             <xsl:variable name="target-id" select="@uid"/>
                             <xsl:variable name="target" select="/m:response//*[@xml:id eq $target-id]"/>
-                            <xsl:variable name="section" select="$target/ancestor::*[self::m:summary | self::m:acknowledgment | self::m:preface | self::m:introduction | self::m:prologue  | self::m:body  | self::m:colophon  | self::m:appendix  | self::m:abbreviations  | self::m:bibliography  | self::m:glossary]"/>
+                            <xsl:variable name="section" select="$target/ancestor::*[self::m:summary | self::m:acknowledgment | self::m:preface | self::m:introduction | self::m:prologue | self::m:homage  | self::m:body  | self::m:colophon  | self::m:appendix  | self::m:abbreviations  | self::m:bibliography  | self::m:glossary]"/>
                             <xsl:variable name="section-name" select="local-name($section)"/>
                             
                             <xsl:variable name="OEBPS-entry">

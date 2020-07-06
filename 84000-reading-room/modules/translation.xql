@@ -406,6 +406,14 @@ declare function translation:prologue($tei as element(tei:TEI)) as element() {
     </prologue>
 };
 
+declare function translation:homage($tei as element(tei:TEI)) as element() {
+    <homage xmlns="http://read.84000.co/ns/1.0" prefix="pl">
+    { 
+        translation:nested-section($tei//tei:body/tei:div[@type eq 'translation']/tei:div[@type eq 'homage'], 0, 'h')
+    }
+    </homage>
+};
+
 declare function translation:body($tei as element(tei:TEI)) as element() {
     <body xmlns="http://read.84000.co/ns/1.0" prefix="tr">
         <honoration>{ data($tei//tei:body/tei:div[@type eq 'translation']/tei:head[@type eq 'titleHon']) }</honoration>
@@ -612,45 +620,16 @@ declare function translation:bibliography($tei as element(tei:TEI)) as element()
 };
 
 (:Glossary from TEI:)
-declare function translation:glossary($tei as element(tei:TEI)) as element() {
+declare function translation:glossary($tei as element(tei:TEI)) as element(m:glossary) {
+    
     <glossary xmlns="http://read.84000.co/ns/1.0" prefix="g">
     {
-        for $gloss in $tei//tei:back//tei:div[@type eq 'glossary']//tei:gloss[
-            (: Check it has a base term :)
-            tei:term
-                [not(@type)]
-                [not(@xml:lang) or @xml:lang eq 'en']
-        ]
+        for $gloss in $tei//tei:back//tei:div[@type eq 'glossary']//tei:gloss
+        let $sort-term := glossary:sort-term($gloss)
+        where $sort-term
+        order by $sort-term
         return
-            glossary:item($gloss)
-    }
-    </glossary>
-};
-
-(:Glossary from TEI filtered by start letter:)
-declare function translation:glossary($tei as element(tei:TEI), $start-letter as xs:string) as element() {
-
-    <glossary xmlns="http://read.84000.co/ns/1.0" prefix="g" start-letter="{ $start-letter }">
-    {
-        for $gloss in 
-            $tei//tei:back//tei:div[@type eq 'glossary']//tei:gloss[
-                (: Check base term matches letter :)
-                tei:term
-                    [not(@type)]
-                    [not(@xml:lang) or @xml:lang eq 'en']
-                    [
-                        matches(
-                            ., 
-                            concat(
-                                '^(\d*\s+|The\s+|A\s+)?(', 
-                                string-join(common:letter-variations($start-letter), '|'), ').*'
-                            ), 
-                            'i'
-                         )
-                     ]
-            ]
-        return
-            glossary:item($gloss)
+            glossary:item($gloss, false())
     }
     </glossary>
     
@@ -659,7 +638,7 @@ declare function translation:glossary($tei as element(tei:TEI), $start-letter as
 declare function translation:word-count($tei as element(tei:TEI)) as xs:integer {
     let $translated-text := 
         $tei//tei:text/tei:body/tei:div[@type eq "translation"]/*[
-               self::tei:div[@type = ("section", "chapter", "prologue", "colophon")] 
+               self::tei:div[@type = ("section", "chapter", "prologue", "homage", "colophon")] 
                or self::tei:head[@type ne 'translation']
            ]//text()[normalize-space() and not(ancestor::tei:note)]
     return
@@ -847,7 +826,7 @@ declare function translation:folio-content($tei as element(tei:TEI), $resource-i
     let $end-ref := $refs[$index-in-resource + 1]
     
     (: Get all sections that may have a <ref/>. They must be siblings so get direct children of section. :)
-    let $translation-paragraphs := $tei//tei:body//tei:div[@type='translation']//tei:div[@type = ('prologue', 'section', 'chapter', 'colophon')]/tei:*[self::tei:head | self::tei:p | self::tei:ab | self::tei:q | self::tei:lg | self::tei:list| self::tei:table | self::tei:trailer]
+    let $translation-paragraphs := $tei//tei:body//tei:div[@type='translation']//tei:div[@type = ('prologue', 'homage', 'section', 'chapter', 'colophon')]/tei:*[self::tei:head | self::tei:p | self::tei:ab | self::tei:q | self::tei:lg | self::tei:list| self::tei:table | self::tei:trailer]
     
     (: Find the container of the start <ref/> and it's index :)
     let $start-ref-paragraph := $start-ref/ancestor::*[. = $translation-paragraphs][1]

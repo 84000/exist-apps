@@ -164,7 +164,7 @@
                     <a>
                         <xsl:choose>
                             <xsl:when test="/m:response/m:request/@resource-id gt ''">
-                                <xsl:attribute name="href" select="concat('/glossary.html?resource-id=', /m:response/m:request/@resource-id, '&amp;start-letter=', /m:response/m:request/@start-letter)"/>
+                                <xsl:attribute name="href" select="concat('/glossary.html?resource-id=', /m:response/m:request/@resource-id)"/>
                             </xsl:when>
                             <xsl:otherwise>
                                 <xsl:attribute name="href" select="'/glossary.html'"/>

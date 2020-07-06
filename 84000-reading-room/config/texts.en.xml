@@ -56,7 +56,7 @@
 
     <!-- Progress -->
     <!--<item key="about.progress.page-title">Progress</item>-->
-    <item key="about.progress.header-img-src">/imgs/about-headers/PROGRESS-1400.jpg</item>
+    <item key="about.progress.header-img-src">/imgs/about-headers/progress.jpg</item>
     <item key="about.progress.page-quote">"You should know first hand how Dharma helps you… With this mind if you extend your intention to
         reach out with your translation…it’ll really make a difference in the world, and it already does."</item>
     <item key="about.progress.page-quote-author">Dzigar Kongtrül Rinpoche</item>
@@ -86,7 +86,7 @@
 
     <!-- Impact -->
     <!--<item key="about.impact.page-title">Reader Engagement</item>-->
-    <item key="about.impact.header-img-src">/imgs/about-headers/IMPACT-1400.jpg</item>
+    <item key="about.impact.header-img-src">/imgs/about-headers/impact.jpg</item>
     <item key="about.impact.page-quote">“It’s not just the heritage of one tradition, one civilization or one nation – it’s the heritage of
         the world. The Kangyur and Tengyur will really contribute to the happiness, peace and freedom of all mankind.”</item>
     <item key="about.impact.page-quote-author">Tulku Pema Wangyal Rinpoche</item>
@@ -156,7 +156,7 @@
 
     <!-- Sponsors -->
     <!--<item key="about.sponsors.page-title">Sponsors</item>-->
-    <item key="about.sponsors.header-img-src">/imgs/about-headers/SPONSORS-1400.jpg</item>
+    <item key="about.sponsors.header-img-src">/imgs/about-headers/sponsors.jpg</item>
     <item key="about.sponsors.page-quote">“Both the very generous benefactors and also the very knowledgeable and experienced translators
         will be able to perfect their two accumulations of virtue through their interdependent connection.”</item>
     <item key="about.sponsors.page-quote-author">Tri Ralpachen (one of the three Dharma kings of Tibet)</item>
@@ -207,7 +207,7 @@
 
     <!-- Translators -->
     <!--<item key="about.translators.page-title">Translator Teams</item>-->
-    <item key="about.translators.header-img-src">/imgs/about-headers/TRANSLATORS-1400.jpg</item>
+    <item key="about.translators.header-img-src">/imgs/about-headers/translators.jpg</item>
     <item key="about.translators.page-quote">“It’s very important that translators really come together as one harmonious unit to do the
         work for the present time and also for future generations.”</item>
     <item key="about.translators.page-quote-author">Dzigar Kongtrül Rinpoche</item>
@@ -232,7 +232,7 @@
 
     <!-- Sponsor a Sutra -->
     <!--<item key="about.sponsor-a-sutra.page-title">Sponsor a Sūtra</item>-->
-    <item key="about.sponsor-a-sutra.header-img-src">/imgs/about-headers/SPONSOR-SUTRA-1024x514.jpg</item>
+    <item key="about.sponsor-a-sutra.header-img-src">/imgs/about-headers/sponsor-a-sutra.jpg</item>
     <item key="about.sponsor-a-sutra.page-quote">“Sūtras teach us the Dharma. The sūtras are much more precious, much more important than
         the image of the Buddha.”</item>
     <item key="about.sponsor-a-sutra.page-quote-author">H.E. Garchen Rinpoche</item>

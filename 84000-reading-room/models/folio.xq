@@ -38,6 +38,6 @@ return
                 xmlns="http://read.84000.co/ns/1.0" 
                 resource-id="{ $resource-id }" 
                 page="{ $page }"/>,
-            translation:folio-content($tei, $resource-id, $page)
+            translation:folio-content($tei, $resource-id, $page, ())
         )
     )

@@ -24,6 +24,10 @@
                     <xsl:with-param name="outline-summary" select="m:outline-summary[@work eq 'UT4CZ5369']"/>
                 </xsl:call-template>
                 
+                <xsl:call-template name="local-text">
+                    <xsl:with-param name="local-key" select="'outlook'"/>
+                </xsl:call-template>
+                
                 <h3>
                     <xsl:call-template name="local-text">
                         <xsl:with-param name="local-key" select="'combined-summary-heading'"/>
@@ -32,12 +36,6 @@
                 <xsl:call-template name="outline-summary">
                     <xsl:with-param name="outline-summary" select="m:outline-summary"/>
                 </xsl:call-template>
-                
-                <xsl:call-template name="local-text">
-                    <xsl:with-param name="local-key" select="'outlook'"/>
-                </xsl:call-template>
-                
-                <hr class="no-margin"/>
                 
                 <div id="accordion" class="list-group accordion" role="tablist" aria-multiselectable="false">
                     

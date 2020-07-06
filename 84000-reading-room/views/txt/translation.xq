@@ -71,7 +71,7 @@ declare function local:parse-content($content) {
 };
 
 let $data := request:get-data()
-let $parsed-content := local:parse-content($data/m:response/m:translation/m:translation | $data/m:response/m:translation/m:prologue | $data/m:response/m:translation/m:body | $data/m:response/m:translation/m:colophon)
+let $parsed-content := local:parse-content($data/m:response/m:translation/m:translation | $data/m:response/m:translation/m:prologue | $data/m:response/m:translation/m:homage | $data/m:response/m:translation/m:body | $data/m:response/m:translation/m:colophon)
 let $string := string-join($parsed-content, '')
 let $binary := util:base64-encode($string)
 

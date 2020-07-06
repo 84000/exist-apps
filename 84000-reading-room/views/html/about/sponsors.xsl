@@ -50,7 +50,6 @@
                 <h3>
                     <xsl:call-template name="local-text">
                         <xsl:with-param name="local-key" select="'sutras-title'"/>
-                        
                     </xsl:call-template>
                 </h3>
                 

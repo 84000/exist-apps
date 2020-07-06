@@ -27,12 +27,11 @@
             </create>
             
             <!-- entities.xml -->
-            <create qname="m:definition">
-                <field name="definition-id" match="@id" type="xs:string"/>
+            <create qname="m:instance">
+                <field name="instance-id" match="@id" type="xs:string"/>
+                <field name="instance-type" match="@type" type="xs:string"/>
             </create>
-            <create qname="m:definition">
-                <field name="definition-type" match="@type" type="xs:string"/>
-            </create>
+            
             <create qname="m:type">
                 <field name="type-type" match="@type" type="xs:string"/>
             </create>

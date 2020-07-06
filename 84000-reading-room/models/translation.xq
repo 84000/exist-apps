@@ -47,6 +47,7 @@ let $translation-data :=
                 translation:preface($tei),
                 translation:introduction($tei),
                 translation:prologue($tei),
+                translation:homage($tei),
                 translation:body($tei),
                 translation:colophon($tei),
                 translation:appendix($tei),
@@ -76,12 +77,14 @@ let $translation-data :=
         <parameters/>
     )
 
-(:(\: Parse the glossary :\)
-let $translation-data := 
+(: Parse the glossary :)
+(:let $translation-data := 
     transform:transform(
         $translation-data,
         doc(concat($common:app-path, "/xslt/glossarize.xsl")), 
-        <parameters/>
+        <parameters>
+            <!--<param name="use-cache" value="false"/>-->
+        </parameters>
     ):)
 
 return

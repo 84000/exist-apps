@@ -4,6 +4,8 @@
     <xsl:import href="../../../xslt/tei-to-xhtml.xsl"/>
     <xsl:import href="epub-page.xsl"/>
     
+    <!-- epub:types https://idpf.github.io/epub-vocabs/structure/ -->
+    
     <xsl:template match="/m:response">
         
         <xsl:variable name="page-title" select="'Body Title'"/>
@@ -13,7 +15,7 @@
             <xsl:with-param name="translation-title" select="$translation-title"/>
             <xsl:with-param name="page-title" select="$page-title"/>
             <xsl:with-param name="content">
-                <section id="body-title">
+                <section id="body-title" epub:type="halftitle">
                     <div class="center half-title">
                         <xsl:if test="m:translation/m:body/m:honoration/text()">
                             <h2>

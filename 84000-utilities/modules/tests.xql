@@ -80,6 +80,7 @@ declare function tests:translations($translation-id as xs:string) as item(){
                         tests:test-section($tei//tei:front//tei:div[@type eq 'preface'], $toh-html//*[@id eq 'preface'], 'preface', 0, false(), true()),
                         tests:test-section($tei//tei:front//tei:div[@type eq 'introduction'], $toh-html//*[@id eq 'introduction'], 'introduction', 1, false(), true()),
                         tests:test-section($tei//tei:body//tei:div[@type eq 'prologue'], $toh-html//*[@id eq 'prologue'], 'prologue', 0, false(), true()),
+                        tests:test-section($tei//tei:body//tei:div[@type eq 'homage'], $toh-html//*[@id eq 'homage'], 'homage', 0, false(), true()),
                         tests:test-section(<tei:div type='translation'>{$tei//tei:body//tei:div[@type eq 'translation']/*[@type=('section', 'chapter')]}</tei:div>, $toh-html//*[@id eq 'translation'], 'translation', 1, true(), true()),
                         tests:test-section($tei//tei:body//tei:div[@type eq 'colophon'], $toh-html//*[@id eq 'colophon'], 'colophon', 0, false(), true()),
                         tests:test-section($tei//tei:back//tei:div[@type eq 'appendix'], $toh-html//*[@id eq 'appendix'], 'appendix', 0, false(), true()),
@@ -334,10 +335,10 @@ declare function tests:test-section($section-tei as element()*, $section-html as
         count($section-html//xhtml:blockquote | $section-html//xhtml:span[common:contains-class(@class, 'blockquote')])
     
     let $section-header-types :=
-        if($section-tei/@type = ('prologue')) then
+        if($section-tei/@type = ('prologue', 'homage')) then
             ('chapterTitle', 'section', 'chapter')
         else
-            ('chapterTitle', 'section', 'chapter', 'prologue', 'appendix')
+            ('chapterTitle', 'section', 'chapter', 'prologue', 'homage', 'appendix')
     let $section-count-tei-id := 
         count($section-tei//*[@tid][self::tei:p | self::tei:ab | self::tei:trailer | self::tei:bibl | self::tei:label | self::tei:head[parent::tei:list] | self::tei:lg | self::tei:head[@type = $section-header-types]][not(ancestor::tei:note)])
     let $section-count-html-id := 
@@ -536,7 +537,7 @@ declare function tests:glossary($tei as element(tei:TEI)*, $html as element()*) 
 declare function tests:refs($tei as element(tei:TEI)*, $html as element()*, $toh-key as xs:string){
     
     let $tei-folios := translation:folios($tei, $toh-key)//m:folio
-    let $html-refs := $html//*[@id = ('prologue', 'translation', 'colophon')]//xhtml:a[common:contains-class(@class, 'ref')]
+    let $html-refs := $html//*[@id = ('prologue', 'homage', 'translation', 'colophon')]//xhtml:a[common:contains-class(@class, 'ref')]
     
     let $folio-count-tei := count($tei-folios)
     let $ref-count-html := count($html-refs)

@@ -8,9 +8,9 @@
     
     <xsl:template match="/m:response">
         
-        <xsl:variable name="section-id" select="'prologue'"/>
-        <xsl:variable name="section-title" select="'Prologue'"/>
-        <xsl:variable name="section-prefix" select="m:translation/m:prologue/@prefix"/>
+        <xsl:variable name="section-id" select="'homage'"/>
+        <xsl:variable name="section-title" select="'Homage'"/>
+        <xsl:variable name="section-prefix" select="m:translation/m:homage/@prefix"/>
         <xsl:variable name="translation-title" select="m:translation/m:titles/m:title[@xml:lang eq 'en']"/>
         
         <xsl:call-template name="epub-page">
@@ -30,7 +30,7 @@
                     </div>
                     
                     <div class="text">
-                        <xsl:apply-templates select="m:translation/m:prologue"/>
+                        <xsl:apply-templates select="m:translation/m:homage"/>
                     </div>
                     
                 </section>

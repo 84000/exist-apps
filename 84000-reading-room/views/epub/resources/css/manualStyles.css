@@ -486,17 +486,17 @@ img.logo-84000 {
 }
 .glossary-item .term {
     margin-top: 0pt;
-    line-height: 1.9em;
     font-weight: bold;
-}
-.glossary-item p {
-    line-height: 1.7em;
 }
 .glossary-item p.definition {
     line-height: 1.4em;
 }
 .glossary-item .alternative {
     display: none;
+}
+.glossary-item h4, 
+.glossary-item p {
+    margin-bottom: .25em;
 }
 
 /* Headings */

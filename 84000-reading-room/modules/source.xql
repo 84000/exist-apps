@@ -104,7 +104,7 @@ declare function source:etext-full($location as element(m:location)) as element(
     
 };
 
-declare function source:etext-page($location as element(m:location), $page-number as xs:integer, $add-context as xs:boolean) as element()? {
+declare function source:etext-page($location as element(m:location), $page-number as xs:integer, $add-context as xs:boolean, $highlight as xs:string*) as element()? {
     
     let $work := $location/@work
     let $page-volume := 
@@ -134,11 +134,11 @@ declare function source:etext-page($location as element(m:location), $page-numbe
         element { QName('http://read.84000.co/ns/1.0', 'source') } {
             attribute work { $work },
             attribute page-url { concat('https://read.84000.co/source/', $location/@key, '.xml?page=', $page-volume/@page-number) },
-            source:etext-page($work, $page-volume/@volume-number, $page-volume/@page-in-volume, $add-context)
+            source:etext-page($work, $page-volume/@volume-number, $page-volume/@page-in-volume, $add-context, $highlight)
         }
 };
 
-declare function source:etext-page($work as xs:string, $volume-number as xs:integer, $page-number as xs:integer, $add-context as xs:boolean) as element()? {
+declare function source:etext-page($work as xs:string, $volume-number as xs:integer, $page-number as xs:integer, $add-context as xs:boolean, $highlight as xs:string*) as element()? {
     
     let $etext-volume-number := source:etext-volume-number($work, $volume-number)
     let $etext-id := source:etext-id($work, $etext-volume-number)
@@ -171,7 +171,7 @@ declare function source:etext-page($work as xs:string, $volume-number as xs:inte
                     },
                     element { QName('http://www.tei-c.org/ns/1.0', 'p') } { 
                         attribute class {'selected'},
-                        $page/child::node() 
+                        common:mark-nodes($page/child::node(), $highlight, 'tibetan') 
                     },
                     element { QName('http://www.tei-c.org/ns/1.0', 'p') } {  
                         $trailing-page/tei:milestone[@unit eq 'line'][xs:integer(@n) eq $trailing-milestone-n]
@@ -180,7 +180,7 @@ declare function source:etext-page($work as xs:string, $volume-number as xs:inte
                 )
                 else
                     (: Just the page :)
-                    $page
+                    common:mark-nodes($page, $highlight, 'tibetan') 
                 
             }
         }

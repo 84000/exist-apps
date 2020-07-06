@@ -6,7 +6,7 @@
     <!-- Specify specific glossary ids, or empty for all -->
     <xsl:param name="glossary-id" as="xs:string" select="'none'"/>
     
-    <!-- Used cached locations or search the whole -->
+    <!-- Use cached locations or search the whole -->
     <xsl:param name="use-cache" as="xs:boolean" select="true()"/>
     
     <!-- 
@@ -19,14 +19,13 @@
         </xsl:perform-sort>
     </xsl:variable>
     <xsl:variable name="glossary-items-count" select="count($glossary)" as="xs:integer"/>
-    <xsl:variable name="glossary-requested" select="if(count($glossary-id) eq 1) then $glossary[@uid = $glossary-id] else () " as="element(m:item)?"/>
-    <xsl:variable name="glossary-requested-strings" select="($glossary-requested/m:term[@xml:lang eq 'en'] | $glossary-requested/m:alternative)" as="xs:string*"/>
+    <xsl:variable name="glossary-requested" select="$glossary[@uid = $glossary-id]" as="element(m:item)*"/>
+    <xsl:variable name="glossary-requested-strings" select="$glossary-requested/m:term[@xml:lang eq 'en']/text() | $glossary-requested/m:alternative/text()" as="xs:string*"/>
     
     <!-- 
         Temporarily encode matches 
         1. To allow the string result to be recursed
         2. To stop subsequent recursions from parsing this result (don't allow matches within matches).
-    
         Matches will be encoded like this
         [[UT22084-040-003-001][Realm of Phenomena]]
         Then encoded like this, to inhibit them being re-matched to another glossary
@@ -44,16 +43,16 @@
     </xsl:template>
     
     <!-- We don't want to parse some nodes, those we should just copy -->
-    <xsl:template match="                  (: Just copy sections :)                  m:titles | m:long-titles | m:source | m:summary | m:acknowledgment | m:bibliography | m:parent | m:downloads | m:abbreviations                  (: Just copy m nodes :)                  | m:term | m:sort-term | m:alternative | m:entity          (: Just copy tei nodes :)                  | tei:head | tei:note | tei:term[@type eq 'ignore'] | tei:match         (: Just copy empty text nodes :)         | text()[not(normalize-space())] | *[not(normalize-space(data()))]     " priority="10">
+    <xsl:template match="         (: Just copy sections :)         m:titles | m:long-titles | m:source | m:summary | m:acknowledgment | m:bibliography | m:parent | m:downloads | m:abbreviations         (: Just copy m nodes :)         | m:term | m:sort-term | m:alternative | m:entity | m:honoration | m:main-title  | m:sub-title         (: Just copy tei nodes :)         | tei:head | tei:note | tei:term[@type eq 'ignore'] | tei:match         (: Just copy empty text nodes :)         | text()[not(normalize-space())] | *[not(normalize-space(data()))]     " priority="10">
         <xsl:copy>
             <xsl:copy-of select="node()|@*"/>
         </xsl:copy>
     </xsl:template>
     
     <!-- Parse marked terms first -->
-    <xsl:template match="tei:term[not(@type eq 'ignore')][not($glossary-requested-strings) or matches(m:normalize-data(data()), m:matches-regex($glossary-requested-strings), 'i')]" name="glossary-marked" priority="9">
+    <xsl:template match="tei:term[not(@type eq 'ignore')][not($glossary-requested) or matches(m:normalize-data(.), m:matches-regex($glossary-requested-strings), 'i')]" name="glossary-marked" priority="9">
         
-        <xsl:variable name="term-content" select="node()" as="xs:string?"/>
+        <xsl:variable name="term-content" select="node()"/>
         <xsl:variable name="term-ref" select="@ref" as="xs:string?"/>
         <xsl:variable name="term-text" select="m:normalize-data(data())" as="xs:string?"/>
         
@@ -67,28 +66,54 @@
                 
                 <!-- Find the first glossary that matches the string -->
                 <xsl:otherwise>
-                    <xsl:copy-of select="$glossary[@mode eq 'marked'][matches($term-text, m:matches-regex((m:term[@xml:lang eq 'en']/text() | m:alternative/text())), 'i')][1]"/>
+                    <xsl:copy-of select="$glossary[@mode eq 'marked'][matches($term-text, m:matches-regex(m:term[@xml:lang eq 'en']/text() | m:alternative/text()), 'i')][1]"/>
                 </xsl:otherwise>
                 
             </xsl:choose>
         </xsl:variable>
         
-        <match xmlns="http://www.tei-c.org/ns/1.0">
-            <!-- Set the id -->
-            <xsl:attribute name="glossary-id" select="$matching-glossary/@uid"/>
-            <xsl:attribute name="match-mode" select="'marked'"/>
-            <!-- Flag if it's the requested one -->
-            <xsl:if test="$matching-glossary[@uid eq $glossary-id]">
-                <xsl:attribute name="requested-glossary" select="'true'"/>
-            </xsl:if>
-            <!-- retain the text -->
-            <xsl:copy-of select="$term-content"/>
-        </match>
+        <xsl:choose>
+            <xsl:when test="m:search-here(., $matching-glossary)">
+                <xsl:copy-of select="m:output-match($matching-glossary, $term-content, 'marked')"/>
+            </xsl:when>
+            <xsl:otherwise>
+                <xsl:copy>
+                    <xsl:copy-of select="node()|@*"/>
+                </xsl:copy>
+            </xsl:otherwise>
+        </xsl:choose>
+        
+    </xsl:template>
+    
+    <!-- Parse nodes that have to be exact matches next -->
+    <xsl:template match="tei:title[not($glossary-requested) or matches(m:normalize-data(.), m:matches-regex($glossary-requested-strings), 'i')] | tei:name[not($glossary-requested) or matches(m:normalize-data(.), m:matches-regex($glossary-requested-strings), 'i')]" priority="8">
+        
+        <xsl:variable name="term-content" select="node()"/>
+        <xsl:variable name="term-ref" select="@ref" as="xs:string?"/>
+        <xsl:variable name="term-text" select="m:normalize-data(data())" as="xs:string?"/>
+        
+        <xsl:variable name="matching-glossary" as="element(m:item)?">
+            <xsl:copy-of select="$glossary[matches($term-text, m:matches-regex-exact(m:term[@xml:lang eq 'en']/text() | m:alternative/text()), 'i')][1]"/>
+        </xsl:variable>
+        
+        <xsl:choose>
+            <xsl:when test="m:search-here(., $matching-glossary)">
+                <xsl:element name="{ local-name(.) }" namespace="http://www.tei-c.org/ns/1.0">
+                    <xsl:copy-of select="@*"/>
+                    <xsl:copy-of select="m:output-match($matching-glossary, $term-content, 'matched')"/>
+                </xsl:element>
+            </xsl:when>
+            <xsl:otherwise>
+                <xsl:copy>
+                    <xsl:copy-of select="node()|@*"/>
+                </xsl:copy>
+            </xsl:otherwise>
+        </xsl:choose>
         
     </xsl:template>
     
     <!-- Parse all other text nodes for matches -->
-    <xsl:template match="text()[not($glossary-requested-strings) or matches(m:normalize-data(.), m:matches-regex($glossary-requested-strings), 'i')]" name="glossary-match" priority="8">
+    <xsl:template match="text()[not($glossary-requested) or matches(m:normalize-data(.), m:matches-regex($glossary-requested-strings), 'i')]" name="glossary-match" priority="7">
         
         <!-- If no index passed, start with 1 -->
         <xsl:param name="glossary-index" as="xs:integer" select="1"/>
@@ -111,10 +136,7 @@
                         <xsl:sort select="count(tokenize(., '\s+'))" order="descending"/>
                     </xsl:perform-sort>
                 </xsl:variable>
-                <xsl:variable name="nearest-milestone" select="if($use-cache) then ancestor::tei:*[@nearest-milestone][1]/@nearest-milestone/string() else ()"/>
-                <xsl:variable name="search-location" select="if(not($use-cache)) then true() else if($nearest-milestone and $glossary-item/m:cache/m:expression[@location eq $nearest-milestone]) then true() else false()"/>
                 
-                <!-- Check @mode="match|marked" here -->
                 <xsl:call-template name="glossary-match">
                     
                     <xsl:with-param name="glossary-index" select="$glossary-index + 1"/>
@@ -123,14 +145,14 @@
                         
                         <xsl:choose>
                             
-                            <xsl:when test="$search-location and $glossary-item[not(@mode) or @mode = ('match', '')][matches($text, m:matches-regex($glossary-terms), 'i')]">
+                            <xsl:when test="m:search-here(., $glossary-item) and $glossary-item[not(@mode) or @mode = ('match', '')][matches($text, m:matches-regex($glossary-terms), 'i')]">
                                 
                                 <!-- Parse the string for this glossary -->
                                 <xsl:analyze-string select="$text" regex="{ m:matches-regex($glossary-terms) }" flags="i">
                                     <xsl:matching-substring>
                                         
                                         <!-- First of all output as an encoded string  -->
-                                        <xsl:value-of select="                                             concat(                                                 regex-group(1),                                                 $glossary-delimit-start,                                                 $glossary-item/@uid,                                                 $glossary-delimit-mid,                                                 (: Encode spaces in the string to inhibit sub matches :)                                                 m:encode-string(regex-group(2)),                                                 regex-group(3),                                                 $glossary-delimit-end,regex-group(4)                                             )                                        "/>
+                                        <xsl:value-of select="                                             concat(                                                 regex-group(1),                                                 $glossary-delimit-start,                                                 $glossary-item/@uid,                                                 $glossary-delimit-mid,                                                 (: Encode spaces in the string to inhibit sub matches :)                                                 m:encode-string(regex-group(2)),                                                 regex-group(3),                                                 $glossary-delimit-end,regex-group(4)                                             )                                         "/>
                                         
                                     </xsl:matching-substring>
                                     <xsl:non-matching-substring>
@@ -187,7 +209,7 @@
                         <match xmlns="http://www.tei-c.org/ns/1.0">
                             <xsl:attribute name="glossary-id" select="$glossary-sequence[1]"/>
                             <xsl:attribute name="match-mode" select="'matched'"/>
-                            <xsl:if test="$glossary-sequence[1] eq $glossary-id">
+                            <xsl:if test="$glossary-sequence[1] = $glossary-id">
                                 <xsl:attribute name="requested-glossary" select="'true'"/>
                             </xsl:if>
                             <!-- Un-encode the spaces -->
@@ -218,10 +240,69 @@
         </xsl:choose>
     </xsl:template>
     
+    <xsl:function name="m:search-here" as="xs:boolean">
+        
+        <xsl:param name="node" as="node()"/>
+        <xsl:param name="glossary" as="node()?"/>
+        
+        <xsl:choose>
+            <xsl:when test="$glossary">
+                <xsl:choose>
+                    <xsl:when test="$use-cache">
+                        <xsl:variable name="nearest-milestone">
+                            <xsl:value-of select="($node/ancestor::*[@uid][1]/@uid | $node/ancestor::*[@nearest-milestone][1]/@nearest-milestone)[1]/string()"/>
+                        </xsl:variable>
+                        <xsl:choose>
+                            <xsl:when test="$nearest-milestone and $glossary/m:cache/m:expression[@include eq 'true'][@location eq $nearest-milestone]">
+                                <xsl:value-of select="true()"/>
+                            </xsl:when>
+                            <xsl:otherwise>
+                                <xsl:value-of select="false()"/>
+                            </xsl:otherwise>
+                        </xsl:choose>
+                    </xsl:when>
+                    <xsl:otherwise>
+                        <xsl:value-of select="true()"/>
+                    </xsl:otherwise>
+                </xsl:choose>
+            </xsl:when>
+            <xsl:otherwise>
+                <xsl:value-of select="false()"/>
+            </xsl:otherwise>
+        </xsl:choose>
+        
+    </xsl:function>
+    
+    <xsl:function name="m:output-match">
+        
+        <xsl:param name="glossary" as="element(m:item)"/>
+        <xsl:param name="content" as="node()"/>
+        <xsl:param name="mode" as="xs:string"/>
+        
+        <match xmlns="http://www.tei-c.org/ns/1.0">
+            <!-- Set the id -->
+            <xsl:attribute name="glossary-id" select="$glossary/@uid"/>
+            <xsl:attribute name="match-mode" select="$mode"/>
+            <!-- Flag if it's the requested one -->
+            <xsl:if test="$glossary[@uid = $glossary-id]">
+                <xsl:attribute name="requested-glossary" select="'true'"/>
+            </xsl:if>
+            <!-- retain the text -->
+            <xsl:copy-of select="$content"/>
+        </match>
+    </xsl:function>
+    
     <xsl:function name="m:matches-regex" as="xs:string">
         
         <xsl:param name="strings" as="xs:string*"/>
         <xsl:value-of select="concat('(^|[^-\w])(', string-join($strings[normalize-space(.)] ! normalize-space(.) ! m:escape-for-regex(.), '|'), ')(s|es|&#34;s|s&#34;)?([^-\w]|$)')"/>
+        
+    </xsl:function>
+    
+    <xsl:function name="m:matches-regex-exact" as="xs:string">
+        
+        <xsl:param name="strings" as="xs:string*"/>
+        <xsl:value-of select="concat('^(', string-join($strings[normalize-space(.)] ! normalize-space(.) ! m:escape-for-regex(.), '|'), ')$')"/>
         
     </xsl:function>
     

@@ -72,7 +72,7 @@
                         </xsl:when>
                         
                         <!-- The target is a section -->
-                        <xsl:when test="$target-id = ('summary', 'acknowledgements', 'introduction', 'prologue', 'colophon', 'appendix', 'abbreviations', 'bibliography')">
+                        <xsl:when test="$target-id = ('summary', 'acknowledgements', 'introduction', 'prologue', 'homage', 'colophon', 'appendix', 'abbreviations', 'bibliography')">
                             <xsl:attribute name="location" select="$target-id"/>
                             <xsl:value-of select="text()[normalize-space(.)]"/>
                         </xsl:when>
@@ -99,7 +99,7 @@
     <xsl:variable name="toh-key" select="m:translation/m:source/@key"/>
     
     <!-- Get valid refs for this rendering in the translation -->
-    <xsl:variable name="folio-refs" select="m:translation/m:*[self::m:prologue | self::m:body | self::m:colophon]//tei:ref[@type eq 'folio'][not(@rend) or not(@rend eq 'hidden')][not(@key) or @key eq $toh-key][not(ancestor::tei:note)]"/>
+    <xsl:variable name="folio-refs" select="m:translation/m:*[self::m:prologue | self::m:homage | self::m:body | self::m:colophon]//tei:ref[@type eq 'folio'][not(@rend) or not(@rend eq 'hidden')][not(@key) or @key eq $toh-key][not(ancestor::tei:note)]"/>
     
     <xsl:template match="tei:ref">
         

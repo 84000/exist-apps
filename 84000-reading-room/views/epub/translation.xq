@@ -72,25 +72,26 @@ let $entries := (
                         <item id="prologue" href="prologue.xhtml" media-type="application/xhtml+xml"/>
                     else
                         ()
-                }
-                {
+                    ,
+                    if($data/m:response/m:translation/m:homage//tei:*) then 
+                        <item id="homage" href="homage.xhtml" media-type="application/xhtml+xml"/>
+                    else
+                        ()
+                    ,
                     for $chapter in $data/m:response/m:translation/m:body/m:chapter
                     return
                         <item id="chapter-{ $chapter/@chapter-index }" href="chapter-{ $chapter/@chapter-index }.xhtml" media-type="application/xhtml+xml"/>
-                }
-                {
+                    ,
                     if($data/m:response/m:translation/m:colophon//tei:*) then 
                         <item id="colophon" href="colophon.xhtml" media-type="application/xhtml+xml"/>
                     else
                         ()
-                }
-                {
+                    ,
                     if($data/m:response/m:translation/m:appendix//tei:*) then 
                         <item id="appendix" href="appendix.xhtml" media-type="application/xhtml+xml"/>
                     else
                         ()
-                }
-                {
+                    ,
                     if($data/m:response/m:translation/m:abbreviations//m:list/m:item) then 
                         <item id="abbreviations" href="abbreviations.xhtml" media-type="application/xhtml+xml"/>
                     else
@@ -121,25 +122,26 @@ let $entries := (
                         <itemref idref="prologue"/>
                     else
                         ()
-                }
-                {
+                    ,
+                    if($data/m:response/m:translation/m:homage//tei:*) then 
+                        <itemref idref="homage"/>
+                    else
+                        ()
+                    ,
                     for $chapter in $data/m:response/m:translation/m:body/m:chapter
                     return
                         <itemref idref="chapter-{ $chapter/@chapter-index }"/>
-                }
-                {
+                    ,
                     if($data/m:response/m:translation/m:colophon//tei:*) then 
                         <itemref idref="colophon"/>
                     else
                         ()
-                }
-                {
+                    ,
                     if($data/m:response/m:translation/m:appendix//tei:*) then 
                         <itemref idref="appendix"/>
                     else
                         ()
-                }
-                {
+                    ,
                     if($data/m:response/m:translation/m:abbreviations//m:list/m:item) then 
                         <itemref idref="abbreviations"/>
                     else
@@ -175,6 +177,11 @@ let $entries := (
     <entry name="OEBPS/body-title.xhtml" type="xml">{transform:transform($data, doc("xslt/body-title.xsl"), ())}</entry>,
     if($data/m:response/m:translation/m:prologue//tei:*) then 
         <entry name="OEBPS/prologue.xhtml" type="xml">{transform:transform($data, doc("xslt/prologue.xsl"), ())}</entry>
+    else
+        ()
+    ,
+    if($data/m:response/m:translation/m:homage//tei:*) then 
+        <entry name="OEBPS/homage.xhtml" type="xml">{transform:transform($data, doc("xslt/homage.xsl"), ())}</entry>
     else
         ()
     ,

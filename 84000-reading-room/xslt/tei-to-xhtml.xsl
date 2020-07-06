@@ -25,7 +25,7 @@
             <xsl:if test="count($base-classes[normalize-space()]) gt 0">
                 <xsl:value-of select="string-join($base-classes[normalize-space()], ' ')"/>
             </xsl:if>
-            <xsl:if test="$html-classes gt '' and /m:response/m:request/@doc-type eq 'html'">
+            <xsl:if test="$html-classes gt '' and /m:response/m:request[@doc-type eq 'html']">
                 <xsl:value-of select="$html-classes"/>
             </xsl:if>
             <xsl:value-of select="normalize-space(common:lang-class($lang))"/>
@@ -182,12 +182,15 @@
                         </xsl:when>
                         
                         <!-- show an absolute link -->
-                        <xsl:when test="/m:response/m:expressions[@reading-room-url][@toh-key] and @ref-index">
+                        <xsl:when test="ancestor::m:expressions[@reading-room-url][@toh-key] and @ref-index">
+                            
+                            <xsl:variable name="expressions" select="ancestor::m:expressions[@reading-room-url][@toh-key][1]"/>
+                            <xsl:variable name="glossary-item" select="$expressions/parent::m:item[1]"/>
                             
                             <a class="ref log-click">
                                 <!-- define an anchor so we can link back to this point -->
                                 <xsl:attribute name="id" select="concat('source-link-', @ref-index)"/>
-                                <xsl:attribute name="href" select="concat(/m:response/m:expressions/@reading-room-url, '/source/', /m:response/m:expressions/@toh-key, '.html?ref-index=', @ref-index, '#ajax-content')"/>
+                                <xsl:attribute name="href" select="concat($expressions/@reading-room-url, '/source/', $expressions/@toh-key, '.html?ref-index=', @ref-index, '&amp;highlight=', string-join($glossary-item/m:term[@xml:lang eq 'bo'], ','), '#ajax-content')"/>
                                 <xsl:attribute name="data-ajax-target" select="'#popup-footer-source .data-container'"/>
                                 <xsl:value-of select="concat('[', @cRef, ']')"/>
                             </a>
@@ -232,8 +235,8 @@
     
     <xsl:template match="tei:ptr">
         <a class="internal-ref">
-            
             <xsl:choose>
+                
                 <xsl:when test="/m:response/m:request/@doc-type eq 'epub'">
                     <xsl:attribute name="href">
                         <xsl:choose>
@@ -249,9 +252,12 @@
                         </xsl:choose>
                     </xsl:attribute>
                 </xsl:when>
+                
                 <xsl:when test="/m:response[@model-type eq 'operations/glossary']">
-                    <xsl:value-of select="@target"/>
+                    <!-- TO DO: point to the Reading Room -->
+                    <xsl:attribute name="href" select="@target"/>
                 </xsl:when>
+                
                 <xsl:otherwise>
                     <xsl:attribute name="href" select="@target"/>
                     <xsl:call-template name="class-attribute">
@@ -259,6 +265,7 @@
                         <xsl:with-param name="html-classes" select="'scroll-to-anchor'"/>
                     </xsl:call-template>
                 </xsl:otherwise>
+                
             </xsl:choose>
             
             <xsl:if test="@location eq 'missing'">
@@ -459,7 +466,7 @@
     </xsl:template>
     
     <xsl:template match="tei:cell">
-        <xsl:if test="/m:response/m:request/@doc-type eq 'html'">
+        <xsl:if test="/m:response/m:request[@doc-type eq 'html']">
             <xsl:if test="@rows">
                 <xsl:attribute name="rowspan" select="@rows"/>
             </xsl:if>
@@ -710,113 +717,6 @@
         </span>
     </xsl:template>
     
-    <!-- Temporary id -->
-    <xsl:template name="tid">
-        <xsl:param name="node" required="yes"/>
-        <!-- If a temporary id is present then set the id -->
-        <xsl:if test="/m:response/m:request/@doc-type eq 'html' and $node/@tid">
-            <xsl:choose>
-                
-                <!-- A translation -->
-                <xsl:when test="/m:response/m:translation">
-                    <xsl:attribute name="id" select="concat('node-', $node/@tid)"/>
-                </xsl:when>
-                
-                <!-- If we are rendering a section then the id may refer to a text in that section rather than the section itself -->
-                <xsl:when test="/m:response/m:section">
-                    <xsl:choose>
-                        <xsl:when test="ancestor::m:text">
-                            <xsl:attribute name="id" select="concat($node/ancestor::m:text/@resource-id, '-node-', $node/@tid)"/>
-                        </xsl:when>
-                        <xsl:otherwise>
-                            <xsl:attribute name="id" select="concat('node-', $node/@tid)"/>
-                        </xsl:otherwise>
-                    </xsl:choose>
-                </xsl:when>
-                
-            </xsl:choose>
-        </xsl:if>
-    </xsl:template>
-    
-    <!-- Milestone -->
-    <xsl:template name="milestone">
-        
-        <xsl:param name="content" required="yes"/>
-        <xsl:param name="row-type" required="yes"/>
-        
-        <xsl:choose>
-            <xsl:when test="/m:response/m:translation | /m:response/m:expressions">
-                <div class="rw">
-                    
-                    <!-- Set the class -->
-                    <xsl:attribute name="class">
-                        <xsl:variable name="node-index" select="common:index-of-node(../., .)"/>
-                        <xsl:value-of select="'rw'"/>
-                        <xsl:value-of select="concat(' rw-', $row-type)"/>
-                        <xsl:if test="$node-index eq 1">
-                            <xsl:value-of select="' first-child'"/>
-                        </xsl:if>
-                        <xsl:if test="$node-index eq count(../.)">
-                            <xsl:value-of select="' last-child'"/>
-                        </xsl:if>
-                    </xsl:attribute>
-                    
-                    <!-- 
-                        Select the milestone node
-                        1. The element is preceded by a milestone
-                        2. The element is preceded by an lb and a milestones precedes that
-                        3. The parent node is a seg preceded by a milestone
-                        4. The parent node is a seg preceded by an lb preceded by a milestone
-                    -->
-                    <xsl:variable name="milestone" select="preceding-sibling::*[1][self::tei:milestone] | preceding-sibling::*[2][self::tei:milestone[following-sibling::*[1][self::tei:lb]]] | parent::tei:seg/preceding-sibling::*[1][self::tei:milestone] | parent::tei:seg/preceding-sibling::*[2][self::tei:milestone[following-sibling::*[1][self::tei:lb]]]"/>
-                    
-                    <!-- If there's a milestone add a gutter and put the milestone in it -->
-                    <xsl:if test="$milestone/@xml:id">
-                        <div class="gtr">
-                            <xsl:choose>
-                                
-                                <!-- show a relative link -->
-                                <xsl:when test="/m:response/m:request/@doc-type eq 'html'">
-                                    <a class="milestone from-tei" title="Bookmark this section">
-                                        <xsl:attribute name="href" select="concat('#', $milestone/@xml:id)"/>
-                                        <xsl:attribute name="id" select="$milestone/@xml:id"/>
-                                        <xsl:value-of select="$milestone/@label"/>
-                                    </a>
-                                </xsl:when>
-                                
-                                <!-- show an absolute link -->
-                                <xsl:when test="/m:response/m:expressions">
-                                    <a target="reading-room" title="Go to this section">
-                                        <xsl:attribute name="href" select="concat(/m:response/m:expressions/@reading-room-url, '/translation/', /m:response/m:expressions/@text-id,'.html#', $milestone/@xml:id)"/>
-                                        <xsl:attribute name="id" select="$milestone/@xml:id"/>
-                                        <xsl:value-of select="$milestone/@label"/>
-                                    </a>
-                                </xsl:when>
-                                
-                                <!-- or just the text -->
-                                <xsl:otherwise>
-                                    <xsl:attribute name="id" select="$milestone/@xml:id"/>
-                                    <xsl:value-of select="$milestone/@label"/>
-                                </xsl:otherwise>
-                                
-                            </xsl:choose>
-                        </div>
-                    </xsl:if>
-                    
-                    <!-- Output the content -->
-                    <xsl:copy-of select="$content"/>
-                    
-                </div>
-            </xsl:when>
-            <xsl:otherwise>
-                
-                <xsl:copy-of select="$content"/>
-                
-            </xsl:otherwise>
-        </xsl:choose>
-        
-    </xsl:template>
-    
     <!-- Nested Sections -->
     <xsl:template match="tei:div[@type = ('section', 'chapter')]">
         <!-- Wrap in a div -->
@@ -850,6 +750,258 @@
         </div>
     </xsl:template>
     
+    <!-- Glossary item -->
+    <xsl:template match="m:glossary/m:item">
+        <div class="glossary-item rw">
+            
+            <xsl:attribute name="id" select="@uid/string()"/>
+            <xsl:attribute name="data-match" select="if(@mode/string() eq 'marked') then 'marked' else 'match'"/>
+            
+            <div class="gtr">
+                <xsl:choose>
+                    
+                    <xsl:when test="/m:response/m:request[@doc-type eq 'html']">
+                        
+                        <a class="milestone" title="Bookmark this section">
+                            <xsl:attribute name="href" select="concat('#', @uid/string())"/>
+                            <xsl:value-of select="concat(parent::m:glossary/@prefix, '.', @index)"/>
+                        </a>
+                        
+                    </xsl:when>
+                    
+                    <xsl:when test="ancestor::m:expressions[@reading-room-url][@toh-key]">
+                        
+                        <xsl:variable name="expressions" select="ancestor::m:expressions[@reading-room-url][@toh-key][1]"/>
+                        
+                        <a target="reading-room">
+                            <xsl:attribute name="href" select="concat($expressions/@reading-room-url, '/translation/', $expressions/@toh-key, '.html#', @uid/string())"/>
+                            <xsl:value-of select="concat(parent::m:glossary/@prefix, '.', @index)"/>
+                        </a>
+                        
+                    </xsl:when>
+                    
+                    <xsl:otherwise>
+                        <xsl:value-of select="concat(parent::m:glossary/@prefix, '.', @index)"/>
+                    </xsl:otherwise>
+                </xsl:choose>
+            </div>
+            
+            <div class="row">
+                
+                <div class="col-md-12 print-width-override print-height-override">
+                    
+                    <xsl:if test="/m:response/m:request[@doc-type eq 'html']">
+                        <xsl:attribute name="class" select="'col-md-8 match-this-height print-width-override print-height-override'"/>
+                    </xsl:if>
+                    
+                    <xsl:attribute name="data-match-height" select="concat('gloss-', @index)"/>
+                    <xsl:attribute name="data-match-height-media" select="'.md,.lg'"/>
+                    
+                    <h4 class="term">
+                        <xsl:apply-templates select="m:term[lower-case(@xml:lang) = 'en']"/>
+                    </h4>
+                    <xsl:if test="m:term[@xml:lang eq 'bo-ltn']">
+                        <p class="text-wy">
+                            <xsl:value-of select="string-join(m:term[@xml:lang eq 'bo-ltn'], ' · ')"/>
+                        </p>
+                    </xsl:if>
+                    <xsl:if test="m:term[@xml:lang eq 'bo']">
+                        <p class="text-bo">
+                            <xsl:value-of select="string-join(m:term[@xml:lang eq 'bo'], ' · ')"/>
+                        </p>
+                    </xsl:if>
+                    <xsl:if test="m:term[@xml:lang eq 'sa-ltn']">
+                        <p class="text-sa">
+                            <xsl:value-of select="string-join(m:term[@xml:lang eq 'sa-ltn'], ' · ')"/>
+                        </p>
+                    </xsl:if>
+                    <xsl:for-each select="m:alternative">
+                        <p class="term alternative">
+                            <xsl:apply-templates select="text()"/>
+                        </p>
+                    </xsl:for-each>
+                    <xsl:for-each select="m:definition">
+                        <p>
+                            <xsl:call-template name="class-attribute">
+                                <xsl:with-param name="base-classes" select="'definition'"/>
+                                <xsl:with-param name="html-classes" select="'glossarize'"/>
+                            </xsl:call-template>
+                            <xsl:apply-templates select="node()"/>
+                        </p>
+                    </xsl:for-each>
+                    
+                </div>
+                
+                <xsl:if test="/m:response/m:request[@doc-type eq 'html']">
+                    <div class="col-md-4 occurences hidden-print match-height-overflow print-height-override">
+                        <xsl:attribute name="data-match-height" select="concat('gloss-', @index)"/>
+                        <xsl:attribute name="data-match-height-media" select="'.md,.lg'"/>
+                        <hr class="visible-xs-block visible-sm-block"/>
+                        <h6>
+                            <xsl:value-of select="'Finding passages containing this term...'"/>
+                        </h6>
+                    </div>
+                </xsl:if>
+                
+            </div>
+            
+        </div>
+        
+    </xsl:template>
+    
+    <!-- End notes -->
+    <xsl:template match="m:notes/m:note">
+        <div class="footnote rw">
+            <xsl:attribute name="id" select="@uid"/>
+            <div class="gtr">
+                
+                <xsl:choose>
+                    
+                    <xsl:when test="/m:response/m:request[@doc-type eq 'html']">
+                        <a class="scroll-to-anchor footnote-number">
+                            <xsl:attribute name="href">
+                                <xsl:value-of select="concat('#link-to-', @uid)"/>
+                            </xsl:attribute>
+                            <xsl:attribute name="data-mark">
+                                <xsl:value-of select="concat('#link-to-', @uid)"/>
+                            </xsl:attribute>
+                            <xsl:value-of select="concat(parent::m:notes/@prefix, '.', @index)"/>
+                        </a>
+                    </xsl:when>
+                    
+                    <xsl:when test="ancestor::m:expressions[@reading-room-url][@toh-key]">
+                        
+                        <xsl:variable name="expressions" select="ancestor::m:expressions[@reading-room-url][@toh-key][1]"/>
+                        
+                        <a target="reading-room">
+                            <xsl:attribute name="href" select="concat($expressions/@reading-room-url, '/translation/', $expressions/@toh-key, '.html#', @uid/string())"/>
+                            <xsl:value-of select="concat(parent::m:notes/@prefix, '.', @index)"/>
+                        </a>
+                    </xsl:when>
+                    
+                    <xsl:otherwise>
+                        <xsl:value-of select="concat(parent::m:notes/@prefix, '.', @index)"/>
+                    </xsl:otherwise>
+                    
+                </xsl:choose>
+                
+            </div>
+            <div class="glossarize">
+                <xsl:apply-templates select="node()"/>
+            </div>
+        </div>
+    </xsl:template>
+    
+    <!-- Temporary id -->
+    <xsl:template name="tid">
+        <xsl:param name="node" required="yes"/>
+        <!-- If a temporary id is present then set the id -->
+        <xsl:if test="/m:response/m:request[@doc-type eq 'html'] and $node/@tid">
+            <xsl:choose>
+                
+                <!-- A translation -->
+                <xsl:when test="/m:response/m:translation">
+                    <xsl:attribute name="id" select="concat('node-', $node/@tid)"/>
+                </xsl:when>
+                
+                <!-- If we are rendering a section then the id may refer to a text in that section rather than the section itself -->
+                <xsl:when test="/m:response/m:section">
+                    <xsl:choose>
+                        <xsl:when test="ancestor::m:text">
+                            <xsl:attribute name="id" select="concat($node/ancestor::m:text/@resource-id, '-node-', $node/@tid)"/>
+                        </xsl:when>
+                        <xsl:otherwise>
+                            <xsl:attribute name="id" select="concat('node-', $node/@tid)"/>
+                        </xsl:otherwise>
+                    </xsl:choose>
+                </xsl:when>
+                
+            </xsl:choose>
+        </xsl:if>
+    </xsl:template>
+    
+    <!-- Milestone -->
+    <xsl:template name="milestone">
+        
+        <xsl:param name="content" required="yes"/>
+        <xsl:param name="row-type" required="yes"/>
+        
+        <xsl:choose>
+            <xsl:when test="/m:response/m:translation | ancestor::m:expressions">
+                <div class="rw">
+                    
+                    <!-- Set the class -->
+                    <xsl:attribute name="class">
+                        <xsl:variable name="node-index" select="common:index-of-node(../., .)"/>
+                        <xsl:value-of select="'rw'"/>
+                        <xsl:value-of select="concat(' rw-', $row-type)"/>
+                        <xsl:if test="$node-index eq 1">
+                            <xsl:value-of select="' first-child'"/>
+                        </xsl:if>
+                        <xsl:if test="$node-index eq count(../.)">
+                            <xsl:value-of select="' last-child'"/>
+                        </xsl:if>
+                    </xsl:attribute>
+                    
+                    <!-- 
+                        Select the milestone node
+                        1. The element is preceded by a milestone
+                        2. The element is preceded by an lb and a milestones precedes that
+                        3. The parent node is a seg preceded by a milestone
+                        4. The parent node is a seg preceded by an lb preceded by a milestone
+                    -->
+                    <xsl:variable name="milestone" select="preceding-sibling::*[1][self::tei:milestone] | preceding-sibling::*[2][self::tei:milestone[following-sibling::*[1][self::tei:lb]]] | parent::tei:seg/preceding-sibling::*[1][self::tei:milestone] | parent::tei:seg/preceding-sibling::*[2][self::tei:milestone[following-sibling::*[1][self::tei:lb]]]"/>
+                    
+                    <!-- If there's a milestone add a gutter and put the milestone in it -->
+                    <xsl:if test="$milestone/@xml:id">
+                        <div class="gtr">
+                            <xsl:choose>
+                                
+                                <!-- show a relative link -->
+                                <xsl:when test="/m:response/m:request[@doc-type eq 'html']">
+                                    <a class="milestone from-tei" title="Bookmark this section">
+                                        <xsl:attribute name="href" select="concat('#', $milestone/@xml:id)"/>
+                                        <xsl:attribute name="id" select="$milestone/@xml:id"/>
+                                        <xsl:value-of select="$milestone/@label"/>
+                                    </a>
+                                </xsl:when>
+                                
+                                <!-- show an absolute link -->
+                                <xsl:when test="ancestor::m:expressions[@reading-room-url][@toh-key]">
+                                    
+                                    <xsl:variable name="expressions" select="ancestor::m:expressions[@reading-room-url][@toh-key][1]"/>
+                                    
+                                    <a target="reading-room" title="Go to this section">
+                                        <xsl:attribute name="href" select="concat($expressions/@reading-room-url, '/translation/', $expressions/@toh-key,'.html#', $milestone/@xml:id)"/>
+                                        <xsl:attribute name="id" select="$milestone/@xml:id"/>
+                                        <xsl:value-of select="$milestone/@label"/>
+                                    </a>
+                                </xsl:when>
+                                
+                                <!-- or just the text -->
+                                <xsl:otherwise>
+                                    <xsl:attribute name="id" select="$milestone/@xml:id"/>
+                                    <xsl:value-of select="$milestone/@label"/>
+                                </xsl:otherwise>
+                                
+                            </xsl:choose>
+                        </div>
+                    </xsl:if>
+                    
+                    <!-- Output the content -->
+                    <xsl:copy-of select="$content"/>
+                    
+                </div>
+            </xsl:when>
+            <xsl:otherwise>
+                
+                <xsl:copy-of select="$content"/>
+                
+            </xsl:otherwise>
+        </xsl:choose>
+        
+    </xsl:template>
+
     <!-- Chapter title -->
     <xsl:template name="chapter-title">
         <xsl:param name="chapter-index" required="yes"/>
@@ -861,7 +1013,7 @@
                 <xsl:choose>
                     
                     <!-- show a link -->
-                    <xsl:when test="/m:response/m:request/@doc-type eq 'html'">
+                    <xsl:when test="/m:response/m:request[@doc-type eq 'html']">
                         <a class="milestone milestone-h4" title="Bookmark this section">
                             <xsl:attribute name="href" select="concat('#chapter-', $prefix)"/>
                             <xsl:value-of select="concat($prefix, '.')"/>
@@ -929,7 +1081,7 @@
                 <xsl:choose>
                     
                     <!-- show a link -->
-                    <xsl:when test="/m:response/m:request/@doc-type eq 'html'">
+                    <xsl:when test="/m:response/m:request[@doc-type eq 'html']">
                         <a title="Bookmark this section">
                             <xsl:attribute name="href" select="concat('#', $bookmark-id)"/>
                             <xsl:attribute name="class" select="concat('milestone', ' milestone-', $title-tag)"/>
@@ -1039,43 +1191,6 @@
             </xsl:when>
             
         </xsl:choose>        
-    </xsl:template>
-    
-    <!-- Glossary item -->
-    <xsl:template name="glossary-item">
-        <xsl:param name="glossary-item" required="yes"/>
-        <h4 class="term">
-            <xsl:apply-templates select="$glossary-item/m:term[lower-case(@xml:lang) = 'en']"/>
-        </h4>
-        <xsl:if test="$glossary-item/m:term[@xml:lang eq 'bo-ltn']">
-            <p class="text-wy">
-                <xsl:value-of select="string-join($glossary-item/m:term[@xml:lang eq 'bo-ltn'], ' · ')"/>
-            </p>
-        </xsl:if>
-        <xsl:if test="$glossary-item/m:term[@xml:lang eq 'bo']">
-            <p class="text-bo">
-                <xsl:value-of select="string-join($glossary-item/m:term[@xml:lang eq 'bo'], ' · ')"/>
-            </p>
-        </xsl:if>
-        <xsl:if test="$glossary-item/m:term[@xml:lang eq 'sa-ltn']">
-            <p class="text-sa">
-                <xsl:value-of select="string-join($glossary-item/m:term[@xml:lang eq 'sa-ltn'], ' · ')"/>
-            </p>
-        </xsl:if>
-        <xsl:for-each select="$glossary-item/m:alternative">
-            <p class="term alternative">
-                <xsl:apply-templates select="text()"/>
-            </p>
-        </xsl:for-each>
-        <xsl:for-each select="$glossary-item/m:definition">
-            <p>
-                <xsl:call-template name="class-attribute">
-                    <xsl:with-param name="base-classes" select="'definition'"/>
-                    <xsl:with-param name="html-classes" select="'glossarize'"/>
-                </xsl:call-template>
-                <xsl:apply-templates select="node()"/>
-            </p>
-        </xsl:for-each>
     </xsl:template>
     
     <xsl:template name="expandable-toh">

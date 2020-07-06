@@ -192,6 +192,27 @@
                                     </section>
                                 </xsl:if>
                                 
+                                <xsl:if test="m:translation/m:homage//tei:*">
+                                    <hr class="hidden-print"/>
+                                    <section id="homage" class="page text glossarize-section">
+                                        
+                                        <xsl:call-template name="section-title">
+                                            <xsl:with-param name="bookmark-id" select="'homage'"/>
+                                            <xsl:with-param name="prefix" select="m:translation/m:homage/@prefix"/>
+                                            <xsl:with-param name="title" select="'Homage'"/>
+                                            <xsl:with-param name="title-tag" select="'h3'"/>
+                                        </xsl:call-template>
+                                        
+                                        <div>
+                                            <xsl:if test="not(m:request/@view-mode = ('editor','app'))">
+                                                <xsl:attribute name="class" select="'render-in-viewport'"/>
+                                            </xsl:if>
+                                            <xsl:apply-templates select="m:translation/m:homage"/>
+                                        </div>
+                                        
+                                    </section>
+                                </xsl:if>
+                                
                                 <div id="translation">
                                     
                                     <xsl:for-each select="m:translation/m:body/m:chapter">
@@ -204,7 +225,7 @@
                                             <xsl:attribute name="id" select="concat('chapter-', @prefix)"/>
                                             
                                             <xsl:choose>
-                                                <xsl:when test="m:title/text() or m:title-number/text() or m:translation/m:prologue//tei:*">
+                                                <xsl:when test="m:title/text() or m:title-number/text() or m:translation/m:prologue//tei:* or m:translation/m:homage//tei:*">
                                                     <xsl:attribute name="class" select="'chapter text glossarize-section page'"/>
                                                 </xsl:when>
                                                 <xsl:otherwise>
@@ -355,9 +376,7 @@
                                         <xsl:if test="not(m:request/@view-mode = ('editor','app'))">
                                             <xsl:attribute name="class" select="'render-in-viewport'"/>
                                         </xsl:if>
-                                        <xsl:call-template name="notes">
-                                            <xsl:with-param name="translation" select="m:translation"/>
-                                        </xsl:call-template>
+                                        <xsl:apply-templates select="m:translation/m:notes/m:note"/>
                                     </div>
                                 </section>
                                 
@@ -397,9 +416,7 @@
                                         <xsl:if test="not(m:request/@view-mode = ('editor','app'))">
                                             <xsl:attribute name="class" select="'render-in-viewport'"/>
                                         </xsl:if>
-                                        <xsl:call-template name="glossary">
-                                            <xsl:with-param name="translation" select="m:translation"/>
-                                        </xsl:call-template>
+                                        <xsl:apply-templates select="m:translation/m:glossary/m:item"/>
                                     </div>
                                     
                                 </section>
@@ -648,6 +665,16 @@
                         </td>
                         <td>
                             <a href="#prologue" class="scroll-to-anchor">Prologue</a>
+                        </td>
+                    </tr>
+                </xsl:if>
+                <xsl:if test="$translation/m:homage//tei:*">
+                    <tr>
+                        <td>
+                            <xsl:value-of select="concat($translation/m:homage/@prefix, '.')"/>
+                        </td>
+                        <td>
+                            <a href="#homage" class="scroll-to-anchor">Homage</a>
                         </td>
                     </tr>
                 </xsl:if>
@@ -991,77 +1018,7 @@
         </a>
     </xsl:template>
     
-    <xsl:template name="notes">
-        <xsl:param name="translation" required="yes"/>
-        <xsl:for-each select="$translation/m:notes/m:note">
-            <div class="footnote rw">
-                <xsl:attribute name="id" select="@uid"/>
-                <div class="gtr">
-                    <a class="scroll-to-anchor footnote-number">
-                        <xsl:attribute name="href">
-                            <xsl:value-of select="concat('#link-to-', @uid)"/>
-                        </xsl:attribute>
-                        <xsl:attribute name="data-mark">
-                            <xsl:value-of select="concat('#link-to-', @uid)"/>
-                        </xsl:attribute>
-                        <xsl:apply-templates select="@index"/>
-                    </a>
-                </div>
-                <div class="glossarize">
-                    <xsl:apply-templates select="node()"/>
-                </div>
-            </div>
-        </xsl:for-each>
-    </xsl:template>
     
-    <xsl:template name="glossary">
-        <xsl:param name="translation" required="yes"/>
-        <xsl:for-each select="$translation/m:glossary/m:item">
-            <div class="glossary-item rw">
-                
-                <xsl:attribute name="id" select="@uid/string()"/>
-                <xsl:attribute name="data-match" select="if(@mode/string() eq 'marked') then 'marked' else 'match'"/>
-                
-                <div class="gtr">
-                    <a class="milestone" title="Bookmark this section">
-                        <xsl:attribute name="href" select="concat('#', @uid/string())"/>
-                        <xsl:value-of select="concat($translation/m:glossary/@prefix, '.', @index)"/>
-                    </a>
-                </div>
-                
-                <div class="row">
-                    
-                    <div class="col-md-8 match-this-height print-width-override print-height-override">
-                        
-                        <xsl:if test="/m:response/m:request/@view-mode = ('app')">
-                            <xsl:attribute name="class" select="'col-md-12 print-width-override print-height-override'"/>
-                        </xsl:if>
-                        
-                        <xsl:attribute name="data-match-height" select="concat('g-', @index)"/>
-                        <xsl:attribute name="data-match-height-media" select="'.md,.lg'"/>
-                        
-                        <xsl:call-template name="glossary-item">
-                            <xsl:with-param name="glossary-item" select="."/>
-                        </xsl:call-template>
-                        
-                    </div>
-                    
-                    <xsl:if test="not(/m:response/m:request/@view-mode = ('app'))">
-                        <div class="col-md-4 occurences hidden-print match-height-overflow print-height-override">
-                            <xsl:attribute name="data-match-height" select="concat('g-', @index)"/>
-                            <xsl:attribute name="data-match-height-media" select="'.md,.lg'"/>
-                            <hr class="visible-xs-block visible-sm-block"/>
-                            <h6>
-                                <xsl:value-of select="'Finding passages containing this term...'"/>
-                            </h6>
-                        </div>
-                    </xsl:if>
-                    
-                </div>
-                
-            </div>
-        </xsl:for-each>
-    </xsl:template>
     
     <xsl:template name="contents-sidebar">
         <xsl:param name="translation" required="yes"/>

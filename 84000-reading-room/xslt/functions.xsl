@@ -134,35 +134,71 @@
         <xsl:param name="base-url" as="xs:string"/>
         <xsl:param name="append-to-url" as="xs:string"/>
         
-        <xsl:variable name="count-pages" select="xs:integer(ceiling($count-records div $max-records))" as="xs:integer"/>
-        <xsl:variable name="max-pages" select="if ($count-pages le 15) then $count-pages else 15"/>
+        <xsl:variable name="count-blocks" select="xs:integer(ceiling($count-records div $max-records))" as="xs:integer"/>
+        <xsl:variable name="this-block" select="xs:integer(floor((($first-record -1) + $max-records) div $max-records))" as="xs:integer"/>
         
         <nav aria-label="Page navigation" class="text-right">
             <ul class="pagination">
                 <li class="disabled">
                     <span>
-                        <xsl:value-of select="'Page: '"/>
+                        <xsl:value-of select="concat(format-number($count-records, '#,###'), if($count-records gt 1) then ' records' else ' record')"/>
                     </span>
                 </li>
-                <xsl:for-each select="1 to $max-pages">
-                    <xsl:variable name="page-first-record" select="(((. - 1) * $max-records) + 1)"/>
+                <xsl:if test="$this-block gt  1">
                     <li>
-                        <xsl:if test="$first-record eq $page-first-record">
-                            <xsl:attribute name="class" select="'active'"/>
-                        </xsl:if>
-                        <a>
-                            <xsl:attribute name="href" select="concat($base-url, if(contains($base-url, '?')) then '&amp;' else '?', 'first-record=', $page-first-record, $append-to-url)"/>
-                            <xsl:value-of select="position()"/>
-                        </a>
+                        <xsl:copy-of select="common:pagination-link(1, $max-records, $base-url, $append-to-url, 'fa-first', 'Page 1')"/>
                     </li>
-                </xsl:for-each>
-                <li class="disabled">
+                    <li>
+                        <xsl:copy-of select="common:pagination-link((((($this-block - 1) - 1) * $max-records) + 1), $max-records, $base-url, $append-to-url, 'fa-previous', concat('Page ', format-number(($this-block - 1), '#,###')))"/>
+                    </li>
+                </xsl:if>
+                <li class="active">
                     <span>
-                        <xsl:value-of select="concat('of ', format-number($count-records, '#,###'), ' results')"/>
+                        <xsl:value-of select="concat('page ', $this-block, ' of ', $count-blocks)"/>
                     </span>
                 </li>
+                <xsl:if test="$this-block lt $count-blocks">
+                    <li>
+                        <xsl:copy-of select="common:pagination-link((((($this-block + 1) - 1) * $max-records) + 1), $max-records, $base-url, $append-to-url, 'fa-next', concat('Page ', format-number(($this-block + 1), '#,###')))"/>
+                    </li>
+                    <li>
+                        <xsl:copy-of select="common:pagination-link(((($count-blocks - 1) * $max-records) + 1), $max-records, $base-url, $append-to-url, 'fa-last', concat('Page ', format-number($count-blocks, '#,###')))"/>
+                    </li>
+                </xsl:if>
+                
             </ul>
         </nav>
+    </xsl:function>
+    
+    <xsl:function name="common:pagination-link">
+        <xsl:param name="first-record" as="xs:integer"/>
+        <xsl:param name="max-records" as="xs:integer"/>
+        <xsl:param name="base-url" as="xs:string"/>
+        <xsl:param name="append-to-url" as="xs:string"/>
+        <xsl:param name="link-text" as="xs:string"/>
+        <xsl:param name="link-title" as="xs:string"/>
+        <a>
+            <xsl:attribute name="href" select="concat($base-url, if(contains($base-url, '?')) then '&amp;' else '?', 'first-record=',  $first-record, '&amp;max-records=', $max-records, $append-to-url)"/>
+            <xsl:attribute name="title" select="$link-title"/>
+            <xsl:choose>
+                <xsl:when test="$link-text eq 'fa-next'">
+                    <i class="fa fa-chevron-right"/>
+                </xsl:when>
+                <xsl:when test="$link-text eq 'fa-previous'">
+                    <i class="fa fa-chevron-left"/>
+                </xsl:when>
+                <xsl:when test="$link-text eq 'fa-first'">
+                    <i class="fa fa-step-backward"/>
+                </xsl:when>
+                <xsl:when test="$link-text eq 'fa-last'">
+                    <i class="fa fa-step-forward"/>
+                </xsl:when>
+                <xsl:otherwise>
+                    <xsl:value-of select="$link-text"/>
+                </xsl:otherwise>
+            </xsl:choose>
+            
+        </a>
     </xsl:function>
     
     <xsl:function name="common:marker">
@@ -369,7 +405,7 @@
         <xsl:param name="changeFrom" as="xs:string*"/>
         <xsl:param name="changeTo" as="xs:string*"/>
         
-        <xsl:sequence select="             if (count($changeFrom) &gt; 0)                 then                      functx:replace-multi(                         replace($arg, $changeFrom[1],                             functx:if-absent($changeTo[1],'')                         ),                         $changeFrom[position() &gt; 1],                         $changeTo[position() &gt; 1]                     )                 else $arg             "/>
+        <xsl:sequence select="if (count($changeFrom) &gt; 0) then functx:replace-multi(replace($arg, $changeFrom[1], functx:if-absent($changeTo[1],'')), $changeFrom[position() &gt; 1], $changeTo[position() &gt; 1]) else $arg "/>
         
     </xsl:function>
     
@@ -377,7 +413,21 @@
         <xsl:param name="arg" as="item()*"/>
         <xsl:param name="value" as="item()*"/>
         
-        <xsl:sequence select="             if (exists($arg))                 then $arg                 else $value             "/>
+        <xsl:sequence select="if (exists($arg)) then $arg else $value "/>
+        
+    </xsl:function>
+    
+    <xsl:function name="functx:is-a-number" as="xs:boolean">
+        <xsl:param name="value" as="xs:anyAtomicType?"/>
+        
+        <xsl:sequence select="string(number($value)) != 'NaN'"/>
+        
+    </xsl:function>
+    
+    <xsl:function name="common:enforce-integer" as="xs:integer">
+        <xsl:param name="value" as="xs:anyAtomicType?"/>
+        
+        <xsl:sequence select="if(functx:is-a-number($value)) then xs:integer($value) else 0"/>
         
     </xsl:function>
     

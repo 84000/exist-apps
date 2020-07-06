@@ -130,6 +130,7 @@
             </create>
             
             <create qname="tei:gloss">
+                <field name="gloss-id" match="@xml:id" type="xs:string"/>
                 <field name="gloss-type" match="@type" type="xs:string"/>
                 <field name="term-lang" match="tei:term/@xml:lang" type="xs:string"/>
                 <field name="term-type" match="tei:term/@type" type="xs:string"/>

@@ -4,6 +4,8 @@
     <xsl:import href="../../../xslt/tei-to-xhtml.xsl"/>
     <xsl:import href="epub-page.xsl"/>
     
+    <!-- epub:types https://idpf.github.io/epub-vocabs/structure/ -->
+    
     <xsl:template match="/m:response">
         
         <xsl:variable name="page-title" select="'Contents'"/>
@@ -41,6 +43,11 @@
                         <xsl:if test="m:translation/m:prologue//tei:*">
                             <li>
                                 <a href="prologue.xhtml">Prologue</a>
+                            </li>
+                        </xsl:if>
+                        <xsl:if test="m:translation/m:homage//tei:*">
+                            <li>
+                                <a href="homage.xhtml">Homage</a>
                             </li>
                         </xsl:if>
                         <li>

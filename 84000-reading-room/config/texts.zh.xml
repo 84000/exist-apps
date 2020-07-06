@@ -39,7 +39,7 @@
             possible by complying with open standards. If you have any feedback about this functionality, or tips for reading them on your
             device, please contact us at <a href="mailto:info@84000.co">info@84000.co</a>. </p>
     </item>
-
+    
     <!-- About -->
     <item key="about.common.sponsor-button-label">線上捐款</item>
     <item key="about.common.sponsor-button-link">#commsSiteUrl/ch-how-you-can-help/ch-howhelp-subscribe</item>
@@ -56,7 +56,7 @@
     <item key="about.common.page-total-label">Total pages:</item>
     <item key="about.common.pages-label">pages</item>
     <item key="about.common.texts-label">texts</item>
-
+    
     <!-- Progress -->
     <!--<item key="about.progress.page-title">工作進度</item>-->
     <item key="about.progress.header-img-src">/imgs/about-headers/PROGRESS-1400.jpg</item>
@@ -82,7 +82,7 @@
             </li>
         </ul>
     </item>
-
+    
     <!-- Impact -->
     <!--<item key="about.impact.page-title">全球影響</item>-->
     <item key="about.impact.header-img-src">/imgs/about-headers/IMPACT-1400.jpg</item>
@@ -150,7 +150,7 @@
     <item key="about.impact.countries-title">讀者來源:</item>
     <item key="about.impact.countries-legend">*備註：以上圖案僅列出部分讀者所處國家與地區，並非全數。</item>
     <item key="about.impact.countries-timestamp">最後更新日期：2018年8月5日</item>
-
+    
     <!-- Sponsors -->
     <!--<item key="about.sponsors.page-title">贊助人</item>-->
     <item key="about.sponsors.header-img-src">/imgs/about-headers/SPONSORS-1400.jpg</item>
@@ -187,7 +187,7 @@
         <p>108位創始贊助人</p>
     </item>
     <item key="about.sponsors.text-sponsorship-link-label">還有一個贊助機會</item>
-
+    
     <!-- Translators -->
     <!--<item key="about.translators.page-title">翻譯人員</item>-->
     <item key="about.translators.header-img-src">/imgs/about-headers/TRANSLATORS-1400.jpg</item>
@@ -211,7 +211,7 @@
     <item key="about.translators.affiliation-label">of contributors</item>
     <item key="about.translators.region-title">Contributors by region</item>
     <item key="about.translators.region-label">of contributors</item>
-
+    
     <!-- Sponsor a Sutra -->
     <!--<item key="about.sponsor-a-sutra.page-title">贊助一部佛典</item>-->
     <item key="about.sponsor-a-sutra.header-img-src">/imgs/about-headers/SPONSOR-SUTRA-1024x514.jpg</item>
@@ -273,7 +273,7 @@
     <item key="widget.progress-chart.tab-title-combined">And Tengyur</item>
     <item key="widget.progress-chart.tab-subtitle-combined">~230,000 pages</item>
     <item key="widget.progress-chart.tab-description-combined">Our 100 year goal is the translation and free accessibility of all 231,800 pages of the Tibetan Buddhist Canon.</item>
-
+    
     <!-- Download dana -->
     <item key="widget.download-dana.widget-title">Download Dāna</item>
     <item key="widget.download-dana.icon-label">You are downloading:</item>
@@ -288,5 +288,5 @@
     
     <!-- Audio test -->
     <item key="about.audio-test.page-title">Audio test</item>
-
+    
 </texts>

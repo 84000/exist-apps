@@ -4,6 +4,8 @@
     <xsl:import href="../../../xslt/tei-to-xhtml.xsl"/>
     <xsl:import href="epub-page.xsl"/>
     
+    <!-- epub:types https://idpf.github.io/epub-vocabs/structure/ -->
+    
     <xsl:param name="chapter-index" required="yes"/>
     <xsl:param name="prefix" required="yes"/>
     

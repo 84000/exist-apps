@@ -4,6 +4,8 @@
     <xsl:import href="../../../xslt/tei-to-xhtml.xsl"/>
     <xsl:import href="epub-page.xsl"/>
     
+    <!-- epub:types https://idpf.github.io/epub-vocabs/structure/ -->
+    
     <xsl:template match="/m:response">
         
         <xsl:variable name="section-id" select="'glossary'"/>
@@ -25,14 +27,7 @@
                         </h3>
                     </div>
                     
-                    <xsl:for-each select="m:translation/m:glossary/m:item">
-                        <xsl:sort select="common:standardized-sa(m:term[lower-case(@xml:lang) = 'en'][1])"/>
-                        <div class="glossary-item">
-                            <xsl:call-template name="glossary-item">
-                                <xsl:with-param name="glossary-item" select="."/>
-                            </xsl:call-template>
-                        </div>
-                    </xsl:for-each>
+                    <xsl:apply-templates select="m:translation/m:glossary/m:item"/>
                     
                 </section>
             </xsl:with-param>
