@@ -518,7 +518,8 @@ declare function glossary:translation-data($tei as element(tei:TEI), $resource-i
 
 declare function glossary:filter($translation-milestones-internal-refs as element(m:translation), $filter as xs:string, $search as xs:string) as element(m:glossary) {
     
-    let $tei := tei-content:tei($translation-milestones-internal-refs/@id, 'translation')
+    let $text-id := $translation-milestones-internal-refs/@id
+    let $tei := tei-content:tei($text-id, 'translation')
     
     let $entity-instance-ids := $entities:entities/m:entities/m:entity/m:instance/@id/string()
     
@@ -558,14 +559,16 @@ declare function glossary:filter($translation-milestones-internal-refs as elemen
             $translation-glossarized/m:glossary/@*,
             
             attribute filter { $filter },
+            attribute text-id { $text-id },
             element search { $search },
             
             for $gloss in $tei-gloss
             
                 let $search-score := if(normalize-space($search) gt '') then ft:score($gloss) else 1
                 
-                let $glossary-item := $translation-milestones-internal-refs/m:glossary/m:item[@uid eq $gloss/@xml:id]
-            
+                (: It seems to be significantly quicker to re-create the glossary-item than look it up :)
+                let $glossary-item := glossary:item($gloss, false()) (: $translation-milestones-internal-refs/m:glossary/m:item[@uid = $gloss/@xml:id/string()] :)
+                
                 (: Expression items :)
                 let $expression-items := 
                     if($filter eq 'new-expressions') then
@@ -592,8 +595,8 @@ declare function glossary:filter($translation-milestones-internal-refs as elemen
                         element { QName('http://read.84000.co/ns/1.0', 'expressions') }{     
                             
                             (: Specify the context :)
-                            attribute text-id { $translation-milestones-internal-refs/@id },
-                            attribute toh-key { $translation-milestones-internal-refs/m:source/@key },
+                            attribute text-id { $translation-glossarized/@id },
+                            attribute toh-key { $translation-glossarized/m:source/@key },
                             attribute reading-room-url { $common:environment/m:url[@id eq 'reading-room']/text() },
                             
                             (: Expression items :)

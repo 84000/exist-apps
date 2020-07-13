@@ -206,6 +206,8 @@ declare function entities:match-instance($entity-id as xs:string, $instance-id a
             attribute id { $instance-id },
             attribute type { $instance-type }
         }
+    
+    where $instance-id gt '' and $instance-type gt ''
     return
         common:update('entity-match-instance', $existing-instance, $new-instance, $entity, ())
     

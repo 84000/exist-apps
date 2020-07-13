@@ -10,6 +10,7 @@
     <xsl:variable name="request-max-records" select="common:enforce-integer(/m:response/m:request/@max-records)" as="xs:integer"/>
     <xsl:variable name="request-filter" select="/m:response/m:request/@filter"/>
     <xsl:variable name="request-search" select="/m:response/m:request/m:search/text()"/>
+    <xsl:variable name="request-similar-search" select="/m:response/m:request/m:similar-search/text()"/>
     
     <xsl:variable name="request-glossary-id" select="/m:response/m:request/@glossary-id"/>
     <xsl:variable name="request-item-tab" select="/m:response/m:request/@item-tab"/>
@@ -376,12 +377,14 @@
                                         
                                         <ul class="list-inline inline-dots no-bottom-margin">
                                             <li class="small">
-                                                <xsl:value-of select="concat('Matched glossaries : ', count($loop-glossary/m:entity-glossaries/m:item[not(@uid eq $loop-glossary-id)]))"/>
+                                                <xsl:value-of select="concat('Matched with: ', count($loop-glossary/m:entity-glossaries/m:item[not(@uid eq $loop-glossary-id)]))"/>
                                             </li>
                                             <xsl:if test="$loop-glossary/m:entity">
                                                 <li class="small">
                                                     <xsl:value-of select="$loop-glossary/m:entity/m:label"/>
-                                                    <xsl:value-of select="concat(' (', $loop-glossary/m:entity/@xml:id, ')')"/>
+                                                </li>
+                                                <li class="small">
+                                                    <xsl:value-of select="$loop-glossary/m:entity/@xml:id"/>
                                                 </li>
                                             </xsl:if>
                                             <li>
@@ -457,7 +460,7 @@
                                                         <div class="form-group">
                                                             <div class="col-sm-offset-4 col-sm-4">
                                                                 <div class="input-group">
-                                                                    <input type="text" name="similar-search" class="form-control" id="similar-search" value="{ $request-search }" placeholder="Widen search..."/>
+                                                                    <input type="text" name="similar-search" class="form-control" id="similar-search" value="{ $request-similar-search }" placeholder="Widen search..."/>
                                                                     <div class="input-group-btn">
                                                                         <button type="submit" class="btn btn-primary">
                                                                             <i class="fa fa-search"/>
