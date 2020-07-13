@@ -197,6 +197,19 @@ declare function entities:exclude($entity-ids as xs:string*) as element()* {
             common:update('entity-exclude', $existing-value, $new-value, $target-entity, ())
 };
 
+declare function entities:match-instance($entity-id as xs:string, $instance-id as xs:string, $instance-type as xs:string) as element()* {
+    
+    let $entity := $entities:entities/m:entities/m:entity[@xml:id eq $entity-id][1]
+    let $existing-instance := $entity/m:instance[@id eq  $instance-id][1]
+    let $new-instance := 
+        element { QName('http://read.84000.co/ns/1.0', 'instance') } {
+            attribute id { $instance-id },
+            attribute type { $instance-type }
+        }
+    return
+        common:update('entity-match-instance', $existing-instance, $new-instance, $entity, ())
+    
+};
 
 declare function entities:remove-instance($instance-id as xs:string) as element()* {
 
@@ -206,3 +219,5 @@ declare function entities:remove-instance($instance-id as xs:string) as element(
         common:update('entity-exclude', $existing-value, (), $existing-value/parent::m:entity, ())
         
 };
+
+

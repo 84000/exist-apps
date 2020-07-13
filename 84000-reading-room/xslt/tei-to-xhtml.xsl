@@ -703,13 +703,6 @@
         </span>
     </xsl:template>
     
-    <xsl:template match="tei:match[@requested-glossary eq 'true']">
-        <span class="mark">
-            <xsl:attribute name="data-glossary-id" select="@glossary-id"/>
-            <xsl:apply-templates select="node()"/>
-        </span>
-    </xsl:template>
-    
     <xsl:template match="tei:match">
         <span class="underline">
             <xsl:attribute name="data-glossary-id" select="@glossary-id"/>

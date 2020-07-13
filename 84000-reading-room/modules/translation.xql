@@ -407,7 +407,7 @@ declare function translation:prologue($tei as element(tei:TEI)) as element() {
 };
 
 declare function translation:homage($tei as element(tei:TEI)) as element() {
-    <homage xmlns="http://read.84000.co/ns/1.0" prefix="pl">
+    <homage xmlns="http://read.84000.co/ns/1.0" prefix="h">
     { 
         translation:nested-section($tei//tei:body/tei:div[@type eq 'translation']/tei:div[@type eq 'homage'], 0, 'h')
     }

@@ -74,7 +74,7 @@
         
         <xsl:choose>
             <xsl:when test="m:search-here(., $matching-glossary)">
-                <xsl:copy-of select="m:output-match($matching-glossary, $term-content, 'marked')"/>
+                <xsl:copy-of select="m:output-match($matching-glossary/@uid, $term-content, 'marked')"/>
             </xsl:when>
             <xsl:otherwise>
                 <xsl:copy>
@@ -100,7 +100,7 @@
             <xsl:when test="m:search-here(., $matching-glossary)">
                 <xsl:element name="{ local-name(.) }" namespace="http://www.tei-c.org/ns/1.0">
                     <xsl:copy-of select="@*"/>
-                    <xsl:copy-of select="m:output-match($matching-glossary, $term-content, 'matched')"/>
+                    <xsl:copy-of select="m:output-match($matching-glossary/@uid, $term-content, 'matched')"/>
                 </xsl:element>
             </xsl:when>
             <xsl:otherwise>
@@ -206,16 +206,8 @@
                         
                         <!-- Output leading and glossary strings -->
                         <xsl:value-of select="$leading-string"/>
-                        <match xmlns="http://www.tei-c.org/ns/1.0">
-                            <xsl:attribute name="glossary-id" select="$glossary-sequence[1]"/>
-                            <xsl:attribute name="match-mode" select="'matched'"/>
-                            <xsl:if test="$glossary-sequence[1] = $glossary-id">
-                                <xsl:attribute name="requested-glossary" select="'true'"/>
-                            </xsl:if>
-                            <!-- Un-encode the spaces -->
-                            <xsl:value-of select="m:decode-string($glossary-sequence[2])"/>
-                            <!--<xsl:value-of select=" concat(' (ptrs:',count($pointers),')')"/>-->
-                        </match>
+                        <xsl:variable name="text-content" select="m:decode-string($glossary-sequence[2])"/>
+                        <xsl:copy-of select="m:output-match($glossary-sequence[1], $text-content, 'matched')"/>
                         
                         <!-- Parse the remainder string -->
                         <xsl:call-template name="mark-matches">
@@ -275,18 +267,18 @@
     
     <xsl:function name="m:output-match">
         
-        <xsl:param name="glossary" as="element(m:item)"/>
-        <xsl:param name="content" as="node()"/>
+        <xsl:param name="match-glossary-id" as="xs:string"/>
+        <xsl:param name="content"/>
         <xsl:param name="mode" as="xs:string"/>
         
         <match xmlns="http://www.tei-c.org/ns/1.0">
             <!-- Set the id -->
-            <xsl:attribute name="glossary-id" select="$glossary/@uid"/>
+            <xsl:attribute name="glossary-id" select="$match-glossary-id"/>
             <xsl:attribute name="match-mode" select="$mode"/>
             <!-- Flag if it's the requested one -->
-            <xsl:if test="$glossary[@uid = $glossary-id]">
+            <!--<xsl:if test="$match-glossary-id = $glossary-id">
                 <xsl:attribute name="requested-glossary" select="'true'"/>
-            </xsl:if>
+            </xsl:if>-->
             <!-- retain the text -->
             <xsl:copy-of select="$content"/>
         </match>

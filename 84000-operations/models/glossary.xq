@@ -27,11 +27,10 @@ let $glossary-id := request:get-parameter('glossary-id', '')
 let $form-action := request:get-parameter('form-action', '')
 let $search := request:get-parameter('search', '')
 let $entity-id := request:get-parameter('entity-id', '')
-let $target-entity-id := request:get-parameter('target-entity-id', '')
-let $entity-ids := request:get-parameter('entity-ids[]', '')
+let $similar-search := request:get-parameter('similar-search', '')
 
 let $resource-id := 
-    if(not($resource-id)) then
+    if(not($resource-id gt '')) then
         translations:files($tei-content:marked-up-status-ids)/m:file[1]/@id
     else
         $resource-id
@@ -53,10 +52,8 @@ let $update-glossary :=
         update-translation:cache-expressions($tei, $resource-id)
     else if($form-action eq 'update-entity') then
         entities:update-entity($entity-id)
-    else if($form-action = ('match-entity') and $entity-id gt '' and $target-entity-id gt '') then
-        entities:match($entity-id, $target-entity-id)
-    else if($form-action = ('exclude-entities') and count($entity-ids) gt 1) then
-        entities:exclude($entity-ids)
+    else if($form-action eq 'match-entity') then
+        entities:match-instance($entity-id, $glossary-id, 'glossary-item')
     else
         ()
 
@@ -100,8 +97,11 @@ return
                 attribute max-records { request:get-parameter('max-records', $default-max-records) },
                 attribute filter { request:get-parameter('filter', '') },
                 attribute glossary-id { request:get-parameter('glossary-id', '') },
+                attribute form-action { request:get-parameter('form-action', '') },
+                attribute entity-id { request:get-parameter('entity-id', '') },
                 attribute item-tab { request:get-parameter('tab-id', '') },
-                element search { request:get-parameter('search', '') }
+                element search { request:get-parameter('search', '') },
+                element similar-search { request:get-parameter('similar-search', '') }
             },
             element { QName('http://read.84000.co/ns/1.0', 'text') }{
                 attribute id { $translation-data/@id },
@@ -126,18 +126,10 @@ return
                         attribute active-item { $glossary-item/@uid eq $glossary-id },
                         attribute next-gloss-id { $glossary-filtered/m:item[@uid eq $glossary-item/@uid]/following-sibling::m:item[1]/@uid },
                         $glossary-item/node(),
-                        $entity,
-                        element { QName('http://read.84000.co/ns/1.0', 'entity-glossaries') }{
-                            if($entity) then
-                                for $matched-item in glossary:items($entity/m:instance/@id/string(), true())
-                                return
-                                    element { node-name($matched-item) } {
-                                        $matched-item/@*,
-                                        $matched-item/node(),
-                                        entities:entities($matched-item/@uid)/m:entity[1]
-                                    }
-                            else ()
-                        },
+                        if(not($glossary-item/m:expressions)) then
+                            glossary:expressions($translation-data, $glossary-item/@uid)
+                        else ()
+                        ,
                         element markdown {
                             for $definition in $glossary-item/m:definition
                             return 
@@ -146,7 +138,44 @@ return
                                     common:markdown($definition/node(), 'http://www.tei-c.org/ns/1.0')
                                 }
                         },
-                        glossary:expressions($translation-data, $glossary-item/@uid)
+                        if($entity) then (
+                            $entity,
+                            element { QName('http://read.84000.co/ns/1.0', 'entity-glossaries') }{
+                                if($entity) then
+                                    for $matched-item in glossary:items($entity/m:instance/@id/string(), true())
+                                    return
+                                        element { node-name($matched-item) } {
+                                            $matched-item/@*,
+                                            $matched-item/node(),
+                                            entities:entities($matched-item/@uid)/m:entity[1]
+                                        }
+                                else ()
+                            }
+                        )
+                        else 
+                            element { QName('http://read.84000.co/ns/1.0', 'similar-entities') }{
+                            
+                                let $similar-items := glossary:similar-items($glossary-item, $similar-search)
+                                let $entities := entities:entities($similar-items/@uid)/m:entity
+                                
+                                for $entity-id in distinct-values($entities/@xml:id)
+                                    let $entity := $entities[@xml:id eq $entity-id]
+                                    let $instances := $entity/m:instance
+                                    let $score := functx:index-of-node($similar-items, $similar-items[@uid = $instances/@id][1])
+                                    let $instances-items := glossary:items($instances/@id, true())
+                                order by $score
+                                return
+                                    element { node-name($entity) } {
+                                        $entity/@*,
+                                        $entity/node()[not(self::m:instance)],
+                                        for $instance in $instances
+                                        return
+                                            element { node-name($instance) } {
+                                                $instance/@*,
+                                                $instances-items[@uid = $instance/@id]
+                                            }
+                                    }
+                            }
                     }
             },
             $update-glossary

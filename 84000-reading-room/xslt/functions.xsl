@@ -83,7 +83,7 @@
     </xsl:function>
     
     <xsl:function name="common:limit-str" as="xs:string">
-        <xsl:param name="string" as="xs:string"/>
+        <xsl:param name="string" as="xs:string?"/>
         <xsl:param name="max-length" as="xs:integer"/>
         <xsl:choose>
             <xsl:when test="string-length($string) gt $max-length ">
