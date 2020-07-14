@@ -172,7 +172,12 @@ declare function update-translation:title-statement($tei as element(tei:TEI)) as
                     element {QName("http://www.tei-c.org/ns/1.0", "title")} {
                         attribute type {$title-type},
                         attribute xml:lang {$title-lang},
-                        text {$title-text}
+                        text {
+                            if($title-lang eq 'Sa-Ltn') then
+                                replace($title-text, '\-', '­')
+                            else
+                                $title-text
+                        }
                     }
                 )
                 

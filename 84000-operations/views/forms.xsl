@@ -84,20 +84,35 @@
                                 </xsl:call-template>
                             </xsl:otherwise>
                         </xsl:choose>
-                        <div>
-                            <a href="#add-nodes" class="add-nodes">
-                                <span class="monospace">
-                                    <xsl:value-of select="'+'"/>
-                                </span>
-                                <xsl:value-of select="' add a title'"/>
-                            </a>
+                        <div class="form-group">
+                            <div class="col-sm-12">
+                                <a href="#add-nodes" class="add-nodes">
+                                    <span class="monospace">
+                                        <xsl:value-of select="'+'"/>
+                                    </span>
+                                    <xsl:value-of select="' add a title'"/>
+                                </a>
+                            </div>
                         </div>
                     </div>
-                    <div class="pull-right">
-                        <button type="submit" class="btn btn-primary">
-                            <xsl:value-of select="'Save'"/>
-                        </button>
+                    
+                    <div class="form-group">
+                        <div class="col-sm-12">
+                            <div class="center-vertical full-width">
+                                <div>
+                                    <p class="text-muted">
+                                        <xsl:value-of select="'* Standard hyphens can be added to Sanskrit strings and will be converted to soft-hyphens when saved'"/>
+                                    </p>
+                                </div>
+                                <div>
+                                    <button type="submit" class="btn btn-primary pull-right">
+                                        <xsl:value-of select="'Save'"/>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
+                    
                 </form>
             </xsl:with-param>
         </xsl:call-template>
@@ -144,7 +159,14 @@
                                 <xsl:if test="$option-value eq $title-lang">
                                     <xsl:attribute name="selected" select="'selected'"/>
                                 </xsl:if>
-                                <xsl:value-of select="$label"/>
+                                <xsl:choose>
+                                    <xsl:when test="$option-value eq 'Sa-Ltn'">
+                                        <xsl:value-of select="concat($label, ' *')"/>
+                                    </xsl:when>
+                                    <xsl:otherwise>
+                                        <xsl:value-of select="$label"/>
+                                    </xsl:otherwise>
+                                </xsl:choose>
                             </option>
                         </xsl:for-each>
                     </select>
@@ -152,7 +174,14 @@
                 <div class="col-sm-8">
                     <input class="form-control">
                         <xsl:attribute name="name" select="concat('title-text-', position())"/>
-                        <xsl:attribute name="value" select="$title-text"/>
+                        <xsl:choose>
+                            <xsl:when test="$title-lang eq 'Sa-Ltn'">
+                                <xsl:attribute name="value" select="replace($title-text, '­', '-')"/>
+                            </xsl:when>
+                            <xsl:otherwise>
+                                <xsl:attribute name="value" select="$title-text"/>
+                            </xsl:otherwise>
+                        </xsl:choose>
                     </input>
                 </div>
             </div>
