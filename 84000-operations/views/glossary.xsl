@@ -20,10 +20,6 @@
     
     <xsl:template match="/m:response">
         
-        <!-- Make a sorted copy so we can browse from one to the next -->
-
-        <!-- <xsl:variable name="similar-glossary-items" select="m:similar-glossaries/m:item"/> -->
-        
         <xsl:variable name="content">
             
             <xsl:call-template name="operations-page">
@@ -52,7 +48,7 @@
                                     <xsl:with-param name="form-action" select="'cache-expressions-all'"/>
                                     <xsl:with-param name="form-class" select="'form-inline pull-right'"/>
                                     <xsl:with-param name="form-content">
-                                        <button type="submit" class="btn btn-danger btn-sm">
+                                        <button type="submit" class="btn btn-danger btn-sm" data-loading="Caching locations...">
                                             <xsl:value-of select="'Cache all locations'"/>
                                         </button>
                                     </xsl:with-param>
@@ -137,7 +133,7 @@
                                         </div>
                                         
                                         <div class="input-group">
-                                            <button class="btn btn-primary" type="submit">
+                                            <button class="btn btn-primary" type="submit" data-loading="Applying filter...">
                                                 <i class="fa fa-refresh"/>
                                             </button>
                                         </div>
@@ -336,7 +332,7 @@
                                                                             </div>
                                                                             <div>
                                                                                 
-                                                                                <button type="submit" class="btn btn-primary btn-sm">
+                                                                                <button type="submit" class="btn btn-primary btn-sm" data-loading="Caching locations...">
                                                                                     <xsl:value-of select="'Cache locations'"/>
                                                                                 </button>
                                                                                 
@@ -462,7 +458,7 @@
                                                                 <div class="input-group">
                                                                     <input type="text" name="similar-search" class="form-control" id="similar-search" value="{ $request-similar-search }" placeholder="Widen search..."/>
                                                                     <div class="input-group-btn">
-                                                                        <button type="submit" class="btn btn-primary">
+                                                                        <button type="submit" class="btn btn-primary" data-loading="Searching for similar terms...">
                                                                             <i class="fa fa-search"/>
                                                                         </button>
                                                                     </div>
@@ -603,7 +599,7 @@
                                                 <!-- Submit button -->
                                                 <div class="form-group">
                                                     <div class="col-sm-offset-2 col-sm-10">
-                                                        <button type="submit">
+                                                        <button type="submit" data-loading="Applying changes...">
                                                             <xsl:choose>
                                                                 <xsl:when test="$loop-glossary/m:entity">
                                                                     <xsl:attribute name="class" select="'btn btn-primary'"/>
@@ -734,6 +730,10 @@
             
             <xsl:attribute name="class" select="$link-class"/>
             <xsl:attribute name="target" select="$link-target"/>
+            
+            <xsl:if test="$link-target eq '_self'">
+                <xsl:attribute name="data-loading" select="'Loading page...'"/>
+            </xsl:if>
             
             <xsl:choose>
                 <xsl:when test="starts-with($link-text, 'fa-')">
@@ -1080,8 +1080,8 @@
         
         <div class="form-group">
             <div class="col-sm-offset-2 col-sm-2">
-                <button type="submit" class="btn btn-primary">
-                    <xsl:value-of select="'Save changes'"/>
+                <button type="submit" class="btn btn-primary" data-loading="Applying changes...">
+                    <xsl:value-of select="'Apply changes'"/>
                 </button>
             </div>
         </div>
@@ -1260,7 +1260,7 @@
                             <xsl:attribute name="value" select="$entity/@xml:id"/>
                         </input>
                         
-                        <button type="submit" class="btn btn-success btn-sm">
+                        <button type="submit" class="btn btn-success btn-sm" data-loading="Applying match...">
                             <xsl:value-of select="'Match'"/>
                         </button>
                         

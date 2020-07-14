@@ -36,7 +36,6 @@
                             </span>
                             <xsl:value-of select="' / '"/>
                             <a>
-                                <!-- <xsl:attribute name="href" select="concat('/imported-file/', if(string($submission/@original-file-name)) then encode-for-uri($submission/@original-file-name) else $submission/@file-name, '?text-id=', $submission/@text-id, '&submission-id=', $submission/@id)"/> -->
                                 <xsl:attribute name="href" select="concat('/imported-file/', $submission/@file-name, '?text-id=', $submission/@text-id, '&amp;submission-id=', $submission/@id)"/>
                                 <xsl:value-of select="'Download file '"/>
                                 <i class="fa fa-cloud-download"/>
