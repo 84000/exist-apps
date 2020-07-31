@@ -197,12 +197,20 @@ declare function local:glossary-bo($doc, $do-all as xs:boolean) {
             $doc//tei:div[@type='glossary']//tei:gloss[not(count(tei:term[@xml:lang eq 'bo']) eq count(tei:term[@xml:lang eq 'Bo-Ltn']))]
     
     for $gloss in $glosses
-    return
-    (
-        update delete $gloss/tei:term[lower-case(@xml:lang) = 'bo'],
-        for $bo-ltn in $gloss/tei:term[lower-case(@xml:lang) = 'bo-ltn'][normalize-space(text())]
+    return (
+    
+        update delete $gloss/tei:term[@xml:lang = 'bo'],
+        
+        for $bo-ltn-term in $gloss/tei:term[@xml:lang = 'Bo-Ltn'][normalize-space(text())]
+            let $bo-term := 
+                <term xmlns="http://www.tei-c.org/ns/1.0" xml:lang="bo">
+                { 
+                    common:bo-term($bo-ltn-term/text()) 
+                }
+                </term>
+            
         return
-            update insert <term xmlns="http://www.tei-c.org/ns/1.0" xml:lang="bo">{ common:bo-term($bo-ltn/text()) }</term> following $bo-ltn
+            update insert $bo-term following $bo-ltn-term
    )
 };
 

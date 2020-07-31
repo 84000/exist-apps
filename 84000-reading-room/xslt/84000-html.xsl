@@ -55,12 +55,14 @@
                                 </button>
                             </span>
                             
-                            <div class="visible-desktop">
-                                <div class="center-vertical align-right">
-                                    <span>
-                                        <xsl:call-template name="language-links"/>
-                                    </span>
-                                    <xsl:call-template name="search-form"/>
+                            <div>
+                                <div class="visible-desktop">
+                                    <div class="center-vertical align-right">
+                                        <span>
+                                            <xsl:call-template name="language-links"/>
+                                        </span>
+                                        <xsl:call-template name="search-form"/>
+                                    </div>
                                 </div>
                             </div>
                             

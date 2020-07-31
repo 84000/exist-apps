@@ -115,10 +115,27 @@
         
     </xsl:template>
     
-    <xsl:template match="tei:p">
+    <xsl:template match="tei:p[@class eq 'selected']">
+        <xsl:variable name="preceding-word" select="tokenize(preceding-sibling::tei:p/text()[last()], '\s+')[last()]"/>
+        <xsl:variable name="last-word" select="tokenize(text()[last()], '\s+')[last()]"/>
+        <xsl:variable name="following-word" select="tokenize(following-sibling::tei:p/text()[1], '\s+')[1]"/>
         <p class="text-bo source">
+            <xsl:if test="not(ends-with($preceding-word, '།'))">
+                <span class="text-muted">
+                    <xsl:value-of select="$preceding-word"/>
+                </span>
+            </xsl:if>
             <xsl:apply-templates select="node()"/>
+            <xsl:if test="not(ends-with($last-word, '།')) and $following-word">
+                <span class="text-muted">
+                    <xsl:value-of select="$following-word"/>
+                </span>
+            </xsl:if>
         </p>
+    </xsl:template>
+    
+    <xsl:template match="tei:p">
+        <!-- Ignore non-selected <p/>s -->
     </xsl:template>
     
     <xsl:template match="tei:milestone[@unit eq 'line']">

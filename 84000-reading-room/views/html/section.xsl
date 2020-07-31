@@ -342,25 +342,25 @@
                         </xsl:otherwise>
                     </xsl:choose>
                     
-                    <xsl:if test="$section/m:titles/m:title[@xml:lang = 'bo']/text() or $section/m:titles/m:title[@xml:lang = 'bo-ltn']/text()">
+                    <xsl:if test="$section/m:titles/m:title[@xml:lang = 'bo']/text() or $section/m:titles/m:title[@xml:lang = 'Bo-Ltn']/text()">
                         <hr/>
                         <h4>
                             <span class="text-bo">
                                 <xsl:value-of select="normalize-space($section/m:titles/m:title[@xml:lang = 'bo'])"/>
                             </span>
-                            <xsl:if test="$section/m:titles/m:title[@xml:lang = 'bo-ltn']/text()">
+                            <xsl:if test="$section/m:titles/m:title[@xml:lang = 'Bo-Ltn']/text()">
                                 <xsl:value-of select="' · '"/>
                                 <span class="text-wy">
-                                    <xsl:value-of select="normalize-space($section/m:titles/m:title[@xml:lang = 'bo-ltn'])"/>
+                                    <xsl:value-of select="normalize-space($section/m:titles/m:title[@xml:lang = 'Bo-Ltn'])"/>
                                 </span>
                             </xsl:if>
                         </h4>
                     </xsl:if>
                     
-                    <xsl:if test="$section/m:titles/m:title[@xml:lang = 'sa-ltn']/text()">
+                    <xsl:if test="$section/m:titles/m:title[@xml:lang = 'Sa-Ltn']/text()">
                         <hr/>
                         <h4 class="text-sa">
-                            <xsl:value-of select="normalize-space($section/m:titles/m:title[@xml:lang = 'sa-ltn'])"/>
+                            <xsl:value-of select="normalize-space($section/m:titles/m:title[@xml:lang = 'Sa-Ltn'])"/>
                         </h4>
                     </xsl:if>
                     
@@ -680,17 +680,17 @@
                                 </xsl:if>
                                 
                                 <!-- Tibetan title -->
-                                <xsl:if test="m:titles/m:title[@xml:lang='bo']/text()">
+                                <xsl:if test="m:titles/m:title[@xml:lang = 'bo']/text()">
                                     <hr/>
                                     <span class="text-bo">
-                                        <xsl:value-of select="normalize-space(m:titles/m:title[@xml:lang='bo'])"/>
+                                        <xsl:value-of select="normalize-space(m:titles/m:title[@xml:lang = 'bo'])"/>
                                     </span>
                                 </xsl:if>
                                 
                                 <!-- Wylie title -->
-                                <xsl:if test="m:titles/m:title[@xml:lang='bo-ltn']/text()">
+                                <xsl:if test="m:titles/m:title[@xml:lang = 'Bo-Ltn']/text()">
                                     <xsl:choose>
-                                        <xsl:when test="normalize-space(m:titles/m:title[@xml:lang='bo'])">
+                                        <xsl:when test="normalize-space(m:titles/m:title[@xml:lang = 'bo'])">
                                            <xsl:value-of select="' · '"/>
                                         </xsl:when>
                                         <xsl:otherwise>
@@ -698,15 +698,15 @@
                                         </xsl:otherwise>
                                     </xsl:choose>
                                     <span class="text-wy">
-                                        <xsl:value-of select="normalize-space(m:titles/m:title[@xml:lang='bo-ltn'])"/>
+                                        <xsl:value-of select="normalize-space(m:titles/m:title[@xml:lang = 'Bo-Ltn'])"/>
                                     </span>
                                 </xsl:if>
                                 
                                 <!-- Sanskrit title -->
-                                <xsl:if test="m:titles/m:title[@xml:lang='sa-ltn']/text()">
+                                <xsl:if test="m:titles/m:title[@xml:lang = 'Sa-Ltn']/text()">
                                     <hr/>
                                     <span class="text-sa">
-                                        <xsl:value-of select="normalize-space(m:titles/m:title[@xml:lang='sa-ltn'])"/> 
+                                        <xsl:value-of select="normalize-space(m:titles/m:title[@xml:lang = 'Sa-Ltn'])"/> 
                                     </span>
                                 </xsl:if>
                                 
@@ -990,14 +990,14 @@
                                             <xsl:value-of select="m:titles/m:title[@xml:lang='bo']/text()"/>
                                         </h4>
                                     </xsl:if>
-                                    <xsl:if test="m:titles/m:title[@xml:lang='bo-ltn']/text()">
+                                    <xsl:if test="m:titles/m:title[@xml:lang='Bo-Ltn']/text()">
                                         <h4 class="text-wy">
-                                            <xsl:value-of select="m:titles/m:title[@xml:lang='bo-ltn']/text()"/>
+                                            <xsl:value-of select="m:titles/m:title[@xml:lang='Bo-Ltn']/text()"/>
                                         </h4>
                                     </xsl:if>
-                                    <xsl:if test="m:titles/m:title[@xml:lang='sa-ltn']/text()">
+                                    <xsl:if test="m:titles/m:title[@xml:lang='Sa-Ltn']/text()">
                                         <h4 class="text-sa">
-                                            <xsl:value-of select="m:titles/m:title[@xml:lang='sa-ltn']/text()"/>
+                                            <xsl:value-of select="m:titles/m:title[@xml:lang='Sa-Ltn']/text()"/>
                                         </h4>
                                     </xsl:if>
                                 </a>

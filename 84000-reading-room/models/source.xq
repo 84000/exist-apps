@@ -69,7 +69,7 @@ return
             if($ref-sort-index gt 0) then
             (
                 (: Get a page :)
-                source:etext-page($tei-location, $ref-sort-index, false(), $highlight),
+                source:etext-page($tei-location, $ref-sort-index, true(), $highlight),
                 
                 <translation 
                     xmlns="http://read.84000.co/ns/1.0" 

@@ -53,9 +53,7 @@ declare function glossary:search-options() as element() {
 declare function glossary:search-query($string as xs:string) as element() {
     <query>
         <bool>
-            <near slop="20" occur="must">
-                { $string }
-            </near>
+            <near slop="20" occur="must">{ $string }</near>
         </bool>
     </query>
 };
@@ -224,7 +222,7 @@ declare function glossary:items($glossary-ids as xs:string*, $include-context as
 };
 
 declare function glossary:sort-term($gloss as element(tei:gloss)) as xs:string? {
-    $gloss/tei:term[not(@xml:lang) or @xml:lang eq 'en'][not(@type)][1]/text() ! lower-case(.) ! common:normalized-chars(.) ! common:alphanumeric(.)
+    $gloss/tei:term[not(@xml:lang) or @xml:lang eq 'en'][not(@type)][1]/text() ! normalize-space(.) ! lower-case(.) ! common:normalized-chars(.) ! common:alphanumeric(.)
 };
 
 declare function glossary:item($gloss as element(tei:gloss), $include-context as xs:boolean) as element(m:item) {
@@ -240,55 +238,50 @@ declare function glossary:item($gloss as element(tei:gloss), $include-context as
         $gloss/@type,
         
         (: Sort term :)
-        element sort-term {
-            glossary:sort-term($gloss)
-        },
+        let $sort-term := glossary:sort-term($gloss)
+        return
+            element sort-term {
+                attribute sort-length { count(tokenize($sort-term, '\s+')) },
+                text { $sort-term }
+            },
         
         (: Terms and definition :)
         for $term in $gloss/tei:term
         return 
              if($term[not(@type)][not(@xml:lang) or @xml:lang eq 'en']) then
-                <term xml:lang="en">
-                { 
-                    functx:capitalize-first(
-                        normalize-space(
-                            $term/text()
+                element term {
+                    attribute xml:lang { 'en' },
+                    (:attribute sort-length { count(tokenize($term, '\s+')) },:)
+                    text {
+                        functx:capitalize-first(
+                            normalize-space($term/text())
                         )
-                    ) 
+                    }
                 }
-                </term>
             else if($term[not(@type)][@xml:lang][not(@xml:lang eq 'en')]) then
-                <term xml:lang="{ lower-case($term/@xml:lang) }">
-                {
-                    if (not($term/text())) then
-                        common:local-text(
-                            concat('glossary.term-empty-', lower-case($term/@xml:lang)), 
-                            'en'
-                        )
-                    else if ($term/@xml:lang eq 'Bo-Ltn') then 
-                        common:bo-ltn(
-                            $term/text()
-                         )
-                    else 
-                        normalize-space(
-                            $term/text()
-                        )
+                element term {
+                    attribute xml:lang { $term/@xml:lang },
+                    text {
+                        if (not($term/text())) then
+                            common:local-text(concat('glossary.term-empty-', lower-case($term/@xml:lang)), 'en')
+                        else if ($term/@xml:lang eq 'Bo-Ltn') then 
+                            common:bo-ltn($term/text())
+                        else 
+                            normalize-space($term/text())
+                    }
                 }
-                </term>
             else if ($term[@type eq 'alternative']) then
-                <alternative xml:lang="{ lower-case($term/@xml:lang) }">
-                { 
-                    normalize-space(
-                        data($term)
-                    ) 
+                element alternative {
+                    attribute xml:lang { $term/@xml:lang },
+                    (:attribute sort-length { count(tokenize($term, '\s+')) },:)
+                    text {
+                        normalize-space(data($term)) 
+                    }
                 }
-                </alternative>
             else if($term[@type eq 'definition']) then
-                <definition>
-                { 
+                element definition {
                     $term/node()
                 }
-                </definition>
             else
                 ()
         ,
@@ -300,62 +293,52 @@ declare function glossary:item($gloss as element(tei:gloss), $include-context as
         if($include-context) then
         
             let $tei := $gloss/ancestor::tei:TEI
+            let $fileDesc := $tei/tei:teiHeader/tei:fileDesc
             let $translation-id := tei-content:id($tei)
             
             return
-                <text 
-                    id="{ $translation-id }"
-                    uri="{ concat($common:environment/m:url[@id eq 'reading-room'], '/translation/', $translation-id, '.html#', $gloss/@xml:id/string()) }">
-                    <toh>
-                    {
-                        $tei//tei:sourceDesc/tei:bibl[1]/tei:ref/text()
-                    }
-                    </toh>
-                    <title>
-                    {   
+                element { QName('http://read.84000.co/ns/1.0', 'text') } {
+                    attribute id { $translation-id },
+                    attribute uri { concat($common:environment/m:url[@id eq 'reading-room'], '/translation/', $translation-id, '.html#', $gloss/@xml:id/string()) },
+                    element toh {
+                        $fileDesc/tei:sourceDesc/tei:bibl[1]/tei:ref/text()
+                    },
+                    element title {   
                         tei-content:title($tei)
-                    }
-                    </title>
-                    <authors>
-                    {
-                        for $author in $tei//tei:titleStmt/tei:author[not(@role = 'translatorMain')]
+                    },
+                    element authors {
+                        for $author in $fileDesc/tei:titleStmt/tei:author[not(@role = 'translatorMain')]
                         return 
                             element author {
                                 $author/@ref,
                                 $author/text() ! normalize-space(.) 
                             }
                         ,
-                        let $translator-main := $tei//tei:titleStmt/tei:author[@role = 'translatorMain'][1]
+                        let $translator-main := $fileDesc/tei:titleStmt/tei:author[@role = 'translatorMain'][1]
                         return
                             element summary {
                                 $translator-main/@ref,
                                 $translator-main/text() ! concat(normalize-space(.), ' ') ! normalize-space(.) 
                             }
-                     }
-                    </authors>
-                    <editors>
-                    {
-                        for $editor in $tei//tei:titleStmt/tei:editor
+                    },
+                    element editors {
+                        for $editor in $fileDesc/tei:titleStmt/tei:editor
                         return 
                             element editor {
                                 $editor/@ref,
                                 $editor/text() ! normalize-space(.) 
                             }
+                    },
+                    element edition {
+                        $fileDesc/tei:editionStmt/tei:edition[1]/text() ! concat(normalize-space(.), ' ') ! normalize-space(.) 
                     }
-                    </editors>
-                    <edition>
-                    {
-                        $tei//tei:editionStmt/tei:edition[1]/text() ! concat(normalize-space(.), ' ') ! normalize-space(.) 
-                    }
-                    </edition>
-                </text>
+                }
         else
             ()
      }
 };
 
-declare function glossary:glossary-items($term as xs:string, $lang as xs:string) as element(m:glossary) {
-
+declare function glossary:matching-items($term as xs:string, $lang as xs:string) as element(m:glossary) {
     <glossary
         xmlns="http://read.84000.co/ns/1.0"
         model-type="glossary-items">
@@ -379,7 +362,7 @@ declare function glossary:similar-items($glossary-item as element(m:item)?, $sea
         let $entity := entities:entities($glossary-item/@uid)/m:entity
         let $instance-ids := ($entity/m:instance/@id, $glossary-item/@uid) ! distinct-values(.)
         let $instance-items := glossary:items($instance-ids, false())
-        let $instance-terms := ($instance-items//m:term[@xml:lang = ('bo', 'sa-ltn')] | $instance-items//m:alternatives[@xml:lang = ('bo', 'sa-ltn')]) ! distinct-values(.)
+        let $instance-terms := ($instance-items//m:term[@xml:lang = ('bo', 'Sa-Ltn')] | $instance-items//m:alternatives[@xml:lang = ('bo', 'Sa-Ltn')]) ! distinct-values(.)
         let $exclude-ids := ($entities:entities/m:entities/m:entity[@xml:id = $entity/m:exclude/@id]/m:instance/@id, $glossary-item/@uid, $instance-ids) ! distinct-values(.)
         let $search-string := normalize-space($search-string)
         
@@ -434,7 +417,7 @@ declare function glossary:cumulative-glossary($chunk as xs:integer) as element()
                 return
                     <term listing-number="{ ($first + $position) - 1 }">
                     {
-                        glossary:glossary-items($term/m:main-term, $term/m:main-term/@xml:lang)/*
+                        glossary:matching-items($term/m:main-term, $term/m:main-term/@xml:lang)/*
                     }
                     </term>
             }
@@ -471,7 +454,6 @@ declare function glossary:translation-data($tei as element(tei:TEI), $resource-i
     
     (: Compile the translation data - we need text-id and toh-key :)
     let $source := tei-content:source($tei, $resource-id)
-    let $toh-key := $source/@key
     
     let $translation-data := 
         <translation 
@@ -479,10 +461,11 @@ declare function glossary:translation-data($tei as element(tei:TEI), $resource-i
             id="{ tei-content:id($tei) }"
             status="{ tei-content:translation-status($tei) }"
             status-group="{ tei-content:translation-status-group($tei) }"
-            page-url="{ translation:canonical-html($toh-key) }">
-            {(
+            page-url="{ translation:canonical-html($source/@key) }">
+            {
                 translation:titles($tei),
                 $source,
+                translation:summary($tei),
                 translation:preface($tei),
                 translation:introduction($tei),
                 translation:prologue($tei),
@@ -492,7 +475,7 @@ declare function glossary:translation-data($tei as element(tei:TEI), $resource-i
                 translation:appendix($tei),
                 translation:notes($tei),
                 translation:glossary($tei)
-            )}
+            }
         </translation>
     
     (: Parse the milestones :)
@@ -543,7 +526,7 @@ declare function glossary:filter($translation-milestones-internal-refs as elemen
     
     (: Expression filters :)
     let $translation-glossarized := 
-        if($filter eq 'new-expressions') then
+        if($filter = ('new-expressions', 'no-expressions')) then
             transform:transform(
                 $translation-milestones-internal-refs,
                 doc(concat($common:app-path, "/xslt/glossarize.xsl")), 
@@ -571,15 +554,16 @@ declare function glossary:filter($translation-milestones-internal-refs as elemen
                 
                 (: Expression items :)
                 let $expression-items := 
-                    if($filter eq 'new-expressions') then
+                    if($filter = ('new-expressions', 'no-expressions')) then
                         glossary:expression-items($translation-glossarized, $glossary-item/@uid)
                     else
                         ()
                 
             where 
                 (: If filtering by new expressions, return where there are expression items not in the cache :)
-                not($filter eq 'new-expressions') 
-                or $expression-items[not(@nearest-xml-id = $gloss/m:cache/m:expression/@location)]
+                not($filter = ('new-expressions', 'no-expressions')) 
+                or ($filter eq 'new-expressions' and $expression-items[not(@nearest-xml-id = $gloss/m:cache/m:expression/@location)])
+                or ($filter eq 'no-expressions' and not($expression-items))
             
             order by 
                 $search-score descending,
@@ -618,18 +602,18 @@ declare function glossary:expressions($translation-milestones-internal-refs as e
                 <param name="use-cache" value="false"/>
             </parameters>
         )
-        
-    return
-    element { QName('http://read.84000.co/ns/1.0', 'expressions') }{     
     
-        (: Specify the context :)
-        attribute text-id { $translation-milestones-internal-refs/@id },
-        attribute toh-key { $translation-milestones-internal-refs/m:source/@key },
-        attribute reading-room-url { $common:environment/m:url[@id eq 'reading-room']/text() },
+    return
+        element { QName('http://read.84000.co/ns/1.0', 'expressions') }{     
         
-        (: Expression items :)
-        glossary:expression-items($translation-glossarized, $glossary-id)
-    }
+            (: Specify the context :)
+            attribute text-id { $translation-milestones-internal-refs/@id },
+            attribute toh-key { $translation-milestones-internal-refs/m:source/@key },
+            attribute reading-room-url { $common:environment/m:url[@id eq 'reading-room']/text() },
+            
+            (: Expression items :)
+            glossary:expression-items($translation-glossarized, $glossary-id)
+        }
 };
 
 declare function glossary:expression-items($translation-glossarized as element(m:translation), $glossary-id as xs:string) as element(m:item)* {
@@ -697,13 +681,16 @@ declare function glossary:expression-items($translation-glossarized as element(m
                         $match-context-single/@*,
                         
                         (: prepend the preceding source ref :)
-                        if($context-position[1] eq 1) then (
+                        if($context-position[1] eq 1 and $preceding-ref[1]) then (
                             $preceding-ref[1],
                             text { ' ... ' }
                         )
                         else ()
                         ,
-                        $match-context-single/node()
+                        if($match-context-single[tei:match[@glossary-id = $glossary-id]]) then
+                            $match-context-single/node()
+                        else
+                            $match-context-single/*[descendant::tei:match[@glossary-id = $glossary-id]]
                     }
         }
 

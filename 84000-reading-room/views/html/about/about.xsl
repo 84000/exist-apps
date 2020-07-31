@@ -167,7 +167,7 @@
             </span>
         </xsl:if>
         
-        <xsl:if test="$text/m:titles/m:title[@xml:lang = 'bo-ltn']/text()">
+        <xsl:if test="$text/m:titles/m:title[@xml:lang = 'Bo-Ltn']/text()">
             <xsl:choose>
                 <xsl:when test="$text/m:titles/m:title[@xml:lang = 'bo']/text()">
                     <xsl:value-of select="' · '"/>
@@ -177,14 +177,14 @@
                 </xsl:otherwise>
             </xsl:choose>
             <span class="text-wy">
-                <xsl:value-of select="$text/m:titles/m:title[@xml:lang = 'bo-ltn']/text()"/>
+                <xsl:value-of select="$text/m:titles/m:title[@xml:lang = 'Bo-Ltn']/text()"/>
             </span>
         </xsl:if>
         
-        <xsl:if test="$text/m:titles/m:title[@xml:lang = 'sa-ltn']/text()">
+        <xsl:if test="$text/m:titles/m:title[@xml:lang = 'Sa-Ltn']/text()">
             <hr/>
             <span class="text-sa">
-                <xsl:value-of select="$text/m:titles/m:title[@xml:lang = 'sa-ltn']/text()"/> 
+                <xsl:value-of select="$text/m:titles/m:title[@xml:lang = 'Sa-Ltn']/text()"/> 
             </span>
         </xsl:if>
         

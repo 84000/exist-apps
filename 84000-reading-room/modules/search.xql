@@ -156,29 +156,29 @@ declare function search:search($request as xs:string, $resource-id as xs:string,
 declare function search:tm-search($request as xs:string, $lang as xs:string, $first-record as xs:double, $max-records as xs:double)  as element() {
     
     let $request-bo := 
-        if($lang eq 'bo') then
+        if(lower-case($lang) eq 'bo') then
             $request
-        else if($lang eq 'bo-ltn') then
+        else if(lower-case($lang) eq 'bo-ltn') then
             common:bo-from-wylie($request)
         else
             ''
     
     let $request-bo-ltn := 
-        if($lang eq 'bo-ltn') then
+        if(lower-case($lang) eq 'bo-ltn') then
             $request
-        else if($lang eq 'bo') then
+        else if(lower-case($lang) eq 'bo') then
             common:wylie-from-bo($request)
         else
             ''
     
     let $search :=
-        if($lang = ('bo', 'bo-ltn')) then
+        if(lower-case($lang) = ('bo', 'bo-ltn')) then
             $request-bo
         else
             $request
     
     let $search-lang := 
-        if($lang = ('bo', 'bo-ltn')) then
+        if(lower-case($lang) = ('bo', 'bo-ltn')) then
             'bo'
         else
             'en'
@@ -398,8 +398,7 @@ declare function local:search-query($request as xs:string) as element() {
                     for $request-token in $request-tokenized
                         for $synonym in $synonyms//eft:synonym[eft:term/text() = $request-token]/eft:term[not(text() = $request-token)]
                             let $request-synonym := replace($request-normalized, $request-token, $synonym)
-                        return
-                        (
+                        return (
                             <near slop="20" occur="should">{ $request-synonym }</near>,
                             <wildcard occur="should">{ concat($request-synonym,'*') }</wildcard>
                         )

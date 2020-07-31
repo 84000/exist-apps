@@ -18,16 +18,16 @@
                     <xsl:call-template name="alert-translation-locked"/>
                     
                     <div class="center-vertical full-width bottom-margin">
-                        <span class="h3 text-sa">
-                            <a target="_blank" class="text-muted">
+                        <div class="h3 sml-margin top bottom">
+                            <a target="_blank">
                                 <xsl:attribute name="href" select="concat($reading-room-path, '/translation/', m:translation/@id, '.html')"/>
                                 <xsl:value-of select="concat(string-join(m:translation/m:toh/m:full, ' / '), ' : ', m:translation/m:titles/m:title[@xml:lang eq 'en'])"/>
                             </a>
-                        </span>
-                        <span class="text-right">
+                        </div>
+                        <div class="text-right">
                             <xsl:copy-of select="common:sponsorship-status(m:sponsorship-status/m:status)"/>
                             <xsl:copy-of select="common:translation-status(m:translation/@status-group)"/>
-                        </span>
+                        </div>
                     </div>
                     
                     <xsl:call-template name="text-sponsors-form"/>

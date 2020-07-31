@@ -437,7 +437,7 @@
                     
                     <!-- Wylie tab -->
                     <li role="presentation">
-                        <xsl:if test="$request/@type = ('bo-ltn')">
+                        <xsl:if test="lower-case($request/@type) = ('bo-ltn')">
                             <xsl:attribute name="class" select="'active'"/>
                         </xsl:if>
                         <a href="#wylie-search" aria-controls="wylie-search" role="tab" data-toggle="tab">Wylie</a>
@@ -546,11 +546,11 @@
                 </div>
                 
                 <div role="tabpanel" id="wylie-search" class="tab-pane fade">
-                    <xsl:if test="$request/@type eq 'bo-ltn'">
+                    <xsl:if test="lower-case($request/@type) eq 'bo-ltn'">
                         <xsl:attribute name="class" select="'tab-pane fade in active'"/>
                     </xsl:if>
                     <xsl:call-template name="search-form">
-                        <xsl:with-param name="type" select="'bo-ltn'"/>
+                        <xsl:with-param name="type" select="'Bo-Ltn'"/>
                     </xsl:call-template>
                 </div>
                 
@@ -703,7 +703,7 @@
                     <xsl:when test="$lang eq 'bo'">
                         <xsl:value-of select="'Search Tibetan'"/>
                     </xsl:when>
-                    <xsl:when test="$lang eq 'bo-ltn'">
+                    <xsl:when test="lower-case($lang) eq 'bo-ltn'">
                         <xsl:value-of select="'Search Wylie'"/>
                     </xsl:when>
                     <xsl:otherwise>
@@ -718,7 +718,7 @@
                         <xsl:when test="$lang eq 'bo'">
                             <xsl:attribute name="class" select="'form-control text-bo'"/>
                         </xsl:when>
-                        <xsl:when test="$lang eq 'bo-ltn'">
+                        <xsl:when test="lower-case($lang) eq 'bo-ltn'">
                             <xsl:attribute name="class" select="'form-control text-wy'"/>
                         </xsl:when>
                         <xsl:otherwise>

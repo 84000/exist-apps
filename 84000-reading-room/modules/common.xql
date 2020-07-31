@@ -94,13 +94,13 @@ declare
 function common:xml-lang($node as element()) as xs:string {
 
     if($node/@encoding eq "extendedWylie") then
-        "bo-ltn"
+        "Bo-Ltn"
     else if($node/@lang eq "tibetan" and $node/@encoding eq "native") then
-        "bo-ltn"
+        "Bo-Ltn"
     else if($node[self::o:title and not(@lang)]) then
-        "bo-ltn"
+        "Bo-Ltn"
     else if ($node/@lang eq "sanskrit") then
-        "sa-ltn"
+        "Sa-Ltn"
     else if ($node/@lang eq "english") then
         "en"
     else
@@ -339,9 +339,9 @@ declare function common:mark-text($text as xs:string, $find as xs:string*, $mode
     (: Tokenise the input (applying mode) :)
     let $find-tokenized :=
         if($mode = ('words')) then
-             tokenize($find, '\s+')
+             $find ! tokenize(., '\s+')
         else if($mode = ('tibetan')) then
-             tokenize($find, '\s+') ! replace(., '།', '')
+             $find ! tokenize(., '\s+') ! replace(., '།', '')
         else
             $find
     
@@ -544,7 +544,7 @@ declare function common:local-text($key as xs:string, $lang as xs:string) {
 declare function common:view-mode() as xs:string {
     let $view-mode := request:get-parameter('view-mode', '')
     return
-        if($view-mode = ('editor', 'epub', 'app')) then 
+        if($view-mode = ('editor', 'annotation', 'epub', 'app')) then 
             $view-mode 
         else 
             ''

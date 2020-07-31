@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://read.84000.co/ns/1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:functx="http://www.functx.com" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" exclude-result-prefixes="#all" version="3.0">
+<xsl:stylesheet xmlns="http://read.84000.co/ns/1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:functx="http://www.functx.com" xmlns:xmldb="http://exist-db.org/xquery/xmldb" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" exclude-result-prefixes="#all" version="3.0">
     
     <xsl:import href="functions.xsl"/>
     
@@ -15,7 +15,7 @@
     -->
     <xsl:variable name="glossary" as="element(m:item)*">
         <xsl:perform-sort select="/m:translation/m:glossary/m:item">
-            <xsl:sort select="count(tokenize(m:sort-term, '\s+'))" order="descending"/>
+            <xsl:sort select="xs:integer(m:sort-term/@sort-length)" order="descending"/>
         </xsl:perform-sort>
     </xsl:variable>
     <xsl:variable name="glossary-items-count" select="count($glossary)" as="xs:integer"/>
@@ -43,7 +43,7 @@
     </xsl:template>
     
     <!-- We don't want to parse some nodes, those we should just copy -->
-    <xsl:template match="         (: Just copy sections :)         m:titles | m:long-titles | m:source | m:summary | m:acknowledgment | m:bibliography | m:parent | m:downloads | m:abbreviations         (: Just copy m nodes :)         | m:term | m:sort-term | m:alternative | m:entity | m:honoration | m:main-title  | m:sub-title         (: Just copy tei nodes :)         | tei:head | tei:note | tei:term[@type eq 'ignore'] | tei:match         (: Just copy empty text nodes :)         | text()[not(normalize-space())] | *[not(normalize-space(data()))]     " priority="10">
+    <xsl:template match="m:titles | m:long-titles | m:source | m:acknowledgment | m:bibliography | m:parent | m:downloads | m:abbreviations | m:term | m:sort-term | m:alternative | m:entity | m:honoration | m:main-title  | m:sub-title | tei:head | tei:note | tei:term[@type eq 'ignore'] | tei:match | text()[not(normalize-space())] | *[not(normalize-space(data()))]" priority="10">
         <xsl:copy>
             <xsl:copy-of select="node()|@*"/>
         </xsl:copy>
@@ -124,52 +124,45 @@
             <!-- We are recurring through the terms  -->
             <xsl:when test="$glossary-index le $glossary-items-count">
                 
-                <!-- 
-                    Select the glossary term(s)
-                    - Find the translated term and alternatives
-                    - Sort by the phrase with the most words and match those first
-                -->
-                
                 <xsl:variable name="glossary-item" select="$glossary[$glossary-index]"/>
-                <xsl:variable name="glossary-terms" as="xs:string*">
-                    <xsl:perform-sort select="$glossary-item/m:term[@xml:lang eq 'en'] | $glossary-item/m:alternative">
-                        <xsl:sort select="count(tokenize(., '\s+'))" order="descending"/>
-                    </xsl:perform-sort>
+                
+                <xsl:variable name="parsed-text">
+                    
+                    <xsl:choose>
+                        <xsl:when test="$glossary-item[not(@mode) or @mode = ('match', '')]">
+                            <xsl:choose>
+                                <xsl:when test="m:search-here(., $glossary-item)">
+                                    
+                                    <!-- Parse the string for these glossary terms -->
+                                    <xsl:analyze-string select="$text" regex="{ m:matches-regex($glossary-item/m:term[@xml:lang eq 'en'] | $glossary-item/m:alternative) }" flags="i">
+                                        <xsl:matching-substring>
+                                            
+                                            <!-- First of all pass on as an encoded string  -->
+                                            <xsl:value-of select="concat(regex-group(1), $glossary-delimit-start, $glossary-item/@uid, $glossary-delimit-mid, m:encode-string(regex-group(2)), regex-group(3), $glossary-delimit-end,regex-group(4))"/>
+                                            
+                                        </xsl:matching-substring>
+                                        <xsl:non-matching-substring>
+                                            <xsl:value-of select="."/>
+                                        </xsl:non-matching-substring>
+                                    </xsl:analyze-string>
+                                    
+                                </xsl:when>
+                                <xsl:otherwise>
+                                    <xsl:value-of select="$text"/>
+                                </xsl:otherwise>
+                            </xsl:choose>
+                        </xsl:when>
+                        <xsl:otherwise>
+                            <xsl:value-of select="$text"/>
+                        </xsl:otherwise>
+                    </xsl:choose>
                 </xsl:variable>
                 
                 <xsl:call-template name="glossary-match">
                     
                     <xsl:with-param name="glossary-index" select="$glossary-index + 1"/>
+                    <xsl:with-param name="text" select="$parsed-text"/>
                     
-                    <xsl:with-param name="text">
-                        
-                        <xsl:choose>
-                            
-                            <xsl:when test="m:search-here(., $glossary-item) and $glossary-item[not(@mode) or @mode = ('match', '')][matches($text, m:matches-regex($glossary-terms), 'i')]">
-                                
-                                <!-- Parse the string for this glossary -->
-                                <xsl:analyze-string select="$text" regex="{ m:matches-regex($glossary-terms) }" flags="i">
-                                    <xsl:matching-substring>
-                                        
-                                        <!-- First of all output as an encoded string  -->
-                                        <xsl:value-of select="                                             concat(                                                 regex-group(1),                                                 $glossary-delimit-start,                                                 $glossary-item/@uid,                                                 $glossary-delimit-mid,                                                 (: Encode spaces in the string to inhibit sub matches :)                                                 m:encode-string(regex-group(2)),                                                 regex-group(3),                                                 $glossary-delimit-end,regex-group(4)                                             )                                         "/>
-                                        
-                                    </xsl:matching-substring>
-                                    <xsl:non-matching-substring>
-                                        <xsl:value-of select="."/>
-                                    </xsl:non-matching-substring>
-                                </xsl:analyze-string>
-                                
-                            </xsl:when>
-                            
-                            <!-- Just copy it -->
-                            <xsl:otherwise>
-                                <xsl:value-of select="$text"/>
-                            </xsl:otherwise>
-                            
-                        </xsl:choose>
-                        
-                    </xsl:with-param>
                 </xsl:call-template>
                 
             </xsl:when>
@@ -315,14 +308,14 @@
     <xsl:function name="m:encode-string" as="xs:string">
         
         <xsl:param name="arg" as="xs:string?"/>
-        <xsl:value-of select="functx:replace-multi($arg, ('\[', '\]', '\s', '\-'), ('%5B', '%5D', '%20', '%2D'))"/>
+        <xsl:value-of select="functx:replace-multi($arg, ('\[', '\]', '\s', '\-'), ('E%5B', 'E%5D', 'E%20', 'E%2D'))"/>
         
     </xsl:function>
     
     <xsl:function name="m:decode-string" as="xs:string">
         
         <xsl:param name="arg" as="xs:string?"/>
-        <xsl:value-of select="functx:replace-multi($arg, ('%5B', '%5D', '%20', '%2D'), ('[', ']', ' ', '-'))"/>
+        <xsl:value-of select="functx:replace-multi($arg, ('E%5B', 'E%5D', 'E%20', 'E%2D'), ('[', ']', ' ', '-'))"/>
         
     </xsl:function>
     

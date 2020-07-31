@@ -43,15 +43,12 @@ let $first-record :=
     else
         1
 
-let $etext-page :=  source:etext-page($work, $volume, $page, true(), ())
-
-(:
-let $search := 
-    if($type eq 'folio') then
-        normalize-space(string-join($etext-page//tei:p[@class eq "selected"]/text(), ' '))
+let $etext-page := 
+    if($tab eq 'tm-search') then
+        source:etext-page($work, $volume, $page, true(), ())
     else
-        $search
-:)
+        ()
+
 return
 
     common:response(
@@ -66,8 +63,7 @@ return
                 search:search($search, $resource-id, $first-record, 15)
             else if($tab eq 'glossary') then 
                 glossary:glossary-terms($type, $lang, $search, true())
-            else if($tab eq 'tm-search') then 
-            (
+            else if($tab eq 'tm-search') then (
                 $etext-page,
                 search:tm-search($search, $lang, $first-record, 10),
                 source:etext-volumes($work, xs:integer($volume)),

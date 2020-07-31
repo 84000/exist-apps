@@ -21,13 +21,13 @@
                         <xsl:apply-templates select="m:translation/m:long-titles/m:title[@xml:lang eq 'bo']"/>
                     </h2>
                     <h2>
-                        <xsl:apply-templates select="m:translation/m:long-titles/m:title[@xml:lang eq 'bo-ltn']"/>
+                        <xsl:apply-templates select="m:translation/m:long-titles/m:title[@xml:lang eq 'Bo-Ltn']"/>
                     </h2>
                     <h1>
                         <xsl:apply-templates select="m:translation/m:long-titles/m:title[@xml:lang eq 'en']"/>
                     </h1>
                     <h2 class="text-sa">
-                        <xsl:apply-templates select="m:translation/m:long-titles/m:title[@xml:lang eq 'sa-ltn']"/>
+                        <xsl:apply-templates select="m:translation/m:long-titles/m:title[@xml:lang eq 'Sa-Ltn']"/>
                     </h2>
                     <div class="space-before">
                         <h3>

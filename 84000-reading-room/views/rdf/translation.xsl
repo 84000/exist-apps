@@ -94,7 +94,7 @@
                     <bdo:workHasTranslation rdf:resource="{ 'http://purl.84000.co/resource/core/' || $eft-english-id }"/>
                     <bdo:workHasTranslation rdf:resource="{ 'http://purl.84000.co/resource/core/' || $eft-tibetan-id }"/>
                     <xsl:call-template name="translation-titles">
-                        <xsl:with-param name="lang" select="'sa-ltn'"/>
+                        <xsl:with-param name="lang" select="'Sa-Ltn'"/>
                     </xsl:call-template>
                     <xsl:call-template name="translation-titles">
                         <xsl:with-param name="lang" select="'en'"/>
@@ -214,7 +214,7 @@
         <xsl:param name="lang" as="xs:string"/>
         <xsl:attribute name="xml:lang">
             <xsl:choose>
-                <xsl:when test="$lang eq 'sa-ltn'">
+                <xsl:when test="$lang eq 'Sa-Ltn'">
                     <xsl:value-of select="'sa-x-iast'"/>
                 </xsl:when>
                 <xsl:otherwise>

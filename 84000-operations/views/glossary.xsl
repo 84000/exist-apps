@@ -34,12 +34,14 @@
                     <div class="center-vertical full-width">
                         
                         <!-- Text title / link -->
-                        <a target="reading-room" class="h3">
-                            <xsl:attribute name="href" select="concat($reading-room-path, '/translation/', $text-id, '.html')"/>
-                            <xsl:value-of select="m:text/m:source/m:toh"/>
-                            <xsl:value-of select="' / '"/>
-                            <xsl:value-of select="common:limit-str(m:text/m:title, 80)"/>
-                        </a>
+                        <div class="h3 sml-margin top bottom">
+                            <a target="reading-room">
+                                <xsl:attribute name="href" select="concat($reading-room-path, '/translation/', $text-id, '.html')"/>
+                                <xsl:value-of select="m:text/m:source/m:toh"/>
+                                <xsl:value-of select="' / '"/>
+                                <xsl:value-of select="common:limit-str(m:text/m:title, 80)"/>
+                            </a>
+                        </div>
                         
                         <!-- Cache locations button -->
                         <xsl:if test="$request-filter = ('no-cache') and not($request-search gt '')">
@@ -106,6 +108,12 @@
                                                         <xsl:attribute name="selected" select="'selected'"/>
                                                     </xsl:if>
                                                     <xsl:value-of select="'New expressions'"/>
+                                                </option>
+                                                <option value="no-expressions">
+                                                    <xsl:if test="$request-filter eq 'no-expressions'">
+                                                        <xsl:attribute name="selected" select="'selected'"/>
+                                                    </xsl:if>
+                                                    <xsl:value-of select="'No expressions'"/>
                                                 </option>
                                             </select>
                                         </div>
@@ -203,6 +211,8 @@
                                         <xsl:with-param name="glossary-id" select="$loop-glossary-id"/>
                                         <xsl:with-param name="max-records" select="1"/>
                                         <xsl:with-param name="link-text" select="'isolate'"/>
+                                        <xsl:with-param name="search" select="''"/>
+                                        <xsl:with-param name="filter" select="''"/>
                                     </xsl:call-template>
                                 </small>
                                 
@@ -844,7 +854,7 @@
         
         <div class="add-nodes-container">
             
-            <xsl:for-each select="(1 to (if(count($terms) gt 0) then count($terms) else 1))">
+            <xsl:for-each select="(1 to (if(count($terms) gt 0) then count($terms) else 3))">
                 <xsl:variable name="index" select="."/>
                 <xsl:variable name="element-name" select="concat('term-main-text-', $index)"/>
                 <xsl:variable name="element-id" select="concat('term-main-text-', $glossary/@uid, '-', $index)"/>
@@ -859,7 +869,22 @@
                             <xsl:attribute name="class" select="'col-sm-offset-2 col-sm-2'"/>
                         </xsl:if>
                         <xsl:call-template name="select-language">
-                            <xsl:with-param name="selected-language" select="$terms[$index]/@xml:lang"/>
+                            <xsl:with-param name="selected-language">
+                                <xsl:choose>
+                                    <xsl:when test="not($terms[$index]) and $index eq 1">
+                                        <xsl:value-of select="'en'"/>
+                                    </xsl:when>
+                                    <xsl:when test="not($terms[$index]) and $index eq 2">
+                                        <xsl:value-of select="'Bo-Ltn'"/>
+                                    </xsl:when>
+                                    <xsl:when test="not($terms[$index]) and $index eq 3">
+                                        <xsl:value-of select="'Sa-Ltn'"/>
+                                    </xsl:when>
+                                    <xsl:otherwise>
+                                        <xsl:value-of select="$terms[$index]/@xml:lang"/>
+                                    </xsl:otherwise>
+                                </xsl:choose>
+                            </xsl:with-param>
                             <xsl:with-param name="input-name" select="concat('term-main-lang-', $index)"/>
                             <xsl:with-param name="input-id" select="concat('term-main-lang-', $glossary/@uid, '-',$index)"/>
                         </xsl:call-template>
@@ -1298,13 +1323,13 @@
                 <xsl:value-of select="'Tibetan'"/>
             </option>
             <option value="bo-ltn">
-                <xsl:if test="$selected-language eq 'bo-ltn'">
+                <xsl:if test="$selected-language eq 'Bo-Ltn'">
                     <xsl:attribute name="selected" select="'selected'"/>
                 </xsl:if>
                 <xsl:value-of select="'Wylie'"/>
             </option>
             <option value="sa-ltn">
-                <xsl:if test="$selected-language eq 'sa-ltn'">
+                <xsl:if test="$selected-language eq 'Sa-Ltn'">
                     <xsl:attribute name="selected" select="'selected'"/>
                 </xsl:if>
                 <xsl:value-of select="'Sanskrit'"/>
@@ -1372,6 +1397,18 @@
                     </span>
                 </li>
             </xsl:for-each>
+            <xsl:if test="m:alternative">
+                <xsl:for-each select="m:alternative">
+                    <li class="text-warning">
+                        <span>
+                            <xsl:attribute name="class">
+                                <xsl:value-of select="common:lang-class(@xml:lang)"/>
+                            </xsl:attribute>
+                            <xsl:value-of select="text()"/>
+                        </span>
+                    </li>
+                </xsl:for-each>
+            </xsl:if>
         </ul>
         
     </xsl:template>

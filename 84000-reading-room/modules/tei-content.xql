@@ -133,9 +133,9 @@ declare function tei-content:titles($tei as element(tei:TEI)) as element() {
 declare function tei-content:title-set($tei as element(tei:TEI), $type as xs:string) as element()* {
     
     let $bo := tei-content:title($tei, $type , 'bo')
-    let $bo-ltn := tei-content:title($tei, $type , ('bo-ltn', ''))
+    let $bo-ltn := tei-content:title($tei, $type , ('Bo-Ltn', ''))
     let $en := tei-content:title($tei, $type , ('eng', 'en'))
-    let $sa-ltn := tei-content:title($tei, $type , 'sa-ltn')
+    let $sa-ltn := tei-content:title($tei, $type , 'Sa-Ltn')
     
     let $source-bibl := tei-content:source-bibl($tei, '')
     
@@ -150,8 +150,8 @@ declare function tei-content:title-set($tei as element(tei:TEI), $type as xs:str
                 $bo
         }
         </title>,
-        <title xmlns="http://read.84000.co/ns/1.0" xml:lang="bo-ltn">{ $bo-ltn }</title>,
-        <title xmlns="http://read.84000.co/ns/1.0" xml:lang="sa-ltn">{ $sa-ltn }</title>,        
+        <title xmlns="http://read.84000.co/ns/1.0" xml:lang="Bo-Ltn">{ $bo-ltn }</title>,
+        <title xmlns="http://read.84000.co/ns/1.0" xml:lang="Sa-Ltn">{ $sa-ltn }</title>,        
         if($source-bibl/@type eq 'chapter') then
             <parent xmlns="http://read.84000.co/ns/1.0">
                 <titles>

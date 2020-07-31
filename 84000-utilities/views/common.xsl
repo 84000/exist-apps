@@ -17,10 +17,6 @@
             <tab page="folios.html" model="utilities/folios">
                 <label>Folios</label>
             </tab>
-            <!-- 
-            <tab page="glossary-management.html" model="utilities/glossary-management">
-                <label>Glossary management</label>
-            </tab> -->
             <tab page="tests.html" model="utilities/tests">
                 <label>Tests</label>
             </tab>
@@ -33,16 +29,6 @@
             <tab page="client-errors.html" model="utilities/client-errors">
                 <label>Client Errors</label>
             </tab>
-            <!--<xsl:if test="$environment/m:snapshot-conf and /m:response/m:request/m:authenticated-user/m:group[@name eq 'snapshots']">
-                <tab page="snapshot.html" model="utilities/snapshot">
-                    <label>Make a data snapshot</label>
-                </tab>
-            </xsl:if>
-            <xsl:if test="$environment/m:deployment-conf and /m:response/m:request/m:authenticated-user/@name eq 'admin'">
-                <tab page="deployment.html" model="utilities/deployment">
-                    <label>Deploy the software</label>
-                </tab>
-            </xsl:if>-->
             <xsl:if test="$environment/m:git-config/m:push/m:repo and /m:response/m:request/m:authenticated-user/m:group[@name eq 'git-push']">
                 <tab page="git-push.html" model="utilities/git-push">
                     <label>Push updated files to the Git repository</label>

@@ -134,12 +134,11 @@
                                             <xsl:with-param name="title" select="'Preface'"/>
                                         </xsl:call-template>
                                         
-                                        <div>
-                                            <xsl:if test="not(m:request/@view-mode = ('editor','app'))">
-                                                <xsl:attribute name="class" select="'render-in-viewport'"/>
-                                            </xsl:if>
-                                            <xsl:apply-templates select="m:translation/m:preface"/>
-                                        </div>
+                                        <xsl:call-template name="section-collapsed">
+                                            <xsl:with-param name="section-content">
+                                                <xsl:apply-templates select="m:translation/m:preface"/>
+                                            </xsl:with-param>
+                                        </xsl:call-template>
                                         
                                     </section>
                                 </xsl:if>
@@ -154,12 +153,11 @@
                                         <xsl:with-param name="title" select="'Introduction'"/>
                                     </xsl:call-template>
                                     
-                                    <div>
-                                        <xsl:if test="not(m:request/@view-mode = ('editor','app'))">
-                                            <xsl:attribute name="class" select="'render-in-viewport'"/>
-                                        </xsl:if>
-                                        <xsl:apply-templates select="m:translation/m:introduction"/>
-                                    </div>
+                                    <xsl:call-template name="section-collapsed">
+                                        <xsl:with-param name="section-content">
+                                            <xsl:apply-templates select="m:translation/m:introduction"/>
+                                        </xsl:with-param>
+                                    </xsl:call-template>
                                     
                                 </section>
 
@@ -182,12 +180,11 @@
                                             <xsl:with-param name="title-tag" select="'h3'"/>
                                         </xsl:call-template>
                                         
-                                        <div>
-                                            <xsl:if test="not(m:request/@view-mode = ('editor','app'))">
-                                                <xsl:attribute name="class" select="'render-in-viewport'"/>
-                                            </xsl:if>
-                                            <xsl:apply-templates select="m:translation/m:prologue"/>
-                                        </div>
+                                        <xsl:call-template name="section-collapsed">
+                                            <xsl:with-param name="section-content">
+                                                <xsl:apply-templates select="m:translation/m:prologue"/>
+                                            </xsl:with-param>
+                                        </xsl:call-template>
                                         
                                     </section>
                                 </xsl:if>
@@ -203,12 +200,11 @@
                                             <xsl:with-param name="title-tag" select="'h3'"/>
                                         </xsl:call-template>
                                         
-                                        <div>
-                                            <xsl:if test="not(m:request/@view-mode = ('editor','app'))">
-                                                <xsl:attribute name="class" select="'render-in-viewport'"/>
-                                            </xsl:if>
-                                            <xsl:apply-templates select="m:translation/m:homage"/>
-                                        </div>
+                                        <xsl:call-template name="section-collapsed">
+                                            <xsl:with-param name="section-content">
+                                                <xsl:apply-templates select="m:translation/m:homage"/>
+                                            </xsl:with-param>
+                                        </xsl:call-template>
                                         
                                     </section>
                                 </xsl:if>
@@ -244,12 +240,11 @@
                                                 
                                             </xsl:if>
                                             
-                                            <div>
-                                                <xsl:if test="not(m:request/@view-mode = ('editor','app'))">
-                                                    <xsl:attribute name="class" select="'render-in-viewport'"/>
-                                                </xsl:if>
-                                                <xsl:apply-templates select="tei:*"/>
-                                            </div>
+                                            <xsl:call-template name="section-collapsed">
+                                                <xsl:with-param name="section-content">
+                                                    <xsl:apply-templates select="tei:*"/>
+                                                </xsl:with-param>
+                                            </xsl:call-template>
                                             
                                         </section>
                                         
@@ -270,12 +265,11 @@
                                             <xsl:with-param name="title-tag" select="'h3'"/>
                                         </xsl:call-template>
                                         
-                                        <div>
-                                            <xsl:if test="not(m:request/@view-mode = ('editor','app'))">
-                                                <xsl:attribute name="class" select="'render-in-viewport'"/>
-                                            </xsl:if>
-                                            <xsl:apply-templates select="m:translation/m:colophon"/>
-                                        </div>
+                                        <xsl:call-template name="section-collapsed">
+                                            <xsl:with-param name="section-content">
+                                                <xsl:apply-templates select="m:translation/m:colophon"/>
+                                            </xsl:with-param>
+                                        </xsl:call-template>
                                         
                                     </section>
                                 </xsl:if>
@@ -304,34 +298,33 @@
                                             <xsl:with-param name="title-tag" select="'h3'"/>
                                         </xsl:call-template>
                                         
-                                        <div>
-                                            <xsl:if test="not(m:request/@view-mode = ('editor','app'))">
-                                                <xsl:attribute name="class" select="'render-in-viewport'"/>
-                                            </xsl:if>
-                                            <xsl:for-each select="m:translation/m:appendix/m:chapter">
-                                                
-                                                <xsl:if test="position() gt 1">
-                                                    <hr class="hidden-print"/>
-                                                </xsl:if>
-                                                
-                                                <div class="chapter">
+                                        <xsl:call-template name="section-collapsed">
+                                            <xsl:with-param name="section-content">
+                                                <xsl:for-each select="m:translation/m:appendix/m:chapter">
                                                     
-                                                    <xsl:attribute name="id" select="concat('chapter-', @prefix)"/>
-                                                    
-                                                    <xsl:if test="m:title[normalize-space(text())] | m:title-number[text()]">
-                                                        <xsl:call-template name="chapter-title">
-                                                            <xsl:with-param name="title" select="m:title"/>
-                                                            <xsl:with-param name="title-number" select="m:title-number"/>
-                                                            <xsl:with-param name="chapter-index" select="@chapter-index/string()"/>
-                                                            <xsl:with-param name="prefix" select="@prefix/string()"/>
-                                                        </xsl:call-template>
+                                                    <xsl:if test="position() gt 1">
+                                                        <hr class="hidden-print"/>
                                                     </xsl:if>
                                                     
-                                                    <xsl:apply-templates select="tei:*"/>
-                                                    
-                                                </div>
-                                            </xsl:for-each>
-                                        </div>
+                                                    <div class="chapter">
+                                                        
+                                                        <xsl:attribute name="id" select="concat('chapter-', @prefix)"/>
+                                                        
+                                                        <xsl:if test="m:title[normalize-space(text())] | m:title-number[text()]">
+                                                            <xsl:call-template name="chapter-title">
+                                                                <xsl:with-param name="title" select="m:title"/>
+                                                                <xsl:with-param name="title-number" select="m:title-number"/>
+                                                                <xsl:with-param name="chapter-index" select="@chapter-index/string()"/>
+                                                                <xsl:with-param name="prefix" select="@prefix/string()"/>
+                                                            </xsl:call-template>
+                                                        </xsl:if>
+                                                        
+                                                        <xsl:apply-templates select="tei:*"/>
+                                                        
+                                                    </div>
+                                                </xsl:for-each>
+                                            </xsl:with-param>
+                                        </xsl:call-template>
                                     </section>
                                 </xsl:if>
                                 
@@ -347,16 +340,15 @@
                                             <xsl:with-param name="title" select="'Abbreviations'"/>
                                         </xsl:call-template>
                                         
-                                        <div>
-                                            <xsl:if test="not(m:request/@view-mode = ('editor','app'))">
-                                                <xsl:attribute name="class" select="'render-in-viewport'"/>
-                                            </xsl:if>
-                                            <div class="rw">
-                                                <xsl:call-template name="abbreviations">
-                                                    <xsl:with-param name="translation" select="m:translation"/>
-                                                </xsl:call-template>
-                                            </div>
-                                        </div>
+                                        <xsl:call-template name="section-collapsed">
+                                            <xsl:with-param name="section-content">
+                                                <div class="rw">
+                                                    <xsl:call-template name="abbreviations">
+                                                        <xsl:with-param name="translation" select="m:translation"/>
+                                                    </xsl:call-template>
+                                                </div>
+                                            </xsl:with-param>
+                                        </xsl:call-template>
                                         
                                     </section>
                                     
@@ -372,12 +364,12 @@
                                         <xsl:with-param name="title" select="'Notes'"/>
                                     </xsl:call-template>
                                     
-                                    <div>
-                                        <xsl:if test="not(m:request/@view-mode = ('editor','app'))">
-                                            <xsl:attribute name="class" select="'render-in-viewport'"/>
-                                        </xsl:if>
-                                        <xsl:apply-templates select="m:translation/m:notes/m:note"/>
-                                    </div>
+                                    <xsl:call-template name="section-collapsed">
+                                        <xsl:with-param name="section-content">
+                                            <xsl:apply-templates select="m:translation/m:notes/m:note"/>
+                                        </xsl:with-param>
+                                    </xsl:call-template>
+                                    
                                 </section>
                                 
                                 <hr class="hidden-print"/>
@@ -390,16 +382,16 @@
                                         <xsl:with-param name="title" select="'Bibliography'"/>
                                     </xsl:call-template>
                                     
-                                    <div>
-                                        <xsl:if test="not(m:request/@view-mode = ('editor','app'))">
-                                            <xsl:attribute name="class" select="'render-in-viewport'"/>
-                                        </xsl:if>
-                                        <xsl:for-each select="m:translation/m:bibliography">
-                                            <div class="rw">
-                                                <xsl:apply-templates select="node()"/>
-                                            </div>
-                                        </xsl:for-each>
-                                    </div>
+                                    <xsl:call-template name="section-collapsed">
+                                        <xsl:with-param name="section-content">
+                                            <xsl:for-each select="m:translation/m:bibliography">
+                                                <div class="rw">
+                                                    <xsl:apply-templates select="node()"/>
+                                                </div>
+                                            </xsl:for-each>
+                                        </xsl:with-param>
+                                    </xsl:call-template>
+                                    
                                 </section>
     
                                 <hr class="hidden-print"/>
@@ -412,12 +404,11 @@
                                         <xsl:with-param name="title" select="'Glossary'"/>
                                     </xsl:call-template>
                                     
-                                    <div>
-                                        <xsl:if test="not(m:request/@view-mode = ('editor','app'))">
-                                            <xsl:attribute name="class" select="'render-in-viewport'"/>
-                                        </xsl:if>
-                                        <xsl:apply-templates select="m:translation/m:glossary/m:item"/>
-                                    </div>
+                                    <xsl:call-template name="section-collapsed">
+                                        <xsl:with-param name="section-content">
+                                            <xsl:apply-templates select="m:translation/m:glossary/m:item"/>
+                                        </xsl:with-param>
+                                    </xsl:call-template>
                                     
                                 </section>
                                 
@@ -526,7 +517,7 @@
         <!-- Pass the content to the page -->
         <xsl:call-template name="reading-room-page">
             <xsl:with-param name="page-url" select="m:translation/@page-url"/>
-            <xsl:with-param name="page-class" select="concat('reading-room translation ', if(m:request/@view-mode eq 'editor') then 'editor-mode' else '')"/>
+            <xsl:with-param name="page-class" select="concat('reading-room translation ', if(m:request/@view-mode = ('editor', 'annotation')) then 'editor-mode' else '')"/>
             <xsl:with-param name="page-title" select="concat(m:translation/m:titles/m:title[@xml:lang eq 'en']/text(), ' | 84000 Reading Room')"/>
             <xsl:with-param name="page-description" select="normalize-space(data(m:translation/m:summary/tei:p[1]))"/>
             <xsl:with-param name="content" select="$content"/>
@@ -554,10 +545,10 @@
                 <link rel="related" type="application/atom+xml;profile=opds-catalog;kind=navigation" href="/section/lobby.navigation.atom" title="The 84000 Reading Room"/>
                 <link rel="related" type="application/atom+xml;profile=opds-catalog;kind=acquisition" href="/section/all-translated.acquisition.atom" title="84000: All Translated Texts"/>
                 
-                <!--<xsl:if test="m:request/@view-mode eq 'editor'">
-                    <!-\- <script type="application/json" class="js-hypothesis-config">{"theme": "clean"}</script> -\->
+                <xsl:if test="m:request/@view-mode eq 'annotation'">
+                    <!-- <script type="application/json" class="js-hypothesis-config">{"theme": "clean"}</script> -->
                     <script src="https://hypothes.is/embed.js" async="async"/>
-                </xsl:if>-->
+                </xsl:if>
                 
             </xsl:with-param>
         </xsl:call-template>
@@ -851,17 +842,17 @@
                 <h1>
                     <xsl:apply-templates select="$translation/m:titles/m:title[@xml:lang eq 'en']"/>
                 </h1>
-                <xsl:if test="$translation/m:titles/m:title[@xml:lang eq 'sa-ltn']/text()">
+                <xsl:if test="$translation/m:titles/m:title[@xml:lang eq 'Sa-Ltn']/text()">
                     <h2 class="text-sa">
-                        <xsl:apply-templates select="$translation/m:titles/m:title[@xml:lang eq 'sa-ltn']"/>
+                        <xsl:apply-templates select="$translation/m:titles/m:title[@xml:lang eq 'Sa-Ltn']"/>
                     </h2>
                 </xsl:if>
             </div>
             
-            <xsl:if test="count($translation/m:long-titles/m:title/text()) eq 1 and $translation/m:long-titles/m:title[@xml:lang eq 'bo-ltn']/text()">
+            <xsl:if test="count($translation/m:long-titles/m:title/text()) eq 1 and $translation/m:long-titles/m:title[@xml:lang eq 'Bo-Ltn']/text()">
                 <div id="long-titles">
                     <h4 class="text-wy">
-                        <xsl:apply-templates select="$translation/m:long-titles/m:title[@xml:lang eq 'bo-ltn']/text()"/>
+                        <xsl:apply-templates select="$translation/m:long-titles/m:title[@xml:lang eq 'Bo-Ltn']/text()"/>
                     </h4>
                 </div>
             </xsl:if>
@@ -877,9 +868,9 @@
                             <xsl:apply-templates select="$translation/m:long-titles/m:title[@xml:lang eq 'bo']"/>
                         </h4>
                     </xsl:if>
-                    <xsl:if test="$translation/m:long-titles/m:title[@xml:lang eq 'bo-ltn']/text()">
+                    <xsl:if test="$translation/m:long-titles/m:title[@xml:lang eq 'Bo-Ltn']/text()">
                         <h4 class="text-wy">
-                            <xsl:apply-templates select="$translation/m:long-titles/m:title[@xml:lang eq 'bo-ltn']"/>
+                            <xsl:apply-templates select="$translation/m:long-titles/m:title[@xml:lang eq 'Bo-Ltn']"/>
                         </h4>
                     </xsl:if>
                     <xsl:if test="$translation/m:long-titles/m:title[@xml:lang eq 'en']/text()">
@@ -887,9 +878,9 @@
                             <xsl:apply-templates select="$translation/m:long-titles/m:title[@xml:lang eq 'en']"/>
                         </h4>
                     </xsl:if>
-                    <xsl:if test="$translation/m:long-titles/m:title[@xml:lang eq 'sa-ltn']/text()">
+                    <xsl:if test="$translation/m:long-titles/m:title[@xml:lang eq 'Sa-Ltn']/text()">
                         <h4 class="text-sa">
-                            <xsl:apply-templates select="$translation/m:long-titles/m:title[@xml:lang eq 'sa-ltn']"/>
+                            <xsl:apply-templates select="$translation/m:long-titles/m:title[@xml:lang eq 'Sa-Ltn']"/>
                         </h4>
                     </xsl:if>
                 </div>
@@ -1017,8 +1008,6 @@
             <i class="fa fa-print"/>
         </a>
     </xsl:template>
-    
-    
     
     <xsl:template name="contents-sidebar">
         <xsl:param name="translation" required="yes"/>
@@ -1196,4 +1185,14 @@
     </xsl:template>
      -->
     
+    <xsl:template name="section-collapsed">
+        <xsl:param name="section-content"/>
+        <div>
+            <xsl:if test="not(/m:response/m:request/@view-mode = ('editor', 'annotation', 'app'))">
+                <xsl:attribute name="class" select="'render-in-viewport'"/>
+            </xsl:if>
+            <xsl:copy-of select="$section-content"/>
+        </div>
+    </xsl:template>
+
 </xsl:stylesheet>

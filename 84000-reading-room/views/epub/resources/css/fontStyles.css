@@ -8,17 +8,17 @@
   src: url(../fonts/IndUni-P-84000-Regular.otf);
 }
 @font-face {
-  font-family: "IndUni-P";
+  font-family: "IndUni-P-84000";
   src: url(../fonts/IndUni-P-Bold.otf);
   font-weight: bold;
 }
 @font-face {
-  font-family: "IndUni-P";
+  font-family: "IndUni-P-84000";
   src: url(../fonts/IndUni-P-Italic.otf);
   font-style: italic;
 }
 @font-face {
-  font-family: "IndUni-P";
+  font-family: "IndUni-P-84000";
   src: url(../fonts/IndUni-P-BoldItalic.otf);
   font-weight: bold;
   font-style: italic;

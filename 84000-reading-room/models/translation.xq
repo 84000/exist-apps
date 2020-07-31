@@ -34,7 +34,7 @@ let $translation-data :=
         status="{ tei-content:translation-status($tei) }"
         status-group="{ tei-content:translation-status-group($tei) }"
         page-url="{ translation:canonical-html($source/@key) }">
-        {(
+        {
             translation:titles($tei),
             translation:long-titles($tei),
             $source,
@@ -58,7 +58,7 @@ let $translation-data :=
             )
             else
                 ()
-        )}
+        }
     </translation>
 
 (: Parse the milestones :)

@@ -85,7 +85,7 @@
                                                             <xsl:value-of select="$tei/m:titles/m:title[@xml:lang eq 'en']"/>
                                                         </xsl:when>
                                                         <xsl:otherwise>
-                                                            <xsl:value-of select="$tei/m:titles/m:title[@xml:lang eq 'sa-ltn']"/>
+                                                            <xsl:value-of select="$tei/m:titles/m:title[@xml:lang eq 'Sa-Ltn']"/>
                                                         </xsl:otherwise>
                                                     </xsl:choose>
                                                     

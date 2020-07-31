@@ -126,7 +126,6 @@ declare function source:etext-page($location as element(m:location), $page-numbe
                 attribute end-page-in-volume  { $end-page-in-volume  },
                 attribute page-in-volume { $page-in-volume }
             }
-    (: return $page-volume :)
     
     let $page-volume := $page-volume[1]
     where $page-volume
@@ -151,6 +150,61 @@ declare function source:etext-page($work as xs:string, $volume-number as xs:inte
     let $trailing-lines := 3
     let $trailing-milestone-n := ($trailing-lines + 1)
     
+    let $options :=
+        <options>
+            <default-operator>or</default-operator>
+            <phrase-slop>10</phrase-slop>
+            <leading-wildcard>no</leading-wildcard>
+            <filter-rewrite>yes</filter-rewrite>
+        </options>
+    
+    let $query := 
+        <query>
+            <bool>
+            {
+                for $phrase in $highlight ! normalize-space(.)
+                where not($phrase = ('།'))
+                return
+                    <phrase>{ $phrase }</phrase>
+            }
+            </bool>
+        </query>
+        
+    let $page-highlighted := $page[ft:query(., $query, $options)]
+    
+    let $page-expanded := util:expand($page-highlighted, "expand-xincludes=no")
+    
+    let $page-expanded :=
+        if(not($page-expanded//exist:match)) then
+            common:mark-nodes($page, $highlight, 'tibetan')
+        else
+            $page-expanded
+    
+    let $paragraph := 
+        element { QName('http://www.tei-c.org/ns/1.0', 'p') } { 
+            attribute class {'selected'},
+            $page-expanded/node()
+        }
+    
+    (: Context around the page, in case page break comes in the middle of a passage :)
+    let $preceding-paragraph := 
+        if($add-context) then
+            element { QName('http://www.tei-c.org/ns/1.0', 'p') } { 
+                $preceding-page/tei:milestone[@unit eq 'line'][xs:integer(@n) eq $preceding-milestone-n]
+                | $preceding-page/node()[preceding-sibling::tei:milestone[@unit eq 'line'][xs:integer(@n) ge $preceding-milestone-n]] 
+            }
+        else
+            ()
+    
+    let $trailing-paragraph := 
+        if($add-context) then
+            element { QName('http://www.tei-c.org/ns/1.0', 'p') } {  
+                $trailing-page/tei:milestone[@unit eq 'line'][xs:integer(@n) eq $trailing-milestone-n]
+                | $trailing-page/node()[following-sibling::tei:milestone[@unit eq 'line'][xs:integer(@n) le $trailing-milestone-n]] 
+            }
+        else
+            ()
+    
     return 
         element { QName('http://read.84000.co/ns/1.0','page') }  {
             attribute volume { $volume-number },
@@ -159,29 +213,10 @@ declare function source:etext-page($work as xs:string, $volume-number as xs:inte
             attribute folio-in-etext { $page/@data-orig-n },
             attribute etext-id { $etext-id },
             element language {
-            
                 attribute xml:lang {'bo'},
-                
-                (: Context around the page, in case page break comes in the middle of a passage :)
-                if($add-context) then 
-                (
-                    element { QName('http://www.tei-c.org/ns/1.0', 'p') } { 
-                        $preceding-page/tei:milestone[@unit eq 'line'][xs:integer(@n) eq $preceding-milestone-n]
-                        | $preceding-page/child::node()[preceding-sibling::tei:milestone[@unit eq 'line'][xs:integer(@n) ge $preceding-milestone-n]] 
-                    },
-                    element { QName('http://www.tei-c.org/ns/1.0', 'p') } { 
-                        attribute class {'selected'},
-                        common:mark-nodes($page/child::node(), $highlight, 'tibetan') 
-                    },
-                    element { QName('http://www.tei-c.org/ns/1.0', 'p') } {  
-                        $trailing-page/tei:milestone[@unit eq 'line'][xs:integer(@n) eq $trailing-milestone-n]
-                        | $trailing-page/child::node()[following-sibling::tei:milestone[@unit eq 'line'][xs:integer(@n) le $trailing-milestone-n]] 
-                    }
-                )
-                else
-                    (: Just the page :)
-                    common:mark-nodes($page, $highlight, 'tibetan') 
-                
+                $preceding-paragraph,
+                $paragraph,
+                $trailing-paragraph
             }
         }
 };

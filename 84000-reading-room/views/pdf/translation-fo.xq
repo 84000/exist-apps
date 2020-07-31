@@ -31,7 +31,7 @@ declare function fo:main($translation) {
                 </fo:block>
                 <fo:block text-align="center" font-size="30pt" font-family="Times" margin-bottom="10mm">
                 {
-                    $translation/t:titles/t:title[@xml:lang = 'sa-ltn']/text()
+                    $translation/t:titles/t:title[@xml:lang = 'Sa-Ltn']/text()
                 }
                 </fo:block>
                 {

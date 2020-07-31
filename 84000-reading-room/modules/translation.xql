@@ -33,7 +33,7 @@ declare function translation:long-titles($tei as element(tei:TEI)) as element() 
 declare function translation:title-variants($tei as element(tei:TEI)) as element() {
     <title-variants xmlns="http://read.84000.co/ns/1.0">
     {
-        for $title in $tei//tei:titleStmt/tei:title[not(@type eq 'mainTitle')]
+        for $title in $tei/tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:title[not(@type eq 'mainTitle')]
         return
             <title xml:lang="{ $title/@xml:lang }">
             {
@@ -45,65 +45,67 @@ declare function translation:title-variants($tei as element(tei:TEI)) as element
 };
 
 declare function translation:translation($tei as element(tei:TEI)) as element() {
-    <translation xmlns="http://read.84000.co/ns/1.0">
-        <contributors>
-            {
-                for $contributor in $tei//tei:titleStmt/tei:author[@role eq 'translatorMain']
-                return 
-                    element summary {
-                        $contributor/@ref,
-                        common:normalize-space($contributor/node())
-                    }
+    let $fileDesc := $tei/tei:teiHeader/tei:fileDesc
+    return
+        <translation xmlns="http://read.84000.co/ns/1.0">
+            <contributors>
+                {
+                    for $contributor in $fileDesc/tei:titleStmt/tei:author[@role eq 'translatorMain']
+                    return 
+                        element summary {
+                            $contributor/@ref,
+                            common:normalize-space($contributor/node())
+                        }
+                }
+                {
+                    for $contributor in $fileDesc/tei:titleStmt/tei:author[not(@role eq 'translatorMain')] | $fileDesc/tei:titleStmt/tei:editor | $fileDesc/tei:titleStmt/tei:consultant
+                    return 
+                        element { local-name($contributor) }
+                        {
+                            $contributor/@role,
+                            $contributor/@ref,
+                            normalize-space($contributor/text())
+                        }
+                }
+            </contributors>
+            <sponsors>
+                {
+                    for $sponsor in $fileDesc/tei:titleStmt/tei:sponsor
+                    return 
+                        <sponsor>
+                        {
+                            $sponsor/@ref,
+                            normalize-space($sponsor/text())
+                        }
+                        </sponsor>
+                }
+            </sponsors>
+            <edition>
+            { 
+                $fileDesc/tei:editionStmt/tei:edition[1]/node() 
             }
+            </edition>
+            <license img-url="{ $fileDesc/tei:publicationStmt/tei:availability/tei:licence/tei:graphic/@url }">
             {
-                for $contributor in $tei//tei:titleStmt/tei:author[not(@role eq 'translatorMain')] | $tei//tei:titleStmt/tei:editor | $tei//tei:titleStmt/tei:consultant
-                return 
-                    element { local-name($contributor) }
-                    {
-                        $contributor/@role,
-                        $contributor/@ref,
-                        normalize-space($contributor/text())
-                    }
+                common:normalize-space($fileDesc/tei:publicationStmt/tei:availability/tei:licence/tei:p)
             }
-        </contributors>
-        <sponsors>
+            </license>
+            <publication-statement>
             {
-                for $sponsor in $tei//tei:titleStmt/tei:sponsor
-                return 
-                    <sponsor>
-                    {
-                        $sponsor/@ref,
-                        normalize-space($sponsor/text())
-                    }
-                    </sponsor>
+                common:normalize-space($fileDesc/tei:publicationStmt/tei:publisher/node())
             }
-        </sponsors>
-        <edition>
-        { 
-            $tei//tei:editionStmt/tei:edition[1]/node() 
-        }
-        </edition>
-        <license img-url="{ $tei//tei:publicationStmt/tei:availability/tei:licence/tei:graphic/@url }">
-        {
-            common:normalize-space($tei//tei:publicationStmt/tei:availability/tei:licence/tei:p)
-        }
-        </license>
-        <publication-statement>
-        {
-            common:normalize-space($tei//tei:publicationStmt/tei:publisher/node())
-        }
-        </publication-statement>
-        <publication-date>
-        {
-            $tei//tei:publicationStmt/tei:date/text()
-        }
-        </publication-date>
-        <tantric-restriction>
-        {
-            common:normalize-space($tei//tei:publicationStmt/tei:availability/tei:p[@type eq 'tantricRestriction'])
-        }
-        </tantric-restriction>
-    </translation>
+            </publication-statement>
+            <publication-date>
+            {
+                $fileDesc/tei:publicationStmt/tei:date/text()
+            }
+            </publication-date>
+            <tantric-restriction>
+            {
+                common:normalize-space($fileDesc/tei:publicationStmt/tei:availability/tei:p[@type eq 'tantricRestriction'])
+            }
+            </tantric-restriction>
+        </translation>
 };
 
 declare function translation:toh-key($tei as element(tei:TEI), $resource-id as xs:string) as xs:string {
@@ -128,7 +130,7 @@ declare function translation:toh-full($bibl as element(tei:bibl)) as xs:string? 
 declare function translation:toh($tei as element(tei:TEI), $resource-id as xs:string) as element() {
     (: Returns a toh meta-data for sorting grouping  :)
     let $bibl := tei-content:source-bibl($tei, $resource-id)
-    let $bibls := $tei//tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl
+    let $bibls := $tei/tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl
     let $toh-str := translation:toh-str($bibl)
     let $full := translation:toh-full($bibl)
     return
@@ -200,7 +202,7 @@ declare function translation:filename($tei as element(tei:TEI), $resource-id as 
 (: Just the version number part of the edition as string :)
 declare function translation:version-number-str($tei as element(tei:TEI)) as xs:string {
     (: Remove all but the numbers and points :)
-    replace($tei//tei:editionStmt/tei:edition/text()[1],'[^0-9\.]','')
+    replace($tei/tei:teiHeader/tei:fileDesc/tei:editionStmt/tei:edition/text()[1],'[^0-9\.]','')
 };
 
 (: Just the version number part of the edition as numbers e.g. (1,2,3) :)
@@ -259,7 +261,7 @@ declare function translation:version-number-str-increment($tei as element(tei:TE
 (: Just the date part of the edition :)
 declare function translation:version-date($tei as element(tei:TEI)) as xs:string {
     (: Remove all but the numbers :)
-    replace($tei//tei:editionStmt/tei:edition/tei:date/text(),'[^0-9]','')
+    replace($tei/tei:teiHeader/tei:fileDesc/tei:editionStmt/tei:edition/tei:date/text(),'[^0-9]','')
 };
 
 (: The full version string :)
@@ -268,7 +270,7 @@ declare function translation:version-str($tei as element(tei:TEI)) as xs:string 
         replace(
             normalize-space(
                 string-join(
-                    $tei//tei:editionStmt/tei:edition//text()   (: Get all text :)
+                    $tei/tei:teiHeader/tei:fileDesc/tei:editionStmt/tei:edition//text()   (: Get all text :)
                 , ' ')                                          (: Make sure they don't concatenate :)
             )                                                   (: Normalize the whitespace :)
         , '[^a-zA-Z0-9\s\.]', '')                               (: Remove all but the alpanumeric, points and spaces :)
@@ -332,9 +334,9 @@ declare function translation:summary($tei as element(tei:TEI), $lang as xs:strin
         { 
             common:normalize-space(
                 if($valid-lang eq 'en') then
-                    $tei//tei:front//tei:div[@type eq 'summary'][not(@xml:lang) or @xml:lang = 'en']/*[self::tei:p | self::tei:milestone | self::tei:lg ]/.
+                    $tei/tei:text/tei:front//tei:div[@type eq 'summary'][not(@xml:lang) or @xml:lang = 'en']/*[self::tei:p | self::tei:milestone | self::tei:lg ]/.
                 else
-                    $tei//tei:front//tei:div[@type eq 'summary'][@xml:lang = $valid-lang]/*[self::tei:p | self::tei:milestone | self::tei:lg ]/.
+                    $tei/tei:text/tei:front//tei:div[@type eq 'summary'][@xml:lang = $valid-lang]/*[self::tei:p | self::tei:milestone | self::tei:lg ]/.
             )
         }
         </summary>
@@ -343,7 +345,7 @@ declare function translation:summary($tei as element(tei:TEI), $lang as xs:strin
 declare function translation:acknowledgment($tei as element(tei:TEI)) as element() {
     <acknowledgment xmlns="http://read.84000.co/ns/1.0" prefix="ac">
     { 
-        $tei//tei:front//tei:div[@type='acknowledgment']/*[self::tei:p | self::tei:milestone | self::tei:lg ]/.
+        $tei/tei:text/tei:front//tei:div[@type='acknowledgment']/*[self::tei:p | self::tei:milestone | self::tei:lg ]/.
     }
     </acknowledgment>
 };
@@ -351,7 +353,7 @@ declare function translation:acknowledgment($tei as element(tei:TEI)) as element
 declare function translation:preface($tei as element(tei:TEI)) as element()* {
     <preface xmlns="http://read.84000.co/ns/1.0" prefix="pf">
     { 
-        translation:nested-section($tei//tei:front/tei:div[@type eq 'preface'], 0, 'pf')
+        translation:nested-section($tei/tei:text/tei:front/tei:div[@type eq 'preface'], 0, 'pf')
     }
     </preface>
 };
@@ -393,7 +395,7 @@ declare function translation:nested-section($section as element()?, $nesting as 
 declare function translation:introduction($tei as element(tei:TEI)) as element() {
     <introduction xmlns="http://read.84000.co/ns/1.0" prefix="i">
     {
-        translation:nested-section($tei//tei:front/tei:div[@type eq 'introduction'], 0, 'i')
+        translation:nested-section($tei/tei:text/tei:front/tei:div[@type eq 'introduction'], 0, 'i')
     }
     </introduction>
 };
@@ -401,7 +403,7 @@ declare function translation:introduction($tei as element(tei:TEI)) as element()
 declare function translation:prologue($tei as element(tei:TEI)) as element() {
     <prologue xmlns="http://read.84000.co/ns/1.0" prefix="pl">
     { 
-        translation:nested-section($tei//tei:body/tei:div[@type eq 'translation']/tei:div[@type eq 'prologue'], 0, 'p')
+        translation:nested-section($tei/tei:text/tei:body/tei:div[@type eq 'translation']/tei:div[@type eq 'prologue'], 0, 'p')
     }
     </prologue>
 };
@@ -409,18 +411,18 @@ declare function translation:prologue($tei as element(tei:TEI)) as element() {
 declare function translation:homage($tei as element(tei:TEI)) as element() {
     <homage xmlns="http://read.84000.co/ns/1.0" prefix="h">
     { 
-        translation:nested-section($tei//tei:body/tei:div[@type eq 'translation']/tei:div[@type eq 'homage'], 0, 'h')
+        translation:nested-section($tei/tei:text/tei:body/tei:div[@type eq 'translation']/tei:div[@type eq 'homage'], 0, 'h')
     }
     </homage>
 };
 
 declare function translation:body($tei as element(tei:TEI)) as element() {
     <body xmlns="http://read.84000.co/ns/1.0" prefix="tr">
-        <honoration>{ data($tei//tei:body/tei:div[@type eq 'translation']/tei:head[@type eq 'titleHon']) }</honoration>
-        <main-title>{ data($tei//tei:body/tei:div[@type eq 'translation']/tei:head[@type eq 'titleMain']) }</main-title>
-        <sub-title>{ data($tei//tei:body/tei:div[@type eq 'translation']/tei:head[@type eq 'sub']) }</sub-title>
+        <honoration>{ data($tei/tei:text/tei:body/tei:div[@type eq 'translation']/tei:head[@type eq 'titleHon']) }</honoration>
+        <main-title>{ data($tei/tei:text/tei:body/tei:div[@type eq 'translation']/tei:head[@type eq 'titleMain']) }</main-title>
+        <sub-title>{ data($tei/tei:text/tei:body/tei:div[@type eq 'translation']/tei:head[@type eq 'sub']) }</sub-title>
         { 
-            for $chapter at $chapter-index in $tei//tei:body//tei:div[@type eq 'translation']/tei:div[@type = ('section', 'chapter')]
+            for $chapter at $chapter-index in $tei/tei:text/tei:body//tei:div[@type eq 'translation']/tei:div[@type = ('section', 'chapter')]
                 let $chapter-prefix := ($chapter/@prefix, $chapter-index)[1]
             return
                 <chapter chapter-index="{ $chapter-index }" prefix="{ $chapter-prefix }">
@@ -464,14 +466,14 @@ declare function translation:body($tei as element(tei:TEI)) as element() {
 declare function translation:colophon($tei as element(tei:TEI)) as element() {
     <colophon xmlns="http://read.84000.co/ns/1.0" prefix="c">
     { 
-        translation:nested-section($tei//tei:body/tei:div[@type eq 'translation']/tei:div[@type eq 'colophon'], 0, 'c')
+        translation:nested-section($tei/tei:text/tei:body/tei:div[@type eq 'translation']/tei:div[@type eq 'colophon'], 0, 'c')
     }
     </colophon>
 };
 
 declare function translation:appendix($tei as element(tei:TEI)) as element() {
 
-    let $appendix := $tei//tei:back//*[@type eq 'appendix'][1]
+    let $appendix := $tei/tei:text/tei:back//*[@type eq 'appendix'][1]
     let $appendix-title := $appendix/tei:head[@type = ('appendix')][1]
     let $count-prologue := count($appendix/*[@type eq 'prologue'])
     
@@ -520,7 +522,7 @@ declare function translation:appendix($tei as element(tei:TEI)) as element() {
 declare function translation:abbreviations($tei as element(tei:TEI)) as element() {
     <abbreviations xmlns="http://read.84000.co/ns/1.0" prefix="ab">
     {
-        for $section in $tei//tei:back/tei:div[@type eq 'notes']/tei:*
+        for $section in $tei/tei:text/tei:back/tei:div[@type eq 'notes']/tei:*
         return
             translation:abbreviation-section($section)
     }
@@ -575,7 +577,7 @@ declare function translation:abbreviation-section($section as element()) as elem
 declare function translation:notes($tei as element(tei:TEI)) as element() {
     <notes xmlns="http://read.84000.co/ns/1.0" prefix="n">
     {
-        for $note in $tei//tei:text//tei:note[@place eq 'end']
+        for $note in $tei/tei:text//tei:note[@place eq 'end']
         return
             <note 
                 index="{ $note/@index/string() }" 
@@ -612,7 +614,7 @@ declare function translation:bibliography-section($section as element()) as elem
 declare function translation:bibliography($tei as element(tei:TEI)) as element() {
     <bibliography xmlns="http://read.84000.co/ns/1.0" prefix="b">
     {
-        for $section in $tei//tei:back/*[@type eq 'listBibl']/*[@type eq 'section']
+        for $section in $tei/tei:text/tei:back/*[@type eq 'listBibl']/*[@type eq 'section']
         return
             translation:bibliography-section($section)
     }
@@ -624,7 +626,7 @@ declare function translation:glossary($tei as element(tei:TEI)) as element(m:glo
     
     <glossary xmlns="http://read.84000.co/ns/1.0" prefix="g">
     {
-        for $gloss in $tei//tei:back//tei:div[@type eq 'glossary']//tei:gloss
+        for $gloss in $tei/tei:text/tei:back/tei:div[@type eq 'glossary']//tei:gloss[@xml:id]
         let $sort-term := glossary:sort-term($gloss)
         where $sort-term
         order by $sort-term
@@ -637,7 +639,7 @@ declare function translation:glossary($tei as element(tei:TEI)) as element(m:glo
 
 declare function translation:word-count($tei as element(tei:TEI)) as xs:integer {
     let $translated-text := 
-        $tei//tei:text/tei:body/tei:div[@type eq "translation"]/*[
+        $tei/tei:text/tei:body/tei:div[@type eq "translation"]/*[
                self::tei:div[@type = ("section", "chapter", "prologue", "homage", "colophon")] 
                or self::tei:head[@type ne 'translation']
            ]//text()[normalize-space() and not(ancestor::tei:note)]
@@ -649,7 +651,7 @@ declare function translation:word-count($tei as element(tei:TEI)) as xs:integer 
 };
 
 declare function translation:glossary-count($tei as element(tei:TEI)) as xs:integer {
-    count($tei//*[@type='glossary']//tei:item)
+    count($tei/tei:text/tei:back/tei:div[@type eq 'glossary']//tei:gloss[@xml:id])
 };
 
 declare function translation:title-listing($translation-title as xs:string*) as xs:string* {
@@ -688,7 +690,7 @@ declare function translation:refs($tei as element(tei:TEI), $resource-id as xs:s
     (: Get the relevant refs :)
     let $toh-key := translation:toh-key($tei, $resource-id)
     return
-        $tei//tei:body//tei:ref[@type = $types][not(@rend) or not(@rend eq 'hidden')][not(@key) or @key eq $toh-key][not(ancestor::tei:note)]
+        $tei/tei:text/tei:body//tei:ref[@type = $types][not(@rend) or not(@rend eq 'hidden')][not(@key) or @key eq $toh-key][not(ancestor::tei:note)]
     
 };
 
@@ -826,7 +828,7 @@ declare function translation:folio-content($tei as element(tei:TEI), $resource-i
     let $end-ref := $refs[$index-in-resource + 1]
     
     (: Get all sections that may have a <ref/>. They must be siblings so get direct children of section. :)
-    let $translation-paragraphs := $tei//tei:body//tei:div[@type='translation']//tei:div[@type = ('prologue', 'homage', 'section', 'chapter', 'colophon')]/tei:*[self::tei:head | self::tei:p | self::tei:ab | self::tei:q | self::tei:lg | self::tei:list| self::tei:table | self::tei:trailer]
+    let $translation-paragraphs := $tei/tei:text/tei:body//tei:div[@type='translation']//tei:div[@type = ('prologue', 'homage', 'section', 'chapter', 'colophon')]/tei:*[self::tei:head | self::tei:p | self::tei:ab | self::tei:q | self::tei:lg | self::tei:list| self::tei:table | self::tei:trailer]
     
     (: Find the container of the start <ref/> and it's index :)
     let $start-ref-paragraph := $start-ref/ancestor::*[. = $translation-paragraphs][1]
@@ -877,13 +879,13 @@ declare function translation:source-link-id($index-in-resource as xs:integer){
 
 declare function translation:sponsors($tei as element(tei:TEI), $include-acknowledgements as xs:boolean) as element() {
     
-    let $translation-sponsors := $tei//tei:titleStmt/tei:sponsor
+    let $translation-sponsors := $tei/tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:sponsor
     
     let $sponsor-ids := $translation-sponsors ! substring-after(./@ref, 'sponsors.xml#')
     
     let $sponsors := sponsors:sponsors($sponsor-ids, false(), false())
     
-    let $acknowledgment := $tei//tei:front/tei:div[@type eq "acknowledgment"]
+    let $acknowledgment := $tei/tei:text/tei:front/tei:div[@type eq "acknowledgment"]
     
     return
         <sponsors xmlns="http://read.84000.co/ns/1.0">
@@ -946,13 +948,13 @@ declare function translation:sponsors($tei as element(tei:TEI), $include-acknowl
 
 declare function translation:contributors($tei as element(tei:TEI), $include-acknowledgements as xs:boolean) as element() {
     
-    let $translation-contributors := $tei//tei:titleStmt/tei:*[self::tei:author | self::tei:editor | self::tei:consultant]
+    let $translation-contributors := $tei/tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:*[self::tei:author | self::tei:editor | self::tei:consultant]
     
     let $contributor-ids := $translation-contributors ! substring-after(./@ref, 'contributors.xml#')
     
     let $contributors := $contributors:contributors/m:contributors/m:person[@xml:id = $contributor-ids]
     
-    let $acknowledgment := $tei//tei:front/tei:div[@type eq "acknowledgment"]
+    let $acknowledgment := $tei/tei:text/tei:front/tei:div[@type eq "acknowledgment"]
     
     return
         <contributors xmlns="http://read.84000.co/ns/1.0" >
@@ -997,7 +999,7 @@ declare function translation:status-updates($tei as element()) as element(m:stat
         let $translation-status := tei-content:translation-status($tei)
         let $tei-version-number-str := translation:version-number-str($tei)
         (: Returns notes of status updates :)
-        for $status-update in $tei//tei:teiHeader//tei:notesStmt/tei:note[@update = ('text-version', 'translation-status')]
+        for $status-update in $tei/tei:teiHeader//tei:notesStmt/tei:note[@update = ('text-version', 'translation-status')]
             let $status-update-version-number-str := replace($status-update/@value,'[^0-9\.]','')
         return
             element { QName('http://read.84000.co/ns/1.0', 'status-update') }{ 

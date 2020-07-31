@@ -26,7 +26,7 @@
                     </h1>
                     
                     <h2 class="text-sa">
-                        <xsl:apply-templates select="m:translation/m:titles/m:title[@xml:lang eq 'sa-ltn']"/>
+                        <xsl:apply-templates select="m:translation/m:titles/m:title[@xml:lang eq 'Sa-Ltn']"/>
                     </h2>
                     
                     <img src="image/logo-stacked.png" alt="84000 Translating the Words of the Buddha Logo" class="logo logo-84000"/>

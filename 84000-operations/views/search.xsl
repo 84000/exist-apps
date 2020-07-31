@@ -500,13 +500,13 @@
                                                     <xsl:when test="m:titles/m:title[@xml:lang eq 'en']/text()">
                                                         <xsl:value-of select="m:titles/m:title[@xml:lang eq 'en']"/>
                                                     </xsl:when>
-                                                    <xsl:when test="m:titles/m:title[@xml:lang eq 'sa-ltn']/text()">
+                                                    <xsl:when test="m:titles/m:title[@xml:lang eq 'Sa-Ltn']/text()">
                                                         <xsl:attribute name="class" select="'printable text-sa break'"/>
-                                                        <xsl:value-of select="m:titles/m:title[@xml:lang eq 'sa-ltn']"/>
+                                                        <xsl:value-of select="m:titles/m:title[@xml:lang eq 'Sa-Ltn']"/>
                                                     </xsl:when>
                                                     <xsl:otherwise>
                                                         <xsl:attribute name="class" select="'printable text-wy'"/>
-                                                        <xsl:value-of select="m:titles/m:title[@xml:lang eq 'bo-ltn']"/>
+                                                        <xsl:value-of select="m:titles/m:title[@xml:lang eq 'Bo-Ltn']"/>
                                                     </xsl:otherwise>
                                                 </xsl:choose>
                                             </a>

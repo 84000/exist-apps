@@ -503,7 +503,7 @@
         </xsl:call-template>
     </xsl:template>
     
-    <xsl:template match="tei:list[tei:item]">
+    <xsl:template match="tei:list">
         <xsl:call-template name="milestone">
             <xsl:with-param name="content">
                 <div>
@@ -793,9 +793,9 @@
                     <h4 class="term">
                         <xsl:apply-templates select="m:term[lower-case(@xml:lang) = 'en']"/>
                     </h4>
-                    <xsl:if test="m:term[@xml:lang eq 'bo-ltn']">
+                    <xsl:if test="m:term[@xml:lang eq 'Bo-Ltn']">
                         <p class="text-wy">
-                            <xsl:value-of select="string-join(m:term[@xml:lang eq 'bo-ltn'], ' · ')"/>
+                            <xsl:value-of select="string-join(m:term[@xml:lang eq 'Bo-Ltn'], ' · ')"/>
                         </p>
                     </xsl:if>
                     <xsl:if test="m:term[@xml:lang eq 'bo']">
@@ -803,9 +803,9 @@
                             <xsl:value-of select="string-join(m:term[@xml:lang eq 'bo'], ' · ')"/>
                         </p>
                     </xsl:if>
-                    <xsl:if test="m:term[@xml:lang eq 'sa-ltn']">
+                    <xsl:if test="m:term[@xml:lang eq 'Sa-Ltn']">
                         <p class="text-sa">
-                            <xsl:value-of select="string-join(m:term[@xml:lang eq 'sa-ltn'], ' · ')"/>
+                            <xsl:value-of select="string-join(m:term[@xml:lang eq 'Sa-Ltn'], ' · ')"/>
                         </p>
                     </xsl:if>
                     <xsl:for-each select="m:alternative">
