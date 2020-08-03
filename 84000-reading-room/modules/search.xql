@@ -270,6 +270,8 @@ declare function search:tm-search($request as xs:string, $lang as xs:string, $fi
                         else
                             $expanded
                     
+                    let $toh-key := translation:toh($tei, '')/@key
+                    
                 return
                     if($tei) then
                         element item { 
@@ -283,19 +285,23 @@ declare function search:tm-search($request as xs:string, $lang as xs:string, $fi
                             (: Data :)
                             if(local-name($result) eq 'tu') then
                                 
-                                (: Translation meory :)
-                                let $result-folio := $result/tmx:prop[@name eq 'folio']/text()
-                                let $folio-ref := $tei//tei:ref[@type eq 'folio'][lower-case(@cRef) eq lower-case($result-folio)]
-                                let $toh-key := if($folio-ref/@key) then $folio-ref/@key else ''
-                                let $toh-key := translation:toh($tei, $toh-key)/@key
-                                let $folio-refs := translation:folio-refs($tei, $toh-key)
-                                let $page-index := 
-                                    if($folio-ref) then
-                                        functx:index-of-node($folio-refs, $folio-ref)
+                                (: Translation memory result :)
+                                
+                                (: The folio is a prop of the TM unit :)
+                                let $result-folio := $result/tmx:prop[@name eq 'folio']
+                                
+                                (: Get the full list of folios :)
+                                let $folio-refs-sorted := translation:folio-refs-sorted($tei, $toh-key)
+                                
+                                (: Get the position of this one :)
+                                let $folio-index-in-resource := 
+                                    if($result-folio[@volume-cRef]) then
+                                        $folio-refs-sorted[@cRef eq $result-folio/text()][@cRef-volume eq $result-folio/@cRef-volume][1]/@index-in-resource
                                     else
-                                        0
+                                        $folio-refs-sorted[@cRef eq $result-folio/text()][1]/@index-in-resource
                                     
-                                let $source-link-id := translation:source-link-id($page-index)
+                                (: Use that to derive the id in the rendered text :)
+                                let $source-link-id := translation:source-link-id($folio-index-in-resource)
                                 
                                 return
                                     element match {
@@ -307,18 +313,16 @@ declare function search:tm-search($request as xs:string, $lang as xs:string, $fi
                                 
                             else
                                 
-                                (: TEI glossary :)
-                                let $toh-key := translation:toh($tei, '')/@key
+                                (: TEI glossary result :)
                                 
-                                return
-                                    element match {
-                                        attribute type { 'glossary-term' },
-                                        attribute location { concat('/translation/', $toh-key, '.html#', $result/@xml:id) },
-                                        element tibetan { ($expanded/tei:term[not(@type)][@xml:lang eq "bo"][exist:match], $expanded/tei:term[not(@type)][@xml:lang eq "bo"])[1] }, 
-                                        element translation { ($expanded/tei:term[not(@type)][not(@xml:lang) or @xml:lang eq "en"][not(@type)][exist:match], $expanded/tei:term[not(@type)][not(@xml:lang) or @xml:lang eq "en"][not(@type)])[1] },
-                                        element wylie { ($expanded/tei:term[not(@type)][@xml:lang eq "Bo-Ltn"][exist:match], $expanded/tei:term[not(@type)][@xml:lang eq "Bo-Ltn"])[1] },
-                                        element sanskrit { ($expanded/tei:term[not(@type)][@xml:lang eq "Sa-Ltn"][exist:match], $expanded/tei:term[not(@type)][@xml:lang eq "Sa-Ltn"])[1] }
-                                    }
+                                element match {
+                                    attribute type { 'glossary-term' },
+                                    attribute location { concat('/translation/', $toh-key, '.html#', $result/@xml:id) },
+                                    element tibetan { ($expanded/tei:term[not(@type)][@xml:lang eq "bo"][exist:match], $expanded/tei:term[not(@type)][@xml:lang eq "bo"])[1] }, 
+                                    element translation { ($expanded/tei:term[not(@type)][not(@xml:lang) or @xml:lang eq "en"][not(@type)][exist:match], $expanded/tei:term[not(@type)][not(@xml:lang) or @xml:lang eq "en"][not(@type)])[1] },
+                                    element wylie { ($expanded/tei:term[not(@type)][@xml:lang eq "Bo-Ltn"][exist:match], $expanded/tei:term[not(@type)][@xml:lang eq "Bo-Ltn"])[1] },
+                                    element sanskrit { ($expanded/tei:term[not(@type)][@xml:lang eq "Sa-Ltn"][exist:match], $expanded/tei:term[not(@type)][@xml:lang eq "Sa-Ltn"])[1] }
+                                }
                                 
                         }
                     else

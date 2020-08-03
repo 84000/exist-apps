@@ -104,7 +104,16 @@ return
                 <value key="#LinkToPage">{ translation:canonical-html($source/@key) }</value>
             </replace-text>,
             (: Include translation data :)
-            $translation-data
+            $translation-data,
+            (: Include folios data if it's txt :)
+            if($resource-suffix = ('txt')) then
+                <folio-refs xmlns="http://read.84000.co/ns/1.0" >
+                {
+                    translation:folio-refs-sorted($tei, $resource-id)
+                }
+                </folio-refs>
+            else
+                ()
         )
     )
 

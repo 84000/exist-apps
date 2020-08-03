@@ -671,13 +671,6 @@ declare function translation:count-volume-pages($location as element(m:location)
     sum($location/m:volume ! (xs:integer(@end-page) - (xs:integer(@start-page) - 1)))
 };
 
-(: 
-    Move folio logic into a seperate module
-    Get folio data per $tei or per list of $resource-ids
-    Use xquery to build map of folios -> volumes -> sort order
-    Inject the map into the xslt to lookup the sort order
-:)
-
 declare function translation:folio-refs($tei as element(tei:TEI), $resource-id as xs:string) as element(tei:ref)* {
     
     (: Get the relevant folio refs refs :)
@@ -695,6 +688,14 @@ declare function translation:refs($tei as element(tei:TEI), $resource-id as xs:s
 };
 
 declare function translation:folio-refs-sorted($tei as element(tei:TEI), $resource-id as xs:string) as element(tei:ref)* {
+
+    (: 
+        This returns a set of folios for the text with additional detail
+        e.g. the volume of each folio based on its proximity to a <ref type="volume"/>
+        and it's index in the folio refs.
+        Based on this folio index x can be mapped to a page in a volume
+        e.g. Toh340 ref-index=620 (F.3.a) can be mapped to Volume 74 page 5.
+    :)
     
     (: Get the relevant refs :)
     let $refs-for-resource := translation:refs($tei, $resource-id, ('folio', 'volume'))
