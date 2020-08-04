@@ -14,7 +14,7 @@ declare function local:parse-content($content) {
     for $page at $position in $content//m:page
     return (
     
-        text { '{{page:{number:' || $position || ',volume:' || $page/@volume || ',folio:' || $page/@folio-in-etext || '}}}' },
+        text { '{{page:{number:' || $position || ',folio:' || $page/@folio-in-etext || ',volume:' || $page/@volume || '}}}' },
         
         for $node at $position in $page//node()[self::text() | self::tei:milestone[@unit eq "text"]]
         return

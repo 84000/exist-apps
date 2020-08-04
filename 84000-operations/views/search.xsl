@@ -530,6 +530,12 @@
                                                             <xsl:value-of select="'Edit glossary'"/>
                                                         </a>
                                                     </li>
+                                                    <!--<li>
+                                                        <a target="_blank">
+                                                            <xsl:attribute name="href" select="concat($reading-room-path ,'/translation/', m:toh/@key, '.html?view-mode=annotation')"/>
+                                                            <xsl:value-of select="'Annotate'"/>
+                                                        </a>
+                                                    </li>-->
                                                 </xsl:if>
                                                 <xsl:if test="@status-group eq 'published' and m:downloads[@tei-version != m:download/@version]">
                                                     <li>

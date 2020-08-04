@@ -295,18 +295,22 @@ declare function search:tm-search($request as xs:string, $lang as xs:string, $fi
                                 
                                 (: Get the position of this one :)
                                 let $folio-index-in-resource := 
-                                    if($result-folio[@volume-cRef]) then
-                                        $folio-refs-sorted[@cRef eq $result-folio/text()][@cRef-volume eq $result-folio/@cRef-volume][1]/@index-in-resource
+                                    if($result-folio[@m:cRef-volume]) then
+                                        $folio-refs-sorted[lower-case(@cRef) eq lower-case($result-folio/text())][lower-case(@cRef-volume) eq lower-case($result-folio/@m:cRef-volume)][1]/@index-in-resource
                                     else
-                                        $folio-refs-sorted[@cRef eq $result-folio/text()][1]/@index-in-resource
-                                    
+                                        $folio-refs-sorted[lower-case(@cRef) eq lower-case($result-folio/text())][1]/@index-in-resource
+                                
                                 (: Use that to derive the id in the rendered text :)
-                                let $source-link-id := translation:source-link-id($folio-index-in-resource)
+                                let $source-link-selector := 
+                                    if(functx:is-a-number($folio-index-in-resource)) then
+                                        concat('#', translation:source-link-id($folio-index-in-resource))
+                                    else
+                                        ''
                                 
                                 return
                                     element match {
                                         attribute type { 'tm-unit' },
-                                        attribute location { concat('/translation/', $toh-key, '.html#', $source-link-id) },
+                                        attribute location { concat('/translation/', $toh-key, '.html', $source-link-selector) },
                                         element tibetan { $expanded/tmx:tuv[@xml:lang eq "bo"]/tmx:seg/node() },
                                         element translation { $expanded/tmx:tuv[@xml:lang eq "en"]/tmx:seg/node() }
                                     }

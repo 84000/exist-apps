@@ -106,6 +106,14 @@
                                                     <xsl:value-of select="'editor mode'"/>
                                                 </a>
                                             </li>
+                                            <!--<li>
+                                                <a class="small">
+                                                    <xsl:attribute name="href" select="concat($reading-room-path ,'/translation/', $text-id, '.html?view-mode=annotation')"/>
+                                                    <xsl:attribute name="target" select="concat($text-id, '.html')"/>
+                                                    <xsl:attribute name="title" select="'View this text in annotation mode'"/>
+                                                    <xsl:value-of select="'annotation mode'"/>
+                                                </a>
+                                            </li>-->
                                             <li>
                                                 <a class="small">
                                                     <xsl:attribute name="href" select="concat($reading-room-path, '/translation/', $text-id, '.xml')"/>
