@@ -108,6 +108,10 @@
                                                     <xsl:with-param name="url" select="@url"/>
                                                 </xsl:call-template>
                                             </xsl:attribute>
+                                            <xsl:call-template name="translation-lang-class">
+                                                <xsl:with-param name="lang" select="$lang"/>
+                                                <xsl:with-param name="persist-class-str" select="'dropdown-toggle'"/>
+                                            </xsl:call-template>
                                             <xsl:value-of select="eft:label"/>
                                             <span>
                                                 <i class="fa fa-plus"/>
@@ -133,6 +137,10 @@
                                                                     </xsl:choose>
                                                                 </xsl:attribute>
                                                                 <div class="title">
+                                                                    <xsl:call-template name="translation-lang-class">
+                                                                        <xsl:with-param name="lang" select="$lang"/>
+                                                                        <xsl:with-param name="persist-class-str" select="'title'"/>
+                                                                    </xsl:call-template>
                                                                     <xsl:value-of select="eft:label"/>
                                                                 </div>
                                                                 <div class="links">
@@ -150,6 +158,9 @@
                                                                                             <xsl:with-param name="url" select="@url"/>
                                                                                         </xsl:call-template>
                                                                                     </xsl:attribute>
+                                                                                    <xsl:call-template name="translation-lang-class">
+                                                                                        <xsl:with-param name="lang" select="$lang"/>
+                                                                                    </xsl:call-template>
                                                                                     <xsl:value-of select="eft:label"/>
                                                                                 </a>
                                                                             </li>
@@ -170,6 +181,9 @@
                                                                         <xsl:with-param name="url" select="@url"/>
                                                                     </xsl:call-template>
                                                                 </xsl:attribute>
+                                                                <xsl:call-template name="translation-lang-class">
+                                                                    <xsl:with-param name="lang" select="$lang"/>
+                                                                </xsl:call-template>
                                                                 <xsl:value-of select="eft:label"/>
                                                             </a>
                                                         </xsl:otherwise>
@@ -198,6 +212,9 @@
                                                     <xsl:with-param name="url" select="@url"/>
                                                 </xsl:call-template>
                                             </xsl:attribute>
+                                            <xsl:call-template name="translation-lang-class">
+                                                <xsl:with-param name="lang" select="$lang"/>
+                                            </xsl:call-template>
                                             <xsl:value-of select="eft:label"/>
                                         </a>
                                     </xsl:otherwise>
@@ -251,7 +268,7 @@
                                             </xsl:call-template>
                                         </xsl:attribute>
                                         <xsl:attribute name="title">
-                                            <xsl:value-of select="eft:label/text()"/>
+                                            <xsl:value-of select="eft:label"/>
                                         </xsl:attribute>
                                         <i aria-hidden="true">
                                             <xsl:attribute name="class">
@@ -414,6 +431,9 @@
     <xsl:template match="eft:nav-category[eft:item/eft:item]">
         <div>
             <h2>
+                <xsl:call-template name="translation-lang-class">
+                    <xsl:with-param name="lang" select="$lang"/>
+                </xsl:call-template>
                 <xsl:value-of select="eft:item/eft:label"/>
             </h2>
             <p data-match-height="nav-category-description">
@@ -432,11 +452,14 @@
                             <xsl:with-param name="url" select="@url"/>
                         </xsl:call-template>
                     </xsl:attribute>
-                    <xsl:if test="@url = $active-url">
-                        <xsl:attribute name="class">
-                            <xsl:value-of select="'list-group-item active'"/>
-                        </xsl:attribute>
-                    </xsl:if>
+                    <xsl:call-template name="translation-lang-class">
+                        <xsl:with-param name="lang" select="$lang"/>
+                        <xsl:with-param name="persist-class-str">
+                            <xsl:if test="@url = $active-url">
+                                <xsl:value-of select="'list-group-item active'"/>
+                            </xsl:if>
+                        </xsl:with-param>
+                    </xsl:call-template>
                     <xsl:value-of select="eft:label"/>
                 </a>
             </xsl:for-each>
@@ -458,7 +481,11 @@
                         <xsl:value-of select="concat($id, '-heading')"/>
                     </xsl:attribute>
                     <h3 class="panel-title">
-                        <xsl:value-of select="concat('More About ', eft:item/eft:label)"/>
+                        <xsl:call-template name="translation-lang-class">
+                            <xsl:with-param name="lang" select="$lang"/>
+                            <xsl:with-param name="persist-class-str" select="'panel-title'"/>
+                        </xsl:call-template>
+                        <xsl:value-of select="eft:item/eft:label"/>
                     </h3>
                     <span class="text-right">
                         <i class="fa fa-plus collapsed-show"/>
@@ -507,10 +534,16 @@
                             <xsl:when test="eft:item/eft:item[@url = $active-url]">
                                 <ul class="breadcrumb">
                                     <li>
+                                        <xsl:call-template name="translation-lang-class">
+                                            <xsl:with-param name="lang" select="$lang"/>
+                                        </xsl:call-template>
                                         <xsl:value-of select="eft:item/eft:label"/>
                                     </li>
                                     <li>
                                         <h1>
+                                            <xsl:call-template name="translation-lang-class">
+                                                <xsl:with-param name="lang" select="$lang"/>
+                                            </xsl:call-template>
                                             <xsl:value-of select="eft:item/eft:item[@url = $active-url]/eft:label"/>
                                         </h1>
                                     </li>
@@ -518,6 +551,9 @@
                             </xsl:when>
                             <xsl:otherwise>
                                 <h1>
+                                    <xsl:call-template name="translation-lang-class">
+                                        <xsl:with-param name="lang" select="$lang"/>
+                                    </xsl:call-template>
                                     <xsl:value-of select="eft:item[@url = $active-url]/eft:label"/>
                                 </h1>
                             </xsl:otherwise>
@@ -534,6 +570,7 @@
                             <span class="btn-round-text">
                                 <xsl:call-template name="translation-lang-class">
                                     <xsl:with-param name="lang" select="$lang"/>
+                                    <xsl:with-param name="persist-class-str" select="'btn-round-text'"/>
                                 </xsl:call-template>
                                 <xsl:value-of select="eft:label[@id = 'label-bookmarks']"/>
                             </span>
@@ -593,6 +630,9 @@
                             <xsl:value-of select="@url"/>
                         </xsl:attribute>
                         <div>
+                            <xsl:call-template name="translation-lang-class">
+                                <xsl:with-param name="lang" select="$lang"/>
+                            </xsl:call-template>
                             <xsl:value-of select="eft:label"/>
                         </div>
                         <div>
@@ -604,6 +644,10 @@
                         </div>
                     </a>
                     <p class="small">
+                        <xsl:call-template name="translation-lang-class">
+                            <xsl:with-param name="lang" select="$lang"/>
+                            <xsl:with-param name="persist-class-str" select="'small'"/>
+                        </xsl:call-template>
                         <xsl:value-of select="eft:description"/>
                     </p>
                 </xsl:for-each>
@@ -689,14 +733,16 @@
     
     <xsl:template name="translation-lang-class">
         <xsl:param name="lang" select="'en'"/>
+        <xsl:param name="persist-class-str" select="''"/>
         <xsl:attribute name="class">
+            <xsl:value-of select="$persist-class-str"/>
             <xsl:choose>
                 <xsl:when test="$lang = 'zh'">
-                    <xsl:value-of select="'text-zh'"/>
-                </xsl:when>
+                    <xsl:value-of select="' text-zh'"/>
+                </xsl:when><!--
                 <xsl:otherwise>
                     <xsl:value-of select="'text-en'"/>
-                </xsl:otherwise>
+                </xsl:otherwise>-->
             </xsl:choose>
         </xsl:attribute>
     </xsl:template>

@@ -95,10 +95,10 @@
                     <xsl:attribute name="data-onload-replace">
                         <xsl:choose>
                             <xsl:when test="$lang eq 'zh'">
-                                <xsl:value-of select="concat('{&#34;#project-progress&#34;:&#34;', $reading-room-path,'/widget/progress-chart.html#eft-progress-chart-panel&#34;}')"/>
+                                <xsl:value-of select="concat('{&#34;#project-progress&#34;:&#34;', $reading-room-path,'/widget/progress-chart.html?lang=', $lang ,'#eft-progress-chart-panel&#34;}')"/>
                             </xsl:when>
                             <xsl:otherwise>
-                                <xsl:value-of select="concat('{&#34;#project-progress&#34;:&#34;', $reading-room-path,'/widget/progress-chart.html?lang=', $lang ,'#eft-progress-chart-panel&#34;}')"/>
+                                <xsl:value-of select="concat('{&#34;#project-progress&#34;:&#34;', $reading-room-path,'/widget/progress-chart.html#eft-progress-chart-panel&#34;}')"/>
                             </xsl:otherwise>
                         </xsl:choose>
                     </xsl:attribute>                            

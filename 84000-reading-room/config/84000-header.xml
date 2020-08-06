@@ -243,10 +243,10 @@
                 <item url="https://read.84000.co/about/impact.html?lang=zh">
                     <label key="label-impact">讀者互動</label>
                 </item>
-                <item url="https://84000.co/about/media">
+                <item url="https://84000.co/ch-about/ch-media">
                     <label key="label-achievements">媒體報導</label>
                 </item>
-                <item url="https://84000.co/about/milestones">
+                <item url="https://84000.co/ch-about/ch-milestones">
                     <label key="label-milestones">里程碑</label>
                 </item>
             </item>
@@ -310,7 +310,7 @@
     </social>
     <social xml:lang="zh">
         <label key="label-social">關注我們</label>
-        <item url="https://84000.co/how-you-can-help/spread-the-word" icon-class="fa fa-envelope-square">
+        <item url="https://84000.co/ch-how-you-can-help/ch-howhelp-subscribe" icon-class="fa fa-envelope-square">
             <label key="label-social-spread-the-word">電子通訊訂閱</label>
         </item>
         <item url="#wechat-qcode" icon-class="fa fa-weixin">

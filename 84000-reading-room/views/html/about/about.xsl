@@ -46,7 +46,7 @@
             <xsl:if test="$page-quote gt '' and $header-img-src gt ''">
                 <aside class="banner-band">
                     <div class="container">
-                        <div class="center-vertical-md">
+                        <div class="center-vertical-md full-width">
                             <div>
                                 <blockquote>
                                     <p>
