@@ -43,6 +43,7 @@
                                         </ul>
                                         <div class="tab-content">
                                             <xsl:variable name="outline-summary" select="m:outline-summary"/>
+                                            <xsl:variable name="replace-text" select="m:replace-text"/>
                                             <xsl:for-each select="('kangyur', 'combined')">
                                                 <xsl:variable name="tab" select="." as="xs:string"/>
                                                 <div role="tabpanel" class="tab-pane fade">
@@ -54,12 +55,14 @@
                                                         <xsl:when test="$tab eq 'kangyur'">
                                                             <xsl:call-template name="progress-pie-chart">
                                                                 <xsl:with-param name="outline-summary" select="$outline-summary[@work eq 'UT4CZ5369']"/>
+                                                                <xsl:with-param name="replace-text" select="$replace-text"/>
                                                                 <xsl:with-param name="show-legend" select="true()"/>
                                                             </xsl:call-template>
                                                         </xsl:when>
                                                         <xsl:when test="$tab eq 'combined'">
                                                             <xsl:call-template name="progress-pie-chart">
                                                                 <xsl:with-param name="outline-summary" select="$outline-summary"/>
+                                                                <xsl:with-param name="replace-text" select="$replace-text"/>
                                                                 <xsl:with-param name="show-legend" select="true()"/>
                                                             </xsl:call-template>
                                                         </xsl:when>

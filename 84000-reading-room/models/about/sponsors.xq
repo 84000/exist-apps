@@ -10,7 +10,6 @@ import module namespace source="http://read.84000.co/source" at "../../modules/s
 declare option exist:serialize "method=xml indent=no";
 
 let $sponsor-ids := $sponsors:sponsors/m:sponsors/m:sponsor[m:type/@id = ('founding', 'matching-funds')]/@xml:id
-let $comms-url := $common:environment/m:url[@id eq 'communications-site'][1]/text()
 
 return
     common:response(
@@ -22,7 +21,9 @@ return
                 sharing-url="/about/sponsors.html" 
                 tab="{ request:get-parameter('tab', 'matching-funds-tab') }"/>,
             <replace-text xmlns="http://read.84000.co/ns/1.0">
-                <value key="#commsSiteUrl">{ $comms-url }</value>
+                <value key="#commsSiteUrl">{ $common:environment/m:url[@id eq 'communications-site'][1]/text() }</value>
+                <value key="#readingRoomSiteUrl">{ $common:environment/m:url[@id eq 'reading-room'][1]/text() }</value>
+                <value key="#feSiteUrl">{ $common:environment/m:url[@id eq 'front-end'][1]/text() }</value>
             </replace-text>,
             sponsors:sponsors($sponsor-ids, false(), false()),
             translations:sponsored-texts()

@@ -566,7 +566,7 @@
                         <xsl:attribute name="title">
                             <xsl:value-of select="eft:label"/>
                         </xsl:attribute>
-                        <i class="fa fa-facebook-square" aria-hidden="true">
+                        <i>
                             <xsl:attribute name="class">
                                 <xsl:value-of select="@icon-class"/>
                             </xsl:attribute>
@@ -581,6 +581,35 @@
     <xsl:template match="eft:bookmarks-sidebar">
         <!-- Bookmarks fly-out -->
         <xsl:call-template name="bookmarks-sidebar"/>
+    </xsl:template>
+    
+    <xsl:template match="eft:shopping-panel[eft:item]">
+        
+        <div class="panel panel-default">
+            <div class="panel-body shopping">
+                <xsl:for-each select="eft:item">
+                    <a target="_blank" class="center-vertical full-width">
+                        <xsl:attribute name="href">
+                            <xsl:value-of select="@url"/>
+                        </xsl:attribute>
+                        <div>
+                            <xsl:value-of select="eft:label"/>
+                        </div>
+                        <div>
+                            <img>
+                                <xsl:attribute name="src">
+                                    <xsl:value-of select="concat($local-front-end-url, eft:img)"/>
+                                </xsl:attribute>
+                            </img>
+                        </div>
+                    </a>
+                    <p class="small">
+                        <xsl:value-of select="eft:description"/>
+                    </p>
+                </xsl:for-each>
+            </div>
+        </div>
+        
     </xsl:template>
     
     <xsl:template name="bookmarks-sidebar">

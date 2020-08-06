@@ -57,6 +57,10 @@ function common:app-id() as xs:string {
     
 };
 
+declare function common:request-lang() as xs:string {
+    if(request:exists()) then request:get-parameter('lang', 'en') else 'en'
+};
+
 declare
     %test:args('dummy', 'dummy', '<data xmlns="http://read.84000.co/ns/1.0" />') 
     %test:assertXPath("$result//m:data")
@@ -78,7 +82,7 @@ function common:response($model-type as xs:string, $app-id as xs:string, $data a
         data-path="{ $common:data-path }" 
         environment-path="{ $common:environment-path }"
         user-name="{ common:user-name() }" 
-        lang="{ if(request:exists()) then request:get-parameter('lang', 'en') else 'en' }"
+        lang="{ common:request-lang() }"
         exist-version="{ system:get-version() }">
         {
             $data
@@ -526,8 +530,8 @@ declare function common:letter-variations($letter as xs:string) as xs:string* {
 declare function common:local-text($key as xs:string, $lang as xs:string) {
     
     let $local-texts :=
-        if($lang = ('en', 'zh')) then
-            doc(concat($common:app-config, '/', 'texts.', $lang, '.xml'))//m:item
+        if(lower-case($lang) = ('en', 'zh')) then
+            doc(concat($common:app-config, '/', 'texts.', lower-case($lang), '.xml'))//m:item
         else
             doc(concat($common:app-config, '/', 'texts.en.xml'))//m:item
     

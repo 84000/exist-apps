@@ -61,7 +61,7 @@
                             </div>
                             <div>
                                 <img>
-                                    <xsl:attribute name="src" select="concat($front-end-path, $header-img-src)"/>
+                                    <xsl:attribute name="src" select="$header-img-src"/>
                                 </img>
                             </div>
                         </div>
@@ -98,6 +98,13 @@
                             
                             <!-- Passed content -->
                             <xsl:copy-of select="$side-content"/>
+                            
+                            <xsl:variable name="shopping-panel">
+                                <m:shopping-panel>
+                                    <xsl:copy-of select="$eft-header/m:shopping[@xml:lang eq $lang]/node()"/>
+                                </m:shopping-panel>
+                            </xsl:variable>
+                            <xsl:apply-templates select="$shopping-panel"/>
                             
                         </aside>
                     </div>

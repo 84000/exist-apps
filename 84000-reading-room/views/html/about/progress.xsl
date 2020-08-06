@@ -160,6 +160,7 @@
                 
                 <xsl:call-template name="progress-pie-chart">
                     <xsl:with-param name="outline-summary" select="$outline-summary"/>
+                    <xsl:with-param name="replace-text" select="/m:response/m:replace-text"/>
                     <xsl:with-param name="show-legend" select="false()"/>
                 </xsl:call-template>
                 

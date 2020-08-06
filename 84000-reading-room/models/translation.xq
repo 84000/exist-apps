@@ -101,7 +101,7 @@ return
             (: Calculated strings :)
             <replace-text xmlns="http://read.84000.co/ns/1.0">
                 <value key="#CurrentDateTime">{ format-dateTime(current-dateTime(), '[h].[m01][Pn] on [FNn], [D1o] [MNn] [Y0001]') }</value>
-                <value key="#LinkToPage">{ translation:canonical-html($source/@key) }</value>
+                <value key="#LinkToSelf">{ translation:canonical-html($source/@key) }</value>
             </replace-text>,
             (: Include translation data :)
             $translation-data,

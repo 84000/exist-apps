@@ -149,9 +149,6 @@
             <item url="https://84000.co/how-you-can-help/download-dana">
                 <label key="label-download-dana">Download Dāna</label>
             </item>
-            <item url="https://84000.co/how-you-can-help/shop-n-give">
-                <label key="label-shop-n-give">Shop and Give</label>
-            </item>
             <item url="https://84000.co/how-you-can-help/spread-the-word">
                 <label key="label-subscribe">Subscribe to our Newsletter</label>
             </item>
@@ -209,44 +206,74 @@
             <item url="https://84000.co/ch-resources/ch-resources-training">
                 <label key="label-translator-training">譯者培訓</label>
             </item>
-            <item url="https://84000.co/ch-resources/ch-translator-resources-chinese">
+            <!--<item url="https://84000.co/ch-resources/ch-translator-resources-chinese">
                 <label key="label-translator-resources">Translator Resources</label>
-            </item>
+            </item>-->
+            <!--<item url="https://84000.co/ch-resources/ch-quotes">
+                <label key="label-quotes">經典語錄</label>
+            </item>-->
         </item>
         <item class="about" url="#about">
             <label key="label-about">關於我們</label>
-            <item url="https://84000.co/ch-about/ch-about-origin">
-                <label key="label-origin">成立緣起</label>
+            <item url="#work">
+                <label key="label-our-work">我們的傳譯事業</label>
+                <description key="description-our-work">在專業編輯團隊的帶領下，84000致力於將藏文大藏經的廿三萬一千八百多頁經文翻譯成英文，並結合最新技術於線上出版免費供眾閱覽下載。我們不僅在財務上資助全球各地的佛典翻譯團隊，同時也與各翻譯團隊保持密切的合作關係，以確保這些由古典藏文翻譯成英文的佛典兼具準確度和權威性。</description>
+                <item url="https://84000.co/ch-about/ch-what-we-do">
+                    <label key="label-what-we-do">傳譯事業</label>
+                </item>
+                <item url="https://84000.co/ch-about/ch-about-origin">
+                    <label key="label-origin">成立緣起</label>
+                </item>
+                <item url="https://84000.co/ch-about/ch-grants">
+                    <label key="label-grants">翻譯資助金</label>
+                </item>
+                <item url="https://84000.co/ch-about/ch-about-workflow">
+                    <label key="label-workflow">工作流程</label>
+                </item>
+                <item url="https://84000.co/ch-about/ch-about-copyright">
+                    <label key="label-copyright">版權</label>
+                </item>
             </item>
-            <item url="https://read.84000.co/about/progress.html?lang=zh">
-                <label key="label-progress">工作進度</label>
+            <item url="#impact">
+                <label key="label-impact-group">我們的全球響應力</label>
+                <description key="description-impact">在2010年時， 僅有5%的藏文佛典被翻譯成現代語言，古典藏文的存續可說是岌岌可危。十年後，我們已將數據提升至10%，不僅讓國際佛學研究得以更深更廣，亦讓佛陀的智慧法語無遠弗屆的傳送到讀者的指尖。</description>
+                <item url="https://read.84000.co/about/progress.html?lang=zh">
+                    <label key="label-progress">翻譯進度</label>
+                </item>
+                <item url="https://read.84000.co/about/impact.html?lang=zh">
+                    <label key="label-impact">讀者互動</label>
+                </item>
+                <item url="https://84000.co/about/media">
+                    <label key="label-achievements">媒體報導</label>
+                </item>
+                <item url="https://84000.co/about/milestones">
+                    <label key="label-milestones">里程碑</label>
+                </item>
             </item>
-            <item url="https://84000.co/ch-about/ch-about-impact">
-                <label key="label-impact">全球影響</label>
-            </item>
-            <item url="https://84000.co/ch-about/ch-about-workflow">
-                <label key="label-workflow">工作流程</label>
-            </item>
-            <item url="https://84000.co/ch-about/ch-about-copyright">
-                <label key="label-copyright">關於版權</label>
-            </item>
-            <item url="https://84000.co/ch-about/ch-about-team">
-                <label key="label-team">我們的團隊</label>
-            </item>
-            <item url="https://read.84000.co/about/translators.html?lang=zh">
-                <label key="label-translators">翻譯人員</label>
-            </item>
-            <item url="https://read.84000.co/about/sponsors.html?lang=zh">
-                <label key="label-sponsors">贊助人</label>
-            </item>
-            <item url="https://84000.co/ch-about/ch-partnerships">
-                <label key="label-partnerships">合作夥伴</label>
-            </item>
-            <item url="https://84000.co/ch-about/ch-about-contact">
-                <label key="label-contact">聯繫方式</label>
+            <item url="#people">
+                <label key="label-people">我們的團隊</label>
+                <description key="description-people">84000的工作仰賴著世界各地的學者、專業人士、顧問、志工和護持者的全心投入與互相配合。我們的團隊不受限於時間或空間，工作人員們居住於各大時區與地區。</description>
+                <item url="https://84000.co/ch-about/ch-about-team">
+                    <label key="label-team">84000執行團隊</label>
+                </item>
+                <item url="https://read.84000.co/about/translators.html?lang=zh">
+                    <label key="label-translators">翻譯團隊</label>
+                </item>
+                <item url="https://read.84000.co/about/sponsors.html?lang=zh">
+                    <label key="label-sponsors">贊助者</label>
+                </item>
+                <item url="https://84000.co/ch-about/ch-partnerships">
+                    <label key="label-partnerships">合作夥伴</label>
+                </item>
+                <!--<item url="https://84000.co/ch-about/ch-endorsements">
+                    <label key="label-endorsements">權威認可</label>
+                </item>-->
             </item>
             <item url="https://84000.co/ch-about/ch-faq">
                 <label key="label-faq">常見問題</label>
+            </item>
+            <item url="https://84000.co/ch-about/ch-about-contact">
+                <label key="label-contact">聯繫方式</label>
             </item>
         </item>
         <item class="how-to-help" url="#how-to-help">
@@ -303,12 +330,19 @@
         </item>
     </sharing>
     <sharing xml:lang="zh">
-        <label key="label-sharing">Share this page:</label>
+        <label key="label-sharing">分享此頁</label>
         <item url="https://www.facebook.com/sharer/sharer.php?u=" icon-class="fa fa-facebook-square">
-            <label key="label-sharing-facebook">Post on Facebook</label>
+            <label key="label-sharing-facebook">分享於臉書</label>
         </item>
         <item url="https://twitter.com/home?status=" icon-class="fa fa-twitter-square">
-            <label key="label-sharing-twitter">Tweet</label>
+            <label key="label-sharing-twitter">用Twitter推送</label>
         </item>
     </sharing>
+    <shopping xml:lang="en">
+        <item url="http://www.amazon.com/?_encoding=UTF8&amp;camp=1789&amp;creative=390957&amp;linkCode=ur2&amp;tag=translate84000-20">
+            <label key="label-shopping-amazon">Donate while you shop</label>
+            <description key="description-shopping-amazon">Accessing Amazon via the link above will donate up to 15% of the amount of your purchases to 84000, at no additional cost to you.</description>
+            <img>/imgs/Amazon_icon.png</img>
+        </item>
+    </shopping>
 </eft-header>
