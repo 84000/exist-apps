@@ -319,62 +319,51 @@
                     <xsl:call-template name="translation">
                         <xsl:with-param name="translation-id" select="'copyright'"/>
                         <xsl:with-param name="lang" select="$lang"/>
-                        <xsl:with-param name="text-node" select="false()"/>
                     </xsl:call-template>
+                    <xsl:value-of select="' '"/>
                     <span itemprop="name">
                         <xsl:call-template name="translation">
                             <xsl:with-param name="translation-id" select="'org-name'"/>
                             <xsl:with-param name="lang" select="$lang"/>
-                            <xsl:with-param name="text-node" select="false()"/>
                         </xsl:call-template>
                     </span>
+                    <xsl:value-of select="' '"/>
                     <xsl:call-template name="translation">
                         <xsl:with-param name="translation-id" select="'rights-reserved'"/>
                         <xsl:with-param name="lang" select="$lang"/>
-                        <xsl:with-param name="text-node" select="false()"/>
                     </xsl:call-template>
                 </div>
                 
                 <ul class="list-inline inline-dots">
                     <li>
                         <xsl:call-template name="translation">
-                            <xsl:with-param name="translation-id" select="'contact-label'"/>
-                            <xsl:with-param name="lang" select="$lang"/>
-                            <xsl:with-param name="text-node" select="false()"/>
-                        </xsl:call-template>
-                        <a itemprop="email">
-                            <xsl:attribute name="href">
-                                <xsl:call-template name="translation">
-                                    <xsl:with-param name="translation-id" select="'contact-link'"/>
-                                    <xsl:with-param name="lang" select="$lang"/>
-                                    <xsl:with-param name="text-node" select="true()"/>
-                                </xsl:call-template>
-                            </xsl:attribute>
-                            <xsl:call-template name="translation">
-                                <xsl:with-param name="translation-id" select="'contact-link-text'"/>
-                                <xsl:with-param name="lang" select="$lang"/>
-                                <xsl:with-param name="text-node" select="false()"/>
-                            </xsl:call-template>
-                        </a>
-                    </li>
-                    <li>
-                        <xsl:call-template name="translation">
                             <xsl:with-param name="translation-id" select="'website-label'"/>
                             <xsl:with-param name="lang" select="$lang"/>
-                            <xsl:with-param name="text-node" select="false()"/>
                         </xsl:call-template>
-                        <a itemprop="email">
+                        <a itemprop="url">
                             <xsl:attribute name="href">
                                 <xsl:call-template name="translation">
                                     <xsl:with-param name="translation-id" select="'website-link'"/>
                                     <xsl:with-param name="lang" select="$lang"/>
-                                    <xsl:with-param name="text-node" select="true()"/>
                                 </xsl:call-template>
                             </xsl:attribute>
                             <xsl:call-template name="translation">
                                 <xsl:with-param name="translation-id" select="'website-link-text'"/>
                                 <xsl:with-param name="lang" select="$lang"/>
-                                <xsl:with-param name="text-node" select="false()"/>
+                            </xsl:call-template>
+                        </a>
+                    </li>
+                    <li>
+                        <a>
+                            <xsl:attribute name="href">
+                                <xsl:call-template name="translation">
+                                    <xsl:with-param name="translation-id" select="'contact-link'"/>
+                                    <xsl:with-param name="lang" select="$lang"/>
+                                </xsl:call-template>
+                            </xsl:attribute>
+                            <xsl:call-template name="translation">
+                                <xsl:with-param name="translation-id" select="'contact-link-text'"/>
+                                <xsl:with-param name="lang" select="$lang"/>
                             </xsl:call-template>
                         </a>
                     </li>
@@ -384,13 +373,11 @@
                                 <xsl:call-template name="translation">
                                     <xsl:with-param name="translation-id" select="'privacy-link'"/>
                                     <xsl:with-param name="lang" select="$lang"/>
-                                    <xsl:with-param name="text-node" select="true()"/>
                                 </xsl:call-template>
                             </xsl:attribute>
                             <xsl:call-template name="translation">
                                 <xsl:with-param name="translation-id" select="'privacy-label'"/>
                                 <xsl:with-param name="lang" select="$lang"/>
-                                <xsl:with-param name="text-node" select="false()"/>
                             </xsl:call-template>
                         </a>
                     </li>

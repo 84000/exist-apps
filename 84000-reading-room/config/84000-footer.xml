@@ -12,17 +12,13 @@
         <text xml:lang="en"> - All Rights Reserved</text>
         <text xml:lang="zh"> 版權所有</text>
     </translation>
-    <translation id="contact-label">
-        <text xml:lang="en">Contact: </text>
-        <text xml:lang="zh">聯繫方式：</text>
-    </translation>
     <translation id="contact-link">
-        <text xml:lang="en">mailto:info@84000.co</text>
-        <text xml:lang="zh">mailto:info@84000.co</text>
+        <text xml:lang="en">https://84000.co/about/contact</text>
+        <text xml:lang="zh">https://84000.co/ch-about/ch-about-contact</text>
     </translation>
     <translation id="contact-link-text">
-        <text xml:lang="en">info@84000.co</text>
-        <text xml:lang="zh">info@84000.co</text>
+        <text xml:lang="en">Contact</text>
+        <text xml:lang="zh">聯繫方式</text>
     </translation>
     <translation id="website-label">
         <text xml:lang="en">Website: </text>
