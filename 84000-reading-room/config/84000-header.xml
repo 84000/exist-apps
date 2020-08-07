@@ -206,12 +206,12 @@
             <item url="https://84000.co/ch-resources/ch-resources-training">
                 <label key="label-translator-training">譯者培訓</label>
             </item>
-            <!--<item url="https://84000.co/ch-resources/ch-translator-resources-chinese">
+            <item url="https://84000.co/resources/translator-resources">
                 <label key="label-translator-resources">Translator Resources</label>
-            </item>-->
-            <!--<item url="https://84000.co/ch-resources/ch-quotes">
+            </item>
+            <item url="https://84000.co/resources/quotes">
                 <label key="label-quotes">經典語錄</label>
-            </item>-->
+            </item>
         </item>
         <item class="about" url="#about">
             <label key="label-about">關於我們</label>
@@ -243,7 +243,7 @@
                 <item url="https://read.84000.co/about/impact.html?lang=zh">
                     <label key="label-impact">讀者互動</label>
                 </item>
-                <item url="https://84000.co/ch-about/ch-media">
+                <item url="https://84000.co/about/media">
                     <label key="label-achievements">媒體報導</label>
                 </item>
                 <item url="https://84000.co/ch-about/ch-milestones">

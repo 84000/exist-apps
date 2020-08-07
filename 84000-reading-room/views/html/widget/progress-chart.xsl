@@ -79,7 +79,7 @@
                                     
                                     <div class="text-center top-margin">
                                         <div>
-                                            <a class="btn btn-warning btn-lg uppercase">
+                                            <a class="btn btn-warning uppercase">
                                                 <xsl:attribute name="href">
                                                     <xsl:call-template name="local-text">
                                                         <xsl:with-param name="local-key" select="'sponsor-button-link'"/>

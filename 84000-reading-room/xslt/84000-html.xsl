@@ -455,9 +455,14 @@
                     <xsl:call-template name="translation-lang-class">
                         <xsl:with-param name="lang" select="$lang"/>
                         <xsl:with-param name="persist-class-str">
-                            <xsl:if test="@url = $active-url">
-                                <xsl:value-of select="'list-group-item active'"/>
-                            </xsl:if>
+                            <xsl:choose>
+                                <xsl:when test="@url = $active-url">
+                                    <xsl:value-of select="'list-group-item active'"/>
+                                </xsl:when>
+                                <xsl:otherwise>
+                                    <xsl:value-of select="'list-group-item'"/>
+                                </xsl:otherwise>
+                            </xsl:choose>
                         </xsl:with-param>
                     </xsl:call-template>
                     <xsl:value-of select="eft:label"/>
