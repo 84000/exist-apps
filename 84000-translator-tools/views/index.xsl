@@ -600,7 +600,7 @@
                                 </div>
                                 <div>
                                     <div class="col-sm-6">
-                                        <p class="title">
+                                        <p class="bottom-margin">
                                             <a target="reading-room">
                                                 <xsl:choose>
                                                     <xsl:when test="m:match/@type eq 'glossary-term'">

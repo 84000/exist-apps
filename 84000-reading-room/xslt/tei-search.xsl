@@ -118,7 +118,6 @@
                                     <div class="row small text-muted">
                                         <div class="col-sm-12">
                                             
-                                            <xsl:value-of select="'in '"/>
                                             <ul class="breadcrumb">
                                                 <xsl:for-each select="m:parent | m:parent//m:parent">
                                                     <xsl:sort select="@nesting" order="descending"/>
@@ -145,6 +144,7 @@
                                                     </li>
                                                 </xsl:if>
                                             </ul>
+                                            
                                         </div>
                                     </div>
                                 </xsl:for-each>
@@ -191,7 +191,7 @@
                                     </div>
                                 </xsl:if>
                                 
-                                <section>
+                                <section class="result-matches">
                                     
                                     <xsl:attribute name="id" select="concat('result-matches-', position())"/>
                                     
