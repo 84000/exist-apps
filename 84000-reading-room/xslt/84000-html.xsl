@@ -16,6 +16,10 @@
     
     <xsl:output method="html" indent="no" omit-xml-declaration="yes"/>
     
+    <xsl:template match="text()[parent::eft:text]">
+        <!-- Don't output text nodes unless explicit -->
+    </xsl:template>
+    
     <xsl:template match="eft:eft-header">
         <nav class="navbar navbar-default">
             
@@ -564,7 +568,11 @@
                                     <xsl:with-param name="lang" select="$lang"/>
                                     <xsl:with-param name="persist-class-str" select="'btn-round-text'"/>
                                 </xsl:call-template>
-                                <xsl:value-of select="eft:label[@id = 'label-bookmarks']"/>
+                                <xsl:call-template name="translation">
+                                    <xsl:with-param name="translation-id" select="'label-bookmarks'"/>
+                                    <xsl:with-param name="lang" select="$lang"/>
+                                    <xsl:with-param name="text-node" select="true()"/>
+                                </xsl:call-template>
                             </span>
                         </a>
                     </div>
@@ -656,7 +664,11 @@
                         <xsl:call-template name="translation-lang-class">
                             <xsl:with-param name="lang" select="$lang"/>
                         </xsl:call-template>
-                        <xsl:value-of select="eft:label[@id = 'label-bookmarks']"/>
+                        <xsl:call-template name="translation">
+                            <xsl:with-param name="translation-id" select="'label-bookmarks'"/>
+                            <xsl:with-param name="lang" select="$lang"/>
+                            <xsl:with-param name="text-node" select="true()"/>
+                        </xsl:call-template>
                     </h4>
                     <table id="bookmarks-list" class="contents-table">
                         <tbody/>

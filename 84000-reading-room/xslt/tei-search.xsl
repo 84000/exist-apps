@@ -470,7 +470,6 @@
         </xsl:choose>
     </xsl:template>
     
-    
     <xsl:template match="tei:foreign">
         <span>
             <xsl:apply-templates select="node()"/>

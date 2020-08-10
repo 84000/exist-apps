@@ -17,6 +17,10 @@
         <text xml:lang="en">Search the Website</text>
         <text xml:lang="zh">網站檢索</text>
     </translation>
+    <translation id="label-bookmarks">
+        <text xml:lang="en">Bookmarks</text>
+        <text xml:lang="zh">Bookmarks</text>
+    </translation>
     <navigation xml:lang="en">
         <item class="home" url="https://84000.co/">
             <label key="label-home">Home</label>
@@ -153,7 +157,6 @@
                 <label key="label-subscribe">Subscribe to our Newsletter</label>
             </item>
         </item>
-        <label key="label-bookmarks" id="label-bookmarks">Bookmarks</label>
     </navigation>
     <navigation xml:lang="zh">
         <item class="home" url="https://84000.co/ch">
@@ -291,7 +294,6 @@
                 <label key="label-subscribe">訂閱電子通訊</label>
             </item>
         </item>
-        <label key="label-bookmarks" id="label-bookmarks">Bookmarks</label>
     </navigation>
     <social xml:lang="en">
         <label key="label-social">Follow our work:</label>

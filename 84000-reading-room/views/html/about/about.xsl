@@ -14,7 +14,7 @@
         
         <xsl:variable name="title-band">
             <m:title-band>
-                <xsl:copy-of select="$eft-header/m:navigation[@xml:lang eq $lang]/m:item/m:item[@url eq $active-url or m:item[@url eq $active-url]] | $eft-header/m:navigation[@xml:lang eq $lang]/m:label"/>
+                <xsl:copy-of select="$eft-header/m:navigation[@xml:lang eq $lang]/m:item/m:item[@url eq $active-url or m:item[@url eq $active-url]] | $eft-header/m:translation"/>
             </m:title-band>
         </xsl:variable>
         

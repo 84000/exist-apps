@@ -16,14 +16,11 @@
                         <div>
                             <ul class="breadcrumb">
                                 <li>
-                                    <a>
-                                        <xsl:attribute name="href" select="common:internal-link('/section/lobby.html', (), '', /m:response/@lang)"/>
-                                        <xsl:value-of select="'The Collection'"/>
-                                    </a>
+                                    <xsl:value-of select="'Search results'"/>
                                 </li>
                                 <li>
                                     <h1>
-                                        <xsl:value-of select="'Search'"/>
+                                        <xsl:value-of select="m:search/m:request/text()"/>
                                     </h1>
                                 </li>
                             </ul>
