@@ -341,9 +341,9 @@
         </item>
     </sharing>
     <shopping xml:lang="en">
-        <item url="http://www.amazon.com/?_encoding=UTF8&amp;camp=1789&amp;creative=390957&amp;linkCode=ur2&amp;tag=translate84000-20">
-            <label key="label-shopping-amazon">Donate while you shop</label>
-            <description key="description-shopping-amazon">Accessing Amazon via the link above will donate up to 15% of the amount of your purchases to 84000, at no additional cost to you.</description>
+        <item url="https://smile.amazon.com/?_encoding=UTF8&amp;camp=1789&amp;creative=390957&amp;linkCode=ur2&amp;tag=translate84000-20">
+            <label key="label-shopping-amazon">Support Us While You Shop</label>
+            <description key="description-shopping-amazon">Use this smile.amazon.com link to select "84000" as your charity of choice, and shop Amazon's same selection of products effortlessly redirecting up to 10% the value of your purchases to translating a page of the sūtras.</description>
             <img>/imgs/Amazon_icon.png</img>
         </item>
     </shopping>
