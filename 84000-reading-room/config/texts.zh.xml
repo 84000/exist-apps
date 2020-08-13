@@ -4,10 +4,10 @@
     <item key="glossary.term-empty-sa-ltn">—</item>
     <item key="glossary.term-empty-bo-ltn">—</item>
     
-    <item key="translation-status-group.published.label">Published</item>
-    <item key="translation-status-group.translated.label">Translated</item>
-    <item key="translation-status-group.in-translation.label">In translation</item>
-    <item key="translation-status-group.remaining.label">Not started</item>
+    <item key="translation-status-group.published.label">已發布</item>
+    <item key="translation-status-group.translated.label">已翻譯</item>
+    <item key="translation-status-group.in-translation.label">翻譯中</item>
+    <item key="translation-status-group.remaining.label">未翻譯</item>
     
     <item key="cumulative-glossary.disclaimer">Please bear in mind that we are constantly revising the glossaries and we will continue to
         add more glossaries as we publish translations. To keep up to date please regularly download the latest version from the website. </item>
@@ -69,7 +69,7 @@
     
     <!-- Progress -->
     <item key="about.progress.header-img-src">#feSiteUrl/imgs/about-headers/progress.jpg</item>
-    <item key="about.progress.page-quote">「佛法如何助益你都應當有親身體會。若能持此心念, 透過佛典翻譯向外開展這份善念, 必將能讓世界有所改變。」</item>
+    <item key="about.progress.page-quote">「佛法是如何助益你，你應該有親身體會。既然如此, 如果你發心以你的翻譯去影響外界，這必定會改變世界。其實已經在改變世界了。」</item>
     <item key="about.progress.page-quote-author">吉噶康楚仁波切</item>
     <item key="about.progress.page-intro">【八萬四千．佛典傳譯】百年願景的第一部份，是將《甘珠爾》的70,000頁翻譯成英文，之後再開始《丹珠爾》161,800頁的翻譯工作。翻譯作品列表</item>
     <item key="about.progress.kangyur-summary-heading">25年將《甘珠爾》翻譯完成目標之進度</item>
@@ -98,9 +98,8 @@
     <item key="about.impact.page-quote">「《甘珠爾》與《丹珠爾》並不僅是一個傳統、一個文明時代或一個國家的遺產,而是整個世界的珍貴遺產。」</item>
     <item key="about.impact.page-quote-author">祖古貝馬望買仁波切</item>
     <item key="about.impact.page-introduction">
-        <p>【八萬四千．佛典傳譯】的兩項主要任務分別是：<strong>佛經翻譯</strong>以及<strong>全球流通</strong>。</p>
-        <p>除了翻譯佛陀言教之外，我們需要建立與維護一個易於使用、技術穩定的公眾平台（即<a href="#commsSiteUrl">84000[crr]</a>），俾使人人都能輕易地接觸到這些珍貴法教。</p>
-        <p>以下的數字是我們共同創造的全球影響力。請您<a href="#commsSiteUrl/ch-download-dana">繼續護持</a>84000，幫助我們將佛陀的言教流通全世界。</p>
+        <p>經藏是佛陀教法的根本。將藏文大藏經完整地翻譯成英文，將改變現代社會研讀、參考及修行佛法的形式，讓更多人有機會接觸佛陀浩瀚的智慧。</p>
+        <p>84000計畫於2035年完成《甘珠爾》的翻譯與線上發布。這是自公元900年在藏地的大型譯經計畫後，世界的首項大型譯經計畫。</p>
     </item>
     <item key="about.impact.visitors-per-week-stat">
         <div class="heading">每週瀏覽次數</div>
@@ -251,7 +250,7 @@
     <item key="about.sponsor-a-sutra.reserved-label">已預留</item>
     <item key="about.sponsor-a-sutra.sponsor-part-label">贊助一部分</item>
     <item key="about.sponsor-a-sutra.sponsor-whole-label">贊助整部經典</item>
-    <item key="about.sponsor-a-sutra.no-texts-of-type">目前</item>
+    <item key="about.sponsor-a-sutra.no-texts-of-type">此類型經文目前不供贊助</item>
     <item key="about.sponsor-a-sutra.footer">
         <p>想了解更多詳情，請與<span class="underline">84000</span>執行長黃淨蕊聯繫: <a href="mailto:jingrui@84000.co">jingrui@84000.co</a>
         </p>
@@ -260,7 +259,9 @@
     <!-- Progress panel widget -->
     <item key="widget.progress-panel.support-label">護持【八萬四千•佛典傳譯】</item>
     <item key="widget.progress-panel.support-description">
-        <p>我們在108位創始贊助人和數千位捐助者的幫助下，持續資助佛典的翻譯。共七萬頁的《甘珠爾》經文，仍需要您的發心贊助，請加入我們的行列。</p>
+        <p>
+            <p>我們在<a href="#readingRoomSiteUrl/about/sponsors.html?lang=zh">108 founding sponsors</a> 108位創始贊助人和數千位捐助者的幫助下，持續資助佛典的翻譯。共七萬頁的《甘珠爾》經文，仍需要您的發心贊助，請加入我們的行列。</p>
+        </p>
     </item>
     <!--<item key="widget.progress-panel.kangyur-count-before-label">《甘珠爾》總頁數</item>
     <item key="widget.progress-panel.translation-count-before-label">翻譯中頁數</item>
@@ -283,7 +284,8 @@
     <item key="widget.download-dana.widget-title">隨喜贊助</item>
     <item key="widget.download-dana.icon-label">您正在下載…</item>
     <item key="widget.download-dana.dana-description">
-        <p>本部經典由【八萬四千 • 佛典傳譯】免費出版流通。如若您因此心生喜悅想隨喜贊助，請點擊「隨喜贊助」，為佛法傳世點燃無盡藏法燈，延續無盡藏傳承！</p>
+        <p>本部經典由【八萬四千 • 佛典傳譯】免費出版流通。</p>
+        <p>如若您因此心生喜悅想隨喜贊助，請點擊「隨喜贊助」，為佛法傳世點燃無盡藏法燈，延續無盡藏傳承！</p>
     </item>
     <item key="widget.download-dana.donate-form-link">/ch-download-dana</item>
     <item key="widget.download-dana.donate-form-link-label">點擊此線上捐款</item>

@@ -15,7 +15,7 @@ declare variable $contributors:person-prefixes := '(Dr\.|Prof\.|Ven\.)';
 declare variable $contributors:team-prefixes := '(Dr\.|The|Prof\.)';
 declare variable $contributors:institution-prefixes := '(The|University\sof)';
 
-declare function contributors:persons($include-acknowledgements as xs:boolean) as element(m:contributor-persons) {
+declare function contributors:persons($include-acknowledgements as xs:boolean, $count-contributions as xs:boolean) as element(m:contributor-persons) {
     
     let $contributors := 
         for $contributor in $contributors:contributors/m:contributors/m:person
@@ -27,44 +27,58 @@ declare function contributors:persons($include-acknowledgements as xs:boolean) a
         {
             for $contributor in $contributors
             return
-                contributors:person($contributor/@xml:id, $include-acknowledgements)
+                contributors:person($contributor/@xml:id, $include-acknowledgements, $count-contributions)
         }
         </contributor-persons>
 };
 
-declare function contributors:person($id as xs:string, $include-acknowledgements as xs:boolean) as element(m:person) {
+declare function contributors:person($id as xs:string, $include-acknowledgements as xs:boolean, $count-contributions as xs:boolean) as element(m:person) {
     
     let $contributor := $contributors:contributors/m:contributors/m:person[@xml:id eq $id]
-    
+    let $contributor-uri := concat('contributors.xml#', $contributor/@xml:id)
+
     return
         element { node-name($contributor) } {
             $contributor/@*,
             attribute start-letter { upper-case(substring(normalize-space(replace($contributor/m:label, $contributors:person-prefixes, '')), 1, 1)) },
+            if($count-contributions) then
+                let $contributions :=
+                    $contributors:texts//tei:TEI[
+                        descendant::tei:author[@ref eq $contributor-uri][parent::tei:titleStmt]
+                        | descendant::tei:editor[@ref eq $contributor-uri][parent::tei:titleStmt]
+                        | descendant::tei:consultant[@ref eq $contributor-uri][parent::tei:titleStmt]
+                    ]
+                return
+                    attribute count-contributions { count($contributions) }
+            else ()
+            ,
             $contributor/*,
             element sort-name { replace($contributor/m:label, concat($contributors:person-prefixes, '\s(.*)'), '$2, $1') },
             if($include-acknowledgements) then
-                contributors:acknowledgements(concat('contributors.xml#', $contributor/@xml:id))
+                contributors:acknowledgements($contributor-uri)
             else
                 ()
         }
 };
 
-declare function contributors:acknowledgements($uri as xs:string) as element(m:acknowledgement)* {
+declare function contributors:acknowledgements($contributor-uri as xs:string) as element(m:acknowledgement)* {
     
+    (: Loop through texts to which this person has contributed :)
     for $tei in 
         $contributors:texts//tei:TEI[
-            tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:author/@ref = $uri
-            or tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:editor/@ref = $uri
-            or tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:consultant/@ref = $uri
+            descendant::tei:author[@ref eq $contributor-uri][parent::tei:titleStmt]
+            | descendant::tei:editor[@ref eq $contributor-uri][parent::tei:titleStmt]
+            | descendant::tei:consultant[@ref eq $contributor-uri][parent::tei:titleStmt]
         ]
         
+        (: Get their expression in this text :)
         let $translation-contributor := (
-            $tei//tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:author[@ref eq $uri]
-            | $tei//tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:editor[@ref eq $uri]
-            | $tei//tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:consultant[@ref eq $uri]
+            $tei//tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:author[@ref eq $contributor-uri]
+            | $tei//tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:editor[@ref eq $contributor-uri]
+            | $tei//tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:consultant[@ref eq $contributor-uri]
         )[1]
         
-        let $id := substring-after($uri, 'contributors.xml#')
+        let $id := substring-after($contributor-uri, 'contributors.xml#')
         
         let $contributor-name := 
             if($translation-contributor/text()) then
@@ -79,30 +93,29 @@ declare function contributors:acknowledgements($uri as xs:string) as element(m:a
         let $marked-paragraphs := common:mark-nodes($acknowledgment/tei:p, $mark-contributor-name, 'phrase')
         
     return
-        contributors:acknowledgement($tei, $marked-paragraphs[exist:match])
+        local:acknowledgement($tei, $marked-paragraphs[exist:match], $translation-contributor)
 };
 
-declare function contributors:acknowledgement($tei as element(tei:TEI), $paragraphs as element()*) as element(m:acknowledgement)* {
+declare function local:acknowledgement($tei as element(tei:TEI), $paragraphs as element()*, $contribution as element()?) as element(m:acknowledgement)* {
 
-    let $title := tei-content:title($tei)
-    let $translation-id := tei-content:id($tei)
-    let $translation-status := tei-content:translation-status($tei)
-    let $translation-status-group := tei-content:translation-status-group($tei)
-    
-    for $toh-key in $tei//tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl/@key
-        let $toh := translation:toh($tei, $toh-key)
-    return
-        element m:acknowledgement {
-            attribute translation-id { $translation-id },
-            attribute translation-status {$translation-status},
-            attribute translation-status-group { $translation-status-group },
-            element m:title { text { $title } },
-            $toh,
-            element tei:div {
-                attribute type {'acknowledgment'},
-                $paragraphs
-            }
+    element m:acknowledgement {
+        attribute translation-id { tei-content:id($tei) },
+        attribute translation-status { tei-content:translation-status($tei) },
+        attribute translation-status-group { tei-content:translation-status-group($tei) },
+        element m:title { text { tei-content:title($tei) } },
+        translation:toh($tei, ''),
+        element m:contribution {
+            attribute node-name { local-name($contribution) },
+            $contribution/@role,
+            $contribution/@ref,
+            normalize-space($contribution/text())
+        },
+        element tei:div {
+            attribute type {'acknowledgment'},
+            $paragraphs
         }
+    }
+    
 };
 
 declare function contributors:teams($include-hidden as xs:boolean, $include-acknowledgements as xs:boolean, $include-persons as xs:boolean) as element(m:contributor-teams){
@@ -143,7 +156,7 @@ declare function contributors:team($id as xs:string, $include-acknowledgements a
                 for $tei in $contributors:texts//tei:TEI[tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:author[@ref eq $team-id]]
                     let $acknowledgement := $tei/tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:*[@ref eq concat('contributors.xml#', $team/@xml:id)]
                 return
-                    contributors:acknowledgement($tei, element tei:p { $acknowledgement })
+                    local:acknowledgement($tei, element tei:p { $acknowledgement }, ())
             else
                 (),
             if($include-persons) then
@@ -266,7 +279,7 @@ declare function contributors:institution-types($include-stats as xs:boolean) as
         }
 };
 
-declare function contributors:next-id() as xs:integer {
+declare function local:next-id() as xs:integer {
     max($contributors:contributors/m:contributors/m:person/@xml:id ! substring-after(., 'person-') ! common:integer(.)) + 1
 };
 
@@ -276,7 +289,7 @@ declare function contributors:update-person($person as element(m:person)?) as xs
         if($person/@xml:id) then
             $person/@xml:id
         else
-            concat('person-', xs:string(contributors:next-id()))
+            concat('person-', xs:string(local:next-id()))
     
     let $request-parameter-names := common:sort-trailing-number-in-string(request:get-parameter-names(), '-')
     
@@ -356,7 +369,7 @@ declare function contributors:update-team($team as element(m:team)?) as xs:strin
         $new-value//@xml:id
 };
 
-declare function contributors:next-institution-id() as xs:integer {
+declare function local:next-institution-id() as xs:integer {
     max($contributors:contributors/m:contributors/m:institution/@xml:id ! substring-after(., 'institution-') ! common:integer(.)) + 1
 };
 
@@ -366,7 +379,7 @@ declare function contributors:update-institution($institution as element(m:insti
         if($institution/@xml:id) then
             $institution/@xml:id
         else
-            concat('institution-', xs:string(contributors:next-institution-id()))
+            concat('institution-', xs:string(local:next-institution-id()))
     
     let $new-value := 
         <institution 

@@ -27,6 +27,6 @@ return
             contributors:institutions(false()),
             contributors:regions(false()),
             contributors:institution-types(false()),
-            contributors:persons(false())
+            contributors:persons(false(), false())
         )
     )

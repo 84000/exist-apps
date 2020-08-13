@@ -15,7 +15,7 @@
                     <div class="well well-sm center-vertical full-width bottom-margin">
                         
                         <span class="small">
-                            <xsl:value-of select="concat('Listing ', fn:format-number(xs:integer(count(m:contributor-persons/m:person)),'#,##0'), ' translators')"/>
+                            <xsl:value-of select="concat('Listing ', fn:format-number(xs:integer(count(m:contributor-persons/m:person)),'#,##0'), ' contributors')"/>
                         </span>
                         
                         <div>
@@ -35,7 +35,7 @@
                                 
                                 <a class="btn btn-primary btn-sml">
                                     <xsl:attribute name="href" select="'/edit-translator.html'"/>
-                                    <xsl:value-of select="'Add a translator'"/>
+                                    <xsl:value-of select="'Add a contributor'"/>
                                 </a>
                                 
                             </form>
@@ -58,13 +58,28 @@
                                     
                                     <div class="row">
                                         <div class="col-sm-5">
-                                            <a>
-                                                <xsl:attribute name="href" select="concat('/edit-translator.html?id=', $person-id)"/>
-                                                <xsl:value-of select="m:sort-name"/>
-                                            </a>
-                                            <span class="small text-muted">
-                                                <xsl:value-of select="concat(' / ', $person-id)"/>
-                                            </span>
+                                            
+                                            <div class="center-vertical full-width">
+                                                <span>
+                                                    <a>
+                                                        <xsl:attribute name="href" select="concat('/edit-translator.html?id=', $person-id)"/>
+                                                        <xsl:value-of select="m:sort-name"/>
+                                                    </a>
+                                                    <span class="small text-muted">
+                                                        <xsl:value-of select="concat(' / ', $person-id)"/>
+                                                    </span>
+                                                </span>
+                                                <span class="text-right">
+                                                    <xsl:if test="@count-contributions gt '0'">
+                                                        <xsl:value-of select="' '"/>
+                                                        <span class="badge badge-notification">
+                                                            <xsl:value-of select="@count-contributions"/>
+                                                        </span>
+                                                    </xsl:if>
+                                                </span>
+                                                
+                                            </div>
+                                            
                                             <ul class="list-inline inline-dots small">
                                                 <xsl:if test="m:affiliation[@type eq 'academic']">
                                                     <li class="text-success">

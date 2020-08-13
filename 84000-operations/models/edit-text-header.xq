@@ -119,7 +119,7 @@ return
                 translation-status:texts($text-id, true())
             },
             tei-content:text-statuses-selected(tei-content:translation-status($tei)),
-            contributors:persons(false()),
+            contributors:persons(false(), false()),
             contributors:teams(true(), false(), false()),
             $tei-content:title-types,
             doc('../config/contributor-types.xml'),

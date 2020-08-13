@@ -443,6 +443,7 @@
                                     <xsl:variable name="status" select="/m:response/m:text-statuses/m:status[@status-id eq $status-id][1]"/>
                                     <xsl:variable name="translation-status" select="/m:response/m:translation-status/m:text[@text-id eq $text-id][1]"/>
                                     
+                                    <!-- Status grouping -->
                                     <xsl:if test="/m:response/m:texts[@sort eq 'status'] and not($status-id eq $preceding-status-id)">
                                         <tr class="header">
                                             <td colspan="6">
@@ -452,8 +453,14 @@
                                         </tr>
                                     </xsl:if>
                                     
+                                    <!-- Main row - About the text -->
                                     <tr>
                                         <td rowspan="2">
+                                            
+                                            <xsl:if test="m:sponsors/tei:div[@type eq 'acknowledgment']/tei:p">
+                                                <xsl:attribute name="rowspan" select="'3'"/>
+                                            </xsl:if>
+                                            
                                             <xsl:choose>
                                                 <xsl:when test="/m:response/m:texts/@deduplicate eq 'text' and m:toh/m:duplicates">
                                                     <xsl:value-of select="m:toh/m:full/text()"/>
@@ -579,6 +586,33 @@
                                         </td>
                                     </tr>
                                     
+                                    <!-- Acknowlegment -->
+                                    <xsl:if test="m:sponsors/tei:div[@type eq 'acknowledgment']/tei:p">
+                                        <tr class="sub">
+                                            <xsl:if test="not(/m:response/m:texts[@sort eq 'status'])">
+                                                <td/>
+                                            </xsl:if>
+                                            <td colspan="5">
+                                                <div class="pull-quote green-quote no-bottom-margin small">
+                                                    <xsl:if test="m:sponsors/tei:div[@type eq 'acknowledgment']/@generated">
+                                                        <xsl:attribute name="class" select="'pull-quote orange-quote no-bottom-margin small'"/>
+                                                    </xsl:if>
+                                                    
+                                                    <div class="title">
+                                                        <xsl:value-of select="'Acknowledgment'"/>
+                                                        <xsl:if test="m:sponsors/tei:div[@type eq 'acknowledgment']/@generated">
+                                                            <xsl:value-of select="' (auto-generated)'"/>
+                                                        </xsl:if>
+                                                    </div>
+                                                    
+                                                    <xsl:apply-templates select="m:sponsors/tei:div[@type eq 'acknowledgment']/tei:p"/>
+                                                    
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </xsl:if>
+                                    
+                                    <!-- Notes and statuses -->
                                     <tr class="sub">
                                         
                                         <xsl:if test="not(/m:response/m:texts[@sort eq 'status'])">
@@ -696,35 +730,6 @@
                                             
                                         </td>
                                     </tr>
-                                    
-                                    <xsl:if test="m:sponsors/tei:div[@type eq 'acknowledgment']/tei:p">
-                                        <tr class="sub">
-                                            <td colspan="2">
-                                                <xsl:if test="/m:response/m:texts[@sort eq 'status']">
-                                                    <xsl:attribute name="colspan" select="'1'"/>
-                                                </xsl:if>
-                                            </td>
-                                            <td colspan="5">
-                                                <div>
-                                                    <xsl:choose>
-                                                        <xsl:when test="m:sponsors/tei:div[@type eq 'acknowledgment']/@generated">
-                                                            <xsl:attribute name="class" select="'pull-quote orange-quote no-bottom-margin'"/>
-                                                            <div class="small text-warning">
-                                                                <xsl:value-of select="'Auto-generated acknowledgment:'"/>
-                                                            </div>
-                                                        </xsl:when>
-                                                        <xsl:otherwise>
-                                                            <xsl:attribute name="class" select="'pull-quote green-quote no-bottom-margin'"/>
-                                                            <div class="small">
-                                                                <xsl:value-of select="'Acknowledgment:'"/>
-                                                            </div>
-                                                        </xsl:otherwise>
-                                                    </xsl:choose>
-                                                    <xsl:apply-templates select="m:sponsors/tei:div[@type eq 'acknowledgment']/tei:p"/>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    </xsl:if>
                                     
                                 </xsl:for-each>
                             </tbody>

@@ -19,7 +19,7 @@
     </translation>
     <translation id="label-bookmarks">
         <text xml:lang="en">Bookmarks</text>
-        <text xml:lang="zh">Bookmarks</text>
+        <text xml:lang="zh">書籤</text>
     </translation>
     <navigation xml:lang="en">
         <item class="home" url="https://84000.co/">
@@ -210,7 +210,7 @@
                 <label key="label-translator-training">譯者培訓</label>
             </item>
             <item url="https://84000.co/resources/translator-resources">
-                <label key="label-translator-resources">Translator Resources</label>
+                <label key="label-translator-resources">譯者資源</label>
             </item>
             <item url="https://84000.co/resources/quotes">
                 <label key="label-quotes">經典語錄</label>

@@ -24,7 +24,7 @@ return
         'operations', 
         (
             <request xmlns="http://read.84000.co/ns/1.0" include-acknowledgements="{ $include-acknowledgements }"/>,
-            contributors:persons($include-acknowledgements),
+            contributors:persons($include-acknowledgements, true()),
             contributors:institutions(false()),
             contributors:teams(true(), false(), false())
         )

@@ -16,13 +16,13 @@ let $new-id :=
     else
         ''
 
-let $translator := 
+let $contributor := 
     if($new-id gt '') then
-        contributors:person($new-id, true())
+        contributors:person($new-id, true(), false())
     else if($post-id gt '') then
-        contributors:person($post-id, true())
+        contributors:person($post-id, true(), false())
     else if($request-id gt '') then
-        contributors:person($request-id, true())
+        contributors:person($request-id, true(), false())
     else
         ()
 
@@ -33,13 +33,14 @@ return
         (
             <request 
                 xmlns="http://read.84000.co/ns/1.0" 
-                id="{ $translator/@xml:id }"/>,
+                id="{ $contributor/@xml:id }"/>,
             <updates
                 xmlns="http://read.84000.co/ns/1.0" >
                 { if($new-id) then <updated node="translator" update="insert"/> else () }
             </updates>,
-            $translator,
+            $contributor,
             contributors:teams(true(), false(), false()),
-            contributors:institutions(false())
+            contributors:institutions(false()),
+            doc('../config/contributor-types.xml')
         )
     )

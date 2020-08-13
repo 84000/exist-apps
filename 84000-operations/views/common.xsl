@@ -137,7 +137,7 @@
                     <xsl:attribute name="class" select="'active'"/>
                 </xsl:if>
                 <a href="translators.html">
-                    <xsl:value-of select="'Translators'"/>
+                    <xsl:value-of select="'Contributors'"/>
                 </a>
             </li>
             <li role="presentation">

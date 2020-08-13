@@ -1358,7 +1358,9 @@
                             <xsl:attribute name="data-match-height" select="concat('group-', $group)"/>
                         </xsl:if>
                         <div class="pull-quote">
-                            <div class="title top-vertical full-width">
+                            
+                            <!-- Text title -->
+                            <div class="top-vertical full-width">
                                 <a>
                                     <xsl:attribute name="href" select="replace($link-href, '@translation-id', @translation-id)"/>
                                     <xsl:value-of select="m:toh/m:full"/> / <xsl:value-of select="m:title"/>
@@ -1368,7 +1370,30 @@
                                     <xsl:copy-of select="common:translation-status(@translation-status-group)"/>
                                 </span>
                             </div>
-                            <xsl:apply-templates select="tei:div[@type eq 'acknowledgment']/*"/>
+                            
+                            <div class="small">
+                                
+                                <!-- Contribution -->
+                                <xsl:variable name="contribution" select="m:contribution"/>
+                                <xsl:if test="$contribution">
+                                    <div class="text-warning">
+                                        <xsl:value-of select="/m:response/m:contributor-types/m:contributor-type[@node-name eq $contribution/@node-name][@role eq $contribution/@role]/m:label"/>
+                                    </div>
+                                </xsl:if>
+                                
+                                <!-- Acknowledgment statement -->
+                                <xsl:choose>
+                                    <xsl:when test="tei:div[@type eq 'acknowledgment']/*">
+                                        <xsl:apply-templates select="tei:div[@type eq 'acknowledgment']/*"/>
+                                    </xsl:when>
+                                    <xsl:otherwise>
+                                        <p class="text-muted italic">
+                                            <xsl:value-of select="'Not explicitly mentioned in the acknowledgment statement'"/>
+                                        </p>
+                                    </xsl:otherwise>
+                                </xsl:choose>
+                                
+                            </div>
                         </div>
                     </div>
                 </xsl:for-each>
