@@ -31,7 +31,7 @@ declare function search:search($request as xs:string, $resource-id as xs:string,
         if($resource-id gt '') then
             tei-content:tei($resource-id, 'translation') (: Note, this needs fixing when we search section data!!! :)
         else
-            collection($common:tei-path)//tei:TEI
+            collection($common:translations-path)//tei:TEI
     
     let $published := $all[tei:teiHeader/tei:fileDesc/tei:publicationStmt/@status = $tei-content:published-status-ids]
     
@@ -77,7 +77,7 @@ declare function search:search($request as xs:string, $resource-id as xs:string,
                 
             }
             </result-group>
-        
+    
     return 
         <search xmlns="http://read.84000.co/ns/1.0" >
             <request>{ $request }</request>
