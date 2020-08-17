@@ -83,7 +83,7 @@
             <label key="label-about">About</label>
             <item url="#work">
                 <label key="label-our-work">Our Work</label>
-                <description key="description-our-work">With a strong editorial team, we award text-specific grants to translation teams around the world, working collaboratively to ensure accurate and credible publications of Classical Tibetan Buddhist texts that will form a cohesive Canon upon completion. We integrate new publication technologies in order to deliver these 231,800 pages of the wisdom to you, in English, online, for free.</description>
+                <description key="description-our-work">With a strong editorial team, we award text-specific grants to translation teams around the world, working collaboratively to ensure accurate and credible translations of Classical Tibetan Buddhist texts that will form a cohesive Canon upon completion. We integrate new publication technologies in order to deliver these 231,800 pages of the wisdom to you, in English, online, for free.</description>
                 <item url="https://84000.co/about/what-we-do">
                     <label key="label-what-we-do">What We Do</label>
                 </item>
@@ -102,7 +102,7 @@
             </item>
             <item url="#impact">
                 <label key="label-impact-group">Our Impact</label>
-                <description key="description-impact">As of 2010, only 5% of the Tibetan Buddhist Canon has been translated out of Classical Tibetan - a language facing a serious threat to its survival. In ten years, we’ve raised that number to almost 10%, not only making deeper international academic inquiry possible, but as our readership grows around the world, we put wisdom at the fingertips of readers like you.</description>
+                <description key="description-impact">As of 2010, only 5% of the Tibetan Buddhist Canon had been translated out of Classical Tibetan—a language facing a serious threat to its survival. In ten years, we have published or have in-translation over 36,000 pages of the Kangyur, not only making deeper international academic inquiry possible, but as our readership grows around the world, we put the wisdom that the Canon contains at the fingertips of readers like you.</description>
                 <item url="https://read.84000.co/about/progress.html">
                     <label key="label-progress">Translation Progress</label>
                 </item>
@@ -118,7 +118,7 @@
             </item>
             <item url="#people">
                 <label key="label-people">Our People</label>
-                <description key="description-people">Our work relies upon the dedicated and collaborative effort of scholars, professionals, volunteers, advisors, and sponsors around the world. We work remotely and online, across timezones and continents, and we greatly value each and every member of our team. This virtual teamwork has been a major source of both pride and humility as we produce credible and accurate translations and make them available to you online, for free.</description>
+                <description key="description-people">Our work relies upon the dedicated and collaborative effort of scholars, professionals, volunteers, advisors, and sponsors around the world. We work remotely and online, across timezones and continents, and we greatly value each and every member of our team. This virtual teamwork has been a major source of both pride and humility as we produce accurate and credible translations and make them available to you online, for free.</description>
                 <item url="https://84000.co/about/team">
                     <label key="label-team">84000 Team</label>
                 </item>

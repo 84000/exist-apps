@@ -600,7 +600,8 @@
                                 </div>
                                 <div>
                                     <div class="col-sm-6">
-                                        <p class="bottom-margin">
+                                        
+                                        <div>
                                             <a target="reading-room">
                                                 <xsl:choose>
                                                     <xsl:when test="m:match/@type eq 'glossary-term'">
@@ -612,27 +613,35 @@
                                                 </xsl:choose>
                                                 <xsl:apply-templates select="m:tei/m:titles/m:title[@xml:lang eq 'en']"/>
                                             </a>
-                                            <br/>
-                                            <span class="translators text-muted small">
-                                                <xsl:value-of select="'Translated by '"/>
-                                                <xsl:variable name="author-ids" select="m:tei/m:translation/m:contributors/m:author[@role eq 'translatorEng']/@ref ! substring-after(., 'contributors.xml#')"/>
-                                                <xsl:value-of select="string-join(/m:response/m:contributor-persons/m:person[@xml:id = $author-ids]/m:label, ' · ')"/>
-                                            </span>
-                                            <xsl:for-each select="m:tei/m:bibl">
-                                                <br/>
-                                                <span class="ancestors text-muted small">
-                                                    <xsl:value-of select="'in '"/>
+                                        </div>
+                                        
+                                        <div class="translators text-muted small">
+                                            <xsl:value-of select="'Translated by '"/>
+                                            <xsl:variable name="author-ids" select="m:tei/m:translation/m:contributors/m:author[@role eq 'translatorEng']/@ref ! substring-after(., 'contributors.xml#')"/>
+                                            <xsl:value-of select="string-join(/m:response/m:contributor-persons/m:person[@xml:id = $author-ids]/m:label, ' · ')"/>
+                                        </div>
+                                        
+                                        <xsl:for-each select="m:tei/m:bibl">
+                                            <div class="ancestors text-muted small">
+                                                <xsl:value-of select="'in '"/>
+                                                <ul class="breadcrumb">
                                                     <xsl:for-each select="m:parent | m:parent//m:parent">
                                                         <xsl:sort select="@nesting" order="descending"/>
-                                                        <xsl:value-of select="m:titles/m:title[@xml:lang='en']/text()"/>
-                                                        <xsl:value-of select="' / '"/>
+                                                        <li>
+                                                            <xsl:value-of select="m:titles/m:title[@xml:lang='en']"/>
+                                                        </li>
                                                     </xsl:for-each>
                                                     <xsl:if test="m:toh/m:full">
-                                                        <xsl:value-of select="m:toh/m:full"/>
+                                                        <li>
+                                                            <xsl:value-of select="m:toh/m:full"/>
+                                                        </li>
+                                                        
                                                     </xsl:if>
-                                                </span>
-                                            </xsl:for-each>
-                                        </p>
+                                                </ul>
+                                                
+                                            </div>
+                                        </xsl:for-each>
+                                        
                                     </div>
                                 </div>
                                 
