@@ -248,10 +248,6 @@ declare function translation-status:next-task-id($text-id as xs:string, $positio
         concat($text-id, '-task-', $next-id)
 };
 
-declare function translation-status:is-current-version($tei-version-str as xs:string?, $cached-version-str as xs:string?) as xs:boolean {
-    (compare($tei-version-str, $cached-version-str) eq 0)
-};
-
 declare function translation-status:word-count($tei as element(tei:TEI)) as xs:integer {
     local:translation-status-value($tei, 'word-count')
 };
@@ -266,7 +262,7 @@ declare function local:translation-status-value($tei as element(tei:TEI), $name 
     let $tei-version-str := translation:version-str($tei)
     let $translation-status := translation-status:texts($text-id)
     let $cached-version-str := if($translation-status) then $translation-status/@version else ''
-    let $is-current-version := translation-status:is-current-version($tei-version-str, $cached-version-str)
+    let $is-current-version := translation:is-current-version($tei-version-str, $cached-version-str)
     
     let $cached-count := 
         if($translation-status) then 
@@ -305,7 +301,7 @@ declare function translation-status:update($text-id as xs:string) as element()? 
     let $cached-glossary-count := if($existing-value) then $existing-value/@glossary-count else ''
     
     let $word-count := 
-        if(translation-status:is-current-version($tei-version-str, $cached-version-str) and functx:is-a-number($cached-word-count)) then
+        if(translation:is-current-version($tei-version-str, $cached-version-str) and functx:is-a-number($cached-word-count)) then
            xs:integer($cached-word-count)
         else if(tei-content:translation-status-group($tei) eq 'published') then
             translation:word-count($tei)
@@ -313,7 +309,7 @@ declare function translation-status:update($text-id as xs:string) as element()? 
            0
    
     let $glossary-count := 
-        if(translation-status:is-current-version($tei-version-str, $cached-version-str) and functx:is-a-number($cached-glossary-count)) then
+        if(translation:is-current-version($tei-version-str, $cached-version-str) and functx:is-a-number($cached-glossary-count)) then
            xs:integer($cached-glossary-count)
         else if(tei-content:translation-status-group($tei) eq 'published') then
             translation:glossary-count($tei)
@@ -457,11 +453,12 @@ declare function translation-status:update($text-id as xs:string) as element()? 
             ()
             
     return
-        element { QName('http://read.84000.co/ns/1.0', 'updated') }
-        {
-            $do-update/@*,
-            $new-value
-        }
+        if($do-update) then
+            element { QName('http://read.84000.co/ns/1.0', 'updated') }{
+                $do-update/@*,
+                $new-value
+            }
+        else ()
 };
 
 declare function translation-status:update-submission($text-id as xs:string, $submission-id as xs:string) as element()* {
@@ -489,10 +486,11 @@ declare function translation-status:update-submission($text-id as xs:string, $su
             common:update('update-submission', (), $new-value, $submission, ())
     
     return
-        element { QName('http://read.84000.co/ns/1.0', 'updated') }
-        {
-            attribute update { 'replace' },
-            $new-values
-        }
+        if($do-update) then
+            element { QName('http://read.84000.co/ns/1.0', 'updated') }{
+                attribute update { 'replace' },
+                $new-values
+            }
+        else ()
 };
 

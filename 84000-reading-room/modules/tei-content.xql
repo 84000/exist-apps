@@ -2,8 +2,7 @@ xquery version "3.1";
 
 module namespace tei-content="http://read.84000.co/tei-content";
 
-declare namespace m = "http://read.84000.co/ns/1.0";
-declare namespace o = "http://www.tbrc.org/models/outline";
+declare namespace m="http://read.84000.co/ns/1.0";
 declare namespace tei="http://www.tei-c.org/ns/1.0";
 
 import module namespace functx="http://www.functx.com";
@@ -11,6 +10,8 @@ import module namespace common="http://read.84000.co/common" at "common.xql";
 
 declare variable $tei-content:translations-collection := collection($common:translations-path);
 declare variable $tei-content:sections-collection := collection($common:sections-path);
+declare variable $tei-content:knowledgebase-collection := collection($common:knowledgebase-path);
+
 declare variable $tei-content:text-statuses := 
     <text-statuses xmlns="http://read.84000.co/ns/1.0">
         <status status-id="0" group="not-started">Not started</status>
@@ -66,6 +67,8 @@ declare function tei-content:tei($resource-id as xs:string, $resource-type as xs
             collection(concat($common:data-path, '/archived/', $archive-path))
         else if($resource-type = ('section', 'pseudo-section')) then
             $tei-content:sections-collection
+        else if($resource-type eq 'knowledgebase') then
+            $tei-content:knowledgebase-collection
         else 
             $tei-content:translations-collection
     
@@ -75,10 +78,14 @@ declare function tei-content:tei($resource-id as xs:string, $resource-type as xs
             let $resource-id := lower-case($resource-id)
             return
                 $collection//tei:sourceDesc/tei:bibl[@key eq $resource-id][1]/ancestor::tei:TEI
+        else if($resource-type eq 'knowledgebase') then
+            let $resource-id := lower-case($resource-id)
+            return
+                $collection//tei:publicationStmt/tei:idno[@m:kb-id eq $resource-id][1]/ancestor::tei:TEI
         else
             ()
     
-    return
+    return 
         if(not($tei)) then
             (: Fallback to UT number :)
             let $resource-id := upper-case($resource-id)

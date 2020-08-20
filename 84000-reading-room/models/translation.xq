@@ -26,6 +26,8 @@ let $tei := tei-content:tei($resource-id, 'translation')
 (: Get the source so we can extract the Toh :)
 let $source := tei-content:source($tei, $resource-id)
 
+let $canonical-html := translation:canonical-html($source/@key)
+
 (: Compile all the translation data :)
 let $translation-data :=
     <translation 
@@ -33,7 +35,7 @@ let $translation-data :=
         id="{ tei-content:id($tei) }"
         status="{ tei-content:translation-status($tei) }"
         status-group="{ tei-content:translation-status-group($tei) }"
-        page-url="{ translation:canonical-html($source/@key) }">
+        page-url="{ $canonical-html }">
         {
             translation:titles($tei),
             translation:long-titles($tei),
@@ -101,7 +103,7 @@ return
             (: Calculated strings :)
             <replace-text xmlns="http://read.84000.co/ns/1.0">
                 <value key="#CurrentDateTime">{ format-dateTime(current-dateTime(), '[h].[m01][Pn] on [FNn], [D1o] [MNn] [Y0001]') }</value>
-                <value key="#LinkToSelf">{ translation:canonical-html($source/@key) }</value>
+                <value key="#LinkToSelf">{ $canonical-html }</value>
             </replace-text>,
             (: Include translation data :)
             $translation-data,

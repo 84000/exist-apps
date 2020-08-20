@@ -26,7 +26,7 @@ declare variable $common:data-path := concat('/db/apps', $common:data-collection
 declare variable $common:tei-path := concat($common:data-path, '/tei');
 declare variable $common:translations-path := concat($common:tei-path, '/translations');
 declare variable $common:sections-path := concat($common:tei-path, '/sections');
-(:declare variable $common:outlines-path := concat($common:data-path, '/outlines');:)
+declare variable $common:knowledgebase-path := concat($common:tei-path, '/knowledgebase');
 declare variable $common:import-data-collection := '/84000-import-data';
 declare variable $common:import-data-path := concat('/db/apps', $common:import-data-collection);
 declare variable $common:environment-path := '/db/system/config/db/system/environment.xml';
@@ -613,8 +613,8 @@ declare function common:update($request-parameter as xs:string, $existing-value 
         
         (: Return <updated/> :)
         return
-            element { QName('http://read.84000.co/ns/1.0', 'updated') }
-            {
+            element { QName('http://read.84000.co/ns/1.0', 'updated') } {
+            
                 (: Request parameter :)
                 attribute node { $request-parameter },             
                 

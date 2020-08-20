@@ -340,6 +340,30 @@ return
                     <parameters xmlns="http://exist.sourceforge.net/NS/exist"/>
                 )
         
+        (: Knowledgebase :)
+        else if ($collection-path eq "knowledgebase") then
+            if ($resource-suffix eq 'tei') then
+                local:dispatch("/models/knowledgebase-tei.xq", "",
+                    <parameters xmlns="http://exist.sourceforge.net/NS/exist">
+                        <add-parameter name="resource-id" value="{$resource-id}"/>
+                    </parameters>
+                )
+            else if ($resource-suffix eq 'html') then
+                local:dispatch-html("/models/knowledgebase.xq", "/views/html/knowledgebase.xsl", 
+                    <parameters xmlns="http://exist.sourceforge.net/NS/exist">
+                        <add-parameter name="resource-id" value="{$resource-id}"/>
+                        <add-parameter name="resource-suffix" value="html"/>
+                    </parameters>
+                )
+            else
+                (: return the xml :)
+                local:dispatch("/models/knowledgebase.xq", "",
+                    <parameters xmlns="http://exist.sourceforge.net/NS/exist">
+                        <add-parameter name="resource-id" value="{$resource-id}"/>
+                        <add-parameter name="resource-suffix" value="xml"/>
+                    </parameters>
+                )
+        
         (: Downloads - used on Dist to get Collab files :)
         else if ($resource-id eq "downloads") then
             (: return the xml :)

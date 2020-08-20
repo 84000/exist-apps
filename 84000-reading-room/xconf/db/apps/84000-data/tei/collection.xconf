@@ -9,7 +9,7 @@
         </trigger>
     </triggers>
     
-    <index xmlns:tei="http://www.tei-c.org/ns/1.0">
+    <index xmlns:eft="http://read.84000.co/ns/1.0" xmlns:tei="http://www.tei-c.org/ns/1.0">
         
         <lucene diacritics="no">
             <!-- 
@@ -74,6 +74,10 @@
             
             <create qname="tei:idno">
                 <field name="source-id" match="@source-id" type="xs:string"/>
+            </create>
+            
+            <create qname="tei:idno">
+                <field name="kb-id" match="@eft:kb-id" type="xs:string"/>
             </create>
             
             <create qname="tei:sourceDesc">

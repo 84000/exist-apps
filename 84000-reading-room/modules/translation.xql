@@ -202,16 +202,19 @@ declare function translation:filename($tei as element(tei:TEI), $resource-id as 
 (: Just the version number part of the edition as string :)
 declare function translation:version-number-str($tei as element(tei:TEI)) as xs:string {
     (: Remove all but the numbers and points :)
-    replace($tei/tei:teiHeader/tei:fileDesc/tei:editionStmt/tei:edition/text()[1],'[^0-9\.]','')
+    translation:strip-version-number($tei/tei:teiHeader/tei:fileDesc/tei:editionStmt/tei:edition/text()[1])
+};
+
+declare function translation:strip-version-number($version-str as xs:string?) as xs:string {
+    (: Remove all but the numbers and points :)
+    replace($version-str,'[^0-9\.]','')
 };
 
 (: Just the version number part of the edition as numbers e.g. (1,2,3) :)
-declare function translation:version-number($tei as element(tei:TEI)) as xs:integer* {
-    (: Remove all but the numbers and points :)
-    let $version-number-str := translation:version-number-str($tei)
+declare function translation:version-number($version-number-str as xs:string) as xs:integer* {
     
     (: Split the numbers :)
-    let $version-number-split := tokenize($version-number-str, '\.')
+    let $version-number-split := tokenize(translation:strip-version-number($version-number-str), '\.')
     
     return (
         if(count($version-number-split) gt 0 and functx:is-a-number($version-number-split[1])) then
@@ -231,10 +234,21 @@ declare function translation:version-number($tei as element(tei:TEI)) as xs:inte
     )
 };
 
+(: Compare 2 version number strings - result of strip-version-number() e.g. '0.1.2' :)
+declare function translation:is-current-version($tei-version-number-str as xs:string?, $other-version-number-str as xs:string?) as xs:boolean {
+    
+    let $tei-version-number := translation:version-number($tei-version-number-str)
+    let $other-version-number := translation:version-number($other-version-number-str)
+    
+    return
+        deep-equal($tei-version-number, $other-version-number)
+};
+
 (: Increment specific parts of the version number :)
 declare function translation:version-number-str-increment($tei as element(tei:TEI), $part as xs:string) as xs:string {
     
-    let $version-number := translation:version-number($tei)
+    let $version-number-str := translation:version-number-str($tei)
+    let $version-number := translation:version-number($version-number-str)
     
     return string-join((
         if($part eq 'major') then

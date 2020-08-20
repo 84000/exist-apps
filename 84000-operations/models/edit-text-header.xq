@@ -63,7 +63,7 @@ let $updated :=
 (: If it's a new version :)
 let $tei-version-str := translation:version-str($tei)
 let $commit-version := 
-    if($post-id and $store:conf and not(translation-status:is-current-version($tei-version-str, $current-version-str))) then (
+    if($post-id and $store:conf and not(translation:is-current-version($tei-version-str, $current-version-str))) then (
         
         (: Commit new version to GitHub :)
         deploy:push('data-tei', (), concat($text-id, ' / ', $tei-version-str), tei-content:document-url($tei)),
