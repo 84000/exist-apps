@@ -204,7 +204,7 @@
                     </input>
                     <xsl:for-each select="m:translation/m:toh">
                         <xsl:variable name="toh-key" select="./@key"/>
-                        <xsl:variable name="toh-location" select="/m:response/m:translation/m:location[@key eq $toh-key]"/>
+                        <xsl:variable name="toh-location" select="/m:response/m:translation/m:location[@key eq $toh-key][1]"/>
                         <input type="hidden">
                             <xsl:attribute name="name" select="concat('work-', $toh-key)"/>
                             <xsl:attribute name="value" select="$toh-location/@work"/>
@@ -1351,7 +1351,7 @@
         <xsl:choose>
             <xsl:when test="$acknowledgements">
                 <xsl:for-each select="$acknowledgements">
-                    <xsl:sort select="xs:integer(m:toh/@number)"/>
+                    <xsl:sort select="xs:integer(m:toh/@number[1])"/>
                     <div>
                         <xsl:attribute name="class" select="$css-class"/>
                         <xsl:if test="$group gt ''">

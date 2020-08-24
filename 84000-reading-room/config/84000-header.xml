@@ -219,7 +219,7 @@
         <item class="about" url="#about">
             <label key="label-about">關於我們</label>
             <item url="#work">
-                <label key="label-our-work">我們的傳譯事業</label>
+                <label key="label-our-work">傳譯事業</label>
                 <description key="description-our-work">在專業編輯團隊的帶領下，84000致力於將藏文大藏經的廿三萬一千八百多頁經文翻譯成英文，並結合最新技術於線上出版免費供眾閱覽下載。我們不僅在財務上資助全球各地的佛典翻譯團隊，同時也與各翻譯團隊保持密切的合作關係，以確保這些由古典藏文翻譯成英文的佛典兼具準確度和權威性。</description>
                 <item url="https://84000.co/ch-about/ch-what-we-do">
                     <label key="label-what-we-do">傳譯事業</label>
@@ -238,7 +238,7 @@
                 </item>
             </item>
             <item url="#impact">
-                <label key="label-impact-group">我們的全球響應力</label>
+                <label key="label-impact-group">全球響應力</label>
                 <description key="description-impact">在2010年時， 僅有5%的藏文佛典被翻譯成現代語言，古典藏文的存續可說是岌岌可危。十年後，我們已將數據提升至10%，不僅讓國際佛學研究得以更深更廣，亦讓佛陀的智慧法語無遠弗屆的傳送到讀者的指尖。</description>
                 <item url="https://read.84000.co/about/progress.html?lang=zh">
                     <label key="label-progress">翻譯進度</label>
