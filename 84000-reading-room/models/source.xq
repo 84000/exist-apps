@@ -67,6 +67,7 @@ return
                 page="{ $page }"/>,
             
             if($ref-sort-index gt 0) then (
+            
                 (: Get a page :)
                 source:etext-page($tei-location, $ref-sort-index, true(), $highlight),
                 

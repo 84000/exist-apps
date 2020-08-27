@@ -712,37 +712,37 @@ declare function translation:folio-refs-sorted($tei as element(tei:TEI), $resour
     :)
     
     (: Get the relevant refs :)
-    let $refs-for-resource := translation:refs($tei, $resource-id, ('folio', 'volume'))
-    
-    (: Get the volume refs :)
-    let $volume-refs := 
-        for $ref in $refs-for-resource[@type = ('volume')]
+    let $refs-for-resource := 
+        for $ref at $index-in-resource in translation:refs($tei, $resource-id, ('folio', 'volume'))
         return
             element { node-name($ref) } {
                 $ref/@*,
-                attribute index-in-resource { functx:index-of-node($refs-for-resource, $ref) },
-                attribute sort-volume { replace($ref/@cRef, '\D', '') },
+                attribute index-in-resource { $index-in-resource },
+                if ($ref[@type = ('volume')]) then
+                    attribute sort-volume { replace($ref/@cRef, '\D', '') }
+                else ()
+                ,
                 $ref/node()
             }
     
+    (: Get the volume refs :)
+    let $volume-refs := $refs-for-resource[@type = ('volume')]
+    
     (: Add sort attributes to the folio refs :)
     let $folio-refs := 
-        for $ref in $refs-for-resource[@type = ('folio')]
-            let $index-in-resource := functx:index-of-node($refs-for-resource, $ref)
-            let $preceding-volume-index-in-resource := max(($volume-refs[xs:integer(@index-in-resource) lt $index-in-resource]/@index-in-resource ! xs:integer(.), 0))
-            let $preceding-volume-ref := $volume-refs[xs:integer(@index-in-resource) eq $preceding-volume-index-in-resource]
+        for $ref at $index-of-folio-in-resource in $refs-for-resource[@type = ('folio')]
+            let $preceding-volume-refs := $volume-refs[@index-in-resource ! xs:integer(.) lt $ref/@index-in-resource ! xs:integer(.)]
+            let $preceding-volume-ref-index := xs:integer(max(($preceding-volume-refs/@index-in-resource ! xs:integer(.), 0)))
+            let $preceding-volume-ref := $volume-refs[@index-in-resource ! xs:integer(.) eq $preceding-volume-ref-index]
             let $cref-tokenized := tokenize($ref/@cRef, '\.')
-            let $sort-volume := if($preceding-volume-ref) then $preceding-volume-ref/@sort-volume else 0
-            let $sort-number := if(count($cref-tokenized) gt 1) then replace($cref-tokenized[2], '\D', '') else 0
-            let $sort-letter := if(count($cref-tokenized) gt 2) then $cref-tokenized[3] else ''
-            order by 
-                number($sort-volume),
-                number($sort-number),
-                $sort-letter
+        order by 
+            if($preceding-volume-ref) then number($preceding-volume-ref/@sort-volume) else 0,
+            if(count($cref-tokenized) gt 1) then number(replace($cref-tokenized[2], '\D', '')) else 0,
+            if(count($cref-tokenized) gt 2) then $cref-tokenized[3] else ''
         return
             element { node-name($ref) } {
-                $ref/@*,
-                attribute index-in-resource { functx:index-of-node($refs-for-resource[@type = ('folio')], $ref) },
+                $ref/@*[not(name(.) = ('index-in-resource', 'cRef-volume'))],
+                attribute index-in-resource { $index-of-folio-in-resource },
                 attribute cRef-volume { $preceding-volume-ref/@cRef },
                 $ref/node()
             }
