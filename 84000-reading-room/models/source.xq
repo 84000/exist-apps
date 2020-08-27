@@ -71,16 +71,6 @@ return
                 (: Get a page :)
                 source:etext-page($tei-location, $ref-sort-index, true(), $highlight),
                 
-                <translation 
-                    xmlns="http://read.84000.co/ns/1.0" 
-                    id="{ tei-content:id($tei) }"
-                    status="{ tei-content:translation-status($tei) }"
-                    status-group="{ tei-content:translation-status-group($tei) }">
-                    { 
-                        translation:folio-content($tei, $resource-id, $ref-resource-index) 
-                    }
-                </translation>,
-                
                 (: Include back link to the passage in the text :)
                 <back-link 
                     xmlns="http://read.84000.co/ns/1.0"
@@ -90,7 +80,21 @@ return
                         tei-content:title($tei) 
                     }
                     </title>
-                </back-link>
+                </back-link>,
+                
+                (: Include the translation :)
+                if (lower-case($resource-suffix) = ('xml')) then
+                    <translation 
+                        xmlns="http://read.84000.co/ns/1.0" 
+                        id="{ tei-content:id($tei) }"
+                        status="{ tei-content:translation-status($tei) }"
+                        status-group="{ tei-content:translation-status-group($tei) }">
+                        { 
+                            translation:folio-content($tei, $resource-id, $ref-resource-index) 
+                        }
+                    </translation>
+                else ()
+                
             )
             else if (lower-case($resource-suffix) = ('xml', 'txt')) then
                 (: Get the whole text :)

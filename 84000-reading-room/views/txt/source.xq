@@ -3,10 +3,6 @@ xquery version "3.0";
 declare namespace m = "http://read.84000.co/ns/1.0";
 declare namespace tei = "http://www.tei-c.org/ns/1.0";
 
-import module namespace common = "http://read.84000.co/common" at "../../modules/common.xql";
-import module namespace translation = "http://read.84000.co/translation" at "../../modules/translation.xql";
-import module namespace functx="http://www.functx.com";
-
 declare option exist:serialize "indent=no";
 
 declare function local:parse-content($content) {

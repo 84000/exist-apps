@@ -35,8 +35,8 @@
                         <xsl:for-each select="m:source/m:page">
                             <xsl:variable name="folio-string" as="xs:string">
                                 <xsl:choose>
-                                    <xsl:when test="m:translation/m:folio-content/tei:ref[@type eq 'folio'][@cRef]">
-                                        <xsl:value-of select="m:translation/m:folio-content/tei:ref[@type eq 'folio'][1]/@cRef"/>
+                                    <xsl:when test="/m:response/m:translation/m:folio-content/tei:ref[@type eq 'folio'][@cRef]">
+                                        <xsl:value-of select="/m:response/m:translation/m:folio-content/tei:ref[@type eq 'folio'][1]/@cRef"/>
                                     </xsl:when>
                                     <xsl:otherwise>
                                         <xsl:value-of select="concat('folio ', @folio-in-etext)"/>
