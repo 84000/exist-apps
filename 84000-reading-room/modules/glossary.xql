@@ -222,7 +222,7 @@ declare function glossary:items($glossary-ids as xs:string*, $include-context as
 };
 
 declare function glossary:sort-term($gloss as element(tei:gloss)) as xs:string? {
-    $gloss/tei:term[not(@xml:lang) or @xml:lang eq 'en'][not(@type)][1]/text() ! normalize-space(.) ! lower-case(.) ! common:normalized-chars(.) ! common:alphanumeric(.)
+    $gloss/tei:term[not(@xml:lang) or @xml:lang eq 'en'][not(@type = ('definition','alternative'))][1]/text() ! normalize-space(.) ! lower-case(.) ! common:normalized-chars(.) ! common:alphanumeric(.)
 };
 
 declare function glossary:item($gloss as element(tei:gloss), $include-context as xs:boolean) as element(m:item) {
@@ -248,9 +248,10 @@ declare function glossary:item($gloss as element(tei:gloss), $include-context as
         (: Terms and definition :)
         for $term in $gloss/tei:term
         return 
-             if($term[not(@type)][not(@xml:lang) or @xml:lang eq 'en']) then
+             if($term[not(@type = ('definition','alternative'))][not(@xml:lang) or @xml:lang eq 'en']) then
                 element term {
                     attribute xml:lang { 'en' },
+                    $term/@type,
                     (:attribute sort-length { count(tokenize($term, '\s+')) },:)
                     text {
                         functx:capitalize-first(
@@ -258,9 +259,10 @@ declare function glossary:item($gloss as element(tei:gloss), $include-context as
                         )
                     }
                 }
-            else if($term[not(@type)][@xml:lang][not(@xml:lang eq 'en')]) then
+            else if($term[not(@type = ('definition','alternative'))][@xml:lang][not(@xml:lang eq 'en')]) then
                 element term {
-                    attribute xml:lang { $term/@xml:lang },
+                    $term/@xml:lang,
+                    $term/@type,
                     text {
                         if (not($term/text())) then
                             common:local-text(concat('glossary.term-empty-', lower-case($term/@xml:lang)), 'en')
@@ -272,7 +274,7 @@ declare function glossary:item($gloss as element(tei:gloss), $include-context as
                 }
             else if ($term[@type eq 'alternative']) then
                 element alternative {
-                    attribute xml:lang { $term/@xml:lang },
+                    $term/@xml:lang,
                     (:attribute sort-length { count(tokenize($term, '\s+')) },:)
                     text {
                         normalize-space(data($term)) 
@@ -436,8 +438,8 @@ declare function glossary:item-query($gloss as element(tei:gloss)) as element() 
         <bool>
         {
             for $term in 
-                $gloss/tei:term[@xml:lang eq 'en'][not(@type)] 
-                | $gloss/tei:term[not(@xml:lang)][not(@type)]
+                $gloss/tei:term[@xml:lang eq 'en'][not(@type = ('definition','alternative'))] 
+                | $gloss/tei:term[not(@xml:lang)][not(@type = ('definition','alternative'))]
                 | $gloss/tei:term[@type = 'alternative']
             let $term-str := normalize-space(data($term))
             return 

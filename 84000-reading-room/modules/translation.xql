@@ -860,7 +860,7 @@ declare function translation:folio-content($tei as element(tei:TEI), $resource-i
             functx:index-of-node($translation-paragraphs, $end-ref-paragraph)
         else
             count($translation-paragraphs)
-            
+    
     (: Get paragraphs including and between these 2 points :)
     let $folio-paragraphs := 
         if($start-ref-paragraph) then
@@ -870,7 +870,7 @@ declare function translation:folio-content($tei as element(tei:TEI), $resource-i
     
     (: Convert the content to text and <ref/>s only :)
     let $folio-content-spaced := 
-        for $node in $folio-paragraphs//text()[not(ancestor::tei:note)] | $folio-paragraphs//tei:ref[@cRef = $refs/@cRef]
+        for $node in $folio-paragraphs//text()[not(ancestor::tei:note)] | $folio-paragraphs//tei:ref[@cRef = ($start-ref/@cRef, $end-ref/@cRef)]
         return
             (: Catch instances where the string ends in a punctuation mark. Assume a space has been dropped. Add a space to concat to the next string. :)
             if($node[not(self::tei:ref)] and substring($node, string-length($node), 1) = ('.',',','!','?','”',':',';')) then

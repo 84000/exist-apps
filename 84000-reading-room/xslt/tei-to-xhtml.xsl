@@ -666,12 +666,14 @@
                                     </xsl:if>
                                 </xsl:with-param>
                             </xsl:call-template>
-                            <h4>
-                                <xsl:if test="@type eq 'chapter'">
-                                    <xsl:attribute name="class" select="'chapter-number'"/>
-                                </xsl:if>
-                                <xsl:apply-templates select="node()"/>
-                            </h4>
+                            <span>
+                                <h4>
+                                    <xsl:if test="@type eq 'chapter'">
+                                        <xsl:attribute name="class" select="'chapter-number'"/>
+                                    </xsl:if>
+                                    <xsl:apply-templates select="node()"/>
+                                </h4>
+                            </span>
                         </div>
                     </xsl:with-param>
                     <xsl:with-param name="row-type" select="concat(@type, '-head')"/>
@@ -791,23 +793,38 @@
                     <xsl:attribute name="data-match-height-media" select="'.md,.lg'"/>
                     
                     <h4 class="term">
-                        <xsl:apply-templates select="m:term[lower-case(@xml:lang) = 'en']"/>
+                        <xsl:apply-templates select="m:term[@xml:lang = 'en']"/>
                     </h4>
-                    <xsl:if test="m:term[@xml:lang eq 'Bo-Ltn']">
-                        <p class="text-wy">
-                            <xsl:value-of select="string-join(m:term[@xml:lang eq 'Bo-Ltn'], ' · ')"/>
-                        </p>
-                    </xsl:if>
-                    <xsl:if test="m:term[@xml:lang eq 'bo']">
-                        <p class="text-bo">
-                            <xsl:value-of select="string-join(m:term[@xml:lang eq 'bo'], ' · ')"/>
-                        </p>
-                    </xsl:if>
-                    <xsl:if test="m:term[@xml:lang eq 'Sa-Ltn']">
-                        <p class="text-sa">
-                            <xsl:value-of select="string-join(m:term[@xml:lang eq 'Sa-Ltn'], ' · ')"/>
-                        </p>
-                    </xsl:if>
+                    <xsl:variable name="glossary-item" select="."/>
+                    <xsl:for-each select="('Bo-Ltn','bo','Sa-Ltn')">
+                        <xsl:variable name="term-lang" select="."/>
+                        <xsl:if test="$glossary-item/m:term[@xml:lang eq $term-lang]">
+                            <ul class="list-inline inline-dots">
+                                <xsl:for-each select="$glossary-item/m:term[@xml:lang eq $term-lang]">
+                                    <li>
+                                        <xsl:variable name="css-class" as="xs:string*">
+                                            <xsl:choose>
+                                                <xsl:when test="$term-lang eq 'Bo-Ltn'">
+                                                    <xsl:value-of select="'text-wy'"/>
+                                                </xsl:when>
+                                                <xsl:when test="$term-lang eq 'bo'">
+                                                    <xsl:value-of select="'text-bo'"/>
+                                                </xsl:when>
+                                                <xsl:when test="$term-lang eq 'Sa-Ltn'">
+                                                    <xsl:value-of select="'text-sa'"/>
+                                                </xsl:when>
+                                            </xsl:choose>
+                                            <xsl:if test="@type = ('semanticReconstruction','transliterationReconstruction')">
+                                                <xsl:value-of select="'reconstructed'"/>
+                                            </xsl:if>
+                                        </xsl:variable>
+                                        <xsl:attribute name="class" select="string-join($css-class, ' ')"/>
+                                        <xsl:value-of select="text()"/>
+                                    </li>
+                                </xsl:for-each>
+                            </ul>
+                        </xsl:if>
+                    </xsl:for-each>
                     <xsl:for-each select="m:alternative">
                         <p class="term alternative">
                             <xsl:apply-templates select="text()"/>

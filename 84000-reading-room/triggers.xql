@@ -214,51 +214,6 @@ declare function local:glossary-bo($doc, $do-all as xs:boolean) {
    )
 };
 
-declare function local:glossary-prioritise($doc) {
-    (: Auto-set priority attribute for glossary items :)
-    (: DEPRECATED :)
-    for $gloss-missing-priority in $doc//tei:div[@type='glossary']//tei:gloss[not(@priority)]
-        let $priority := local:glossary-priority($doc, $gloss-missing-priority)
-    return
-        update insert attribute priority { $priority } into $gloss-missing-priority
-
-};
-
-declare function local:glossary-remove-prioritise($doc) {
-
-    (: Removes priority attributes :)
-    for $priority in $doc//tei:div[@type='glossary']//tei:gloss/@priority
-    return
-        update delete $priority
-    
-};
-
-declare function local:glossary-priority($doc, $gloss) as xs:integer {
-    (: Take a guess at the priority :)
-    let $term := $gloss/tei:term[(lower-case(@xml:lang) = ('eng', 'en') or not(@xml:lang)) and not(@type = 'definition')][1]
-    return 
-        if(local:glossary-overlaps($doc, $term)) then
-            (: If yes then return priority as count of words in english term :)
-            common:word-count($term)
-        else
-            0
-};
-
-declare function local:glossary-overlaps($doc, $term) as xs:boolean {
-    (: Are there other glossary items containing this string or is this string in other items? :)
-    if(
-        count(
-            $doc//tei:div[@type='glossary']
-                //tei:gloss/tei:term[
-                    (not(@type) and (not(@xml:lang) or lower-case(@xml:lang) = ('eng', 'en'))) or @type = 'alternative']
-                        /text()[.!= $term/text() and (contains(normalize-space(.), $term/text()) or contains($term/text(), normalize-space(.)))]
-        )
-    ) then
-        true()
-    else
-        false()
-};
-
 declare function local:log-event($type as xs:string, $event as xs:string, $object-type as xs:string, $uri as xs:string) {
     
     (: 

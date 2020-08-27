@@ -51,7 +51,7 @@ let $ref-sort-index :=
 
 let $reading-room-path := $common:environment/m:url[@id eq 'reading-room']/text()
 
-return
+return 
     common:response(
         "source/folio", 
         $common:app-id,
@@ -66,8 +66,7 @@ return
                 folio="{ $folio }"
                 page="{ $page }"/>,
             
-            if($ref-sort-index gt 0) then
-            (
+            if($ref-sort-index gt 0) then (
                 (: Get a page :)
                 source:etext-page($tei-location, $ref-sort-index, true(), $highlight),
                 

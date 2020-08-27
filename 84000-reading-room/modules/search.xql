@@ -226,7 +226,7 @@ declare function search:tm-search($request as xs:string, $lang as xs:string, $fi
             if($search-lang eq 'bo') then
                 $translations//tei:back//tei:gloss[ft:query(tei:term[@xml:lang eq 'bo'], $query, $options)]
             else
-                $translations//tei:back//tei:gloss[ft:query(tei:term[not(@xml:lang) or @xml:lang eq 'en'][not(@type)], $query, $options)]
+                $translations//tei:back//tei:gloss[ft:query(tei:term[not(@xml:lang) or @xml:lang eq 'en'][not(@type = ('definition','alternative'))], $query, $options)]
         )
             let $score := ft:score($result)
             order by $score descending
@@ -322,10 +322,10 @@ declare function search:tm-search($request as xs:string, $lang as xs:string, $fi
                                 element match {
                                     attribute type { 'glossary-term' },
                                     attribute location { concat('/translation/', $toh-key, '.html#', $result/@xml:id) },
-                                    element tibetan { ($expanded/tei:term[not(@type)][@xml:lang eq "bo"][exist:match], $expanded/tei:term[not(@type)][@xml:lang eq "bo"])[1] }, 
-                                    element translation { ($expanded/tei:term[not(@type)][not(@xml:lang) or @xml:lang eq "en"][not(@type)][exist:match], $expanded/tei:term[not(@type)][not(@xml:lang) or @xml:lang eq "en"][not(@type)])[1] },
-                                    element wylie { ($expanded/tei:term[not(@type)][@xml:lang eq "Bo-Ltn"][exist:match], $expanded/tei:term[not(@type)][@xml:lang eq "Bo-Ltn"])[1] },
-                                    element sanskrit { ($expanded/tei:term[not(@type)][@xml:lang eq "Sa-Ltn"][exist:match], $expanded/tei:term[not(@type)][@xml:lang eq "Sa-Ltn"])[1] }
+                                    element tibetan { ($expanded/tei:term[not(@type = ('definition','alternative'))][@xml:lang eq "bo"][exist:match], $expanded/tei:term[not(@type = ('definition','alternative'))][@xml:lang eq "bo"])[1] }, 
+                                    element translation { ($expanded/tei:term[not(@type = ('definition','alternative'))][not(@xml:lang) or @xml:lang eq "en"][not(@type = ('definition','alternative'))][exist:match], $expanded/tei:term[not(@type = ('definition','alternative'))][not(@xml:lang) or @xml:lang eq "en"][not(@type = ('definition','alternative'))])[1] },
+                                    element wylie { ($expanded/tei:term[not(@type = ('definition','alternative'))][@xml:lang eq "Bo-Ltn"][exist:match], $expanded/tei:term[not(@type = ('definition','alternative'))][@xml:lang eq "Bo-Ltn"])[1] },
+                                    element sanskrit { ($expanded/tei:term[not(@type = ('definition','alternative'))][@xml:lang eq "Sa-Ltn"][exist:match], $expanded/tei:term[not(@type = ('definition','alternative'))][@xml:lang eq "Sa-Ltn"])[1] }
                                 }
                                 
                         }

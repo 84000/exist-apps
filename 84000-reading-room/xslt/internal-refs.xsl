@@ -53,7 +53,7 @@
                         <!-- The target is a gloss -->
                         <xsl:when test="$target[self::gloss]">
                             <xsl:attribute name="location" select="'glossary'"/>
-                            <xsl:value-of select="normalize-space($target/tei:term[not(@xml:lang)][not(@type)][1])"/>
+                            <xsl:value-of select="normalize-space($target/tei:term[not(@xml:lang)][not(@type = ('definition','alternative'))][1])"/>
                         </xsl:when>
                         
                         <!-- The target is a milestone -->
