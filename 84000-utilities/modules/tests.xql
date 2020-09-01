@@ -81,7 +81,11 @@ declare function tests:translations($translation-id as xs:string) as item(){
                         tests:test-section($tei//tei:front//tei:div[@type eq 'introduction'], $toh-html//*[@id eq 'introduction'], 'introduction', 1, false(), true()),
                         tests:test-section($tei//tei:body//tei:div[@type eq 'prologue'], $toh-html//*[@id eq 'prologue'], 'prologue', 0, false(), true()),
                         tests:test-section($tei//tei:body//tei:div[@type eq 'homage'], $toh-html//*[@id eq 'homage'], 'homage', 0, false(), true()),
-                        tests:test-section(<tei:div type='translation'>{$tei//tei:body//tei:div[@type eq 'translation']/*[@type=('section', 'chapter')]}</tei:div>, $toh-html//*[@id eq 'translation'], 'translation', 1, true(), true()),
+                        tests:test-section(
+                            element { QName('http://www.tei-c.org/ns/1.0', 'div') }{
+                                $tei//tei:body//tei:div[@type eq 'translation']/*[@type=('section', 'chapter')]
+                            },
+                            $toh-html//*[@id eq 'translation'], 'translation', 1, true(), true()),
                         tests:test-section($tei//tei:body//tei:div[@type eq 'colophon'], $toh-html//*[@id eq 'colophon'], 'colophon', 0, false(), true()),
                         tests:test-section($tei//tei:back//tei:div[@type eq 'appendix'], $toh-html//*[@id eq 'appendix'], 'appendix', 0, false(), true()),
                         tests:notes($tei, $toh-html),
@@ -492,17 +496,16 @@ declare function tests:glossary($tei as element(tei:TEI)*, $html as element()*) 
     
     let $glossary-count-html := count($html//*[@id eq 'glossary']//*[common:contains-class(@class, 'glossary-item')])
     let $glossary-count-tei := count($tei//tei:back/tei:div[@type='glossary']//tei:gloss)
-    let $tei-terms-raw := $tei//tei:back/tei:div[@type='glossary']//tei:gloss/tei:term[text()][not(tei:ptr)][not(@xml:lang) or @xml:lang = ('Sa-Ltn', 'bo', 'Bo-Ltn', 'en')](:[(not(@xml:lang) and not(@type)) or not(text() = preceding-sibling::tei:term[not(@xml:lang) and not(@type)]/text())]:)
+    let $tei-terms-raw := $tei//tei:back/tei:div[@type='glossary']//tei:gloss/tei:term[text()][not(tei:ptr)][not(@xml:lang) or @xml:lang = ('Sa-Ltn', 'bo', 'Bo-Ltn', 'en')]
     let $empty-term-placeholders := (common:local-text('glossary.term-empty-sa-ltn', 'en'), common:local-text('glossary.term-empty-bo-ltn', 'en'))
     
-    let $tei-terms := 
-        (
-            $tei-terms-raw[@xml:lang eq "Bo-Ltn"] ! data(.) ! lower-case(.) ! tests:normalize-whitespace(.) ! common:bo-ltn(.),
-            $tei-terms-raw[not(@xml:lang eq "Bo-Ltn")] ! data(.) ! lower-case(.) ! tests:normalize-whitespace(.)
-        )
+    let $tei-terms := (
+        $tei-terms-raw[@xml:lang eq "Bo-Ltn"] ! data(.) ! lower-case(.) ! tests:normalize-whitespace(.) ! common:bo-ltn(.),
+        $tei-terms-raw[not(@xml:lang eq "Bo-Ltn")] ! data(.) ! lower-case(.) ! tests:normalize-whitespace(.)
+    )
     
     let $html-terms-untokenized := 
-        $html//*[@id eq 'glossary']//*[common:contains-class(@class, 'glossary-item')]//*[self::xhtml:h4 | self::xhtml:p[not(xhtml:a[common:contains-class(@class, 'internal-ref')])]]
+        $html//*[@id eq 'glossary']//*[common:contains-class(@class, 'glossary-item')]//*[self::xhtml:h4  | self::xhtml:li | self::xhtml:p[not(xhtml:a[common:contains-class(@class, 'internal-ref')])]]
     
     let $html-terms := 
         $html-terms-untokenized[not(. = $empty-term-placeholders)] ! data(.) ! tokenize(., '·') ! translate(., 'ᴀʙᴄᴅᴇꜰɢʜɪᴊᴋʟᴍɴᴏᴘǫʀsᴛᴜᴠᴡxʏᴢ', 'abcdefghijklmnopqrstuvwxyz') ! lower-case(.) ! tests:normalize-whitespace(.)

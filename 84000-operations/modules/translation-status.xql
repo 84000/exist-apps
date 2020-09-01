@@ -259,10 +259,10 @@ declare function translation-status:glossary-count($tei as element(tei:TEI)) as 
 declare function local:translation-status-value($tei as element(tei:TEI), $name as xs:string) {
 
     let $text-id := tei-content:id($tei)
-    let $tei-version-str := translation:version-str($tei)
+    let $tei-version-str := tei-content:version-str($tei)
     let $translation-status := translation-status:texts($text-id)
     let $cached-version-str := if($translation-status) then $translation-status/@version else ''
-    let $is-current-version := translation:is-current-version($tei-version-str, $cached-version-str)
+    let $is-current-version := tei-content:is-current-version($tei-version-str, $cached-version-str)
     
     let $cached-count := 
         if($translation-status) then 
@@ -294,14 +294,14 @@ declare function translation-status:update($text-id as xs:string) as element()? 
     let $request-parameters := request:get-parameter-names()
     
     let $tei := tei-content:tei($text-id, 'translation')
-    let $tei-version-str := translation:version-str($tei)
+    let $tei-version-str := tei-content:version-str($tei)
     
     let $cached-version-str := if($existing-value) then $existing-value/@version else ''
     let $cached-word-count := if($existing-value) then $existing-value/@word-count else ''
     let $cached-glossary-count := if($existing-value) then $existing-value/@glossary-count else ''
     
     let $word-count := 
-        if(translation:is-current-version($tei-version-str, $cached-version-str) and functx:is-a-number($cached-word-count)) then
+        if(tei-content:is-current-version($tei-version-str, $cached-version-str) and functx:is-a-number($cached-word-count)) then
            xs:integer($cached-word-count)
         else if(tei-content:translation-status-group($tei) eq 'published') then
             translation:word-count($tei)
@@ -309,7 +309,7 @@ declare function translation-status:update($text-id as xs:string) as element()? 
            0
    
     let $glossary-count := 
-        if(translation:is-current-version($tei-version-str, $cached-version-str) and functx:is-a-number($cached-glossary-count)) then
+        if(tei-content:is-current-version($tei-version-str, $cached-version-str) and functx:is-a-number($cached-glossary-count)) then
            xs:integer($cached-glossary-count)
         else if(tei-content:translation-status-group($tei) eq 'published') then
             translation:glossary-count($tei)

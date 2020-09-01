@@ -276,56 +276,62 @@
                                 
                                 <xsl:if test="m:translation/m:appendix//tei:*">
                                     
-                                    <hr class="hidden-print"/>
-                                    
-                                    <section id="appendix" class="page text glossarize-section">
+                                    <div id="appendix">
                                         
-                                        <xsl:call-template name="milestone">
-                                            <xsl:with-param name="content">
-                                                <h4>
-                                                    <xsl:value-of select="'Appendix'"/>
-                                                </h4>
-                                            </xsl:with-param>
-                                            <xsl:with-param name="row-type" select="'section-label'"/>
-                                        </xsl:call-template>
+                                        <hr class="hidden-print"/>
                                         
-                                        
-                                        <xsl:call-template name="section-title">
-                                            <xsl:with-param name="bookmark-id" select="'appendix'"/>
-                                            <xsl:with-param name="prefix" select="m:translation/m:appendix/@prefix"/>
-                                            <xsl:with-param name="title" select="m:translation/m:appendix/m:title"/>
-                                            <xsl:with-param name="title-id" select="m:translation/m:appendix/m:title/@tid"/>
-                                            <xsl:with-param name="title-tag" select="'h3'"/>
-                                        </xsl:call-template>
-                                        
-                                        <xsl:call-template name="section-collapsed">
-                                            <xsl:with-param name="section-content">
-                                                <xsl:for-each select="m:translation/m:appendix/m:chapter">
-                                                    
-                                                    <xsl:if test="position() gt 1">
-                                                        <hr class="hidden-print"/>
-                                                    </xsl:if>
-                                                    
-                                                    <div class="chapter">
+                                        <section class="page text glossarize-section">
+                                            
+                                            <xsl:attribute name="id" select="concat('chapter-', m:translation/m:appendix/@prefix)"/>
+                                            
+                                            <xsl:call-template name="milestone">
+                                                <xsl:with-param name="content">
+                                                    <h4>
+                                                        <xsl:value-of select="'Appendix'"/>
+                                                    </h4>
+                                                </xsl:with-param>
+                                                <xsl:with-param name="row-type" select="'section-label'"/>
+                                            </xsl:call-template>
+                                            
+                                            <xsl:call-template name="section-title">
+                                                <xsl:with-param name="bookmark-id" select="'appendix'"/>
+                                                <xsl:with-param name="prefix" select="m:translation/m:appendix/@prefix"/>
+                                                <xsl:with-param name="title" select="m:translation/m:appendix/m:title"/>
+                                                <xsl:with-param name="title-id" select="m:translation/m:appendix/m:title/@tid"/>
+                                                <xsl:with-param name="title-tag" select="'h3'"/>
+                                            </xsl:call-template>
+                                            
+                                            <xsl:call-template name="section-collapsed">
+                                                <xsl:with-param name="section-content">
+                                                    <xsl:for-each select="m:translation/m:appendix/m:chapter">
                                                         
-                                                        <xsl:attribute name="id" select="concat('chapter-', @prefix)"/>
-                                                        
-                                                        <xsl:if test="m:title[normalize-space(text())] | m:title-number[text()]">
-                                                            <xsl:call-template name="chapter-title">
-                                                                <xsl:with-param name="title" select="m:title"/>
-                                                                <xsl:with-param name="title-number" select="m:title-number"/>
-                                                                <xsl:with-param name="chapter-index" select="@chapter-index/string()"/>
-                                                                <xsl:with-param name="prefix" select="@prefix/string()"/>
-                                                            </xsl:call-template>
+                                                        <xsl:if test="position() gt 1">
+                                                            <hr class="hidden-print"/>
                                                         </xsl:if>
                                                         
-                                                        <xsl:apply-templates select="tei:*"/>
-                                                        
-                                                    </div>
-                                                </xsl:for-each>
-                                            </xsl:with-param>
-                                        </xsl:call-template>
-                                    </section>
+                                                        <div class="chapter">
+                                                            
+                                                            <xsl:attribute name="id" select="concat('chapter-', @prefix)"/>
+                                                            
+                                                            <xsl:if test="m:title[normalize-space(text())] | m:title-number[text()]">
+                                                                <xsl:call-template name="chapter-title">
+                                                                    <xsl:with-param name="title" select="m:title"/>
+                                                                    <xsl:with-param name="title-number" select="m:title-number"/>
+                                                                    <xsl:with-param name="chapter-index" select="@chapter-index/string()"/>
+                                                                    <xsl:with-param name="prefix" select="@prefix/string()"/>
+                                                                </xsl:call-template>
+                                                            </xsl:if>
+                                                            
+                                                            <xsl:apply-templates select="tei:*"/>
+                                                            
+                                                        </div>
+                                                    </xsl:for-each>
+                                                </xsl:with-param>
+                                            </xsl:call-template>
+                                        </section>
+                                        
+                                    </div>
+                                    
                                 </xsl:if>
                                 
                                 <xsl:if test="m:translation/m:abbreviations//m:list/m:item">
@@ -669,9 +675,10 @@
                         </td>
                     </tr>
                 </xsl:if>
-                <xsl:if test="$translation/m:body/m:chapter[m:title/text() | m:title-number/text()]">
-                    <xsl:call-template name="table-of-contents-chapters">
-                        <xsl:with-param name="chapters" select="$translation/m:body/m:chapter[m:title/text() | m:title-number/text()]"/>
+                <xsl:variable name="chapters" select="$translation/m:body/m:chapter"/>
+                <xsl:if test="$chapters">
+                    <xsl:call-template name="table-of-contents-sections">
+                        <xsl:with-param name="sections" select="$chapters"/>
                     </xsl:call-template>
                 </xsl:if>
                 <xsl:if test="$translation/m:colophon//tei:*">
@@ -684,23 +691,21 @@
                         </td>
                     </tr>
                 </xsl:if>
-                <xsl:if test="$translation/m:appendix//tei:*">
-                    <tr>
+                <xsl:variable name="appendix" select="$translation/m:appendix"/>
+                <xsl:if test="$appendix//tei:*">
+                    <!--<tr>
                         <td>
-                            <xsl:value-of select="concat($translation/m:appendix/@prefix, '.')"/>
+                            <xsl:value-of select="concat($appendix/@prefix, '.')"/>
                         </td>
                         <td>
                             <a href="#appendix" class="scroll-to-anchor">
-                                <xsl:value-of select="$translation/m:appendix/m:title"/>
+                                <xsl:value-of select="$appendix/m:title"/>
                             </a>
                         </td>
-                    </tr>
-                    <xsl:if test="$translation/m:appendix/m:chapter[m:title/text()]">
-                        <xsl:call-template name="table-of-contents-sub-chapters">
-                            <xsl:with-param name="sub-chapters" select="$translation/m:appendix/m:chapter[m:title/text()]"/>
-                            <xsl:with-param name="expand-id" select="'appendix-chapters'"/>
-                        </xsl:call-template>
-                    </xsl:if>
+                    </tr>-->
+                    <xsl:call-template name="table-of-contents-sections">
+                        <xsl:with-param name="sections" select="$appendix"/>
+                    </xsl:call-template>
                 </xsl:if>
                 <xsl:if test="$translation/m:abbreviations//m:list/m:item">
                     <tr>
@@ -740,95 +745,110 @@
         </table>
     </xsl:template>
     
-    <xsl:template name="table-of-contents-chapters">
-        <xsl:param name="chapters" required="yes"/>
-        <xsl:for-each select="$chapters">
+    <xsl:template name="table-of-contents-sections">
+        <xsl:param name="sections" required="yes"/>
+        
+        <!-- output a row per chapter -->
+        <xsl:for-each select="$sections">
             
             <xsl:variable name="id" select="if(@prefix) then concat('chapter-', @prefix) else concat('section-', @section-id)"/>
+            <xsl:variable name="expand-id" select="concat('toc-', $id)"/>
+            <xsl:variable name="sub-sections" select="tei:div[@type = ('section', 'chapter')] | m:chapter"/>
             
-            <tr>
-                <td>
-                    <xsl:choose>
-                        <xsl:when test="@prefix">
-                            <xsl:apply-templates select="@prefix"/>
-                            <xsl:value-of select="'.'"/>
-                        </xsl:when>
-                        <xsl:otherwise>
-                            <xsl:value-of select="'·'"/>
-                        </xsl:otherwise>
-                    </xsl:choose>
-                </td>
-                <td>
-                    <a class="scroll-to-anchor">
-                        <xsl:attribute name="href" select="concat('#', $id)"/>
+            <xsl:choose>
+                <xsl:when test="tei:head[text()] | m:title[text()] | m:title-number[text()]">
+                    
+                    <!-- Create a link to the chapter -->
+                    <tr>
+                        <td>
+                            <xsl:choose>
+                                <xsl:when test="@prefix">
+                                    <xsl:apply-templates select="@prefix"/>
+                                    <xsl:value-of select="'.'"/>
+                                </xsl:when>
+                                <xsl:otherwise>
+                                    <xsl:value-of select="'·'"/>
+                                </xsl:otherwise>
+                            </xsl:choose>
+                        </td>
+                        <td>
+                            <a class="scroll-to-anchor">
+                                <xsl:attribute name="href" select="concat('#', $id)"/>
+                                <xsl:choose>
+                                    <xsl:when test="tei:head[text()]">
+                                        <xsl:apply-templates select="tei:head/text()"/>
+                                    </xsl:when>
+                                    <xsl:when test="m:title[text()]">
+                                        <xsl:apply-templates select="m:title/text()"/>
+                                    </xsl:when>
+                                    <xsl:otherwise>
+                                        <xsl:apply-templates select="m:title-number/text()"/>
+                                    </xsl:otherwise>
+                                </xsl:choose>
+                            </a>
+                        </td>
+                    </tr>
+                    
+                    <!-- If somewhere down the chain there's something more to show -->
+                    <xsl:if test="$sub-sections//tei:head[text()] | $sub-sections//tei:title[text()] | $sub-sections//m:title-number[text()]">
                         
-                        <xsl:choose>
-                            <xsl:when test="tei:head/text()">
-                                <xsl:apply-templates select="tei:head/text()"/>
-                            </xsl:when>
-                            <xsl:when test="m:title/text()">
-                                <xsl:apply-templates select="m:title/text()"/>
-                            </xsl:when>
-                            <xsl:otherwise>
-                                <xsl:apply-templates select="m:title-number/text()"/>
-                            </xsl:otherwise>
-                        </xsl:choose>
-                    </a>
-                </td>
-            </tr>
-            
-            <xsl:if test="tei:div[@type = ('section', 'chapter')][tei:head/text()]">
-                <xsl:call-template name="table-of-contents-sub-chapters">
-                    <xsl:with-param name="sub-chapters" select="tei:div[@type = ('section', 'chapter')][tei:head/text()]"/>
-                    <xsl:with-param name="expand-id" select="concat('toc-', $id)"/>
-                </xsl:call-template>
-            </xsl:if>
-        </xsl:for-each>
-        
-    </xsl:template>
-    
-    <xsl:template name="table-of-contents-sub-chapters">
-        <xsl:param name="sub-chapters" required="yes"/>
-        <xsl:param name="expand-id" required="yes"/>
-        <tr class="sub">
-            <td/>
-            <td>
-                
-                <xsl:if test="$expand-id">
-                    <a role="button" data-toggle="collapse" aria-expanded="true" class="small collapsed hidden-print">
-                        <xsl:attribute name="href" select="concat('#', $expand-id)"/>
-                        <xsl:attribute name="aria-controls" select="$expand-id"/>
-                        <span class="collapsed-show">
-                            <span class="monospace">
-                                <xsl:value-of select="'+'"/>
-                            </span>
-                            <xsl:value-of select="' sub-sections'"/>
-                        </span>
-                        <span class="collapsed-hide">
-                            <span class="monospace">
-                                <xsl:value-of select="'-'"/>
-                            </span>
-                            <xsl:value-of select="' sub-sections'"/>
-                        </span>
-                    </a>
-                </xsl:if>
-                
-                <div>
-                    <xsl:if test="$expand-id">
-                        <xsl:attribute name="class" select="'collapse print-expand collapse-chapter'"/>
-                        <xsl:attribute name="id" select="$expand-id"/>
+                        <!-- Create a block for sub- -->
+                        <tr class="sub">
+                            <td/>
+                            <td>
+                                
+                                <!-- Option to open and close -->
+                                <xsl:if test="$expand-id">
+                                    <a role="button" data-toggle="collapse" aria-expanded="true" class="collapsed small hidden-print">
+                                        <xsl:attribute name="href" select="concat('#', $expand-id)"/>
+                                        <xsl:attribute name="aria-controls" select="$expand-id"/>
+                                        <span class="collapsed-show">
+                                            <span class="monospace">
+                                                <xsl:value-of select="'+'"/>
+                                            </span>
+                                            <xsl:value-of select="' sub-sections'"/>
+                                        </span>
+                                        <span class="collapsed-hide">
+                                            <span class="monospace">
+                                                <xsl:value-of select="'-'"/>
+                                            </span>
+                                            <xsl:value-of select="' sub-sections'"/>
+                                        </span>
+                                    </a>
+                                </xsl:if>
+                                
+                                <!-- Expandable box -->
+                                <div>
+                                    <xsl:if test="$expand-id">
+                                        <xsl:attribute name="class" select="'collapse persist print-expand collapse-chapter'"/>
+                                        <xsl:attribute name="id" select="$expand-id"/>
+                                    </xsl:if>
+                                    <table>
+                                        <tbody>
+                                            <!-- Process sub-sections -->
+                                            <xsl:call-template name="table-of-contents-sections">
+                                                <xsl:with-param name="sections" select="$sub-sections"/>
+                                            </xsl:call-template>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                
+                            </td>
+                        </tr>
                     </xsl:if>
-                    <table>
-                        <tbody>
-                            <xsl:call-template name="table-of-contents-chapters">
-                                <xsl:with-param name="chapters" select="$sub-chapters"/>
-                            </xsl:call-template>
-                        </tbody>
-                    </table>
-                </div>
-                
-            </td>
-        </tr>
+                    
+                </xsl:when>
+                <xsl:otherwise>
+                    
+                    <!-- Process sub-sections -->
+                    <xsl:call-template name="table-of-contents-sections">
+                        <xsl:with-param name="sections" select="$sub-sections"/>
+                    </xsl:call-template>
+                    
+                </xsl:otherwise>
+            </xsl:choose>
+            
+        </xsl:for-each>
     </xsl:template>
     
     <xsl:template name="front-matter">
@@ -907,10 +927,11 @@
                 </xsl:if>
             </div>
             
-            <xsl:if test="m:translation/@status = $render-status">
-                <xsl:if test="$translation/m:translation/m:contributors/m:summary/text()">
+            <xsl:if test="$translation/@status = $render-status">
+                <xsl:variable name="contributors-summary" select="$translation/m:publication/m:contributors/m:summary"/>
+                <xsl:if test="$contributors-summary[node()]">
                     <div class="well">
-                        <xsl:for-each select="$translation/m:translation/m:contributors/m:summary">
+                        <xsl:for-each select="$translation/m:publication/m:contributors/m:summary">
                             <p id="authours-summary">
                                 <xsl:apply-templates select="node()"/>
                             </p>
@@ -922,8 +943,8 @@
             <div class="bottom-margin">
                 <p id="edition">
                     <xsl:choose>
-                        <xsl:when test="$translation/m:translation/m:publication-date castable as xs:date">
-                            <xsl:value-of select="concat('First published ', format-date($translation/m:translation/m:publication-date, '[Y]'))"/>
+                        <xsl:when test="$translation/m:publication/m:publication-date castable as xs:date">
+                            <xsl:value-of select="concat('First published ', format-date($translation/m:publication/m:publication-date, '[Y]'))"/>
                         </xsl:when>
                         <xsl:otherwise>
                             <xsl:value-of select="'Not yet published'"/>
@@ -931,8 +952,8 @@
                     </xsl:choose>
                     <br/>
                     <xsl:choose>
-                        <xsl:when test="$translation/m:translation/m:edition/tei:date[1] gt ''">
-                            <xsl:value-of select="concat('Current version ', $translation/m:translation/m:edition/text()[1], '(', $translation/m:translation/m:edition/tei:date[1], ')')"/>
+                        <xsl:when test="$translation/m:publication/m:edition/tei:date[1] gt ''">
+                            <xsl:value-of select="concat('Current version ', $translation/m:publication/m:edition/text()[1], '(', $translation/m:publication/m:edition/tei:date[1], ')')"/>
                         </xsl:when>
                         <xsl:otherwise>
                             <xsl:value-of select="'Invalid version'"/>
@@ -947,13 +968,13 @@
             
             <div class="bottom-margin">
                 <p id="publication-statement">
-                    <xsl:apply-templates select="$translation/m:translation/m:publication-statement"/>
+                    <xsl:apply-templates select="$translation/m:publication/m:publication-statement"/>
                 </p>
             </div>
             
-            <xsl:if test="$translation/m:translation/m:tantric-restriction/tei:p">
+            <xsl:if test="$translation/m:publication/m:tantric-restriction/tei:p">
                 <div id="tantric-warning" class="well well-danger">
-                    <xsl:for-each select="$translation/m:translation/m:tantric-restriction/tei:p">
+                    <xsl:for-each select="$translation/m:publication/m:tantric-restriction/tei:p">
                         <p>
                             <xsl:apply-templates select="node()"/>
                         </p>
@@ -961,14 +982,14 @@
                 </div>
             </xsl:if>
             
-            <xsl:if test="m:translation/@status = $render-status">
+            <xsl:if test="$translation/@status = $render-status">
                 <div id="license">
                     <img>
                         <!-- Update to set image in CSS -->
-                        <xsl:attribute name="src" select="replace($translation/m:translation/m:license/@img-url, '^http:', 'https:')"/>
+                        <xsl:attribute name="src" select="replace($translation/m:publication/m:license/@img-url, '^http:', 'https:')"/>
                         <xsl:attribute name="alt" select="'Logo for the license'"/>
                     </img>
-                    <xsl:for-each select="$translation/m:translation/m:license/tei:p">
+                    <xsl:for-each select="$translation/m:publication/m:license/tei:p">
                         <p class="text-muted small">
                             <xsl:apply-templates select="node()"/>
                         </p>
@@ -1029,7 +1050,7 @@
                 </span>
             </div>
         </form>
-        <xsl:if test="m:translation/@status = $render-status">
+        <xsl:if test="$translation/@status = $render-status">
             <h4>
                 <xsl:value-of select="'Download Options'"/>
             </h4>

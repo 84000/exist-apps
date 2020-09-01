@@ -61,9 +61,9 @@ let $updated :=
         ()
 
 (: If it's a new version :)
-let $tei-version-str := translation:version-str($tei)
+let $tei-version-str := tei-content:version-str($tei)
 let $commit-version := 
-    if($post-id and $store:conf and not(translation:is-current-version($tei-version-str, $current-version-str))) then (
+    if($post-id and $store:conf and not(tei-content:is-current-version($tei-version-str, $current-version-str))) then (
         
         (: Commit new version to GitHub :)
         deploy:push('data-tei', (), concat($text-id, ' / ', $tei-version-str), tei-content:document-url($tei)),
@@ -99,18 +99,16 @@ return
                 status-group="{ tei-content:translation-status-group($tei) }">
                 { 
                     for $bibl in $tei//tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl
-                    return
-                        (
+                    return (
                             translation:toh($tei, $bibl/@key),
                             translation:location($tei, $bibl/@key),
                             translation:downloads($tei, $bibl/@key, 'all')
-                        )
-                    ,
+                    ),
                     element title { 
                         tei-content:title($tei) 
                     },
                     tei-content:titles($tei),
-                    translation:translation($tei),
+                    translation:publication($tei),
                     translation:contributors($tei, true()),
                     translation:status-updates($tei)
                 }

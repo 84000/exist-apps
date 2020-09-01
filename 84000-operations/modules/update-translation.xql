@@ -19,8 +19,8 @@ declare function local:minor-version-increment($tei as element(tei:TEI), $form-a
     
     (: Force a minor version increment:)
     
-    let $version-number-str-increment := translation:version-number-str-increment($tei, 'revision')
-    let $version-date := translation:version-date($tei)
+    let $version-number-str-increment := tei-content:version-number-str-increment($tei, 'revision')
+    let $version-date := tei-content:version-date($tei)
     
     let $new-editionStmt :=
         element {QName("http://www.tei-c.org/ns/1.0", "editionStmt")} {
@@ -138,16 +138,16 @@ declare function update-translation:publication-status($tei as element(tei:TEI))
         (: Get the version from the request :)
         let $request-version := request:get-parameter('text-version', '')
         (: Make a comparable string from the request :)
-        let $request-version-number-str := translation:strip-version-number($request-version)
+        let $request-version-number-str := tei-content:strip-version-number($request-version)
         (: Get the current version number from the TEI :)
-        let $existing-version-number-str := translation:version-number-str($tei)
+        let $existing-version-number-str := tei-content:version-number-str($tei)
         (: Test if it's a new version :)
-        let $request-is-current-version := translation:is-current-version($existing-version-number-str, $request-version-number-str)
+        let $request-is-current-version := tei-content:is-current-version($existing-version-number-str, $request-version-number-str)
         
         (: If the request is the current version number (not incremented) but there was an update - then force an increment :)
         let $version-number-str := 
             if($request-is-current-version and $do-publication-statement-update[self::m:updated]) then
-                translation:version-number-str-increment($tei, 'revision')
+                tei-content:version-number-str-increment($tei, 'revision')
             else
                 $request-version-number-str
         
@@ -165,7 +165,7 @@ declare function update-translation:publication-status($tei as element(tei:TEI))
             }
         
         (: Test if it's a new version :)
-        let $new-is-current-version := translation:is-current-version($existing-version-number-str, $version-number-str)
+        let $new-is-current-version := tei-content:is-current-version($existing-version-number-str, $version-number-str)
         
         let $existing-version-date := $existing-value/tei:date/string()
         
@@ -516,7 +516,7 @@ declare function update-translation:update-glossary($tei as element(tei:TEI), $g
     (: If it's an update and the main term is '' then don't construct the new value e.g. remove existing :)
     let $remove := (request:get-parameter('form-action', '') eq 'update-glossary' and request:get-parameter('term-main-text-1', '') eq '')
     
-    let $tei-version := translation:version-str($tei)
+    let $tei-version := tei-content:version-str($tei)
     
     (: Only construct the new value if there's an id :)
     let $new-value := 
@@ -686,7 +686,7 @@ declare function update-translation:cache-expressions($tei as element(tei:TEI), 
     (# exist:batch-transaction #) {
     
         let $translation-data := glossary:translation-data($tei, $resource-id)
-        let $tei-version := translation:version-str($tei)
+        let $tei-version := tei-content:version-str($tei)
     
         for $gloss in $tei//tei:back//tei:list[@type eq 'glossary']/tei:item/tei:gloss
             let $expressions := glossary:expressions($translation-data, $gloss/@xml:id)

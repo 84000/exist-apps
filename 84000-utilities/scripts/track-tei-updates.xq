@@ -32,9 +32,9 @@ let $notes-at-last-update :=
         $notes-at-last-update[not(@user eq 'admin' and @type eq 'lastUpdated')]
         and not($notes-at-last-update[@type eq "updated"][@update eq "text-version"])
 
-let $tei-version-str := translation:version-str($tei)
-let $new-version-number-str := translation:version-number-str-increment($tei, 'revision')
-let $tei-version-date := translation:version-date($tei)
+let $tei-version-str := tei-content:version-str($tei)
+let $new-version-number-str := tei-content:version-number-str-increment($tei, 'revision')
+let $tei-version-date := tei-content:version-date($tei)
 let $new-editionStmt :=
     element {QName("http://www.tei-c.org/ns/1.0", "editionStmt")} {
         element edition {

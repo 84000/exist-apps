@@ -10,8 +10,7 @@ declare function local:files-mimetype-xml($collection-uri as xs:string, $file-ex
     order by $file
     where ends-with($file, '.' || $file-extension)
     return
-        if(not(xmldb:get-mime-type(xs:anyURI(concat($collection-uri, '/', $file))) eq 'application/xml')) then
-        (
+        if(not(xmldb:get-mime-type(xs:anyURI(concat($collection-uri, '/', $file))) eq 'application/xml')) then(
             xmldb:store(
                 $collection-uri, 
                 $file, 
@@ -29,8 +28,7 @@ declare function local:files-permissions($collection-uri as xs:string, $file-ext
     for $file in xmldb:get-child-resources($collection-uri)
     order by $file
     where ends-with($file, '.' || $file-extension)
-    return
-    (
+    return(
         sm:chgrp(xs:anyURI(concat($collection-uri, '/', $file)), $group),
         sm:chmod(xs:anyURI(concat($collection-uri, '/', $file)), $permissions),
         concat($file, ' group:', $group, ' permissions:', $permissions)

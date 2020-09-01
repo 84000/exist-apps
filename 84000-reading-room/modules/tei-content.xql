@@ -369,3 +369,96 @@ declare function tei-content:next-xml-id($tei as element(tei:TEI)) as xs:string 
     
 };
 
+(: Just the version number part of the edition as string :)
+declare function tei-content:version-number-str($tei as element(tei:TEI)) as xs:string {
+    (: Remove all but the numbers and points :)
+    tei-content:strip-version-number($tei/tei:teiHeader/tei:fileDesc/tei:editionStmt/tei:edition/text()[1])
+};
+
+declare function tei-content:strip-version-number($version-str as xs:string?) as xs:string {
+    (: Remove all but the numbers and points :)
+    replace($version-str,'[^0-9\.]','')
+};
+
+(: Just the version number part of the edition as numbers e.g. (1,2,3) :)
+declare function tei-content:version-number($version-number-str as xs:string) as xs:integer* {
+    
+    (: Split the numbers :)
+    let $version-number-split := tokenize(tei-content:strip-version-number($version-number-str), '\.')
+    
+    return (
+        if(count($version-number-split) gt 0 and functx:is-a-number($version-number-split[1])) then
+            xs:integer($version-number-split[1])
+        else
+            0
+        ,
+        if(count($version-number-split) gt 1 and functx:is-a-number($version-number-split[2])) then
+            xs:integer($version-number-split[2])
+        else
+            0
+        ,
+        if(count($version-number-split) gt 2 and functx:is-a-number($version-number-split[3])) then
+            xs:integer($version-number-split[3])
+        else
+            0
+    )
+};
+
+(: Compare 2 version number strings - result of strip-version-number() e.g. '0.1.2' :)
+declare function tei-content:is-current-version($tei-version-number-str as xs:string?, $other-version-number-str as xs:string?) as xs:boolean {
+    
+    let $tei-version-number := tei-content:version-number($tei-version-number-str)
+    let $other-version-number := tei-content:version-number($other-version-number-str)
+    
+    return
+        deep-equal($tei-version-number, $other-version-number)
+};
+
+(: Increment specific parts of the version number :)
+declare function tei-content:version-number-str-increment($tei as element(tei:TEI), $part as xs:string) as xs:string {
+    
+    let $version-number-str := tei-content:version-number-str($tei)
+    let $version-number := tei-content:version-number($version-number-str)
+    
+    return string-join((
+        if($part eq 'major') then
+            $version-number[1] + 1
+        else
+            $version-number[1]
+        ,
+        if($part eq 'minor') then
+            $version-number[2] + 1
+        else if($part eq 'major') then
+            0
+        else
+            $version-number[2]
+        ,
+        if($part eq 'revision') then
+            $version-number[3] + 1
+        else if($part = ('major', 'minor')) then
+            0
+        else
+            $version-number[3]
+    ), '.')
+};
+
+(: Just the date part of the edition :)
+declare function tei-content:version-date($tei as element(tei:TEI)) as xs:string {
+    (: Remove all but the numbers :)
+    replace($tei/tei:teiHeader/tei:fileDesc/tei:editionStmt/tei:edition/tei:date/text(),'[^0-9]','')
+};
+
+(: The full version string :)
+declare function tei-content:version-str($tei as element(tei:TEI)) as xs:string {
+    replace(
+        replace(
+            normalize-space(
+                string-join(
+                    $tei/tei:teiHeader/tei:fileDesc/tei:editionStmt/tei:edition//text()   (: Get all text :)
+                , ' ')                                          (: Make sure they don't concatenate :)
+            )                                                   (: Normalize the whitespace :)
+        , '[^a-zA-Z0-9\s\.]', '')                               (: Remove all but the alpanumeric, points and spaces :)
+    , '\s', '-')                                                (: Replace the spaces with hyphens :)
+};
+
+

@@ -155,9 +155,10 @@ return
         (: Translation :)
         else if ($collection-path eq "translation") then
             if ($resource-suffix eq 'tei') then
-                local:dispatch("/models/translation-tei.xq", "",
+                local:dispatch("/models/translation.xq", "",
                     <parameters xmlns="http://exist.sourceforge.net/NS/exist">
                         <add-parameter name="resource-id" value="{$resource-id}"/>
+                        <add-parameter name="resource-suffix" value="tei"/>
                     </parameters>
                 )
             else if ($resource-suffix eq 'html') then
@@ -224,9 +225,10 @@ return
         (: Section :)
         else if ($collection-path eq "section") then
             if ($resource-suffix eq 'tei') then
-                local:dispatch("/models/section-tei.xq", "",
+                local:dispatch("/models/section.xq", "",
                     <parameters xmlns="http://exist.sourceforge.net/NS/exist">
                         <add-parameter name="resource-id" value="{$resource-id}"/>
+                        <add-parameter name="resource-suffix" value="tei"/>
                     </parameters>
                 )
             else if ($resource-suffix eq 'html') then
@@ -343,9 +345,10 @@ return
         (: Knowledgebase :)
         else if ($collection-path eq "knowledgebase") then
             if ($resource-suffix eq 'tei') then
-                local:dispatch("/models/knowledgebase-tei.xq", "",
+                local:dispatch("/models/knowledgebase.xq", "",
                     <parameters xmlns="http://exist.sourceforge.net/NS/exist">
                         <add-parameter name="resource-id" value="{$resource-id}"/>
+                        <add-parameter name="resource-suffix" value="tei"/>
                     </parameters>
                 )
             else if ($resource-suffix eq 'html') then

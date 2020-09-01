@@ -617,7 +617,7 @@
                                         
                                         <div class="translators text-muted small">
                                             <xsl:value-of select="'Translated by '"/>
-                                            <xsl:variable name="author-ids" select="m:tei/m:translation/m:contributors/m:author[@role eq 'translatorEng']/@ref ! substring-after(., 'contributors.xml#')"/>
+                                            <xsl:variable name="author-ids" select="m:tei/m:publication/m:contributors/m:author[@role eq 'translatorEng']/@ref ! substring-after(., 'contributors.xml#')"/>
                                             <xsl:value-of select="string-join(/m:response/m:contributor-persons/m:person[@xml:id = $author-ids]/m:label, ' · ')"/>
                                         </div>
                                         
@@ -819,22 +819,22 @@
                                 </li>
                                 <li>
                                     <xsl:value-of select="'Translator(s): '"/>
-                                    <xsl:value-of select="string-join(m:translation/m:contributors/m:author[@role eq 'translatorEng'], ' · ')"/>
+                                    <xsl:value-of select="string-join(m:publication/m:contributors/m:author[@role eq 'translatorEng'], ' · ')"/>
                                 </li>
-                                <xsl:if test="m:translation/m:contributors/m:editor[@role eq 'reviser']">
+                                <xsl:if test="m:publication/m:contributors/m:editor[@role eq 'reviser']">
                                     <li>
                                         <xsl:value-of select="'Editor(s): '"/>
-                                        <xsl:value-of select="string-join(m:translation/m:contributors/m:editor[@role eq 'reviser'], ' · ')"/>
+                                        <xsl:value-of select="string-join(m:publication/m:contributors/m:editor[@role eq 'reviser'], ' · ')"/>
                                     </li>
                                 </xsl:if>
-                                <xsl:if test="m:translation/m:contributors/m:consultant[@role eq 'advisor']">
+                                <xsl:if test="m:publication/m:contributors/m:consultant[@role eq 'advisor']">
                                     <li>
                                         <xsl:value-of select="'Advisor(s): '"/>
-                                        <xsl:value-of select="string-join(m:translation/m:contributors/m:consultant[@role eq 'advisor'], ' · ')"/>
+                                        <xsl:value-of select="string-join(m:publication/m:contributors/m:consultant[@role eq 'advisor'], ' · ')"/>
                                     </li>
                                 </xsl:if>
                                 <li>
-                                    <xsl:value-of select="concat('Published ', format-date(m:translation/m:publication-date, '[FNn,*-3], [D1o] [MNn,*-3] [Y]'))"/>
+                                    <xsl:value-of select="concat('Published ', format-date(m:publication/m:publication-date, '[FNn,*-3], [D1o] [MNn,*-3] [Y]'))"/>
                                 </li>
                             </ul>
                         </td>

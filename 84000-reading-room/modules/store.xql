@@ -125,7 +125,7 @@ declare function store:create($file-name as xs:string) as element() {
     
     (: Get TEI document version :)
     let $tei := tei-content:tei($resource-id, 'translation')
-    let $tei-version := translation:version-str($tei)
+    let $tei-version := tei-content:version-str($tei)
     
     (: Select which file types to process :)
     let $file-types := ('pdf', 'epub', 'rdf')

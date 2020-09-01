@@ -218,7 +218,7 @@ declare function section:text($tei as element(tei:TEI), $resource-id as xs:strin
         translation:toh($tei, $resource-id),
         translation:titles($tei),
         translation:title-variants($tei),
-        translation:translation($tei),
+        translation:publication($tei),
         translation:downloads($tei, $resource-id, 'any-version'),
         translation:summary($tei)
     }

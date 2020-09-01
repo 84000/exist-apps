@@ -17,10 +17,10 @@ return
             order by $id
             
             let $increment-part := 'revision'
-            let $version-str := translation:version-str($tei)
-            let $version-number-str := translation:version-number-str($tei)
-            let $version-date := translation:version-date($tei)
-            let $version-number-str-increment := translation:version-number-str-increment($tei, $increment-part)
+            let $version-str := tei-content:version-str($tei)
+            let $version-number-str := tei-content:version-number-str($tei)
+            let $version-date := tei-content:version-date($tei)
+            let $version-number-str-increment := tei-content:version-number-str-increment($tei, $increment-part)
             
             let $editionStmt := 
                 element { QName("http://www.tei-c.org/ns/1.0", "editionStmt") }{
@@ -55,5 +55,5 @@ return
             
         return 
             $id || ' / ' || $version-number-str || ' -> ' || $version-number-str-increment
-            (: $id || ' / ' || $version-str || ' -> ' || translation:version-str($tei) :)
+            (: $id || ' / ' || $version-str || ' -> ' || tei-content:version-str($tei) :)
     }

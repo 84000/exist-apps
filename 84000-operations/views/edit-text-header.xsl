@@ -57,12 +57,12 @@
                         
                         <xsl:copy-of select="common:translation-status(m:translation/@status-group)"/>
                         
-                        <xsl:if test="normalize-space(m:translation/m:translation/m:edition)">
+                        <xsl:if test="normalize-space(m:translation/m:publication/m:edition)">
                             
                             <a class="label label-info">
                                 <xsl:attribute name="href" select="concat($reading-room-path, '/translation/', m:translation/@id, '.tei')"/>
                                 <xsl:attribute name="target" select="concat(m:translation/@id, '.tei')"/>
-                                <xsl:value-of select="concat('TEI ', m:translation/m:translation/m:edition)"/>
+                                <xsl:value-of select="concat('TEI ', m:translation/m:publication/m:edition)"/>
                             </a>
                             
                         </xsl:if>
@@ -71,7 +71,7 @@
                             <xsl:for-each select="m:translation/m:downloads">
                                 <xsl:variable name="resource-id" select="@resource-id"/>
                                 <xsl:variable name="tei-version" select="@tei-version"/>
-                                <xsl:for-each select="m:download">
+                                <xsl:for-each select="m:download[@type ne 'html']">
                                     
                                     <a href="#" class="label label-danger">
                                         <xsl:choose>

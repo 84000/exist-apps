@@ -152,7 +152,7 @@
                     <xsl:attribute name="class" select="'active'"/>
                 </xsl:if>
                 <a href="translator-teams.html">
-                    <xsl:value-of select="'Translator Teams'"/>
+                    <xsl:value-of select="'Teams'"/>
                 </a>
             </li>
             <li role="presentation">
@@ -160,7 +160,7 @@
                     <xsl:attribute name="class" select="'active'"/>
                 </xsl:if>
                 <a href="translator-institutions.html">
-                    <xsl:value-of select="'Translator Institutions'"/>
+                    <xsl:value-of select="'Institutions'"/>
                 </a>
             </li>
             <xsl:if test="$active-tab eq 'operations/glossary'">

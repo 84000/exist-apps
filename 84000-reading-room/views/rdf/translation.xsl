@@ -153,9 +153,9 @@
                             <xsl:with-param name="lang" select="'en'"/>
                         </xsl:call-template>
                         <adm:canonicalHtml rdf:resource="{ m:translation/@page-url }"/>
-                        <xsl:if test="m:translation/m:translation/m:contributors/m:author[@role = 'translatorEng']">
+                        <xsl:if test="m:translation/m:publication/m:contributors/m:author[@role = 'translatorEng']">
                             <xsl:comment>Creators</xsl:comment>
-                            <xsl:for-each select="m:translation/m:translation/m:contributors/m:author[@role = 'translatorEng']">
+                            <xsl:for-each select="m:translation/m:publication/m:contributors/m:author[@role = 'translatorEng']">
                                 <xsl:variable name="contributor-id" select="substring-after(@ref, 'contributors.xml#')"/>
                                 <xsl:variable name="contributor" select="$contributors//m:person[@xml:id eq $contributor-id]"/>
                                 <xsl:if test="$contributor">

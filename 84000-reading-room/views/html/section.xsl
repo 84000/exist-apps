@@ -580,7 +580,7 @@
                     <!-- loop through the texts -->
                     <xsl:for-each select="m:texts/m:text">
                         
-                        <xsl:sort select="if(/m:response/m:request/@translations-order eq 'latest' and m:translation/m:publication-date) then xs:date(m:translation/m:publication-date) else ''" order="descending"/>
+                        <xsl:sort select="if(/m:response/m:request/@translations-order eq 'latest' and m:publication/m:publication-date) then xs:date(m:publication/m:publication-date) else ''" order="descending"/>
                         <xsl:sort select="if(/m:response/m:request/@translations-order eq 'shortest' and m:source/m:location/@count-pages) then xs:integer(m:source/m:location/@count-pages) else ''" order="ascending"/>
                         <xsl:sort select="if(/m:response/m:request/@translations-order eq 'longest' and m:source/m:location/@count-pages) then xs:integer(m:source/m:location/@count-pages) else ''" order="descending"/>
                         <xsl:sort select="number(m:toh/@number)"/>
@@ -608,8 +608,8 @@
                                     <xsl:choose>
                                         <xsl:when test="@status-group eq 'published'">
                                             <xsl:choose>
-                                                <xsl:when test="m:translation/m:publication-date/text()">
-                                                    <xsl:value-of select="concat(' Published ', format-date(m:translation/m:publication-date, '[FNn,*-3], [D1o] [MNn,*-3] [Y]'))"/>
+                                                <xsl:when test="m:publication/m:publication-date/text()">
+                                                    <xsl:value-of select="concat(' Published ', format-date(m:publication/m:publication-date, '[FNn,*-3], [D1o] [MNn,*-3] [Y]'))"/>
                                                 </xsl:when>
                                                 <xsl:otherwise>
                                                     <xsl:value-of select="' Published'"/>
@@ -669,11 +669,11 @@
                                     </div>
                                     
                                     <!-- Tantric warning -->
-                                    <xsl:if test="m:translation/m:tantric-restriction/tei:p">
+                                    <xsl:if test="m:publication/m:tantric-restriction/tei:p">
                                         <hr/>
                                         <xsl:call-template name="tantra-warning">
                                             <xsl:with-param name="id" select="@resource-id"/>
-                                            <xsl:with-param name="node" select="m:translation/m:tantric-restriction/tei:p"/>
+                                            <xsl:with-param name="node" select="m:publication/m:tantric-restriction/tei:p"/>
                                         </xsl:call-template>
                                     </xsl:if>
                                     
@@ -769,9 +769,9 @@
                                 <xsl:choose>
                                     <xsl:when test="@status-group eq 'published'">
                                         
-                                        <xsl:if test="m:translation/m:publication-date/text()">
+                                        <xsl:if test="m:publication/m:publication-date/text()">
                                             <div class="hidden-xs hidden-sm small italic sml-margin bottom">
-                                                <xsl:value-of select="concat('Published ', format-date(m:translation/m:publication-date, '[FNn,*-3], [D1o] [MNn,*-3] [Y]'))"/>
+                                                <xsl:value-of select="concat('Published ', format-date(m:publication/m:publication-date, '[FNn,*-3], [D1o] [MNn,*-3] [Y]'))"/>
                                             </div>
                                         </xsl:if>
                                         

@@ -14,6 +14,9 @@
             <tab page="sections.html" model="utilities/sections">
                 <label>Sections</label>
             </tab>
+            <tab page="knowledgebase.html" model="utilities/knowledgebase">
+                <label>Knowledgebase Pages</label>
+            </tab>
             <tab page="folios.html" model="utilities/folios">
                 <label>Folios</label>
             </tab>
@@ -161,7 +164,7 @@
         </div>
         
         <!-- Pop-up footer  -->
-        <div id="popup-footer" class="fixed-footer collapse hidden-print">
+        <div id="popup-footer" class="fixed-footer collapse persist hidden-print">
             <div class="fix-height">
                 <div class="container">
                     <div class="data-container">

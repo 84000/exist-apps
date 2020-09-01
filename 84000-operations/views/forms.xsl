@@ -281,7 +281,7 @@
                     
                     <div class="row">
                         <div class="col-sm-8">
-                            <xsl:variable name="translator-team-id" select="substring-after(m:translation/m:translation/m:contributors/m:summary[1]/@ref, 'contributors.xml#')"/>
+                            <xsl:variable name="translator-team-id" select="substring-after(m:translation/m:publication/m:contributors/m:summary[1]/@ref, 'contributors.xml#')"/>
                             <div class="form-group">
                                 <label class="control-label col-sm-3">
                                     <xsl:value-of select="'Translator Team'"/>
@@ -307,7 +307,7 @@
                             <hr class="sml-margin"/>
                             <div class="add-nodes-container">
                                 <xsl:call-template name="contributors-controls">
-                                    <xsl:with-param name="text-contributors" select="m:translation/m:translation/m:contributors/m:*[self::m:author | self::m:editor | self::m:consultant]"/>
+                                    <xsl:with-param name="text-contributors" select="m:translation/m:publication/m:contributors/m:*[self::m:author | self::m:editor | self::m:consultant]"/>
                                     <xsl:with-param name="contributor-types" select="/m:response/m:contributor-types/m:contributor-type"/>
                                 </xsl:call-template>
                                 <div>
@@ -317,9 +317,9 @@
                             </div>
                         </div>
                         <div class="col-sm-4">
-                            <xsl:if test="m:translation/m:translation/m:contributors/m:summary">
+                            <xsl:if test="m:translation/m:publication/m:contributors/m:summary">
                                 <div class="text-bold">Attribution</div>
-                                <xsl:for-each select="m:translation/m:translation/m:contributors/m:summary">
+                                <xsl:for-each select="m:translation/m:publication/m:contributors/m:summary">
                                     <p>
                                         <xsl:apply-templates select="node()"/>
                                     </p>
@@ -461,7 +461,7 @@
     <xsl:template name="select-contributor">
         <xsl:param name="contributor-id"/>
         <xsl:param name="control-name"/>
-        <xsl:variable name="summary" select="/m:response/m:translation/m:translation/m:contributors/m:summary[1]"/>
+        <xsl:variable name="summary" select="/m:response/m:translation/m:publication/m:contributors/m:summary[1]"/>
         <xsl:variable name="translator-team-id" select="substring-after($summary/@ref, 'contributors.xml#')"/>
         <xsl:variable name="team-contributors" select="/m:response/m:contributor-persons/m:person[m:team[@id = $translator-team-id]]"/>
         <xsl:variable name="other-contributors" select="/m:response/m:contributor-persons/m:person[not(m:team[@id = $translator-team-id])]"/>
@@ -576,7 +576,7 @@
                                 </label>
                                 <div class="col-sm-3">
                                     <input type="date" name="publication-date" id="publication-date" class="form-control">
-                                        <xsl:attribute name="value" select="m:translation/m:translation/m:publication-date"/>
+                                        <xsl:attribute name="value" select="m:translation/m:publication/m:publication-date"/>
                                         <xsl:if test="m:text-statuses/m:status[@selected eq 'selected']/@value eq '1'">
                                             <xsl:attribute name="required" select="'required'"/>
                                         </xsl:if>
@@ -594,8 +594,8 @@
                                         <!-- Force the addition of a version number if the form is used -->
                                         <xsl:attribute name="value">
                                             <xsl:choose>
-                                                <xsl:when test="m:translation/m:translation/m:edition/text()[1]/normalize-space()">
-                                                    <xsl:value-of select="m:translation/m:translation/m:edition/text()[1]/normalize-space()"/>
+                                                <xsl:when test="m:translation/m:publication/m:edition/text()[1]/normalize-space()">
+                                                    <xsl:value-of select="m:translation/m:publication/m:edition/text()[1]/normalize-space()"/>
                                                 </xsl:when>
                                                 <xsl:otherwise>
                                                     <xsl:value-of select="'0.0.1'"/>
@@ -611,8 +611,8 @@
                                     <input type="text" name="text-version-date" id="text-version-date" class="form-control" placeholder="e.g. 2019">
                                         <xsl:attribute name="value">
                                             <xsl:choose>
-                                                <xsl:when test="m:translation/m:translation/m:edition/tei:date/text()/normalize-space()">
-                                                    <xsl:value-of select="m:translation/m:translation/m:edition/tei:date/text()/normalize-space()"/>
+                                                <xsl:when test="m:translation/m:publication/m:edition/tei:date/text()/normalize-space()">
+                                                    <xsl:value-of select="m:translation/m:publication/m:edition/tei:date/text()/normalize-space()"/>
                                                 </xsl:when>
                                                 <xsl:otherwise>
                                                     <xsl:value-of select="format-dateTime(current-dateTime(), '[Y]')"/>
@@ -1021,9 +1021,9 @@
                             <xsl:value-of select="'Sponsors'"/>
                         </legend>
                         <xsl:choose>
-                            <xsl:when test="m:translation/m:translation/m:sponsors/m:sponsor">
+                            <xsl:when test="m:translation/m:publication/m:sponsors/m:sponsor">
                                 <xsl:call-template name="sponsors-controls">
-                                    <xsl:with-param name="text-sponsors" select="m:translation/m:translation/m:sponsors/m:sponsor"/>
+                                    <xsl:with-param name="text-sponsors" select="m:translation/m:publication/m:sponsors/m:sponsor"/>
                                     <xsl:with-param name="all-sponsors" select="/m:response/m:sponsors/m:sponsor"/>
                                 </xsl:call-template>
                             </xsl:when>

@@ -460,8 +460,8 @@ declare function local:tei-header($tei as element(tei:TEI)) as element() {
             {
                 if($tei-type eq 'translation') then
                 (
-                    (: Add translation :)
-                    translation:translation($tei),
+                    (: Add header :)
+                    translation:publication($tei),
                     
                     (: Add Toh :)
                     for $toh-key in $tei//tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl/@key

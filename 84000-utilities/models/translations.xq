@@ -42,11 +42,9 @@ let $store-file :=
         ,
         if($utilities-url and matches(request:get-uri(), '.*/translations\.html.*')) then
             response:redirect-to(xs:anyURI(concat($utilities-url, '/translations.html?texts-status=',$request-status)))
-        else
-            ()
+        else ()
     )
-    else
-        ()
+    else ()
 
 (: If this is a client doing a version diff then first get translation versions in MASTER database for comparison :)
 let $translations-master := 

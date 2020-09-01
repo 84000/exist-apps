@@ -148,7 +148,7 @@
                                     </div>
                                 </xsl:for-each>
                                 
-                                <xsl:variable name="tantric-restriction" select="$tei/m:translation/m:tantric-restriction"/>
+                                <xsl:variable name="tantric-restriction" select="$tei/m:publication/m:tantric-restriction"/>
                                 <xsl:if test="$tantric-restriction/tei:p">
                                     <div class="row">
                                         <div class="col-sm-12">

@@ -5,9 +5,9 @@ declare namespace tei="http://www.tei-c.org/ns/1.0";
 declare namespace rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#";
 
 import module namespace common="http://read.84000.co/common" at "../../84000-reading-room/modules/common.xql";
+import module namespace tei-content="http://read.84000.co/tei-content" at "../../84000-reading-room/modules/tei-content.xql";
 import module namespace source="http://read.84000.co/source" at "../../84000-reading-room/modules/source.xql";
 import module namespace translations="http://read.84000.co/translations" at "../../84000-reading-room/modules/translations.xql";
-import module namespace translation="http://read.84000.co/translation" at "../../84000-reading-room/modules/translation.xql";
 import module namespace store="http://read.84000.co/store" at "../../84000-reading-room/modules/store.xql";
 
 (:  NOTE: 
@@ -35,9 +35,9 @@ return (
             let $file-name := concat($toh-key, '.rdf')
             let $file-path := concat($common:data-path, '/rdf/', $file-name)
             let $tei := $teis[tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl[@key eq $toh-key]]
-            let $tei-version-str := translation:version-str($tei)
+            let $tei-version-str := tei-content:version-str($tei)
             let $rdf-version-str := $rdf-file-versions//m:file-version[@file-name eq $file-name]/@version
-            where not($rdf-version-str) or not(translation:is-current-version($tei-version-str, $rdf-version-str))
+            where not($rdf-version-str) or not(tei-content:is-current-version($tei-version-str, $rdf-version-str))
             order by $toh-key
         return 
             string-join((

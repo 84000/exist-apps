@@ -109,7 +109,7 @@
                     <navPoint id="appendix">
                         <navLabel>
                             <text>
-                                <xsl:value-of select="m:translation/m:appendix/m:title"/>
+                                <xsl:apply-templates select="m:translation/m:appendix/m:title"/>
                             </text>
                         </navLabel>
                         <content src="appendix.xhtml"/>

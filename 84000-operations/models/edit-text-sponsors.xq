@@ -25,7 +25,6 @@ let $tei :=
         tei-content:tei($request-id, 'translation')
 
 let $text-id := tei-content:id($tei)
-let $tei-translation := translation:translation($tei)
 
 let $document-uri := base-uri($tei)
 let $document-uri-tokenised := tokenize($document-uri, '/')
@@ -35,13 +34,11 @@ let $tei-locked-by-user := xmldb:document-has-lock(concat("xmldb:exist://", $doc
 
 (: Process input :)
 let $updated := 
-    if($post-id and $tei and $text-id and $form-action eq 'update-sponsorship') then
-        (
-            update-translation:title-statement($tei),
-            update-translation:project($text-id)
-        )
-     else
-        ()
+    if($post-id and $tei and $text-id and $form-action eq 'update-sponsorship') then (
+        update-translation:title-statement($tei),
+        update-translation:project($text-id)
+    )
+     else ()
 
 (: Return output :)
 let $acknowledgment := translation:acknowledgment($tei)
@@ -65,7 +62,7 @@ return
                 status="{ tei-content:translation-status($tei) }">
                 { translation:titles($tei) }
                 { translation:sponsors($tei, true()) }
-                { translation:translation($tei) }
+                { translation:publication($tei) }
                 { translation:toh($tei, '') }
             </translation>,
             sponsors:sponsors('all', false(), true()),

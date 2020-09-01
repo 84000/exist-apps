@@ -29,7 +29,7 @@ declare function local:parse-content($content, $folio-refs) {
             
             else (
                 (: These are the nodes we want to include :)
-                for $node at $position in ($group//text()[not(ancestor::tei:note | ancestor::m:translation[parent::m:translation])][normalize-space(.) gt ''] | $group//tei:milestone | $group//tei:ref[@ref-index] | $group//tei:note[@index])
+                for $node at $position in ($group//text()[not(ancestor::tei:note | ancestor::m:publication[parent::m:translation])][normalize-space(.) gt ''] | $group//tei:milestone | $group//tei:ref[@ref-index] | $group//tei:note[@index])
                 return (
                     (: Add a space before all nodes except the first, unless it's punctuation or followed by punctuation :)
                     if($position gt 1 and not(normalize-space($node) = ('.',',','!','?','”',':',';'))) then
@@ -67,7 +67,7 @@ declare function local:parse-content($content, $folio-refs) {
 };
 
 let $data := request:get-data()
-let $parsed-content := local:parse-content($data/m:response/m:translation/m:translation | $data/m:response/m:translation/m:prologue | $data/m:response/m:translation/m:homage | $data/m:response/m:translation/m:body | $data/m:response/m:translation/m:colophon, $data/m:response/m:folio-refs)
+let $parsed-content := local:parse-content($data/m:response/m:translation/m:publication | $data/m:response/m:translation/m:prologue | $data/m:response/m:translation/m:homage | $data/m:response/m:translation/m:body | $data/m:response/m:translation/m:colophon, $data/m:response/m:folio-refs)
 let $string := string-join($parsed-content, '')
 let $binary := util:base64-encode($string)
 

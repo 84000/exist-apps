@@ -412,7 +412,7 @@ declare function translations:filtered-text($tei as element(tei:TEI), $toh-key a
             translation:title-variants($tei),
             tei-content:source-bibl($tei, $toh-key),
             translation:location($tei, $toh-key),
-            translation:translation($tei),
+            translation:publication($tei),
             translation:summary($tei, $lang),
             translation:status-updates($tei),
             sponsorship:text-status($text-id, false()),

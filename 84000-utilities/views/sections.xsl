@@ -79,15 +79,15 @@
                     <xsl:with-param name="counter" select="1"/>
                     <xsl:with-param name="finish" select="xs:integer(@nesting)"/>
                     <xsl:with-param name="content">
-                        <span class="text-bold">
-                            <xsl:value-of select="m:titles/m:title[@xml:lang eq 'en']"/>
-                        </span>
+                        <div>
+                            <span class="text-bold">
+                                <xsl:value-of select="m:titles/m:title[@xml:lang eq 'en']"/>
+                            </span>
+                            <small>
+                                <xsl:value-of select="concat(' \ ', @id)"/>
+                            </small>
+                        </div>
                         <ul class="list-inline inline-dots sml-margin bottom">
-                            <li>
-                                <span class="small">
-                                    <xsl:value-of select="@id"/>
-                                </span>
-                            </li>
                             <li>
                                 <a>
                                     <xsl:attribute name="href" select="concat($reading-room-path ,'/section/', @id, '.tei')"/>
@@ -154,7 +154,7 @@
                                 </a>
                             </li>
                         </ul>
-                        <div class="small">
+                        <div class="small text-muted">
                             <xsl:value-of select="'File: '"/>
                             <span class="break">
                                 <xsl:value-of select="@uri"/>
