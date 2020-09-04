@@ -15,46 +15,50 @@ declare variable $section:sections := collection($common:sections-path);
 declare variable $section:texts := collection($common:translations-path);
 
 declare function section:titles($tei as element(tei:TEI)) as element() {
-    <titles xmlns="http://read.84000.co/ns/1.0">
-    {
+    
+    element { QName('http://read.84000.co/ns/1.0', 'titles') } {
         tei-content:title-set($tei, 'mainTitle')
     }
-    </titles>
+    
 };
 
 declare function section:abstract($tei as element(tei:TEI)) as element() {
 
-    <abstract xmlns="http://read.84000.co/ns/1.0">
-    { 
+    element { QName('http://read.84000.co/ns/1.0', 'abstract') } {
         common:normalize-space(
             $tei/tei:text/tei:front/tei:div[@type eq "abstract"]/*
         )
     }
-    </abstract>
     
 };
 
 declare function section:warning($tei as element(tei:TEI)) as element() {
 
-    <warning xmlns="http://read.84000.co/ns/1.0">
-    { 
+    element { QName('http://read.84000.co/ns/1.0', 'warning') } { 
         common:normalize-space(
             $tei/tei:text/tei:front/tei:div[@type eq "warning"]/*
         )
     }
-    </warning>
     
 };
 
 declare function section:about($tei as element(tei:TEI)) as element() {
 
-    <about xmlns="http://read.84000.co/ns/1.0">
-    { 
+    element { QName('http://read.84000.co/ns/1.0', 'about') } { 
         common:normalize-space(
             $tei/tei:text/tei:body/tei:div[@type eq "about"]/*
         )
     }
-    </about>
+    
+};
+
+declare function section:filters($tei as element(tei:TEI)) as element() {
+
+    element { QName('http://read.84000.co/ns/1.0', 'filters') } { 
+        common:normalize-space(
+            $tei/tei:text/tei:body/tei:div[@type eq "filter"]
+        )
+    }
     
 };
 
@@ -146,22 +150,57 @@ declare function section:child-sections($tei as element(tei:TEI), $include-text-
                     sum($child-texts-fileDesc[tei:publicationStmt/@status = $tei-content:in-progress-status-ids]/tei:sourceDesc/tei:bibl/tei:location/@count-pages ! common:integer(.))
             
             return
-                <text-stats xmlns="http://read.84000.co/ns/1.0">
-                    <stat type="count-text-children" value="{ $count-text-children }"/>
-                    <stat type="count-published-children" value="{ $count-published-children }"/>
-                    <stat type="count-in-progress-children" value="{ $count-in-progress-children }"/>
-                    <stat type="count-text-descendants" value="{ $count-text-children + sum($child-sections//m:stat[@type = 'count-text-children']/@value ! xs:integer(.)) }"/>
-                    <stat type="count-published-descendants" value="{ $count-published-children + sum($child-sections//m:stat[@type = 'count-published-children']/@value ! xs:integer(.)) }"/>
-                    <stat type="count-in-progress-descendants" value="{ $count-in-progress-children + sum($child-sections//m:stat[@type = 'count-in-progress-children']/@value ! xs:integer(.)) }"/>
-                    <stat type="sum-pages-text-children" value="{ $sum-pages-text-children }"/>
-                    <stat type="sum-pages-published-children" value="{ $sum-pages-published-children }"/>
-                    <stat type="sum-pages-in-progress-children" value="{ $sum-pages-in-progress-children }"/>
-                    <stat type="sum-pages-text-descendants" value="{ $sum-pages-text-children + sum($child-sections//m:stat[@type = 'sum-pages-text-children']/@value ! xs:integer(.)) }"/>
-                    <stat type="sum-pages-published-descendants" value="{ $sum-pages-published-children + sum($child-sections//m:stat[@type = 'sum-pages-published-children']/@value ! xs:integer(.)) }"/>
-                    <stat type="sum-pages-in-progress-descendants" value="{ $sum-pages-in-progress-children + sum($child-sections//m:stat[@type = 'sum-pages-in-progress-children']/@value ! xs:integer(.)) }"/>
-                </text-stats>
-            else
-                ()
+                element { QName('http://read.84000.co/ns/1.0', 'text-stats') } { 
+                    element stat {
+                        attribute type { 'count-text-children' },
+                        attribute value { $count-text-children }
+                    },
+                    element stat {
+                        attribute type { 'count-published-children' },
+                        attribute value { $count-published-children }
+                    },
+                    element stat {
+                        attribute type { 'count-in-progress-children' },
+                        attribute value { $count-in-progress-children }
+                    },
+                    element stat {
+                        attribute type { 'count-text-descendants' },
+                        attribute value { $count-text-children + sum($child-sections//m:stat[@type = 'count-text-children']/@value ! xs:integer(.)) }
+                    },
+                    element stat {
+                        attribute type { 'count-published-descendants' },
+                        attribute value { $count-published-children + sum($child-sections//m:stat[@type = 'count-published-children']/@value ! xs:integer(.)) }
+                    },
+                    element stat {
+                        attribute type { 'count-in-progress-descendants' },
+                        attribute value { $count-in-progress-children + sum($child-sections//m:stat[@type = 'count-in-progress-children']/@value ! xs:integer(.)) }
+                    },
+                    element stat {
+                        attribute type { 'sum-pages-text-children' },
+                        attribute value { $sum-pages-text-children }
+                    },
+                    element stat {
+                        attribute type { 'sum-pages-published-children' },
+                        attribute value { $sum-pages-published-children }
+                    },
+                    element stat {
+                        attribute type { 'sum-pages-in-progress-children' },
+                        attribute value { $sum-pages-in-progress-children }
+                    },
+                    element stat {
+                        attribute type { 'sum-pages-text-descendants' },
+                        attribute value { $sum-pages-text-children + sum($child-sections//m:stat[@type = 'sum-pages-text-children']/@value ! xs:integer(.)) }
+                    },
+                    element stat {
+                        attribute type { 'sum-pages-published-descendants' },
+                        attribute value { $sum-pages-published-children + sum($child-sections//m:stat[@type = 'sum-pages-published-children']/@value ! xs:integer(.)) }
+                    },
+                    element stat {
+                        attribute type { 'sum-pages-in-progress-descendants' },
+                        attribute value { $sum-pages-in-progress-children + sum($child-sections//m:stat[@type = 'sum-pages-in-progress-children']/@value ! xs:integer(.)) }
+                    }
+                }
+            else ()
     
     (: Derive last updated from tree :)
     let $last-updated := 
@@ -204,6 +243,7 @@ declare function section:child-sections($tei as element(tei:TEI), $include-text-
 
 declare function section:text($tei as element(tei:TEI), $resource-id as xs:string, $include-ancestors as xs:boolean) as element() {
     element { QName('http://read.84000.co/ns/1.0', 'text') }{
+        attribute id { tei-content:id($tei) },
         attribute resource-id { $resource-id },
         attribute status { tei-content:translation-status($tei) },
         attribute status-group { tei-content:translation-status-group($tei) },
@@ -233,6 +273,7 @@ declare function section:section-tree($tei as element(tei:TEI), $include-text-st
             $section/@*,
             $section/*,
             section:about($tei),
+            section:filters($tei),
             tei-content:ancestors($tei, '', 1)
         }
         

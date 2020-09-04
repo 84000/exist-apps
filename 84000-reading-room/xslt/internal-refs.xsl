@@ -40,7 +40,7 @@
                     <!-- Get the target of this pointer -->
                     <xsl:variable name="target-id" select="substring-after(@target, '#')"/>
                     <!-- Query it in this page -->
-                    <xsl:variable name="target" select="//*[@xml:id eq $target-id]"/>
+                    <xsl:variable name="target" select="//*[@xml:id eq $target-id][1]"/>
                     
                     <xsl:choose>
                         

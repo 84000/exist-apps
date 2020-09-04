@@ -810,7 +810,7 @@
                                     <xsl:value-of select="' · '"/>
                                 </span>
                                 <span class="text-sa">
-                                    <xsl:value-of select="m:titles/m:title[@xml:lang eq 'sa-ltn']"/>
+                                    <xsl:value-of select="m:titles/m:title[@xml:lang eq 'Sa-Ltn']"/>
                                 </span>
                             </div>
                             <ul class="list-unstyled small sml-margin top text-muted">

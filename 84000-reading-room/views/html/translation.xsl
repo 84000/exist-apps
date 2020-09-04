@@ -595,18 +595,21 @@
         <xsl:param name="translation" required="yes"/>
         <table id="table-of-contents" class="contents-table">
             <tbody>
+                
                 <tr>
                     <td>ti.</td>
                     <td>
                         <a href="#top" class="scroll-to-anchor">Title</a>
                     </td>
                 </tr>
+                
                 <tr>
                     <td>co.</td>
                     <td>
                         <a href="#contents" class="scroll-to-anchor">Contents</a>
                     </td>
                 </tr>
+                
                 <xsl:if test="$translation/m:summary//tei:*">
                     <tr>
                         <td>
@@ -617,6 +620,7 @@
                         </td>
                     </tr>
                 </xsl:if>
+                
                 <xsl:if test="$translation/m:acknowledgment//tei:*">
                     <tr>
                         <td>
@@ -627,6 +631,7 @@
                         </td>
                     </tr>
                 </xsl:if>
+                
                 <xsl:if test="$translation/m:preface//tei:*">
                     <tr>
                         <td>
@@ -637,6 +642,7 @@
                         </td>
                     </tr>
                 </xsl:if>
+                
                 <xsl:if test="$translation/m:introduction//tei:*">
                     <tr>
                         <td>
@@ -647,6 +653,7 @@
                         </td>
                     </tr>
                 </xsl:if>
+                
                 <tr>
                     <td>
                         <xsl:value-of select="concat($translation/m:body/@prefix, '.')"/>
@@ -655,6 +662,7 @@
                         <a href="#body-title" class="scroll-to-anchor">The Translation</a>
                     </td>
                 </tr>
+                
                 <xsl:if test="$translation/m:prologue//tei:*">
                     <tr>
                         <td>
@@ -665,6 +673,7 @@
                         </td>
                     </tr>
                 </xsl:if>
+                
                 <xsl:if test="$translation/m:homage//tei:*">
                     <tr>
                         <td>
@@ -675,12 +684,14 @@
                         </td>
                     </tr>
                 </xsl:if>
+                
                 <xsl:variable name="chapters" select="$translation/m:body/m:chapter"/>
                 <xsl:if test="$chapters">
                     <xsl:call-template name="table-of-contents-sections">
                         <xsl:with-param name="sections" select="$chapters"/>
                     </xsl:call-template>
                 </xsl:if>
+                
                 <xsl:if test="$translation/m:colophon//tei:*">
                     <tr>
                         <td>
@@ -691,22 +702,14 @@
                         </td>
                     </tr>
                 </xsl:if>
+                
                 <xsl:variable name="appendix" select="$translation/m:appendix"/>
                 <xsl:if test="$appendix//tei:*">
-                    <!--<tr>
-                        <td>
-                            <xsl:value-of select="concat($appendix/@prefix, '.')"/>
-                        </td>
-                        <td>
-                            <a href="#appendix" class="scroll-to-anchor">
-                                <xsl:value-of select="$appendix/m:title"/>
-                            </a>
-                        </td>
-                    </tr>-->
                     <xsl:call-template name="table-of-contents-sections">
                         <xsl:with-param name="sections" select="$appendix"/>
                     </xsl:call-template>
                 </xsl:if>
+                
                 <xsl:if test="$translation/m:abbreviations//m:list/m:item">
                     <tr>
                         <td>
@@ -717,6 +720,7 @@
                         </td>
                     </tr>
                 </xsl:if>
+                
                 <tr>
                     <td>
                         <xsl:value-of select="concat($translation/m:notes/@prefix, '.')"/>
@@ -747,23 +751,32 @@
     
     <xsl:template name="table-of-contents-sections">
         <xsl:param name="sections" required="yes"/>
+        <xsl:param name="expand" select="false()"/>
+        <!--<xsl:param name="key" as="xs:string"/>-->
         
         <!-- output a row per chapter -->
         <xsl:for-each select="$sections">
             
-            <xsl:variable name="id" select="if(@prefix) then concat('chapter-', @prefix) else concat('section-', @section-id)"/>
+            <xsl:variable name="section" select="."/>
+            <xsl:variable name="id" select="if($section[@prefix]) then concat('chapter-', $section/@prefix) else concat('section-', $section/@section-id)"/>
+            <!--<xsl:variable name="expand-id" select="concat('toc-', $key, '-', $id)"/>-->
             <xsl:variable name="expand-id" select="concat('toc-', $id)"/>
-            <xsl:variable name="sub-sections" select="tei:div[@type = ('section', 'chapter')] | m:chapter"/>
+            <xsl:variable name="sub-sections" select="$section/tei:div[@type = ('section', 'chapter')] | $section/m:chapter"/>
             
             <xsl:choose>
-                <xsl:when test="tei:head[text()] | m:title[text()] | m:title-number[text()]">
+                <xsl:when test="$section[tei:head[text()] | m:title[text()] | m:title-number[text()]]">
+                <!--<xsl:when test="
+                    (: No @key or the specified @key :)
+                    $section[($key eq '' and not(@key)) or @key eq $key or $key eq '__complete__']
+                    (: Has a heading :)                     
+                    and $section[tei:head[text()] | m:title[text()] | m:title-number[text()]]">-->
                     
                     <!-- Create a link to the chapter -->
                     <tr>
                         <td>
                             <xsl:choose>
-                                <xsl:when test="@prefix">
-                                    <xsl:apply-templates select="@prefix"/>
+                                <xsl:when test="$section/@prefix">
+                                    <xsl:apply-templates select="$section/@prefix"/>
                                     <xsl:value-of select="'.'"/>
                                 </xsl:when>
                                 <xsl:otherwise>
@@ -775,14 +788,14 @@
                             <a class="scroll-to-anchor">
                                 <xsl:attribute name="href" select="concat('#', $id)"/>
                                 <xsl:choose>
-                                    <xsl:when test="tei:head[text()]">
-                                        <xsl:apply-templates select="tei:head/text()"/>
+                                    <xsl:when test="$section/tei:head[text()]">
+                                        <xsl:apply-templates select="$section/tei:head/text()"/>
                                     </xsl:when>
-                                    <xsl:when test="m:title[text()]">
-                                        <xsl:apply-templates select="m:title/text()"/>
+                                    <xsl:when test="$section/m:title[text()]">
+                                        <xsl:apply-templates select="$section/m:title/text()"/>
                                     </xsl:when>
                                     <xsl:otherwise>
-                                        <xsl:apply-templates select="m:title-number/text()"/>
+                                        <xsl:apply-templates select="$section/m:title-number/text()"/>
                                     </xsl:otherwise>
                                 </xsl:choose>
                             </a>
@@ -791,6 +804,7 @@
                     
                     <!-- If somewhere down the chain there's something more to show -->
                     <xsl:if test="$sub-sections//tei:head[text()] | $sub-sections//tei:title[text()] | $sub-sections//m:title-number[text()]">
+                    <!--<xsl:if test="$sub-sections//tei:div[($key eq '' and not(@key)) or @key eq $key or $key eq '__complete__'][tei:head[text()] | $sub-sections//tei:title[text()] | $sub-sections//m:title-number[text()]]">-->
                         
                         <!-- Create a block for sub- -->
                         <tr class="sub">
@@ -798,7 +812,7 @@
                             <td>
                                 
                                 <!-- Option to open and close -->
-                                <xsl:if test="$expand-id">
+                                <xsl:if test="not($expand) and $expand-id">
                                     <a role="button" data-toggle="collapse" aria-expanded="true" class="collapsed small hidden-print">
                                         <xsl:attribute name="href" select="concat('#', $expand-id)"/>
                                         <xsl:attribute name="aria-controls" select="$expand-id"/>
@@ -819,7 +833,7 @@
                                 
                                 <!-- Expandable box -->
                                 <div>
-                                    <xsl:if test="$expand-id">
+                                    <xsl:if test="not($expand) and $expand-id">
                                         <xsl:attribute name="class" select="'collapse persist print-expand collapse-chapter'"/>
                                         <xsl:attribute name="id" select="$expand-id"/>
                                     </xsl:if>
@@ -828,6 +842,7 @@
                                             <!-- Process sub-sections -->
                                             <xsl:call-template name="table-of-contents-sections">
                                                 <xsl:with-param name="sections" select="$sub-sections"/>
+                                                <xsl:with-param name="expand" select="$expand"/>
                                             </xsl:call-template>
                                         </tbody>
                                     </table>
@@ -843,6 +858,7 @@
                     <!-- Process sub-sections -->
                     <xsl:call-template name="table-of-contents-sections">
                         <xsl:with-param name="sections" select="$sub-sections"/>
+                        <xsl:with-param name="expand" select="$expand"/>
                     </xsl:call-template>
                     
                 </xsl:otherwise>
@@ -850,6 +866,27 @@
             
         </xsl:for-each>
     </xsl:template>
+    
+    <!--<xsl:template match="m:toc[@key]">
+        
+        <!-\- Outputs an alternative table of contents based on the key -\->
+        <xsl:call-template name="milestone">
+            <xsl:with-param name="content">
+            <table class="contents-table">
+                <xsl:attribute name="id" select="concat('table-of-contents', @key)"/>
+                <tbody>
+                    <xsl:call-template name="table-of-contents-sections">
+                        <xsl:with-param name="sections" select="/m:response/m:translation/m:body/m:chapter"/>
+                        <xsl:with-param name="key" select="@key"/>
+                        <xsl:with-param name="expand" select="true()"/>
+                    </xsl:call-template>
+                </tbody>
+            </table>
+            </xsl:with-param>
+            <xsl:with-param name="row-type" select="'toc'"/>
+        </xsl:call-template>
+        
+    </xsl:template>-->
     
     <xsl:template name="front-matter">
         <xsl:param name="translation" required="yes"/>

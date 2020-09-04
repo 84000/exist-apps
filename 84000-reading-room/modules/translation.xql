@@ -210,46 +210,39 @@ declare function translation:downloads($tei as element(tei:TEI), $resource-id as
         }
 };
 
-
 declare function local:section($name as xs:string, $prefix as xs:string, $section as node()?) as element() {
+    local:section($name, $prefix, $section, '')
+};
+
+declare function local:section($name as xs:string, $prefix as xs:string, $section as node()?, $valid-lang as xs:string) as element() {
     element { QName('http://read.84000.co/ns/1.0', $name) } {
         attribute prefix { $prefix },
+        if($valid-lang gt '')then
+            attribute xml:lang { $valid-lang }
+        else ()
+        ,
         translation:nested-section($section, 0, $prefix)
     }
 };
 
 declare function translation:nested-section($section as element()?, $nesting as xs:integer, $parent-id) (:as element()*:) {
-    if($section) then (
-        (: Add direct children :)
-        $section/*[
-            self::tei:head
-            | self::tei:p
-            | self::tei:milestone
-            | self::tei:ab
-            | self::tei:lg
-            | self::tei:lb
-            | self::tei:q
-            | self::tei:list
-            | self::tei:trailer
-            | self::tei:label
-            | self::tei:seg
-            | self::tei:table
-        ],
-        (: Add subsections :)
-        for $sub-section at $position in $section/tei:div[@type = ('section', 'chapter')]
-            let $section-id := concat($parent-id, '-', $position)
-        return
-            element tei:div {
-                attribute type { $sub-section/@type },
-                attribute nesting { $nesting },
-                attribute section-id { $section-id },
-                attribute section-uid { $sub-section/@xml:id },
-                translation:nested-section($sub-section, $nesting + 1, $section-id)
-            }
-    )
-    else ()
-};
 
+    for $node at $position in $section/*
+    return
+        if($node[self::tei:div[@type = ('section', 'chapter')]]) then
+            let $section-id := concat($parent-id, '-', $position)
+            return
+                element tei:div {
+                    $node/@*,
+                    attribute nesting { $nesting },
+                    attribute section-id { $section-id },
+                    attribute section-uid { $node/@xml:id },
+                    translation:nested-section($node, $nesting + 1, $section-id)
+                }
+        else
+            $node[self::tei:head | self::m:toc]
+    
+};
 
 declare function translation:summary($tei as element(tei:TEI)) as element() {
     translation:summary($tei, '')
@@ -257,22 +250,14 @@ declare function translation:summary($tei as element(tei:TEI)) as element() {
 
 declare function translation:summary($tei as element(tei:TEI), $lang as xs:string) as element() {
     let $valid-lang := common:valid-lang($lang)
-    let $valid-lang :=
-        if($valid-lang eq '') then
-            'en'
+    let $section :=
+        if(not($valid-lang = ('en', ''))) then
+            $tei/tei:text/tei:front//tei:div[@type eq 'summary'][@xml:lang = $valid-lang]
         else
-            $valid-lang
+            $tei/tei:text/tei:front//tei:div[@type eq 'summary'][not(@xml:lang) or @xml:lang = 'en']
+     
     return
-        element { QName('http://read.84000.co/ns/1.0', 'summary') } {
-            attribute xml:lang { $valid-lang },
-            attribute prefix { 's' },
-            common:normalize-space(
-                if($valid-lang eq 'en') then
-                    $tei/tei:text/tei:front//tei:div[@type eq 'summary'][not(@xml:lang) or @xml:lang = 'en']/*
-                else
-                    $tei/tei:text/tei:front//tei:div[@type eq 'summary'][@xml:lang = $valid-lang]/*
-            )
-        }
+        local:section('summary', 's', $section, $valid-lang)
 };
 
 declare function translation:acknowledgment($tei as element(tei:TEI)) as element() {

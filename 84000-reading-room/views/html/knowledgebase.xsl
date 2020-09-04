@@ -173,7 +173,7 @@
         
         <ul class="list-unstyled taxonomy">
             <xsl:for-each select="m:knowledgebase/m:taxonomy/tei:category">
-                <li class="label label-category">
+                <li class="label label-filter">
                     <xsl:value-of select="tei:catDesc"/>
                 </li>
             </xsl:for-each>

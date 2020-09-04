@@ -652,28 +652,38 @@
                 <xsl:call-template name="milestone">
                     <xsl:with-param name="content">
                         <div>
+                            
                             <xsl:call-template name="tid">
                                 <xsl:with-param name="node" select="."/>
                             </xsl:call-template>
+                            
                             <xsl:call-template name="class-attribute">
                                 <xsl:with-param name="base-classes" as="xs:string*">
                                     <xsl:value-of select="'rw-heading'"/>
                                     <xsl:if test="@type">
                                         <xsl:value-of select="concat('heading-', @type)"/>
                                     </xsl:if>
-                                    <xsl:if test="ancestor::tei:div[1]/@nesting">
+                                    <xsl:if test="ancestor::tei:div[1][@nesting]">
                                         <xsl:value-of select="concat('nesting-', ancestor::tei:div[1]/@nesting)"/>
+                                    </xsl:if>
+                                    <xsl:if test="ancestor::tei:div[1][@nesting][@key]">
+                                        <xsl:value-of select="'supp-head'"/>
                                     </xsl:if>
                                 </xsl:with-param>
                             </xsl:call-template>
+                            
                             <span>
                                 <h4>
-                                    <xsl:if test="@type eq 'chapter'">
-                                        <xsl:attribute name="class" select="'chapter-number'"/>
-                                    </xsl:if>
+                                    <xsl:variable name="css-class" as="xs:string*">
+                                        <xsl:if test="@type eq 'chapter'">
+                                            <xsl:value-of select="'chapter-number'"/>
+                                        </xsl:if>
+                                    </xsl:variable>
+                                    <xsl:attribute name="class" select="string-join($css-class, ' ')"/>
                                     <xsl:apply-templates select="node()"/>
                                 </h4>
                             </span>
+                            
                         </div>
                     </xsl:with-param>
                     <xsl:with-param name="row-type" select="concat(@type, '-head')"/>
@@ -723,7 +733,7 @@
             <!-- Set the class -->
             <xsl:attribute name="class" select="concat('nested-', @type)"/>
             <!-- If the child is another div it will recurse -->
-            <xsl:apply-templates select="tei:*"/>
+            <xsl:apply-templates select="*"/>
         </div>
     </xsl:template>
     
