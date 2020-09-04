@@ -14,6 +14,8 @@ declare option exist:serialize "method=xml indent=no";
 
 let $resource-id := upper-case(request:get-parameter('resource-id', 'lobby'))
 let $resource-suffix := request:get-parameter('resource-suffix', '')
+let $translations-order := request:get-parameter('translations-order', 'toh')
+let $filter-id := request:get-parameter('filter-id', '')
 
 let $tei := tei-content:tei($resource-id, 'section')
 
@@ -48,7 +50,7 @@ return
                 else
                     'descendants'
     
-        let $translations-order := request:get-parameter('translations-order', 'toh')
+        
         
         return
             common:response(
@@ -63,7 +65,8 @@ return
                         doc-type="{ $doc-type }"
                         published-only="{ xs:boolean($published-only) }"
                         child-texts-only="{ xs:boolean($child-texts-only) }"
-                        translations-order="{ $translations-order }"/>,
+                        translations-order="{ $translations-order }"
+                        filter-id="{ $filter-id }"/>,
                         
                     (: Include section data :)
                     section:section-tree($tei, true(), $include-texts)

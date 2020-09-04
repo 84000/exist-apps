@@ -56,7 +56,7 @@
                                                 </span>
                                             </span>
                                             <span class="btn-round-text">
-                                                <xsl:value-of select="'View Published Translations'"/>
+                                                <xsl:value-of select="'All Published Translations'"/>
                                             </span>
                                         </a>
                                     </div>
@@ -98,23 +98,13 @@
                     </div>
                     
                     <!-- 
-                            Conditions for having a text tab
-                            - There are texts
-                            - There are texts in a sub-section (it's a grouping section)
-                            - There were texts but published-only was selected
-                        -->
+                        Conditions for having a text tab
+                        - There are texts
+                        - There are texts in a sub-section (it's a grouping section)
+                        - There were texts but published-only was selected
+                    -->
                     <xsl:variable name="show-texts" select="(m:section/m:texts/m:text or m:section/m:section[@type eq 'grouping']/m:texts/m:text or m:section/m:texts[@published-only eq '1'])"/>
                     
-                    <xsl:variable name="filters" select="m:section/m:filters/tei:div[@type eq 'filter']"/>
-                    <xsl:variable name="max-filter-tabs" select="3"/>
-                    
-                    <!-- 
-                            Conditions for showing tabs
-                            - it's not lobby or all translated
-                            - and there are texts ($show-texts)
-                            - or there are sections
-                            - or there's some about content
-                        -->
                     <xsl:if test="not($section-id = ('lobby', 'all-translated')) and ($show-texts or m:section/m:section[not(@type eq 'grouping')] or m:section/m:about/*)">
                         
                         <!-- Content tabs (sections/texts/summary) -->
@@ -125,72 +115,47 @@
                                 <xsl:if test="$show-texts">
                                     <li role="presentation" class="active">
                                         <a href="#texts" aria-controls="texts" role="tab" data-toggle="tab">
-                                            <xsl:choose>
-                                                <xsl:when test="$filters">
-                                                    <xsl:value-of select="'All Texts'"/>
-                                                </xsl:when>
-                                                <xsl:otherwise>
-                                                    <xsl:value-of select="'Texts'"/>
-                                                </xsl:otherwise>
-                                            </xsl:choose>
+                                            <xsl:value-of select="'Texts'"/>
                                         </a>
                                     </li>
                                 </xsl:if>
                                 
-                                <!-- Sections tab -->
+                                <!-- Sub-sections tab -->
                                 <xsl:if test="m:section/m:section[not(@type eq 'grouping')]">
                                     <li role="presentation">
                                         <xsl:attribute name="class" select="if(not($show-texts)) then 'active' else ''"/>
-                                        <a href="#sections" aria-controls="sections" role="tab" data-toggle="tab">Sections</a>
+                                        <a href="#sections" aria-controls="sections" role="tab" data-toggle="tab">
+                                            <xsl:value-of select="'Sections'"/>
+                                        </a>
                                     </li>
                                 </xsl:if>
                                 
                                 <!-- About tab -->
                                 <xsl:if test="m:section/m:about/*">
                                     <li role="presentation">
-                                        <a href="#summary" aria-controls="summary" role="tab" data-toggle="tab">About</a>
+                                        <a href="#summary" aria-controls="summary" role="tab" data-toggle="tab">
+                                            <xsl:value-of select="'About'"/>
+                                        </a>
                                     </li>
                                 </xsl:if>
-                                
-                                <!-- Filter tabs -->
-                                <!--<xsl:if test="$filters">
-                                    
-                                    <xsl:for-each select="subsequence($filters, 1, $max-filter-tabs)">
-                                        <li role="presentation">
-                                            <a role="tab" data-toggle="tab">
-                                                <xsl:attribute name="href" select="concat('#tab-', @xml:id)"/>
-                                                <xsl:attribute name="aria-controls" select="@xml:id"/>
-                                                <xsl:value-of select="tei:head[@type eq 'filter']"/>
-                                            </a>
-                                        </li>
-                                    </xsl:for-each>
-                                    
-                                    <xsl:if test="count($filters) gt $max-filter-tabs">
-                                        <li role="presentation">
-                                            <a href="#filters" aria-controls="filters" role="tab" data-toggle="tab">
-                                                <xsl:value-of select="'More filters...'"/>
-                                            </a>
-                                        </li>
-                                    </xsl:if>
-                                    
-                                    <!-\-<li role="presentation">
-                                        <a href="#filters" aria-controls="filters" role="tab" data-toggle="tab">
-                                            <xsl:value-of select="'Reading Lists'"/>
-                                        </a>
-                                    </li>-\->
-                                    
-                                </xsl:if>-->
                                 
                             </ul>
                         </div>
                         
                     </xsl:if>
                     
+                    <!-- Filters carousel -->
+                    <xsl:variable name="filters" select="m:section/m:filters/tei:div[@type eq 'filter']"/>
+                    <xsl:variable name="max-filter-tabs" select="3"/>
+                    
                     <xsl:if test="$filters">
                         <div id="filters">
                             <ul class="list-unstyled row-filter">
                                 
-                                <li class="col-filter active">
+                                <li class="col-filter">
+                                    <xsl:if test="/m:response/m:request[@filter-id eq '']">
+                                        <xsl:attribute name="class" select="'col-filter active'"/>
+                                    </xsl:if>
                                     <a role="tab" data-toggle="tab" class="filter-panel">
                                         <xsl:attribute name="href" select="'#texts'"/>
                                         <xsl:attribute name="aria-controls" select="@xml:id"/>
@@ -204,15 +169,19 @@
                                 </li>
                                 
                                 <xsl:for-each select="$filters">
+                                    <xsl:variable name="filter" select="."/>
                                     
                                     <li class="col-filter">
+                                        <xsl:if test="/m:response/m:request[@filter-id eq $filter/@xml:id]">
+                                            <xsl:attribute name="class" select="'col-filter active'"/>
+                                        </xsl:if>
                                         <a role="tab" data-toggle="tab" class="filter-panel">
                                             <xsl:attribute name="href" select="concat('#tab-', @xml:id)"/>
                                             <xsl:attribute name="aria-controls" select="@xml:id"/>
                                             <h3>
                                                 <xsl:value-of select="tei:head[@type eq 'filter']"/>
                                             </h3>
-                                            <xsl:apply-templates select="."/>
+                                            <xsl:apply-templates select="$filter"/>
                                         </a>
                                     </li>
                                     
@@ -236,15 +205,18 @@
                     <div class="tab-content">
                         
                         <!-- Sections -->
-                        <div role="tabpanel" id="sections" class="hidden">
+                        <div role="tabpanel" id="sections">
                             
                             <xsl:choose>
+                                <xsl:when test="m:section/m:section[not(@type eq 'grouping')]">
+                                    <xsl:attribute name="class" select="'tab-pane fade in active print-collapse-override'"/>
+                                </xsl:when>
                                 <xsl:when test="$show-texts">
                                     <xsl:attribute name="class" select="'tab-pane fade print-collapse-override'"/>
                                 </xsl:when>
-                                <xsl:when test="m:section/m:section[not(@type eq 'grouping')]">
-                                    <xsl:attribute name="class" select="'tab-pane fade in active'"/>
-                                </xsl:when>
+                                <xsl:otherwise>
+                                    <xsl:attribute name="class" select="'hidden'"/>
+                                </xsl:otherwise>
                             </xsl:choose>
                             
                             <xsl:call-template name="sub-sections">
@@ -254,11 +226,16 @@
                         </div>
                         
                         <!-- Summary -->
-                        <div role="tabpanel" id="summary" class="hidden">
+                        <div role="tabpanel" id="summary">
                             
-                            <xsl:if test="m:section/m:about/*">
-                                <xsl:attribute name="class" select="'tab-pane fade print-collapse-override'"/>
-                            </xsl:if>
+                            <xsl:choose>
+                                <xsl:when test="m:section/m:about/*">
+                                    <xsl:attribute name="class" select="'tab-pane fade print-collapse-override'"/>
+                                </xsl:when>
+                                <xsl:otherwise>
+                                    <xsl:attribute name="class" select="'hidden'"/>
+                                </xsl:otherwise>
+                            </xsl:choose>
                             
                             <div class="row">
                                 <div class="col-md-offset-2 col-md-8 text-left">
@@ -271,9 +248,17 @@
                         <!-- Texts -->
                         <div role="tabpanel" id="texts" class="hidden">
                             
-                            <xsl:if test="$show-texts">
-                                <xsl:attribute name="class" select="'tab-pane fade in active print-collapse-override'"/>
-                            </xsl:if>
+                            <xsl:choose>
+                                <xsl:when test="$show-texts and /m:response/m:request[@filter-id eq '']">
+                                    <xsl:attribute name="class" select="'tab-pane fade in active print-collapse-override'"/>
+                                </xsl:when>
+                                <xsl:when test="$show-texts">
+                                    <xsl:attribute name="class" select="'tab-pane fade print-collapse-override'"/>
+                                </xsl:when>
+                                <xsl:otherwise>
+                                    <xsl:attribute name="class" select="'hidden'"/>
+                                </xsl:otherwise>
+                            </xsl:choose>
                             
                             <xsl:call-template name="section-texts">
                                 <xsl:with-param name="section" select="m:section"/>
@@ -281,15 +266,26 @@
                             
                         </div>
                         
-                        <!-- Filtered lists -->
+                        <!-- Filtered texts -->
                         <xsl:for-each select="$filters">
                             
-                            <div role="tabpanel" id="filters" class="tab-pane fade print-collapse-override">
+                            <xsl:variable name="filter" select="."/>
+                            
+                            <div role="tabpanel" id="filters">
                                 <xsl:attribute name="id" select="concat('tab-', @xml:id)"/>
+                                
+                                <xsl:choose>
+                                    <xsl:when test="$show-texts and /m:response/m:request[@filter-id eq $filter/@xml:id]">
+                                        <xsl:attribute name="class" select="'tab-pane fade in active print-collapse-override'"/>
+                                    </xsl:when>
+                                    <xsl:otherwise>
+                                        <xsl:attribute name="class" select="'tab-pane fade print-collapse-override'"/>
+                                    </xsl:otherwise>
+                                </xsl:choose>
                                 
                                 <xsl:call-template name="section-texts">
                                     <xsl:with-param name="section" select="ancestor::m:section[1]"/>
-                                    <xsl:with-param name="filter" select="m:filter"/>
+                                    <xsl:with-param name="filter" select="$filter"/>
                                 </xsl:call-template>
                                 
                             </div>
@@ -548,7 +544,7 @@
     
     <xsl:template name="section-texts">
         <xsl:param name="section"/>
-        <xsl:param name="filter" as="element(m:filter)*"/>
+        <xsl:param name="filter" as="element(tei:div)*"/>
         
         <div class="text-list">
             
@@ -571,47 +567,56 @@
                 </div>
                 <div class="col-md-4 col-lg-3">
                     <!-- Filter / Sort options -->
-                    <xsl:choose>
-                        <xsl:when test="lower-case($section/@id) eq 'all-translated'">
-                            <!-- Form to sort translated -->
-                            <form method="post" class="filter-form form-inline col-sm-pull-right hidden-print">
+                    <form method="post" class="filter-form form-inline col-sm-pull-right hidden-print">
+                        
+                        <xsl:if test="$filter">
+                            <!--<xsl:attribute name="action" select="concat(lower-case($section/@id), '.html#', $filter/@xml:id)"/>-->
+                            <input type="hidden" name="filter-id">
+                                <xsl:attribute name="value" select="$filter/@xml:id"/>
+                            </input>
+                        </xsl:if>
+                        
+                        <xsl:choose>
+                            <xsl:when test="lower-case($section/@id) eq 'all-translated'">
+                                
+                                <!-- Form to sort translated -->
                                 <div class="form-group">
                                     <label class="sr-only">
                                         <xsl:value-of select="'Sort translations'"/>
                                     </label>
                                     <select name="translations-order" class="form-control">
                                         <option value="toh">
-                                            <xsl:if test="m:request/@translations-order eq 'toh'">
+                                            <xsl:if test="/m:response/m:request/@translations-order eq 'toh'">
                                                 <xsl:attribute name="selected" select="'selected'"/>
                                             </xsl:if>
                                             <xsl:value-of select="'Sort by Tohoku number'"/>
                                         </option>
                                         <option value="latest">
-                                            <xsl:if test="m:request/@translations-order eq 'latest'">
+                                            <xsl:if test="/m:response/m:request/@translations-order eq 'latest'">
                                                 <xsl:attribute name="selected" select="'selected'"/>
                                             </xsl:if>
                                             <xsl:value-of select="'Most recent publications'"/>
                                         </option>
                                         <option value="shortest">
-                                            <xsl:if test="m:request/@translations-order eq 'shortest'">
+                                            <xsl:if test="/m:response/m:request/@translations-order eq 'shortest'">
                                                 <xsl:attribute name="selected" select="'selected'"/>
                                             </xsl:if>
                                             <xsl:value-of select="'Shortest first'"/>
                                         </option>
                                         <option value="longest">
-                                            <xsl:if test="m:request/@translations-order eq 'longest'">
+                                            <xsl:if test="/m:response/m:request/@translations-order eq 'longest'">
                                                 <xsl:attribute name="selected" select="'selected'"/>
                                             </xsl:if>
                                             <xsl:value-of select="'Longest first'"/>
                                         </option>
                                     </select>
                                 </div>
-                                <button type="submit" class="btn btn-default hidden-scripts">Go</button>
-                            </form>
-                        </xsl:when>
-                        <xsl:otherwise>
-                            <!-- Form to filter translated -->
-                            <form method="post" class="filter-form col-sm-pull-right hidden-print">
+                                <!--<button type="submit" class="btn btn-default hidden-scripts">Go</button>-->
+                                
+                            </xsl:when>
+                            <xsl:otherwise>
+                                
+                                <!-- Form to filter translated -->
                                 <div class="checkbox">
                                     <label>
                                         <input type="checkbox" name="published-only" value="1">
@@ -622,9 +627,11 @@
                                         <xsl:value-of select="'Published translations only'"/>
                                     </label>
                                 </div>
-                            </form>
-                        </xsl:otherwise>
-                    </xsl:choose>
+                                
+                            </xsl:otherwise>
+                        </xsl:choose>
+                        
+                    </form>
                 </div>
             </div>
             
@@ -633,13 +640,13 @@
                 <xsl:when test="lower-case($section/@id) eq 'all-translated'">
                     <div class="visible-print-block text-italic">
                         <xsl:choose>
-                            <xsl:when test="m:request/@translations-order eq 'latest'">
+                            <xsl:when test="/m:response/m:request/@translations-order eq 'latest'">
                                 <xsl:value-of select="'Sorted by most recent publications'"/>
                             </xsl:when>
-                            <xsl:when test="m:request/@translations-order eq 'shortest'">
+                            <xsl:when test="/m:response/m:request/@translations-order eq 'shortest'">
                                 <xsl:value-of select="'Sorted by shortest first'"/>
                             </xsl:when>
-                            <xsl:when test="m:request/@translations-order eq 'longest'">
+                            <xsl:when test="/m:response/m:request/@translations-order eq 'longest'">
                                 <xsl:value-of select="'Sorted by longest first'"/>
                             </xsl:when>
                             <xsl:otherwise>
@@ -668,7 +675,7 @@
                 
                 <xsl:sort select="number(m:texts/m:text[1]/m:toh/@number)"/>
                 
-                <xsl:variable name="texts" select="m:texts/m:text[not($filter[@max-pages]) or m:source/m:location/@count-pages/number() le $filter[@max-pages][1]/@max-pages/number()][not($filter[@section-id]) or descendant::m:parent/@id = $filter[@section-id]/@section-id][not($filter[@text-id]) or @id = $filter[@text-id]/@text-id]"/>
+                <xsl:variable name="texts" select="m:texts/m:text[not($filter/m:filter[@max-pages]) or m:source/m:location/@count-pages/number() le $filter/m:filter[@max-pages][1]/@max-pages/number()][not($filter/m:filter[@section-id]) or descendant::m:parent/@id = $filter/m:filter[@section-id]/@section-id][not($filter/m:filter[@text-id]) or @id = $filter/m:filter[@text-id]/@text-id]"/>
                 
                 <div class="list-grouping">
                     
