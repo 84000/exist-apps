@@ -484,6 +484,10 @@
                                 
                                 <xsl:attribute name="action" select="concat(lower-case(m:section/@id), '.html')"/>
                                 
+                                <input type="hidden" name="translations-order">
+                                    <xsl:attribute name="value" select="/m:response/m:request/@translations-order"/>
+                                </input>
+                                
                                 <h5>
                                     <xsl:value-of select="'Sections with Published Translations'"/>
                                 </h5>
@@ -711,15 +715,19 @@
             
             <!-- Row headers -->
             <div class="row table-headers hidden-print">
+                
                 <div class="col-md-1 hidden-xs hidden-sm">
                     <xsl:value-of select="'Toh'"/>
                 </div>
+                
                 <div class="col-md-7 col-lg-8 hidden-xs hidden-sm">
                     <xsl:value-of select="'Title'"/>
                 </div>
+                
                 <div class="col-xs-4 visible-xs visible-sm">
                     <xsl:value-of select="'Text'"/>
                 </div>
+                
                 <div class="col-md-4 col-lg-3">
                     <!-- Filter / Sort options -->
                     <form method="get" class="filter-form col-sm-pull-right hidden-print">
@@ -727,11 +735,21 @@
                         <xsl:attribute name="action" select="concat(lower-case($section/@id), '.html')"/>
                         
                         <xsl:if test="$filter">
-                            
                             <input type="hidden" name="filter-id">
                                 <xsl:attribute name="value" select="$filter/@xml:id"/>
                             </input>
-                            
+                        </xsl:if>
+                        
+                        <xsl:for-each select="/m:response/m:request/m:filter[@section-id]">
+                            <input type="hidden" name="filter-section-id[]">
+                                <xsl:attribute name="value" select="@section-id"/>
+                            </input>
+                        </xsl:for-each>
+                        
+                        <xsl:if test="/m:response/m:request/m:filter[@max-pages]">
+                            <input type="hidden" name="filter-max-pages">
+                                <xsl:attribute name="value" select="/m:response/m:request/m:filter[@max-pages][1]/@max-pages"/>
+                            </input>
                         </xsl:if>
                         
                         <xsl:choose>
