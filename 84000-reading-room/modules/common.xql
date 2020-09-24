@@ -567,7 +567,7 @@ declare
     %test:assertFalse
     %test:args('other-class line other', 'line other-line')
     %test:assertFalse
-function common:contains-class($string as xs:string?, $class as xs:string ) as xs:boolean {
+function common:contains-class($string as xs:string?, $class as xs:string) as xs:boolean {
     (: for testing existence of a class in a class attribute :)
     matches(
         lower-case($string),

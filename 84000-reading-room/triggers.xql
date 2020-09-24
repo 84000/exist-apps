@@ -17,9 +17,8 @@ declare function trigger:after-update-document($uri as xs:anyURI) {
 
 declare function local:after-update-document-functions($doc) {
     
-    if($doc[tei:TEI/tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:idno/@xml:id]) then 
-    (
-        local:footnote-indexes($doc),
+    if($doc[tei:TEI/tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:idno[@xml:id]]) then (
+        (:local:footnote-indexes($doc),:)
         local:glossary-types($doc),
         local:glossary-bo($doc, false()),
         local:glossary-remove-term-ids($doc),
@@ -27,31 +26,31 @@ declare function local:after-update-document-functions($doc) {
         local:temporary-ids($doc),
         local:last-updated($doc)
     )
-    else
-        ()
+    else ()
 };
 
 declare function local:footnote-indexes($doc) {
 
-    (: Add indexes to footnotes :)
-    (: This supports stable numbering accross all sections :)
-    let $end-notes := $doc/tei:TEI/tei:text//tei:note[@place eq 'end']
-    let $count-notes := count($end-notes)
-    let $max-note-index := max($end-notes/@index ! common:integer(.))
-    let $count-distinct-note-indexes := count(distinct-values($end-notes/@index))
-    let $count-notes-missing-index := count($end-notes[not(@index) or @index eq ''])
+    (# exist:batch-transaction #) {
     
-    return 
-        if(
-            $count-notes-missing-index > 0
+        (: Add indexes to footnotes :)
+        (: This supports stable numbering across all sections :)
+        let $end-notes := $doc/tei:TEI/tei:text//tei:note[@place eq 'end']
+        let $count-notes := count($end-notes)
+        let $max-note-index := max($end-notes[@index]/@index ! common:integer(.))
+        let $count-distinct-note-indexes := count(distinct-values($end-notes/@index))
+        let $count-notes-missing-index := count($end-notes[not(@index) or @index eq ''])
+        
+        where $count-notes-missing-index > 0
             or $count-notes ne $count-distinct-note-indexes
             or $count-notes ne $max-note-index
-        ) then
+        return 
             for $note at $index in $end-notes
+            where $note[not(@index ! xs:integer(.) eq $index)]
             return
-                update insert attribute index {$index} into $note
-        else ()
-        
+                update insert attribute index { $index } into $note
+    }
+    
 };
 
 declare function local:chapter-indexes($doc) {
@@ -129,12 +128,10 @@ declare function local:glossary-types($doc) {
                 'text'
             else
                 ''
+    where $type
     return
-        if($type) then 
-            update insert attribute type { $type } into $glossary
-        else
-            ()
-
+        update insert attribute type { $type } into $glossary
+        
 };
 
 declare function local:glossary-remove-term-ids($doc) {

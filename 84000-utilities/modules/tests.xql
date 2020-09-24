@@ -75,19 +75,46 @@ declare function tests:translations($translation-id as xs:string) as item(){
                         tests:outline-context($tei, $toh-key),
                         tests:complete-source($toh-html),
                         tests:translation-tantra-warning($tei, $toh-html),
-                        tests:test-section($tei//tei:front//tei:div[@type eq 'summary'][not(@xml:lang) or @xml:lang eq 'en'], $toh-html//*[@id eq 'summary'], 'summary', 1, false(), true()),
-                        tests:test-section($tei//tei:front//tei:div[@type eq 'acknowledgment'], $toh-html//*[@id eq 'acknowledgements'], 'acknowledgements', 1, false(), true()),
-                        tests:test-section($tei//tei:front//tei:div[@type eq 'preface'], $toh-html//*[@id eq 'preface'], 'preface', 0, false(), true()),
-                        tests:test-section($tei//tei:front//tei:div[@type eq 'introduction'], $toh-html//*[@id eq 'introduction'], 'introduction', 1, false(), true()),
-                        tests:test-section($tei//tei:body//tei:div[@type eq 'prologue'], $toh-html//*[@id eq 'prologue'], 'prologue', 0, false(), true()),
-                        tests:test-section($tei//tei:body//tei:div[@type eq 'homage'], $toh-html//*[@id eq 'homage'], 'homage', 0, false(), true()),
-                        tests:test-section(
-                            element { QName('http://www.tei-c.org/ns/1.0', 'div') }{
-                                $tei//tei:body//tei:div[@type eq 'translation']/*[@type=('section', 'chapter')]
+                        tests:section(
+                            $tei//tei:front//tei:div[@type eq 'summary'][not(@xml:lang) or @xml:lang eq 'en'], 
+                            $toh-html//xhtml:section[@id eq 'summary'], 
+                            'summary', 1),
+                        tests:section(
+                            $tei//tei:front//tei:div[@type eq 'acknowledgment'], 
+                            $toh-html//xhtml:section[@id eq 'acknowledgment'], 
+                            'acknowledgment', 1),
+                        tests:section(
+                            $tei//tei:front//tei:div[@type eq 'preface'], 
+                            $toh-html//xhtml:section[@id eq 'preface'], 
+                            'preface', 0),
+                        tests:section(
+                            $tei//tei:front//tei:div[@type eq 'introduction'], 
+                            $toh-html//xhtml:section[@id eq 'introduction'], 
+                            'introduction', 1),
+                        tests:section(
+                            $tei//tei:body//tei:div[@type eq 'prologue'], 
+                            $toh-html//xhtml:section[@id eq 'prologue'], 
+                            'prologue', 0),
+                        tests:section(
+                            $tei//tei:body//tei:div[@type eq 'homage'], 
+                            $toh-html//xhtml:section[@id eq 'homage'], 
+                            'homage', 0),
+                        tests:section(
+                            element tei:div {
+                                $tei//tei:body//tei:div[@type eq 'translation']/tei:div[@type = ('section', 'chapter')]
                             },
-                            $toh-html//*[@id eq 'translation'], 'translation', 1, true(), true()),
-                        tests:test-section($tei//tei:body//tei:div[@type eq 'colophon'], $toh-html//*[@id eq 'colophon'], 'colophon', 0, false(), true()),
-                        tests:test-section($tei//tei:back//tei:div[@type eq 'appendix'], $toh-html//*[@id eq 'appendix'], 'appendix', 0, false(), true()),
+                            element xhtml:div {
+                                $toh-html//xhtml:section[(common:contains-class(@class, 'section-type-chapter') or common:contains-class(@class, 'section-type-section'))]
+                            }, 
+                            'body', 1),
+                        tests:section(
+                            $tei//tei:body//tei:div[@type eq 'colophon'], 
+                            $toh-html//xhtml:section[@id eq 'colophon'], 
+                            'colophon', 0),
+                        tests:section(
+                            $tei//tei:back//tei:div[@type eq 'appendix'], 
+                            $toh-html//xhtml:section[@id eq 'appendix'], 
+                            'appendix', 0),
                         tests:notes($tei, $toh-html),
                         tests:abbreviations($tei, $toh-html),
                         tests:bibliography($tei, $toh-html),
@@ -141,8 +168,8 @@ declare function tests:sections($section-id as xs:string) as item(){
                         tests:duplicate-ids($tei),
                         tests:scoped-ids($tei),
                         tests:outline-context($tei, $resource-id),
-                        tests:test-section($tei//tei:front//tei:div[@type eq 'abstract'], $html//*[@id eq 'title']//*[@id eq 'abstract'], 'abstract', 0, false(), false()),
-                        tests:test-section($tei//tei:body//tei:div[@type eq 'about'], $html//*[@id eq 'summary'], 'summary', 0, false(), false()),
+                        tests:section($tei//tei:front//tei:div[@type eq 'abstract'], $html//*[@id eq 'title']//*[@id eq 'abstract'], 'abstract', 0),
+                        tests:section($tei//tei:body//tei:div[@type eq 'about'], $html//*[@id eq 'summary'], 'summary', 0),
                         tests:section-tantra-warning($tei, $html)
                     }
                     </tests>
@@ -321,7 +348,7 @@ declare function tests:complete-source($toh-html as element()) as item() {
         </test>
 };
 
-declare function tests:test-section($section-tei as element()*, $section-html as element()*, $section-name as xs:string, $required-paragraphs as xs:integer, $count-chapters as xs:boolean, $count-milestones as xs:boolean) {
+declare function tests:section($section-tei as element()*, $section-html as element()*, $section-name as xs:string, $required-paragraphs as xs:integer) {
 
     let $section-count-tei-p := 
         count($section-tei//*[self::tei:p | self::tei:ab | self::tei:trailer | self::tei:bibl | self::tei:l[ancestor::tei:lg][not(ancestor::tei:note)]])
@@ -338,13 +365,8 @@ declare function tests:test-section($section-tei as element()*, $section-html as
     let $section-count-html-q := 
         count($section-html//xhtml:blockquote | $section-html//xhtml:span[common:contains-class(@class, 'blockquote')])
     
-    let $section-header-types :=
-        if($section-tei/@type = ('prologue', 'homage')) then
-            ('chapterTitle', 'section', 'chapter')
-        else
-            ('chapterTitle', 'section', 'chapter', 'prologue', 'homage', 'appendix')
     let $section-count-tei-id := 
-        count($section-tei//*[@tid][self::tei:p | self::tei:ab | self::tei:trailer | self::tei:bibl | self::tei:label | self::tei:head[parent::tei:list] | self::tei:lg | self::tei:head[@type = $section-header-types]][not(ancestor::tei:note)])
+        count($section-tei//*[@tid][not(ancestor::tei:note)])
     let $section-count-html-id := 
         count($section-html//*[contains(@id, 'node-')])
     
@@ -353,10 +375,10 @@ declare function tests:test-section($section-tei as element()*, $section-html as
     let $section-count-html-list-item := 
         count($section-html//xhtml:div[common:contains-class(@class, 'list-item')])
     
-    let $section-count-tei-chapters := 
-        count($section-tei//tei:div[@type = ('section', 'chapter')])
-    let $section-count-html-chapters := 
-        count($section-html//xhtml:section[common:contains-class(@class, 'chapter')] | $section-html//xhtml:div[common:contains-class(@class, 'nested-chapter') or common:contains-class(@class, 'nested-section')])
+    let $section-count-tei-sections := 
+        count($section-tei//tei:div[@type][tei:head[@type eq parent::tei:div/@type]])
+    let $section-count-html-sections := 
+        count($section-html//xhtml:section[(common:contains-class(@class, 'section-type-chapter') or common:contains-class(@class, 'section-type-section')) and not(common:contains-class(@class, 'hide-header'))] | $section-html//xhtml:div[common:contains-class(@class, 'nested-section')])
     
     let $section-count-tei-milestones := 
         count($section-tei//tei:milestone)
@@ -364,8 +386,6 @@ declare function tests:test-section($section-tei as element()*, $section-html as
         count($section-html//xhtml:a[common:contains-class(@class, 'milestone from-tei')])
     
     let $required-paragraphs-rule := if ($required-paragraphs > 0) then concat(' at least ', $required-paragraphs , ' paragraph(s) and') else ''
-    let $count-chapters-rule := if ($count-chapters eq true()) then ', chapters ' else ''
-    let $count-milestones-rule := if ($count-chapters eq true()) then ', milestones ' else ''
     
     return
         <test 
@@ -378,12 +398,16 @@ declare function tests:test-section($section-tei as element()*, $section-html as
                     and $section-count-html-q eq $section-count-tei-q
                     and $section-count-html-id eq $section-count-tei-id
                     and $section-count-html-list-item eq $section-count-tei-list-item
-                    and ($count-chapters eq false() or $section-count-tei-chapters eq 0 or $section-count-html-chapters eq $section-count-tei-chapters)
-                    and ($count-milestones eq false() or $section-count-html-milestones eq $section-count-tei-milestones)
+                    and $section-count-html-sections eq $section-count-tei-sections
+                    and $section-count-html-milestones eq $section-count-tei-milestones
                 ) then 1 else 0 }">
             <title>
             {
-                concat(functx:capitalize-first($section-name) ,' test: The ', $section-name, ' has', $required-paragraphs-rule, ' the same number of paragraphs, notes, quotes, ids, labels, list items', $count-chapters-rule, $count-milestones-rule, ' in the HTML as in the TEI.')
+                concat(
+                    functx:capitalize-first($section-name),
+                    ' test: The ', $section-name,
+                    ' has', $required-paragraphs-rule, ' the same number of paragraphs, notes, quotes, ids, labels, list items, sections and milestones in the HTML as in the TEI.'
+                )
             }
             </title>
             <details>
@@ -392,18 +416,8 @@ declare function tests:test-section($section-tei as element()*, $section-html as
                 <detail>{$section-count-tei-q} TEI quote(s), {$section-count-html-q} HTML quote(s).</detail>
                 <detail>{$section-count-tei-id} TEI id(s), {$section-count-html-id} HTML id(s).</detail>
                 <detail>{$section-count-tei-list-item} TEI list item(s), {$section-count-html-list-item} HTML list item(s).</detail>
-                {
-                    if ($count-chapters eq true()) then
-                        <detail>{$section-count-tei-chapters} TEI chapter(s), {$section-count-html-chapters} HTML chapter(s).</detail>
-                    else
-                        ()
-                }
-                {
-                    if ($count-milestones eq true()) then
-                        <detail>{$section-count-tei-milestones} TEI milestone(s), {$section-count-html-milestones} HTML milestone(s).</detail>
-                    else
-                        ()
-                }
+                <detail>{$section-count-tei-sections} TEI section(s), {$section-count-html-sections} HTML section(s).</detail>
+                <detail>{$section-count-tei-milestones} TEI milestone(s), {$section-count-html-milestones} HTML milestone(s).</detail>
                 <!--
                 <detail>{string-join($section-tei//tei:milestone[not(@xml:id = $section-html//xhtml:a[common:contains-class(@class, 'milestone from-tei')]/@id)]/@xml:id , ' / ')}</detail>
                 -->
@@ -413,7 +427,7 @@ declare function tests:test-section($section-tei as element()*, $section-html as
 
 declare function tests:notes($tei as element(tei:TEI)*, $html as element()*) as item() {
 
-    let $notes-count-html := count($html//*[@id eq 'notes']/*/*[common:contains-class(@class, 'footnote')])
+    let $notes-count-html := count($html//xhtml:section[@id eq 'end-notes']/*/*[common:contains-class(@class, 'footnote')])
     let $notes-count-tei := count($tei//tei:text//tei:note[@place eq 'end'])
     
     return
@@ -536,11 +550,10 @@ declare function tests:glossary($tei as element(tei:TEI)*, $html as element()*) 
         </test>
 };
 
-
 declare function tests:refs($tei as element(tei:TEI)*, $html as element()*, $toh-key as xs:string){
     
     let $tei-folios := translation:folios($tei, $toh-key)//m:folio
-    let $html-refs := $html//*[@id = ('prologue', 'homage', 'translation', 'colophon')]//xhtml:a[common:contains-class(@class, 'ref')]
+    let $html-refs := $html//xhtml:a[common:contains-class(@class, 'ref')]
     
     let $folio-count-tei := count($tei-folios)
     let $ref-count-html := count($html-refs)
@@ -577,7 +590,6 @@ declare function tests:refs($tei as element(tei:TEI)*, $html as element()*, $toh
             </details>
         </test>
 };
-
 
 declare function tests:normalize-whitespace($string as xs:string) as xs:string {
     fn:replace(fn:replace(normalize-space($string),'\s+(,|\.|\))', '$1'),'(\()\s+', '$1')

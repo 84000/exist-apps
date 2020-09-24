@@ -2,6 +2,7 @@ xquery version "3.0";
 
 declare namespace fo="http://www.w3.org/1999/XSL/Format";
 declare namespace t="http://read.84000.co/ns/1.0";
+declare namespace tei="http://www.tei-c.org/ns/1.0";
 declare namespace xhtml="http://www.w3.org/1999/xhtml";
 
 declare function fo:main($translation) {
@@ -35,7 +36,7 @@ declare function fo:main($translation) {
                 }
                 </fo:block>
                 {
-                    for $paragraph in $translation/t:summary/xhtml:p
+                    for $paragraph in $translation/t:section[@type eq 'summary']/tei:p
                     return
                         <fo:block font-size="12pt" text-align="justify" font-family="Times" margin-bottom="5mm">
                         {

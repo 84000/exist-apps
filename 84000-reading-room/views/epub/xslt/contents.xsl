@@ -8,136 +8,34 @@
     
     <xsl:template match="/m:response">
         
-        <xsl:variable name="page-title" select="'Contents'"/>
-        <xsl:variable name="translation-title" select="m:translation/m:titles/m:title[@xml:lang eq 'en']"/>
+        <xsl:variable name="section" select="m:translation/m:toc/m:section[@section-id eq 'contents']"/>
         
         <xsl:call-template name="epub-page">
-            <xsl:with-param name="translation-title" select="$translation-title"/>
-            <xsl:with-param name="page-title" select="$page-title"/>
+            <xsl:with-param name="page-title" select="$section/tei:head[@type eq $section/@type]"/>
             <xsl:with-param name="content">
                 
-                <div class="center header">
-                    <h2>Table of Contents</h2>
-                </div>
-                
-                <nav epub:type="toc" class="contents">
-                    <ol>
-                        <li>
-                            <a href="half-title.xhtml">Title</a>
-                        </li>
-                        <li>
-                            <a href="imprint.xhtml">Imprint</a>
-                        </li>
-                        <li>
-                            <a href="contents.xhtml">Contents</a>
-                        </li>
-                        <li>
-                            <a href="summary.xhtml">Summary</a>
-                        </li>
-                        <li>
-                            <a href="acknowledgements.xhtml">Acknowledgements</a>
-                        </li>
-                        <li>
-                            <a href="introduction.xhtml">Introduction</a>
-                        </li>
-                        <xsl:if test="m:translation/m:prologue//tei:*">
-                            <li>
-                                <a href="prologue.xhtml">Prologue</a>
-                            </li>
-                        </xsl:if>
-                        <xsl:if test="m:translation/m:homage//tei:*">
-                            <li>
-                                <a href="homage.xhtml">Homage</a>
-                            </li>
-                        </xsl:if>
-                        <li>
-                            <a href="body-title.xhtml">The Translation</a>
-                        </li>
-                        <xsl:for-each select="m:translation/m:body/m:chapter[m:title/text() | m:title-number/text()]">
-                            <li>
-                                <a>
-                                    <xsl:attribute name="href" select="concat('chapter-', @chapter-index, '.xhtml')"/>
-                                    <xsl:choose>
-                                        <xsl:when test="m:title/text()">
-                                            <xsl:apply-templates select="@chapter-index"/>. <xsl:apply-templates select="m:title/text()"/>
-                                        </xsl:when>
-                                        <xsl:otherwise>
-                                            <xsl:apply-templates select="m:title-number/text()"/>
-                                        </xsl:otherwise>
-                                    </xsl:choose>
-                                </a>
-                                <xsl:if test="tei:div[@type = ('section', 'chapter')][tei:head/text()]">
-                                    <xsl:call-template name="sub-chapters">
-                                        <xsl:with-param name="sub-chapters" select="tei:div[@type = ('section', 'chapter')][tei:head/text()]"/>
-                                        <xsl:with-param name="chapter-index" select="@chapter-index"/>
-                                    </xsl:call-template>
-                                </xsl:if>
-                            </li>
-                        </xsl:for-each>
-                        <xsl:if test="m:translation/m:colophon//tei:*">
-                            <li>
-                                <a href="colophon.xhtml">Colophon</a>
-                            </li>
-                        </xsl:if>
-                        <xsl:if test="m:translation/m:appendix//tei:*">
-                            <li>
-                                <a href="appendix.xhtml">
-                                    <xsl:value-of select="m:translation/m:appendix/m:title"/>
-                                </a>
-                            </li>
-                        </xsl:if>
-                        <xsl:if test="m:translation/m:abbreviations//m:list/m:item">
-                            <li>
-                                <a href="abbreviations.xhtml">Abbreviations</a>
-                            </li>
-                        </xsl:if>
-                        <li>
-                            <a href="notes.xhtml">Notes</a>
-                        </li>
-                        <li>
-                            <a href="bibliography.xhtml">Bibliography</a>
-                        </li>
-                        <li>
-                            <a href="glossary.xhtml">Glossary</a>
-                        </li>
-                    </ol>
-                </nav>
+                <aside>
+                    
+                    <xsl:attribute name="id" select="$section/@section-id"/>
+                    
+                    <xsl:apply-templates select="$section/tei:head[@type eq $section/@type]"/>
+                    
+                    <nav epub:type="toc">
+                        <ol>
+                            
+                            <xsl:call-template name="toc-sections">
+                                <xsl:with-param name="sections" select="m:translation/m:toc/m:section"/>
+                                <xsl:with-param name="doc-type" select="'epub'"/>
+                            </xsl:call-template>
+                            
+                        </ol>
+                    </nav>
+                    
+                </aside>
                 
             </xsl:with-param>
         </xsl:call-template>
         
-    </xsl:template>
-    
-    <xsl:template name="sub-chapters">
-        <xsl:param name="sub-chapters" required="yes"/>
-        <xsl:param name="chapter-index" required="yes"/>
-        <ol>
-            <xsl:for-each select="$sub-chapters">
-                <xsl:variable name="id" select="if(@prefix) then concat('chapter-', @prefix) else concat('section-', @section-id)"/>
-                <li>
-                    <a>
-                        <xsl:attribute name="href" select="concat('chapter-', $chapter-index, '.xhtml#', $id)"/>
-                        <xsl:choose>
-                            <xsl:when test="tei:head/text()">
-                                <xsl:apply-templates select="tei:head/text()"/>
-                            </xsl:when>
-                            <xsl:when test="m:title/text()">
-                                <xsl:apply-templates select="m:title/text()"/>
-                            </xsl:when>
-                            <xsl:otherwise>
-                                <xsl:apply-templates select="m:title-number/text()"/>
-                            </xsl:otherwise>
-                        </xsl:choose>
-                    </a>
-                    <xsl:if test="tei:div[@type = ('section', 'chapter')][tei:head/text()]">
-                        <xsl:call-template name="sub-chapters">
-                            <xsl:with-param name="sub-chapters" select="tei:div[@type = ('section', 'chapter')][tei:head/text()]"/>
-                            <xsl:with-param name="chapter-index" select="$chapter-index"/>
-                        </xsl:call-template>
-                    </xsl:if>
-                </li>
-            </xsl:for-each>
-        </ol>
     </xsl:template>
     
 </xsl:stylesheet>

@@ -68,11 +68,13 @@
                             </xsl:call-template>
                         </xsl:with-param>
                         <xsl:with-param name="content">
-                            <xsl:call-template name="text-list">
-                                <xsl:with-param name="texts" select="m:sponsored-texts/m:text"/>
-                                <xsl:with-param name="grouping" select="'sponsorship'"/>
-                                <xsl:with-param name="show-sponsors" select="true()"/>
-                            </xsl:call-template>
+                            <div class="top-margin">
+                                <xsl:call-template name="text-list">
+                                    <xsl:with-param name="texts" select="m:sponsored-texts/m:text"/>
+                                    <xsl:with-param name="grouping" select="'sponsorship'"/>
+                                    <xsl:with-param name="show-sponsors" select="true()"/>
+                                </xsl:call-template>
+                            </div>
                         </xsl:with-param>
                     </xsl:call-template>
                 </div>

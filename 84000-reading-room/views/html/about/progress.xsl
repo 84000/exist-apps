@@ -47,9 +47,11 @@
                             </xsl:call-template>
                         </xsl:with-param>
                         <xsl:with-param name="content">
-                            <xsl:call-template name="text-list">
-                                <xsl:with-param name="texts" select="m:translations-published/m:translation-status-texts/m:text"/>
-                            </xsl:call-template>
+                            <div class="top-margin">
+                                <xsl:call-template name="text-list">
+                                    <xsl:with-param name="texts" select="m:translations-published/m:translation-status-texts/m:text"/>
+                                </xsl:call-template>
+                            </div>
                         </xsl:with-param>
                     </xsl:call-template>
                     
@@ -61,9 +63,11 @@
                             </xsl:call-template>
                         </xsl:with-param>
                         <xsl:with-param name="content">
-                            <xsl:call-template name="text-list">
-                                <xsl:with-param name="texts" select="m:translations-translated/m:translation-status-texts/m:text"/>
-                            </xsl:call-template>
+                            <div class="top-margin">
+                                <xsl:call-template name="text-list">
+                                    <xsl:with-param name="texts" select="m:translations-translated/m:translation-status-texts/m:text"/>
+                                </xsl:call-template>
+                            </div>
                         </xsl:with-param>
                     </xsl:call-template>
                     
@@ -75,9 +79,11 @@
                             </xsl:call-template>
                         </xsl:with-param>
                         <xsl:with-param name="content">
-                            <xsl:call-template name="text-list">
-                                <xsl:with-param name="texts" select="m:translations-in-translation/m:translation-status-texts/m:text"/>
-                            </xsl:call-template>
+                            <div class="top-margin">
+                                <xsl:call-template name="text-list">
+                                    <xsl:with-param name="texts" select="m:translations-in-translation/m:translation-status-texts/m:text"/>
+                                </xsl:call-template>
+                            </div>
                         </xsl:with-param>
                     </xsl:call-template>
                     

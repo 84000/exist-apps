@@ -3,14 +3,13 @@
         
     <xsl:template name="epub-page">
         
-        <xsl:param name="translation-title"/>
         <xsl:param name="page-title"/>
         <xsl:param name="content"/>
         
         <html xmlns:epub="http://www.idpf.org/2007/ops">
             <head>
                 <title>
-                    <xsl:value-of select="concat($page-title, ' - ', $translation-title)"/>
+                    <xsl:value-of select="concat($page-title, ' - ', /m:response/m:translation/m:titles/m:title[@xml:lang eq 'en'])"/>
                 </title>
                 <link href="css/manualStyles.css" rel="stylesheet" type="text/css"/>
                 <link href="css/fontStyles.css" rel="stylesheet" type="text/css"/>

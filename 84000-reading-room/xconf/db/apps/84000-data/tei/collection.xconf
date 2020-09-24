@@ -66,17 +66,8 @@
             
             <create qname="tei:idno">
                 <field name="tei-id" match="@xml:id" type="xs:string"/>
-            </create>
-            
-            <create qname="tei:idno">
                 <field name="parent-id" match="@parent-id" type="xs:string"/>
-            </create>
-            
-            <create qname="tei:idno">
                 <field name="source-id" match="@source-id" type="xs:string"/>
-            </create>
-            
-            <create qname="tei:idno">
                 <field name="kb-id" match="@eft:kb-id" type="xs:string"/>
             </create>
             
@@ -103,15 +94,18 @@
                 <field name="audit-date-time" match="tei:note/@date-time" type="xs:dateTime"/>
             </create>
             
-            <!-- 
-            <create qname="tei:div">
+            <create qname="tei:title">
+                <field name="title-type" match="@type" type="xs:string"/>
+                <field name="title-lang" match="@xml:lang" type="xs:string"/>
+            </create>
+            
+            <!--<create qname="tei:div">
                 <field name="div-type" match="@type" type="xs:string"/>
             </create>
             
             <create qname="tei:head">
                 <field name="head-type" match="@type" type="xs:string"/>
-            </create>
-            -->
+            </create>-->
             
             <create qname="tei:sponsor">
                 <field name="sponsor-id" match="@ref" type="xs:string"/>
@@ -146,6 +140,11 @@
                 <field name="ref-type" match="@type" type="xs:string"/>
                 <field name="ref-rend" match="@rend" type="xs:string"/>
                 <field name="ref-cref" match="@cRef" type="xs:string" case="no"/>
+            </create>
+            
+            <create qname="tei:note">
+                <field name="note-type" match="@type" type="xs:string"/>
+                <field name="note-index" match="@index" type="xs:string"/>
             </create>
             
         </range>

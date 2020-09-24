@@ -8,43 +8,60 @@
     
     <xsl:template match="/m:response">
         
-        <xsl:variable name="page-title" select="'Full Title'"/>
-        <xsl:variable name="translation-title" select="m:translation/m:titles/m:title[@xml:lang eq 'en']"/>
+        <xsl:variable name="section" select="m:translation/m:toc/m:section[@section-id eq 'full-title']"/>
         
         <xsl:call-template name="epub-page">
-            <xsl:with-param name="translation-title" select="$translation-title"/>
-            <xsl:with-param name="page-title" select="$page-title"/>
+            <xsl:with-param name="page-title" select="$section/tei:head[@type eq $section/@type]"/>
             <xsl:with-param name="content">
                 
-                <section class="center full-title" epub:type="titlepage">
-                    <h2 class="text-bo">
-                        <xsl:apply-templates select="m:translation/m:long-titles/m:title[@xml:lang eq 'bo']"/>
-                    </h2>
-                    <h2>
-                        <xsl:apply-templates select="m:translation/m:long-titles/m:title[@xml:lang eq 'Bo-Ltn']"/>
-                    </h2>
-                    <h1>
-                        <xsl:apply-templates select="m:translation/m:long-titles/m:title[@xml:lang eq 'en']"/>
-                    </h1>
-                    <h2 class="text-sa">
-                        <xsl:apply-templates select="m:translation/m:long-titles/m:title[@xml:lang eq 'Sa-Ltn']"/>
-                    </h2>
-                    <div class="space-before">
+                <section>
+                    
+                    <xsl:attribute name="id" select="$section/@section-id"/>
+                    
+                    <div epub:type="titlepage" class="heading-section">
+                        
+                        <xsl:if test="m:translation/m:long-titles/m:title[@xml:lang eq 'bo'][text()]">
+                            <h2 class="text-bo">
+                                <xsl:apply-templates select="m:translation/m:long-titles/m:title[@xml:lang eq 'bo']"/>
+                            </h2>
+                        </xsl:if>
+                        
+                        <xsl:if test="m:translation/m:long-titles/m:title[@xml:lang eq 'Bo-Ltn'][text()]">
+                            <h2>
+                                <xsl:apply-templates select="m:translation/m:long-titles/m:title[@xml:lang eq 'Bo-Ltn']"/>
+                            </h2>
+                            
+                        </xsl:if>
+                        <xsl:if test="m:translation/m:long-titles/m:title[@xml:lang eq 'en'][text()]">
+                            <h1>
+                                <xsl:apply-templates select="m:translation/m:long-titles/m:title[@xml:lang eq 'en']"/>
+                            </h1>
+                        </xsl:if>
+                        
+                        <xsl:if test="m:translation/m:long-titles/m:title[@xml:lang eq 'Sa-Ltn'][text()]">
+                            <h2 class="text-sa">
+                                <xsl:apply-templates select="m:translation/m:long-titles/m:title[@xml:lang eq 'Sa-Ltn']"/>
+                            </h2>
+                        </xsl:if>
+                        
                         <h3>
                             <xsl:apply-templates select="m:translation/m:source/m:toh"/>
                         </h3>
+                        
                         <p>
                             <xsl:value-of select="string-join(m:translation/m:source/m:series/text() | m:translation/m:source/m:scope/text() | m:translation/m:source/m:range/text(), ', ')"/>.
                         </p>
+                        
                     </div>
-                </section>
-                
-                <section class="center full-title" epub:type="contributors">
-                    <xsl:for-each select="m:translation/m:publication/m:contributors/m:summary">
-                        <p class="translator">
-                            <xsl:apply-templates select="node()"/>
-                        </p>
-                    </xsl:for-each>
+                    
+                    <div epub:type="contributors" class="translator">
+                        <xsl:for-each select="m:translation/m:publication/m:contributors/m:summary">
+                            <p>
+                                <xsl:apply-templates select="node()"/>
+                            </p>
+                        </xsl:for-each>
+                    </div>
+                    
                 </section>
                 
             </xsl:with-param>

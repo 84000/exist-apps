@@ -20,6 +20,6 @@ return
         attribute url { concat('/translation/', $translation/m:source/@key,'.json?api-version=', $api-version) },
         attribute canonical-html { $translation/@page-url },
         element comment {'We do not currently serve json responses for translations. Please search or browse sections to find urls for translations html.'}
-        (: element summary { eft-json:tei-to-escaped-xhtml($translation/m:summary, doc(concat($common:app-path, "/xslt/tei-to-xhtml.xsl"))) } :)
+        (: element summary { eft-json:tei-to-escaped-xhtml($translation/m:section[@type eq 'summary']/tei:p, doc(concat($common:app-path, "/xslt/tei-to-xhtml.xsl"))) } :)
     }
     </translation>

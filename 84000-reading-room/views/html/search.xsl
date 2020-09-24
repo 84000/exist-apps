@@ -16,13 +16,15 @@
                         <div>
                             <ul class="breadcrumb">
                                 <li>
-                                    <xsl:value-of select="'Search results'"/>
+                                    <xsl:value-of select="'Search The Reading Room'"/>
                                 </li>
-                                <li>
-                                    <h1>
-                                        <xsl:value-of select="m:search/m:request/text()"/>
-                                    </h1>
-                                </li>
+                                <xsl:if test="m:search/m:request[text()]">
+                                    <li>
+                                        <h1>
+                                            <xsl:value-of select="m:search/m:request/text()"/>
+                                        </h1>
+                                    </li>
+                                </xsl:if>
                             </ul>
                         </div>
                         

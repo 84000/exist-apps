@@ -47,12 +47,14 @@
                                         </xsl:call-template>
                                     </p>
                                 </div>
-                                <xsl:call-template name="text-list">
-                                    <xsl:with-param name="texts" select="$priority-texts"/>
-                                    <xsl:with-param name="grouping" select="'sponsorship'"/>
-                                    <xsl:with-param name="show-sponsorship" select="true()"/>
-                                    <xsl:with-param name="show-sponsorship-cost" select="true()"/>
-                                </xsl:call-template>
+                                <div class="top-margin">
+                                    <xsl:call-template name="text-list">
+                                        <xsl:with-param name="texts" select="$priority-texts"/>
+                                        <xsl:with-param name="grouping" select="'sponsorship'"/>
+                                        <xsl:with-param name="show-sponsorship" select="true()"/>
+                                        <xsl:with-param name="show-sponsorship-cost" select="true()"/>
+                                    </xsl:call-template>
+                                </div>
                             </xsl:with-param>
                         </xsl:call-template>
                     </xsl:if>
@@ -76,11 +78,13 @@
                             <xsl:with-param name="title" select="replace(replace($group-title-app-text, '#pageUpper', xs:string($page-upper)), '#groupCost', format-number($group-cost, '#,###'))"/>
                             <xsl:with-param name="show-count" select="count($single-part-cost-group-texts)"/>
                             <xsl:with-param name="content">
-                                <xsl:call-template name="text-list">
-                                    <xsl:with-param name="texts" select="$single-part-cost-group-texts"/>
-                                    <xsl:with-param name="grouping" select="'sponsorship'"/>
-                                    <xsl:with-param name="show-sponsorship" select="true()"/>
-                                </xsl:call-template>
+                                <div class="top-margin">
+                                    <xsl:call-template name="text-list">
+                                        <xsl:with-param name="texts" select="$single-part-cost-group-texts"/>
+                                        <xsl:with-param name="grouping" select="'sponsorship'"/>
+                                        <xsl:with-param name="show-sponsorship" select="true()"/>
+                                    </xsl:call-template>
+                                </div>
                             </xsl:with-param>
                         </xsl:call-template>
                         
@@ -129,12 +133,14 @@
                                 </div>
                             </div>
                             
-                            <xsl:call-template name="text-list">
-                                <xsl:with-param name="texts" select="$remainder-texts"/>
-                                <xsl:with-param name="grouping" select="'sponsorship'"/>
-                                <xsl:with-param name="show-sponsorship" select="true()"/>
-                                <xsl:with-param name="show-sponsorship-cost" select="true()"/>
-                            </xsl:call-template>
+                            <div class="top-margin">
+                                <xsl:call-template name="text-list">
+                                    <xsl:with-param name="texts" select="$remainder-texts"/>
+                                    <xsl:with-param name="grouping" select="'sponsorship'"/>
+                                    <xsl:with-param name="show-sponsorship" select="true()"/>
+                                    <xsl:with-param name="show-sponsorship-cost" select="true()"/>
+                                </xsl:call-template>
+                            </div>
                             
                         </xsl:with-param>
                     </xsl:call-template>

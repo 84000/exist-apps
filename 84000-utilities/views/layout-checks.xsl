@@ -168,6 +168,16 @@
                             <li>
                                 <xsl:value-of select="'Abbreviations: '"/>
                                 <a target="test-layout">
+                                    <xsl:attribute name="href" select="concat($reading-room-path, '/translation/toh52.html#colophon')"/>
+                                    <xsl:value-of select="'none'"/>
+                                </a>
+                                <xsl:value-of select="', '"/>
+                                <a target="test-layout">
+                                    <xsl:attribute name="href" select="concat($reading-room-path, '/translation/toh1-1.html#abbreviations')"/>
+                                    <xsl:value-of select="'basic'"/>
+                                </a>
+                                <xsl:value-of select="', '"/>
+                                <a target="test-layout">
                                     <xsl:attribute name="href" select="concat($reading-room-path, '/translation/UT22084-081-006.html#abbreviations')"/>
                                     <xsl:value-of select="'with header &amp; footer'"/>
                                 </a>

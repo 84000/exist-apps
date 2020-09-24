@@ -8,16 +8,16 @@
     
     <xsl:template match="/m:response">
         
-        <xsl:variable name="section" select="m:translation/m:section[@section-id eq 'summary']"/>
+        <xsl:variable name="section" select="m:translation/m:section[@section-id eq 'acknowledgment']"/>
         
         <xsl:call-template name="epub-page">
             <xsl:with-param name="page-title" select="$section/tei:head[@type eq $section/@type]"/>
             <xsl:with-param name="content">
-                <section epub:type="abstract" class="text">
-                    
+                
+                <section epub:type="acknowledgments" class="text">
                     <xsl:apply-templates select="$section"/>
-                    
                 </section>
+                
             </xsl:with-param>
         </xsl:call-template>
         

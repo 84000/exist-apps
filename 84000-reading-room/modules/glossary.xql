@@ -470,12 +470,9 @@ declare function glossary:translation-data($tei as element(tei:TEI), $resource-i
                 translation:summary($tei),
                 translation:preface($tei),
                 translation:introduction($tei),
-                translation:prologue($tei),
-                translation:homage($tei),
                 translation:body($tei),
-                translation:colophon($tei),
                 translation:appendix($tei),
-                translation:notes($tei),
+                translation:end-notes($tei),
                 translation:glossary($tei)
             }
         </translation>
@@ -501,7 +498,7 @@ declare function glossary:translation-data($tei as element(tei:TEI), $resource-i
 };
 
 
-declare function glossary:filter($translation-milestones-internal-refs as element(m:translation), $filter as xs:string, $search as xs:string) as element(m:glossary) {
+declare function glossary:filter($translation-milestones-internal-refs as element(m:translation), $filter as xs:string, $search as xs:string) as element(m:section) {
     
     let $text-id := $translation-milestones-internal-refs/@id
     let $tei := tei-content:tei($text-id, 'translation')
@@ -539,9 +536,11 @@ declare function glossary:filter($translation-milestones-internal-refs as elemen
         else
             $translation-milestones-internal-refs
     
+    let $glossary-glossarized := $translation-glossarized/m:section[@type eq 'glossary']
+    
     return
-        element { node-name($translation-glossarized/m:glossary) }{
-            $translation-glossarized/m:glossary/@*,
+        element { node-name($glossary-glossarized) }{
+            $glossary-glossarized/@*,
             
             attribute filter { $filter },
             attribute text-id { $text-id },
@@ -552,7 +551,7 @@ declare function glossary:filter($translation-milestones-internal-refs as elemen
                 let $search-score := if(normalize-space($search) gt '') then ft:score($gloss) else 1
                 
                 (: It seems to be significantly quicker to re-create the glossary-item than look it up :)
-                let $glossary-item := glossary:item($gloss, false()) (: $translation-milestones-internal-refs/m:glossary/m:item[@uid = $gloss/@xml:id/string()] :)
+                let $glossary-item := glossary:item($gloss, false()) (: $glossary-glossarized/m:item[@uid = $gloss/@xml:id/string()] :)
                 
                 (: Expression items :)
                 let $expression-items := 
@@ -659,7 +658,8 @@ declare function glossary:expression-items($translation-glossarized as element(m
             
                 (: It's a note :)
                 if($match-context-single[self::m:note]) then
-                    element m:notes {
+                    element m:section {
+                        attribute type { 'end-notes' },
                         attribute prefix { 'n' },
                         element m:note {
                             $match-context-single/@*,
@@ -669,7 +669,8 @@ declare function glossary:expression-items($translation-glossarized as element(m
                 
                 (: It's a glossary definition :)
                 else if($match-context-single[self::m:item]) then
-                    element m:glossary {
+                    element m:section {
+                        attribute type { 'glossary' },
                         attribute prefix { 'g' },
                         element m:item {
                             $match-context-single/@*,

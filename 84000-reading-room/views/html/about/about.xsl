@@ -216,11 +216,13 @@
     <xsl:template name="expandable-summary">
         
         <xsl:param name="text"/>
+        <xsl:param name="expand-id" as="xs:string"/>
         
-        <xsl:if test="$text/m:summary/tei:p">
+        <xsl:if test="$text/m:section[@type eq 'summary'][tei:p]">
             <hr/>
-            <a class="summary-link collapsed" role="button" data-toggle="collapse" aria-expanded="false" aria-controls="collapseExample">
-                <xsl:attribute name="href" select="concat('#summary-detail-', $text/m:toh/@key)"/>
+            <a class="summary-link collapsed" role="button" data-toggle="collapse" aria-expanded="false">
+                <xsl:attribute name="href" select="concat('#', $expand-id)"/>
+                <xsl:attribute name="aria-controls" select="$expand-id"/>
                 <i class="fa fa-chevron-down"/>
                 <xsl:value-of select="' '"/>
                 <xsl:call-template name="local-text">
@@ -230,13 +232,11 @@
             
             <div class="collapse summary-detail">
                 
-                <xsl:attribute name="id" select="concat('summary-detail-', $text/m:toh/@key)"/>
+                <xsl:attribute name="id" select="$expand-id"/>
                 
                 <div class="well well-sm">
                     
-                    <xsl:if test="$text/m:summary/tei:p">
-                        <xsl:apply-templates select="$text/m:summary/tei:p"/>
-                    </xsl:if>
+                    <xsl:apply-templates select="$text/m:section[@type eq 'summary']/tei:p"/>
                     
                 </div>
             </div>
@@ -348,6 +348,8 @@
                             <xsl:sort select="number(m:toh/@chapter-number)"/>
                             <xsl:sort select="m:toh/@chapter-letter"/>
                             
+                            <xsl:variable name="group-index" select="position()"/>
+                            
                             <div class="row list-item">
                                 
                                 <xsl:attribute name="id" select="@id"/>
@@ -408,6 +410,7 @@
                                         
                                         <xsl:call-template name="expandable-summary">
                                             <xsl:with-param name="text" select="."/>
+                                            <xsl:with-param name="expand-id" select="concat('summary-detail-', $group-index, '-', m:toh/@key)"/>
                                         </xsl:call-template>
                                         
                                     </xsl:for-each>

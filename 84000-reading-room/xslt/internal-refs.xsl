@@ -4,9 +4,10 @@
     <xsl:import href="functions.xsl"/>
     
     <!-- Ensure eveything is copied -->
-    <xsl:template match="node()|@*">
+    <xsl:template match="@*|node()">
         <xsl:copy>
-            <xsl:apply-templates select="node()|@*"/>
+            <xsl:apply-templates select="@*"/>
+            <xsl:apply-templates select="node()"/>
         </xsl:copy>
     </xsl:template>
     
@@ -16,12 +17,11 @@
             
             <!-- Copy all the current attributes -->
             <xsl:copy-of select="@*"/>
-            <xsl:attribute name="debug" select="''"/>
+            <!--<xsl:attribute name="debug" select="''"/>-->
             
             <!-- Set / update the following attributes -->
             <!-- @target is the id of the node referenced e.g. UT22084-051-001-389 -->
             <!-- @location is the section of the text e.g. glossary -->
-            <!-- @chapter-index is the chapter number if @location is a chapter -->
             
             <xsl:choose>
                 
@@ -39,28 +39,29 @@
                     
                     <!-- Get the target of this pointer -->
                     <xsl:variable name="target-id" select="substring-after(@target, '#')"/>
+                    
                     <!-- Query it in this page -->
-                    <xsl:variable name="target" select="//*[@xml:id eq $target-id][1]"/>
+                    <xsl:variable name="target" select="/m:translation/m:section//tei:*[@xml:id eq $target-id][1]"/>
                     
                     <xsl:choose>
                         
                         <!-- The target is a note -->
                         <xsl:when test="$target[self::tei:note]">
-                            <xsl:attribute name="location" select="'notes'"/>
-                            <xsl:value-of select="concat('note ', $target/@index)"/>
+                            <xsl:attribute name="location" select="'end-notes'"/>
+                            <xsl:value-of select="concat('n.', $target/@index)"/>
                         </xsl:when>
                         
                         <!-- The target is a gloss -->
-                        <xsl:when test="$target[self::gloss]">
+                        <!-- This is wrong! gloss is already processed to m:item -->
+                        <xsl:when test="$target[self::tei:gloss]">
                             <xsl:attribute name="location" select="'glossary'"/>
                             <xsl:value-of select="normalize-space($target/tei:term[not(@xml:lang)][not(@type = ('definition','alternative'))][1])"/>
                         </xsl:when>
                         
                         <!-- The target is a milestone -->
                         <xsl:when test="$target[self::tei:milestone]">
-                            <xsl:variable name="group" select="$target/ancestor::*[exists(@prefix)][1]"/>
-                            <xsl:attribute name="location" select="local-name($group)"/>
-                            <xsl:attribute name="chapter-index" select="$group/@chapter-index"/>
+                            <xsl:variable name="group" select="$target/ancestor::m:section[@nesting eq '0'][1]"/>
+                            <xsl:attribute name="location" select="$group/@section-id"/>
                             <xsl:choose>
                                 <xsl:when test="text()[normalize-space(.)]">
                                     <xsl:value-of select="text()[normalize-space(.)]"/>
@@ -99,7 +100,7 @@
     <xsl:variable name="toh-key" select="m:translation/m:source/@key"/>
     
     <!-- Get valid refs for this rendering in the translation -->
-    <xsl:variable name="folio-refs" select="m:translation/m:*[self::m:prologue | self::m:homage | self::m:body | self::m:colophon]//tei:ref[@type eq 'folio'][not(@rend) or not(@rend eq 'hidden')][not(@key) or @key eq $toh-key][not(ancestor::tei:note)]"/>
+    <xsl:variable name="folio-refs" select="m:translation/m:section[@type eq 'translation']//tei:ref[@type eq 'folio'][not(@rend) or not(@rend eq 'hidden')][not(@key) or @key eq $toh-key][not(ancestor::tei:note)]"/>
     
     <xsl:template match="tei:ref">
         
@@ -135,15 +136,16 @@
     </xsl:template>
     
     <!-- Add indexes to glossaries -->
-    <xsl:template match="m:glossary">
+    <xsl:template match="m:translation/m:section[@type eq 'glossary']">
         <xsl:element name="{ node-name(.) }">
             <xsl:copy-of select="@*"/>
+            <xsl:copy-of select="*[not(self::m:item)]"/>
             <xsl:for-each select="m:item">
                 <xsl:sort select="m:sort-term"/>
                 <xsl:element name="{ node-name(.) }">
                     <xsl:copy-of select="@*"/>
                     <xsl:attribute name="index" select="position()"/>
-                    <xsl:apply-templates select="node()"/>
+                    <xsl:apply-templates select="*"/>
                 </xsl:element>
             </xsl:for-each>
         </xsl:element>

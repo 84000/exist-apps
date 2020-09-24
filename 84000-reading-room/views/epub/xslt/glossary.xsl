@@ -8,26 +8,14 @@
     
     <xsl:template match="/m:response">
         
-        <xsl:variable name="section-id" select="'glossary'"/>
-        <xsl:variable name="section-title" select="'Glossary'"/>
-        <xsl:variable name="section-prefix" select="m:translation/m:glossary/@prefix"/>
-        <xsl:variable name="translation-title" select="m:translation/m:titles/m:title[@xml:lang eq 'en']"/>
+        <xsl:variable name="section" select="m:translation/m:section[@section-id eq 'glossary']"/>
         
         <xsl:call-template name="epub-page">
-            <xsl:with-param name="translation-title" select="$translation-title"/>
-            <xsl:with-param name="page-title" select="$section-title"/>
+            <xsl:with-param name="page-title" select="$section/tei:head[@type eq $section/@type]"/>
             <xsl:with-param name="content">
                 <section epub:type="glossary">
                     
-                    <xsl:attribute name="id" select="$section-id"/>
-                    
-                    <div class="center header">
-                        <h3>
-                            <xsl:value-of select="$section-title"/>
-                        </h3>
-                    </div>
-                    
-                    <xsl:apply-templates select="m:translation/m:glossary/m:item"/>
+                    <xsl:apply-templates select="$section"/>
                     
                 </section>
             </xsl:with-param>

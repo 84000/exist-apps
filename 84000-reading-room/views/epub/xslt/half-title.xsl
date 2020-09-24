@@ -8,30 +8,33 @@
     
     <xsl:template match="/m:response">
         
-        <xsl:variable name="page-title" select="'Half Title'"/>
-        <xsl:variable name="translation-title" select="m:translation/m:titles/m:title[@xml:lang eq 'en']"/>
+        <xsl:variable name="section" select="m:translation/m:toc/m:section[@section-id eq 'half-title']"/>
         
         <xsl:call-template name="epub-page">
-            <xsl:with-param name="translation-title" select="$translation-title"/>
-            <xsl:with-param name="page-title" select="$page-title"/>
+            <xsl:with-param name="page-title" select="$section/tei:head[@type eq $section/@type]"/>
             <xsl:with-param name="content">
-                <section class="center half-title" epub:type="halftitlepage">
+                <div>
                     
-                    <h2 class="text-bo">
-                        <xsl:apply-templates select="m:translation/m:titles/m:title[@xml:lang eq 'bo']"/>
-                    </h2>
+                    <xsl:attribute name="id" select="$section/@section-id"/>
                     
-                    <h1>
-                        <xsl:apply-templates select="m:translation/m:titles/m:title[@xml:lang eq 'en']"/>
-                    </h1>
+                    <section epub:type="halftitlepage" class="heading-section">
                     
-                    <h2 class="text-sa">
-                        <xsl:apply-templates select="m:translation/m:titles/m:title[@xml:lang eq 'Sa-Ltn']"/>
-                    </h2>
+                        <h2 class="text-bo">
+                            <xsl:apply-templates select="m:translation/m:titles/m:title[@xml:lang eq 'bo']"/>
+                        </h2>
+                        
+                        <h1>
+                            <xsl:apply-templates select="m:translation/m:titles/m:title[@xml:lang eq 'en']"/>
+                        </h1>
+                        
+                        <h2 class="text-sa">
+                            <xsl:apply-templates select="m:translation/m:titles/m:title[@xml:lang eq 'Sa-Ltn']"/>
+                        </h2>
+                        
+                        <img src="image/logo-stacked.png" alt="84000 Translating the Words of the Buddha Logo" class="logo logo-84000"/>
                     
-                    <img src="image/logo-stacked.png" alt="84000 Translating the Words of the Buddha Logo" class="logo logo-84000"/>
-                    
-                </section>
+                    </section>
+                </div>
             </xsl:with-param>
         </xsl:call-template>
         

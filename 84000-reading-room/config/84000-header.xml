@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <eft-header xmlns="http://read.84000.co/ns/1.0">
-    <!-- Updated 05.06.2020 -->
+    <!-- Updated 04.09.2020 -->
     <translation id="tag-line">
         <text xml:lang="en">Translating the words of the Buddha</text>
         <text xml:lang="zh">八萬四千 • 佛典傳譯</text>
@@ -10,11 +10,11 @@
         <text xml:lang="zh">網站檢索</text>
     </translation>
     <translation id="button-search-reading-room">
-        <text xml:lang="en">Search the publications</text>
+        <text xml:lang="en">Search The Reading Room</text>
         <text xml:lang="zh">雲端藏經閣檢索</text>
     </translation>
     <translation id="button-search-comms">
-        <text xml:lang="en">Search the website</text>
+        <text xml:lang="en">Search The website</text>
         <text xml:lang="zh">網站檢索</text>
     </translation>
     <translation id="label-bookmarks">

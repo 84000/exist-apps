@@ -96,42 +96,46 @@ declare function tei-content:tei($resource-id as xs:string, $resource-type as xs
     
 };
 
-declare function tei-content:title($tei as element(tei:TEI)) as xs:string {
+declare function tei-content:title($tei as element(tei:TEI)) as xs:string? {
     (: Returns a standardised title in a given tei doc :)
     
-    let $title := normalize-space($tei//tei:fileDesc//tei:title[@type='mainTitle'][@xml:lang eq 'en'][1]/text())
+    let $title := $tei//tei:fileDesc/tei:titleStmt/tei:title[@type='mainTitle'][@xml:lang eq 'en'][1]/text() ! normalize-space(.)
     
     let $title := 
         if(not($title gt ''))then
-            normalize-space($tei//tei:fileDesc//tei:title[@xml:lang eq 'en'][1]/text())
+            $tei//tei:fileDesc/tei:titleStmt/tei:title[@xml:lang eq 'en'][1]/text() ! normalize-space(.)
         else
             $title
             
-    let $title-missing :=
+    let $title :=
         if(not($title gt ''))then
-            concat(normalize-space($tei//tei:fileDesc//tei:title[@xml:lang eq 'Sa-Ltn'][1]/text()), ' (awaiting English title)')
+            concat($tei//tei:fileDesc/tei:titleStmt/tei:title[@xml:lang eq 'Sa-Ltn'][1]/text() ! normalize-space(.), ' (awaiting English title)')
         else
             $title
     
     return
-        translate($title-missing, '&#x2003;', '&#x20;')
+        $title ! normalize-space(.) ! translate(., '&#x2003;', '&#x20;')
 };
 
-declare function tei-content:title($tei as node(), $type as xs:string?, $lang as xs:string*) as xs:string {
-    translate(normalize-space($tei//tei:titleStmt/tei:title[@type eq $type][lower-case(@xml:lang) = $lang ! lower-case(.)][1]), '&#x2003;', '&#x20;')
+declare function tei-content:title($tei as node(), $type as xs:string?, $lang as xs:string*) as xs:string? {
+    
+    $tei//tei:fileDesc/tei:titleStmt/tei:title[@type eq $type][@xml:lang = $lang][1]/text() ! normalize-space(.) ! translate(., '&#x2003;', '&#x20;')
+    
 };
 
 declare function tei-content:titles($tei as element(tei:TEI)) as element() {
 
     <titles xmlns="http://read.84000.co/ns/1.0">
     {
-        for $title in $tei//tei:titleStmt/tei:title
+        for $title in $tei//tei:fileDesc/tei:titleStmt/tei:title
         return
             <title 
                 xml:lang="{ $title/@xml:lang }"
-                type="{ $title/@type }">{
-                translate(normalize-space($title/text()), '&#x2003;', '&#x20;') 
-            }</title>
+                type="{ $title/@type }">
+            {
+                $title/text() ! normalize-space(.) ! translate(., '&#x2003;', '&#x20;') 
+            }
+            </title>
     }
     </titles>
     
@@ -146,8 +150,7 @@ declare function tei-content:title-set($tei as element(tei:TEI), $type as xs:str
     
     let $source-bibl := tei-content:source-bibl($tei, '')
     
-    return 
-    (
+    return (
         <title xmlns="http://read.84000.co/ns/1.0" xml:lang="en">{ $en }</title>,
         <title xmlns="http://read.84000.co/ns/1.0" xml:lang="bo">
         {
@@ -265,7 +268,7 @@ declare function tei-content:source($tei as element(tei:TEI), $resource-id as xs
     let $bibl := tei-content:source-bibl($tei, $resource-id)
     
     return
-        <source xmlns="http://read.84000.co/ns/1.0" key="{ $bibl/@key }">
+        <source xmlns="http://read.84000.co/ns/1.0" key="{ $bibl/@key }" parent-id="{ $bibl/tei:idno[@parent-id]/@parent-id }">
             <toh>{ normalize-space(string-join($bibl/tei:ref//text(), ' +')) }</toh>
             <series>{ normalize-space(data($bibl/tei:series)) }</series>
             <scope>{ normalize-space(data($bibl/tei:biblScope)) }</scope>

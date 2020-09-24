@@ -787,6 +787,12 @@
                                     <xsl:attribute name="target" select="concat(m:toh/@key, '.html')"/>
                                     <xsl:value-of select="'editor mode'"/>
                                 </a>
+                                <xsl:value-of select="' / '"/>
+                                <a class="small">
+                                    <xsl:attribute name="href" select="concat($reading-room-path ,'/translation/', m:toh/@key, '.html?view-mode=annotation')"/>
+                                    <xsl:attribute name="target" select="concat(m:toh/@key, '.html')"/>
+                                    <xsl:value-of select="'annotation mode'"/>
+                                </a>
                             </div>
                         </td>
                         <td>

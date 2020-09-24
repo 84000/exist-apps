@@ -413,7 +413,7 @@ declare function translations:filtered-text($tei as element(tei:TEI), $toh-key a
             tei-content:source-bibl($tei, $toh-key),
             translation:location($tei, $toh-key),
             translation:publication($tei),
-            translation:summary($tei, $lang),
+            translation:summary($tei, 'full', $lang),
             translation:status-updates($tei),
             sponsorship:text-status($text-id, false()),
             if($include-sponsors) then

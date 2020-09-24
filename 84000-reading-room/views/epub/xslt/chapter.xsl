@@ -6,39 +6,21 @@
     
     <!-- epub:types https://idpf.github.io/epub-vocabs/structure/ -->
     
-    <xsl:param name="chapter-index" required="yes"/>
-    <xsl:param name="prefix" required="yes"/>
+    <xsl:param name="section-id" required="yes"/>
+    <xsl:param name="parent-id" required="yes"/>
     
     <xsl:template match="/m:response">
         
-        <xsl:variable name="page-title" select="'Body'"/>
-        <xsl:variable name="translation-title" select="m:translation/m:titles/m:title[@xml:lang eq 'en']"/>
-        <xsl:variable name="chapter" select="m:translation/m:body/m:chapter[@chapter-index eq $chapter-index]"/>
+        <xsl:variable name="section" select="m:translation/m:section[@section-id eq $parent-id]/m:section[@section-id eq $section-id]"/>
         
         <xsl:call-template name="epub-page">
-            <xsl:with-param name="translation-title" select="$translation-title"/>
-            <xsl:with-param name="page-title" select="$page-title"/>
+            <xsl:with-param name="page-title" select="$section/tei:head[@type eq $section/@type]"/>
             <xsl:with-param name="content">
-                <section class="translation" epub:type="chapter">
-                    
-                    <xsl:attribute name="id" select="concat('chapter-', $prefix)"/>
-                    
-                    <xsl:if test="$chapter/m:title/text() or $chapter/m:title-number/text()">
-                        <div class="center header">
-                            <xsl:call-template name="chapter-title">
-                                <xsl:with-param name="title" select="$chapter/m:title"/>
-                                <xsl:with-param name="title-number" select="$chapter/m:title-number"/>
-                                <xsl:with-param name="chapter-index" select="$chapter/@chapter-index/string()"/>
-                                <xsl:with-param name="prefix" select="$chapter/@prefix/string()"/>
-                            </xsl:call-template>
-                        </div>
-                    </xsl:if>
-                    
-                    <div class="text">
-                        <xsl:apply-templates select="$chapter/tei:*"/>
-                    </div>
-                    
+                
+                <section epub:type="chapter" class="text">
+                    <xsl:apply-templates select="$section"/>
                 </section>
+                
             </xsl:with-param>
         </xsl:call-template>
         

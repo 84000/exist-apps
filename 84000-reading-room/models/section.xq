@@ -6,9 +6,13 @@ xquery version "3.0" encoding "UTF-8";
     Can be returned as xml or transformed into json or html.
 :)
 
+declare namespace tei="http://www.tei-c.org/ns/1.0";
+declare namespace m="http://read.84000.co/ns/1.0";
+
 import module namespace common="http://read.84000.co/common" at "../modules/common.xql";
 import module namespace tei-content="http://read.84000.co/tei-content" at "../modules/tei-content.xql";
 import module namespace section="http://read.84000.co/section" at "../modules/section.xql";
+import module namespace functx="http://www.functx.com";
 
 declare option exist:serialize "method=xml indent=no";
 
@@ -16,8 +20,76 @@ let $resource-id := upper-case(request:get-parameter('resource-id', 'lobby'))
 let $resource-suffix := request:get-parameter('resource-suffix', '')
 let $translations-order := request:get-parameter('translations-order', 'toh')
 let $filter-id := request:get-parameter('filter-id', '')
+let $filter-section-ids := request:get-parameter('filter-section-id[]', '')
+let $filter-max-pages := request:get-parameter('filter-max-pages', '')
 
 let $tei := tei-content:tei($resource-id, 'section')
+let $filters := section:filters($tei)
+
+let $filter-section-ids := 
+    for $filter-section-id in $filter-section-ids[not(. eq '')]
+    return
+        element { QName('http://read.84000.co/ns/1.0', 'filter') } {
+            attribute section-id { $filter-section-id }
+        }
+
+let $filter-max-pages := 
+    if(functx:is-a-number($filter-max-pages)) then
+        element { QName('http://read.84000.co/ns/1.0', 'filter') } {
+            attribute max-pages { $filter-max-pages }
+        }
+    else ()
+(:
+let $user-defined-filter := 
+    if($filter-section-ids or $filter-max-pages) then (
+        element { QName('http://www.tei-c.org/ns/1.0', 'div') } {
+            attribute type { 'filter' },
+            attribute xml:id { 'USER-DEFINED-FILTER' },
+            element head {
+                attribute type { 'filter' },
+                text { 'Custom Filter' }
+            },
+            element p {
+                if($filter-max-pages) then
+                    text { concat('Max. ', $filter-max-pages/@max-pages, ' pages from ') }
+                else
+                    text { 'Any sized text from ' }
+                ,
+                if($filter-section-ids) then(
+                    text { string-join($filter-section-ids/@section-id, ', ') }
+                )  
+                else 
+                    text { 'all sections.' }
+            },
+            element { QName('http://read.84000.co/ns/1.0','display') } {
+                attribute key { 'carousel' }
+            },
+            $filter-section-ids,
+            $filter-max-pages
+        }
+    )
+    else ():)
+(:
+let $filter-id :=
+    if($filter-section-ids or $filter-max-pages) then
+        'USER-DEFINED-FILTER'
+    else
+        $filter-id:)
+
+(:let $filters := 
+    element { node-name($filters) } {
+        $filters/@*,
+        $filters/*,
+        $user-defined-filter
+    }:)
+
+let $apply-filters := 
+    if($filter-section-ids or $filter-max-pages) then (
+        $filter-section-ids,
+        $filter-max-pages
+    )
+    else
+        $filters/tei:div[@xml:id eq $filter-id]/m:filter
 
 return 
     
@@ -50,8 +122,6 @@ return
                 else
                     'descendants'
     
-        
-        
         return
             common:response(
                 "section", 
@@ -66,10 +136,18 @@ return
                         published-only="{ xs:boolean($published-only) }"
                         child-texts-only="{ xs:boolean($child-texts-only) }"
                         translations-order="{ $translations-order }"
-                        filter-id="{ $filter-id }"/>,
-                        
+                        filter-id="{ $filter-id }">
+                        {
+                            $filter-section-ids,
+                            $filter-max-pages
+                        }
+                        </request>,
+                    
                     (: Include section data :)
-                    section:section-tree($tei, true(), $include-texts)
+                    section:section-tree($tei, true(), $include-texts, $apply-filters),
+                    
+                    (: Include section filters :)
+                    $filters
                     
                 )
             )

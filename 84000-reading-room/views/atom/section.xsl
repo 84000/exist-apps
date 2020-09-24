@@ -144,12 +144,12 @@
                             <eft:title-variants>
                                 <xsl:copy-of select="eft:title-variants/eft:*" copy-namespaces="no"/>
                             </eft:title-variants>
-                            <xsl:if test="eft:summary/*">
+                            <xsl:if test="eft:section[@type eq 'summary']/*">
                                 <summary type="text">
-                                    <xsl:value-of select="normalize-space(data(eft:summary))"/>
+                                    <xsl:value-of select="normalize-space(data(eft:section[@type eq 'summary']/tei:p))"/>
                                 </summary>
                                 <eft:summary>
-                                    <xsl:apply-templates select="eft:summary" exclude-result-prefixes="xhtml"/>
+                                    <xsl:apply-templates select="eft:section[@type eq 'summary']" exclude-result-prefixes="xhtml"/>
                                 </eft:summary>
                             </xsl:if>
                             <xsl:for-each select="eft:downloads/eft:download[@type = ('epub', 'azw3', 'pdf')]">

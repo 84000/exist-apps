@@ -8,30 +8,14 @@
     
     <xsl:template match="/m:response">
         
-        <xsl:variable name="section-id" select="'introduction'"/>
-        <xsl:variable name="section-title" select="'Introduction'"/>
-        <xsl:variable name="section-prefix" select="m:translation/m:introduction/@prefix"/>
-        <xsl:variable name="translation-title" select="m:translation/m:titles/m:title[@xml:lang eq 'en']"/>
+        <xsl:variable name="section" select="m:translation/m:section[@section-id eq 'introduction']"/>
         
         <xsl:call-template name="epub-page">
-            <xsl:with-param name="translation-title" select="$translation-title"/>
-            <xsl:with-param name="page-title" select="$section-title"/>
+            <xsl:with-param name="page-title" select="$section/tei:head[@type eq $section/@type]"/>
             <xsl:with-param name="content">
-                <section epub:type="introduction">
+                <section epub:type="introduction" class="text">
                     
-                    <xsl:attribute name="id" select="$section-id"/>
-                    
-                    <div class="center header">
-                        <xsl:call-template name="section-title">
-                            <xsl:with-param name="bookmark-id" select="$section-id"/>
-                            <xsl:with-param name="prefix" select="$section-prefix"/>
-                            <xsl:with-param name="title" select="$section-title"/>
-                        </xsl:call-template>
-                    </div>
-                    
-                    <div class="text">
-                        <xsl:apply-templates select="m:translation/m:introduction"/>
-                    </div>
+                    <xsl:apply-templates select="$section"/>
                     
                 </section>
             </xsl:with-param>

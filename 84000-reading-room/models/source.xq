@@ -75,11 +75,7 @@ return
                 <back-link 
                     xmlns="http://read.84000.co/ns/1.0"
                     url="{ concat($reading-room-path, '/translation/', $resource-id, '.html#', translation:source-link-id($ref-resource-index)) }">
-                    <title>
-                    { 
-                        tei-content:title($tei) 
-                    }
-                    </title>
+                    <title>{ tei-content:title($tei) }</title>
                 </back-link>,
                 
                 (: Include the translation :)

@@ -98,7 +98,7 @@ declare function contributors:acknowledgements($contributor-uri as xs:string) as
 
 declare function local:acknowledgement($tei as element(tei:TEI), $paragraphs as element()*, $contribution as element()?) as element(m:acknowledgement)* {
 
-    element m:acknowledgement {
+    element { QName('http://read.84000.co/ns/1.0', 'acknowledgement') } {
         attribute translation-id { tei-content:id($tei) },
         attribute translation-status { tei-content:translation-status($tei) },
         attribute translation-status-group { tei-content:translation-status-group($tei) },
@@ -132,13 +132,11 @@ declare function contributors:teams($include-hidden as xs:boolean, $include-ackn
         return $team
     
     return
-        <contributor-teams xmlns="http://read.84000.co/ns/1.0">
-        {
+        element { QName('http://read.84000.co/ns/1.0', 'contributor-teams') } {
             for $team in $teams
             return
                 contributors:team($team/@xml:id, $include-acknowledgements, $include-persons)
         }
-        </contributor-teams>
 };
 
 declare function contributors:team($id as xs:string, $include-acknowledgements as xs:boolean, $include-persons as xs:boolean) as element() {

@@ -14,7 +14,7 @@
         - Sort by the phrase with the most words and always find those matches first
     -->
     <xsl:variable name="glossary" as="element(m:item)*">
-        <xsl:perform-sort select="/m:translation/m:glossary/m:item">
+        <xsl:perform-sort select="/m:translation/m:section[@type eq 'glossary']/m:item">
             <xsl:sort select="xs:integer(m:sort-term/@sort-length)" order="descending"/>
         </xsl:perform-sort>
     </xsl:variable>
@@ -43,7 +43,7 @@
     </xsl:template>
     
     <!-- We don't want to parse some nodes, those we should just copy -->
-    <xsl:template match="m:titles | m:long-titles | m:source | m:acknowledgment | m:bibliography | m:parent | m:downloads | m:abbreviations | m:term | m:sort-term | m:alternative | m:entity | m:honoration | m:main-title  | m:sub-title | tei:head | tei:note | tei:term[@type eq 'ignore'] | tei:match | text()[not(normalize-space())] | *[not(normalize-space(data()))]" priority="10">
+    <xsl:template match="m:titles | m:long-titles | m:source | m:parent | m:downloads | m:section[@type = ('acknowledgment', 'bibliography', 'abbreviations')] | m:term | m:sort-term | m:alternative | m:entity | m:honoration | m:main-title  | m:sub-title | tei:head | tei:note | tei:term[@type eq 'ignore'] | tei:match | text()[not(normalize-space())] | *[not(normalize-space(data()))]" priority="10">
         <xsl:copy>
             <xsl:copy-of select="node()|@*"/>
         </xsl:copy>

@@ -8,71 +8,16 @@
     
     <xsl:template match="/m:response">
         
-        <xsl:variable name="section-id" select="'appendix'"/>
-        <xsl:variable name="section-title" select="m:translation/m:appendix/m:title"/>
-        <xsl:variable name="section-prefix" select="m:translation/m:appendix/@prefix"/>
-        <xsl:variable name="translation-title" select="m:translation/m:titles/m:title[@xml:lang eq 'en']"/>
+        <xsl:variable name="section" select="m:translation/m:section[@section-id eq 'appendix']"/>
         
         <xsl:call-template name="epub-page">
-            <xsl:with-param name="translation-title" select="$translation-title"/>
-            <xsl:with-param name="page-title" select="$section-title"/>
+            <xsl:with-param name="page-title" select="'Appendix'"/>
             <xsl:with-param name="content">
-                <section class="translation" epub:type="appendix">
-                    
-                    <xsl:attribute name="id" select="$section-id"/>
-                    
-                    <xsl:choose>
-                        <xsl:when test="count(m:translation/m:appendix/m:chapter) gt 0">
-                            
-                            <div class="center header">
-                                <h4>
-                                    <xsl:value-of select="'Appendix'"/>
-                                </h4>
-                                <h3>
-                                    <xsl:value-of select="$section-title"/>
-                                </h3>
-                            </div>
-                            
-                            <xsl:for-each select="m:translation/m:appendix/m:chapter">
-                                <div class="new-page">
-                                    
-                                    <xsl:if test="m:title[normalize-space(text())] | m:title-number[text()]">
-                                        <div class="center header">
-                                            <xsl:call-template name="chapter-title">
-                                                <xsl:with-param name="title" select="m:title"/>
-                                                <xsl:with-param name="title-number" select="m:title-number"/>
-                                                <xsl:with-param name="chapter-index" select="@chapter-index/string()"/>
-                                                <xsl:with-param name="prefix" select="@prefix/string()"/>
-                                            </xsl:call-template>
-                                        </div>
-                                    </xsl:if>
-                                    
-                                    <div class="text">
-                                        <xsl:apply-templates select="tei:*"/>
-                                    </div>
-                                    
-                                </div>
-                            </xsl:for-each>
-                            
-                        </xsl:when>
-                        <xsl:otherwise>
-                            
-                            <div class="center header">
-                                <xsl:call-template name="section-title">
-                                    <xsl:with-param name="bookmark-id" select="$section-id"/>
-                                    <xsl:with-param name="prefix" select="$section-prefix"/>
-                                    <xsl:with-param name="title" select="$section-title"/>
-                                </xsl:call-template>
-                            </div>
-                            
-                            <div class="text">
-                                <xsl:apply-templates select="tei:*"/>
-                            </div>
-                            
-                        </xsl:otherwise>
-                    </xsl:choose>
-                    
+                
+                <section epub:type="appendix" class="text">
+                    <xsl:apply-templates select="$section/tei:*"/>
                 </section>
+                
             </xsl:with-param>
         </xsl:call-template>
         

@@ -67,7 +67,7 @@ declare function local:parse-content($content, $folio-refs) {
 };
 
 let $data := request:get-data()
-let $parsed-content := local:parse-content($data/m:response/m:translation/m:publication | $data/m:response/m:translation/m:prologue | $data/m:response/m:translation/m:homage | $data/m:response/m:translation/m:body | $data/m:response/m:translation/m:colophon, $data/m:response/m:folio-refs)
+let $parsed-content := local:parse-content($data/m:response/m:translation/m:publication | $data/m:response/m:translation/m:section[@type eq 'translation']/m:section, $data/m:response/m:folio-refs)
 let $string := string-join($parsed-content, '')
 let $binary := util:base64-encode($string)
 
