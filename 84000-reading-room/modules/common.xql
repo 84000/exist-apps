@@ -434,7 +434,9 @@ declare
 function common:normalized-chars($string as xs:string?) as xs:string {
     if($string) then
         translate(
-            replace(normalize-unicode($string), '­'(: This is a soft-hyphen :), ''), 
+            replace(
+                normalize-unicode($string)
+            , '­'(: This is a soft-hyphen :), ''), 
             string-join(($common:diacritic-letters, upper-case($common:diacritic-letters)), ''), 
             string-join(($common:diacritic-letters-without, upper-case($common:diacritic-letters-without)), '')
         )

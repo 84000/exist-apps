@@ -218,15 +218,11 @@ declare function translation:toc($tei as element(tei:TEI)) as element() {
 declare function translation:toc($tei as element(tei:TEI), $mode as xs:string?) as element() {
     
     element { QName('http://read.84000.co/ns/1.0', 'toc') } {
-    
-        if($mode eq 'epub') then (
-            local:section('half-title', 'half-title', 0, (), 'toc', text {'Half title'}, 'ti'),
-            local:section('full-title', 'full-title', 0, (), 'toc', text {'Full title'}, 'ft'),
+        local:section('titles', 'titles', 0, (), 'toc', text {'Title'}, 'ti'),
+        if($mode eq 'epub') then
             local:section('imprint', 'imprint', 0, (), 'toc', text {'Imprint'}, 'im')
-        )
-        else
-            local:section('titles', 'titles', 0, (), 'toc', text {'Titles'}, 'ti'),
-            
+        else ()
+        ,
         local:section('contents', 'contents', 0, (), 'toc', text {'Contents'}, 'co'),
         translation:summary($tei, 'toc'),
         translation:acknowledgment($tei, 'toc'),

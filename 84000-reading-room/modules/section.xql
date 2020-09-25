@@ -92,7 +92,6 @@ declare function section:child-sections($tei as element(tei:TEI), $include-text-
         if(($include-texts = ('descendants', 'descendants-published')) or ($include-texts = ('children', 'children-published') and ($nest eq 1 or ($type eq 'grouping' and $nest eq 2)))) then
             (: List child texts :)
             for $tei in 
-                
                 (: published only :)
                 if($include-texts = ('children-published', 'descendants-published')) then
                     $child-texts[tei:teiHeader/tei:fileDesc[tei:publicationStmt[@status = $tei-content:published-status-ids]]]
@@ -100,23 +99,36 @@ declare function section:child-sections($tei as element(tei:TEI), $include-text-
                     $child-texts
             
                 (: Get the correct Toh for this parent :)
-                (: All translated get all Tohs :)
                 for $resource-id in 
+                    (: All translated get all the variants :)
                     if($id eq 'ALL-TRANSLATED') then
                         $tei//tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl/@key
                     else
                         $tei//tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl[tei:idno[@parent-id = $id]]/@key
-                        
+                
+                let $text-id := tei-content:id($tei)
+                let $source := tei-content:source($tei, $resource-id)
+                
+                (: ~ Apply the filters here?
+                let $text-parent-section := ($id, $child-sections/@id)
+                let $filters-section-ids := $filters[@section-id]/@section-id
+                
+                where (
+                    (not($filters[@max-pages]) or $filters[@max-pages ! xs:integer(.) ge $source/m:location/@count-pages ! xs:integer(.)])
+                    and (not($filters[@section-id]) or $text-parent-section[ancestor-or-self::m:section/@id = $filters-section-ids])
+                    and (not($filters[@text-id]) or $filters[@text-id = $text-id])
+                ):)
+                
                 return
                     element { QName('http://read.84000.co/ns/1.0', 'text') }{
-                        attribute id { tei-content:id($tei) },
+                        attribute id { $text-id },
                         attribute resource-id { $resource-id },
                         attribute status { tei-content:translation-status($tei) },
                         attribute status-group { tei-content:translation-status-group($tei) },
                         attribute uri { base-uri($tei) },
                         attribute canonical-html { translation:canonical-html($resource-id) },
                         attribute last-updated { tei-content:last-updated($tei//tei:fileDesc) },
-                        tei-content:source($tei, $resource-id),
+                        $source,
                         translation:toh($tei, $resource-id),
                         translation:titles($tei),
                         translation:title-variants($tei),
@@ -284,15 +296,16 @@ declare function section:filter-texts($section as element(m:section), $filters a
                     $section/@*,
                     $filters,
                     for $text in $node/m:text
-                    let $text-parent-section := $section/descendant-or-self::m:section[@id eq $text/m:source/@parent-id]
+                    let $source := $text/m:source
+                    let $text-parent-section := $section/descendant-or-self::m:section[@id eq $source/@parent-id]
                     let $filters-section-ids := $filters[@section-id]/@section-id
                     return
                         element { node-name($text) }{
                             $text/@*,
                             attribute filter-match {(
-                                (not($filters[@max-pages]) or $text/m:source/m:location/@count-pages ! xs:integer(.) le $filters[@max-pages]/@max-pages ! xs:integer(.))
+                                (not($filters[@max-pages]) or $source/m:location/@count-pages ! xs:integer(.) le $filters[@max-pages]/@max-pages ! xs:integer(.))
                                 and (not($filters[@section-id]) or $text-parent-section[ancestor-or-self::m:section/@id = $filters-section-ids])
-                                and (not($filters[@text-id]) or $text/@id = $filters[@text-id]/@text-id)
+                                and (not($filters[@text-id]) or $filters[@text-id = $text/@id])
                             )},
                             $text/*
                         }

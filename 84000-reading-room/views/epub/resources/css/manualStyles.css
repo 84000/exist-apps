@@ -38,6 +38,7 @@ aside,
     display: block;
     page-break-before: always;
     max-width: 100%;
+    padding-top: 20%;
 }
 p {
     line-height: 1.5;
@@ -401,46 +402,40 @@ img.logo-84000 {
 }
 
 /* title pages */
-#half-title,
-#full-title,
-#imprint section,
+#titles,
+#imprint,
 #body-title {
-    padding-top: 20%;
     text-align: center;
 }
 
-#half-title p,
-#full-title p,
+#titles p,
 #imprint p,
 #body-title p {
     text-align: center;
 }
 
-#half-title h1,
-#half-title h2,
-#full-title h1,
-#full-title h2,
-#full-title p,
+#titles h1,
+#titles h2,
+#titles p,
 #body-title h1,
 #body-title h2 {
     font-weight: normal;
 }
 
-#half-title .logo {
+#titles .logo {
     display: inline-block;
     margin: 0 auto;
     margin-top: 20%;
 }
 
-#half-title h2,
-#full-title h2,
-#full-title h3,
-#full-title p,
+#titles h2,
+#titles h3,
+#titles p,
 #body-title h2 {
     font-size: 13pt;
 }
 
-#full-title .translator {
+#titles .translator {
     margin-top: 24pt;
     padding: 10pt 15pt;
     background-color: #eee;

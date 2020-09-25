@@ -43,7 +43,11 @@ declare function search:search($request as xs:string, $resource-id as xs:string,
             <filter-rewrite>yes</filter-rewrite>
         </options>
     
-    let $query := local:search-query($request)
+    (: Interogate the request to see if it's a phrase :)
+    let $request-is-phrase := matches($request, '^["“].+["“]$')
+    let $request-no-quotes := replace($request, '("|“)', '')
+    
+    let $query := local:search-query($request-no-quotes, $request-is-phrase)
     
     let $results := 
         $all/tei:teiHeader/tei:fileDesc//tei:title[ft:query(., $query, $options)]
@@ -126,7 +130,7 @@ declare function search:search($request as xs:string, $resource-id as xs:string,
                             (: Take the top x matches :)
                             for $result in subsequence($results, 1, $max-tei-records)
                             
-                                let $expanded := common:mark-nodes($result/node(), $request, 'words')
+                                let $expanded := common:mark-nodes($result/node(), $request-no-quotes, 'words')
                                 
                                 (:let $expanded :=
                                     if(not($expanded//exist:match)) then
@@ -381,7 +385,7 @@ declare function search:tm-search($request as xs:string, $lang as xs:string, $fi
     return util:expand($ancestor)
 };:)
 
-declare function local:search-query($request as xs:string) as element() {
+declare function local:search-query($request as xs:string, $search-as-phrase as xs:boolean?) as element() {
     
     (: In leiu of Lucene synonyms :)
     
@@ -392,7 +396,7 @@ declare function local:search-query($request as xs:string) as element() {
                 <term>toh</term>
             </synonym>
         </synonyms>
-        
+    
     let $request-normalized := common:normalized-chars($request)
     
     let $request-tokenized := tokenize($request-normalized, '\s')
@@ -400,9 +404,12 @@ declare function local:search-query($request as xs:string) as element() {
     return
         <query>
             <bool>
-                <near slop="20" occur="should">{ $request-normalized }</near>
-                <wildcard occur="should">{ concat($request-normalized,'*') }</wildcard>
-                {
+            {
+                if($search-as-phrase) then
+                    <phrase slop="0" occur="must">{ $request-normalized }</phrase>
+                else (
+                    <near slop="20" occur="should">{ $request-normalized }</near>,
+                    <wildcard occur="should">{ concat($request-normalized,'*') }</wildcard>,
                     for $request-token in $request-tokenized
                         for $synonym in $synonyms//eft:synonym[eft:term/text() = $request-token]/eft:term[not(text() = $request-token)]
                             let $request-synonym := replace($request-normalized, $request-token, $synonym)
@@ -410,7 +417,9 @@ declare function local:search-query($request as xs:string) as element() {
                             <near slop="20" occur="should">{ $request-synonym }</near>,
                             <wildcard occur="should">{ concat($request-synonym,'*') }</wildcard>
                         )
-                }
+                
+                )
+            }   
             </bool>
         </query>
 };
