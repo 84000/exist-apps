@@ -41,20 +41,7 @@
                                             </span>
                                         </span>
                                         <span class="btn-round-text">
-                                            <xsl:value-of select="'View Published Translations'"/>
-                                        </span>
-                                    </a>
-                                </div>
-                                <div>
-                                    <a href="#bookmarks-sidebar" id="bookmarks-btn" class="show-sidebar center-vertical" role="button" aria-haspopup="true" aria-expanded="false">
-                                        <span>
-                                            <span class="btn-round sml">
-                                                <i class="fa fa-bookmark"/>
-                                                <span class="badge badge-notification">0</span>
-                                            </span>
-                                        </span>
-                                        <span class="btn-round-text">
-                                            <xsl:value-of select="'Bookmarks'"/>
+                                            <xsl:value-of select="'All Published Translations'"/>
                                         </span>
                                     </a>
                                 </div>
@@ -63,7 +50,6 @@
                     </div>
                 </div>
             </div>
-            <xsl:call-template name="bookmarks-sidebar"/>
             
             <!-- Include .client-error to do a client side error log -->
             <div class="content-band client-error">

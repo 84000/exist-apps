@@ -580,9 +580,37 @@
             </div>
         </div>
         
-        <!-- Include the bookmarks sidebar -->
-        <xsl:call-template name="bookmarks-sidebar"/>
-        
+    </xsl:template>
+    
+    <xsl:template match="eft:bookmarks-sidebar[eft:translation[@id = 'label-bookmarks']]">
+        <!-- Bookmarks fly-out -->
+        <div id="bookmarks-sidebar" class="fixed-sidebar collapse width hidden-print">
+            <div class="fix-width">
+                <div class="sidebar-content">
+                    <h4>
+                        <xsl:call-template name="translation-lang-class">
+                            <xsl:with-param name="lang" select="$lang"/>
+                        </xsl:call-template>
+                        <xsl:call-template name="translation">
+                            <xsl:with-param name="translation-id" select="'label-bookmarks'"/>
+                            <xsl:with-param name="lang" select="$lang"/>
+                            <xsl:with-param name="text-node" select="true()"/>
+                        </xsl:call-template>
+                    </h4>
+                    <table id="bookmarks-list" class="contents-table">
+                        <tbody/>
+                        <tfoot/>
+                    </table>
+                </div>
+            </div>
+            <div class="fixed-btn-container close-btn-container right">
+                <button type="button" class="btn-round close close-collapse" aria-label="Close">
+                    <span aria-hidden="true">
+                        <i class="fa fa-times"/>
+                    </span>
+                </button>
+            </div>
+        </div>
     </xsl:template>
     
     <xsl:template match="eft:sharing-panel[eft:item]">
@@ -613,11 +641,6 @@
             </div>
         </div>
         
-    </xsl:template>
-    
-    <xsl:template match="eft:bookmarks-sidebar">
-        <!-- Bookmarks fly-out -->
-        <xsl:call-template name="bookmarks-sidebar"/>
     </xsl:template>
     
     <xsl:template match="eft:shopping-panel[eft:item]">
@@ -654,36 +677,6 @@
             </div>
         </div>
         
-    </xsl:template>
-    
-    <xsl:template name="bookmarks-sidebar">
-        <div id="bookmarks-sidebar" class="fixed-sidebar collapse width hidden-print">
-            <div class="fix-width">
-                <div class="sidebar-content">
-                    <h4>
-                        <xsl:call-template name="translation-lang-class">
-                            <xsl:with-param name="lang" select="$lang"/>
-                        </xsl:call-template>
-                        <xsl:call-template name="translation">
-                            <xsl:with-param name="translation-id" select="'label-bookmarks'"/>
-                            <xsl:with-param name="lang" select="$lang"/>
-                            <xsl:with-param name="text-node" select="true()"/>
-                        </xsl:call-template>
-                    </h4>
-                    <table id="bookmarks-list" class="contents-table">
-                        <tbody/>
-                        <tfoot/>
-                    </table>
-                </div>
-            </div>
-            <div class="fixed-btn-container close-btn-container right">
-                <button type="button" class="btn-round close close-collapse" aria-label="Close">
-                    <span aria-hidden="true">
-                        <i class="fa fa-times"/>
-                    </span>
-                </button>
-            </div>
-        </div>
     </xsl:template>
     
     <xsl:template name="local-url">

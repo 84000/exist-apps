@@ -88,7 +88,13 @@
                 </div>
             </div>
             
-            <xsl:call-template name="bookmarks-sidebar"/>
+            <!-- Include the bookmarks sidebar -->
+            <xsl:variable name="bookmarks-sidebar">
+                <m:bookmarks-sidebar>
+                    <xsl:copy-of select="$eft-header/m:translation"/>
+                </m:bookmarks-sidebar>
+            </xsl:variable>
+            <xsl:apply-templates select="$bookmarks-sidebar"/>
             
             <div class="content-band">
                 <div class="container">

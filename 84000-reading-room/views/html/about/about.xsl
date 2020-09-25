@@ -17,6 +17,11 @@
                 <xsl:copy-of select="$eft-header/m:navigation[@xml:lang eq $lang]/m:item/m:item[@url eq $active-url or m:item[@url eq $active-url]] | $eft-header/m:translation"/>
             </m:title-band>
         </xsl:variable>
+        <xsl:variable name="bookmarks-sidebar">
+            <m:bookmarks-sidebar>
+                <xsl:copy-of select="$eft-header/m:translation"/>
+            </m:bookmarks-sidebar>
+        </xsl:variable>
         
         <xsl:variable name="page-title">
             <!--<xsl:call-template name="local-text">
@@ -28,8 +33,8 @@
         <!-- Content variable -->
         <xsl:variable name="content">
             
-            
             <xsl:apply-templates select="$title-band"/>
+            <xsl:apply-templates select="$bookmarks-sidebar"/>
             
             <xsl:variable name="page-quote">
                 <xsl:call-template name="local-text">

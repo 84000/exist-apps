@@ -257,8 +257,13 @@
                 
             </div>
             
-            <!-- Bookmarks fly-out -->
-            <xsl:call-template name="bookmarks-sidebar"/>
+            <!-- Include the bookmarks sidebar -->
+            <xsl:variable name="bookmarks-sidebar">
+                <m:bookmarks-sidebar>
+                    <xsl:copy-of select="$eft-header/m:translation"/>
+                </m:bookmarks-sidebar>
+            </xsl:variable>
+            <xsl:apply-templates select="$bookmarks-sidebar"/>
             
         </xsl:variable>
         
@@ -640,7 +645,7 @@
                     <td>
                         <a>
                             <xsl:attribute name="href" select="common:internal-link('/section/all-translated.html', (), '', /m:response/@lang)"/>
-                            <xsl:value-of select="'View Published Translations'"/>
+                            <xsl:value-of select="'All Published Translations'"/>
                         </a>
                     </td>
                 </tr>
