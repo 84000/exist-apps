@@ -44,8 +44,8 @@ declare function search:search($request as xs:string, $resource-id as xs:string,
         </options>
     
     (: Interogate the request to see if it's a phrase :)
-    let $request-is-phrase := matches($request, '^["“].+["“]$')
-    let $request-no-quotes := replace($request, '("|“)', '')
+    let $request-is-phrase := matches($request, '^["“].+["”]$')
+    let $request-no-quotes := replace($request, '("|“|”)', '')
     
     let $query := local:search-query($request-no-quotes, $request-is-phrase)
     

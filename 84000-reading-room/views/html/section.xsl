@@ -17,7 +17,7 @@
             <xsl:variable name="section-id" select="lower-case(m:section/@id)"/>
             
             <!-- Filters -->
-            <xsl:variable name="filters" select="m:filters/tei:div[@type eq 'filter']"/>
+            <xsl:variable name="filters" select="m:section/m:filters/tei:div[@type eq 'filter']"/>
             <xsl:variable name="selected-filter" select="$filters[@xml:id eq /m:response/m:request/@filter-id]"/>
             <xsl:variable name="carousel-filters" select="$filters[m:display[@key eq 'carousel']]"/>
             <xsl:variable name="sidebar-filters" select="$filters[m:display[@key eq 'sidebar']]"/>
@@ -99,9 +99,21 @@
                             <xsl:with-param name="section" select="m:section"/>
                         </xsl:call-template>
                         
-                        <xsl:call-template name="section-stats">
-                            <xsl:with-param name="section" select="m:section"/>
-                        </xsl:call-template>
+                        <xsl:choose>
+                            <xsl:when test="$section-id eq 'all-translated'">
+                                <xsl:call-template name="section-stats">
+                                    <xsl:with-param name="section" select="m:section/m:section[lower-case(@id) eq 'lobby']"/>
+                                </xsl:call-template>
+                            </xsl:when>
+                            <xsl:when test="$section-id eq 'lobby'">
+                                <!-- Do nothing -->
+                            </xsl:when>
+                            <xsl:otherwise>
+                                <xsl:call-template name="section-stats">
+                                    <xsl:with-param name="section" select="m:section"/>
+                                </xsl:call-template>
+                            </xsl:otherwise>
+                        </xsl:choose>
                         
                     </div>
                     
@@ -167,7 +179,7 @@
                                             <h3>
                                                 <xsl:value-of select="'All Publications'"/>
                                             </h3>
-                                            <p>
+                                            <p class="small">
                                                 <xsl:value-of select="'All the texts we have published so far.'"/>
                                             </p>
                                         </a>
@@ -185,7 +197,9 @@
                                                 <h3>
                                                     <xsl:value-of select="tei:head[@type eq 'filter']"/>
                                                 </h3>
-                                                <xsl:apply-templates select="$filter/tei:p"/>
+                                                <div class="small">
+                                                    <xsl:apply-templates select="$filter/tei:p"/>
+                                                </div>
                                             </a>
                                         </li>
                                     </xsl:for-each>
@@ -222,27 +236,32 @@
                                     <div class="panel panel-default">
                                         <div class="panel-body text-center">
                                             
-                                            <h3 class="no-top-margin">
+                                            <h3 class="no-top-margin no-bottom-margin">
                                                 <xsl:value-of select="'Advanced Filters...'"/>
                                             </h3>
                                             
                                             <xsl:choose>
-                                                <xsl:when test="m:request[m:filter]">
-                                                    <xsl:variable name="count-section-filters" select="count(m:request/m:filter[@section-id])"/>
-                                                    <p class="text-muted">
+                                                <xsl:when test="m:section/m:texts[m:filter]">
+                                                    
+                                                    <xsl:variable name="count-section-filters" select="count(m:section/m:texts/m:filter[@section-id])"/>
+                                                    
+                                                    <p class="text-muted small">
                                                         <xsl:value-of select="'Currently showing texts'"/>
-                                                        <xsl:if test="m:request/m:filter[@max-pages]">
-                                                            <xsl:value-of select="concat(' up to ',m:request/m:filter[@max-pages][1]/@max-pages, ' pages')"/>
+                                                        <xsl:if test="m:section/m:texts/m:filter[@max-pages]">
+                                                            <xsl:value-of select="concat(' up to ', m:section/m:texts/m:filter[@max-pages][1]/@max-pages, ' pages')"/>
                                                         </xsl:if>
                                                         <xsl:if test="$count-section-filters gt 0">
                                                             <xsl:value-of select="concat(' from ', $count-section-filters, ' selected section', if($count-section-filters gt 1) then 's' else '')"/>
                                                         </xsl:if>
                                                     </p>
+                                                    
                                                 </xsl:when>
                                                 <xsl:otherwise>
-                                                    <p class="text-muted">
+                                                    
+                                                    <p class="text-muted small">
                                                         <xsl:value-of select="'Further options for filtering the published translations'"/>
                                                     </p>
+                                                    
                                                 </xsl:otherwise>
                                             </xsl:choose>
                                             
@@ -650,61 +669,38 @@
     
     <xsl:template name="section-stats">
         <xsl:param name="section"/>
-        
-        <!-- Ignore in lobby -->
-        <xsl:if test="not(lower-case($section/@id) = 'lobby')">
-            <div class="row">
-                <div class="col-xs-12 col-md-offset-2 col-md-8">
-                    
-                    <!-- stats -->
-                    <xsl:variable name="count-texts" as="xs:integer" select="$section/m:text-stats/m:stat[@type eq 'count-text-descendants']/@value"/>
-                    <xsl:variable name="count-published" as="xs:integer" select="$section/m:text-stats/m:stat[@type eq 'count-published-descendants']/@value"/>
-                    <xsl:variable name="count-in-progress" as="xs:integer" select="$section/m:text-stats/m:stat[@type eq 'count-in-progress-descendants']/@value"/>
-                    <xsl:variable name="sum-published-pages" as="xs:integer" select="$section/m:text-stats/m:stat[@type eq 'sum-pages-published-descendants']/@value"/>
-                    
-                    <xsl:choose>
-                        
-                        <xsl:when test="lower-case($section/@id) = 'all-translated'">
-                            <table class="table table-stats">
-                                <tbody>
-                                    <tr>
-                                        <td>
-                                            <xsl:value-of select="concat('Publications: ', format-number($count-published, '#,###'))"/>
-                                        </td>
-                                        <td>
-                                            <xsl:value-of select="concat('Total Pages: ', format-number($sum-published-pages, '#,###'))"/>
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </xsl:when>
-                        
-                        <xsl:otherwise>
-                            <table class="table table-stats">
-                                <tbody>
-                                    <tr>
-                                        <td>
-                                            <xsl:value-of select="concat('Texts: ', format-number($count-texts, '#,###'))"/>
-                                        </td>
-                                        <td>
-                                            <xsl:value-of select="concat('Published: ', format-number($count-published, '#,###'))"/>
-                                        </td>
-                                        <td>
-                                            <xsl:value-of select="concat('In Progress: ', format-number($count-in-progress, '#,###'))"/>
-                                        </td>
-                                        <td>
-                                            <xsl:value-of select="concat('Not Begun: ', format-number($count-texts - ($count-published + $count-in-progress), '#,###'))"/>
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </xsl:otherwise>
-                        
-                    </xsl:choose>
-                    
-                </div>
+    
+        <div class="row">
+            <div class="col-xs-12 col-md-offset-2 col-md-8">
+                
+                <!-- stats -->
+                <xsl:variable name="count-texts" as="xs:integer?" select="$section/m:text-stats/m:stat[@type eq 'count-text-descendants']/@value"/>
+                <xsl:variable name="count-published" as="xs:integer?" select="$section/m:text-stats/m:stat[@type eq 'count-published-descendants']/@value"/>
+                <xsl:variable name="count-in-progress" as="xs:integer?" select="$section/m:text-stats/m:stat[@type eq 'count-in-progress-descendants']/@value"/>
+                <xsl:variable name="sum-published-pages" as="xs:integer?" select="$section/m:text-stats/m:stat[@type eq 'sum-pages-published-descendants']/@value"/>
+                
+                <table class="table table-stats">
+                    <tbody>
+                        <tr>
+                            <td>
+                                <xsl:value-of select="concat('Texts: ', format-number($count-texts, '#,###'))"/>
+                            </td>
+                            <td>
+                                <xsl:value-of select="concat('Published: ', format-number($count-published, '#,###'))"/>
+                            </td>
+                            <td>
+                                <xsl:value-of select="concat('In Progress: ', format-number($count-in-progress, '#,###'))"/>
+                            </td>
+                            <td>
+                                <xsl:value-of select="concat('Not Begun: ', format-number($count-texts - ($count-published + $count-in-progress), '#,###'))"/>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                
             </div>
-        </xsl:if>
+        </div>
+        
     </xsl:template>
     
     <xsl:template name="section-texts">
@@ -740,15 +736,15 @@
                             </input>
                         </xsl:if>
                         
-                        <xsl:for-each select="/m:response/m:request/m:filter[@section-id]">
+                        <xsl:for-each select="$section/m:texts/m:filter[@section-id]">
                             <input type="hidden" name="filter-section-id[]">
                                 <xsl:attribute name="value" select="@section-id"/>
                             </input>
                         </xsl:for-each>
                         
-                        <xsl:if test="/m:response/m:request/m:filter[@max-pages]">
+                        <xsl:if test="$section/m:texts/m:filter[@max-pages]">
                             <input type="hidden" name="filter-max-pages">
-                                <xsl:attribute name="value" select="/m:response/m:request/m:filter[@max-pages][1]/@max-pages"/>
+                                <xsl:attribute name="value" select="$section/m:texts/m:filter[@max-pages][1]/@max-pages"/>
                             </input>
                         </xsl:if>
                         
@@ -874,7 +870,7 @@
                 
                 <xsl:sort select="number(m:texts/m:text[1]/m:toh/@number)"/>
                 
-                <xsl:variable name="texts" select="m:texts/m:text[not(@filter-match) or @filter-match eq 'true']"/>
+                <xsl:variable name="texts" select="m:texts/m:text"/>
                 
                 <div class="list-grouping">
                     
