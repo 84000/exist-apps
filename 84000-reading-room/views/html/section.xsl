@@ -176,7 +176,7 @@
                                 <ul class="list-unstyled slider">
                                     
                                     <li class="col-filter">
-                                        <xsl:if test="/m:response/m:request[@filter-id eq ''] and not(/m:response/m:request[m:filter])">
+                                        <xsl:if test="/m:response/m:request[@filter-id eq ''] and not(/m:response/m:section/m:texts[m:filter])">
                                             <xsl:attribute name="class" select="'col-filter active'"/>
                                         </xsl:if>
                                         <a class="filter-panel" data-match-height="carousel-filters">
