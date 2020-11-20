@@ -1339,7 +1339,7 @@
                                 </div>
                                 
                                 <xsl:if test="m:warning/tei:p">
-                                    <div class="top-margin">
+                                    <div class="sml-margin top">
                                         <xsl:call-template name="tantra-warning">
                                             <xsl:with-param name="id" select="$sub-section-id"/>
                                             <xsl:with-param name="node" select="m:warning"/>

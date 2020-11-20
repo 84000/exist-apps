@@ -239,20 +239,31 @@ declare function translation:parts($tei as element(tei:TEI), $show-part-id as xs
     (: Get the part containing the @xml:id = $show-part-id :)
     let $target := 
         if(not($show-part-id = ('all', 'front', 'body', 'back'))) then
-            if(starts-with($show-part-id, 'node-')) then
-                $tei/tei:text//tei:*[@tid eq substring-after($show-part-id, 'node-')]
-            else
-                $tei/tei:text//tei:*[@xml:id eq $show-part-id]
-        else 
-            ()
+            
+            let $element := $tei/tei:text//tei:div[@type eq $show-part-id][1]
+            
+            let $element := 
+                if(not($element)) then
+                    $tei/tei:text//tei:*[@xml:id eq $show-part-id][1]
+                else 
+                    $element
+            
+            let $element := 
+                if(not($element) and starts-with($show-part-id, 'node-')) then
+                    $tei/tei:text//tei:*[@tid eq substring-after($show-part-id, 'node-')][1]
+                else 
+                    $element
+            
+            return $element
+            
+        else ()
     
     (: Get the part that contains/is the target :)
     let $show-part := 
         if($target) then
-            $target/ancestor-or-self::tei:div[@type][not(@type eq 'translation')][@xml:id][last()]
-        else
-            ()
-            
+            $target/ancestor-or-self::tei:div[@type][not(@type eq 'translation')][last()]
+        else ()
+    
     return (
     
         (: Always include summary :)
@@ -278,7 +289,7 @@ declare function translation:parts($tei as element(tei:TEI), $show-part-id as xs
             return 
                 translation:introduction($tei, $render)
             ,
-            let $part := if($show-part-id = ('all', 'body')) then 'all' else $show-part/@xml:id
+            let $part := if($show-part-id = ('all', 'body')) then 'all' else ($show-part/@xml:id, $show-part/@type)[1]
             return 
                 translation:body($tei, $part)
             ,
@@ -504,11 +515,11 @@ declare function translation:body($tei as element(tei:TEI), $part as xs:string*)
     let $head := ($translation/tei:head[@type eq 'titleMain'][text()], $translation/tei:head[@type eq 'titleHon'][text()])[1]
     let $count-chapters := count($translation/tei:div[@type = ('section', 'chapter')])
         where $translation
-    let $end-notes := $tei/tei:text/descendant::tei:note[@place eq 'end'][@xml:id]
+    
     return
         element {QName('http://read.84000.co/ns/1.0', 'part')} {
             $translation/@type,
-            attribute id { $translation/@xml:id },
+            attribute id { 'translation' },
             attribute nesting { 0 },
             attribute section-index { 1 },
             attribute render { 'persist' },
@@ -574,13 +585,12 @@ declare function translation:appendix($tei as element(tei:TEI), $render as xs:st
         else
             $render
         
-        where $part
-    let $end-notes := $tei/tei:text/descendant::tei:note[@place eq 'end'][@xml:id]
+    where $part
     return
         
         element { QName('http://read.84000.co/ns/1.0', 'part') } {
             $part/@type,
-            attribute id { $part/@xml:id },
+            attribute id { 'appendix' },
             attribute nesting { 0 },
             attribute section-index { 1 },
             attribute render { $render },
@@ -797,12 +807,12 @@ declare function translation:notes-cache($tei as element(tei:TEI), $refresh as x
             attribute app-version { $common:app-version },
             
             for $note at $index in $tei/tei:text//tei:note[@place eq 'end'][@xml:id]
-                let $part := $note/ancestor::tei:div[@type][not(@type eq 'translation')][@xml:id][last()]
+                let $part := $note/ancestor::tei:div[@type][not(@type eq 'translation')][last()]
             return (
                 common:ws(2),
                 element end-note {
                     attribute id { $note/@xml:id },
-                    attribute part-id { $part/@xml:id },
+                    attribute part-id { ($part/@xml:id, $part/@type)[1] },
                     attribute index { $index }
                 }
             )
@@ -819,15 +829,15 @@ declare function translation:milestones-cache($tei as element(tei:TEI), $refresh
             attribute timestamp { current-dateTime() },
             attribute app-version { $common:app-version },
             for $part in 
-                $tei/tei:text/tei:front/tei:div[@type][@xml:id]
-                | $tei/tei:text/tei:body/tei:div[@type eq 'translation']/tei:div[@type][@xml:id]
-                | $tei/tei:text/tei:back/tei:div[@type][@xml:id]
+                $tei/tei:text/tei:front/tei:div[@type]
+                | $tei/tei:text/tei:body/tei:div[@type eq 'translation']/tei:div[@type]
+                | $tei/tei:text/tei:back/tei:div[@type]
                 for $milestone at $index in $part//tei:milestone[@xml:id]
                 return (
                     common:ws(2),
                     element milestone {
                         attribute id { $milestone/@xml:id },
-                        attribute part-id { $part/@xml:id },
+                        attribute part-id { ($part/@xml:id, $part/@type)[1] },
                         attribute index { $index }
                     }
                 )

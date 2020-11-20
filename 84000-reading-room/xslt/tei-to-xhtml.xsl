@@ -1980,26 +1980,35 @@
             
             <!-- The target is a note -->
             <xsl:when test="$target-element[self::m:end-note][@index]">
-                <xsl:call-template name="bookmark-label">
-                    <xsl:with-param name="prefix" select="key('translation-parts', 'end-notes')[1]/@prefix"/>
-                    <xsl:with-param name="index" select="$target-element/@index"/>
-                </xsl:call-template>
+                <xsl:variable name="part" select="key('translation-parts', 'end-notes')[1]"/>
+                <xsl:if test="$part[@prefix]">
+                    <xsl:call-template name="bookmark-label">
+                        <xsl:with-param name="prefix" select="$part/@prefix"/>
+                        <xsl:with-param name="index" select="$target-element/@index"/>
+                    </xsl:call-template>
+                </xsl:if>
             </xsl:when>
             
             <!-- The target is a glossary item -->
             <xsl:when test="$target-element[self::m:gloss][@index]">
-                <xsl:call-template name="bookmark-label">
-                    <xsl:with-param name="prefix" select="key('translation-parts', 'glossary')[1]/@prefix"/>
-                    <xsl:with-param name="index" select="$target-element/@index"/>
-                </xsl:call-template>
+                <xsl:variable name="part" select="key('translation-parts', 'glossary')[1]"/>
+                <xsl:if test="$part[@prefix]">
+                    <xsl:call-template name="bookmark-label">
+                        <xsl:with-param name="prefix" select="$part/@prefix"/>
+                        <xsl:with-param name="index" select="$target-element/@index"/>
+                    </xsl:call-template>
+                </xsl:if>
             </xsl:when>
             
             <!-- The target is a milestone -->
             <xsl:when test="$target-element[self::m:milestone][@index]">
-                <xsl:call-template name="bookmark-label">
-                    <xsl:with-param name="prefix" select="key('translation-parts', $target-element/@part-id)[1]/@prefix"/>
-                    <xsl:with-param name="index" select="$target-element/@index"/>
-                </xsl:call-template>
+                <xsl:variable name="part" select="key('translation-parts', $target-element/@part-id)[1]"/>
+                <xsl:if test="$part[@prefix]">
+                    <xsl:call-template name="bookmark-label">
+                        <xsl:with-param name="prefix" select="$part/@prefix"/>
+                        <xsl:with-param name="index" select="$target-element/@index"/>
+                    </xsl:call-template>
+                </xsl:if>
             </xsl:when>
             
             <!-- The target is a section -->

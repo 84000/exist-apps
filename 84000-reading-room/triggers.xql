@@ -99,9 +99,9 @@ declare function local:permanent-ids($doc) {
         ,
         
         (: If any parts are missing a @xml:id then re-calculate all :)
-        let $part-missing-id := $doc//tei:text//tei:div[@type][not(@xml:id) or @xml:id eq '']
+        let $part-missing-id := $doc//tei:text//tei:div[@type = ('section', 'chapter', 'prologue', 'homage', 'colophon')][not(@xml:id) or @xml:id eq '']
         where $part-missing-id
-            for $part in $doc//tei:text//tei:div[@type]
+            for $part in $doc//tei:text//tei:div[@type][@type = ('section', 'chapter', 'prologue', 'homage', 'colophon')]
             
             (: Get the base type - except for translation :)
             let $base-type := $part/ancestor::tei:div[not(@type eq 'translation')][last()]/@type
