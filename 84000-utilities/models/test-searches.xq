@@ -1,7 +1,7 @@
 xquery version "3.0" encoding "UTF-8";
 
 
-import module namespace local="http://utilities.84000.co/local" at "../modules/local.xql";
+import module namespace utilities="http://utilities.84000.co/utilities" at "../modules/utilities.xql";
 import module namespace common="http://read.84000.co/common" at "../../84000-reading-room/modules/common.xql";
 import module namespace tests="http://utilities.84000.co/tests" at "../modules/tests.xql";
 
@@ -30,7 +30,7 @@ return
         'utilities/text-searches',
         'utilities',
         (
-            local:request(),
+            utilities:request(),
             tests:lucene-test-languages(),
             tests:lucene-lang-data($lang),
             tests:lucene-tests($lang)

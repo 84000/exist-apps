@@ -330,8 +330,10 @@ declare function contributors:update-person($person as element(m:person)?) as xs
         
 };
 
-declare function contributors:delete($person as element(m:person)) as element()? {
-    common:update('contributor-person', $person, (), (), ())
+declare function contributors:delete($element as element()) as element()? {
+    if($element[self::m:person | self::m:team | self::m:institution][parent::m:contributors]) then
+        common:update('contributor-delete', $element, (), (), ())
+    else ()
 };
 
 declare function contributors:next-team-id() as xs:integer {

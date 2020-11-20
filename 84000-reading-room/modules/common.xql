@@ -71,23 +71,47 @@ function common:response($model-type as xs:string, $app-id as xs:string, $data a
         Includes standard attributes for xslts
         This should be the response root
     :)
-    <response 
-        xmlns="http://read.84000.co/ns/1.0" 
-        model-type="{ $model-type }"
-        timestamp="{ current-dateTime() }"
-        app-id="{ $app-id }" 
-        app-version="{ $common:app-version }"
-        app-path="{ $common:app-path }" 
-        app-config="{ $common:app-config }" 
-        data-path="{ $common:data-path }" 
-        environment-path="{ $common:environment-path }"
-        user-name="{ common:user-name() }" 
-        lang="{ common:request-lang() }"
-        exist-version="{ system:get-version() }">
-        {
-            $data
-        }
-    </response>
+    let $lang := common:request-lang() ! lower-case(.)
+    let $local-texts :=
+        if($lang = ('en', 'zh')) then
+            doc(concat($common:app-config, '/', 'texts.', $lang, '.xml'))/m:texts/m:item
+        else
+            doc(concat($common:app-config, '/', 'texts.en.xml'))/m:texts/m:item
+    return
+        <response 
+            xmlns="http://read.84000.co/ns/1.0" 
+            model-type="{ $model-type }"
+            timestamp="{ current-dateTime() }"
+            app-id="{ $app-id }" 
+            app-version="{ $common:app-version }"
+            app-path="{ $common:app-path }" 
+            app-config="{ $common:app-config }" 
+            data-path="{ $common:data-path }" 
+            user-name="{ common:user-name() }" 
+            lang="{ $lang }"
+            exist-version="{ system:get-version() }">
+            {   
+                $data,
+                element { name($common:environment) } {
+                    $common:environment/@*,
+                    $common:environment/m:label,
+                    $common:environment/m:url,
+                    $common:environment/m:google-analytics,
+                    $common:environment/m:render-translation,
+                    if($app-id eq 'utilities') then (
+                        $common:environment/m:store-conf,
+                        $common:environment/m:git-config
+                    )
+                    else if($app-id eq 'operations') then (
+                        $common:environment/m:conversion-conf
+                    )
+                    else ()
+                },
+                element lang-items {
+                    $local-texts
+                }
+            }
+        </response>
 };
 
 declare
@@ -355,7 +379,7 @@ declare function common:mark-text($text as xs:string, $find as xs:string*, $mode
             for $word in tokenize($text, '[^\w­]') (: Not alphanumeric or soft-hyphen (There's a soft-hyphen in there too i.e.[^\w-] !!!) :)
                 let $word-normalized := lower-case(common:normalized-chars($word))
                 (: If it's an input word and it's changed :)
-                where not(normalize-unicode($word) eq $word-normalized)
+                where not(lower-case(normalize-unicode($word)) eq $word-normalized)
             group by $word-normalized
                 for $find-match in $find-tokenized[starts-with(., substring($word-normalized, 1, string-length(.)))]
                 (:group by $find-match:)
@@ -369,7 +393,7 @@ declare function common:mark-text($text as xs:string, $find as xs:string*, $mode
         if($mode = ('tibetan')) then
             concat('(', string-join($find-tokenized[not(. = ('།'))] ! functx:escape-for-regex(.), '|'),')')
         else
-            concat('(?:\W)(', string-join(($find-tokenized, $find-diacritics) ! functx:escape-for-regex(.), '|'),')')
+            concat('(?:^|\W*)(', string-join(($find-tokenized, $find-diacritics) ! functx:escape-for-regex(.), '|'),')(?:$|\W*)')
     
     (: shrink multiple spaces to single :)
     let $text := replace($text, '\s+', ' ')
@@ -380,10 +404,10 @@ declare function common:mark-text($text as xs:string, $find as xs:string*, $mode
     (: Output result :)
     return (
         for $analyze-result-text in $analyze-result//text()
-        return
+        return 
             if($analyze-result-text[parent::xpath:group]) then
                 element exist:match {
-                    text { $analyze-result-text }
+                    $analyze-result-text
                 }
             else
                 $analyze-result-text
@@ -435,8 +459,10 @@ function common:normalized-chars($string as xs:string?) as xs:string {
     if($string) then
         translate(
             replace(
-                normalize-unicode($string)
-            , '­'(: This is a soft-hyphen :), ''), 
+                replace(
+                    normalize-unicode($string)
+                , '­'(: This is a soft-hyphen :), ''), 
+            '&#39;', '&#8217;'),
             string-join(($common:diacritic-letters, upper-case($common:diacritic-letters)), ''), 
             string-join(($common:diacritic-letters-without, upper-case($common:diacritic-letters-without)), '')
         )
@@ -548,12 +574,13 @@ declare function common:local-text($key as xs:string, $lang as xs:string) {
 };
 
 declare function common:view-mode() as xs:string {
+
     let $view-mode := request:get-parameter('view-mode', '')
     return
-        if($view-mode = ('editor', 'annotation', 'epub', 'app')) then 
+        if($view-mode = ('editor', 'annotation', 'ajax', 'ebook', 'pdf', 'app', 'glossary-tool')) then 
             $view-mode 
         else 
-            ''
+            'default'
 };
 
 declare 
@@ -605,13 +632,9 @@ declare function common:update($request-parameter as xs:string, $existing-value 
         
         (: Add a return character before elements so it's not too unreadable :)
         let $padding-ws :=
-            if(
-                not($new-value instance of xs:anyAtomicType)
-                and functx:node-kind($new-value) eq 'element'
-            ) then
+            if(not($new-value instance of xs:anyAtomicType) and functx:node-kind($new-value) eq 'element') then
                 text { $common:node-ws }
-            else
-                ()
+            else ()
         
         (: Return <updated/> :)
         return

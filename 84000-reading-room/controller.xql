@@ -28,8 +28,7 @@ declare function local:dispatch($model as xs:string?, $view as xs:string?, $para
                 $parameters//add-parameter
             }
             </forward>
-        else
-            ()
+        else ()
         ,
         (: View optional :)
         if($view)then
@@ -50,8 +49,7 @@ declare function local:dispatch($model as xs:string?, $view as xs:string?, $para
                     </forward>
             }
             </view>
-        else
-            ()
+        else ()
     }
     </dispatch>
 };
@@ -68,6 +66,7 @@ declare function local:dispatch-html($model as xs:string, $view as xs:string, $p
         <view>
             <forward servlet="XSLTServlet">
                 <set-attribute name="xslt.stylesheet" value="{concat($exist:root, $exist:controller, $view)}"/>
+                <set-header name="X-UA-Compatible" value="IE=edge,chrome=1"/>
                 { 
                     $parameters//set-header
                 }
@@ -373,10 +372,26 @@ return
             local:dispatch("/models/downloads.xq", "", 
                 <parameters xmlns="http://exist.sourceforge.net/NS/exist"/>
             )
+        
+        (: Sitemaps - used for compiling pdfs from multiple files :)
+        (:else if ($collection-path eq "sitemap") then
+            (\: return the xml :\)
+            local:dispatch("/models/sitemap.xq", "",
+                <parameters xmlns="http://exist.sourceforge.net/NS/exist">
+                    <add-parameter name="resource-id" value="{$resource-id}"/>
+                </parameters>
+            ):)
             
         else
             (: It's data :)
-            if($resource-suffix eq 'pdf') then
+            if($resource-suffix eq 'html') then
+                (:<response>{ download:file-path($exist:resource) }</response>:)
+                <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+                    <forward url="{ download:file-path($exist:resource) }">
+                        <set-header name="Content-Type" value="text/html"/>
+                    </forward>
+                </dispatch>
+            else if($resource-suffix eq 'pdf') then
                 (:<response>{ download:file-path($exist:resource) }</response>:)
                 <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
                     <forward url="{ download:file-path($exist:resource) }">

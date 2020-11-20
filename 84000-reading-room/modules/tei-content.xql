@@ -27,6 +27,7 @@ declare variable $tei-content:text-statuses :=
         <status status-id="2.g" group="translated">In editorial review</status>
         <status status-id="2.h" group="translated" target-date="true">Awaiting review</status>
         <status status-id="3" group="in-translation">Current translation projects</status>
+        <status status-id="4" group="in-application">Application pending</status>
     </text-statuses>;
 
 declare variable $tei-content:published-status-ids := $tei-content:text-statuses/m:status[@group = ('published')]/@status-id;
@@ -49,7 +50,11 @@ declare function tei-content:id($tei as element(tei:TEI)) as xs:string {
     $tei//tei:publicationStmt/tei:idno/@xml:id
 };
 
-declare function tei-content:tei($resource-id as xs:string, $resource-type as xs:string) as element()? {
+declare function tei-content:tei($resource-id as xs:string, $resource-type as xs:string) {
+    tei-content:tei($resource-id, $resource-type, '')
+};
+
+declare function tei-content:tei($resource-id as xs:string, $resource-type as xs:string, $archive-path as xs:string) as element()? {
 
     (:
         This is controls the method of looking up the resource-id 
@@ -58,9 +63,6 @@ declare function tei-content:tei($resource-id as xs:string, $resource-type as xs
         1.  UT Number e.g. translation/UT22084-061-013.html
         2.  Tohoku Number e.g. translation/toh739.html
     :)
-    
-    (: accept an parameter for an archive :)
-    let $archive-path := request:get-parameter('archive-path', '')
     
     let $collection := 
         if($archive-path gt '') then

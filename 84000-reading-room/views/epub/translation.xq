@@ -48,23 +48,19 @@ let $entries := (
                 <item id="english-font-bold" href="fonts/IndUni-P-Bold.otf" media-type="application/vnd.ms-opentype"/>
                 <item id="english-font-italic" href="fonts/IndUni-P-Italic.otf" media-type="application/vnd.ms-opentype"/>
                 <item id="english-font-bold-italic" href="fonts/IndUni-P-BoldItalic.otf" media-type="application/vnd.ms-opentype"/>
+                <item id="titles" href="titles.xhtml" media-type="application/xhtml+xml"/>
+                <item id="imprint" href="imprint.xhtml" media-type="application/xhtml+xml"/>
+                <item id="contents" href="contents.xhtml" media-type="application/xhtml+xml" properties="nav"/>
                 {
-                    for $section in $data/m:response/m:translation/m:toc/m:section
+                    for $part in $data/m:response/m:translation/m:part
                     return (
                     
-                        <item xmlns="http://www.idpf.org/2007/opf" id="{ $section/@section-id }" href="{ $section/@section-id }.xhtml" media-type="application/xhtml+xml">
-                            {
-                                if($section/@section-id eq 'contents') then
-                                    attribute properties {"nav"}
-                                else
-                                    ()
-                            }
-                        </item>,
+                        <item id="{ $part/@id }" href="{ $part/@id }.xhtml" media-type="application/xhtml+xml"/>,
                         
-                        if($section[@section-id = ('translation', 'appendix')]) then
-                            for $chapter in $section/m:section
+                        if($part[@type = ('translation', 'appendix')]) then
+                            for $chapter in $part/m:part
                             return
-                                <item xmlns="http://www.idpf.org/2007/opf" id="{ $chapter/@section-id }" href="{ $chapter/@section-id }.xhtml" media-type="application/xhtml+xml"/>
+                                <item id="{ $chapter/@id }" href="{ $chapter/@id }.xhtml" media-type="application/xhtml+xml"/>
                         else ()
                         
                     )
@@ -72,16 +68,19 @@ let $entries := (
                 <item id="toc" href="toc.ncx" media-type="application/x-dtbncx+xml"/>
             </manifest>
             <spine toc="toc">
+                <itemref idref="titles"/>
+                <itemref idref="imprint"/>
+                <itemref idref="contents"/>
                 {
-                    for $section in $data/m:response/m:translation/m:toc/m:section
+                    for $part in $data/m:response/m:translation/m:part
                     return (
                     
-                        <itemref xmlns="http://www.idpf.org/2007/opf" idref="{ $section/@section-id }"/>,
+                        <itemref idref="{ $part/@id }"/>,
                         
-                        if($section[@section-id = ('translation', 'appendix')]) then
-                            for $chapter in $section/m:section
+                        if($part[@type = ('translation', 'appendix')]) then
+                            for $chapter in $part/m:part
                             return
-                                <itemref xmlns="http://www.idpf.org/2007/opf" idref="{ $chapter/@section-id }"/>
+                                <itemref idref="{ $chapter/@id }"/>
                         else ()
                         
                     )
@@ -98,21 +97,24 @@ let $entries := (
     <entry name="OEBPS/fonts/IndUni-P-Bold.otf" type="binary">{ common:epub-resource('fonts/IndUni-P-Bold.otf') }</entry>,
     <entry name="OEBPS/fonts/IndUni-P-Italic.otf" type="binary">{ common:epub-resource('fonts/IndUni-P-Italic.otf') }</entry>,
     <entry name="OEBPS/fonts/IndUni-P-BoldItalic.otf" type="binary">{ common:epub-resource('fonts/IndUni-P-BoldItalic.otf') }</entry>,
-    for $section in $data/m:response/m:translation/m:toc/m:section
+    <entry name="OEBPS/titles.xhtml" type="xml">{ transform:transform($data, doc('xslt/titles.xsl'), ()) }</entry>,
+    <entry name="OEBPS/imprint.xhtml" type="xml">{ transform:transform($data, doc('xslt/imprint.xsl'), ()) }</entry>,
+    <entry name="OEBPS/contents.xhtml" type="xml">{ transform:transform($data, doc('xslt/contents.xsl'), ()) }</entry>,
+    for $part in $data/m:response/m:translation/m:part
     return (
     
-        <entry name="OEBPS/{ $section/@section-id }.xhtml" type="xml">{transform:transform($data, doc(concat('xslt/', $section/@section-id, '.xsl')), ())}</entry>,
+        <entry name="OEBPS/{ $part/@id }.xhtml" type="xml">{ transform:transform($data, doc(concat('xslt/', $part/@type, '.xsl')), ()) }</entry>,
         
-        if($section[@section-id = ('translation', 'appendix')]) then
-            for $chapter in $section/m:section
+        if($part[@type = ('translation', 'appendix')]) then
+            for $chapter in $part/m:part
                 let $parameters := 
                     <parameters>
-                        <param name="section-id" value="{ $chapter/@section-id }"/>
-                        <param name="parent-id" value="{ $chapter/parent::m:section/@section-id }"/>
+                        <param name="part-id" value="{ $chapter/@id }"/>
                     </parameters>
             return
-                <entry name="OEBPS/{ $chapter/@section-id }.xhtml" type="xml">{transform:transform($data, doc('xslt/chapter.xsl'), $parameters)}</entry>
+                <entry name="OEBPS/{ $chapter/@id }.xhtml" type="xml">{transform:transform($data, doc('xslt/chapter.xsl'), $parameters)}</entry>
         else ()
+        
     ),
     
     let $parameters := 
@@ -126,6 +128,6 @@ let $entries := (
 let $zip := compression:zip($entries, true())
 return
     response:stream-binary($zip, 'application/epub+zip')
-(:
-return <entries>{$entries}</entries>:)
+
+(:return <entries>{$entries}</entries>:)
 

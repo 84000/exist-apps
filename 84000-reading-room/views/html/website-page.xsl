@@ -1,16 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" version="2.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" version="3.0" exclude-result-prefixes="#all">
     
     <!-- include navigation stylesheet -->
     <xsl:import href="../../xslt/84000-html.xsl"/>
+    <xsl:import href="../../xslt/functions.xsl"/>
+    <xsl:import href="../../xslt/lang.xsl"/>
     
     <!-- Look up environment variables -->
-    <xsl:variable name="environment-path" select="if(/m:response/@environment-path)then /m:response/@environment-path else '/db/system/config/db/system/environment.xml'" as="xs:string"/>
-    <xsl:variable name="environment" select="doc($environment-path)/m:environment" as="element(m:environment)"/>
-    <xsl:variable name="front-end-path" select="$environment/m:url[@id eq 'front-end']/text()" as="xs:string"/>
-    <xsl:variable name="reading-room-path" select="$environment/m:url[@id eq 'reading-room']/text()" as="xs:string"/>
-    <xsl:variable name="communications-site-path" select="$environment/m:url[@id eq 'communications-site']/text()" as="xs:string"/>
-    <xsl:variable name="ga-tracking-id" select="$environment/m:google-analytics/@tracking-id" as="xs:string"/>
+    <xsl:variable name="environment" select="if(/m:response[m:environment]) then /m:response/m:environment else doc('/db/system/config/db/system/environment.xml')/m:environment"/>
+    
+    <xsl:variable name="front-end-path" select="if($environment/m:url[@id eq 'front-end']) then $environment/m:url[@id eq 'front-end'] else ''" as="xs:string"/>
+    <xsl:variable name="reading-room-path" select="if($environment/m:url[@id eq 'reading-room']) then $environment/m:url[@id eq 'reading-room'] else ''" as="xs:string"/>
+    <xsl:variable name="communications-site-path" select="if($environment/m:url[@id eq 'communications-site']) then $environment/m:url[@id eq 'communications-site'] else ''" as="xs:string"/>
+    <xsl:variable name="ga-tracking-id" select="if($environment/m:google-analytics[@tracking-id]) then $environment/m:google-analytics/@tracking-id else ''" as="xs:string"/>
     <xsl:variable name="app-version" select="if(/m:response/@app-version) then /m:response/@app-version else ''" as="xs:string"/>
     <xsl:variable name="app-version-url-attribute" select="if($app-version gt '') then concat('?v=', $app-version) else ''" as="xs:string"/>
     
@@ -18,10 +20,9 @@
     <xsl:variable name="eft-header" select="doc('../../config/84000-header.xml')/m:eft-header" as="element(m:eft-header)"/>
     <xsl:variable name="eft-footer" select="doc('../../config/84000-footer.xml')/m:eft-footer" as="element(m:eft-footer)"/>
     
-    <!-- language -->
+    <!-- language [en|zh] -->
     <xsl:variable name="lang" select="if(/m:response/@lang) then /m:response/@lang else 'en'" as="xs:string"/>
-    
-    <!-- view-mode -->
+    <!-- view-mode [editor|annotation|epub|app] -->
     <xsl:variable name="view-mode" select="/m:response/m:request/@view-mode" as="xs:string?"/>
     
     <!-- override navigation params -->
@@ -77,9 +78,7 @@
         
         <head>
             
-            <meta charset="utf-8"/>
             <meta http-equiv="Content-Type" content="text/html;charset=utf-8"/>
-            <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
             <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=0"/>
             <meta name="description" content="84000 is a non-profit global initiative to translate the words of the Buddha and make them available to everyone."/>
             
@@ -107,7 +106,7 @@
                 <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
                 <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
             <![endif]-->
-            <link rel="apple-touch-icon" sizes="180x180">
+            <link rel="apple-touch-icon">
                 <xsl:attribute name="href" select="concat($front-end-path, '/favicon/apple-touch-icon.png')"/>
             </link>
             <link rel="icon" type="image/png" sizes="32x32">
@@ -119,7 +118,7 @@
             <link rel="manifest">
                 <xsl:attribute name="href" select="concat($front-end-path, '/favicon/manifest.json')"/>
             </link>
-            <link rel="mask-icon" color="#ffffff">
+            <link rel="mask-icon">
                 <xsl:attribute name="href" select="concat($front-end-path, '/favicon/safari-pinned-tab.svg')"/>
             </link>
             <link rel="shortcut icon">
@@ -151,6 +150,11 @@
             <meta name="twitter:card" content="summary"/>
             <meta name="twitter:image:alt" content="84000 Translating The Words of The Budda Logo"/>
             <meta name="twitter:site" content="@Translate84000"/>
+            <xsl:if test="not($view-mode = ('pdf', 'app', 'glossary-tool'))">
+                <script>
+                    <xsl:attribute name="src" select="concat($front-end-path, '/js/84000-fe.min.js', $app-version-url-attribute)"/>
+                </script>
+            </xsl:if>
         </head>
         
     </xsl:template>
@@ -165,29 +169,17 @@
         <xsl:apply-templates select="$eft-footer"/>
         
         <!-- Don't add js in static mode -->
-        <xsl:if test="not($view-mode eq 'app')">
-            <script>
-                function downloadJSAtOnload() {
-                    var element = document.createElement("script");
-                    element.src = "<xsl:value-of select="concat($front-end-path, '/js/84000-fe.min.js', $app-version-url-attribute)"/>";
-                    document.body.appendChild(element);
-                }
-                if (window.addEventListener)
-                    window.addEventListener("load", downloadJSAtOnload, false);
-                else if (window.attachEvent)
-                    window.attachEvent("onload", downloadJSAtOnload);
-                else window.onload = downloadJSAtOnload;
-            </script>
-            
+        <xsl:if test="not($view-mode = ('pdf', 'app', 'glossary-tool'))">
             <xsl:if test="$ga-tracking-id and not($ga-tracking-id eq '')">
+                <!-- Global site tag (gtag.js) - Google Analytics -->
+                <script async="async">
+                    <xsl:attribute name="src" select="concat('https://www.googletagmanager.com/gtag/js?id=', $ga-tracking-id)"/>
+                </script>
                 <script>
-                    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-                    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-                    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-                    })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
-                    ga('create', '<xsl:value-of select="$ga-tracking-id"/>', 'auto');
-                    ga('set', 'anonymizeIp', true);
-                    ga('send', 'pageview');
+                    window.dataLayer = window.dataLayer || [];
+                    function gtag(){dataLayer.push(arguments);}
+                    gtag('js', new Date());
+                    gtag('config', '<xsl:value-of select="$ga-tracking-id"/>');
                 </script>
             </xsl:if>
         </xsl:if>
@@ -233,7 +225,6 @@
                 <div id="page-alert" class="collapse">
                     <div class="container"/>
                 </div>
-                
                 <!-- Shared header -->
                 <xsl:apply-templates select="$eft-header"/>
                 
@@ -292,7 +283,7 @@
                 </div>
                 
                 <!-- Place content -->
-                <xsl:copy-of select="$content"/>
+                <xsl:sequence select="$content"/>
                 
                 <!-- Get the common <footer> -->
                 <xsl:call-template name="html-footer">
@@ -322,7 +313,7 @@
                 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=0"/>
                 
                 <title>
-                    <xsl:value-of select="concat('84000 Reading Room | ', $page-title)"/>
+                    <xsl:value-of select="concat($page-title, ' | 84000 Reading Room')"/>
                 </title>
                 
                 <!-- Styles -->
@@ -332,6 +323,9 @@
                 <link rel="stylesheet" type="text/css">
                     <xsl:attribute name="href" select="concat($front-end-path, '/css/ie10-viewport-bug-workaround.css')"/>
                 </link>
+                <script>
+                    <xsl:attribute name="src" select="concat($front-end-path, '/js/84000-fe.min.js', $app-version-url-attribute)"/>
+                </script>
                 <!--[if lt IE 9]>
                    <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
                    <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
@@ -343,7 +337,7 @@
                 <!-- Place content -->
                 <xsl:copy-of select="$content"/>
                 
-                <xsl:if test="not($view-mode eq 'app')">
+                <xsl:if test="not($view-mode  = ('pdf', 'app', 'glossary-tool'))">
                     
                     <!-- Foooter components -->
                     <span id="media_test">
@@ -356,19 +350,6 @@
                         <span class="visible-desktop"/>
                         <span class="event-hover"/>
                     </span>
-                    
-                    <script type="text/javascript">
-                        function downloadJSAtOnload() {
-                            var element = document.createElement("script");
-                            element.src = "<xsl:value-of select="concat($front-end-path, '/js/84000-fe.min.js', $app-version-url-attribute)"/>";
-                            document.body.appendChild(element);
-                        }
-                        if (window.addEventListener)
-                            window.addEventListener("load", downloadJSAtOnload, false);
-                        else if (window.attachEvent)
-                            window.attachEvent("onload", downloadJSAtOnload);
-                        else window.onload = downloadJSAtOnload;
-                    </script>
                     
                 </xsl:if>
                 
@@ -428,14 +409,14 @@
     
     <!-- Localization helpers -->
     <!-- Copied from functions.xsl to avoid duplicate include warning -->
-    <xsl:function name="common:internal-link">
+    <!--<xsl:function name="internal-link">
         <xsl:param name="url" required="yes" as="xs:string"/>
         <xsl:param name="attributes" required="yes" as="xs:string*"/>
         <xsl:param name="fragment-id" required="yes" as="xs:string"/>
         <xsl:param name="lang" required="yes" as="xs:string"/>
         <xsl:variable name="lang-attribute" select="if($lang = ('zh')) then concat('lang=', $lang) else ()"/>
         <xsl:variable name="attributes-with-lang" select="($attributes, $lang-attribute)"/>
-        <xsl:value-of select="concat($url, if(count($attributes-with-lang) gt 0) then concat('?', string-join($attributes-with-lang, '&amp;')) else '', $fragment-id)"/>
-    </xsl:function>
+        <xsl:value-of select="concat($url, if(count($attributes-with-lang) gt 0) then concat('?', string-join($attributes-with-lang, '&')) else '', $fragment-id)"/>
+    </xsl:function>-->
     
 </xsl:stylesheet>

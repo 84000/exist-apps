@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" version="2.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" version="3.0" exclude-result-prefixes="#all">
     
-    <xsl:import href="../../84000-reading-room/xslt/tei-to-xhtml.xsl"/>
+    <xsl:import href="../../84000-reading-room/xslt/functions.xsl"/>
     
     <xsl:template match="/m:response">
         
-        <xsl:variable name="environment" select="doc(/m:response/@environment-path)/m:environment"/>
+        <xsl:variable name="environment" select="/m:response/m:environment"/>
         <xsl:variable name="reading-room-path" select="$environment/m:url[@id eq 'reading-room']/text()"/>
         
         <table class="table table-responsive">
@@ -34,8 +34,14 @@
                             <xsl:value-of select="m:titles/m:title[@xml:lang eq 'en']"/>
                         </td>
                         <td class="nowrap">
-                            <xsl:value-of select="@id"/>
-                            <xsl:copy-of select="common:translation-status(@status-group)"/>
+                            <div class="center-vertical full-width">
+                                <span class="small">
+                                    <xsl:value-of select="@id"/>
+                                </span>
+                                <span>
+                                    <xsl:copy-of select="common:translation-status(@status-group)"/>
+                                </span>
+                            </div>
                         </td>
                     </tr>
                     <tr class="sub">

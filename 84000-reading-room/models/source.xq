@@ -6,6 +6,7 @@ xquery version "3.0" encoding "UTF-8";
 :)
 
 declare namespace m = "http://read.84000.co/ns/1.0";
+declare namespace tei="http://www.tei-c.org/ns/1.0";
 
 import module namespace common="http://read.84000.co/common" at "../modules/common.xql";
 import module namespace tei-content="http://read.84000.co/tei-content" at "../modules/tei-content.xql";
@@ -49,7 +50,9 @@ let $ref-sort-index :=
     else
         0
 
-let $reading-room-path := $common:environment/m:url[@id eq 'reading-room']/text()
+let $source-text := source:etext-page($tei-location, $ref-sort-index, true(), $highlight)
+let $translation-text := translation:folio-content($tei, $resource-id, $ref-resource-index)
+let $ref-id := $translation-text//tei:ref[@xml:id][1]/@xml:id
 
 return 
     common:response(
@@ -66,35 +69,38 @@ return
                 folio="{ $folio }"
                 page="{ $page }"/>,
             
+            (: Get a page :)
             if($ref-sort-index gt 0) then (
-            
-                (: Get a page :)
-                source:etext-page($tei-location, $ref-sort-index, true(), $highlight),
+                
+                (: The source text :)
+                $source-text,
+                
+                (: The translation :)
+                <translation 
+                    xmlns="http://read.84000.co/ns/1.0" 
+                    id="{ tei-content:id($tei) }"
+                    status="{ tei-content:translation-status($tei) }"
+                    status-group="{ tei-content:translation-status-group($tei) }">
+                    { 
+                       $translation-text  
+                    }
+                </translation>,
                 
                 (: Include back link to the passage in the text :)
-                <back-link 
-                    xmlns="http://read.84000.co/ns/1.0"
-                    url="{ concat($reading-room-path, '/translation/', $resource-id, '.html#', translation:source-link-id($ref-resource-index)) }">
-                    <title>{ tei-content:title($tei) }</title>
-                </back-link>,
-                
-                (: Include the translation :)
-                if (lower-case($resource-suffix) = ('xml')) then
-                    <translation 
-                        xmlns="http://read.84000.co/ns/1.0" 
-                        id="{ tei-content:id($tei) }"
-                        status="{ tei-content:translation-status($tei) }"
-                        status-group="{ tei-content:translation-status-group($tei) }">
-                        { 
-                            translation:folio-content($tei, $resource-id, $ref-resource-index) 
-                        }
-                    </translation>
+                if($ref-id) then
+                    <back-link 
+                        xmlns="http://read.84000.co/ns/1.0"
+                        url="{ concat($common:environment/m:url[@id eq 'reading-room'], '/translation/', $resource-id, '.html', '?part=', $ref-id, '#', $ref-id) }">
+                        <title>{ tei-content:title($tei) }</title>
+                    </back-link>
                 else ()
                 
             )
+            
+            (: Get the whole text :)
             else if (lower-case($resource-suffix) = ('xml', 'txt')) then
-                (: Get the whole text :)
                 source:etext-full($tei-location)
+                
             else
                 ()
         )

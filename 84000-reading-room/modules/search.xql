@@ -100,6 +100,7 @@ declare function search:search($request as xs:string, $resource-id as xs:string,
                 max-records="{ $max-records }"
                 count-records="{ count($result-groups) }">
                 {
+                    $query,
                     for $result-group in subsequence($result-groups, $first-record, $max-records)
                         
                         let $tei := doc($result-group/@document-uri)/tei:TEI
@@ -134,7 +135,7 @@ declare function search:search($request as xs:string, $resource-id as xs:string,
                                 
                                 (:let $expanded :=
                                     if(not($expanded//exist:match)) then
-                                        util:expand($group-match, "expand-xincludes=no")
+                                        util:expand($result, "expand-xincludes=no")
                                     else
                                         $expanded:)
                             
@@ -298,23 +299,16 @@ declare function search:tm-search($request as xs:string, $lang as xs:string, $fi
                                 let $folio-refs-sorted := translation:folio-refs-sorted($tei, $toh-key)
                                 
                                 (: Get the position of this one :)
-                                let $folio-index-in-resource := 
-                                    if($result-folio[@m:cRef-volume]) then
-                                        $folio-refs-sorted[lower-case(@cRef) eq lower-case($result-folio/text())][lower-case(@cRef-volume) eq lower-case($result-folio/@m:cRef-volume)][1]/@index-in-resource
+                                let $folio := 
+                                    if($result-folio[@cRef-volume]) then
+                                        $folio-refs-sorted[lower-case(@cRef) eq lower-case($result-folio/text())][lower-case(@cRef-volume) eq lower-case($result-folio/@cRef-volume)][1]
                                     else
-                                        $folio-refs-sorted[lower-case(@cRef) eq lower-case($result-folio/text())][1]/@index-in-resource
-                                
-                                (: Use that to derive the id in the rendered text :)
-                                let $source-link-selector := 
-                                    if(functx:is-a-number($folio-index-in-resource)) then
-                                        concat('#', translation:source-link-id($folio-index-in-resource))
-                                    else
-                                        ''
+                                        $folio-refs-sorted[lower-case(@cRef) eq lower-case($result-folio/text())][1]
                                 
                                 return
                                     element match {
                                         attribute type { 'tm-unit' },
-                                        attribute location { concat('/translation/', $toh-key, '.html', $source-link-selector) },
+                                        attribute location { concat('/translation/', $toh-key, '.html', if($folio[@xml:id]) then concat('?part=', $folio/@xml:id, '#', $folio/@xml:id) else '') },
                                         element tibetan { $expanded/tmx:tuv[@xml:lang eq "bo"]/tmx:seg/node() },
                                         element translation { $expanded/tmx:tuv[@xml:lang eq "en"]/tmx:seg/node() }
                                     }
@@ -406,7 +400,7 @@ declare function local:search-query($request as xs:string, $search-as-phrase as 
             <bool>
             {
                 if($search-as-phrase) then
-                    <phrase slop="0" occur="must">{ $request-normalized }</phrase>
+                    <phrase slop="1" occur="must">{ $request-normalized }</phrase>
                 else (
                     <near slop="20" occur="should">{ $request-normalized }</near>,
                     <wildcard occur="should">{ concat($request-normalized,'*') }</wildcard>,
@@ -439,18 +433,24 @@ declare function local:tei-header($tei as element(tei:TEI)) as element() {
     let $trandlation-status-group := tei-content:translation-status-group($tei)
     
     let $link := 
+        
+        (: Translation :)
         if($tei-type eq 'translation') then
+            
+            (: Published :)
             if($trandlation-status-group eq 'published') then
-                (: Published translation :)
                 concat('/translation/', $resource-id, '.html')
+            
+            (: Un-published :)
             else
-                (: Un-published text :)
                 let $first-bibl := $tei//tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl[1]
                 return
                     concat('/section/', $first-bibl/tei:idno/@parent-id, '.html', '#', $first-bibl/@key)
+        
+        (: Section :)
         else if($tei-type eq 'section') then
-            (: Section :)
             concat('/section/', $resource-id, '.html')
+        
         else
             ''
     
@@ -478,7 +478,7 @@ declare function local:tei-header($tei as element(tei:TEI)) as element() {
                         (: Must group these in m:bibl to keep track of @key group :)
                         element bibl {
                             attribute toh-key { $toh-key },
-                            attribute canonical-html { translation:canonical-html($toh-key) },
+                            attribute canonical-html { translation:canonical-html($toh-key, '') },
                             translation:toh($tei, $toh-key),
                             tei-content:ancestors($tei, $toh-key, 1)
                         }
@@ -494,50 +494,64 @@ declare function local:tei-header($tei as element(tei:TEI)) as element() {
 };
 
 declare function local:match-link($result as element(), $search-tei as element()) as xs:string {
-
+    
+    (: Translation :)
     if($search-tei/@type eq 'translation') then
+    
+        (: Published :)
         if($search-tei/@translation-status-group eq 'published') then
             
-            (: Published translation :)
+            (:Has an xml:id:)
             if($result/@xml:id) then
-                (:Has an xml:id:)
-                concat(functx:substring-before-if-contains($search-tei/@link, '#'),'#', $result/@xml:id)
-            else if($result/@tid) then
-                (: Has an id :)
-                concat(functx:substring-before-if-contains($search-tei/@link, '#'),'#node-', $result/@tid)
-            else if(local-name($result) = ('ref', 'biblScope')) then
-                (: Toh / Scope :)
-                concat(functx:substring-before-if-contains($search-tei/@link, '#'),'#toh')
-            else if(local-name($result) = ('author', 'sponsor')) then
-                (: Author :)
-                concat(functx:substring-before-if-contains($search-tei/@link, '#'),'#acknowledgements')
-            else
-                (: Default to the beginning of the page :)
-                $search-tei/@link
-            
-        else
-        
-            (: Un-published text :)
-            if($result/@tid) then
-                (: Has an id that must be elaborated to work in the section/texts list :)
-                concat(functx:substring-before-if-contains($search-tei/@link, '#'), '#', $search-tei/m:bibl[1]/@toh-key,'-node-', $result/@tid)
-            else if($result[local-name($result) eq 'title' and $result/@type eq 'otherTitle']) then
-                (: Has a collapsed title in the section/texts list :)
-                concat(functx:substring-before-if-contains($search-tei/@link, '#'), '#', $search-tei/m:bibl[1]/@toh-key, '-title-variants')
-            else
-                $search-tei/@link
-            
-    else if($search-tei/@type eq 'section') then
-        (: Section :)
-        if($result/@xml:id) then
-            (: Has an xml:id :)
-            concat(functx:substring-before-if-contains($search-tei/@link, '#'),'#', $result/@xml:id)
-        else if($result/@tid) then
+                concat(functx:substring-before-if-contains($search-tei/@link, '#'), '?part=', $result/@xml:id, '#', $result/@xml:id)
+                
             (: Has an id :)
-            concat(functx:substring-before-if-contains($search-tei/@link, '#'),'#node-', $result/@tid)
-        else
+            else if($result/@tid) then
+                concat(functx:substring-before-if-contains($search-tei/@link, '#'), '?part=', 'node-', $result/@tid, '#node-', $result/@tid)
+            
+            (: Toh / Scope :)
+            else if(local-name($result) = ('ref', 'biblScope')) then
+                concat(functx:substring-before-if-contains($search-tei/@link, '#'),'#toh')
+            
+            (: Author :)
+            else if(local-name($result) = ('author', 'sponsor')) then
+                concat(functx:substring-before-if-contains($search-tei/@link, '#'),'#acknowledgements')
+            
             (: Default to the beginning of the page :)
+            else
+                $search-tei/@link
+        
+        (: Un-published :)
+        else
+            
+            (: Has an id that must be elaborated to work in the section/texts list :)
+            if($result/@tid) then
+                concat(functx:substring-before-if-contains($search-tei/@link, '#'), '#', $search-tei/m:bibl[1]/@toh-key,'-node-', $result/@tid)
+            
+            (: Has a collapsed title in the section/texts list :)
+            else if($result[local-name($result) eq 'title' and $result/@type eq 'otherTitle']) then
+                concat(functx:substring-before-if-contains($search-tei/@link, '#'), '#', $search-tei/m:bibl[1]/@toh-key, '-title-variants')
+            
+            (: Default to the beginning of the page :)
+            else
+                $search-tei/@link
+    
+    (: Section :)
+    else if($search-tei/@type eq 'section') then
+        
+        (: Has an xml:id :)
+        if($result/@xml:id) then
+            concat(functx:substring-before-if-contains($search-tei/@link, '#'),'#', $result/@xml:id)
+        
+        (: Has an id :)
+        else if($result/@tid) then
+            concat(functx:substring-before-if-contains($search-tei/@link, '#'),'#node-', $result/@tid)
+        
+        (: Default to the beginning of the page :)
+        else
             $search-tei/@link
+    
+    (: Default to the beginning of the page :)
     else
         $search-tei/@link
 };

@@ -1,12 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:util="http://exist-db.org/xquery/util" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" version="2.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:util="http://exist-db.org/xquery/util" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" version="3.0" exclude-result-prefixes="#all">
     
     <xsl:import href="website-page.xsl"/>
     
     <!-- Look up environment variables -->
-    <xsl:variable name="environment-path" select="if(/m:response/@environment-path)then /m:response/@environment-path else '/db/system/config/db/system/environment.xml'"/>
-    <xsl:variable name="environment" select="doc($environment-path)/m:environment"/>
-    
+    <xsl:variable name="environment" select="if(/m:response[m:environment]) then /m:response/m:environment else doc('/db/system/config/db/system/environment.xml')/m:environment"/>
+
     <xsl:template match="/">
         
         <!-- PAGE CONTENT -->
@@ -73,7 +72,7 @@
                             <div id="project-progress">
                                 <!-- Project Progress, get from ajax -->
                                 <xsl:attribute name="data-onload-replace">
-                                    <xsl:value-of select="concat('{&#34;#project-progress&#34;:&#34;', $reading-room-path,'/widget/progress-chart.html#eft-progress-chart-panel&#34;}')"/>
+                                    <xsl:value-of select="concat('{&#34;#project-progress&#34;:&#34;', $environment/m:url[@id eq 'reading-room'],'/widget/progress-chart.html#eft-progress-chart-panel&#34;}')"/>
                                 </xsl:attribute>                            
                                 <div class="panel panel-default">
                                     <div class="panel-body loading"/>

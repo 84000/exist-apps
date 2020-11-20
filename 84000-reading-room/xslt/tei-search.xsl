@@ -1,18 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" exclude-result-prefixes="#all" version="2.0">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" exclude-result-prefixes="#all" version="3.0">
         
     <!-- 
         Converts expanded search result to xhtml
     -->
     
-    <xsl:import href="functions.xsl"/>
+    <xsl:import href="../views/html/website-page.xsl"/>
     
     <!-- Look up environment variables -->
-    <xsl:variable name="environment" select="doc(/m:response/@environment-path)/m:environment"/>
+    <xsl:variable name="environment" select="/m:response/m:environment"/>
     <xsl:variable name="reading-room-path" select="$environment/m:url[@id eq 'reading-room']/text()"/>
     <xsl:variable name="request-translation" select="/m:response/m:search/m:translation"/>
     
     <xsl:template name="search">
+        
         <xsl:param name="action" required="yes"/>
         <xsl:param name="lang" required="no"/>
         
@@ -384,14 +385,17 @@
     
     <xsl:template match="m:match">
         <xsl:choose>
+            
             <xsl:when test="@node-name eq 'title' and @node-type eq 'mainTitle' and @node-lang eq 'en'">
                 <!-- A main title replaces the title string -->
                 <xsl:apply-templates select="node()"/>
             </xsl:when>
+            
             <xsl:when test="@node-name eq 'bibl' and @key gt ''">
                 <!-- A bibl ref replaces the Toh string -->
                 <xsl:apply-templates select=".//tei:ref"/>
             </xsl:when>
+            
             <xsl:otherwise>
                 <!-- Everything else is listed as a search-match -->
                 <div class="search-match small">

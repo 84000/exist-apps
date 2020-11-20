@@ -49,20 +49,17 @@
                                                             <xsl:when test="@group eq 'not-started'">
                                                                 <xsl:value-of select="'Not started'"/>
                                                             </xsl:when>
-                                                        </xsl:choose>
-                                                        <xsl:choose>
                                                             <xsl:when test="@group eq 'published'">
                                                                 <xsl:value-of select="'Published'"/>
                                                             </xsl:when>
-                                                        </xsl:choose>
-                                                        <xsl:choose>
                                                             <xsl:when test="@group eq 'translated'">
                                                                 <xsl:value-of select="'Translated'"/>
                                                             </xsl:when>
-                                                        </xsl:choose>
-                                                        <xsl:choose>
                                                             <xsl:when test="@group eq 'in-translation'">
                                                                 <xsl:value-of select="'In translation'"/>
+                                                            </xsl:when>
+                                                            <xsl:when test="@group eq 'in-application'">
+                                                                <xsl:value-of select="'Application phase'"/>
                                                             </xsl:when>
                                                         </xsl:choose>
                                                     </span>
@@ -537,12 +534,14 @@
                                                             <xsl:value-of select="'Edit glossary'"/>
                                                         </a>
                                                     </li>
-                                                    <!--<li>
+                                                    <!-- Link to list of archived copies of this text!!!
+                                                    <li>
                                                         <a target="_blank">
                                                             <xsl:attribute name="href" select="concat($reading-room-path ,'/translation/', m:toh/@key, '.html?view-mode=annotation')"/>
                                                             <xsl:value-of select="'Annotate'"/>
                                                         </a>
-                                                    </li>-->
+                                                    </li>
+                                                    -->
                                                 </xsl:if>
                                                 <xsl:if test="@status-group eq 'published' and m:downloads[@tei-version != m:download/@version]">
                                                     <li>

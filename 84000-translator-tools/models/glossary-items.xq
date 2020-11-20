@@ -8,13 +8,8 @@ import module namespace glossary="http://read.84000.co/glossary" at "../../84000
 
 declare option exist:serialize "method=xml indent=no";
 
-let $glossary-items := glossary:matching-items(request:get-parameter('term', ''), request:get-parameter('lang', ''))
-
-let $internal-refs := transform:transform($glossary-items, doc(concat($common:app-path, "/xslt/internal-refs.xsl")), <parameters/>)
-
-return
-    common:response(
-        'translator-tools/glossary-items',
-        'translator-tools',
-        $internal-refs 
-    )
+common:response(
+    'translator-tools/glossary-items',
+    'translator-tools',
+    glossary:matching-items(request:get-parameter('term', ''), request:get-parameter('lang', ''))
+)

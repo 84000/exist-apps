@@ -128,8 +128,8 @@
             </create>
             
             <create qname="tei:gloss">
-                <field name="gloss-id" match="@xml:id" type="xs:string"/>
                 <field name="gloss-type" match="@type" type="xs:string"/>
+                <!--<field name="gloss-id" match="@xml:id" type="xs:string"/>-->
                 <field name="term-lang" match="tei:term/@xml:lang" type="xs:string"/>
                 <field name="term-type" match="tei:term/@type" type="xs:string"/>
             </create>
@@ -140,12 +140,37 @@
                 <field name="ref-type" match="@type" type="xs:string"/>
                 <field name="ref-rend" match="@rend" type="xs:string"/>
                 <field name="ref-cref" match="@cRef" type="xs:string" case="no"/>
+                <!--<field name="ref-id" match="@xml:id" type="xs:string"/>-->
             </create>
             
             <create qname="tei:note">
                 <field name="note-type" match="@type" type="xs:string"/>
-                <field name="note-index" match="@index" type="xs:string"/>
+                <!--<field name="note-id" match="@xml:id" type="xs:string"/>-->
             </create>
+            
+            <!--<create qname="tei:milestone">
+                <field name="milestone-id" match="@xml:id" type="xs:string"/>
+            </create>-->
+            
+            <!--<create qname="eft:location">
+                <field name="location-id" match="@id" type="xs:string"/>
+            </create>
+            
+            <create qname="eft:end-note">
+                <field name="notes-cache-id" match="@id" type="xs:string"/>
+            </create>
+            
+            <create qname="eft:milestone">
+                <field name="milestones-cache-id" match="@id" type="xs:string"/>
+            </create>
+            
+            <create qname="eft:folio-ref">
+                <field name="folios-cache-id" match="@id" type="xs:string"/>
+            </create>
+            
+            <create qname="eft:gloss">
+                <field name="glossary-cache-id" match="@id" type="xs:string"/>
+            </create>-->
             
         </range>
         

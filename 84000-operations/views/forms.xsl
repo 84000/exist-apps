@@ -4,7 +4,7 @@
     <xsl:import href="../../84000-reading-room/xslt/tei-to-xhtml.xsl"/>
     
     <!-- Look up environment variables -->
-    <xsl:variable name="environment" select="doc(/m:response/@environment-path)/m:environment"/>
+    <xsl:variable name="environment" select="/m:response/m:environment"/>
     <xsl:variable name="operations-path" select="$environment/m:url[@id eq 'operations']/text()"/>
     
     <!-- Accordion panel -->

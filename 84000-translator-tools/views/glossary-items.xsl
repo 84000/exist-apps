@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" version="2.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" version="3.0" exclude-result-prefixes="#all">
     
     <xsl:import href="../../84000-reading-room/views/html/website-page.xsl"/>
     <xsl:import href="../../84000-reading-room/xslt/tei-to-xhtml.xsl"/>
@@ -22,6 +22,7 @@
                                         <xsl:value-of select="'in '"/>
                                         <a>
                                             <xsl:attribute name="href" select="m:text/@uri"/>
+                                            <xsl:attribute name="target" select="m:text/@id"/>
                                             <xsl:apply-templates select="m:text/m:title/text()"/>
                                         </a>
                                         <label class="label label-default pull-right">

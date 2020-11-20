@@ -29,8 +29,11 @@
         <p>This print version was generated at #CurrentDateTime from the online version of the text available on that date. If some time has
             elapsed since then, this version may have been superseded, as most of 84000’s published translations undergo significant updates
             from time to time. For the latest online version, with bilingual display, interactive glossary entries and notes, and a variety
-            of further download options, please see <a href="#LinkToSelf" class="printable">#LinkToSelf</a>.</p>
+            of further download options, please see <br/>
+            <a href="#canonicalHTML" class="printable">#canonicalHTML</a>.</p>
     </item>
+    <item key="translation.partial-text-warning">This webpage does not include the entire published text</item>
+    <item key="translation.partial-text-link">The full translation is available to download as pdf at:</item>
     
     <item key="section.ebook-help-title">Help for downloading eBooks</item>
     <item key="section.ebook-help-body">

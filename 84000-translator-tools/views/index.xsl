@@ -5,7 +5,7 @@
     <xsl:import href="../../84000-reading-room/xslt/tei-search.xsl"/>
     <xsl:import href="../../84000-reading-room/xslt/text-overlay.xsl"/>
     
-    <xsl:variable name="environment" select="doc(/m:response/@environment-path)/m:environment"/>
+    <xsl:variable name="environment" select="/m:response/m:environment"/>
     <xsl:variable name="reading-room-path" select="$environment/m:url[@id eq 'reading-room']/text()"/>
     <xsl:variable name="request" select="/m:response/m:request"/>
     <xsl:variable name="glossary" select="/m:response/m:glossary"/>
@@ -287,21 +287,23 @@
                         </div>
                     </form>
                 </div>
-                <div>
-                    <div class="pull-right">
-                        <a href="/84000-data/translator-tools/data/84000_Cumulative_Glossary-current-full.xlsx" class="download-link center-vertical">
-                            <span>
-                                <span class="btn-round sml">
-                                    <i class="fa fa-cloud-download"/>
+                <xsl:if test="m:tabs/m:tab[@id eq 'glossary']/m:setting[@id eq 'glossary-download-spreadsheet']">
+                    <div>
+                        <div class="pull-right">
+                            <a class="download-link center-vertical">
+                                <xsl:attribute name="href" select="concat('/84000-data/translator-tools/data/', m:tabs/m:tab[@id eq 'glossary']/m:setting[@id eq 'glossary-download-spreadsheet']/@value)"/>
+                                <span>
+                                    <span class="btn-round sml">
+                                        <i class="fa fa-cloud-download"/>
+                                    </span>
                                 </span>
-                            </span>
-                            <span class="btn-round-text">
-                                <xsl:value-of select="'Full Glossary (.xslx)'"/>
-                            </span>
-                        </a>
+                                <span class="btn-round-text">
+                                    <xsl:value-of select="'Full Glossary (.xslx)'"/>
+                                </span>
+                            </a>
+                        </div>
                     </div>
-                </div>
-                
+                </xsl:if>
             </div>
             
             <ul class="nav nav-tabs sml-tabs top-margin" role="tablist">
@@ -376,7 +378,7 @@
                                     </div>
                                 </div>
                                 
-                                <div class="collpase">
+                                <div class="collapse sml-margin top">
                                     <xsl:attribute name="id" select="concat('occurrences-', position())"/>
                                 </div>
                                 

@@ -53,6 +53,7 @@ a {
 /* headings */
 h1 {
     font-size: 1.4em;
+    line-height: 1.4em;
 }
 h2 {
     font-size: 1.3em;
@@ -114,9 +115,8 @@ small, .small {
 .trailer {
     font-style: italic;
 }
-.trailer .ref,
-.trailer .footnote-link {
-    font-style: normal;
+.ref {
+    font-style: normal !important;
 }
 .hidden-ebook {
     display: none;
@@ -375,6 +375,7 @@ br+.rw > p,
     line-height: .75em;
     vertical-align: super;
     padding-left: 2pt;
+    font-style: normal !important;
 }
 
 /* Images */
@@ -440,6 +441,7 @@ img.logo-84000 {
     padding: 10pt 15pt;
     background-color: #eee;
     margin-bottom: 0;
+    page-break-inside: avoid;
 }
 
 /* imprint */
@@ -451,17 +453,18 @@ img.logo-84000 {
 }
 
 /* contents */
-#contents a {
+#toc a {
     text-decoration: none;
 }
-#contents > nav > ol {
+#toc > nav > ol {
     list-style-type: disc;
 }
-#contents > nav > ol ol {
+#toc > nav > ol ol {
     list-style-type: circle;
 }
-#contents li {
+#toc li {
     margin-top: 5pt;
+    line-height: 1.4em;
 }
 
 /* Abbreviations */
@@ -507,6 +510,7 @@ img.logo-84000 {
 .glossary-item .term {
     text-align: left;
     margin-top: 0pt;
+    line-height: 1.4em;
 }
 .glossary-item p.definition {
     line-height: 1.4em;
@@ -518,6 +522,18 @@ img.logo-84000 {
 .glossary-item p,
 .glossary-item ul {
     margin-bottom: .25em;
+}
+.glossary-item .locations {
+    border-top: 1px solid #ddd;
+    padding-top: .5em;
+}
+.glossary-item .locations h5 {
+    font-size: .75em;
+}
+.glossary-item .locations li {
+    font-size: .75em;
+    padding-right: .75em;
+    padding-top: .5em;
 }
 
 /* Headings */

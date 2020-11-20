@@ -99,7 +99,7 @@
                     <xsl:call-template name="translation-titles">
                         <xsl:with-param name="lang" select="'en'"/>
                     </xsl:call-template>
-                    <adm:canonicalHtml rdf:resource="{ m:translation/@page-url }"/>
+                    <adm:canonicalHtml rdf:resource="{ m:translation/@canonical-html }"/>
                 </rdf:Description>
                 
                 <xsl:comment>The Derge edition of the Tibetan translation</xsl:comment>
@@ -116,7 +116,7 @@
                     <xsl:call-template name="translation-titles">
                         <xsl:with-param name="lang" select="'bo'"/>
                     </xsl:call-template>
-                    <adm:canonicalHtml rdf:resource="{ m:translation/@page-url }"/>
+                    <adm:canonicalHtml rdf:resource="{ m:translation/@canonical-html }"/>
                 </rdf:Description>
                 
                 <xsl:comment>The original Tibetan translation</xsl:comment>
@@ -140,7 +140,7 @@
                             </bdr:RefrKTsK>
                         </bf:identifiedBy>
                     </xsl:if>
-                    <adm:canonicalHtml rdf:resource="{ m:translation/@page-url }"/>
+                    <adm:canonicalHtml rdf:resource="{ m:translation/@canonical-html }"/>
                 </rdf:Description>
                 
                 <xsl:if test="m:translation/@status-group eq 'published'">
@@ -152,7 +152,7 @@
                         <xsl:call-template name="translation-titles">
                             <xsl:with-param name="lang" select="'en'"/>
                         </xsl:call-template>
-                        <adm:canonicalHtml rdf:resource="{ m:translation/@page-url }"/>
+                        <adm:canonicalHtml rdf:resource="{ m:translation/@canonical-html }"/>
                         <xsl:if test="m:translation/m:publication/m:contributors/m:author[@role = 'translatorEng']">
                             <xsl:comment>Creators</xsl:comment>
                             <xsl:for-each select="m:translation/m:publication/m:contributors/m:author[@role = 'translatorEng']">

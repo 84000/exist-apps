@@ -1,9 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" version="2.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" version="3.0" exclude-result-prefixes="#all">
     
-    <xsl:import href="../website-page.xsl"/>
     <xsl:import href="../../../xslt/tei-to-xhtml.xsl"/>
-    <xsl:import href="../../../xslt/lang.xsl"/>
     
     <!-- Template -->
     <xsl:template name="about">
@@ -223,7 +221,7 @@
         <xsl:param name="text"/>
         <xsl:param name="expand-id" as="xs:string"/>
         
-        <xsl:if test="$text/m:section[@type eq 'summary'][tei:p]">
+        <xsl:if test="$text/m:part[@type eq 'summary'][tei:p]">
             <hr/>
             <a class="summary-link collapsed" role="button" data-toggle="collapse" aria-expanded="false">
                 <xsl:attribute name="href" select="concat('#', $expand-id)"/>
@@ -241,7 +239,7 @@
                 
                 <div class="well well-sm">
                     
-                    <xsl:apply-templates select="$text/m:section[@type eq 'summary']/tei:p"/>
+                    <xsl:apply-templates select="$text/m:part[@type eq 'summary']/tei:p"/>
                     
                 </div>
             </div>
@@ -429,7 +427,7 @@
                                     
                                     <xsl:if test="$show-sponsors">
                                         <xsl:call-template name="sponsors">
-                                            <xsl:with-param name="sponsor-expressions" select="m:translation/m:sponsors"/>
+                                            <xsl:with-param name="sponsor-expressions" select="m:publication/m:sponsors"/>
                                             <xsl:with-param name="sponsors" select="m:sponsors"/>
                                             <xsl:with-param name="sponsorship-status" select="m:sponsorship-status"/>
                                         </xsl:call-template>

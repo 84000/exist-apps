@@ -2,11 +2,9 @@
 <xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:util="http://exist-db.org/xquery/util" xmlns:common="http://read.84000.co/common" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" version="3.0" exclude-result-prefixes="#all">
     
     <xsl:import href="../../xslt/tei-to-xhtml.xsl"/>
-    <xsl:import href="../../xslt/lang.xsl"/>
-    <xsl:import href="website-page.xsl"/>
     
     <!-- Look up environment variables -->
-    <xsl:variable name="environment" select="doc(/m:response/@environment-path)/m:environment"/>
+    <xsl:variable name="environment" select="/m:response/m:environment"/>
     <xsl:variable name="front-end-path" select="$environment/m:url[@id eq 'front-end']/text()"/>
     
     <xsl:template match="/m:response">
@@ -155,7 +153,7 @@
                                 </xsl:if>
                                 
                                 <!-- About tab -->
-                                <xsl:if test="m:section/m:about/*">
+                                <xsl:if test="m:section/m:about[*]">
                                     <li role="presentation">
                                         <a href="#summary" aria-controls="summary" role="tab" data-toggle="tab">
                                             <xsl:value-of select="'About'"/>

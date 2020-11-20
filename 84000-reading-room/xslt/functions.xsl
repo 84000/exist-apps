@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:functx="http://www.functx.com" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" version="2.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:functx="http://www.functx.com" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" version="3.0" exclude-result-prefixes="#all">
     
     <!-- 
         Converts other xml to valid xhtml
@@ -414,6 +414,13 @@
         <xsl:param name="value" as="item()*"/>
         
         <xsl:sequence select="if (exists($arg)) then $arg else $value "/>
+        
+    </xsl:function>
+    
+    <xsl:function name="functx:capitalize-first" as="xs:string?">
+        <xsl:param name="arg" as="xs:string?"/>
+        
+        <xsl:sequence select="concat(upper-case(substring($arg,1,1)),substring($arg,2))"/>
         
     </xsl:function>
     

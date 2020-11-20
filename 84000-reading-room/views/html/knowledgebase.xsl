@@ -1,12 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:common="http://read.84000.co/common" xmlns:epub="http://www.idpf.org/2007/ops" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" exclude-result-prefixes="#all" version="2.0">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:common="http://read.84000.co/common" xmlns:epub="http://www.idpf.org/2007/ops" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" exclude-result-prefixes="#all" version="3.0">
     
     <xsl:import href="../../xslt/tei-to-xhtml.xsl"/>
-    <xsl:import href="../../xslt/lang.xsl"/>
-    <xsl:import href="website-page.xsl"/>
     
     <!-- Look up environment variables -->
-    <xsl:variable name="environment" select="doc(/m:response/@environment-path)/m:environment"/>
+    <xsl:variable name="environment" select="/m:response/m:environment"/>
     <xsl:variable name="front-end-path" select="$environment/m:url[@id eq 'front-end']/text()"/>
     <xsl:variable name="render-status" select="$environment/m:render-translation/m:status/@status-id"/>
     
@@ -117,7 +115,7 @@
         <!-- Pass the content to the page -->
         <xsl:call-template name="website-page">
             <xsl:with-param name="page-url" select="m:knowledgebase/m:page/@page-url"/>
-            <xsl:with-param name="page-class" select="concat('reading-room knowledgebase ', if(m:request/@view-mode = ('editor', 'annotation')) then 'editor-mode' else '')"/>
+            <xsl:with-param name="page-class" select="concat('reading-room translation',  if(m:request/@view-mode gt '') then concat(' ', m:request/@view-mode, '-mode') else '')"/>
             <xsl:with-param name="page-title" select="concat(m:knowledgebase/m:page/m:titles/m:title[@xml:lang eq 'en'][@type eq 'mainTitle']/text(), ' | 84000 Reading Room')"/>
             <xsl:with-param name="page-description" select="normalize-space(data(m:knowledgebase/m:page/m:summary/tei:p[1]))"/>
             <xsl:with-param name="content" select="$content"/>

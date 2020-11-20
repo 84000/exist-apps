@@ -1,13 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" version="2.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" version="3.0" exclude-result-prefixes="#all">
     
     <xsl:import href="../../84000-reading-room/views/html/website-page.xsl"/>
-    <xsl:import href="../../84000-reading-room/xslt/tei-to-xhtml.xsl"/>
     <xsl:import href="common.xsl"/>
     
     <xsl:template match="/m:response">
         
-        <xsl:variable name="environment" select="doc(@environment-path)/m:environment"/>
+        <xsl:variable name="environment" select="/m:response/m:environment"/>
         <xsl:variable name="reading-room-path" select="$environment/m:url[@id eq 'reading-room']/text()"/>
         <xsl:variable name="reading-room-no-cache-path" select="$environment/m:url[@id eq 'reading-room-no-cache']/text()"/>
         <xsl:variable name="texts-status" select="/m:response/m:request/m:parameter[@name eq 'texts-status']/text()"/>
@@ -91,8 +90,8 @@
                                             <xsl:if test="$reading-room-no-cache-path">
                                                 <li>
                                                     <a class="small">
-                                                        <xsl:attribute name="href" select="concat($reading-room-no-cache-path ,'/translation/', $text-id, '.html')"/>
-                                                        <xsl:attribute name="target" select="concat($text-id, '.html')"/>
+                                                        <xsl:attribute name="href" select="concat($reading-room-no-cache-path ,'/translation/', m:toh/@key, '.html')"/>
+                                                        <xsl:attribute name="target" select="concat(m:toh/@key, '.html')"/>
                                                         <xsl:attribute name="title" select="'View this text by-passing the cache'"/>
                                                         <xsl:value-of select="'bypass cache'"/>
                                                     </a>
@@ -100,8 +99,8 @@
                                             </xsl:if>
                                             <li>
                                                 <a class="small">
-                                                    <xsl:attribute name="href" select="concat($reading-room-path ,'/translation/', $text-id, '.html?view-mode=editor')"/>
-                                                    <xsl:attribute name="target" select="concat($text-id, '.html')"/>
+                                                    <xsl:attribute name="href" select="concat($reading-room-path ,'/translation/', m:toh/@key, '.html?view-mode=editor')"/>
+                                                    <xsl:attribute name="target" select="concat(m:toh/@key, '.html')"/>
                                                     <xsl:attribute name="title" select="'View this text in editor mode'"/>
                                                     <xsl:value-of select="'editor mode'"/>
                                                 </a>
@@ -116,8 +115,8 @@
                                             </li>-->
                                             <li>
                                                 <a class="small">
-                                                    <xsl:attribute name="href" select="concat($reading-room-path, '/translation/', $text-id, '.xml')"/>
-                                                    <xsl:attribute name="target" select="concat($text-id, '.xml')"/>
+                                                    <xsl:attribute name="href" select="concat($reading-room-path, '/translation/', m:toh/@key, '.xml')"/>
+                                                    <xsl:attribute name="target" select="concat(m:toh/@key, '.xml')"/>
                                                     <xsl:attribute name="title" select="'View xml data'"/>
                                                     <xsl:value-of select="'xml'"/>
                                                 </a>
@@ -399,15 +398,29 @@
                                                     
                                                     <!-- Title -->
                                                     <div>
-                                                        <a class="sml-margin top break">
-                                                            <xsl:attribute name="href" select="concat($reading-room-path ,'/translation/', $text-id, '.html')"/>
-                                                            <xsl:attribute name="target" select="concat($text-id, '.html')"/>
-                                                            <xsl:attribute name="title" select="'View this text in the Reading Room'"/>
+                                                        <span>
                                                             <xsl:value-of select="$group-titles/m:title[@xml:lang eq 'en']"/>
-                                                            <small>
-                                                                <xsl:value-of select="concat(' / ', $text-id)"/>
-                                                            </small>
-                                                        </a>
+                                                        </span>
+                                                        <span class="small">
+                                                            <xsl:value-of select="' / '"/>
+                                                            <a>
+                                                                <xsl:attribute name="href" select="concat($reading-room-path ,'/translation/', $text-id, '.html')"/>
+                                                                <xsl:attribute name="target" select="concat($text-id, '.html')"/>
+                                                                <xsl:attribute name="title" select="concat('Open ', $text-id, '.html in the Reading Room')"/>
+                                                                <xsl:value-of select="$text-id"/>
+                                                            </a>
+                                                        </span>
+                                                        <xsl:for-each select="current-group()">
+                                                            <span class="small">
+                                                                <xsl:value-of select="' / '"/>
+                                                                <a>
+                                                                    <xsl:attribute name="href" select="concat($reading-room-path, '/translation/', m:toh/@key, '.html')"/>
+                                                                    <xsl:attribute name="target" select="concat(m:toh/@key, '.html')"/>
+                                                                    <xsl:attribute name="title" select="concat('Open ', m:toh/@key, '.html in the Reading Room')"/>
+                                                                    <xsl:value-of select="m:toh/@key"/>
+                                                                </a>
+                                                            </span>
+                                                        </xsl:for-each>
                                                     </div>
                                                     
                                                     <!-- Links -->

@@ -46,10 +46,14 @@ let $glossary-id :=
 
 (: Process the input :)
 let $update-glossary := 
-    if($form-action = ('update-glossary', 'cache-expressions')) then
+    if($form-action eq 'update-glossary') then
         update-translation:update-glossary($tei, $glossary-id)
-    else if($form-action eq 'cache-expressions-all') then
-        update-translation:cache-expressions($tei, $resource-id)
+    else if($form-action eq 'cache-locations') then
+        update-translation:cache-glossary($tei, $glossary-id)
+    else if($form-action eq 'cache-locations-uncached') then
+        update-translation:cache-glossary($tei, 'uncached')
+    else if($form-action eq 'cache-locations-all') then
+        update-translation:cache-glossary($tei, ())
     else if($form-action eq 'update-entity') then
         entities:update-entity($entity-id)
     else if($form-action eq 'match-entity') then
@@ -57,11 +61,8 @@ let $update-glossary :=
     else
         ()
 
-(: Get translation data :)
-let $translation-data := glossary:translation-data($tei, $resource-id)
-
-(: Get the glossaries :)
-let $glossary-filtered := glossary:filter($translation-data, $filter, $search)
+(: Get the glossaries - applying any filters :)
+let $glossary-filtered := glossary:filter($tei, $resource-id, $filter, $search)
 
 (: Trap any input errors with max-records :)
 let $max-records := 
@@ -72,8 +73,8 @@ let $max-records :=
 
 (: Override first-record to show the updated record :)
 let $selected-glossary-index := 
-    if($glossary-filtered/m:item[@uid eq $glossary-id]) then
-        functx:index-of-node($glossary-filtered/m:item, $glossary-filtered/m:item[@uid eq $glossary-id])
+    if($glossary-filtered/m:item[@id eq $glossary-id]) then
+        functx:index-of-node($glossary-filtered/m:item, $glossary-filtered/m:item[@id eq $glossary-id])
     else 0
 
 let $first-record := 
@@ -104,11 +105,9 @@ return
                 element similar-search { request:get-parameter('similar-search', '') }
             },
             element { QName('http://read.84000.co/ns/1.0', 'text') }{
-                attribute id { $translation-data/@id },
-                element { QName('http://read.84000.co/ns/1.0', 'title') }{
-                    tei-content:title($tei)
-                },
-                $translation-data/m:source
+                attribute id { tei-content:id($tei) },
+                translation:titles($tei),
+                tei-content:source($tei, $resource-id)
             },
             element { QName('http://read.84000.co/ns/1.0', 'glossary') } {
             
@@ -118,65 +117,94 @@ return
                 attribute first-record { $first-record },
                 attribute max-records { $max-records },
                 
-                for $glossary-item in subsequence($glossary-filtered/m:item, $first-record, $max-records)
-                    let $entity := entities:entities($glossary-item/@uid)/m:entity[1]
+                let $glossary-filtered-subsequence := subsequence($glossary-filtered/m:item, $first-record, $max-records)
+                
+                (: Check if we have expressions - we may have them from an expressions filter :)
+                let $glossary-item-expressions := 
+                    if($glossary-filtered/m:item[not(m:expressions)]) then
+                        glossary:expressions($tei, $resource-id, $glossary-filtered-subsequence/@id)
+                    else ()
+                
                 return
-                    element { node-name($glossary-item) }{
-                        $glossary-item/@*,
-                        attribute active-item { $glossary-item/@uid eq $glossary-id },
-                        attribute next-gloss-id { $glossary-filtered/m:item[@uid eq $glossary-item/@uid]/following-sibling::m:item[1]/@uid },
-                        $glossary-item/node(),
-                        if(not($glossary-item/m:expressions)) then
-                            glossary:expressions($translation-data, $glossary-item/@uid)
-                        else ()
-                        ,
-                        element markdown {
-                            for $definition in $glossary-item/m:definition
-                            return 
-                                element { node-name($definition) }{
-                                    $definition/@*,
-                                    common:markdown($definition/node(), 'http://www.tei-c.org/ns/1.0')
-                                }
-                        },
-                        if($entity) then (
-                            $entity,
-                            element { QName('http://read.84000.co/ns/1.0', 'entity-glossaries') }{
-                                if($entity) then
-                                    for $matched-item in glossary:items($entity/m:instance/@id/string(), true())
-                                    return
-                                        element { node-name($matched-item) } {
-                                            $matched-item/@*,
-                                            $matched-item/node(),
-                                            entities:entities($matched-item/@uid)/m:entity[1]
-                                        }
-                                else ()
-                            }
-                        )
-                        else 
-                            element { QName('http://read.84000.co/ns/1.0', 'similar-entities') }{
+                    for $glossary-item in $glossary-filtered-subsequence
+                        let $entity := entities:entities($glossary-item/@id)/m:entity[1]
+                    return
+                        (: Copy each glossary item :)
+                        element { node-name($glossary-item) }{
+                        
+                            $glossary-item/@*,
+                            attribute active-item { $glossary-item[@id eq $glossary-id]/@id },
+                            attribute next-gloss-id { $glossary-filtered/m:item[@id eq $glossary-item/@id]/following-sibling::m:item[1]/@id },
+                            $glossary-item/node(),
                             
-                                let $similar-items := glossary:similar-items($glossary-item, $similar-search)
-                                let $entities := entities:entities($similar-items/@uid)/m:entity
-                                
-                                for $entity-id in distinct-values($entities/@xml:id)
-                                    let $entity := $entities[@xml:id eq $entity-id]
-                                    let $instances := $entity/m:instance
-                                    let $score := functx:index-of-node($similar-items, $similar-items[@uid = $instances/@id][1])
-                                    let $instances-items := glossary:items($instances/@id, true())
-                                order by $score
-                                return
-                                    element { node-name($entity) } {
-                                        $entity/@*,
-                                        $entity/node()[not(self::m:instance)],
-                                        for $instance in $instances
-                                        return
-                                            element { node-name($instance) } {
-                                                $instance/@*,
-                                                $instances-items[@uid = $instance/@id]
-                                            }
+                            (: Add glossary expressions :)
+                            (: They may already be included if we did an expressions filter :)
+                            if(not($glossary-item/m:expressions)) then
+                                element { node-name($glossary-item-expressions) }{
+                                    $glossary-item-expressions/@*,
+                                    $glossary-item-expressions/*[descendant::xhtml:*[@data-glossary-id eq $glossary-item/@id]]
+                                }
+                            else (),
+                            
+                            (: Add glossary cache :)
+                            if($tei[m:glossary-cache]) then
+                                element cache {
+                                    $tei/m:glossary-cache/m:gloss[@id eq $glossary-item/@id]/m:location
+                                }
+                            else(),
+                            
+                            (: Add markdorn of the definition :)
+                            element markdown {
+                                for $definition in $glossary-item/m:definition
+                                return 
+                                    element { node-name($definition) }{
+                                        $definition/@*,
+                                        common:markdown($definition/node(), 'http://www.tei-c.org/ns/1.0')
                                     }
-                            }
-                    }
+                            },
+                            
+                            (: Add the shared entity :)
+                            if($entity) then (
+                                $entity,
+                                element { QName('http://read.84000.co/ns/1.0', 'entity-glossaries') }{
+                                    if($entity) then
+                                        for $matched-item in glossary:items($entity/m:instance/@id/string(), true())
+                                        return
+                                            element { node-name($matched-item) } {
+                                                $matched-item/@*,
+                                                $matched-item/node(),
+                                                entities:entities($matched-item/@id)/m:entity[1]
+                                            }
+                                    else ()
+                                }
+                            )
+                            
+                            (: Or look for possible matches :)
+                            else 
+                                element { QName('http://read.84000.co/ns/1.0', 'similar-entities') }{
+                                
+                                    let $similar-items := glossary:similar-items($glossary-item, $similar-search)
+                                    let $entities := entities:entities($similar-items/@id)/m:entity
+                                    
+                                    for $entity-id in distinct-values($entities/@id)
+                                        let $entity := $entities[@id eq $entity-id]
+                                        let $instances := $entity/m:instance
+                                        let $score := functx:index-of-node($similar-items, $similar-items[@id = $instances/@id][1])
+                                        let $instances-items := glossary:items($instances/@id, true())
+                                    order by $score
+                                    return
+                                        element { node-name($entity) } {
+                                            $entity/@*,
+                                            $entity/node()[not(self::m:instance)],
+                                            for $instance in $instances
+                                            return
+                                                element { node-name($instance) } {
+                                                    $instance/@*,
+                                                    $instances-items[@id = $instance/@id]
+                                                }
+                                        }
+                                }
+                        }
             },
             $update-glossary
         )

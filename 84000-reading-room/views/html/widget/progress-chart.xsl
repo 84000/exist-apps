@@ -3,8 +3,6 @@
     
     <xsl:import href="charts.xsl"/>
     <xsl:import href="../website-page.xsl"/>
-    <xsl:import href="../../../xslt/lang.xsl"/>
-    <xsl:import href="../../../xslt/functions.xsl"/>
     
     <xsl:template match="/m:response">
         

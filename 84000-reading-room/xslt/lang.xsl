@@ -1,31 +1,46 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:functx="http://www.functx.com" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" xmlns:pkg="http://expath.org/ns/pkg" xmlns:xhtml="http://www.w3.org/1999/xhtml" version="2.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:functx="http://www.functx.com" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" xmlns:pkg="http://expath.org/ns/pkg" xmlns:xhtml="http://www.w3.org/1999/xhtml" version="3.0" exclude-result-prefixes="#all">
     
     <xsl:variable name="response-lang" select="/m:response/@lang"/>
+    <xsl:variable name="response-model-type" select="/m:response/@model-type"/>
     <xsl:variable name="replace-text" select="/m:response/m:replace-text/m:value"/>
-    <xsl:variable name="text-items" select="doc(concat(/m:response/@app-config, '/', 'texts.', if($response-lang = ('en', 'zh')) then $response-lang else 'en', '.xml'))//m:item"/>
+    <!--<xsl:key name="text-items" match="/m:response/m:lang-items/m:item" use="@key"/>-->
+    <xsl:variable name="text-items" select="/m:response/m:lang-items/m:item"/>
     
     <xsl:template name="text">
-        <xsl:param name="global-key" as="xs:string*" required="yes"/>
-        <xsl:variable name="text-item" select="$text-items[@key = $global-key][1]/node()"/>
+        
+        <xsl:param name="global-key" as="xs:string" required="yes"/>
+        
+        <!--<xsl:variable name="text-item" select="key('text-items', $global-key)[1]"/>-->
+        <xsl:variable name="text-item" select="$text-items[@key eq $global-key][1]"/>
+        
         <xsl:choose>
+            
             <xsl:when test="$text-item">
                 <xsl:call-template name="normalize-nodes-space">
                     <xsl:with-param name="nodes" select="$text-item"/>
                 </xsl:call-template>
             </xsl:when>
+            
             <xsl:otherwise>
-                <xsl:value-of select="''"/>
+                <xsl:variable name="local-key" select="tokenize($global-key, '\.')"/>
+                <xsl:variable name="common-key" select="string-join(('about', 'common', $local-key[last()]), '.')"/>
+                <!--<xsl:variable name="text-item" select="key('text-items', $common-key)[1]"/>-->
+                <xsl:variable name="text-item" select="$text-items[@key eq $common-key][1]"/>
+                <xsl:if test="$text-item">
+                    <xsl:call-template name="normalize-nodes-space">
+                        <xsl:with-param name="nodes" select="$text-item"/>
+                    </xsl:call-template>
+                </xsl:if>
             </xsl:otherwise>
+            
         </xsl:choose>
     </xsl:template>
     
     <xsl:template name="local-text">
         <xsl:param name="local-key" as="xs:string" required="yes"/>
-        <xsl:variable name="common-key" select="string-join(('about', 'common', $local-key), '.')"/>
-        <xsl:variable name="global-key" select="string-join((tokenize(/m:response/@model-type, '/'), $local-key), '.')"/>
         <xsl:call-template name="text">
-            <xsl:with-param name="global-key" select="($global-key, $common-key)"/>
+            <xsl:with-param name="global-key" select="string-join((tokenize($response-model-type, '/'), $local-key), '.')"/>
         </xsl:call-template>
     </xsl:template>
     
@@ -40,7 +55,7 @@
         <xsl:if test="$local-text gt ''">
             <xsl:choose>
                 <xsl:when test="$node-name gt ''">
-                    <xsl:element name="{ $node-name }">
+                    <xsl:element name="{ $node-name }" namespace="http://www.w3.org/1999/xhtml">
                         <xsl:value-of select="$local-text"/>
                     </xsl:element>
                 </xsl:when>
@@ -61,7 +76,7 @@
                     </xsl:call-template>
                 </xsl:when>
                 <xsl:otherwise>
-                    <xsl:element name="{ node-name(.) }">
+                    <xsl:element name="{ local-name(.) }" namespace="http://www.w3.org/1999/xhtml">
                         <xsl:for-each select="@*">
                             <xsl:attribute name="{ name(.) }">
                                 <xsl:call-template name="replace-text">

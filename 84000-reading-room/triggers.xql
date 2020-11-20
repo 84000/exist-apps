@@ -5,8 +5,10 @@ declare namespace xmldb="http://exist-db.org/xquery/xmldb";
 declare namespace tei="http://www.tei-c.org/ns/1.0";
 declare namespace m="http://read.84000.co/ns/1.0";
 
-import module namespace tei-content="http://read.84000.co/tei-content" at "modules/tei-content.xql";
 import module namespace common="http://read.84000.co/common" at "modules/common.xql";
+import module namespace tei-content="http://read.84000.co/tei-content" at "modules/tei-content.xql";
+import module namespace translation="http://read.84000.co/translation" at "modules/translation.xql";
+import module namespace functx = "http://www.functx.com";
 
 declare function trigger:after-update-document($uri as xs:anyURI) {
     
@@ -16,78 +18,117 @@ declare function trigger:after-update-document($uri as xs:anyURI) {
 };
 
 declare function local:after-update-document-functions($doc) {
+
+    if($doc[tei:TEI/tei:teiHeader/tei:fileDesc[@type="section"]/tei:publicationStmt/tei:idno[@xml:id]]) then (
     
-    if($doc[tei:TEI/tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:idno[@xml:id]]) then (
-        (:local:footnote-indexes($doc),:)
-        local:glossary-types($doc),
-        local:glossary-bo($doc, false()),
-        local:glossary-remove-term-ids($doc),
         local:permanent-ids($doc),
         local:temporary-ids($doc),
         local:last-updated($doc)
+        
+    )
+    else if($doc[tei:TEI/tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:idno[@xml:id]]) then (
+        
+        local:glossary-bo($doc, false()),
+        local:permanent-ids($doc),
+        local:temporary-ids($doc),
+        local:refresh-cache($doc),
+        local:last-updated($doc)
+        
     )
     else ()
 };
 
-declare function local:footnote-indexes($doc) {
-
-    (# exist:batch-transaction #) {
+declare function local:refresh-cache($doc) {
     
-        (: Add indexes to footnotes :)
-        (: This supports stable numbering across all sections :)
-        let $end-notes := $doc/tei:TEI/tei:text//tei:note[@place eq 'end']
-        let $count-notes := count($end-notes)
-        let $max-note-index := max($end-notes[@index]/@index ! common:integer(.))
-        let $count-distinct-note-indexes := count(distinct-values($end-notes/@index))
-        let $count-notes-missing-index := count($end-notes[not(@index) or @index eq ''])
-        
-        where $count-notes-missing-index > 0
-            or $count-notes ne $count-distinct-note-indexes
-            or $count-notes ne $max-note-index
-        return 
-            for $note at $index in $end-notes
-            where $note[not(@index ! xs:integer(.) eq $index)]
-            return
-                update insert attribute index { $index } into $note
-    }
-    
-};
-
-declare function local:chapter-indexes($doc) {
-    (: NOT IN USE :)
-    (: Add indexes to chapters :)
-    (: This supports internal navigation of chapters :)
-    for $chapter at $index in $doc/tei:TEI/tei:text//*[@type='translation']/*[@type='chapter']
+    (: Cache notes :)
+    let $notes-cache-ids := $doc/tei:TEI/m:notes-cache/m:end-notes/@id/string()
     return
-        update insert attribute index {$index} into $chapter
-        
+    if($doc/tei:TEI/tei:text//tei:note[@place eq 'end'][not(@xml:id/string() = $notes-cache-ids)]) then
+        common:update('trigger-notes-cache', $doc/tei:TEI/m:notes-cache, translation:notes-cache($doc/tei:TEI, true()), $doc/tei:TEI, $doc/tei:TEI/m:notes-cache/preceding-sibling::*[1])
+    else (),
+    
+    (: Cache milestones :)
+    let $milestone-cache-ids := $doc/tei:TEI/m:milestones-cache/m:milestone/@id/string()
+    return
+    if($doc/tei:TEI/tei:text//tei:milestone[not(@xml:id/string() = $milestone-cache-ids)]) then
+        common:update('trigger-milestones-cache', $doc/tei:TEI/m:milestones-cache, translation:milestones-cache($doc/tei:TEI, true()), $doc/tei:TEI, $doc/tei:TEI/m:milestones-cache/preceding-sibling::*[1])
+    else (),
+    
+    (: Cache folios :)
+    let $folios-cache-ids := $doc/tei:TEI/m:folios-cache/m:folio-ref/@id/string()
+    return
+    if($doc/tei:TEI/tei:text/tei:body//tei:ref[not(@xml:id/string() = $folios-cache-ids)]) then
+        common:update('trigger-cache-folio-refs', $doc/tei:TEI/m:folios-cache, translation:folios-cache($doc/tei:TEI, true()), $doc/tei:TEI, $doc/tei:TEI/m:folios-cache/preceding-sibling::*[1])
+    else (),
+    
+    (: Cache glossary :)
+    let $glossary-cache-ids := $doc/tei:TEI/m:glossary-cache/m:gloss/@id/string()
+    return
+    if($doc/tei:TEI//tei:back//tei:list[@type eq 'glossary']/tei:item/tei:gloss[not(@xml:id/string() = $glossary-cache-ids)]) then
+        common:update('trigger-cache-glossary', $doc/tei:TEI/m:glossary-cache, translation:glossary-cache($doc/tei:TEI, 'none'), $doc/tei:TEI, $doc/tei:TEI/m:glossary-cache/preceding-sibling::*[1])
+    else ()
+    
 };
 
 declare function local:permanent-ids($doc) {
-    (: Add ids to linkable nodes :)
-    (: This enables persistent bookmarks :)
-    let $translation-id := tei-content:id($doc/tei:TEI)
-    let $max-id := max($doc//@xml:id ! substring-after(., $translation-id) ! substring(., 2) ! common:integer(.))
-    for $element at $index in 
-        $doc//tei:milestone[(not(@xml:id) or @xml:id='')]
-        | $doc//tei:text//tei:note[not(@xml:id) or @xml:id eq '']
-        | $doc//*[@type="notes"]//tei:item[not(@xml:id) or @xml:id eq '']
-        | $doc//*[@type='listBibl']//tei:bibl[not(@xml:id) or @xml:id eq '']
-        | $doc//*[@type='glossary']//tei:gloss[not(@xml:id) or @xml:id eq '']
-        (: Populate any empty @xml:id :)
-        | $doc//*[@xml:id eq '']
-    let $new-id := concat($translation-id, '-', xs:string(sum(($max-id, $index))))
-    return
-        update insert attribute xml:id { $new-id } into $element
 
+    (: Add xml:ids to linkable nodes :)
+    (: This enables persistent bookmarks :)
+    
+    let $translation-id := tei-content:id($doc/tei:TEI)
+    where $translation-id
+    return (
+        
+        (: Add any missing @xml:ids :)
+        let $elements-missing-id :=
+            $doc//tei:milestone[(not(@xml:id) or @xml:id='')]
+            | $doc//tei:text//tei:note[not(@xml:id) or @xml:id eq '']
+            | $doc//tei:text//tei:ref[@type = ('folio', 'volume')][not(@xml:id) or @xml:id eq '']
+            | $doc//*[@type="notes"]//tei:item[not(@xml:id) or @xml:id eq '']
+            | $doc//*[@type='listBibl']//tei:bibl[not(@xml:id) or @xml:id eq '']
+            | $doc//*[@type='glossary']//tei:gloss[not(@xml:id) or @xml:id eq '']
+            (: Populate any empty @xml:id :)
+            | $doc//*[@xml:id eq '']
+        
+        where $elements-missing-id
+            let $max-id := max($doc//@xml:id ! substring-after(., $translation-id) ! substring(., 2) ! common:integer(.))
+            for $element at $index in $elements-missing-id
+                let $new-id := concat($translation-id, '-', xs:string(sum(($max-id, $index))))
+            return
+                update insert attribute xml:id { $new-id } into $element
+        ,
+        
+        (: If any parts are missing a @xml:id then re-calculate all :)
+        let $part-missing-id := $doc//tei:text//tei:div[@type][not(@xml:id) or @xml:id eq '']
+        where $part-missing-id
+            for $part in $doc//tei:text//tei:div[@type]
+            
+            (: Get the base type - except for translation :)
+            let $base-type := $part/ancestor::tei:div[not(@type eq 'translation')][last()]/@type
+            
+            (: Get the index of this part in each ancestor part :)
+            let $part-indexes := 
+                for $ancestor-or-self in $part/ancestor-or-self::tei:div[@type = ('section', 'chapter', 'prologue', 'homage', 'colophon')]
+                return (
+                    if($ancestor-or-self[@prefix]) then $ancestor-or-self/@prefix
+                    else if($ancestor-or-self/@type eq 'prologue') then if ($base-type) then 'p' else ()
+                    else if($ancestor-or-self/@type eq 'homage') then if ($base-type) then 'h' else ()
+                    else if($ancestor-or-self/@type eq 'colophon') then if ($base-type) then 'c' else ()
+                    else count($ancestor-or-self/preceding-sibling::tei:div[@type = ('section', 'chapter')]) + 1
+                )
+            
+            (: Join the elements into an id :)
+            let $part-id := string-join(($translation-id, ($base-type, $part/@type)[1], $part/@xml:lang, $part-indexes), '-')
+            return
+                update insert attribute xml:id { $part-id } into $part
+    )
 };
 
 declare function local:temporary-ids($doc) {
     (: Add temporary ids to searchable nodes with no id :)
     (: This allows the search to link through to this block of text :)
     (: These only need to persist for a search/find operation :)
-    let $max-id := max($doc//@tid ! common:integer(.))
-    for $element at $index in 
+    let $elements-missing-ids := 
         $doc//tei:text//tei:p[(not(@tid) or @tid='')]
         | $doc//tei:text//tei:head[(not(@tid) or @tid='')]
         | $doc//tei:text//tei:lg[(not(@tid) or @tid='')]
@@ -95,10 +136,13 @@ declare function local:temporary-ids($doc) {
         | $doc//tei:text//tei:trailer[(not(@tid) or @tid='')]
         | $doc//tei:front//tei:list/tei:head[(not(@tid) or @tid='')]
         | $doc//tei:body//tei:list/tei:head[(not(@tid) or @tid='')]
-    let $new-id := sum(($max-id, $index))
-    return
-        update insert attribute tid { $new-id } into $element
-
+    
+    where $elements-missing-ids
+        let $max-id := max($doc//@tid ! common:integer(.))
+        for $element at $index in $elements-missing-ids
+            let $new-id := sum(($max-id, $index))
+        return
+            update insert attribute tid { $new-id } into $element
 };
 
 declare function local:remove-temporary-ids($doc) {
@@ -106,57 +150,6 @@ declare function local:remove-temporary-ids($doc) {
     for $tid in $doc//tei:text//@tid
     return
         update delete $tid
-
-};
-
-declare function local:glossary-types($doc) {
-    (: Add types to glossary items :)
-    (: Converts old format to new :)
-    let $translation-id := tei-content:id($doc/tei:TEI)
-    for $glossary in $doc//tei:div[@type='glossary']//tei:gloss[not(@type) or not(@type = ('term', 'person', 'place', 'text'))]
-        let $glossary-id := $glossary/tei:term[@xml:id][1]/@xml:id
-        let $glossary-id-end := substring-after($glossary-id, $translation-id)
-        let $short-type := substring($glossary-id-end, 2, 2)
-        let $type := 
-            if($short-type eq 'te') then
-                'term'
-            else if($short-type eq 'pe') then
-                'person'
-            else if($short-type eq 'pl') then
-                'place'
-            else if($short-type eq 'tx') then
-                'text'
-            else
-                ''
-    where $type
-    return
-        update insert attribute type { $type } into $glossary
-        
-};
-
-declare function local:glossary-remove-term-ids($doc) {
-    (: Remove legacy ids :)
-    for $glossary-term-id in $doc//tei:div[@type='glossary']//tei:gloss[@type = ('term', 'person', 'place', 'text')]/tei:term/@xml:id
-    return
-        update delete $glossary-term-id
-
-};
-
-declare function local:glossary-remove-gloss-ids($doc) {
-    (: DO NOT USE ON LIVE TEXTS! :)
-    (: Remove ids :)
-    for $glossary-id in $doc//tei:div[@type='glossary']//tei:gloss/@xml:id
-    return
-        update delete $glossary-id
-
-};
-
-declare function local:section-remove-uids($doc) {
-    (: Remove legacy ids :)
-    for $uid in $doc//tei:text//@uid
-    return
-        update delete $uid
-
 };
 
 declare function local:last-updated($doc) {
@@ -195,16 +188,16 @@ declare function local:glossary-bo($doc, $do-all as xs:boolean) {
     
     for $gloss in $glosses
     return (
-    
+        (: Delete existing :)
         update delete $gloss/tei:term[@xml:lang = 'bo'],
         
+        (: Insert new :)
         for $bo-ltn-term in $gloss/tei:term[@xml:lang = 'Bo-Ltn'][normalize-space(text())]
             let $bo-term := 
-                <term xmlns="http://www.tei-c.org/ns/1.0" xml:lang="bo">
-                { 
-                    common:bo-term($bo-ltn-term/text()) 
+                element { QName('http://www.tei-c.org/ns/1.0', 'term') } {
+                    attribute xml:lang { 'bo' },
+                    text { common:bo-term($bo-ltn-term/text()) } 
                 }
-                </term>
             
         return
             update insert $bo-term following $bo-ltn-term

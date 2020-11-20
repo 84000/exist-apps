@@ -102,7 +102,7 @@ declare function section:child-sections($tei as element(tei:TEI), $include-text-
                         attribute status { tei-content:translation-status($tei) },
                         attribute status-group { tei-content:translation-status-group($tei) },
                         attribute uri { base-uri($tei) },
-                        attribute canonical-html { translation:canonical-html($resource-id) },
+                        attribute canonical-html { translation:canonical-html($resource-id, '') },
                         attribute last-updated { tei-content:last-updated($tei//tei:fileDesc) },
                         tei-content:source($tei, $resource-id),
                         translation:toh($tei, $resource-id),
@@ -297,32 +297,3 @@ declare function section:texts($section-id as xs:string, $published-only as xs:b
             else
                 section:child-sections($tei, true(), 'children')
 };
-(:
-declare function section:filter-texts($section as element(m:section), $filters as element(m:filter)*) as element(m:section) {
-    element { node-name($section) }{
-        $section/@*,
-        for $node in $section/*
-        return
-            if( local-name($node) eq 'texts' ) then
-                element { node-name($node) }{
-                    $section/@*,
-                    $filters,
-                    for $text in $node/m:text
-                    let $source := $text/m:source
-                    let $text-parent-section := $section/descendant-or-self::m:section[@id eq $source/@parent-id]
-                    let $filters-section-ids := $filters[@section-id]/@section-id
-                    return
-                        element { node-name($text) }{
-                            $text/@*,
-                            attribute filter-match {(
-                                (not($filters[@max-pages]) or $source/m:location/@count-pages ! xs:integer(.) le $filters[@max-pages]/@max-pages ! xs:integer(.))
-                                and (not($filters[@section-id]) or $text-parent-section[ancestor-or-self::m:section/@id = $filters-section-ids])
-                                and (not($filters[@text-id]) or $filters[@text-id = $text/@id])
-                            )},
-                            $text/*
-                        }
-                }
-            else
-                $node
-    }
-};:)

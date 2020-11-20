@@ -48,7 +48,7 @@ declare function translations:summary($work as xs:string) as element() {
     
     let $translated-statuses := $tei-content:text-statuses/m:status[@group = ('translated')]/@status-id
     let $in-translation-statuses := $tei-content:text-statuses/m:status[@group = ('in-translation')]/@status-id
-    let $all-statuses := $tei-content:text-statuses/m:status[not(@status-id = ('0'))]/@status-id
+    let $all-statuses := $tei-content:text-statuses/m:status[@group = ('published','translated', 'in-translation')]/@status-id
     
     let $fileDescs := $tei/tei:teiHeader/tei:fileDesc
     let $published-fileDesc := $fileDescs[tei:publicationStmt/@status = $tei-content:published-status-ids]
@@ -404,7 +404,7 @@ declare function translations:filtered-text($tei as element(tei:TEI), $toh-key a
             attribute id { $text-id }, 
             attribute uri { base-uri($tei) },
             attribute file-name { util:unescape-uri(replace(base-uri($tei), ".+/(.+)$", "$1"), 'UTF-8') },
-            attribute page-url { translation:canonical-html($toh/@key) },
+            attribute page-url { translation:canonical-html($toh/@key, '') },
             attribute status { tei-content:translation-status($tei) },
             attribute status-group { tei-content:translation-status-group($tei) },
             $toh,

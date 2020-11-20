@@ -9,6 +9,7 @@ declare namespace file="http://exist-db.org/xquery/file";
 import module namespace common = "http://read.84000.co/common" at "common.xql";
 import module namespace tei-content="http://read.84000.co/tei-content" at "tei-content.xql";
 import module namespace translation = "http://read.84000.co/translation" at "translation.xql";
+import module namespace glossary = "http://read.84000.co/glossary" at "glossary.xql";
 import module namespace translations = "http://read.84000.co/translations" at "translations.xql";
 import module namespace download = "http://read.84000.co/download" at "download.xql";
 import module namespace deploy="http://read.84000.co/deploy" at "deploy.xql";
@@ -128,7 +129,7 @@ declare function store:create($file-name as xs:string) as element() {
     let $tei-version := tei-content:version-str($tei)
     
     (: Select which file types to process :)
-    let $file-types := ('pdf', 'epub', 'rdf')
+    let $file-types := ('html', 'pdf', 'epub', 'rdf')
     let $file-types := 
         (: See if the file extension is a file type :)
         if($file-extension = $file-types) then
@@ -164,7 +165,20 @@ declare function store:create($file-name as xs:string) as element() {
                 if(compare($store-version, $tei-version) ne 0)then
                 
                     (: generate and store the latest version :)
-                    if($file-type eq 'pdf') then
+                    if($file-type eq 'html') then
+                        (:'Store new html':)
+                        let $file-path := concat($common:data-path, '/html/', $toh-key, '.html')
+                        return 
+                            (:element debug {
+                                attribute tei-version { $tei-version },
+                                attribute store-version { $store-version },
+                                attribute toh-key { $toh-key },
+                                attribute file-type { $file-type },
+                                attribute file-path { $file-path },:)
+                                store:store-new-html($file-path, $tei-version)
+                             (:}:)
+                    
+                    else if($file-type eq 'pdf') then
                         (:'Store new pdf':)
                         let $file-path := concat($common:data-path, '/pdf/', $toh-key, '.pdf')
                         return
@@ -228,6 +242,47 @@ declare function store:stored-version-str($resource-id as xs:string, $file-exten
     
 };
 
+declare function store:store-new-html($file-path as xs:string, $version as xs:string) as element() {
+    
+    let $file-path-tokenized := tokenize($file-path, '/')
+    let $file-collection := string-join(subsequence($file-path-tokenized, 1, count($file-path-tokenized) - 1), '/')
+    let $file-name := lower-case($file-path-tokenized[last()])
+    let $resource-id := substring-before($file-name, '.html')
+    let $tei := tei-content:tei($resource-id, 'translation')
+    
+    (: Get the source so we can extract the Toh :)
+    let $source := tei-content:source($tei, $resource-id)
+    
+    (: Get the status so we can evaluate the render status :)
+    let $status-id := tei-content:translation-status($tei)
+    
+    return
+        if($common:environment/m:render-translation/m:status[@status-id = $status-id]) then
+            
+            let $response-data := glossary:translation-data($tei, $resource-id, ())
+            
+            let $translation-html := 
+                transform:transform(
+                    $response-data,
+                    doc(concat($common:app-path, "/views/html/translation.xsl")), 
+                    <parameters/>
+                )
+            
+            let $store-file := xmldb:store($file-collection, $file-name, $translation-html, 'text/html')
+            let $set-file-group:= sm:chgrp(xs:anyURI($file-path), $store:file-group)
+            let $set-file-permissions:= sm:chmod(xs:anyURI($file-path), $store:file-permissions)
+            let $store-version-number := store:store-version-str($file-collection, $file-name, $version)
+            return
+                <stored xmlns="http://read.84000.co/ns/1.0">{ concat('New version saved as ', $file-path) }</stored>
+        
+        else
+            <error xmlns="http://read.84000.co/ns/1.0">
+                <message>{ concat('HTML generation failed: (', $file-path,'). This text is not ready for publication.') }</message>
+            </error>
+
+
+};
+
 declare function store:store-new-pdf($file-path as xs:string, $version as xs:string) as element() {
     
     let $pdf-config := $store:conf/m:pdfs
@@ -239,8 +294,36 @@ declare function store:store-new-pdf($file-path as xs:string, $version as xs:str
             let $file-collection := string-join(subsequence($file-path-tokenized, 1, count($file-path-tokenized) - 1), '/')
             let $file-name := lower-case($file-path-tokenized[last()])
             let $resource-id := substring-before($file-name, '.pdf')
-            let $source-url := concat($pdf-config/m:html-source-url, '/translation/', $resource-id, '.html')
-            let $request-url := concat($pdf-config/m:service-endpoint, '?license=', $pdf-config/m:license-key, '&amp;url=', $source-url)
+            
+            let $request-url := concat(
+                $pdf-config/m:service-endpoint, 
+                '?license=', $pdf-config/m:license-key, 
+                '&amp;url=', $pdf-config/m:html-source-url, '/translation/', $resource-id, '.html',
+                encode-for-uri('?view-mode=pdf')
+            )
+            
+            (: Compile a series of urls to pass to the pdf service :)
+            (: NOTE! Update the service-endpoint to batch_api
+            let $source-urls := (
+                concat($pdf-config/m:html-source-url, '/translation/', $resource-id, '.html', '?view-mode=pdf&amp;part=front'),
+                concat($pdf-config/m:html-source-url, '/translation/', $resource-id, '.html', '?view-mode=pdf&amp;part=body'),
+                concat($pdf-config/m:html-source-url, '/translation/', $resource-id, '.html', '?view-mode=pdf&amp;part=back')
+            )
+            
+            let $request-url := concat(
+                $pdf-config/m:service-endpoint, 
+                '?license=', $pdf-config/m:license-key, 
+                '&amp;urls=', string-join($source-urls ! encode-for-uri(.), ';'),
+                '&amp;merge=true',
+                
+                This needs a callback url to get the created file from the service provider
+                '&amp;callback=', $common:environment/m:url[@id eq 'utilities'], '/translations.html?store=', , $resource-id, '.pdf'
+            )
+            
+            Set the request as pending...
+            If the request is pending and this gets called then check request:get-parameter('download', '') for the dornload url
+            NOTE: this solution can't be tested on a private domain
+            :)
             
             let $download := store:http-get-and-store($request-url, $file-collection, $file-name)
             
@@ -424,7 +507,7 @@ declare function store:store-new-rdf($file-path as xs:string, $version as xs:str
 
 declare function store:http-download($file-url as xs:string, $collection as xs:string, $file-name as xs:string) as item()* {
 
-    let $request := <hc:request href="{$file-url}" method="GET"/>
+    let $request := <hc:request href="{ $file-url }" method="GET"/>
     let $response := hc:send-request($request)
     let $head := $response[1]
     let $body := $response[2]
@@ -439,14 +522,14 @@ declare function store:http-download($file-url as xs:string, $collection as xs:s
             let $mime-type := 
                 if (contains(lower-case($file-url), '.xml') and $media-type = 'text/plain') then
                     'application/xml'
-                else 
+                else
                     $media-type
             
             (: if the file is XML and the payload is binary, we need convert the binary to string :)
             let $content-transfer-encoding := $head/hc:body[@name = 'content-transfer-encoding']/@value
             
             let $file := 
-                if (contains(lower-case($file-url), '.xml') and $content-transfer-encoding = 'binary') then 
+                if ($content-transfer-encoding = 'binary' and contains(lower-case($file-url), '.xml')) then 
                     util:binary-to-string($body) 
                 else if(contains(lower-case($file-url), '.tei')) then
                     document {
