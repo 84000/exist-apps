@@ -21,9 +21,7 @@ let $resource-id := request:get-parameter('resource-id', '')
 let $resource-suffix := request:get-parameter('resource-suffix', '')
 let $part := request:get-parameter('part', 'none')
 let $view-mode := common:view-mode()
-let $archive-path := request:get-parameter('archive-path', '')
-
-let $part := if($view-mode = ('editor', 'annotation') or $resource-suffix = ('ebook', 'txt')) then 'all' else $part
+let $archive-path := request:get-parameter('archive-path', ())
 
 let $tei := tei-content:tei($resource-id, 'translation', $archive-path)
 
@@ -37,6 +35,23 @@ return
         
         (: Get the source so we can extract the Toh :)
         let $source := tei-content:source($tei, $resource-id)
+        
+        
+        (: 
+            Include all parts
+            - if view-mode is editor / annotation
+            - if it's ebook or txt output
+            - if it's a short text
+        :)
+        let $short-text-page-count := 50
+        let $part-root := 
+            if($view-mode = ('editor', 'annotation') or $resource-suffix = ('ebook', 'txt') or $source/m:location/@count-pages ! xs:integer(.) le $short-text-page-count) then 
+                'all'
+            else 
+                translation:part-root($tei, $part)
+        
+        let $canonical-id := $archive-path
+        (:let $canonical-id := string-join(($archive-path, $part-root), '-') :)
         
         return
             
@@ -58,8 +73,8 @@ return
                         attribute id { tei-content:id($tei) },
                         attribute status { tei-content:translation-status($tei) },
                         attribute status-group { tei-content:translation-status-group($tei) },
-                        attribute relative-html { translation:relative-html($source/@key) },
-                        attribute canonical-html { translation:canonical-html($source/@key, $archive-path) },
+                        attribute relative-html { translation:relative-html($source/@key, $canonical-id) },
+                        attribute canonical-html { translation:canonical-html($source/@key, $canonical-id) },
                         
                         (: Data for rdf and json :)
                         if($resource-suffix = ('rdf', 'json')) then (
@@ -80,21 +95,15 @@ return
                             translation:publication($tei),
                             tei-content:ancestors($tei, $source/@key, 1),
                             translation:downloads($tei, $source/@key, 'any-version'),
-                            translation:parts($tei, $part)
+                            translation:parts($tei, $part-root)
                         ),
                         
                         (: Include caches :)
                         translation:notes-cache($tei, false()),
                         translation:milestones-cache($tei, false()),
                         translation:folios-cache($tei, false()),
-                        translation:glossary-cache($tei, ())(:,
+                        translation:glossary-cache($tei, ())
                         
-                        (\: Include folios data if it's txt :\)
-                        if($resource-suffix = ('txt')) then
-                            element { QName('http://read.84000.co/ns/1.0', 'folio-refs')} {
-                                translation:folio-refs-sorted($tei, $resource-id)
-                            }
-                        else ():)
                     },
                     
                     (: Calculated strings :)
@@ -105,11 +114,11 @@ return
                         },
                         element value {
                             attribute key { '#LinkToSelf' },
-                            text { translation:local-html($source/@key) }
+                            text { translation:local-html($source/@key, $canonical-id) }
                         },
                         element value {
                             attribute key { '#canonicalHTML' },
-                            text { translation:canonical-html($source/@key, $archive-path) }
+                            text { translation:canonical-html($source/@key, $canonical-id) }
                         }
                     }
                 )

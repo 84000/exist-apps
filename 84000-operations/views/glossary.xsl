@@ -1442,7 +1442,8 @@
             <xsl:if test="not($cache-location)">
                 <xsl:attribute name="class" select="'item editor-mode translation rw-full-width small pad flagged'"/>
             </xsl:if>
-            <xsl:apply-templates select="xhtml:div"/>
+            
+            <xsl:apply-templates select="xhtml:*"/>
             
         </div>
     </xsl:template>

@@ -74,7 +74,12 @@
     
     <xsl:function name="common:normalize-bo">
         <xsl:param name="bo-string" as="xs:string"/>
-        <xsl:value-of select="translate(normalize-space(concat('', translate(replace($bo-string, '་\s+$', '་'), '&#xA;', ''), '')), '', '')"/>
+        <!-- 
+            - Normalize whitespace
+            - Add a zero-length break after a beginning shad
+            - Add a she to the end
+        -->
+        <xsl:value-of select="             replace(replace(replace($bo-string, '\s+', ' '), '(།)(\S)', '$1​$2'), '་\s+$', '་')"/>                  
     </xsl:function>
     
     <xsl:function name="common:alphanumeric" as="xs:string*">
@@ -154,7 +159,7 @@
                 </xsl:if>
                 <li class="active">
                     <span>
-                        <xsl:value-of select="concat('page ', $this-block, ' of ', $count-blocks)"/>
+                        <xsl:value-of select="concat('page ', $this-block, ' of ', format-number($count-blocks, '#,###'))"/>
                     </span>
                 </li>
                 <xsl:if test="$this-block lt $count-blocks">

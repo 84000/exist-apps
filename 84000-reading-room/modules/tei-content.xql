@@ -54,7 +54,7 @@ declare function tei-content:tei($resource-id as xs:string, $resource-type as xs
     tei-content:tei($resource-id, $resource-type, '')
 };
 
-declare function tei-content:tei($resource-id as xs:string, $resource-type as xs:string, $archive-path as xs:string) as element()? {
+declare function tei-content:tei($resource-id as xs:string, $resource-type as xs:string, $archive-path as xs:string?) as element()? {
 
     (:
         This is controls the method of looking up the resource-id 

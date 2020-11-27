@@ -17,6 +17,7 @@
     
     <!-- Global variables -->
     <xsl:variable name="doc-type" select="/m:response/m:request/@doc-type"/>
+    <xsl:variable name="translation-id" select="/m:response/m:translation/@id"/>
     <xsl:variable name="toh-key" select="/m:response/m:translation/m:source/@key"/>
     <xsl:variable name="part-status" select="if(not(/m:response/m:translation//m:part[@render eq 'partial'])) then 'complete' else if(/m:response/m:translation//m:part[@render eq 'show']) then 'part' else 'empty'" as="xs:string"/>
     
@@ -34,7 +35,7 @@
     <xsl:variable name="test-glossary-items-terms" as="xs:string*" select="m:glossary-terms-to-match($test-glossary-items)"/>
     
     <!-- Use the glossary location cache unless we are testing specific glossaries -->
-    <xsl:variable name="use-glossary-location-cache" select="if($test-glossary) then false() else true()" as="xs:boolean"/>
+    <xsl:variable name="use-glossary-location-cache" select="if($view-mode eq 'glossary-editor') then false() else true()" as="xs:boolean"/>
     
     <!-- Normalize text and check if it needs glossarizing -->
     <xsl:template match="text()">
@@ -240,44 +241,53 @@
             </xsl:when>
             
             <!-- If there's a cRef then output it... -->
-            <xsl:when test="$ref[@cRef][@xml:id]">
+            <xsl:when test="$ref[@cRef]">
                 
                 <!-- Set the index -->
-                <xsl:variable name="index" select="key('folios-cache-ref', $ref/@xml:id)/@index-in-resource"/>
+                <xsl:variable name="index" select="if($ref[@xml:id]) then key('folios-cache-ref', $ref/@xml:id)/@index-in-resource else ()"/>
                 
                 <xsl:choose>
                     
-                    <!-- If it's html then add a link -->
-                    <xsl:when test="$doc-type eq 'html' and $index">
-                        
-                        <a class="ref log-click">
-                            <!-- define an anchor so we can link back to this point -->
-                            <xsl:attribute name="id" select="$ref/@xml:id"/>
-                            <xsl:attribute name="href" select="concat('/source/', $toh-key, '.html?ref-index=', $index, '#ajax-content')"/>
-                            <xsl:attribute name="data-ref" select="$ref/@cRef"/>
-                            <xsl:attribute name="data-ajax-target" select="'#popup-footer-source .data-container'"/>
-                            <xsl:value-of select="concat('[', $ref/@cRef, ']')"/>
-                        </a>
-                        
-                    </xsl:when>
-                    
-                    <xsl:when test="$doc-type eq 'epub' and $index">
-                        
-                        <span class="ref">
-                            <xsl:attribute name="data-href" select="concat('/source/', $toh-key, '.html?ref-index=', $index, '#ajax-content')"/>
-                            <xsl:value-of select="concat('[', $ref/@cRef, ']')"/>
-                        </span>
-                        
+                    <xsl:when test="$index and $doc-type = ('html', 'epub')">
+                        <xsl:choose>
+                            
+                            <!-- If it's html then add a link -->
+                            <xsl:when test="$doc-type eq 'html'">
+                                
+                                <a class="ref log-click">
+                                    <!-- define an anchor so we can link back to this point -->
+                                    <xsl:attribute name="id" select="$ref/@xml:id"/>
+                                    <xsl:attribute name="href" select="concat('/source/', $toh-key, '.html?ref-index=', $index, '#ajax-content')"/>
+                                    <xsl:attribute name="data-ref" select="$ref/@cRef"/>
+                                    <xsl:attribute name="data-ajax-target" select="'#popup-footer-source .data-container'"/>
+                                    <xsl:value-of select="concat('[', $ref/@cRef, ']')"/>
+                                </a>
+                                
+                            </xsl:when>
+                            
+                            <xsl:otherwise>
+                                
+                                <span class="ref">
+                                    <xsl:attribute name="data-href" select="concat('/source/', $toh-key, '.html?ref-index=', $index, '#ajax-content')"/>
+                                    <xsl:value-of select="concat('[', $ref/@cRef, ']')"/>
+                                </span>
+                                
+                            </xsl:otherwise>
+                            
+                        </xsl:choose>
                     </xsl:when>
                     
                     <!-- ...or just output the cRef. -->
                     <xsl:otherwise>
+                        
                         <span class="ref">
                             <xsl:value-of select="concat('[', $ref/@cRef, ']')"/>
                         </span>
+                        
                     </xsl:otherwise>
                     
                 </xsl:choose>
+                
             </xsl:when>
             
             <!-- @target designates an external (http) link -->
@@ -1050,7 +1060,7 @@
                             
                         </xsl:for-each>
                         
-                        <xsl:if test="$view-mode = ('editor', 'annotation')">
+                        <xsl:if test="$view-mode = ('editor', 'annotation', 'glossary-editor')">
                             <xsl:for-each select="$glossary-item/tei:term[@type eq 'alternative'][normalize-space(data())]">
                                 <p class="term alternative">
                                     <xsl:value-of select="normalize-space(data())"/>
@@ -1066,6 +1076,13 @@
                                 <xsl:apply-templates select="node()"/>
                             </p>
                         </xsl:for-each>
+                        
+                        <xsl:if test="$view-mode = ('glossary-editor') and $environment/m:url[@id eq 'operations']">
+                            <a target="84000-glossary-tool" class="underline small">
+                                <xsl:attribute name="href" select="concat($environment/m:url[@id eq 'operations']/text(), '/glossary.html', '?resource-id=', $translation-id, '&amp;glossary-id=', $glossary-item/@xml:id, '&amp;max-records=1')"/>
+                                <xsl:value-of select="'Open in the glossary tool'"/>
+                            </a>
+                        </xsl:if>
                         
                     </div>
                     
@@ -1083,7 +1100,7 @@
                         <h5>
                             <xsl:choose>
                                 <xsl:when test="$count-expressions gt 1">
-                                    <xsl:value-of select="concat($count-expressions, ' passages contain this term')"/>
+                                    <xsl:value-of select="concat(format-number($count-expressions, '#,###'), ' passages contain this term')"/>
                                 </xsl:when>
                                 <xsl:when test="$count-expressions eq 1">
                                     <xsl:value-of select="'1 passage contains this term'"/>
@@ -1444,6 +1461,20 @@
 
         <div class="rw">
             
+            <!-- Set id -->
+            <xsl:variable name="milestone" select="(preceding-sibling::tei:*[1][self::tei:milestone] | preceding-sibling::tei:*[2][self::tei:milestone[following-sibling::tei:*[1][self::tei:lb]]] | parent::tei:seg/preceding-sibling::tei:*[1][self::tei:milestone] | parent::tei:seg/preceding-sibling::tei:*[2][self::tei:milestone[following-sibling::tei:*[1][self::tei:lb]]])[1]"/>
+            <xsl:if test="$milestone">
+                <xsl:attribute name="id" select="$milestone/@xml:id"/>
+            </xsl:if>
+            
+            <!-- Set nearest id -->
+            <xsl:if test="$doc-type eq 'html'">
+                <xsl:variable name="nearest-milestone" select="preceding-sibling::tei:milestone[@xml:id][1]"/>
+                <xsl:if test="$nearest-milestone">
+                    <xsl:attribute name="data-nearest-id" select="$nearest-milestone/@xml:id"/>
+                </xsl:if>
+            </xsl:if>
+            
             <!-- Set the class -->
             <xsl:call-template name="class-attribute">
                 <xsl:with-param name="base-classes" as="xs:string*">
@@ -1454,16 +1485,6 @@
                     </xsl:if>
                 </xsl:with-param>
             </xsl:call-template>
-            
-            <xsl:variable name="milestone" select="(preceding-sibling::tei:*[1][self::tei:milestone] | preceding-sibling::tei:*[2][self::tei:milestone[following-sibling::tei:*[1][self::tei:lb]]] | parent::tei:seg/preceding-sibling::tei:*[1][self::tei:milestone] | parent::tei:seg/preceding-sibling::tei:*[2][self::tei:milestone[following-sibling::tei:*[1][self::tei:lb]]])[1]"/>
-            <xsl:if test="$milestone">
-                <xsl:attribute name="id" select="$milestone/@xml:id"/>
-            </xsl:if>
-            
-            <xsl:variable name="nearest-milestone" select="preceding-sibling::tei:milestone[@xml:id][1]"/>
-            <xsl:if test="$nearest-milestone">
-                <xsl:attribute name="data-nearest-id" select="$nearest-milestone/@xml:id"/>
-            </xsl:if>
             
             <!-- If there's a milestone add a gutter and put the milestone in it -->
             <xsl:if test="$milestone">
@@ -1665,7 +1686,7 @@
                                             <xsl:attribute name="href" select="concat('#', $part/@id)"/>
                                         </xsl:when>
                                         <xsl:otherwise>
-                                            <xsl:attribute name="href" select="concat('?part=', $part/@id, '#', $part/@id)"/>
+                                            <xsl:attribute name="href" select="concat('?part=', $part/@id, m:view-mode-parameter(), '#', $part/@id)"/>
                                         </xsl:otherwise>
                                     </xsl:choose>
                                     
@@ -1930,7 +1951,7 @@
                         <xsl:attribute name="href" select="concat('glossary.xhtml#', $target-element/@id)"/>
                     </xsl:when>
                     <xsl:otherwise>
-                        <xsl:attribute name="href" select="concat('?part=glossary', $mark-param, '#', $target-element/@id)"/>
+                        <xsl:attribute name="href" select="concat('?part=glossary', $mark-param, m:view-mode-parameter(), '#', $target-element/@id)"/>
                     </xsl:otherwise>
                 </xsl:choose>
             </xsl:when>
@@ -1941,7 +1962,7 @@
                         <xsl:attribute name="href" select="concat('end-notes.xhtml#end-note-', $target-element/@id)"/>
                     </xsl:when>
                     <xsl:otherwise>
-                        <xsl:attribute name="href" select="concat('?part=end-notes', $mark-param, '#end-note-', $target-element/@id)"/>
+                        <xsl:attribute name="href" select="concat('?part=end-notes', $mark-param, m:view-mode-parameter(), '#end-note-', $target-element/@id)"/>
                     </xsl:otherwise>
                 </xsl:choose>
             </xsl:when>
@@ -1952,7 +1973,7 @@
                         <xsl:attribute name="href" select="concat($target-element/@part-id, '.xhtml#', $target-element/@id)"/>
                     </xsl:when>
                     <xsl:otherwise>
-                        <xsl:attribute name="href" select="concat('?part=', $target-element/@id, $mark-param, '#', $target-element/@id)"/>
+                        <xsl:attribute name="href" select="concat('?part=', $target-element/@id, m:view-mode-parameter(), $mark-param, '#', $target-element/@id)"/>
                     </xsl:otherwise>
                 </xsl:choose>
             </xsl:when>
@@ -1963,7 +1984,7 @@
                         <xsl:attribute name="href" select="concat($target-element/@id, '.xhtml#', $target-element/@id)"/>
                     </xsl:when>
                     <xsl:otherwise>
-                        <xsl:attribute name="href" select="concat('?part=', $target-element/@id, $mark-param, '#', $target-element/@id)"/>
+                        <xsl:attribute name="href" select="concat('?part=', $target-element/@id, m:view-mode-parameter(), $mark-param, '#', $target-element/@id)"/>
                     </xsl:otherwise>
                 </xsl:choose>
             </xsl:when>
@@ -2191,7 +2212,7 @@
             </xsl:call-template>
         </xsl:variable>
         
-        <xsl:variable name="match-complete-data" select="if($text-node/parent::tei:title | parent::tei:name) then true() else false()" as="xs:boolean"/>
+        <xsl:variable name="match-complete-data" select="if($text-node/parent::tei:title | $text-node/parent::tei:name) then true() else false()" as="xs:boolean"/>
         
         <!-- Narrow down the glossary items - we don't want to scan them all -->
         <xsl:variable name="match-glossary-items" as="element(tei:gloss)*">
@@ -2211,7 +2232,6 @@
                         <xsl:variable name="glossary-cache-gloss" select="key('glossary-cache-gloss', @xml:id)"/>
                         
                         <!-- Do an initial check of the word count -->
-                        <!-- Too slow - try it with cached term length -->
                         <xsl:if test="$glossary-cache-gloss/@word-count ! xs:integer(.) le $text-word-count">
                             
                             <!-- Do an initial check to avoid too much recursion -->
@@ -2360,7 +2380,25 @@
                     <xsl:attribute name="data-match-mode" select="'matched'"/>
                     <xsl:attribute name="data-glossary-location" select="$glossary-location"/>
                     <xsl:attribute name="data-mark-id" select="$glossary-id"/>
-                    <xsl:attribute name="class" select="'glossary-link pop-up'"/>
+                    
+                    <xsl:call-template name="class-attribute">
+                        
+                        <xsl:with-param name="base-classes" as="xs:string*">
+                            
+                            <xsl:value-of select="'glossary-link'"/>
+                            
+                            <xsl:if test="not($use-glossary-location-cache)">
+                                <xsl:variable name="glossary-cache-gloss" select="key('glossary-cache-gloss', $glossary-id, $root)" as="element(m:gloss)*"/>
+                                <xsl:if test="not($glossary-cache-gloss/m:location[@id/string() eq $glossary-location])">
+                                    <xsl:value-of select="'not-cached'"/>
+                                </xsl:if>
+                            </xsl:if>
+                            
+                        </xsl:with-param>
+                        
+                        <xsl:with-param name="html-classes" select="'pop-up'"/>
+                    </xsl:call-template>
+                    
                     <xsl:value-of select="$text"/>
                 </a>
             </xsl:when>
@@ -2390,11 +2428,15 @@
             
             <!-- Default to the id of the nearest part -->
             <xsl:otherwise>
-                <xsl:value-of select="$node/ancestor::m:part[1]/@id"/>
+                <xsl:value-of select="$node/ancestor::m:part[@id][1]/@id"/>
             </xsl:otherwise>
             
         </xsl:choose>
     </xsl:template>
+    
+    <xsl:function name="m:view-mode-parameter" as="xs:string">
+        <xsl:value-of select="if($view-mode = ('editor', 'annotation', 'glossary-editor')) then concat('&amp;view-mode=', $view-mode)  else ''"/>
+    </xsl:function>
     
     <xsl:function name="m:glossary-terms-to-match" as="xs:string*">
         <xsl:param name="glossary-items" as="element(tei:gloss)*"/>

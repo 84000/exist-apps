@@ -1,18 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:functx="http://www.functx.com" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" xmlns:pkg="http://expath.org/ns/pkg" xmlns:xhtml="http://www.w3.org/1999/xhtml" version="3.0" exclude-result-prefixes="#all">
     
+    <!-- Store ref to document root for use in key() -->
+    <xsl:variable name="root" select="/"/>
+    
     <xsl:variable name="response-lang" select="/m:response/@lang"/>
     <xsl:variable name="response-model-type" select="/m:response/@model-type"/>
     <xsl:variable name="replace-text" select="/m:response/m:replace-text/m:value"/>
-    <!--<xsl:key name="text-items" match="/m:response/m:lang-items/m:item" use="@key"/>-->
-    <xsl:variable name="text-items" select="/m:response/m:lang-items/m:item"/>
+    <xsl:key name="text-items" match="/m:response/m:lang-items/m:item" use="@key"/>
+    <!--<xsl:variable name="text-items" select="/m:response/m:lang-items/m:item"/>-->
     
     <xsl:template name="text">
         
         <xsl:param name="global-key" as="xs:string" required="yes"/>
         
-        <!--<xsl:variable name="text-item" select="key('text-items', $global-key)[1]"/>-->
-        <xsl:variable name="text-item" select="$text-items[@key eq $global-key][1]"/>
+        <xsl:variable name="text-item" select="key('text-items', $global-key, $root)[1]"/>
+        <!--<xsl:variable name="text-item" select="$text-items[@key eq $global-key][1]"/>-->
         
         <xsl:choose>
             
@@ -25,8 +28,8 @@
             <xsl:otherwise>
                 <xsl:variable name="local-key" select="tokenize($global-key, '\.')"/>
                 <xsl:variable name="common-key" select="string-join(('about', 'common', $local-key[last()]), '.')"/>
-                <!--<xsl:variable name="text-item" select="key('text-items', $common-key)[1]"/>-->
-                <xsl:variable name="text-item" select="$text-items[@key eq $common-key][1]"/>
+                <xsl:variable name="text-item" select="key('text-items', $common-key, /)[1]"/>
+                <!--<xsl:variable name="text-item" select="$text-items[@key eq $common-key][1]"/>-->
                 <xsl:if test="$text-item">
                     <xsl:call-template name="normalize-nodes-space">
                         <xsl:with-param name="nodes" select="$text-item"/>

@@ -22,7 +22,7 @@
     
     <!-- language [en|zh] -->
     <xsl:variable name="lang" select="if(/m:response/@lang) then /m:response/@lang else 'en'" as="xs:string"/>
-    <!-- view-mode [editor|annotation|epub|app] -->
+    <!-- view-mode [editor|annotation|glossary-editor|ajax|epub|app] -->
     <xsl:variable name="view-mode" select="/m:response/m:request/@view-mode" as="xs:string?"/>
     
     <!-- override navigation params -->
@@ -150,7 +150,7 @@
             <meta name="twitter:card" content="summary"/>
             <meta name="twitter:image:alt" content="84000 Translating The Words of The Budda Logo"/>
             <meta name="twitter:site" content="@Translate84000"/>
-            <xsl:if test="not($view-mode = ('pdf', 'app', 'glossary-tool'))">
+            <xsl:if test="not($view-mode = ('pdf', 'app'))">
                 <script>
                     <xsl:attribute name="src" select="concat($front-end-path, '/js/84000-fe.min.js', $app-version-url-attribute)"/>
                 </script>
@@ -169,7 +169,7 @@
         <xsl:apply-templates select="$eft-footer"/>
         
         <!-- Don't add js in static mode -->
-        <xsl:if test="not($view-mode = ('pdf', 'app', 'glossary-tool'))">
+        <xsl:if test="not($view-mode = ('pdf', 'app'))">
             <xsl:if test="$ga-tracking-id and not($ga-tracking-id eq '')">
                 <!-- Global site tag (gtag.js) - Google Analytics -->
                 <script async="async">
@@ -337,7 +337,7 @@
                 <!-- Place content -->
                 <xsl:copy-of select="$content"/>
                 
-                <xsl:if test="not($view-mode  = ('pdf', 'app', 'glossary-tool'))">
+                <xsl:if test="not($view-mode  = ('pdf', 'app'))">
                     
                     <!-- Foooter components -->
                     <span id="media_test">
@@ -388,19 +388,6 @@
                 
                 <!-- Place content -->
                 <xsl:copy-of select="$content"/>
-                
-                <script type="text/javascript">
-                    function downloadJSAtOnload() {
-                        var element = document.createElement("script");
-                        element.src = "<xsl:value-of select="concat($front-end-path, '/js/84000-fe.min.js', $app-version-url-attribute)"/>";
-                        document.body.appendChild(element);
-                    }
-                    if (window.addEventListener)
-                        window.addEventListener("load", downloadJSAtOnload, false);
-                    else if (window.attachEvent)
-                        window.attachEvent("onload", downloadJSAtOnload);
-                    else window.onload = downloadJSAtOnload;
-                </script>
                 
             </body>
         </html>

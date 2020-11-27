@@ -4,8 +4,8 @@
     <xsl:import href="../../xslt/tei-to-xhtml.xsl"/>
 
     <!-- Look up environment variables -->
-    <xsl:variable name="front-end-path" select="/m:response/m:environment/m:url[@id eq 'front-end']/text()"/>
-    <xsl:variable name="render-status" select="/m:response/m:environment/m:render-translation/m:status/@status-id"/>
+    <xsl:variable name="front-end-path" select="$environment/m:url[@id eq 'front-end']/text()"/>
+    <xsl:variable name="render-status" select="$environment/m:render-translation/m:status/@status-id"/>
     
     <xsl:template match="/m:response">
         
@@ -126,7 +126,7 @@
                 </div>
             </article>
             
-            <xsl:if test="not($view-mode = ('pdf', 'app', 'glossary-tool'))">
+            <xsl:if test="not($view-mode = ('pdf', 'app'))">
                 
                 <!-- Navigation controls -->
                 <div class="nav-controls show-on-scroll-xs hidden-print">
@@ -469,36 +469,49 @@
                 
                 <xsl:attribute name="id" select="$part/@id"/>
                 
+                <xsl:if test="$doc-type eq 'html'">
+                    <xsl:attribute name="data-nearest-id" select="$part/@id"/>
+                </xsl:if>
+                
                 <xsl:call-template name="class-attribute">
+                    
                     <xsl:with-param name="base-classes" as="xs:string*">
                         
                         <xsl:value-of select="concat('part-type-', $part/@type)"/>
                         <xsl:value-of select="$css-classes"/>
                         
-                        <xsl:if test="$part[@render eq 'partial']">
-                            <xsl:value-of select="'preview partial'"/>
-                        </xsl:if>
+                    </xsl:with-param>
+                    
+                    <xsl:with-param name="html-classes">
                         
-                        <xsl:if test="$part[@render eq 'collapse']">
-                            <xsl:value-of select="'preview'"/>
-                        </xsl:if>
-                        
-                        <xsl:if test="$part[@render eq 'show']">
-                            <xsl:value-of select="'show'"/>
-                        </xsl:if>
+                        <xsl:choose>
+                            <xsl:when test="$part[@render eq 'show']">
+                                <xsl:value-of select="'show'"/>
+                            </xsl:when>
+                            <xsl:when test="$part[@render eq 'collapse'] and $view-mode = ('editor', 'annotation', 'glossary-editor')">
+                                <xsl:value-of select="'show'"/>
+                            </xsl:when>
+                            <xsl:when test="$part[@render eq 'partial']">
+                                <xsl:value-of select="'preview partial'"/>
+                            </xsl:when>
+                            <xsl:when test="$part[@render eq 'collapse']">
+                                <xsl:value-of select="'preview'"/>
+                            </xsl:when>
+                        </xsl:choose>
                         
                     </xsl:with-param>
+                    
                 </xsl:call-template>
                 
                 <!-- Add controls to expand / collapse -->
-                <xsl:if test="$part[@render = ('show', 'collapse', 'partial')]">
+                <xsl:if test="$part[@render = ('show', 'collapse', 'partial')] and not($view-mode = ('annotation'))">
                     
                     <!-- Expand -->
                     <a target="_self" title="Read this section">
                         
                         <xsl:choose>
                             <xsl:when test="$part[@render eq 'partial']">
-                                <xsl:attribute name="href" select="concat('?part=', $part/@id, '#', $part/@id)"/>
+                                <xsl:attribute name="href" select="concat('?part=', $part/@id, m:view-mode-parameter(), '#', $part/@id)"/>
                                 <xsl:attribute name="class" select="'reveal'"/>
                                 <xsl:attribute name="data-loading" select="concat('Loading: ', $part/tei:head[@type eq $part/@type][1]/data(), '...')"/>
                             </xsl:when>

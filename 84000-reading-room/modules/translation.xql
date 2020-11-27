@@ -173,17 +173,23 @@ declare function translation:filename($tei as element(tei:TEI), $resource-id as 
 
 };
 
-declare function translation:relative-html($resource-id as xs:string) as xs:string {
-    concat('/translation/', $resource-id, '.html')
+declare function translation:relative-html($resource-id as xs:string, $condition as xs:string?) as xs:string {
+
+    concat('/translation/', $resource-id, '.html', if($condition gt '') then concat('?id=', $condition) else '')
+    
 };
 
-declare function translation:local-html($resource-id as xs:string) as xs:string {
-    concat($common:environment/m:url[@id eq 'reading-romm'], translation:relative-html($resource-id))
+declare function translation:local-html($resource-id as xs:string, $condition as xs:string?) as xs:string {
+
+    concat($common:environment/m:url[@id eq 'reading-room'], translation:relative-html($resource-id, $condition))
+    
 };
 
-declare function translation:canonical-html($resource-id as xs:string, $version-string as xs:string?) as xs:string {
+declare function translation:canonical-html($resource-id as xs:string, $condition as xs:string?) as xs:string {
+
     (: This must point to the distribution server - files generated on other servers must point to the canonical page :)
-    concat('https://read.84000.co', translation:relative-html($resource-id), if($version-string gt '') then concat('?version=', $version-string) else '')
+    concat('https://read.84000.co', translation:relative-html($resource-id, $condition))
+    
 };
 
 declare function translation:downloads($tei as element(tei:TEI), $resource-id as xs:string, $include as xs:string) as element() {
@@ -225,49 +231,48 @@ declare function translation:downloads($tei as element(tei:TEI), $resource-id as
         }
 };
 
-declare function translation:parts($tei as element(tei:TEI), $show-part-id as xs:string) as element(m:part)* {
-
+declare function translation:part-root($tei as element(tei:TEI), $id as xs:string) as xs:string? {
+    
     (: 
-        $show-part-id may refer to any xml:id
-        Find out where it is in the tei in order to load the correct part
+        The $id could be
+        - a predefined part e.g. 'front' or 'summary'
+        - a chapter id (tei:div/@xml:id)
+        - an @xml:id in the text
+        - a @tid in the text
+        Return the an id for the root part
     :)
+    
+    if($id = ('all', 'front', 'body', 'back', 'summary', 'acknowledgment', 'preface', 'introduction', 'appendix', 'abbreviations', 'end-notes', 'bibliography', 'glossary')) then
+        $id
+        
+    else
+        
+        let $element := 
+            if(starts-with($id, 'node-')) then
+                $tei/tei:text//tei:*[@tid eq substring-after($id, 'node-')][1]
+            else 
+                $tei/tei:text//tei:*[@xml:id eq $id][1]
+        
+        let $root := $element/ancestor-or-self::tei:div[@type][not(@type eq 'translation')][last()]
+        
+        (: Get the root that contains/is the target :)
+        where $root
+        return ($root/@xml:id, $root/@type)[1]
+        
+};
+
+declare function translation:parts($tei as element(tei:TEI), $part-root as xs:string?) as element(m:part)* {
+    
+    (: Get all the parts of a translation :)
+    (: Convert the requested part (converted to $part-root) to a render status for each part :)
     
     (: Get the status so we can evaluate the render status :)
     let $status-id := tei-content:translation-status($tei)
-    let $text-id := tei-content:id($tei)
-    
-    (: Get the part containing the @xml:id = $show-part-id :)
-    let $target := 
-        if(not($show-part-id = ('all', 'front', 'body', 'back'))) then
-            
-            let $element := $tei/tei:text//tei:div[@type eq $show-part-id][1]
-            
-            let $element := 
-                if(not($element)) then
-                    $tei/tei:text//tei:*[@xml:id eq $show-part-id][1]
-                else 
-                    $element
-            
-            let $element := 
-                if(not($element) and starts-with($show-part-id, 'node-')) then
-                    $tei/tei:text//tei:*[@tid eq substring-after($show-part-id, 'node-')][1]
-                else 
-                    $element
-            
-            return $element
-            
-        else ()
-    
-    (: Get the part that contains/is the target :)
-    let $show-part := 
-        if($target) then
-            $target/ancestor-or-self::tei:div[@type][not(@type eq 'translation')][last()]
-        else ()
     
     return (
     
         (: Always include summary :)
-        let $render := if($show-part-id = ('all', 'front') or $show-part[@type eq 'summary']) then 'show' else 'collapse'
+        let $render := if($part-root = ('summary', 'front')) then 'show' else 'collapse'
         return
             translation:summary($tei, $render)
         ,
@@ -277,39 +282,36 @@ declare function translation:parts($tei as element(tei:TEI), $show-part-id as xs
             
             (: For each part set a default $render if it's not the requested part :)
             
-            let $render := if($show-part-id = ('all', 'front') or $show-part[@type eq 'acknowledgment']) then 'show' else 'collapse'
+            let $render := if($part-root = ('acknowledgment', 'front')) then 'show' else 'collapse'
             return
                 translation:acknowledgment($tei, $render)
             ,
-            let $render := if($show-part-id = ('all', 'front') or $show-part[@type eq 'preface']) then 'show' else 'partial'
+            let $render := if($part-root = ('preface', 'front')) then 'show' else if($part-root eq 'all') then 'collapse' else 'partial'
             return
                 translation:preface($tei, $render)
             ,
-            let $render := if($show-part-id = ('all', 'front') or $show-part[@type eq 'introduction']) then 'show' else 'partial'
+            let $render := if($part-root = ('introduction', 'front')) then 'show'  else if($part-root eq 'all') then 'collapse' else 'partial'
             return 
                 translation:introduction($tei, $render)
             ,
-            let $part := if($show-part-id = ('all', 'body')) then 'all' else ($show-part/@xml:id, $show-part/@type)[1]
-            return 
-                translation:body($tei, $part)
-            ,
-            let $render := if($show-part-id = ('all', 'back') or $show-part[@type eq 'appendix']) then 'show' else 'partial'
+            translation:body($tei, $part-root),
+            let $render := if($part-root = ('appendix', 'back')) then 'show' else if($part-root eq 'all') then 'collapse' else 'partial'
             return
                 translation:appendix($tei, $render)
             ,
-            let $render := if($show-part-id = ('all', 'back') or $show-part[@type eq 'abbreviations']) then 'show' else 'collapse'
+            let $render := if($part-root = ('abbreviations', 'back')) then 'show' else 'collapse'
             return
                 translation:abbreviations($tei, $render)
             ,
-            let $render := if($show-part-id = ('all', 'back', 'end-notes')) then 'show' else 'partial'
+            let $render := if($part-root = ('end-notes', 'back')) then 'show' else 'collapse'
             return
                 translation:end-notes($tei, $render)
             ,
-            let $render := if($show-part-id = ('all', 'back') or $show-part[@type eq 'bibliography']) then 'show' else 'collapse'
+            let $render := if($part-root = ('bibliography', 'back')) then 'show' else 'collapse'
             return
                 translation:bibliography($tei, $render)
             ,
-            let $render := if($show-part-id = ('all', 'back') or $show-part[@type eq 'glossary']) then 'show' else 'collapse'
+            let $render := if($part-root = ('glossary', 'back')) then 'show' else 'collapse'
             return
                 translation:glossary($tei, $render)
             
@@ -437,15 +439,16 @@ declare function translation:summary($tei as element(tei:TEI), $render as xs:str
     let $valid-lang := common:valid-lang($lang)
     let $summary := $tei/tei:text/tei:front/tei:div[@type eq 'summary']
     let $part :=
-    if (not($valid-lang = ('en', ''))) then
-        $summary[@xml:lang = $valid-lang]
-    else
-        $summary[not(@xml:lang) or @xml:lang = 'en']
+        if (not($valid-lang = ('en', ''))) then
+            $summary[@xml:lang = $valid-lang]
+        else
+            $summary[not(@xml:lang) or @xml:lang = 'en']
     
-    let $render := if (not($render = ('show', 'persist'))) then
-        'collapse'
-    else
-        $render
+    let $render := 
+        if (not($render = ('show', 'persist'))) then
+            'collapse'
+        else
+            $render
         
         where $part
     return
@@ -514,8 +517,8 @@ declare function translation:body($tei as element(tei:TEI), $part as xs:string*)
     let $translation := $tei/tei:text/tei:body/tei:div[@type eq 'translation']
     let $head := ($translation/tei:head[@type eq 'titleMain'][text()], $translation/tei:head[@type eq 'titleHon'][text()])[1]
     let $count-chapters := count($translation/tei:div[@type = ('section', 'chapter')])
-        where $translation
     
+    where $translation
     return
         element {QName('http://read.84000.co/ns/1.0', 'part')} {
             $translation/@type,
@@ -524,6 +527,7 @@ declare function translation:body($tei as element(tei:TEI), $part as xs:string*)
             attribute section-index { 1 },
             attribute render { 'persist' },
             attribute prefix { 'tr' },
+            attribute part { $part },
             element {QName('http://www.tei-c.org/ns/1.0', 'head')} {
                 attribute type {'translation'},
                 attribute tid {$head/@tid},
@@ -548,7 +552,7 @@ declare function translation:body($tei as element(tei:TEI), $part as xs:string*)
                 else
                     ()
                 
-                (: If there's an @prefix then let it override the chapter index :)
+            (: If there's an @prefix then let it override the chapter index :)
             let $chapter-prefix :=
                 if ($chapter[@prefix]) then $chapter/@prefix
                 else if ($chapter[@type eq 'prologue']) then 'p'
@@ -557,7 +561,11 @@ declare function translation:body($tei as element(tei:TEI), $part as xs:string*)
                 else functx:index-of-node($translation/tei:div[@type = ('section', 'chapter')], $chapter)
             
             let $render :=
-                if($part = ($chapter/@xml:id, 'all')) then
+                if($chapter/@xml:id eq $part) then
+                    'show'
+                else if($part eq 'all') then
+                    'collapse'
+                else if($part eq 'body') then
                     'show'
                 else if ($chapter/@type = ('colophon', 'homage')) then
                     'collapse'

@@ -470,20 +470,17 @@ declare function glossary:translation-data($tei as element(tei:TEI), $resource-i
                 element { QName('http://read.84000.co/ns/1.0', 'request')} {
                     attribute resource-id { $resource-id },
                     attribute resource-suffix { 'html' },
-                    attribute part { 'all' },
                     attribute doc-type { 'html' },
-                    attribute view-mode { 'glossary-tool' },
-                    (: 
-                        Add glossary ids to test
-                        - presence of these nodes will switch off the cache
-                        - if no valid glossary ids are requested then all glossaries will be tested
-                        - therefore $test-glossary-ids = 'all' will trigger a test without cache
-                    :)
+                    attribute part { 'all' },
+                    attribute view-mode { 'glossary-editor' },
+                    
+                    (: Glossary ids to test :)
                     for $test-glossary-id in $test-glossary-ids
                     return
                         element test-glossary {
                             attribute id { $test-glossary-id }
                         }
+                    
                 },
                 
                 (: Compile all the translation data :)
@@ -491,7 +488,7 @@ declare function glossary:translation-data($tei as element(tei:TEI), $resource-i
                     attribute id { tei-content:id($tei) },
                     attribute status { tei-content:translation-status($tei) },
                     attribute status-group { tei-content:translation-status-group($tei) },
-                    attribute relative-html { translation:relative-html($source/@key) },
+                    attribute relative-html { translation:relative-html($source/@key, '') },
                     attribute canonical-html { translation:canonical-html($source/@key, '') },
                     
                     (: Parts relevant to glossary :)
@@ -516,7 +513,7 @@ declare function glossary:translation-data($tei as element(tei:TEI), $resource-i
                     },
                     element value {
                         attribute key { '#LinkToSelf' },
-                        text { translation:local-html($source/@key) }
+                        text { translation:local-html($source/@key, '') }
                     },
                     element value {
                         attribute key { '#canonicalHTML' },
@@ -639,9 +636,9 @@ declare function glossary:expression-locations($translation-html as element(xhtm
     (: Also get the nearest preceding ref :)
     for $expression-location at $sort-index in 
         if(count($glossary-ids[not(. = 'all')]) gt 0) then
-            $translation-html/descendant::xhtml:*[@data-glossary-id = $glossary-ids]/ancestor-or-self::xhtml:div[@data-nearest-id][1]
+            $translation-html/descendant::xhtml:*[@data-glossary-id = $glossary-ids]/ancestor-or-self::xhtml:*[@data-nearest-id][1]
         else
-            $translation-html/descendant::xhtml:*[@data-glossary-id]/ancestor-or-self::xhtml:div[@data-nearest-id][1]
+            $translation-html/descendant::xhtml:*[@data-glossary-id]/ancestor-or-self::xhtml:*[@data-nearest-id][1]
     
     let $location := $expression-location/@data-nearest-id
     
