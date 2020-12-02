@@ -186,6 +186,7 @@ return
                     <parameters xmlns="http://exist.sourceforge.net/NS/exist">
                         <add-parameter name="resource-id" value="{$resource-id}"/>
                         <add-parameter name="resource-suffix" value="epub"/>
+                        <add-parameter name="view-mode" value="ebook"/>
                     </parameters>
                 )
             else if ($resource-suffix eq 'txt') then
@@ -372,15 +373,6 @@ return
             local:dispatch("/models/downloads.xq", "", 
                 <parameters xmlns="http://exist.sourceforge.net/NS/exist"/>
             )
-        
-        (: Sitemaps - used for compiling pdfs from multiple files :)
-        (:else if ($collection-path eq "sitemap") then
-            (\: return the xml :\)
-            local:dispatch("/models/sitemap.xq", "",
-                <parameters xmlns="http://exist.sourceforge.net/NS/exist">
-                    <add-parameter name="resource-id" value="{$resource-id}"/>
-                </parameters>
-            ):)
             
         else
             (: It's data :)

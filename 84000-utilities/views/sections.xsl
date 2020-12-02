@@ -172,8 +172,8 @@
                         <a href="#" target="_self">
                             <xsl:choose>
                                 <xsl:when test="xs:integer(m:text-stats/m:stat[@type eq 'count-text-children']/@value) gt 0">
-                                    <xsl:attribute name="href" select="concat('section-texts.html?section-id=', fn:encode-for-uri(@id))"/>
-                                    <xsl:attribute name="data-ajax-target" select="concat('#', $section-texts-id)"/>
+                                    <xsl:attribute name="href" select="concat('section-texts.html?section-id=', fn:encode-for-uri(@id), '#ajax-content')"/>
+                                    <xsl:attribute name="data-ajax-target" select="concat('#', $section-texts-id, ' .ajax-content')"/>
                                     <xsl:attribute name="aria-controls" select="$section-texts-id"/>
                                     <xsl:attribute name="class" select="'underline'"/>
                                     <xsl:value-of select="fn:format-number(xs:integer(m:text-stats/m:stat[@type eq 'count-text-children']/@value),'#,##0')"/>
@@ -249,7 +249,7 @@
             <td colspan="2">
                 <div class="collapse">
                     <xsl:attribute name="id" select="$section-texts-id"/>
-                    <xsl:value-of select="'Texts'"/>
+                    <div class="ajax-content"/>
                 </div>
             </td>
         </tr>

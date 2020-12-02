@@ -22,8 +22,17 @@
     
     <!-- language [en|zh] -->
     <xsl:variable name="lang" select="if(/m:response/@lang) then /m:response/@lang else 'en'" as="xs:string"/>
-    <!-- view-mode [editor|annotation|glossary-editor|ajax|epub|app] -->
+    <!-- view-mode [editor|annotation|glossary-editor|ajax|epub|app|passage|passage-bypass-cache|tests] -->
     <xsl:variable name="view-mode" select="/m:response/m:request/@view-mode" as="xs:string?"/>
+    <xsl:function name="m:view-mode-parameter" as="xs:string">
+        <xsl:value-of select="if($view-mode = ('editor', 'annotation', 'epub')) then concat('&amp;view-mode=', $view-mode)  else ''"/>
+    </xsl:function>
+    <!-- client-mode [no-client|client] -->
+    <xsl:variable name="client-mode" select="/m:response/m:request/@client-mode" as="xs:string?"/>
+    <!-- layout-mode [passage|machine|expanded|expanded-fixed|full] -->
+    <xsl:variable name="layout-mode" select="/m:response/m:request/@layout-mode" as="xs:string?"/>
+    <!-- doc-type [html|epub|ncx] -->
+    <xsl:variable name="doc-type" select="/m:response/m:request/@doc-type"/>
     
     <!-- override navigation params -->
     <xsl:variable name="active-url" as="xs:string">
@@ -86,6 +95,10 @@
                 <xsl:value-of select="$page-title"/>
             </title>
             
+            <link rel="canonical">
+                <xsl:attribute name="href" select="$page-url"/>
+            </link>
+            
             <link rel="stylesheet" type="text/css">
                 <xsl:choose>
                     <xsl:when test="$page-type = ('communications')">
@@ -99,61 +112,71 @@
                     </xsl:otherwise>
                 </xsl:choose>
             </link>
+            
             <link rel="stylesheet" type="text/css">
                 <xsl:attribute name="href" select="concat($front-end-path, '/css/ie10-viewport-bug-workaround.css')"/>
             </link>
-            <!--[if lt IE 9]>
-                <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
-                <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
-            <![endif]-->
-            <link rel="apple-touch-icon">
-                <xsl:attribute name="href" select="concat($front-end-path, '/favicon/apple-touch-icon.png')"/>
-            </link>
-            <link rel="icon" type="image/png" sizes="32x32">
-                <xsl:attribute name="href" select="concat($front-end-path, '/favicon/favicon-32x32.png')"/>
-            </link>
-            <link rel="icon" type="image/png" sizes="16x16">
-                <xsl:attribute name="href" select="concat($front-end-path, '/favicon/favicon-16x16.png')"/>
-            </link>
-            <link rel="manifest">
-                <xsl:attribute name="href" select="concat($front-end-path, '/favicon/manifest.json')"/>
-            </link>
-            <link rel="mask-icon">
-                <xsl:attribute name="href" select="concat($front-end-path, '/favicon/safari-pinned-tab.svg')"/>
-            </link>
-            <link rel="shortcut icon">
-                <xsl:attribute name="href" select="concat($front-end-path, '/favicon/favicon.ico')"/>
-            </link>
-            <link rel="canonical">
-                <xsl:attribute name="href" select="$page-url"/>
-            </link>
-            <xsl:copy-of select="$additional-links"/>
-            <meta name="msapplication-config">
-                <xsl:attribute name="content" select="concat($front-end-path, '/favicon/browserconfig.xml')"/>
-            </meta>
-            <meta name="theme-color" content="#ffffff"/>
-            <meta property="og:url">
-                <xsl:attribute name="content" select="$page-url"/>
-            </meta>
-            <meta property="og:title">
-                <xsl:attribute name="content" select="$page-title"/>
-            </meta>
-            <meta property="og:description">
-                <xsl:attribute name="content" select="$page-description"/>
-            </meta>
-            <meta property="og:image">
-                <xsl:attribute name="content" select="concat($front-end-path, '/imgs/logo-stacked-sq.jpg')"/>
-            </meta>
-            <meta property="og:image:width" content="300"/>
-            <meta property="og:image:height" content="300"/>
-            <meta property="og:site_name" content="84000 Translating The Words of The Budda"/>
-            <meta name="twitter:card" content="summary"/>
-            <meta name="twitter:image:alt" content="84000 Translating The Words of The Budda Logo"/>
-            <meta name="twitter:site" content="@Translate84000"/>
-            <xsl:if test="not($view-mode = ('pdf', 'app'))">
+            
+            <xsl:if test="not($client-mode eq 'no-client')">
+                
+                <link rel="apple-touch-icon">
+                    <xsl:attribute name="href" select="concat($front-end-path, '/favicon/apple-touch-icon.png')"/>
+                </link>
+                <link rel="icon" type="image/png" sizes="32x32">
+                    <xsl:attribute name="href" select="concat($front-end-path, '/favicon/favicon-32x32.png')"/>
+                </link>
+                <link rel="icon" type="image/png" sizes="16x16">
+                    <xsl:attribute name="href" select="concat($front-end-path, '/favicon/favicon-16x16.png')"/>
+                </link>
+                <link rel="manifest">
+                    <xsl:attribute name="href" select="concat($front-end-path, '/favicon/manifest.json')"/>
+                </link>
+                <link rel="mask-icon">
+                    <xsl:attribute name="href" select="concat($front-end-path, '/favicon/safari-pinned-tab.svg')"/>
+                </link>
+                <link rel="shortcut icon">
+                    <xsl:attribute name="href" select="concat($front-end-path, '/favicon/favicon.ico')"/>
+                </link>
+                
+                <xsl:copy-of select="$additional-links"/>
+                
+                <meta name="msapplication-config">
+                    <xsl:attribute name="content" select="concat($front-end-path, '/favicon/browserconfig.xml')"/>
+                </meta>
+                <meta name="theme-color" content="#ffffff"/>
+                <meta property="og:url">
+                    <xsl:attribute name="content" select="$page-url"/>
+                </meta>
+                <meta property="og:title">
+                    <xsl:attribute name="content" select="$page-title"/>
+                </meta>
+                <meta property="og:description">
+                    <xsl:attribute name="content" select="$page-description"/>
+                </meta>
+                <meta property="og:image">
+                    <xsl:attribute name="content" select="concat($front-end-path, '/imgs/logo-stacked-sq.jpg')"/>
+                </meta>
+                <meta property="og:image:width" content="300"/>
+                <meta property="og:image:height" content="300"/>
+                <meta property="og:site_name" content="84000 Translating The Words of The Budda"/>
+                <meta name="twitter:card" content="summary"/>
+                <meta name="twitter:image:alt" content="84000 Translating The Words of The Budda Logo"/>
+                <meta name="twitter:site" content="@Translate84000"/>
+                
+                <!--[if lt IE 9]>
+                    <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
+                    <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+                <![endif]-->
+                
                 <script>
                     <xsl:attribute name="src" select="concat($front-end-path, '/js/84000-fe.min.js', $app-version-url-attribute)"/>
                 </script>
+                
+                <xsl:if test="$view-mode eq 'annotation'">
+                    <!-- <script type="application/json" class="js-hypothesis-config">{"theme": "clean"}</script> -->
+                    <script src="https://hypothes.is/embed.js" async="async"/>
+                </xsl:if>
+                
             </xsl:if>
         </head>
         
@@ -169,7 +192,7 @@
         <xsl:apply-templates select="$eft-footer"/>
         
         <!-- Don't add js in static mode -->
-        <xsl:if test="not($view-mode = ('pdf', 'app'))">
+        <xsl:if test="not($client-mode eq 'no-client')">
             <xsl:if test="$ga-tracking-id and not($ga-tracking-id eq '')">
                 <!-- Global site tag (gtag.js) - Google Analytics -->
                 <script async="async">
@@ -212,7 +235,12 @@
             
             <body id="top">
                 
-                <xsl:attribute name="class" select="$page-class"/>
+                <xsl:attribute name="class">
+                    <xsl:value-of select="$page-class"/>
+                    <xsl:if test="$view-mode gt ''">
+                        <xsl:value-of select="concat(' ', $view-mode, '-mode')"/>
+                    </xsl:if>
+                </xsl:attribute>
                 
                 <!-- Environment alert -->
                 <xsl:if test="$environment/m:label/text()">
@@ -268,7 +296,12 @@
             
             <body id="top">
                 
-                <xsl:attribute name="class" select="$page-class"/>
+                <xsl:attribute name="class">
+                    <xsl:value-of select="$page-class"/>
+                    <xsl:if test="$view-mode gt ''">
+                        <xsl:value-of select="concat(' ', $view-mode, '-mode')"/>
+                    </xsl:if>
+                </xsl:attribute>
                 
                 <!-- Environment alert -->
                 <xsl:if test="$environment/m:label/text()">
@@ -337,7 +370,7 @@
                 <!-- Place content -->
                 <xsl:copy-of select="$content"/>
                 
-                <xsl:if test="not($view-mode  = ('pdf', 'app'))">
+                <xsl:if test="not($client-mode eq 'no-client')">
                     
                     <!-- Foooter components -->
                     <span id="media_test">

@@ -21,7 +21,7 @@
             
             <xsl:when test="$text-item">
                 <xsl:call-template name="normalize-nodes-space">
-                    <xsl:with-param name="nodes" select="$text-item"/>
+                    <xsl:with-param name="nodes" select="$text-item/node()"/>
                 </xsl:call-template>
             </xsl:when>
             
@@ -32,7 +32,7 @@
                 <!--<xsl:variable name="text-item" select="$text-items[@key eq $common-key][1]"/>-->
                 <xsl:if test="$text-item">
                     <xsl:call-template name="normalize-nodes-space">
-                        <xsl:with-param name="nodes" select="$text-item"/>
+                        <xsl:with-param name="nodes" select="$text-item/node()"/>
                     </xsl:call-template>
                 </xsl:if>
             </xsl:otherwise>

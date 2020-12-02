@@ -40,7 +40,7 @@ declare function tests:translations($translation-id as xs:string) as item(){
          for $tei in $selected-translations
             for $toh-key in $tei/tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl/@key
                 let $start-time := util:system-dateTime()
-                let $html-url := concat($test-config/m:path/text(), '/translation/', $toh-key, '.html?view-mode=editor')
+                let $html-url := concat($test-config/m:path/text(), '/translation/', $toh-key, '.html?view-mode=tests')
                 let $toh-html := 
                     if($test-config) then 
                         httpclient:get(

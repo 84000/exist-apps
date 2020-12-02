@@ -473,6 +473,9 @@ declare function glossary:translation-data($tei as element(tei:TEI), $resource-i
                     attribute doc-type { 'html' },
                     attribute part { 'all' },
                     attribute view-mode { 'glossary-editor' },
+                    attribute client-mode { 'no-client' },
+                    attribute layout-mode { 'machine' },
+                    attribute glossary-mode { 'bypass-cache' },
                     
                     (: Glossary ids to test :)
                     for $test-glossary-id in $test-glossary-ids
@@ -496,7 +499,7 @@ declare function glossary:translation-data($tei as element(tei:TEI), $resource-i
                     translation:long-titles($tei),
                     $source,
                     translation:publication($tei),
-                    translation:parts($tei, 'all'),
+                    translation:parts($tei, 'all', 'glossary-editor'),
             
                     (: Include caches - not glossary :)
                     translation:notes-cache($tei, false()),
@@ -634,13 +637,21 @@ declare function glossary:expression-locations($translation-html as element(xhtm
     (: Get and elements with the match :)
     (: Also get the nearest preceding milestone if there isn't one :)
     (: Also get the nearest preceding ref :)
-    for $expression-location at $sort-index in 
+    for $expression at $sort-index in 
         if(count($glossary-ids[not(. = 'all')]) gt 0) then
-            $translation-html/descendant::xhtml:*[@data-glossary-id = $glossary-ids]/ancestor-or-self::xhtml:*[@data-nearest-id][1]
+            $translation-html/descendant::xhtml:*[@data-glossary-id = $glossary-ids]
         else
-            $translation-html/descendant::xhtml:*[@data-glossary-id]/ancestor-or-self::xhtml:*[@data-nearest-id][1]
+            $translation-html/descendant::xhtml:*[@data-glossary-id]
     
-    let $location := $expression-location/@data-nearest-id
+    let $expression-location := $expression/ancestor-or-self::xhtml:*[@data-passage-id][1]
+    
+    let $expression-location := 
+        if(not($expression-location)) then
+            $expression/ancestor-or-self::xhtml:*[@id][1]
+        else
+            $expression-location
+    
+    let $location := ($expression-location/@data-passage-id, $expression-location/@id)[1]
     
     group by $location
     order by $sort-index[1]
@@ -651,7 +662,7 @@ declare function glossary:expression-locations($translation-html as element(xhtm
             attribute sort-index { $sort-index[1] },
             
             element preceding-ref {
-                $expression-location[1]/preceding-sibling::xhtml:div[descendant::xhtml:a[@data-ref]][1]/descendant::xhtml:a[@data-ref][1]
+                $expression-location/preceding-sibling::xhtml:div[descendant::xhtml:a[@data-ref]][1]/descendant::xhtml:a[@data-ref][last()]
             },
             
             element preceding-bookmark {

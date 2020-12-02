@@ -573,16 +573,6 @@ declare function common:local-text($key as xs:string, $lang as xs:string) {
             
 };
 
-declare function common:view-mode() as xs:string {
-
-    let $view-mode := request:get-parameter('view-mode', '')
-    return
-        if($view-mode = ('editor', 'annotation', 'glossary-editor', 'ajax', 'ebook', 'pdf', 'app')) then 
-            $view-mode 
-        else 
-            'default'
-};
-
 declare 
     %test:args('line', 'line')
     %test:assertTrue 

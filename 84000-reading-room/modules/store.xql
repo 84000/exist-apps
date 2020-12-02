@@ -165,20 +165,22 @@ declare function store:create($file-name as xs:string) as element() {
                 if(compare($store-version, $tei-version) ne 0)then
                 
                     (: generate and store the latest version :)
-                    if($file-type eq 'html') then
-                        (:'Store new html':)
+                    (:if($file-type eq 'html') then
+                        (\:'Store new html':\)
                         let $file-path := concat($common:data-path, '/html/', $toh-key, '.html')
                         return 
-                            (:element debug {
+                            (\:element debug {
                                 attribute tei-version { $tei-version },
                                 attribute store-version { $store-version },
                                 attribute toh-key { $toh-key },
                                 attribute file-type { $file-type },
-                                attribute file-path { $file-path },:)
+                                attribute file-path { $file-path },:\)
                                 store:store-new-html($file-path, $tei-version)
-                             (:}:)
+                             (\:}:\)
                     
-                    else if($file-type eq 'pdf') then
+                    else :)
+                    
+                    if($file-type eq 'pdf') then
                         (:'Store new pdf':)
                         let $file-path := concat($common:data-path, '/pdf/', $toh-key, '.pdf')
                         return
@@ -241,7 +243,7 @@ declare function store:stored-version-str($resource-id as xs:string, $file-exten
             '0'
     
 };
-
+(:
 declare function store:store-new-html($file-path as xs:string, $version as xs:string) as element() {
     
     let $file-path-tokenized := tokenize($file-path, '/')
@@ -250,10 +252,10 @@ declare function store:store-new-html($file-path as xs:string, $version as xs:st
     let $resource-id := substring-before($file-name, '.html')
     let $tei := tei-content:tei($resource-id, 'translation')
     
-    (: Get the source so we can extract the Toh :)
+    (\: Get the source so we can extract the Toh :\)
     let $source := tei-content:source($tei, $resource-id)
     
-    (: Get the status so we can evaluate the render status :)
+    (\: Get the status so we can evaluate the render status :\)
     let $status-id := tei-content:translation-status($tei)
     
     return
@@ -279,10 +281,8 @@ declare function store:store-new-html($file-path as xs:string, $version as xs:st
             <error xmlns="http://read.84000.co/ns/1.0">
                 <message>{ concat('HTML generation failed: (', $file-path,'). This text is not ready for publication.') }</message>
             </error>
-
-
 };
-
+:)
 declare function store:store-new-pdf($file-path as xs:string, $version as xs:string) as element() {
     
     let $pdf-config := $store:conf/m:pdfs

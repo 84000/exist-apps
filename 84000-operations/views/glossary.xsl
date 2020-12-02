@@ -216,7 +216,7 @@
                                 <small>
                                     <xsl:value-of select="' / '"/>
                                     <a target="reading-room">
-                                        <xsl:attribute name="href" select="concat($reading-room-path, '/translation/', $toh-key, '.html#', $loop-glossary-id)"/>
+                                        <xsl:attribute name="href" select="concat($reading-room-path, '/translation/', $toh-key, '.html#', $loop-glossary-id, '&amp;view-mode=editor')"/>
                                         <xsl:value-of select="$loop-glossary-id"/>
                                     </a>
                                 </small>

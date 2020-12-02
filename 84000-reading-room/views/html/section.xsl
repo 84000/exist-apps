@@ -245,7 +245,7 @@
                                             </h3>
                                             
                                             <xsl:choose>
-                                                <xsl:when test="m:section/m:texts[m:filter]">
+                                                <xsl:when test="m:section/m:texts[m:filter[@max-pages or @section-id]]">
                                                     
                                                     <xsl:variable name="count-section-filters" select="count(m:section/m:texts/m:filter[@section-id])"/>
                                                     

@@ -15,7 +15,7 @@
                         </h3>
                     </div>
                     <div class="panel-body">
-                        <div id="glossary-items">
+                        <div id="glossary-items" class="ajax-content">
                             <xsl:for-each select="m:glossary/m:item">
                                 <div class="glossary-item">
                                     <div class="title">

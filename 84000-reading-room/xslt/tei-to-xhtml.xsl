@@ -7,7 +7,6 @@
     <xsl:import href="../views/html/website-page.xsl"/>
     
     <!-- Useful keys -->
-    <xsl:key name="xml-ids" match="/m:response/m:translation//tei:*[@xml:id]" use="@xml:id"/>
     <xsl:key name="translation-parts" match="/m:response/m:translation//m:part[@id]" use="@id"/>
     <xsl:key name="glossary-cache-gloss" match="/m:response/m:translation/m:glossary-cache/m:gloss" use="@id"/>
     <xsl:key name="glossary-cache-location" match="/m:response/m:translation/m:glossary-cache/m:gloss/m:location" use="@id"/>
@@ -16,10 +15,9 @@
     <xsl:key name="milestones-cache-milestone" match="/m:response/m:translation/m:milestones-cache/m:milestone" use="@id"/>
     
     <!-- Global variables -->
-    <xsl:variable name="doc-type" select="/m:response/m:request/@doc-type"/>
     <xsl:variable name="translation-id" select="/m:response/m:translation/@id"/>
     <xsl:variable name="toh-key" select="/m:response/m:translation/m:source/@key"/>
-    <xsl:variable name="part-status" select="if(not(/m:response/m:translation//m:part[@render eq 'partial'])) then 'complete' else if(/m:response/m:translation//m:part[@render eq 'show']) then 'part' else 'empty'" as="xs:string"/>
+    <xsl:variable name="part-status" select="if(not(/m:response/m:translation//m:part[@render eq 'preview'])) then 'complete' else if(/m:response/m:translation//m:part[@render eq 'show']) then 'part' else 'empty'" as="xs:string"/>
     
     <!-- Pre-sort the glossaries by priority -->
     <xsl:variable name="glossary-prioritised" as="element(tei:gloss)*">
@@ -34,8 +32,7 @@
     <xsl:variable name="test-glossary-items" select="if($test-glossary) then $glossary-prioritised[@xml:id = $test-glossary/@id] else ()" as="element(tei:gloss)*"/>
     <xsl:variable name="test-glossary-items-terms" as="xs:string*" select="m:glossary-terms-to-match($test-glossary-items)"/>
     
-    <!-- Use the glossary location cache unless we are testing specific glossaries -->
-    <xsl:variable name="use-glossary-location-cache" select="if($view-mode eq 'glossary-editor') then false() else true()" as="xs:boolean"/>
+    <xsl:variable name="glossary-mode" select="/m:response/m:request/@glossary-mode"/>
     
     <!-- Normalize text and check if it needs glossarizing -->
     <xsl:template match="text()">
@@ -53,7 +50,7 @@
                     <xsl:value-of select="normalize-space(.)"/>
                 </xsl:when>
                 <xsl:otherwise>
-                    <xsl:value-of select="m:normalize-data(data(.))"/>
+                    <xsl:value-of select="common:normalize-data(data(.))"/>
                 </xsl:otherwise>
             </xsl:choose>
         </xsl:variable>
@@ -62,17 +59,23 @@
         <xsl:variable name="glossarize" as="xs:boolean">
             <xsl:choose>
                 
-                <xsl:when test="$view-mode eq 'pdf'">
+                <!-- Check the context -->
+                <xsl:when test="not(m:glossarize-context(.))">
                     <xsl:value-of select="false()"/>
                 </xsl:when>
                 
-                <!-- Text has no content -->
+                <!-- Check the content -->
                 <xsl:when test="$text-normalized[not(normalize-space(.))]">
                     <xsl:value-of select="false()"/>
                 </xsl:when>
                 
-                <!-- Text has no content -->
+                <!-- Check the content -->
                 <xsl:when test="$text-normalized[not(matches(.,'[a-zA-Z]'))]">
+                    <xsl:value-of select="false()"/>
+                </xsl:when>
+                
+                <!-- Check if deferred -->
+                <xsl:when test="$glossary-mode = ('defer', 'defer-bypass-cache') and ancestor::tei:*[@tid]">
                     <xsl:value-of select="false()"/>
                 </xsl:when>
                 
@@ -86,9 +89,7 @@
                     <xsl:value-of select="false()"/>
                 </xsl:when>
                 
-                <!-- Check it's a part we are glossarizing -->
-                <xsl:when test="ancestor::m:part[@type = ('summary', 'introduction', 'translation', 'appendix', 'glossary')](: and ancestor::m:part[@prefix][1][not(@render = 'partial')]:)">
-                    
+                <xsl:otherwise>
                     <xsl:choose>
                         
                         <!-- We are matching a particular glossary item, so pre-parse to see if this node is relevant -->
@@ -99,13 +100,13 @@
                                 <!-- Test if the text matches one of the terms exactly -->
                                 <xsl:when test="parent::tei:title | parent::tei:name">
                                     <!-- Returns true / false -->
-                                    <xsl:sequence select="matches($text-normalized, m:matches-regex-exact($test-glossary-items-terms), 'i')"/>
+                                    <xsl:sequence select="matches($text-normalized, common:matches-regex-exact($test-glossary-items-terms), 'i')"/>
                                 </xsl:when>
                                 
                                 <!-- Test if the text matches one of the terms -->
                                 <xsl:otherwise>
                                     <!-- Returns true / false -->
-                                    <xsl:sequence select="matches($text-normalized, m:matches-regex($test-glossary-items-terms), 'i')"/>
+                                    <xsl:sequence select="matches($text-normalized, common:matches-regex($test-glossary-items-terms), 'i')"/>
                                 </xsl:otherwise>
                                 
                             </xsl:choose>
@@ -118,11 +119,6 @@
                         </xsl:otherwise>
                         
                     </xsl:choose>
-                    
-                </xsl:when>
-                
-                <xsl:otherwise>
-                    <xsl:value-of select="false()"/>
                 </xsl:otherwise>
                 
             </xsl:choose>
@@ -259,7 +255,7 @@
                                     <xsl:attribute name="id" select="$ref/@xml:id"/>
                                     <xsl:attribute name="href" select="concat('/source/', $toh-key, '.html?ref-index=', $index, '#ajax-content')"/>
                                     <xsl:attribute name="data-ref" select="$ref/@cRef"/>
-                                    <xsl:attribute name="data-ajax-target" select="'#popup-footer-source .data-container'"/>
+                                    <xsl:attribute name="data-ajax-target" select="'#popup-footer-source #ajax-content'"/>
                                     <xsl:value-of select="concat('[', $ref/@cRef, ']')"/>
                                 </a>
                                 
@@ -808,8 +804,9 @@
             <div class="rw footnote">
                 
                 <xsl:attribute name="id" select="concat('end-note-', $end-note/@xml:id)"/>
+                
                 <xsl:if test="$doc-type eq 'html'">
-                    <xsl:attribute name="data-nearest-id" select="$end-note/@xml:id"/>
+                    <xsl:attribute name="data-passage-id" select="$end-note/@xml:id"/>
                 </xsl:if>
                 
                 <div class="gtr">
@@ -825,7 +822,7 @@
                                 <xsl:attribute name="data-mark" select="concat('[data-mark-id=&#34;', $end-note/@xml:id, '&#34;]')"/>
                                 
                                 <!--<xsl:choose>
-                                    <xsl:when test="$part[@render eq 'partial']">
+                                    <xsl:when test="$part[@render eq 'preview']">
                                         <xsl:attribute name="data-loading" select="concat('Loading ', $part/tei:head[@type eq $part/@type], '...')"/>
                                     </xsl:when>
                                 </xsl:choose>-->
@@ -896,45 +893,69 @@
                 </xsl:with-param>
             </xsl:call-template>
             
+            <xsl:variable name="text-normalized" as="text()">
+                <xsl:value-of select="common:normalize-data(data(.))"/>
+            </xsl:variable>
+            
+            <!-- Evaluate if it's one we want to parse -->
+            <xsl:variable name="glossarize" as="xs:boolean">
+                <xsl:choose>
+                    
+                    <!-- Check the type -->
+                    <xsl:when test="@type eq 'ignore'">
+                        <xsl:value-of select="false()"/>
+                    </xsl:when>
+                    
+                    <!-- Check the context -->
+                    <xsl:when test="not(m:glossarize-context(.))">
+                        <xsl:value-of select="false()"/>
+                    </xsl:when>
+                    
+                    <!-- Check the content -->
+                    <xsl:when test="$text-normalized[not(normalize-space(.))]">
+                        <xsl:value-of select="false()"/>
+                    </xsl:when>
+                    
+                    <!-- Check the content -->
+                    <xsl:when test="$text-normalized[not(matches(.,'[a-zA-Z]'))]">
+                        <xsl:value-of select="false()"/>
+                    </xsl:when>
+                    
+                    <!-- Check ifs deferred -->
+                    <xsl:when test="$glossary-mode = ('defer', 'defer-bypass-cache') and ancestor::tei:*[@tid]">
+                        <xsl:value-of select="false()"/>
+                    </xsl:when>
+                    
+                    <xsl:when test="$test-glossary-items">
+                        <xsl:choose>
+                            
+                            <!-- Glossarize element -->
+                            <xsl:when test="matches($text-normalized, common:matches-regex-exact($test-glossary-items-terms), 'i')">
+                                <xsl:value-of select="true()"/>
+                            </xsl:when>
+                            
+                            <!-- Output child nodes -->
+                            <xsl:otherwise>
+                                <xsl:value-of select="false()"/>
+                            </xsl:otherwise>
+                            
+                        </xsl:choose>
+                    </xsl:when>
+                    
+                    <xsl:otherwise>
+                        <xsl:value-of select="true()"/>
+                    </xsl:otherwise>
+                    
+                </xsl:choose>
+            </xsl:variable>
+            
             <xsl:choose>
                 
                 <!-- Glossarize -->
-                <xsl:when test="not(@type eq 'ignore') and not($view-mode eq 'pdf')">
-                    <xsl:choose>
-                        
-                        <!-- See if it's relevant to node being tested -->
-                        <xsl:when test="$test-glossary-items">
-                            
-                            <xsl:variable name="text-normalized" as="text()">
-                                <xsl:value-of select="m:normalize-data(data(.))"/>
-                            </xsl:variable>
-                            
-                            <xsl:choose>
-                                
-                                <!-- Glossarize element -->
-                                <xsl:when test="matches($text-normalized, m:matches-regex-exact($test-glossary-items-terms), 'i')">
-                                    <xsl:call-template name="glossarize-element">
-                                        <xsl:with-param name="element" select="."/>
-                                    </xsl:call-template>
-                                </xsl:when>
-                                
-                                <!-- Output child nodes -->
-                                <xsl:otherwise>
-                                    <xsl:apply-templates select="node()"/>
-                                </xsl:otherwise>
-                                
-                            </xsl:choose>
-                            
-                        </xsl:when>
-                        
-                        <!-- Glossarize element -->
-                        <xsl:otherwise>
-                            <xsl:call-template name="glossarize-element">
-                                <xsl:with-param name="element" select="."/>
-                            </xsl:call-template>
-                        </xsl:otherwise>
-                        
-                    </xsl:choose>
+                <xsl:when test="$glossarize">
+                    <xsl:call-template name="glossarize-element">
+                        <xsl:with-param name="element" select="."/>
+                    </xsl:call-template>
                 </xsl:when>
                 
                 <!-- Output child nodes -->
@@ -943,6 +964,7 @@
                 </xsl:otherwise>
                 
             </xsl:choose>
+            
         </span>
     </xsl:template>
     <!-- Glossary -->
@@ -970,10 +992,13 @@
             <div class="rw glossary-item">
                 
                 <xsl:if test="$glossary-item[@xml:id]">
+                    
                     <xsl:attribute name="id" select="$glossary-item/@xml:id"/>
+                    
                     <xsl:if test="$doc-type eq 'html'">
-                        <xsl:attribute name="data-nearest-id" select="$glossary-item/@xml:id"/>
+                        <xsl:attribute name="data-passage-id" select="$glossary-item/@xml:id"/>
                     </xsl:if>
+                    
                 </xsl:if>
                 
                 <div class="gtr">
@@ -1060,7 +1085,7 @@
                             
                         </xsl:for-each>
                         
-                        <xsl:if test="$view-mode = ('editor', 'annotation', 'glossary-editor')">
+                        <xsl:if test="$view-mode = ('editor', 'annotation')">
                             <xsl:for-each select="$glossary-item/tei:term[@type eq 'alternative'][normalize-space(data())]">
                                 <p class="term alternative">
                                     <xsl:value-of select="normalize-space(data())"/>
@@ -1077,10 +1102,10 @@
                             </p>
                         </xsl:for-each>
                         
-                        <xsl:if test="$view-mode = ('glossary-editor') and $environment/m:url[@id eq 'operations']">
+                        <xsl:if test="$view-mode = ('editor') and $environment/m:url[@id eq 'operations']">
                             <a target="84000-glossary-tool" class="underline small">
                                 <xsl:attribute name="href" select="concat($environment/m:url[@id eq 'operations']/text(), '/glossary.html', '?resource-id=', $translation-id, '&amp;glossary-id=', $glossary-item/@xml:id, '&amp;max-records=1')"/>
-                                <xsl:value-of select="'Open in the glossary tool'"/>
+                                <xsl:value-of select="'Open in the glossary editor'"/>
                             </a>
                         </xsl:if>
                         
@@ -1191,16 +1216,16 @@
             <xsl:when test="$part">
                 <div>
                     
-                    <xsl:if test="$doc-type eq 'html'">
-                        <xsl:attribute name="data-nearest-id" select="$part/@id"/>
-                    </xsl:if>
-                    
                     <xsl:call-template name="class-attribute">
                         <xsl:with-param name="base-classes" as="xs:string*">
                             <xsl:value-of select="'rw'"/>
                             <xsl:value-of select="'rw-section-head'"/>
                         </xsl:with-param>
                     </xsl:call-template>
+                    
+                    <xsl:if test="$doc-type eq 'html'">
+                        <xsl:attribute name="data-passage-id" select="$part/@id"/>
+                    </xsl:if>
                     
                     <xsl:if test="$part[@prefix]">
                         <div class="gtr">
@@ -1459,20 +1484,12 @@
         <xsl:param name="content" required="yes"/>
         <xsl:param name="row-type" required="yes"/>
 
-        <div class="rw">
+        <div>
             
             <!-- Set id -->
             <xsl:variable name="milestone" select="(preceding-sibling::tei:*[1][self::tei:milestone] | preceding-sibling::tei:*[2][self::tei:milestone[following-sibling::tei:*[1][self::tei:lb]]] | parent::tei:seg/preceding-sibling::tei:*[1][self::tei:milestone] | parent::tei:seg/preceding-sibling::tei:*[2][self::tei:milestone[following-sibling::tei:*[1][self::tei:lb]]])[1]"/>
             <xsl:if test="$milestone">
                 <xsl:attribute name="id" select="$milestone/@xml:id"/>
-            </xsl:if>
-            
-            <!-- Set nearest id -->
-            <xsl:if test="$doc-type eq 'html'">
-                <xsl:variable name="nearest-milestone" select="preceding-sibling::tei:milestone[@xml:id][1]"/>
-                <xsl:if test="$nearest-milestone">
-                    <xsl:attribute name="data-nearest-id" select="$nearest-milestone/@xml:id"/>
-                </xsl:if>
             </xsl:if>
             
             <!-- Set the class -->
@@ -1485,6 +1502,14 @@
                     </xsl:if>
                 </xsl:with-param>
             </xsl:call-template>
+            
+            <!-- Set nearest id -->
+            <xsl:if test="$doc-type eq 'html'">
+                <xsl:variable name="nearest-milestone" select="preceding-sibling::tei:milestone[@xml:id][1]"/>
+                <xsl:if test="$nearest-milestone">
+                    <xsl:attribute name="data-passage-id" select="$nearest-milestone/@xml:id"/>
+                </xsl:if>
+            </xsl:if>
             
             <!-- If there's a milestone add a gutter and put the milestone in it -->
             <xsl:if test="$milestone">
@@ -1538,23 +1563,32 @@
     <!-- Temporary id - used to locate serach results -->
     <xsl:template name="tid">
         <xsl:param name="node" required="yes"/>
+        
+        <xsl:variable name="id" select="concat('node-', $node/@tid)"/>
+        
         <!-- If a temporary id is present then set the id -->
         <xsl:if test="$doc-type eq 'html' and $node[@tid]">
             <xsl:choose>
                 
                 <!-- A translation -->
                 <xsl:when test="/m:response/m:translation">
-                    <xsl:attribute name="id" select="concat('node-', $node/@tid)"/>
+                    
+                    <xsl:attribute name="id" select="$id"/>
+                    
+                    <xsl:if test="$glossary-mode = ('defer', 'defer-bypass-cache') and m:glossarize-context($node) and not(self::tei:head)">
+                        <xsl:attribute name="data-in-view-replace" select="concat('/translation/', $toh-key, '.html?part=', $id, '&amp;view-mode=', if($glossary-mode eq 'defer') then 'passage' else 'passage-bypass-cache', '#', $id)"/>
+                    </xsl:if>
+                    
                 </xsl:when>
                 
                 <!-- If we are rendering a section then the id may refer to a text in that section rather than the section itself -->
                 <xsl:when test="/m:response/m:section">
                     <xsl:choose>
                         <xsl:when test="ancestor::m:text">
-                            <xsl:attribute name="id" select="concat($node/ancestor::m:text[1]/@resource-id, '-node-', $node/@tid)"/>
+                            <xsl:attribute name="id" select="concat($node/ancestor::m:text[1]/@resource-id, '-', $id)"/>
                         </xsl:when>
                         <xsl:otherwise>
-                            <xsl:attribute name="id" select="concat('node-', $node/@tid)"/>
+                            <xsl:attribute name="id" select="$id"/>
                         </xsl:otherwise>
                     </xsl:choose>
                 </xsl:when>
@@ -1691,7 +1725,7 @@
                                     </xsl:choose>
                                     
                                     <!--<xsl:choose>
-                                        <xsl:when test="$part[@render eq 'partial']">
+                                        <xsl:when test="$part[@render eq 'preview']">
                                             <xsl:attribute name="data-loading" select="concat('Loading ', $part/tei:head[@type eq $part/@type], '...')"/>
                                         </xsl:when>
                                     </xsl:choose>-->
@@ -1903,6 +1937,7 @@
             </xsl:choose>
             
         </xsl:for-each>
+    
     </xsl:template>
 
     <xsl:template name="class-attribute">
@@ -1993,7 +2028,7 @@
         
     </xsl:template>
     
-    <xsl:template name="target-element-label" as="xs:string">
+    <xsl:template name="target-element-label" as="xs:string?">
         
         <xsl:param name="target-element" as="element()"/>
         
@@ -2139,6 +2174,7 @@
     
     <!-- Glossarize an element -->
     <xsl:template name="glossarize-element">
+        
         <xsl:param name="element" as="element()"/>
         
         <!-- Find the first matching item -->
@@ -2153,7 +2189,7 @@
                 <!-- Find the first glossary that matches the string -->
                 <xsl:otherwise>
                     <xsl:variable name="element-data" select="normalize-space($element/data())"/>
-                    <xsl:sequence select="$glossary-prioritised[@mode eq 'marked'][matches($element-data, m:matches-regex-exact(m:glossary-terms-to-match(.)), 'i')][1]"/>
+                    <xsl:sequence select="$glossary-prioritised[@mode eq 'marked'][matches($element-data, common:matches-regex-exact(m:glossary-terms-to-match(.)), 'i')][1]"/>
                 </xsl:otherwise>
                 
             </xsl:choose>
@@ -2219,7 +2255,7 @@
             <xsl:choose>
                 
                 <!-- Preferably use the cache -->
-                <xsl:when test="$use-glossary-location-cache">
+                <xsl:when test="not($glossary-mode eq 'bypass-cache')">
                     <xsl:variable name="cached-location-gloss-ids" select="key('glossary-cache-location', $glossary-location)/parent::m:gloss/@id" as="xs:string*"/>
                     <xsl:sequence select="$glossary-prioritised[not(@mode eq 'marked')][@xml:id = $cached-location-gloss-ids]"/>
                 </xsl:when>
@@ -2231,31 +2267,26 @@
                         <xsl:variable name="terms" select="m:glossary-terms-to-match(.)"/>
                         <xsl:variable name="glossary-cache-gloss" select="key('glossary-cache-gloss', @xml:id)"/>
                         
-                        <!-- Do an initial check of the word count -->
-                        <xsl:if test="$glossary-cache-gloss/@word-count ! xs:integer(.) le $text-word-count">
-                            
-                            <!-- Do an initial check to avoid too much recursion -->
-                            <xsl:variable name="match-glossary-item-terms-regex" as="xs:string">
-                                <xsl:choose>
-                                    
-                                    <!-- Look for exact matches -->
-                                    <xsl:when test="$match-complete-data">
-                                        <xsl:value-of select="m:matches-regex-exact($terms)"/>
-                                    </xsl:when>
-                                    
-                                    <!-- Look for any matches -->
-                                    <xsl:otherwise>
-                                        <xsl:value-of select="m:matches-regex($terms)"/>
-                                    </xsl:otherwise>
-                                    
-                                </xsl:choose>
-                            </xsl:variable>
-                            
-                            <!-- If it matches then include it in the scan -->
-                            <xsl:if test="matches($text-normalized, $match-glossary-item-terms-regex, 'i')">
-                                <xsl:sequence select="."/>
-                            </xsl:if>
-                            
+                        <!-- Do an initial check to avoid too much recursion -->
+                        <xsl:variable name="match-glossary-item-terms-regex" as="xs:string">
+                            <xsl:choose>
+                                
+                                <!-- Look for exact matches -->
+                                <xsl:when test="$match-complete-data">
+                                    <xsl:value-of select="common:matches-regex-exact($terms)"/>
+                                </xsl:when>
+                                
+                                <!-- Look for any matches -->
+                                <xsl:otherwise>
+                                    <xsl:value-of select="common:matches-regex($terms)"/>
+                                </xsl:otherwise>
+                                
+                            </xsl:choose>
+                        </xsl:variable>
+                        
+                        <!-- If it matches then include it in the scan -->
+                        <xsl:if test="matches($text-normalized, $match-glossary-item-terms-regex, 'i')">
+                            <xsl:sequence select="."/>
                         </xsl:if>
                         
                     </xsl:for-each>
@@ -2271,7 +2302,7 @@
                 
                 <!-- Find the first glossary that matches the string -->
                 <xsl:variable name="matching-glossary" as="element(tei:gloss)?">
-                    <xsl:copy-of select="$match-glossary-items[matches($text-normalized, m:matches-regex-exact(m:glossary-terms-to-match(.)), 'i')][1]"/>
+                    <xsl:copy-of select="$match-glossary-items[matches($text-normalized, common:matches-regex-exact(m:glossary-terms-to-match(.)), 'i')][1]"/>
                 </xsl:variable>
                 
                 <xsl:choose>
@@ -2328,7 +2359,7 @@
             <xsl:when test="$text[normalize-space()] and $match-glossary-index le count($match-glossary-items)">
                 
                 <xsl:variable name="match-glossary-item" select="$match-glossary-items[$match-glossary-index]"/>
-                <xsl:variable name="match-glossary-item-terms-regex" select="m:matches-regex(m:glossary-terms-to-match($match-glossary-item))"/>
+                <xsl:variable name="match-glossary-item-terms-regex" select="common:matches-regex(m:glossary-terms-to-match($match-glossary-item))"/>
                 
                 <xsl:analyze-string regex="{ $match-glossary-item-terms-regex }" select="$text" flags="i">
                     
@@ -2387,7 +2418,7 @@
                             
                             <xsl:value-of select="'glossary-link'"/>
                             
-                            <xsl:if test="not($use-glossary-location-cache)">
+                            <xsl:if test="$glossary-mode eq 'bypass-cache'">
                                 <xsl:variable name="glossary-cache-gloss" select="key('glossary-cache-gloss', $glossary-id, $root)" as="element(m:gloss)*"/>
                                 <xsl:if test="not($glossary-cache-gloss/m:location[@id/string() eq $glossary-location])">
                                     <xsl:value-of select="'not-cached'"/>
@@ -2397,6 +2428,7 @@
                         </xsl:with-param>
                         
                         <xsl:with-param name="html-classes" select="'pop-up'"/>
+                        
                     </xsl:call-template>
                     
                     <xsl:value-of select="$text"/>
@@ -2434,42 +2466,32 @@
         </xsl:choose>
     </xsl:template>
     
-    <xsl:function name="m:view-mode-parameter" as="xs:string">
-        <xsl:value-of select="if($view-mode = ('editor', 'annotation', 'glossary-editor')) then concat('&amp;view-mode=', $view-mode)  else ''"/>
+    <!-- Check the context of the node is a somewhere to glossarize -->
+    <xsl:function name="m:glossarize-context" as="xs:boolean">
+        
+        <xsl:param name="node" as="node()"/>
+        
+        <xsl:choose>
+            
+            <xsl:when test="$glossary-mode eq 'suppress'">
+                <xsl:value-of select="false()"/>
+            </xsl:when>
+            
+            <xsl:when test="$node[not(ancestor::m:part[@glossarize])]">
+                <xsl:value-of select="false()"/>
+            </xsl:when>
+            
+            <xsl:otherwise>
+                <xsl:value-of select="true()"/>
+            </xsl:otherwise>
+            
+        </xsl:choose>
+        
     </xsl:function>
     
     <xsl:function name="m:glossary-terms-to-match" as="xs:string*">
         <xsl:param name="glossary-items" as="element(tei:gloss)*"/>
         <xsl:sequence select="$glossary-items/tei:term[not(@type) or @type eq 'alternative'][not(@xml:lang) or @xml:lang eq 'en'][normalize-space(data())]/data()"/>
-    </xsl:function>
-    
-    <xsl:function name="m:normalize-data" as="xs:string?">
-        
-        <xsl:param name="arg" as="xs:string?"/>
-        <xsl:sequence select="replace($arg, '\s+', ' ')"/>
-        
-    </xsl:function>
-    
-    <xsl:function name="m:matches-regex" as="xs:string">
-        
-        <xsl:param name="strings" as="xs:string*"/>
-        <xsl:variable name="strings-combined" select="string-join($strings ! normalize-space(.) ! m:escape-for-regex(.), '|')"/>
-        <xsl:value-of select="concat('(^|[^-\w])(', $strings-combined, ')(s|es|&#34;s|s&#34;)?([^-\w]|$)')"/>
-        
-    </xsl:function>
-    
-    <xsl:function name="m:matches-regex-exact" as="xs:string">
-        
-        <xsl:param name="strings" as="xs:string*"/>
-        <xsl:value-of select="concat('^\s*(', string-join($strings[normalize-space(.)] ! normalize-space(.) ! m:escape-for-regex(.), '|'), ')\s*$')"/>
-        
-    </xsl:function>
-    
-    <xsl:function name="m:escape-for-regex" as="xs:string?">
-        
-        <xsl:param name="arg" as="xs:string?"/>
-        <xsl:sequence select="replace($arg, '(\.|\[|\]|\\|\||\-|\^|\$|\?|\*|\+|\{|\}|\(|\))','\\$1')"/>
-        
     </xsl:function>
     
 </xsl:stylesheet>

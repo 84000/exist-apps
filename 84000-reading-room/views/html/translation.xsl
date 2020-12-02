@@ -26,17 +26,19 @@
             </xsl:if>
             
             <!-- Breadcrumbs -->
-            <div class="title-band hidden-print">
-                <div class="container">
-                    <div class="center-vertical center-aligned text-center">
-                        <div>
-                            <ul id="outline" class="breadcrumb">
-                                <xsl:copy-of select="common:breadcrumb-items(m:translation/m:parent | m:translation/m:parent//m:parent, /m:response/@lang)"/>
-                            </ul>
+            <xsl:if test="m:translation[m:parent]">
+                <div class="title-band hidden-print">
+                    <div class="container">
+                        <div class="center-vertical center-aligned text-center">
+                            <div>
+                                <ul id="outline" class="breadcrumb">
+                                    <xsl:copy-of select="common:breadcrumb-items(m:translation/m:parent | m:translation/m:parent//m:parent, /m:response/@lang)"/>
+                                </ul>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
+            </xsl:if>
             
             <!-- Main article -->
             <article class="content-band">
@@ -44,12 +46,16 @@
                     <div class="row">
                         <div class="col-md-offset-1 col-md-10 col-lg-offset-2 col-lg-8 print-width-override">
 
-                            <!-- Titles -->
-                            <xsl:call-template name="front-matter"/>
-                            
-                            <!-- Table of Contents -->
-                            <xsl:if test="m:translation/@status = $render-status">
-                                <xsl:call-template name="table-of-contents"/>
+                            <xsl:if test="not($layout-mode eq 'passage')">
+                                
+                                <!-- Front matter -->
+                                <xsl:call-template name="front-matter"/>
+                                
+                                <!-- Table of Contents -->
+                                <xsl:if test="m:translation/@status = $render-status">
+                                    <xsl:call-template name="table-of-contents"/>
+                                </xsl:if>
+                                
                             </xsl:if>
                             
                             <!-- Summary -->
@@ -120,13 +126,14 @@
                                 </xsl:call-template>
                                 
                             </xsl:if>
+                        
                         </div>
                     </div>
                     
                 </div>
             </article>
             
-            <xsl:if test="not($view-mode = ('pdf', 'app'))">
+            <xsl:if test="not($layout-mode = ('passage', 'machine'))">
                 
                 <!-- Navigation controls -->
                 <div class="nav-controls show-on-scroll-xs hidden-print">
@@ -198,6 +205,7 @@
                     <div class="fix-height">
                         <div class="data-container">
                             <!-- Ajax data here -->
+                            <div class="ajax-content"/>
                         </div>
                     </div>
                     <div class="fixed-btn-container close-btn-container">
@@ -243,20 +251,22 @@
                                 </h4>
                                 <table class="contents-table bottom-margin">
                                     <tbody>
-                                        <tr>
-                                            <td>
-                                                <a target="_blank" class="print-preview">
-                                                    <xsl:attribute name="title" select="'Print'"/>
-                                                    <xsl:attribute name="href" select="'#'"/>
-                                                    <i class="fa fa-laptop"/>
-                                                </a>
-                                            </td>
-                                            <td>
-                                                <a href="#" title="Print" class="print-preview">
-                                                    <xsl:value-of select="'Print'"/>
-                                                </a>
-                                            </td>
-                                        </tr>
+                                        <xsl:if test="$part-status eq 'complete'">
+                                            <tr>
+                                                <td>
+                                                    <a target="_blank" class="print-preview">
+                                                        <xsl:attribute name="title" select="'Print'"/>
+                                                        <xsl:attribute name="href" select="'#'"/>
+                                                        <i class="fa fa-laptop"/>
+                                                    </a>
+                                                </td>
+                                                <td>
+                                                    <a href="#" title="Print" class="print-preview">
+                                                        <xsl:value-of select="'Print'"/>
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                        </xsl:if>
                                         <xsl:for-each select="m:translation/m:downloads/m:download[@type = ('pdf', 'epub', 'azw3')]">
                                             <tr>
                                                 <td>
@@ -269,6 +279,7 @@
                                                         <xsl:attribute name="href" select="@url"/>
                                                         <xsl:attribute name="download" select="@filename"/>
                                                         <xsl:attribute name="class" select="'log-click'"/>
+                                                        <xsl:attribute name="data-page-alert" select="common:internal-link('/widget/download-dana.html', concat('resource-id=', $toh-key), '#dana-description', /m:response/@lang)"/>
                                                         <xsl:call-template name="download-icon">
                                                             <xsl:with-param name="type" select="@type"/>
                                                         </xsl:call-template>
@@ -284,7 +295,7 @@
                                                         <xsl:attribute name="href" select="@url"/>
                                                         <xsl:attribute name="download" select="@filename"/>
                                                         <xsl:attribute name="class" select="'log-click'"/>
-                                                        <xsl:attribute name="data-page-alert" select="common:internal-link('/widget/download-dana.html', concat('resource-id=', m:translation/m:source[1]/@key), '#dana-description', /m:response/@lang)"/>
+                                                        <xsl:attribute name="data-page-alert" select="common:internal-link('/widget/download-dana.html', concat('resource-id=', $toh-key), '#dana-description', /m:response/@lang)"/>
                                                         <xsl:call-template name="download-label">
                                                             <xsl:with-param name="type" select="@type"/>
                                                         </xsl:call-template>
@@ -404,12 +415,19 @@
             </xsl:if>
         
         </xsl:variable>
-        
+ 
         <!-- Pass the content to the page -->
         <xsl:call-template name="reading-room-page">
             
             <xsl:with-param name="page-url" select="m:translation/@canonical-html"/>
-            <xsl:with-param name="page-class" select="concat('reading-room translation', concat(' ', $part-status), if($part-status eq 'part' and m:request[@part gt '']) then concat(' ', 'part-', m:request/@part) else '', if(m:request[@view-mode gt '']) then concat(' ', m:request/@view-mode, '-mode') else '')"/>
+            <xsl:with-param name="page-class">
+                <xsl:value-of select="'reading-room'"/>
+                <xsl:value-of select="' translation'"/>
+                <xsl:value-of select="concat(' ', $part-status)"/>
+                <xsl:if test="$part-status eq 'part' and m:request[@part gt '']">
+                    <xsl:value-of select="concat(' part-', m:request/@part)"/>
+                </xsl:if>
+            </xsl:with-param>
             <xsl:with-param name="page-title">
                 <xsl:choose>
                     <xsl:when test="m:translation//m:part[@prefix][@render eq 'show'][@id eq /m:response/m:request/@part]">
@@ -446,11 +464,6 @@
                 <link rel="related" type="application/atom+xml;profile=opds-catalog;kind=navigation" href="/section/lobby.navigation.atom" title="The 84000 Reading Room"/>
                 <link rel="related" type="application/atom+xml;profile=opds-catalog;kind=acquisition" href="/section/all-translated.acquisition.atom" title="84000: All Translated Texts"/>
                 
-                <xsl:if test="m:request/@view-mode eq 'annotation'">
-                    <!-- <script type="application/json" class="js-hypothesis-config">{"theme": "clean"}</script> -->
-                    <script src="https://hypothes.is/embed.js" async="async"/>
-                </xsl:if>
-                
             </xsl:with-param>
         </xsl:call-template>
         
@@ -462,16 +475,12 @@
         <xsl:param name="css-classes" as="xs:string" select="''"/>
         <xsl:param name="element" as="xs:string" select="'section'"/>
         <!-- If it's a section that's only partial make it an aside -->
-        <xsl:variable name="element" select="if($element eq 'section' and $part[@render eq 'partial']) then 'aside' else $element"/>
+        <xsl:variable name="element" select="if($element eq 'section' and $part[@render eq 'preview']) then 'aside' else $element"/>
         
-        <xsl:if test="$part">
+        <xsl:if test="$part[not(@render eq 'hide')]">
             <xsl:element name="{ $element }">
                 
                 <xsl:attribute name="id" select="$part/@id"/>
-                
-                <xsl:if test="$doc-type eq 'html'">
-                    <xsl:attribute name="data-nearest-id" select="$part/@id"/>
-                </xsl:if>
                 
                 <xsl:call-template name="class-attribute">
                     
@@ -488,10 +497,10 @@
                             <xsl:when test="$part[@render eq 'show']">
                                 <xsl:value-of select="'show'"/>
                             </xsl:when>
-                            <xsl:when test="$part[@render eq 'collapse'] and $view-mode = ('editor', 'annotation', 'glossary-editor')">
+                            <xsl:when test="$part[@render eq 'collapse'] and $layout-mode = ('expanded', 'expanded-fixed', 'machine')">
                                 <xsl:value-of select="'show'"/>
                             </xsl:when>
-                            <xsl:when test="$part[@render eq 'partial']">
+                            <xsl:when test="$part[@render eq 'preview']">
                                 <xsl:value-of select="'preview partial'"/>
                             </xsl:when>
                             <xsl:when test="$part[@render eq 'collapse']">
@@ -504,21 +513,24 @@
                 </xsl:call-template>
                 
                 <!-- Add controls to expand / collapse -->
-                <xsl:if test="$part[@render = ('show', 'collapse', 'partial')] and not($view-mode = ('annotation'))">
+                <xsl:if test="$part[@render = ('show', 'collapse', 'preview')] and not($layout-mode = ('expanded-fixed', 'machine'))">
                     
                     <!-- Expand -->
                     <a target="_self" title="Read this section">
                         
                         <xsl:choose>
-                            <xsl:when test="$part[@render eq 'partial']">
+                            
+                            <xsl:when test="$part[@render eq 'preview']">
                                 <xsl:attribute name="href" select="concat('?part=', $part/@id, m:view-mode-parameter(), '#', $part/@id)"/>
                                 <xsl:attribute name="class" select="'reveal'"/>
                                 <xsl:attribute name="data-loading" select="concat('Loading: ', $part/tei:head[@type eq $part/@type][1]/data(), '...')"/>
                             </xsl:when>
+                            
                             <xsl:otherwise>
                                 <xsl:attribute name="href" select="concat('#', $part/@id)"/>
                                 <xsl:attribute name="class" select="'reveal log-click'"/>
                             </xsl:otherwise>
+                            
                         </xsl:choose>
                         
                         <span class="btn-round">
@@ -537,7 +549,9 @@
                     
                 </xsl:if>
                 
-                <hr class="hidden-print"/>
+                <xsl:if test="not($layout-mode eq 'passage')">
+                    <hr class="hidden-print"/>
+                </xsl:if>
                 
                 <xsl:choose>
                     
@@ -572,10 +586,10 @@
                     </h2>
                     <h1>
                         <xsl:apply-templates select="m:translation/m:titles/m:title[@xml:lang eq 'en']"/>
-                        <xsl:if test="count(m:translation//m:part[@prefix][@render eq 'show'][tei:head[@type eq parent::m:part/@type]]) eq 1">
+                        <!--<xsl:if test="count(m:translation//m:part[@prefix][@render eq 'show'][tei:head[@type eq parent::m:part/@type]]) eq 1">
                             <br/>
                             <xsl:value-of select="concat('· ', m:translation//m:part[@prefix][@render eq 'show'][1]/tei:head[@type eq parent::m:part/@type][1], ' ·')"/>
-                        </xsl:if>
+                        </xsl:if>-->
                     </h1>
                     <xsl:if test="m:translation/m:titles/m:title[@xml:lang eq 'Sa-Ltn'][text()]">
                         <h2 class="text-sa">
@@ -620,7 +634,7 @@
                                         <xsl:attribute name="href" select="$pdf-download/@url"/>
                                         <xsl:attribute name="download" select="$pdf-download/@filename"/>
                                         <xsl:attribute name="class" select="'log-click'"/>
-                                        <xsl:attribute name="data-page-alert" select="common:internal-link('/widget/download-dana.html', concat('resource-id=', m:translation/m:source[1]/@key), '#dana-description', /m:response/@lang)"/>
+                                        <xsl:attribute name="data-page-alert" select="common:internal-link('/widget/download-dana.html', concat('resource-id=', $toh-key), '#dana-description', /m:response/@lang)"/>
                                         <xsl:value-of select="concat($reading-room-path, $pdf-download/@url)"/>
                                     </a>
                                 </p>
@@ -667,94 +681,102 @@
             
             <div class="page">
                 
-                <img class="logo">
-                    <!-- Update to set image in CSS -->
-                    <xsl:attribute name="src" select="concat($front-end-path,'/imgs/logo.png')"/>
-                    <xsl:attribute name="alt" select="'84000 logo'"/>
-                </img>
+                <xsl:if test="m:translation[m:source]">
+                    
+                    <img class="logo">
+                        <!-- Update to set image in CSS -->
+                        <xsl:attribute name="src" select="concat($front-end-path,'/imgs/logo.png')"/>
+                        <xsl:attribute name="alt" select="'84000 logo'"/>
+                    </img>
+                    
+                    <div id="toh">
+                        <h4>
+                            <xsl:apply-templates select="m:translation/m:source/m:toh"/>
+                        </h4>
+                        <xsl:if test="m:translation/m:source[m:series[text()] or m:scope[text()] or m:range[text()]]">
+                            <p id="location">
+                                <xsl:value-of select="concat(normalize-space(string-join(m:translation/m:source/m:series/text() | m:translation/m:source/m:scope/text() | m:translation/m:source/m:range/text(), ', ')), '.')"/>
+                            </p>
+                        </xsl:if>
+                    </div>
+                    
+                </xsl:if>
                 
-                <div id="toh">
-                    <h4>
-                        <xsl:apply-templates select="m:translation/m:source/m:toh"/>
-                    </h4>
-                    <xsl:if test="m:translation/m:source[m:series[text()] or m:scope[text()] or m:range[text()]]">
-                        <p id="location">
-                            <xsl:value-of select="concat(normalize-space(string-join(m:translation/m:source/m:series/text() | m:translation/m:source/m:scope/text() | m:translation/m:source/m:range/text(), ', ')), '.')"/>
-                        </p>
+                <xsl:if test="m:translation[m:publication]">
+                    
+                    <xsl:if test="m:translation/@status = $render-status">
+                        <xsl:if test="m:translation/m:publication/m:contributors/m:summary[node()]">
+                            <div class="well">
+                                <xsl:for-each select="m:translation/m:publication/m:contributors/m:summary">
+                                    <p id="authours-summary">
+                                        <xsl:apply-templates select="node()"/>
+                                    </p>
+                                </xsl:for-each>
+                            </div>
+                        </xsl:if>
                     </xsl:if>
-                </div>
-                
-                <xsl:if test="m:translation/@status = $render-status">
-                    <xsl:if test="m:translation/m:publication/m:contributors/m:summary[node()]">
-                        <div class="well">
-                            <xsl:for-each select="m:translation/m:publication/m:contributors/m:summary">
-                                <p id="authours-summary">
+                    
+                    <div class="bottom-margin">
+                        <p id="edition">
+                            <xsl:choose>
+                                <xsl:when test="m:translation/m:publication/m:publication-date castable as xs:date">
+                                    <xsl:value-of select="concat('First published ', format-date(m:translation/m:publication/m:publication-date, '[Y]'))"/>
+                                </xsl:when>
+                                <xsl:otherwise>
+                                    <xsl:value-of select="'Not yet published'"/>
+                                </xsl:otherwise>
+                            </xsl:choose>
+                            <br/>
+                            <xsl:choose>
+                                <xsl:when test="m:translation/m:publication/m:edition/tei:date[1] gt ''">
+                                    <xsl:value-of select="concat('Current version ', m:translation/m:publication/m:edition/text()[1], '(', m:translation/m:publication/m:edition/tei:date[1], ')')"/>
+                                </xsl:when>
+                                <xsl:otherwise>
+                                    <xsl:value-of select="'Invalid version'"/>
+                                </xsl:otherwise>
+                            </xsl:choose>
+                            <br/>
+                            <span class="small">
+                                <xsl:value-of select="concat('Generated by 84000 Reading Room v', /m:response/@app-version)"/>
+                            </span>
+                        </p>
+                    </div>
+                    
+                    <div class="bottom-margin">
+                        <p id="publication-statement">
+                            <xsl:apply-templates select="m:translation/m:publication/m:publication-statement"/>
+                        </p>
+                    </div>
+                    
+                    <xsl:if test="m:translation/m:publication/m:tantric-restriction[tei:p]">
+                        <div id="tantric-warning" class="well well-danger">
+                            <xsl:for-each select="m:translation/m:publication/m:tantric-restriction/tei:p">
+                                <p>
                                     <xsl:apply-templates select="node()"/>
                                 </p>
                             </xsl:for-each>
                         </div>
                     </xsl:if>
-                </xsl:if>
-                
-                <div class="bottom-margin">
-                    <p id="edition">
-                        <xsl:choose>
-                            <xsl:when test="m:translation/m:publication/m:publication-date castable as xs:date">
-                                <xsl:value-of select="concat('First published ', format-date(m:translation/m:publication/m:publication-date, '[Y]'))"/>
-                            </xsl:when>
-                            <xsl:otherwise>
-                                <xsl:value-of select="'Not yet published'"/>
-                            </xsl:otherwise>
-                        </xsl:choose>
-                        <br/>
-                        <xsl:choose>
-                            <xsl:when test="m:translation/m:publication/m:edition/tei:date[1] gt ''">
-                                <xsl:value-of select="concat('Current version ', m:translation/m:publication/m:edition/text()[1], '(', m:translation/m:publication/m:edition/tei:date[1], ')')"/>
-                            </xsl:when>
-                            <xsl:otherwise>
-                                <xsl:value-of select="'Invalid version'"/>
-                            </xsl:otherwise>
-                        </xsl:choose>
-                        <br/>
-                        <span class="small">
-                            <xsl:value-of select="concat('Generated by 84000 Reading Room v', /m:response/@app-version)"/>
-                        </span>
-                    </p>
-                </div>
-                
-                <div class="bottom-margin">
-                    <p id="publication-statement">
-                        <xsl:apply-templates select="m:translation/m:publication/m:publication-statement"/>
-                    </p>
-                </div>
-                
-                <xsl:if test="m:translation/m:publication/m:tantric-restriction[tei:p]">
-                    <div id="tantric-warning" class="well well-danger">
-                        <xsl:for-each select="m:translation/m:publication/m:tantric-restriction/tei:p">
-                            <p>
-                                <xsl:apply-templates select="node()"/>
-                            </p>
-                        </xsl:for-each>
-                    </div>
-                </xsl:if>
-                
-                <xsl:if test="m:translation[@status = $render-status]">
-                    <div id="license">
-                        <img>
-                            <!-- Update to set image in CSS -->
-                            <xsl:attribute name="src" select="replace(m:translation/m:publication/m:license/@img-url, '^http:', 'https:')"/>
-                            <xsl:attribute name="alt" select="'Logo for the license'"/>
-                        </img>
-                        <xsl:for-each select="m:translation/m:publication/m:license/tei:p">
-                            <p class="text-muted small">
-                                <xsl:apply-templates select="node()"/>
-                            </p>
-                        </xsl:for-each>
-                    </div>
+                    
+                    <xsl:if test="m:translation[@status = $render-status]">
+                        <div id="license">
+                            <img>
+                                <!-- Update to set image in CSS -->
+                                <xsl:attribute name="src" select="replace(m:translation/m:publication/m:license/@img-url, '^http:', 'https:')"/>
+                                <xsl:attribute name="alt" select="'Logo for the license'"/>
+                            </img>
+                            <xsl:for-each select="m:translation/m:publication/m:license/tei:p">
+                                <p class="text-muted small">
+                                    <xsl:apply-templates select="node()"/>
+                                </p>
+                            </xsl:for-each>
+                        </div>
+                    </xsl:if>
+                    
                 </xsl:if>
                 
                 <!-- Additional front-matter -->
-                <xsl:if test="m:translation[@status = $render-status]">
+                <xsl:if test="m:translation[@status = $render-status]/m:downloads">
                     
                     <!-- Download options -->
                     <aside class="download-options hidden-print text-center">
@@ -774,7 +796,7 @@
                                 <xsl:attribute name="download" select="@filename"/>
                                 <xsl:attribute name="class" select="'btn-round log-click'"/>
                                 <xsl:if test="@type = ('pdf', 'epub', 'azw3')">
-                                    <xsl:attribute name="data-page-alert" select="common:internal-link('/widget/download-dana.html', concat('resource-id=', /m:response/m:translation/m:source[1]/@key), '#dana-description', /m:response/@lang)"/>
+                                    <xsl:attribute name="data-page-alert" select="common:internal-link('/widget/download-dana.html', concat('resource-id=', $toh-key), '#dana-description', /m:response/@lang)"/>
                                 </xsl:if>
                                 <xsl:call-template name="download-icon">
                                     <xsl:with-param name="type" select="@type"/>
@@ -805,39 +827,41 @@
     
     <xsl:template name="body-title">
         
-        <aside id="body-title" class="page part-type-translation">
-            
-            <hr class="hidden-print"/>
-            
-            <div class="rw rw-section-head">
+        <xsl:if test="m:translation/m:part[@type eq 'translation']">
+            <aside id="body-title" class="page part-type-translation">
                 
-                <xsl:attribute name="id" select="m:translation/m:part[@type eq 'translation']/@id"/>
+                <hr class="hidden-print"/>
                 
-                <div class="rw-heading heading-section chapter">
+                <div class="rw rw-section-head">
                     
-                    <xsl:if test="m:translation/m:part[@type eq 'translation']/m:honoration[text()]">
-                        <h3>
-                            <xsl:apply-templates select="m:translation/m:part[@type eq 'translation']/m:honoration"/>
-                        </h3>
-                    </xsl:if>
+                    <xsl:attribute name="id" select="m:translation/m:part[@type eq 'translation']/@id"/>
                     
-                    <xsl:if test="m:translation/m:part[@type eq 'translation']/m:main-title[text()]">
-                        <h3 class="h1">
-                            <xsl:apply-templates select="m:translation/m:part[@type eq 'translation']/m:main-title"/>
-                            <xsl:if test="m:translation/m:part[@type eq 'translation']/m:sub-title[text()]">
-                                <br/>
-                                <small>
-                                    <xsl:apply-templates select="m:translation/m:part[@type eq 'translation']/m:sub-title"/>
-                                </small>
-                            </xsl:if>
-                        </h3>
-                    </xsl:if>
+                    <div class="rw-heading heading-section chapter">
+                        
+                        <xsl:if test="m:translation/m:part[@type eq 'translation']/m:honoration[text()]">
+                            <h3>
+                                <xsl:apply-templates select="m:translation/m:part[@type eq 'translation']/m:honoration"/>
+                            </h3>
+                        </xsl:if>
+                        
+                        <xsl:if test="m:translation/m:part[@type eq 'translation']/m:main-title[text()]">
+                            <h3 class="h1">
+                                <xsl:apply-templates select="m:translation/m:part[@type eq 'translation']/m:main-title"/>
+                                <xsl:if test="m:translation/m:part[@type eq 'translation']/m:sub-title[text()]">
+                                    <br/>
+                                    <small>
+                                        <xsl:apply-templates select="m:translation/m:part[@type eq 'translation']/m:sub-title"/>
+                                    </small>
+                                </xsl:if>
+                            </h3>
+                        </xsl:if>
+                        
+                    </div>
                     
                 </div>
                 
-            </div>
-            
-        </aside>
+            </aside>
+        </xsl:if>
         
     </xsl:template>
     

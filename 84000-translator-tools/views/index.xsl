@@ -367,7 +367,7 @@
                                     <div class="col-sm-6 text-right">
                                         <a target="_self">
                                             <xsl:attribute name="href" select="concat('glossary-items.html?term=', fn:encode-for-uri(m:main-term/text()), '&amp;lang=', m:main-term/@xml:lang, '#glossary-items')"/>
-                                            <xsl:attribute name="data-ajax-target" select="concat('#occurrences-', position())"/>
+                                            <xsl:attribute name="data-ajax-target" select="concat('#occurrences-', position(), ' .ajax-content')"/>
                                             <span class="badge badge-notification">
                                                 <xsl:value-of select="@count-items"/>
                                             </span>
@@ -380,6 +380,8 @@
                                 
                                 <div class="collapse sml-margin top">
                                     <xsl:attribute name="id" select="concat('occurrences-', position())"/>
+                                    <!-- Ajax data here -->
+                                    <div class="ajax-content"/>
                                 </div>
                                 
                             </div>                                    

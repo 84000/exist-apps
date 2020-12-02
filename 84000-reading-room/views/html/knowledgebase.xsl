@@ -115,18 +115,10 @@
         <!-- Pass the content to the page -->
         <xsl:call-template name="website-page">
             <xsl:with-param name="page-url" select="m:knowledgebase/m:page/@page-url"/>
-            <xsl:with-param name="page-class" select="concat('reading-room translation',  if(m:request/@view-mode gt '') then concat(' ', m:request/@view-mode, '-mode') else '')"/>
+            <xsl:with-param name="page-class" select="'reading-room translation'"/>
             <xsl:with-param name="page-title" select="concat(m:knowledgebase/m:page/m:titles/m:title[@xml:lang eq 'en'][@type eq 'mainTitle']/text(), ' | 84000 Reading Room')"/>
             <xsl:with-param name="page-description" select="normalize-space(data(m:knowledgebase/m:page/m:summary/tei:p[1]))"/>
             <xsl:with-param name="content" select="$content"/>
-            <xsl:with-param name="additional-links">
-                
-                <xsl:if test="m:request/@view-mode eq 'annotation'">
-                    <!-- <script type="application/json" class="js-hypothesis-config">{"theme": "clean"}</script> -->
-                    <script src="https://hypothes.is/embed.js" async="async"/>
-                </xsl:if>
-                
-            </xsl:with-param>
         </xsl:call-template>
         
     </xsl:template>

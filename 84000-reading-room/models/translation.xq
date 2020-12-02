@@ -9,6 +9,7 @@ xquery version "3.0" encoding "UTF-8";
 :)
 
 declare namespace m = "http://read.84000.co/ns/1.0";
+declare namespace tei = "http://www.tei-c.org/ns/1.0";
 
 import module namespace common="http://read.84000.co/common" at "../modules/common.xql";
 import module namespace tei-content="http://read.84000.co/tei-content" at "../modules/tei-content.xql";
@@ -20,7 +21,7 @@ declare option exist:serialize "method=xml indent=no";
 let $resource-id := request:get-parameter('resource-id', '')
 let $resource-suffix := request:get-parameter('resource-suffix', '')
 let $part := request:get-parameter('part', 'none')
-let $view-mode := common:view-mode()
+let $view-mode := request:get-parameter('view-mode', '')
 let $archive-path := request:get-parameter('archive-path', ())
 
 let $tei := tei-content:tei($resource-id, 'translation', $archive-path)
@@ -35,20 +36,39 @@ return
         
         (: Get the source so we can extract the Toh :)
         let $source := tei-content:source($tei, $resource-id)
-        
-        
-        (: 
-            Include all parts
-            - if view-mode is editor / annotation
-            - if it's ebook or txt output
-            - if it's a short text
-        :)
-        let $short-text-page-count := 50
-        let $part-root := 
-            if($view-mode = ('editor', 'annotation') or $resource-suffix = ('ebook', 'txt') or $source/m:location/@count-pages ! xs:integer(.) le $short-text-page-count) then 
-                'all'
+
+        (: Set the client mode :)
+        let $client-mode :=
+            if($view-mode = ('passage', 'passage-bypass-cache', 'tests', 'pdf', 'app')) then 
+                'no-client'
             else 
-                translation:part-root($tei, $part)
+                'client'
+        
+        (: Set the layout mode :)
+        let $layout-mode :=
+            if($view-mode = ('tests', 'pdf', 'app')) then 
+                'machine'
+            else if($view-mode = ('passage', 'passage-bypass-cache')) then 
+                'passage'
+            else if($view-mode = ('annotation')) then 
+                'expanded-fixed'
+            else if($view-mode = ('editor')) then 
+                'expanded'
+            else 
+                'fully-functional'
+        
+        (: Set the glossary mode :)
+        let $glossary-mode := 
+            if($view-mode = ('pdf')) then
+                'suppress'
+            else if ($view-mode = ('annotation')) then
+                'defer'
+            else if ($view-mode = ('editor')) then
+                'defer-bypass-cache'
+            else if ($view-mode = ('passage-bypass-cache')) then
+                'bypass-cache'
+            else 
+                'use-cache'
         
         let $canonical-id := $archive-path
         (:let $canonical-id := string-join(($archive-path, $part-root), '-') :)
@@ -65,7 +85,10 @@ return
                         attribute resource-suffix { $resource-suffix },
                         attribute doc-type { request:get-parameter('resource-suffix', 'html') },
                         attribute part { $part },
-                        attribute view-mode { $view-mode }
+                        attribute view-mode { $view-mode },
+                        attribute client-mode { $client-mode },
+                        attribute layout-mode { $layout-mode },
+                        attribute glossary-mode { $glossary-mode }
                     },
                     
                     (: Compile all the translation data :)
@@ -79,23 +102,30 @@ return
                         (: Data for rdf and json :)
                         if($resource-suffix = ('rdf', 'json')) then (
                             translation:titles($tei),
+                            $source,
                             translation:long-titles($tei),
-                            tei-content:source($tei, $resource-id),
                             translation:publication($tei),
                             tei-content:ancestors($tei, $source/@key, 1),
                             translation:downloads($tei, $source/@key, 'any-version'),
-                            translation:summary($tei, 'show')
+                            translation:summary($tei)
                         )
                         
                         (: Data for html (pdf) and epub :)
                         else (
+                            
                             translation:titles($tei),
-                            translation:long-titles($tei),
                             $source,
-                            translation:publication($tei),
-                            tei-content:ancestors($tei, $source/@key, 1),
-                            translation:downloads($tei, $source/@key, 'any-version'),
-                            translation:parts($tei, $part-root)
+                            
+                            (: Don't need these for a passage :)
+                            if (not($view-mode = ('passage', 'passage-bypass-cache'))) then (
+                                translation:long-titles($tei),
+                                translation:publication($tei),
+                                tei-content:ancestors($tei, $source/@key, 1),
+                                translation:downloads($tei, $source/@key, 'any-version')
+                            )
+                            else ()
+                            ,
+                            translation:parts($tei, $part, $view-mode)
                         ),
                         
                         (: Include caches :)
@@ -123,4 +153,4 @@ return
                     }
                 )
             )
-
+            

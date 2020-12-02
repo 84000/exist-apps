@@ -125,24 +125,37 @@ declare function local:permanent-ids($doc) {
 };
 
 declare function local:temporary-ids($doc) {
+
     (: Add temporary ids to searchable nodes with no id :)
     (: This allows the search to link through to this block of text :)
-    (: These only need to persist for a search/find operation :)
-    let $elements-missing-ids := 
-        $doc//tei:text//tei:p[(not(@tid) or @tid='')]
-        | $doc//tei:text//tei:head[(not(@tid) or @tid='')]
-        | $doc//tei:text//tei:lg[(not(@tid) or @tid='')]
-        | $doc//tei:text//tei:ab[(not(@tid) or @tid='')]
-        | $doc//tei:text//tei:trailer[(not(@tid) or @tid='')]
-        | $doc//tei:front//tei:list/tei:head[(not(@tid) or @tid='')]
-        | $doc//tei:body//tei:list/tei:head[(not(@tid) or @tid='')]
+    (: These only need to persist for a request/response cycle:)
     
-    where $elements-missing-ids
-        let $max-id := max($doc//@tid ! common:integer(.))
-        for $element at $index in $elements-missing-ids
-            let $new-id := sum(($max-id, $index))
-        return
-            update insert attribute tid { $new-id } into $element
+    let $elements := 
+        $doc//tei:text//tei:p
+        | $doc//tei:text//tei:head
+        | $doc//tei:text//tei:lg
+        | $doc//tei:text//tei:ab
+        | $doc//tei:text//tei:trailer
+        | $doc//tei:front//tei:list/tei:head
+        | $doc//tei:body//tei:list/tei:head
+    
+    let $elements-to-update := (
+        for $element in $elements[@tid]
+        let $element-id := $element/@tid
+        group by $element-id
+        where count($element) gt 1
+        return $element
+        ,
+        $elements[not(@tid) or @tid eq '']
+    )
+    
+    where $elements-to-update
+    
+    let $max-id := max($doc//@tid ! common:integer(.))
+    
+    for $element at $index in $elements-to-update
+    return
+        update insert attribute tid { sum(($max-id, $index)) } into $element
 };
 
 declare function local:remove-temporary-ids($doc) {

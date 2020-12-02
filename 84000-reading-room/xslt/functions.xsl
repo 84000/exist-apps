@@ -404,6 +404,37 @@
         </xsl:if>
     </xsl:function>
     
+    
+    <xsl:function name="common:normalize-data" as="xs:string?">
+        
+        <xsl:param name="arg" as="xs:string?"/>
+        <xsl:sequence select="replace($arg, '\s+', ' ')"/>
+        
+    </xsl:function>
+    
+    <xsl:function name="common:matches-regex" as="xs:string">
+        
+        <xsl:param name="strings" as="xs:string*"/>
+        <xsl:variable name="strings-combined" select="string-join($strings ! normalize-space(.) ! common:escape-for-regex(.), '|')"/>
+        <xsl:value-of select="concat('(^|[^-\w])(', $strings-combined, ')(s|es|&#34;s|s&#34;)?([^-\w]|$)')"/>
+        
+    </xsl:function>
+    
+    <xsl:function name="common:matches-regex-exact" as="xs:string">
+        
+        <xsl:param name="strings" as="xs:string*"/>
+        <xsl:value-of select="concat('^\s*(', string-join($strings[normalize-space(.)] ! normalize-space(.) ! common:escape-for-regex(.), '|'), ')\s*$')"/>
+        
+    </xsl:function>
+    
+    <xsl:function name="common:escape-for-regex" as="xs:string?">
+        
+        <xsl:param name="arg" as="xs:string?"/>
+        <xsl:sequence select="replace($arg, '(\.|\[|\]|\\|\||\-|\^|\$|\?|\*|\+|\{|\}|\(|\))','\\$1')"/>
+        
+    </xsl:function>
+    
+    
     <xsl:function name="functx:replace-multi" as="xs:string?">
         
         <xsl:param name="arg" as="xs:string?"/>
