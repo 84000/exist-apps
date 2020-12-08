@@ -112,21 +112,39 @@
                                 </fieldset>
                             </div>
                             
-                            <section class="col-sm-6">
-                                <div class="relative" id="sponsor-acknowledgements">
+                            <div class="col-sm-6">
+                                <section>
+                                    
+                                    <xsl:variable name="section-id" select="'sponsor-acknowledgements'"/>
+                                    <xsl:attribute name="id" select="$section-id"/>
+                                    
                                     <xsl:if test="count(m:sponsor/m:acknowledgement) gt 1">
-                                        <xsl:attribute name="class" select="'relative preview-list render-in-viewport'"/>
+                                        
+                                        <xsl:attribute name="class" select="'preview-list preview'"/>
+                                        
+                                        <xsl:call-template name="preview-controls">
+                                            
+                                            <xsl:with-param name="section-id" select="$section-id"/>
+                                            
+                                        </xsl:call-template>
+                                        
                                     </xsl:if>
-                                    <h4>Acknowledgements</h4>
+                                    
+                                    <h4>
+                                        <xsl:value-of select="'Acknowledgements'"/>
+                                    </h4>
+                                    
                                     <hr class="sml-margin"/>
+                                    
                                     <xsl:call-template name="acknowledgements">
                                         <xsl:with-param name="acknowledgements" select="m:sponsor/m:acknowledgement"/>
                                         <xsl:with-param name="css-class" select="''"/>
                                         <xsl:with-param name="group" select="''"/>
                                         <xsl:with-param name="link-href" select="'/edit-text-sponsors.html?id=@translation-id'"/>
                                     </xsl:call-template>
-                                </div>
-                            </section>
+                                    
+                                </section>
+                            </div>
                             
                         </div>
                     </form>

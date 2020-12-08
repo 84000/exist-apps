@@ -52,7 +52,7 @@ let $ref-sort-index :=
 
 let $source-text := source:etext-page($tei-location, $ref-sort-index, true(), $highlight)
 let $translation-text := translation:folio-content($tei, $resource-id, $ref-resource-index)
-let $ref-id := $translation-text//tei:ref[@xml:id][1]/@xml:id
+let $ref-1 := $translation-text//tei:ref[@xml:id][1]
 
 return 
     common:response(
@@ -87,13 +87,11 @@ return
                 </translation>,
                 
                 (: Include back link to the passage in the text :)
-                if($ref-id) then
-                    <back-link 
-                        xmlns="http://read.84000.co/ns/1.0"
-                        url="{ concat($common:environment/m:url[@id eq 'reading-room'], '/translation/', $resource-id, '.html', '?part=', $ref-id, '#', $ref-id) }">
-                        <title>{ tei-content:title($tei) }</title>
-                    </back-link>
-                else ()
+                <back-link 
+                    xmlns="http://read.84000.co/ns/1.0"
+                    url="{ concat($common:environment/m:url[@id eq 'reading-room'], '/translation/', $resource-id, '.html', '?part=', $ref-1/@xml:id, '#', $ref-1/@xml:id) }">
+                    <title>{ tei-content:title($tei) }</title>
+                </back-link>
                 
             )
             

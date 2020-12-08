@@ -795,7 +795,7 @@
                     </xsl:attribute>
                 </input>
             </xsl:if>
-            <div id="search-controls" class="input-group">
+            <div class="input-group search-controls">
                 <input type="text" name="s" class="form-control">
                     <xsl:attribute name="placeholder">
                         <xsl:call-template name="translation">

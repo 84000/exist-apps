@@ -460,6 +460,7 @@ declare function glossary:translation-data($tei as element(tei:TEI), $resource-i
     
     (: The translation data for a glossary query - we need text-id and toh-key :)
     let $source := tei-content:source($tei, $resource-id)
+    let $view-mode := $translation:view-modes/m:view-mode[@id eq 'glossary-editor']
     
     return
         common:response(
@@ -472,10 +473,7 @@ declare function glossary:translation-data($tei as element(tei:TEI), $resource-i
                     attribute resource-suffix { 'html' },
                     attribute doc-type { 'html' },
                     attribute part { 'all' },
-                    attribute view-mode { 'glossary-editor' },
-                    attribute client-mode { 'no-client' },
-                    attribute layout-mode { 'machine' },
-                    attribute glossary-mode { 'bypass-cache' },
+                    $view-mode,
                     
                     (: Glossary ids to test :)
                     for $test-glossary-id in $test-glossary-ids
@@ -499,8 +497,8 @@ declare function glossary:translation-data($tei as element(tei:TEI), $resource-i
                     translation:long-titles($tei),
                     $source,
                     translation:publication($tei),
-                    translation:parts($tei, 'all', 'glossary-editor'),
-            
+                    translation:parts($tei, 'all', $view-mode),
+                    
                     (: Include caches - not glossary :)
                     translation:notes-cache($tei, false()),
                     translation:milestones-cache($tei, false()),
@@ -516,7 +514,7 @@ declare function glossary:translation-data($tei as element(tei:TEI), $resource-i
                     },
                     element value {
                         attribute key { '#LinkToSelf' },
-                        text { translation:local-html($source/@key, '') }
+                        text { translation:local-html($source/@key) }
                     },
                     element value {
                         attribute key { '#canonicalHTML' },

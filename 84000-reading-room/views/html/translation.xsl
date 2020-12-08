@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:common="http://read.84000.co/common" xmlns:epub="http://www.idpf.org/2007/ops" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xpf="http://www.w3.org/2005/xpath-functions" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" version="3.0" exclude-result-prefixes="#all">
     
     <xsl:import href="../../xslt/tei-to-xhtml.xsl"/>
 
@@ -46,7 +46,7 @@
                     <div class="row">
                         <div class="col-md-offset-1 col-md-10 col-lg-offset-2 col-lg-8 print-width-override">
 
-                            <xsl:if test="not($layout-mode eq 'passage')">
+                            <xsl:if test="$view-mode[not(@layout eq 'part-only')]">
                                 
                                 <!-- Front matter -->
                                 <xsl:call-template name="front-matter"/>
@@ -133,7 +133,7 @@
                 </div>
             </article>
             
-            <xsl:if test="not($layout-mode = ('passage', 'machine'))">
+            <xsl:if test="$view-mode[not(@layout = ('part-only', 'stripped'))]">
                 
                 <!-- Navigation controls -->
                 <div class="nav-controls show-on-scroll-xs hidden-print">
@@ -155,16 +155,7 @@
                         
                         <!-- Link to the start of the section / defaults to the start of the page -->
                         <a class="btn-round scroll-to-anchor link-to-top" title="top">
-                            <xsl:attribute name="href">
-                                <xsl:choose>
-                                    <xsl:when test="m:translation//m:part[@prefix][@render eq 'show'][@id eq /m:response/m:request/@part]">
-                                        <xsl:value-of select="concat('#', m:translation//m:part[@prefix][@render eq 'show'][@id eq /m:response/m:request/@part][1]/@id)"/>
-                                    </xsl:when>
-                                    <xsl:otherwise>
-                                        <xsl:value-of select="'#top'"/>
-                                    </xsl:otherwise>
-                                </xsl:choose>
-                            </xsl:attribute>
+                            <xsl:attribute name="href" select="'#top'"/>
                             <i class="fa fa-arrow-up" aria-hidden="true"/>
                         </a>
                         
@@ -205,7 +196,7 @@
                     <div class="fix-height">
                         <div class="data-container">
                             <!-- Ajax data here -->
-                            <div class="ajax-content"/>
+                            <div class="ajax-target"/>
                         </div>
                     </div>
                     <div class="fixed-btn-container close-btn-container">
@@ -494,18 +485,27 @@
                     <xsl:with-param name="html-classes">
                         
                         <xsl:choose>
-                            <xsl:when test="$part[@render eq 'show']">
+                            <xsl:when test="$part[@render eq 'collapse'] and $view-mode[@layout = ('expanded-fixed', 'stripped')]">
+                                <!-- .show displays content expanded -->
                                 <xsl:value-of select="'show'"/>
                             </xsl:when>
-                            <xsl:when test="$part[@render eq 'collapse'] and $layout-mode = ('expanded', 'expanded-fixed', 'machine')">
+                            <xsl:when test="$part[@render eq 'collapse'] and $view-mode[@layout = ('expanded')]">
+                                <!-- .show displays content expanded -->
                                 <xsl:value-of select="'show'"/>
                             </xsl:when>
                             <xsl:when test="$part[@render eq 'preview']">
+                                <!-- .preview displays content collapsed -->
+                                <!-- .partial indicates that it is incomplete -->
                                 <xsl:value-of select="'preview partial'"/>
                             </xsl:when>
                             <xsl:when test="$part[@render eq 'collapse']">
+                                <!-- .preview displays content collapsed -->
                                 <xsl:value-of select="'preview'"/>
                             </xsl:when>
+                            <xsl:otherwise>
+                                <!-- .show displays content expanded -->
+                                <xsl:value-of select="'show'"/>
+                            </xsl:otherwise>
                         </xsl:choose>
                         
                     </xsl:with-param>
@@ -513,45 +513,25 @@
                 </xsl:call-template>
                 
                 <!-- Add controls to expand / collapse -->
-                <xsl:if test="$part[@render = ('show', 'collapse', 'preview')] and not($layout-mode = ('expanded-fixed', 'machine'))">
+                <xsl:if test="$view-mode[not(@layout = ('expanded-fixed', 'stripped'))] and $part[@render = ('show', 'collapse', 'preview', 'part-only')]">
                     
-                    <!-- Expand -->
-                    <a target="_self" title="Read this section">
+                    <xsl:call-template name="preview-controls">
                         
-                        <xsl:choose>
-                            
-                            <xsl:when test="$part[@render eq 'preview']">
-                                <xsl:attribute name="href" select="concat('?part=', $part/@id, m:view-mode-parameter(), '#', $part/@id)"/>
-                                <xsl:attribute name="class" select="'reveal'"/>
-                                <xsl:attribute name="data-loading" select="concat('Loading: ', $part/tei:head[@type eq $part/@type][1]/data(), '...')"/>
-                            </xsl:when>
-                            
-                            <xsl:otherwise>
-                                <xsl:attribute name="href" select="concat('#', $part/@id)"/>
-                                <xsl:attribute name="class" select="'reveal log-click'"/>
-                            </xsl:otherwise>
-                            
-                        </xsl:choose>
+                        <xsl:with-param name="section-id" select="$part/@id"/>
+                        <xsl:with-param name="log-click" select="true()"/>
                         
-                        <span class="btn-round">
-                            <i class="fa fa-angle-down"/>
-                        </span>
+                        <!-- Provide complete navigation links so they will be followed by crawlers and right-click works -->
+                        <xsl:with-param name="get-url">
+                            <xsl:if test="$part[@render eq 'preview']">
+                                <xsl:value-of select="concat('?part=', $part/@id, m:view-mode-parameter(), '#', $part/@id)"/>
+                            </xsl:if>
+                        </xsl:with-param>
                         
-                    </a>
-                    
-                    <!-- Collapse -->
-                    <a class="preview" title="Close this section">
-                        <xsl:attribute name="href" select="concat('#', $part/@id)"/>
-                        <span class="btn-round">
-                            <i class="fa fa-times"/>
-                        </span>
-                    </a>
+                    </xsl:call-template>
                     
                 </xsl:if>
                 
-                <xsl:if test="not($layout-mode eq 'passage')">
-                    <hr class="hidden-print"/>
-                </xsl:if>
+                <hr class="hidden-print"/>
                 
                 <xsl:choose>
                     
@@ -607,7 +587,7 @@
                 </xsl:if>
                 
                 <!-- Warn the user not to print a partial view -->
-                <xsl:if test="$part-status eq 'part'">
+                <xsl:if test="not($part-status eq 'complete')">
                     <div class="visible-print-block">
                         
                         <div class="well text-center margin-top hidden-pdf">
@@ -639,6 +619,7 @@
                                     </a>
                                 </p>
                             </xsl:if>
+                            
                         </div>
                         
                     </div>

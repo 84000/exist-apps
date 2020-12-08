@@ -21,7 +21,8 @@ declare option exist:serialize "method=xml indent=no";
 let $resource-id := request:get-parameter('resource-id', '')
 let $resource-suffix := request:get-parameter('resource-suffix', '')
 let $part := request:get-parameter('part', 'none')
-let $view-mode := request:get-parameter('view-mode', '')
+let $view-mode-id := request:get-parameter('view-mode', 'default')
+(:let $request-mode := request:get-parameter('request-mode', ''):)
 let $archive-path := request:get-parameter('archive-path', ())
 
 let $tei := tei-content:tei($resource-id, 'translation', $archive-path)
@@ -36,42 +37,22 @@ return
         
         (: Get the source so we can extract the Toh :)
         let $source := tei-content:source($tei, $resource-id)
+        
+        (: Set the view-mode which controls variations in the display :)
+        let $view-mode :=
+            (:if($view-mode-id eq 'default' and $request-mode eq 'ajax' and not($part eq 'none')) then
+                $translation:view-modes/m:view-mode[@id eq 'ajax-part']
+                
+            else:) if(request:get-parameter('resource-suffix', '') eq 'epub') then
+                $translation:view-modes/m:view-mode[@id eq 'ebook']
+                
+            else if($translation:view-modes/m:view-mode[@id eq $view-mode-id]) then
+                $translation:view-modes/m:view-mode[@id eq $view-mode-id]
+                
+            else
+                $translation:view-modes/m:view-mode[@id eq 'default']
 
-        (: Set the client mode :)
-        let $client-mode :=
-            if($view-mode = ('passage', 'passage-bypass-cache', 'tests', 'pdf', 'app')) then 
-                'no-client'
-            else 
-                'client'
-        
-        (: Set the layout mode :)
-        let $layout-mode :=
-            if($view-mode = ('tests', 'pdf', 'app')) then 
-                'machine'
-            else if($view-mode = ('passage', 'passage-bypass-cache')) then 
-                'passage'
-            else if($view-mode = ('annotation')) then 
-                'expanded-fixed'
-            else if($view-mode = ('editor')) then 
-                'expanded'
-            else 
-                'fully-functional'
-        
-        (: Set the glossary mode :)
-        let $glossary-mode := 
-            if($view-mode = ('pdf')) then
-                'suppress'
-            else if ($view-mode = ('annotation')) then
-                'defer'
-            else if ($view-mode = ('editor')) then
-                'defer-bypass-cache'
-            else if ($view-mode = ('passage-bypass-cache')) then
-                'bypass-cache'
-            else 
-                'use-cache'
-        
         let $canonical-id := $archive-path
-        (:let $canonical-id := string-join(($archive-path, $part-root), '-') :)
         
         return
             
@@ -85,10 +66,7 @@ return
                         attribute resource-suffix { $resource-suffix },
                         attribute doc-type { request:get-parameter('resource-suffix', 'html') },
                         attribute part { $part },
-                        attribute view-mode { $view-mode },
-                        attribute client-mode { $client-mode },
-                        attribute layout-mode { $layout-mode },
-                        attribute glossary-mode { $glossary-mode }
+                        $view-mode
                     },
                     
                     (: Compile all the translation data :)
@@ -117,7 +95,7 @@ return
                             $source,
                             
                             (: Don't need these for a passage :)
-                            if (not($view-mode = ('passage', 'passage-bypass-cache'))) then (
+                            if (not($view-mode[@layout eq 'part-only'])) then (
                                 translation:long-titles($tei),
                                 translation:publication($tei),
                                 tei-content:ancestors($tei, $source/@key, 1),
@@ -144,7 +122,7 @@ return
                         },
                         element value {
                             attribute key { '#LinkToSelf' },
-                            text { translation:local-html($source/@key, $canonical-id) }
+                            text { translation:local-html($source/@key) }
                         },
                         element value {
                             attribute key { '#canonicalHTML' },

@@ -5,6 +5,7 @@
     <xsl:import href="../../xslt/84000-html.xsl"/>
     <xsl:import href="../../xslt/functions.xsl"/>
     <xsl:import href="../../xslt/lang.xsl"/>
+    <xsl:import href="../../xslt/layout.xsl"/>
     
     <!-- Look up environment variables -->
     <xsl:variable name="environment" select="if(/m:response[m:environment]) then /m:response/m:environment else doc('/db/system/config/db/system/environment.xml')/m:environment"/>
@@ -22,15 +23,13 @@
     
     <!-- language [en|zh] -->
     <xsl:variable name="lang" select="if(/m:response/@lang) then /m:response/@lang else 'en'" as="xs:string"/>
-    <!-- view-mode [editor|annotation|glossary-editor|ajax|epub|app|passage|passage-bypass-cache|tests] -->
-    <xsl:variable name="view-mode" select="/m:response/m:request/@view-mode" as="xs:string?"/>
+    
+    <!-- view-mode [default|editor|annotation|ajax-part|passage|passage-no-cache|ebook|pdf||app|tests|glossary-editor] -->
+    <xsl:variable name="view-mode" select="/m:response/m:request/m:view-mode" as="element(m:view-mode)?"/>
     <xsl:function name="m:view-mode-parameter" as="xs:string">
-        <xsl:value-of select="if($view-mode = ('editor', 'annotation', 'epub')) then concat('&amp;view-mode=', $view-mode)  else ''"/>
+        <xsl:value-of select="if($view-mode[not(@id eq 'default')]) then concat('&amp;view-mode=', $view-mode/@id)  else ''"/>
     </xsl:function>
-    <!-- client-mode [no-client|client] -->
-    <xsl:variable name="client-mode" select="/m:response/m:request/@client-mode" as="xs:string?"/>
-    <!-- layout-mode [passage|machine|expanded|expanded-fixed|full] -->
-    <xsl:variable name="layout-mode" select="/m:response/m:request/@layout-mode" as="xs:string?"/>
+    
     <!-- doc-type [html|epub|ncx] -->
     <xsl:variable name="doc-type" select="/m:response/m:request/@doc-type"/>
     
@@ -117,7 +116,7 @@
                 <xsl:attribute name="href" select="concat($front-end-path, '/css/ie10-viewport-bug-workaround.css')"/>
             </link>
             
-            <xsl:if test="not($client-mode eq 'no-client')">
+            <xsl:if test="not($view-mode[@client eq 'no-client'])">
                 
                 <link rel="apple-touch-icon">
                     <xsl:attribute name="href" select="concat($front-end-path, '/favicon/apple-touch-icon.png')"/>
@@ -172,7 +171,7 @@
                     <xsl:attribute name="src" select="concat($front-end-path, '/js/84000-fe.min.js', $app-version-url-attribute)"/>
                 </script>
                 
-                <xsl:if test="$view-mode eq 'annotation'">
+                <xsl:if test="$view-mode[@id eq 'annotation']">
                     <!-- <script type="application/json" class="js-hypothesis-config">{"theme": "clean"}</script> -->
                     <script src="https://hypothes.is/embed.js" async="async"/>
                 </xsl:if>
@@ -192,7 +191,7 @@
         <xsl:apply-templates select="$eft-footer"/>
         
         <!-- Don't add js in static mode -->
-        <xsl:if test="not($client-mode eq 'no-client')">
+        <xsl:if test="not($view-mode[@client eq 'no-client'])">
             <xsl:if test="$ga-tracking-id and not($ga-tracking-id eq '')">
                 <!-- Global site tag (gtag.js) - Google Analytics -->
                 <script async="async">
@@ -237,8 +236,8 @@
                 
                 <xsl:attribute name="class">
                     <xsl:value-of select="$page-class"/>
-                    <xsl:if test="$view-mode gt ''">
-                        <xsl:value-of select="concat(' ', $view-mode, '-mode')"/>
+                    <xsl:if test="$view-mode[@id]">
+                        <xsl:value-of select="concat(' ', $view-mode/@id, '-mode')"/>
                     </xsl:if>
                 </xsl:attribute>
                 
@@ -298,8 +297,8 @@
                 
                 <xsl:attribute name="class">
                     <xsl:value-of select="$page-class"/>
-                    <xsl:if test="$view-mode gt ''">
-                        <xsl:value-of select="concat(' ', $view-mode, '-mode')"/>
+                    <xsl:if test="$view-mode[@id]">
+                        <xsl:value-of select="concat(' ', $view-mode/@id, '-mode')"/>
                     </xsl:if>
                 </xsl:attribute>
                 
@@ -370,7 +369,7 @@
                 <!-- Place content -->
                 <xsl:copy-of select="$content"/>
                 
-                <xsl:if test="not($client-mode eq 'no-client')">
+                <xsl:if test="not($view-mode[@client eq 'no-client'])">
                     
                     <!-- Foooter components -->
                     <span id="media_test">

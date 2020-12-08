@@ -186,7 +186,7 @@
             <div class="fix-height">
                 <div class="data-container">
                     <!-- Ajax data here -->
-                    <div id="ajax-content"/>
+                    <div class="ajax-target"/>
                 </div>
             </div>
             <div class="fixed-btn-container close-btn-container">

@@ -227,8 +227,11 @@
         <div data-spy="affix">
             <div class="btn-group-vertical btn-group-xs" role="group" aria-label="navigation">
                 <xsl:for-each select="$items-with-start-letters">
+                    
                     <xsl:sort select="@start-letter"/>
+                    
                     <xsl:variable name="start-letter" select="@start-letter"/>
+                    
                     <xsl:if test="not(preceding-sibling::*[@start-letter = $start-letter])">
                         
                         <a class="btn btn-default scroll-to-anchor">
@@ -237,6 +240,7 @@
                         </a>
                         
                     </xsl:if>
+                    
                 </xsl:for-each>
             </div>
         </div>

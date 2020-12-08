@@ -351,9 +351,14 @@ declare function tests:section($section-tei as element()*, $section-html as elem
     let $section-tei-type := $section-tei/ancestor::tei:TEI/tei:teiHeader/tei:fileDesc/@type
     
     let $section-count-tei-p := 
-        count($section-tei//*[self::tei:p | self::tei:ab | self::tei:trailer | self::tei:bibl | self::tei:l[ancestor::tei:lg][not(ancestor::tei:note)]])
+        count($section-tei//*[self::tei:p | self::tei:ab | self::tei:trailer | self::tei:bibl])
     let $section-count-html-p := 
-        count($section-html//xhtml:p | $section-html//xhtml:div[common:contains-class(@class, 'line')]) 
+        count($section-html//xhtml:p) 
+        
+    let $section-count-tei-line := 
+        count($section-tei//tei:l[parent::tei:lg][not(ancestor::tei:note)])
+    let $section-count-html-line := 
+        count($section-html//xhtml:div[common:contains-class(@class, 'line')]) 
     
     let $section-count-tei-note := 
         count($section-tei//tei:note[@place eq 'end'])
@@ -395,6 +400,7 @@ declare function tests:section($section-tei as element()*, $section-html as elem
             pass="{ if(
                     $section-count-html-p ge $required-paragraphs
                     and $section-count-html-p eq $section-count-tei-p
+                    and $section-count-html-line eq $section-count-tei-line
                     and $section-count-html-note eq $section-count-tei-note
                     and $section-count-html-q eq $section-count-tei-q
                     and $section-count-html-id eq $section-count-tei-id
@@ -413,6 +419,7 @@ declare function tests:section($section-tei as element()*, $section-html as elem
             </title>
             <details>
                 <detail>{$section-count-tei-p} TEI paragraph(s), {$section-count-html-p} HTML paragraph(s).</detail>
+                <detail>{$section-count-tei-line} TEI line(s), {$section-count-html-line} HTML line(s).</detail>
                 <detail>{$section-count-tei-note} TEI note(s), {$section-count-html-note} HTML note(s).</detail>
                 <detail>{$section-count-tei-q} TEI quote(s), {$section-count-html-q} HTML quote(s).</detail>
                 <detail>{$section-count-tei-id} TEI id(s), {$section-count-html-id} HTML id(s).</detail>
@@ -507,9 +514,10 @@ declare function tests:translation-tantra-warning($tei as element(tei:TEI)*, $ht
 
 declare function tests:glossary($tei as element(tei:TEI)*, $html as element()*) as item() {
     
-    let $glossary-count-html := count($html//*[@id eq 'glossary']/*[common:contains-class(@class, 'glossary-item')])
     let $glossary-count-tei := count($tei//tei:back/tei:div[@type='glossary']//tei:gloss)
-    let $tei-terms-raw := $tei//tei:back/tei:div[@type='glossary']//tei:gloss[@xml:id]/tei:term[text()][not(@type eq 'definition')][not(@xml:lang) or @xml:lang = ('Sa-Ltn', 'bo', 'Bo-Ltn', 'en')](:[not(tei:ptr)]:)
+    let $glossary-count-html := count($html//*[@id eq 'glossary']/*[common:contains-class(@class, 'glossary-item')])
+    
+    let $tei-terms-raw := $tei//tei:back/tei:div[@type='glossary']//tei:gloss[@xml:id]/tei:term[not(@type = 'definition')][not(@xml:lang) or @xml:lang = ('Sa-Ltn', 'bo', 'Bo-Ltn', 'en')][normalize-space(text()[1])](:[not(tei:ptr)]:)
     let $empty-term-placeholders := (common:local-text('glossary.term-empty-sa-ltn', 'en'), common:local-text('glossary.term-empty-bo-ltn', 'en'))
     
     let $tei-terms := (
@@ -518,7 +526,7 @@ declare function tests:glossary($tei as element(tei:TEI)*, $html as element()*) 
     )
     
     let $html-term-elements := 
-        $html//*[@id eq 'glossary']/*[common:contains-class(@class, 'glossary-item')]//*[common:contains-class(@class, 'term')](:[not(xhtml:a[common:contains-class(@class, 'pointer')])]:)
+        $html//*[@id eq 'glossary']/*[common:contains-class(@class, 'glossary-item')]//*[common:contains-class(@class, 'term')][text()](:[not(xhtml:a[common:contains-class(@class, 'pointer')])]:)
     
     let $html-terms := 
         $html-term-elements[not(. = $empty-term-placeholders)] ! data(.) (:! tokenize(., '·'):) ! translate(., 'ᴀʙᴄᴅᴇꜰɢʜɪᴊᴋʟᴍɴᴏᴘǫʀsᴛᴜᴠᴡxʏᴢ', 'abcdefghijklmnopqrstuvwxyz') ! lower-case(.) ! tests:normalize-whitespace(.)

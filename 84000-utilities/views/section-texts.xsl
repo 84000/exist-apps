@@ -17,7 +17,7 @@
             <xsl:with-param name="content">
                 <xsl:call-template name="utilities-page">
                     <xsl:with-param name="content">
-                        <table id="ajax-content" class="table table-responsive ajax-content">
+                        <table id="ajax-source" class="table table-responsive ajax-target">
                             <thead>
                                 <tr>
                                     <th>#</th>

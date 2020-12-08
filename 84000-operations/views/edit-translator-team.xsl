@@ -95,40 +95,76 @@
                             </div>
                             
                             <div class="col-sm-6">
+                                
                                 <section>
-                                    <div id="team-persons" class="relative preview-list render-in-viewport">
-                                        <h4>Contributors</h4>
-                                        <hr class="sml-margin"/>
-                                        <xsl:choose>
-                                            <xsl:when test="m:team/m:person">
-                                                <xsl:for-each select="m:team/m:person">
-                                                    <div>
-                                                        <a target="_self">
-                                                            <xsl:attribute name="href" select="concat('/edit-translator.html?id=', @xml:id)"/>
-                                                            <xsl:value-of select="m:label"/>
-                                                        </a>
-                                                    </div>
-                                                </xsl:for-each>
-                                            </xsl:when>
-                                            <xsl:otherwise>
-                                                <div class="text-muted italic">
-                                                    <xsl:value-of select="'No contributors'"/>
-                                                </div>
-                                            </xsl:otherwise>
-                                        </xsl:choose>
-                                    </div>
-                                </section>
-                                <section>
-                                    <div id="team-acknowledgements" class="relative preview-list render-in-viewport">
-                                        <h4>Attribution</h4>
-                                        <hr class="sml-margin"/>
-                                        <xsl:call-template name="acknowledgements">
-                                            <xsl:with-param name="acknowledgements" select="m:team/m:acknowledgement"/>
-                                            <xsl:with-param name="css-class" select="''"/>
-                                            <xsl:with-param name="group" select="''"/>
-                                            <xsl:with-param name="link-href" select="'/edit-text-header.html?id=@translation-id'"/>
+                                    
+                                    <xsl:variable name="section-id" select="'team-persons'"/>
+                                    <xsl:attribute name="id" select="$section-id"/>
+                                    
+                                    <xsl:if test="count(m:team/m:person) gt 10">
+                                        <xsl:attribute name="class" select="'preview-list preview'"/>
+                                        
+                                        <xsl:call-template name="preview-controls">
+                                            
+                                            <xsl:with-param name="section-id" select="$section-id"/>
+                                            
                                         </xsl:call-template>
-                                    </div>
+                                    </xsl:if>
+                                    
+                                    <h4>
+                                        <xsl:value-of select="'Contributors'"/>
+                                    </h4>
+                                    
+                                    <hr class="sml-margin"/>
+                                    
+                                    <xsl:choose>
+                                        <xsl:when test="m:team/m:person">
+                                            <xsl:for-each select="m:team/m:person">
+                                                <div>
+                                                    <a target="_self">
+                                                        <xsl:attribute name="href" select="concat('/edit-translator.html?id=', @xml:id)"/>
+                                                        <xsl:value-of select="m:label"/>
+                                                    </a>
+                                                </div>
+                                            </xsl:for-each>
+                                        </xsl:when>
+                                        <xsl:otherwise>
+                                            <div class="text-muted italic">
+                                                <xsl:value-of select="'No contributors'"/>
+                                            </div>
+                                        </xsl:otherwise>
+                                    </xsl:choose>
+                                    
+                                </section>
+                                
+                                <section>
+                                    
+                                    <xsl:variable name="section-id" select="'team-acknowledgements'"/>
+                                    <xsl:attribute name="id" select="$section-id"/>
+                                    
+                                    <xsl:if test="count(m:team/m:acknowledgement) gt 5">
+                                        <xsl:attribute name="class" select="'preview-list preview'"/>
+                                        
+                                        <xsl:call-template name="preview-controls">
+                                            
+                                            <xsl:with-param name="section-id" select="$section-id"/>
+                                            
+                                        </xsl:call-template>
+                                    </xsl:if>
+                                    
+                                    <h4>
+                                        <xsl:value-of select="'Attribution'"/>
+                                    </h4>
+                                    
+                                    <hr class="sml-margin"/>
+                                    
+                                    <xsl:call-template name="acknowledgements">
+                                        <xsl:with-param name="acknowledgements" select="m:team/m:acknowledgement"/>
+                                        <xsl:with-param name="css-class" select="''"/>
+                                        <xsl:with-param name="group" select="''"/>
+                                        <xsl:with-param name="link-href" select="'/edit-text-header.html?id=@translation-id'"/>
+                                    </xsl:call-template>
+                                    
                                 </section>
                                 
                             </div>

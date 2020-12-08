@@ -193,80 +193,86 @@
                                 
                                 <section class="result-matches">
                                     
-                                    <xsl:attribute name="id" select="concat('result-matches-', position())"/>
+                                    <xsl:variable name="section-id" select="concat('result-matches-', position())"/>
+                                    <xsl:attribute name="id" select="$section-id"/>
                                     
-                                    <div class="relative">
+                                    <xsl:if test="$count-matches gt 1 and not($request-translation)">
                                         
-                                        <xsl:if test="$count-matches gt 1 and not($request-translation)">
-                                            <xsl:attribute name="class" select="'relative render-in-viewport'"/>
-                                        </xsl:if>
+                                        <xsl:attribute name="class" select="'result-matches preview'"/>
                                         
+                                        <xsl:call-template name="preview-controls">
+                                            
+                                            <xsl:with-param name="section-id" select="$section-id"/>
+                                            
+                                        </xsl:call-template>
+                                        
+                                    </xsl:if>
+                                    
+                                    <div class="row">
+                                        <div class="col-sm-12">
+                                            
+                                            <span class="badge badge-notification">
+                                                <xsl:value-of select="$count-matches"/> 
+                                            </span>
+                                            
+                                            <span class="badge-text">
+                                                <xsl:choose>
+                                                    <xsl:when test="$count-matches eq 1">
+                                                        <xsl:value-of select="' match'"/>
+                                                    </xsl:when>
+                                                    <xsl:otherwise>
+                                                        <xsl:value-of select="' matches'"/>
+                                                    </xsl:otherwise>
+                                                </xsl:choose>
+                                            </span>
+                                            
+                                        </div>
+                                    </div>
+                                    
+                                    <xsl:for-each select="$matches">
+                                        <xsl:sort select="@score" data-type="number" order="descending"/>
+                                        <xsl:choose>
+                                            <xsl:when test="@node-name eq 'title' and @node-type eq 'mainTitle' and @node-lang eq 'en'">
+                                                <!-- Don't bother if it's the title, we already show this -->
+                                            </xsl:when>
+                                            <xsl:when test="@node-name eq 'bibl' and @key">
+                                                <!-- Don't bother if it's the toh, we already show this -->
+                                            </xsl:when>
+                                            <xsl:otherwise>
+                                                <div class="row">
+                                                    
+                                                    <div class="col-sm-12">
+                                                        
+                                                        <xsl:apply-templates select="."/>
+                                                        
+                                                    </div>
+                                                </div>
+                                            </xsl:otherwise>
+                                        </xsl:choose>
+                                    </xsl:for-each>
+                                    
+                                    <xsl:if test="$count-matches gt count($matches)">
                                         <div class="row">
+                                            
                                             <div class="col-sm-12">
                                                 
-                                                <span class="badge badge-notification">
-                                                    <xsl:value-of select="$count-matches"/> 
-                                                </span>
-                                                
-                                                <span class="badge-text">
-                                                    <xsl:choose>
-                                                        <xsl:when test="$count-matches eq 1">
-                                                            <xsl:value-of select="' match'"/>
-                                                        </xsl:when>
-                                                        <xsl:otherwise>
-                                                            <xsl:value-of select="' matches'"/>
-                                                        </xsl:otherwise>
-                                                    </xsl:choose>
-                                                </span>
+                                                <xsl:if test="not($request-translation)">
+                                                    
+                                                    <p>
+                                                        <xsl:value-of select="concat('These are the first ', count($matches), ' matches. ')"/>
+                                                        <a href="" target="_self">
+                                                            <xsl:attribute name="href" select="common:internal-link($action, (concat('search=', /m:response/m:search/m:request/text()), concat('resource-id=', $tei/@resource-id)), '', /m:response/@lang)"/>
+                                                            <xsl:value-of select="concat('View all ', $count-matches)"/>
+                                                        </a>
+                                                    </p>
+                                                    
+                                                </xsl:if>
                                                 
                                             </div>
                                         </div>
                                         
-                                        <xsl:for-each select="$matches">
-                                            <xsl:sort select="@score" data-type="number" order="descending"/>
-                                            <xsl:choose>
-                                                <xsl:when test="@node-name eq 'title' and @node-type eq 'mainTitle' and @node-lang eq 'en'">
-                                                    <!-- Don't bother if it's the title, we already show this -->
-                                                </xsl:when>
-                                                <xsl:when test="@node-name eq 'bibl' and @key">
-                                                    <!-- Don't bother if it's the toh, we already show this -->
-                                                </xsl:when>
-                                                <xsl:otherwise>
-                                                    <div class="row">
-                                                        
-                                                        <div class="col-sm-12">
-                                                            
-                                                            <xsl:apply-templates select="."/>
-                                                            
-                                                        </div>
-                                                    </div>
-                                                </xsl:otherwise>
-                                            </xsl:choose>
-                                        </xsl:for-each>
-                                        
-                                        <xsl:if test="$count-matches gt count($matches)">
-                                            <div class="row">
-                                                
-                                                <div class="col-sm-12">
-                                                    
-                                                    <xsl:if test="not($request-translation)">
-                                                        
-                                                        <p>
-                                                            <xsl:value-of select="concat('These are the first ', count($matches), ' matches. ')"/>
-                                                            <a href="" target="_self">
-                                                                <xsl:attribute name="href" select="common:internal-link($action, (concat('search=', /m:response/m:search/m:request/text()), concat('resource-id=', $tei/@resource-id)), '', /m:response/@lang)"/>
-                                                                <xsl:value-of select="concat('View all ', $count-matches)"/>
-                                                            </a>
-                                                        </p>
-                                                        
-                                                    </xsl:if>
-                                                    
-                                                </div>
-                                            </div>
-                                            
-                                        </xsl:if>
-                                        
-                                    </div>
+                                    </xsl:if>
+                                    
                                 </section>
                                 
                             </div>

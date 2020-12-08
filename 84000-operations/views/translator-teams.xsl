@@ -74,38 +74,60 @@
                                         
                                         <div class="col-sm-4">
                                             <section>
-                                                <div>
-                                                    <xsl:attribute name="id" select="concat('team-contributors-', $team-id)"/>
-                                                    <xsl:attribute name="class" select="'relative preview-list render-in-viewport'"/>
-                                                    <ul>
-                                                        <xsl:for-each select="m:person">
-                                                            <xsl:variable name="translator" select="."/>
-                                                            <li>
-                                                                <xsl:value-of select="$translator/m:label"/>
-                                                                <xsl:value-of select="concat(' (', $translator/@xml:id, ')')"/>
-                                                            </li>
-                                                        </xsl:for-each>
-                                                    </ul>
-                                                </div>
+                                                
+                                                <xsl:variable name="section-id" select="concat('team-contributors-', $team-id)"/>
+                                                <xsl:attribute name="id" select="$section-id"/>
+                                                
+                                                <xsl:if test="count(m:person) gt 12">
+                                                    <xsl:attribute name="class" select="'preview-list preview'"/>
+                                                    
+                                                    <xsl:call-template name="preview-controls">
+                                                        
+                                                        <xsl:with-param name="section-id" select="$section-id"/>
+                                                        
+                                                    </xsl:call-template>
+                                                </xsl:if>
+                                                
+                                                <ul>
+                                                    <xsl:for-each select="m:person">
+                                                        <xsl:variable name="translator" select="."/>
+                                                        <li>
+                                                            <xsl:value-of select="$translator/m:label"/>
+                                                            <xsl:value-of select="concat(' (', $translator/@xml:id, ')')"/>
+                                                        </li>
+                                                    </xsl:for-each>
+                                                </ul>
+                                                
                                             </section>
                                         </div>
                                         
-                                        <div class="col-sm-5">
-                                            <section>
-                                                <div>
-                                                    <xsl:attribute name="id" select="concat('team-acknowledgements-', $team-id)"/>
-                                                    <xsl:attribute name="class" select="'relative preview-list render-in-viewport'"/>
-                                                    <xsl:if test="/m:response/m:request/@include-acknowledgements eq 'true'">
-                                                        <xsl:call-template name="acknowledgements">
-                                                            <xsl:with-param name="acknowledgements" select="m:acknowledgement"/>
-                                                            <xsl:with-param name="group" select="''"/>
-                                                            <xsl:with-param name="css-class" select="'col-sm-12'"/>
-                                                            <xsl:with-param name="link-href" select="'/edit-text-header.html?id=@translation-id'"/>
+                                        <xsl:if test="/m:response/m:request/@include-acknowledgements eq 'true'">
+                                            <div class="col-sm-5">
+                                                <section>
+                                                    
+                                                    <xsl:variable name="section-id" select="concat('team-acknowledgements-', $team-id)"/>
+                                                    <xsl:attribute name="id" select="$section-id"/>
+                                                    
+                                                    <xsl:if test="count(m:acknowledgement) gt 2">
+                                                        <xsl:attribute name="class" select="'preview-list preview'"/>
+                                                        
+                                                        <xsl:call-template name="preview-controls">
+                                                            
+                                                            <xsl:with-param name="section-id" select="$section-id"/>
+                                                            
                                                         </xsl:call-template>
                                                     </xsl:if>
-                                                </div>
-                                            </section>
-                                        </div>
+                                                    
+                                                    <xsl:call-template name="acknowledgements">
+                                                        <xsl:with-param name="acknowledgements" select="m:acknowledgement"/>
+                                                        <xsl:with-param name="group" select="''"/>
+                                                        <xsl:with-param name="css-class" select="'col-sm-12'"/>
+                                                        <xsl:with-param name="link-href" select="'/edit-text-header.html?id=@translation-id'"/>
+                                                    </xsl:call-template>
+                                                    
+                                                </section>
+                                            </div>
+                                        </xsl:if>
                                     </div>
                                     
                                 </div>

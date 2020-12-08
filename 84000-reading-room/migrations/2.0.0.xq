@@ -34,7 +34,9 @@ declare function local:minor-version-increment() {
 
 (: Cache glossary :)
 declare function local:cache-glossary() {
-    for $tei in $local:tei[[not(m:glossary-cache/m:gloss/m:location)]]
+    for $tei in $local:tei
+        (:[not(m:glossary-cache/m:gloss/m:location)]:)
+        [tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:idno[@xml:id eq 'UT22084-040-003']]
     return (
         tei-content:id($tei),
         update-translation:cache-glossary($tei, ())

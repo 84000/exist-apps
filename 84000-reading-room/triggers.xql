@@ -1,6 +1,7 @@
 xquery version "3.0";
 
 module namespace trigger="http://exist-db.org/xquery/trigger";
+
 declare namespace xmldb="http://exist-db.org/xquery/xmldb";
 declare namespace tei="http://www.tei-c.org/ns/1.0";
 declare namespace m="http://read.84000.co/ns/1.0";
@@ -41,7 +42,7 @@ declare function local:after-update-document-functions($doc) {
 declare function local:refresh-cache($doc) {
     
     (: Cache notes :)
-    let $notes-cache-ids := $doc/tei:TEI/m:notes-cache/m:end-notes/@id/string()
+    let $notes-cache-ids := $doc/tei:TEI/m:notes-cache/m:end-note/@id/string()
     return
     if($doc/tei:TEI/tei:text//tei:note[@place eq 'end'][not(@xml:id/string() = $notes-cache-ids)]) then
         common:update('trigger-notes-cache', $doc/tei:TEI/m:notes-cache, translation:notes-cache($doc/tei:TEI, true()), $doc/tei:TEI, $doc/tei:TEI/m:notes-cache/preceding-sibling::*[1])
@@ -80,15 +81,14 @@ declare function local:permanent-ids($doc) {
     return (
         
         (: Add any missing @xml:ids :)
-        let $elements-missing-id :=
-            $doc//tei:milestone[(not(@xml:id) or @xml:id='')]
+        let $elements-missing-id := (
+            $doc//tei:text//tei:milestone[not(@xml:id) or @xml:id eq '']
             | $doc//tei:text//tei:note[not(@xml:id) or @xml:id eq '']
             | $doc//tei:text//tei:ref[@type = ('folio', 'volume')][not(@xml:id) or @xml:id eq '']
-            | $doc//*[@type="notes"]//tei:item[not(@xml:id) or @xml:id eq '']
-            | $doc//*[@type='listBibl']//tei:bibl[not(@xml:id) or @xml:id eq '']
-            | $doc//*[@type='glossary']//tei:gloss[not(@xml:id) or @xml:id eq '']
-            (: Populate any empty @xml:id :)
-            | $doc//*[@xml:id eq '']
+            | $doc//tei:div[@type="notes"]//tei:item[not(@xml:id) or @xml:id eq '']
+            | $doc//tei:div[@type='listBibl']//tei:bibl[not(@xml:id) or @xml:id eq '']
+            | $doc//tei:div[@type='glossary']//tei:gloss[not(@xml:id) or @xml:id eq '']
+        )
         
         where $elements-missing-id
             let $max-id := max($doc//@xml:id ! substring-after(., $translation-id) ! substring(., 2) ! common:integer(.))
@@ -244,5 +244,3 @@ declare function local:log-event($type as xs:string, $event as xs:string, $objec
         into $log
     )
 };
-
-

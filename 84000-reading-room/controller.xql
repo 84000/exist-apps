@@ -186,7 +186,6 @@ return
                     <parameters xmlns="http://exist.sourceforge.net/NS/exist">
                         <add-parameter name="resource-id" value="{$resource-id}"/>
                         <add-parameter name="resource-suffix" value="epub"/>
-                        <add-parameter name="view-mode" value="ebook"/>
                     </parameters>
                 )
             else if ($resource-suffix eq 'txt') then

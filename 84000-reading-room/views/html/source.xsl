@@ -17,7 +17,7 @@
             
             <div class="content-band">
                 <div class="container">
-                    <div id="ajax-content">
+                    <div id="ajax-source" class="ajax-target">
                         
                         <xsl:variable name="work-string" as="xs:string">
                             <xsl:choose>

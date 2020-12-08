@@ -224,8 +224,8 @@
                                                     <td>
                                                         <a>
                                                             <xsl:attribute name="target" select="'check-folios'"/>
-                                                            <xsl:attribute name="href" select="concat(m:url[@format eq 'html'][@xml:lang eq 'bo'], '#ajax-content')"/>
-                                                            <xsl:attribute name="data-ajax-target" select="'#popup-footer-source  #ajax-content'"/>
+                                                            <xsl:attribute name="href" select="concat(m:url[@format eq 'html'][@xml:lang eq 'bo'], '#ajax-source')"/>
+                                                            <xsl:attribute name="data-ajax-target" select="'#popup-footer-source .ajax-target'"/>
                                                             <xsl:value-of select="'Tibetan (pop-up)'"/>
                                                         </a>
                                                         <xsl:value-of select="' | '"/>

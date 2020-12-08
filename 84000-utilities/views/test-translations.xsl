@@ -53,14 +53,14 @@
                     </li>
                     <li>
                         <a>
-                            <xsl:attribute name="href" select="concat($test-domain, '/translation/', $text-id, '.html?view-mode=editor')"/>
+                            <xsl:attribute name="href" select="concat($test-domain, '/translation/', $text-id, '.html?view-mode=tests')"/>
                             <xsl:attribute name="target" select="concat($text-id, '-html')"/>
                             <xsl:value-of select="'html'"/>
                         </a>
                     </li>
                     <li>
                         <a>
-                            <xsl:attribute name="href" select="concat($test-domain, '/translation/', $text-id, '.xml')"/>
+                            <xsl:attribute name="href" select="concat($test-domain, '/translation/', $text-id, '.xml?view-mode=tests')"/>
                             <xsl:attribute name="target" select="concat($text-id, '-xml')"/>
                             <xsl:value-of select="'xml'"/>
                         </a>
@@ -158,6 +158,7 @@
                 <tbody>
                     <xsl:for-each select="m:results/m:translation">
                         <xsl:sort select="count(m:tests/m:test[@pass eq '1'])" order="ascending"/>
+                        <xsl:sort select="number(@duration)" order="descending"/>
                         <xsl:variable name="table-row" select="position()"/>
                         <xsl:variable name="toh-key" select="m:toh/@key"/>
                         <xsl:variable name="text-id" select="@id"/>
@@ -166,7 +167,7 @@
                         <tr>
                             <td>
                                 <a>
-                                    <xsl:attribute name="href" select="concat($test-domain, '/translation/', $toh-key, '.html?view-mode=editor')"/>
+                                    <xsl:attribute name="href" select="concat($test-domain, '/translation/', $toh-key, '.html?view-mode=tests')"/>
                                     <xsl:attribute name="title" select="$text-title"/>
                                     <xsl:attribute name="target" select="$toh-key"/>
                                     <xsl:value-of select="m:toh/m:full"/>
@@ -176,18 +177,27 @@
                                 <xsl:copy-of select="common:translation-status(@status-group)"/>
                             </td>
                             <td>
-                                <xsl:choose>
-                                    <xsl:when test="number(@duration) gt 1">
-                                        <span class="label label-info">
-                                            <xsl:value-of select="concat(@duration, ' secs')"/>
-                                        </span>
-                                    </xsl:when>
-                                    <xsl:otherwise>
-                                        <span class="label label-default">
-                                            <xsl:value-of select="concat(@duration, ' secs')"/>
-                                        </span>
-                                    </xsl:otherwise>
-                                </xsl:choose>
+                                <span>
+                                    
+                                    <xsl:choose>
+                                        
+                                        <xsl:when test="number(@duration) gt 5">
+                                            <xsl:attribute name="class" select="'label label-danger'"/>
+                                        </xsl:when>
+                                        
+                                        <xsl:when test="number(@duration) gt 1">
+                                            <xsl:attribute name="class" select="'label label-warning'"/>
+                                        </xsl:when>
+                                        
+                                        <xsl:otherwise>
+                                            <xsl:attribute name="class" select="'label label-default'"/>
+                                        </xsl:otherwise>
+                                        
+                                    </xsl:choose>
+                                    
+                                    <xsl:value-of select="concat(@duration, ' secs')"/>
+                                    
+                                </span>
                             </td>
                             <xsl:for-each select="m:tests/m:test">
                                 <xsl:variable name="test-id" select="position()"/>

@@ -66,6 +66,26 @@ declare function section:child-sections($tei as element(tei:TEI), $include-text-
     section:child-sections($tei, $include-text-stats, $include-texts, 1)
 };
 
+declare function section:text($tei as element(tei:TEI), $resource-id as xs:string, $include-ancestors as xs:boolean){
+    element { QName('http://read.84000.co/ns/1.0', 'text') }{
+        attribute id { tei-content:id($tei) },
+        attribute resource-id { $resource-id },
+        attribute status { tei-content:translation-status($tei) },
+        attribute status-group { tei-content:translation-status-group($tei) },
+        attribute uri { base-uri($tei) },
+        attribute canonical-html { translation:canonical-html($resource-id, '') },
+        attribute last-updated { tei-content:last-updated($tei//tei:fileDesc) },
+        tei-content:source($tei, $resource-id),
+        translation:toh($tei, $resource-id),
+        tei-content:ancestors($tei, $resource-id, 0),
+        translation:titles($tei),
+        translation:title-variants($tei),
+        translation:publication($tei),
+        translation:downloads($tei, $resource-id, 'any-version'),
+        translation:summary($tei)
+    }
+};
+
 declare function section:child-sections($tei as element(tei:TEI), $include-text-stats as xs:boolean, $include-texts as xs:string, $nest as xs:integer) as element(m:section) {
     
     let $id := upper-case(tei-content:id($tei))
@@ -96,22 +116,7 @@ declare function section:child-sections($tei as element(tei:TEI), $include-text-
                 (: Get the correct Toh for this parent :)
                 for $resource-id in $tei//tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl[tei:idno[@parent-id = $id]]/@key
                 return
-                    element { QName('http://read.84000.co/ns/1.0', 'text') }{
-                        attribute id { tei-content:id($tei) },
-                        attribute resource-id { $resource-id },
-                        attribute status { tei-content:translation-status($tei) },
-                        attribute status-group { tei-content:translation-status-group($tei) },
-                        attribute uri { base-uri($tei) },
-                        attribute canonical-html { translation:canonical-html($resource-id, '') },
-                        attribute last-updated { tei-content:last-updated($tei//tei:fileDesc) },
-                        tei-content:source($tei, $resource-id),
-                        translation:toh($tei, $resource-id),
-                        translation:titles($tei),
-                        translation:title-variants($tei),
-                        translation:publication($tei),
-                        translation:downloads($tei, $resource-id, 'any-version'),
-                        translation:summary($tei)
-                    }
+                    section:text($tei, $resource-id, false())
         else
             ()
     
@@ -211,11 +216,13 @@ declare function section:child-sections($tei as element(tei:TEI), $include-text-
             attribute last-updated { $last-updated },
             attribute include-texts { $include-texts },
             section:titles($tei),
+            
             (: avoid duplicate ids :)
             if($nest gt 1) then
                 common:strip-ids(section:abstract($tei))
             else
                 section:abstract($tei),
+                
             common:strip-ids(section:warning($tei)),
             $text-stats,
             $child-sections,
@@ -247,7 +254,7 @@ declare function section:section-tree($tei as element(tei:TEI), $include-text-st
 declare function section:all-translated($apply-filters as element(m:filter)*) as element(m:section) {
     
     let $section-tei := tei-content:tei('ALL-TRANSLATED', 'section')
-    let $sections := section:section-tree(tei-content:tei('lobby', 'section'), true(), 'descendants-published')
+    (:let $sections := section:section-tree(tei-content:tei('lobby', 'section'), true(), 'descendants-published'):)
     
     return
         element { QName('http://read.84000.co/ns/1.0', 'section') }{
@@ -261,21 +268,27 @@ declare function section:all-translated($apply-filters as element(m:filter)*) as
             section:warning($section-tei),
             section:about($section-tei),
             section:filters($section-tei),
-            $sections,
+            (:$sections,:)
             element { QName('http://read.84000.co/ns/1.0', 'texts') }{
                 
                 (: Include filters :)
                 $apply-filters,
                 
                 (: Output the texts found in the sections tree - applying the filters :)
-                for $text in $sections//m:text
+                let $texts := 
+                    for $tei in $section:texts//tei:TEI[tei:teiHeader/tei:fileDesc[tei:publicationStmt[@status = $tei-content:published-status-ids]]]
+                        for $resource-id in $tei//tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl/@key
+                        return 
+                            section:text($tei, $resource-id, true())
+                            
+                for $text in $texts
                 where (
                     (not($apply-filters[@text-id]) or $apply-filters[@text-id][@text-id = $text/@id])
                     and (not($apply-filters[@max-pages]) or $apply-filters[@max-pages][@max-pages ! xs:integer(.) ge $text/m:source/m:location/@count-pages ! xs:integer(.)])
-                    and (not($apply-filters[@section-id]) or $text/ancestor::m:section[@id = $apply-filters[@section-id]/@section-id])
+                    and (not($apply-filters[@section-id]) or $text[descendant::m:parent[@id = $apply-filters[@section-id]/@section-id]])
                 )
                 return (
-                    <debug text-id="{ $text/@id }" parent-id="{ $text/m:source/@parent-id }" count-pages="{ $text/m:source/m:location/@count-pages }"/>,
+                    (:<debug text-id="{ $text/@id }" parent-id="{ $text/m:source/@parent-id }" count-pages="{ $text/m:source/m:location/@count-pages }"/>,:)
                     $text
                 )
                 
