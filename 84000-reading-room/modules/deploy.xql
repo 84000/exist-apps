@@ -110,14 +110,13 @@ declare function deploy:push($repo-id as xs:string, $admin-password as xs:string
                     )
                     
                 where $do-sync//file:update and $admin-password-correct eq true() and ends-with($backup, '.zip')
-            return
-            (
-                $do-sync,
-                process:execute(
-                    ('bin/backup.sh', '-u', 'admin', '-p', $admin-password, '-b', $sync/@collection, '-d', concat($repo/@path, $sub-dir, $backup))
-                    , $exist-options
+                return (
+                    $do-sync,
+                    process:execute(
+                        ('bin/backup.sh', '-u', 'admin', '-p', $admin-password, '-b', $sync/@collection, '-d', concat($repo/@path, $sub-dir, $backup)), 
+                        $exist-options
+                    )
                 )
-            )
             ,
             <push>
             {
