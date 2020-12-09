@@ -425,17 +425,5 @@
         </html>
         
     </xsl:template>
-    
-    <!-- Localization helpers -->
-    <!-- Copied from functions.xsl to avoid duplicate include warning -->
-    <!--<xsl:function name="internal-link">
-        <xsl:param name="url" required="yes" as="xs:string"/>
-        <xsl:param name="attributes" required="yes" as="xs:string*"/>
-        <xsl:param name="fragment-id" required="yes" as="xs:string"/>
-        <xsl:param name="lang" required="yes" as="xs:string"/>
-        <xsl:variable name="lang-attribute" select="if($lang = ('zh')) then concat('lang=', $lang) else ()"/>
-        <xsl:variable name="attributes-with-lang" select="($attributes, $lang-attribute)"/>
-        <xsl:value-of select="concat($url, if(count($attributes-with-lang) gt 0) then concat('?', string-join($attributes-with-lang, '&')) else '', $fragment-id)"/>
-    </xsl:function>-->
-    
+
 </xsl:stylesheet>
