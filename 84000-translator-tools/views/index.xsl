@@ -10,7 +10,6 @@
     <xsl:variable name="request" select="/m:response/m:request"/>
     <xsl:variable name="glossary" select="/m:response/m:glossary"/>
     
-    
     <xsl:template match="/m:response">
         
         <xsl:variable name="tab-label" select="m:tabs/m:tab[@id eq $request/@tab]/m:label"/>
@@ -156,7 +155,7 @@
         
         <xsl:call-template name="reading-room-page">
             <xsl:with-param name="page-url" select="''"/>
-            <xsl:with-param name="page-class" select="'utilities wait'"/>
+            <xsl:with-param name="page-class" select="'utilities'"/>
             <xsl:with-param name="page-title" select="concat($tab-label, ' | 84000 Community')"/>
             <xsl:with-param name="page-description" select="'Tools for the 84000 translator community'"/>
             <xsl:with-param name="content" select="$content"/>

@@ -1150,7 +1150,7 @@
                                                                 <xsl:attribute name="href" select="common:internal-link(@url, (), '', /m:response/@lang)"/>
                                                             </xsl:when>
                                                             <xsl:otherwise>
-                                                                <xsl:attribute name="href" select="@url"/>
+                                                                <xsl:attribute name="href" select="@download-url"/>
                                                                 <xsl:attribute name="target" select="'_blank'"/>
                                                                 <xsl:attribute name="download" select="@filename"/>
                                                                 <xsl:attribute name="class" select="'log-click'"/>

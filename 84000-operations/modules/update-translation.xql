@@ -9,6 +9,7 @@ import module namespace translation = "http://read.84000.co/translation" at "../
 import module namespace glossary = "http://read.84000.co/glossary" at "../../84000-reading-room/modules/glossary.xql";
 import module namespace entities = "http://read.84000.co/entities" at "../../84000-reading-room/modules/entities.xql";
 import module namespace translation-status = "http://read.84000.co/translation-status" at "translation-status.xql";
+import module namespace store = "http://read.84000.co/store" at "../../84000-reading-room/modules/store.xql";
 
 import module namespace functx = "http://www.functx.com";
 
@@ -676,7 +677,8 @@ declare function update-translation:cache-glossary($tei as element(tei:TEI), $gl
     :)
     
     (: Existing cache :)
-    let $glossary-cache := $tei/m:glossary-cache
+    let $cache := translation:cache($tei, true())
+    let $glossary-cache := $cache/m:glossary-cache
     
     (: TEI glossary items :)
     let $tei-glossary := $tei//tei:back//tei:list[@type eq 'glossary']/tei:item/tei:gloss[@xml:id]
@@ -689,11 +691,16 @@ declare function update-translation:cache-glossary($tei as element(tei:TEI), $gl
         else
             'all'
     
-    let $glossary-cache-new := translation:glossary-cache($tei, $refresh-ids)
+    let $glossary-cache-new := translation:glossary-cache($tei, $refresh-ids, true())
+    
+    let $do-caching := common:update('cache-glossary', $glossary-cache, $glossary-cache-new, $cache, $glossary-cache/preceding-sibling::*[1])
+    
+    let $set-cache-version := store:store-version-str(concat($common:data-path, '/cache'), concat(tei-content:id($tei), '.cache'), tei-content:version-str($tei))
     
     return
         (:element debug { $glossary-cache-new }:)
-        common:update('cache-glossary', $glossary-cache, $glossary-cache-new, $tei, $glossary-cache/preceding-sibling::*[1])
+        $do-caching
+        
 
 
 };

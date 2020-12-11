@@ -204,6 +204,13 @@ return
                         <add-parameter name="resource-suffix" value="rdf"/>
                     </parameters>
                 )
+            else if ($resource-suffix eq 'cache') then
+                local:dispatch("/models/translation.xq", "",
+                    <parameters xmlns="http://exist.sourceforge.net/NS/exist">
+                        <add-parameter name="resource-id" value="{$resource-id}"/>
+                        <add-parameter name="resource-suffix" value="cache"/>
+                    </parameters>
+                )
             else
                 (: return the xml :)
                 if (request:get-parameter('page', request:get-parameter('folio', '')) gt '') then

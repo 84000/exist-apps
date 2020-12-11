@@ -30,7 +30,8 @@ let $reindex-collections as xs:string* :=
         concat($common:data-path, '/azw3'),
         concat($common:data-path, '/epub'),
         concat($common:data-path, '/pdf'),
-        concat($common:data-path, '/rdf')
+        concat($common:data-path, '/rdf'),
+        concat($common:data-path, '/cache')
     )
     else 
         ()

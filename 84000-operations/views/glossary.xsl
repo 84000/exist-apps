@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:output="http://www.w3.org/2010/xslt-xquery-serialization" xmlns:common="http://read.84000.co/common" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" version="3.0" exclude-result-prefixes="#all">
     
-    <xsl:import href="../../84000-reading-room/views/html/website-page.xsl"/>
     <xsl:import href="common.xsl"/>
     
     <xsl:variable name="request-resource-id" select="/m:response/m:request/@resource-id"/>
@@ -15,8 +14,11 @@
     <xsl:variable name="request-item-tab" select="/m:response/m:request/@item-tab"/>
     
     <xsl:variable name="text" select="/m:response/m:text[1]"/>
+    <xsl:variable name="glossary" select="/m:response/m:glossary[1]"/>
     <xsl:variable name="text-id" select="$text/@id"/>
     <xsl:variable name="toh-key" select="$text/m:source/@key"/>
+    <xsl:variable name="cache-slow" select="if($glossary[@seconds-to-build]/@seconds-to-build ! xs:decimal(.) gt 120) then true() else false()" as="xs:boolean"/>
+    <xsl:variable name="cache-old" select="if(compare($text/@tei-version, $glossary/@tei-version-cached) ne 0) then true() else false()" as="xs:boolean"/>
     
     <xsl:template match="/m:response">
         
@@ -45,7 +47,7 @@
                         </div>
                         
                         <!-- Cache locations button - uncached -->
-                        <xsl:if test="$request-filter = ('no-cache') and not($request-search gt '') and m:glossary[m:item]">
+                        <xsl:if test="$request-filter = ('no-cache') and not($request-search gt '') and $glossary[m:item]">
                             <div>
                                 <xsl:call-template name="form">
                                     <xsl:with-param name="form-action" select="'cache-locations-uncached'"/>
@@ -53,21 +55,6 @@
                                     <xsl:with-param name="form-content">
                                         <button type="submit" class="btn btn-danger btn-sm" data-loading="Caching locations...">
                                             <xsl:value-of select="'Cache locations of items with no cache'"/>
-                                        </button>
-                                    </xsl:with-param>
-                                </xsl:call-template>
-                            </div>
-                        </xsl:if>
-                        
-                        <!-- Cache locations button - all -->
-                        <xsl:if test="$request-filter = ('new-expressions') and not($request-search gt '') and m:glossary[m:item]">
-                            <div>
-                                <xsl:call-template name="form">
-                                    <xsl:with-param name="form-action" select="'cache-locations-all'"/>
-                                    <xsl:with-param name="form-class" select="'form-inline pull-right'"/>
-                                    <xsl:with-param name="form-content">
-                                        <button type="submit" class="btn btn-danger btn-sm" data-loading="Caching locations...">
-                                            <xsl:value-of select="'Re-cache locations of all items (slow)'"/>
                                         </button>
                                     </xsl:with-param>
                                 </xsl:call-template>
@@ -86,6 +73,59 @@
                                 </xsl:call-template>
                             </div>
                         </xsl:if>
+                        
+                    </div>
+                    
+                    <!-- Version row -->
+                    <div class="small text-muted">
+                        
+                        <xsl:choose>
+                            
+                            <xsl:when test="$cache-slow">
+                                <xsl:value-of select="'The latest location cache took '"/>
+                                <span class="label label-warning">
+                                    <xsl:value-of select="concat(format-number(($glossary/@seconds-to-build ! xs:decimal(.) div 60), '#,###.##'), ' minutes')"/>
+                                </span>
+                                <xsl:value-of select="' '"/>
+                            </xsl:when>
+                            
+                            <xsl:when test="$glossary[@seconds-to-build]">
+                                <xsl:value-of select="'The latest location cache took '"/>
+                                <span class="label label-default">
+                                    <xsl:value-of select="concat(format-number($glossary/@seconds-to-build, '#,###.##'), ' seconds')"/>
+                                </span>
+                                <xsl:value-of select="' '"/>
+                            </xsl:when>
+                            
+                        </xsl:choose>
+                        
+                        <xsl:if test="$text[@tei-version]">
+                            <xsl:value-of select="'Current TEI version:'"/>
+                            <span class="label label-default">
+                                <xsl:value-of select="$text/@tei-version"/>
+                            </span>
+                            <xsl:value-of select="' '"/>
+                            <xsl:value-of select="'Cached TEI version:'"/>
+                            <span class="label label-default">
+                                <xsl:if test="$cache-old">
+                                    <xsl:attribute name="class" select="'label label-warning'"/>
+                                </xsl:if>
+                                <xsl:choose>
+                                    <xsl:when test="$glossary[@tei-version-cached]">
+                                        <xsl:value-of select="$glossary/@tei-version-cached"/>
+                                    </xsl:when>
+                                    <xsl:otherwise>
+                                        <xsl:value-of select="'[none]'"/>
+                                    </xsl:otherwise>
+                                </xsl:choose>
+                            </span>
+                            <xsl:value-of select="' '"/>
+                        </xsl:if>
+                        
+                        <a target="_self" class="underline">
+                            <xsl:attribute name="href" select="concat('glossary.html?resource-id=', $request-resource-id, '&amp;form-action=cache-locations-all')"/>
+                            <xsl:value-of select="'Re-cache locations of all items'"/>
+                        </a>
                         
                     </div>
                     
@@ -123,13 +163,19 @@
                                                     <xsl:if test="$request-filter eq 'new-expressions'">
                                                         <xsl:attribute name="selected" select="'selected'"/>
                                                     </xsl:if>
-                                                    <xsl:value-of select="'New locations (slow)'"/>
+                                                    <xsl:value-of select="'New locations'"/>
+                                                    <xsl:if test="$cache-slow">
+                                                        <xsl:value-of select="concat(' - takes ', format-number(($glossary/@seconds-to-build ! xs:decimal(.) div 60), '#,###'), ' mins!')"/>
+                                                    </xsl:if>
                                                 </option>
                                                 <option value="no-expressions">
                                                     <xsl:if test="$request-filter eq 'no-expressions'">
                                                         <xsl:attribute name="selected" select="'selected'"/>
                                                     </xsl:if>
-                                                    <xsl:value-of select="'No locations (slow)'"/>
+                                                    <xsl:value-of select="'No locations'"/>
+                                                    <xsl:if test="$cache-slow">
+                                                        <xsl:value-of select="concat(' - takes ', format-number(($glossary/@seconds-to-build ! xs:decimal(.) div 60), '#,###'), ' mins!')"/>
+                                                    </xsl:if>
                                                 </option>
                                             </select>
                                         </div>
@@ -166,7 +212,7 @@
                             </div>
                             
                             <div>
-                                <xsl:copy-of select="common:pagination(common:enforce-integer(m:glossary/@first-record), common:enforce-integer(m:glossary/@max-records), common:enforce-integer(m:glossary/@count-records), concat('glossary.html?resource-id=', $request-resource-id, '&amp;filter=', $request-filter, '&amp;search=', $request-search), '')"/>
+                                <xsl:copy-of select="common:pagination(common:enforce-integer($glossary/@first-record), common:enforce-integer($glossary/@max-records), common:enforce-integer($glossary/@count-records), concat('glossary.html?resource-id=', $request-resource-id, '&amp;filter=', $request-filter, '&amp;search=', $request-search), '')"/>
                             </div>
                             
                         </div>
@@ -192,7 +238,7 @@
                     </xsl:if>
                     
                     <!-- Loop through each item -->
-                    <xsl:for-each select="m:glossary/m:item">
+                    <xsl:for-each select="$glossary/m:item">
                         
                         <xsl:variable name="loop-glossary" select="."/>
                         <xsl:variable name="loop-glossary-id" select="$loop-glossary/@id"/>

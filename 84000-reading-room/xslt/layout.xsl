@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" version="3.0" exclude-result-prefixes="#all">
         
     <xsl:template name="indent">
         <xsl:param name="counter"/>
@@ -65,6 +65,37 @@
             </span>
         </a>
         
+    </xsl:template>
+    
+    <xsl:template name="expandable-toh">
+        <xsl:param name="toh" required="yes" as="element(m:toh)"/>
+        <xsl:choose>
+            <xsl:when test="$toh/m:duplicates">
+                <xsl:variable name="expand-id" select="concat('expand-toh-', $toh/@key)"/>
+                <a role="button" data-toggle="collapse" aria-expanded="true" class="collapsed nowrap">
+                    <xsl:attribute name="href" select="concat('#', $expand-id)"/>
+                    <xsl:attribute name="aria-controls" select="$expand-id"/>
+                    <xsl:value-of select="$toh/m:full"/>
+                    <span class="collapsed-show">
+                        <span class="monospace">+</span>
+                    </span>
+                </a>
+                <div class="collapse print-expand">
+                    <xsl:attribute name="id" select="$expand-id"/>
+                    <xsl:for-each select="$toh/m:duplicates/m:duplicate">
+                        <span class="nowrap">
+                            <xsl:value-of select="normalize-space(concat(' / ', m:full/text()))"/>
+                        </span>
+                        <br/>
+                    </xsl:for-each>
+                </div>
+            </xsl:when>
+            <xsl:otherwise>
+                <span class="nowrap">
+                    <xsl:value-of select="$toh/m:full"/>
+                </span>
+            </xsl:otherwise>
+        </xsl:choose>
     </xsl:template>
     
 </xsl:stylesheet>

@@ -267,7 +267,7 @@
                                                                 <xsl:with-param name="type" select="@type"/>
                                                             </xsl:call-template>
                                                         </xsl:attribute>
-                                                        <xsl:attribute name="href" select="@url"/>
+                                                        <xsl:attribute name="href" select="@download-url"/>
                                                         <xsl:attribute name="download" select="@filename"/>
                                                         <xsl:attribute name="class" select="'log-click'"/>
                                                         <xsl:attribute name="data-page-alert" select="common:internal-link('/widget/download-dana.html', concat('resource-id=', $toh-key), '#dana-description', /m:response/@lang)"/>
@@ -283,7 +283,7 @@
                                                                 <xsl:with-param name="type" select="@type"/>
                                                             </xsl:call-template>
                                                         </xsl:attribute>
-                                                        <xsl:attribute name="href" select="@url"/>
+                                                        <xsl:attribute name="href" select="@download-url"/>
                                                         <xsl:attribute name="download" select="@filename"/>
                                                         <xsl:attribute name="class" select="'log-click'"/>
                                                         <xsl:attribute name="data-page-alert" select="common:internal-link('/widget/download-dana.html', concat('resource-id=', $toh-key), '#dana-description', /m:response/@lang)"/>
@@ -485,11 +485,7 @@
                     <xsl:with-param name="html-classes">
                         
                         <xsl:choose>
-                            <xsl:when test="$part[@render eq 'collapse'] and $view-mode[@layout = ('expanded-fixed', 'stripped')]">
-                                <!-- .show displays content expanded -->
-                                <xsl:value-of select="'show'"/>
-                            </xsl:when>
-                            <xsl:when test="$part[@render eq 'collapse'] and $view-mode[@layout = ('expanded')]">
+                            <xsl:when test="$part[@render eq 'collapse'] and $view-mode[@layout = ('expanded', 'expanded-fixed', 'stripped')]">
                                 <!-- .show displays content expanded -->
                                 <xsl:value-of select="'show'"/>
                             </xsl:when>
@@ -611,11 +607,11 @@
                                                 <xsl:with-param name="type" select="$pdf-download/@type"/>
                                             </xsl:call-template>
                                         </xsl:attribute>
-                                        <xsl:attribute name="href" select="$pdf-download/@url"/>
+                                        <xsl:attribute name="href" select="$pdf-download/@download-url"/>
                                         <xsl:attribute name="download" select="$pdf-download/@filename"/>
                                         <xsl:attribute name="class" select="'log-click'"/>
                                         <xsl:attribute name="data-page-alert" select="common:internal-link('/widget/download-dana.html', concat('resource-id=', $toh-key), '#dana-description', /m:response/@lang)"/>
-                                        <xsl:value-of select="concat($reading-room-path, $pdf-download/@url)"/>
+                                        <xsl:value-of select="concat($reading-room-path, $pdf-download/@download-url)"/>
                                     </a>
                                 </p>
                             </xsl:if>
@@ -757,7 +753,7 @@
                 </xsl:if>
                 
                 <!-- Additional front-matter -->
-                <xsl:if test="m:translation[@status = $render-status]/m:downloads">
+                <xsl:if test="m:translation[@status = $render-status]/m:downloads[m:download]">
                     
                     <!-- Download options -->
                     <aside class="download-options hidden-print text-center">
@@ -773,7 +769,7 @@
                                         <xsl:with-param name="type" select="@type"/>
                                     </xsl:call-template>
                                 </xsl:attribute>
-                                <xsl:attribute name="href" select="@url"/>
+                                <xsl:attribute name="href" select="@download-url"/>
                                 <xsl:attribute name="download" select="@filename"/>
                                 <xsl:attribute name="class" select="'btn-round log-click'"/>
                                 <xsl:if test="@type = ('pdf', 'epub', 'azw3')">
@@ -785,9 +781,9 @@
                             </a>
                         </xsl:for-each>
                         
-                        <a href="#" class="btn-round print-preview" title="Print">
+                        <!--<a href="#" class="btn-round print-preview" title="Print">
                             <i class="fa fa-print"/>
-                        </a>
+                        </a>-->
                         
                     </aside>
                     

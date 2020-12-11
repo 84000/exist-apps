@@ -499,11 +499,11 @@ declare function glossary:translation-data($tei as element(tei:TEI), $resource-i
                     translation:publication($tei),
                     translation:parts($tei, 'all', $view-mode),
                     
-                    (: Include caches - not glossary :)
-                    translation:notes-cache($tei, false()),
-                    translation:milestones-cache($tei, false()),
-                    translation:folios-cache($tei, false()),
-                    $tei/m:glossary-cache
+                    (: Include caches - not glossary, this causes a recursion problem :)
+                    translation:notes-cache($tei, false(), false()),
+                    translation:milestones-cache($tei, false(), false()),
+                    translation:folios-cache($tei, false(), false()),
+                    translation:cache($tei, false())/m:glossary-cache
                 },
                 
                 (: Calculated strings :)
@@ -530,12 +530,14 @@ declare function glossary:filter($tei as element(tei:TEI), $resource-id as xs:st
     
     let $entity-instance-ids := $entities:entities/m:entities/m:entity/m:instance/@id/string()
     
+    let $glossary-cache := translation:glossary-cache($tei, (), false())
+    
     (: Pre-defined filters :)
     let $tei-gloss :=
         if($filter eq 'missing-entities') then
             $tei//tei:back//tei:div[@type eq 'glossary']//tei:gloss[not(@xml:id = $entity-instance-ids)]
         else if($filter eq 'no-cache') then
-            $tei//tei:back//tei:div[@type eq 'glossary']//tei:gloss[not(@xml:id = $tei/m:glossary-cache/m:gloss[m:location]/@id)]
+            $tei//tei:back//tei:div[@type eq 'glossary']//tei:gloss[not(@xml:id = $glossary-cache/m:gloss[m:location]/@id)]
         else if($filter eq 'blank-form') then
             ()
         else
@@ -591,7 +593,7 @@ declare function glossary:filter($tei as element(tei:TEI), $resource-id as xs:st
             where 
                 (: If filtering by new expressions, return where there are expression locations not in the cache :)
                 not($filter = ('new-expressions', 'no-expressions')) 
-                or ($filter eq 'new-expressions' and $expression-locations[not(@id = $tei/m:glossary-cache/m:gloss[@id eq $glossary-item/@id]/m:location/@id)])
+                or ($filter eq 'new-expressions' and $expression-locations[not(@id = $glossary-cache/m:gloss[@id eq $glossary-item/@id]/m:location/@id)])
                 or ($filter eq 'no-expressions' and not($expression-locations))
             
             order by 

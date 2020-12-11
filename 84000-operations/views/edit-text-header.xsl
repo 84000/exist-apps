@@ -1,8 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" version="3.0" exclude-result-prefixes="#all">
     
-    <xsl:import href="../../84000-reading-room/views/html/website-page.xsl"/>
-    <xsl:import href="forms.xsl"/>
     <xsl:import href="common.xsl"/>
     
     <xsl:template match="/m:response">
@@ -25,13 +23,17 @@
                         </a>
                     </div>
                     
+                    <!-- TEI url -->
                     <div class="small text-muted sml-margin bottom ">
                         <xsl:value-of select="concat('TEI file: ', m:translation/@document-url)"/>
                     </div>
                     
+                    <!-- Status flags -->
                     <div class="bottom-margin">
                         
                         <xsl:variable name="next-target-date" select="m:translation-status/m:text[@status-surpassable eq 'true']/m:target-date[@next eq 'true'][1]"/>
+                        
+                        <!-- Due date -->
                         <xsl:if test="$next-target-date">
                             <xsl:choose>
                                 <xsl:when test="xs:integer($next-target-date/@due-days) ge 0">
@@ -55,8 +57,10 @@
                             </xsl:choose>
                         </xsl:if>
                         
+                        <!-- Status -->
                         <xsl:copy-of select="common:translation-status(m:translation/@status-group)"/>
                         
+                        <!-- Version -->
                         <xsl:if test="normalize-space(m:translation/m:publication/m:edition)">
                             
                             <a class="label label-info">
@@ -67,6 +71,7 @@
                             
                         </xsl:if>
                         
+                        <!-- Files -->
                         <xsl:if test="m:translation/@status eq '1'">
                             <xsl:for-each select="m:translation/m:downloads">
                                 <xsl:variable name="resource-id" select="@resource-id"/>
@@ -78,6 +83,9 @@
                                             <xsl:when test="@version eq $tei-version">
                                                 <xsl:attribute name="href" select="concat($reading-room-path, @url)"/>
                                                 <xsl:attribute name="class" select="'label label-info'"/>
+                                                <xsl:if test="not(@download-url)">
+                                                    <xsl:attribute name="target" select="concat($resource-id, '.', @type)"/>
+                                                </xsl:if>
                                                 <i class="fa fa-check"/>
                                                 <xsl:value-of select="concat(' ', $resource-id, '.', @type)"/>
                                             </xsl:when>

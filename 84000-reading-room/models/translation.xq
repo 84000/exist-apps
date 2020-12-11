@@ -22,15 +22,18 @@ let $resource-id := request:get-parameter('resource-id', '')
 let $resource-suffix := request:get-parameter('resource-suffix', '')
 let $part := request:get-parameter('part', 'none')
 let $view-mode-id := request:get-parameter('view-mode', 'default')
-(:let $request-mode := request:get-parameter('request-mode', ''):)
 let $archive-path := request:get-parameter('archive-path', ())
 
 let $tei := tei-content:tei($resource-id, 'translation', $archive-path)
 
+where $tei
 return
     (: return all tei data :)
     if($resource-suffix = ('tei')) then
         $tei
+        
+    else if($resource-suffix = ('cache')) then
+        translation:cache($tei, false())
     
     (: return parts of the data :)
     else 
@@ -107,10 +110,10 @@ return
                         ),
                         
                         (: Include caches :)
-                        translation:notes-cache($tei, false()),
-                        translation:milestones-cache($tei, false()),
-                        translation:folios-cache($tei, false()),
-                        translation:glossary-cache($tei, ())
+                        translation:notes-cache($tei, false(), false()),
+                        translation:milestones-cache($tei, false(), false()),
+                        translation:folios-cache($tei, false(), false()),
+                        translation:glossary-cache($tei, (), false())
                         
                     },
                     

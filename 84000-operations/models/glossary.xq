@@ -13,6 +13,7 @@ import module namespace entities="http://read.84000.co/entities" at "../../84000
 import module namespace translation="http://read.84000.co/translation" at "../../84000-reading-room/modules/translation.xql";
 import module namespace translations="http://read.84000.co/translations" at "../../84000-reading-room/modules/translations.xql";
 import module namespace glossary="http://read.84000.co/glossary" at "../../84000-reading-room/modules/glossary.xql";
+import module namespace store="http://read.84000.co/store" at "../../84000-reading-room/modules/store.xql";
 import module namespace functx="http://www.functx.com";
 
 declare option exist:serialize "method=xml indent=no";
@@ -58,8 +59,7 @@ let $update-glossary :=
         entities:update-entity($entity-id)
     else if($form-action eq 'match-entity') then
         entities:match-instance($entity-id, $glossary-id, 'glossary-item')
-    else
-        ()
+    else ()
 
 (: Get the glossaries - applying any filters :)
 let $glossary-filtered := glossary:filter($tei, $resource-id, $filter, $search)
@@ -87,6 +87,8 @@ let $first-record :=
             xs:integer($first-record)
     else 1
 
+let $glossary-cache := translation:glossary-cache($tei, (), false())
+
 return
     common:response(
         'operations/glossary',
@@ -106,6 +108,7 @@ return
             },
             element { QName('http://read.84000.co/ns/1.0', 'text') }{
                 attribute id { tei-content:id($tei) },
+                attribute tei-version { tei-content:version-str($tei) },
                 translation:titles($tei),
                 tei-content:source($tei, $resource-id)
             },
@@ -116,6 +119,8 @@ return
                 attribute count-records { count($glossary-filtered/m:item) },
                 attribute first-record { $first-record },
                 attribute max-records { $max-records },
+                $glossary-cache/@seconds-to-build,
+                attribute tei-version-cached { store:stored-version-str($resource-id, 'cache') },
                 
                 let $glossary-filtered-subsequence := subsequence($glossary-filtered/m:item, $first-record, $max-records)
                 
@@ -147,9 +152,9 @@ return
                             else (),
                             
                             (: Add glossary cache :)
-                            if($tei[m:glossary-cache]) then
+                            if($glossary-cache) then
                                 element cache {
-                                    $tei/m:glossary-cache/m:gloss[@id eq $glossary-item/@id]/m:location
+                                    $glossary-cache/m:gloss[@id eq $glossary-item/@id]/m:location
                                 }
                             else(),
                             

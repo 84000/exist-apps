@@ -26,13 +26,11 @@ declare function log:log-request($request as xs:string, $app as xs:string, $type
     let $log := doc($logfile-full)/m:log
     
     where doc-available($logfile-full)
-    return (
-    
-        (: Insert return character :)
-        update insert text {'&#10;'} into $log,
-        
+    return
         (: Insert log :)
-        update insert
+        update insert (
+            text { $common:chr-nl },
+            text { $common:chr-tab },
             <request xmlns="http://read.84000.co/ns/1.0" timestamp="{current-dateTime()}">
                 <request>{$request}</request>
                 <app>{$app}</app>
@@ -41,8 +39,8 @@ declare function log:log-request($request as xs:string, $app as xs:string, $type
                 <resource-suffix>{$resource-suffix}</resource-suffix>
                 <parameters>{local:parameters()}</parameters>
             </request>
-        into $log
-    )
+        )
+        following $log/m:request[last()]
 };
 
 declare function local:dateTimes($timestamps) as item()* {
@@ -207,8 +205,7 @@ declare function log:achive-logs() as element() {
                     for $file-name in $log-files
                         let $file-uri := xs:anyURI(concat($common:log-path, "/", $file-name))
                         let $file-name-ts := concat($timestamp, '-', $file-name)
-                    return
-                    (
+                    return (
                         (: Create a new, empty file with correct permissions :)
                         element store {
                             attribute collection { $common:log-path },

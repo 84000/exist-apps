@@ -899,7 +899,7 @@
                             <xsl:value-of select="'ignore'"/>
                         </xsl:when>
                         <xsl:otherwise>
-                            <xsl:value-of select="'match'"/>
+                            <!--<xsl:value-of select="'match'"/>-->
                         </xsl:otherwise>
                     </xsl:choose>
                 </xsl:with-param>
@@ -1123,82 +1123,84 @@
                         
                     </div>
                     
-                    <div class="locations">
-                        
-                        <xsl:if test="$view-mode[not(@client = ('ebook', 'app'))]">
+                    <xsl:if test="$view-mode[not(@id eq 'pdf')]">
+                        <div class="locations">
                             
-                            <xsl:attribute name="class" select="'locations col-md-5 hidden-print'"/>
+                            <xsl:if test="$view-mode[not(@client = ('ebook', 'app'))]">
+                                
+                                <xsl:attribute name="class" select="'locations col-md-5 hidden-print'"/>
+                                
+                                <hr class="visible-xs-block visible-sm-block"/>
+                                
+                            </xsl:if>
                             
-                            <hr class="visible-xs-block visible-sm-block"/>
+                            <xsl:variable name="count-expressions" select="count($cached-locations)"/>
+                            <h5>
+                                <xsl:choose>
+                                    <xsl:when test="$count-expressions gt 1">
+                                        <xsl:value-of select="concat(format-number($count-expressions, '#,###'), ' passages contain this term')"/>
+                                    </xsl:when>
+                                    <xsl:when test="$count-expressions eq 1">
+                                        <xsl:value-of select="'1 passage contains this term'"/>
+                                    </xsl:when>
+                                    <xsl:otherwise>
+                                        <xsl:value-of select="'No instances of this term'"/>
+                                    </xsl:otherwise>
+                                </xsl:choose>
+                            </h5>
                             
-                        </xsl:if>
-                        
-                        <xsl:variable name="count-expressions" select="count($cached-locations)"/>
-                        <h5>
-                            <xsl:choose>
-                                <xsl:when test="$count-expressions gt 1">
-                                    <xsl:value-of select="concat(format-number($count-expressions, '#,###'), ' passages contain this term')"/>
-                                </xsl:when>
-                                <xsl:when test="$count-expressions eq 1">
-                                    <xsl:value-of select="'1 passage contains this term'"/>
-                                </xsl:when>
-                                <xsl:otherwise>
-                                    <xsl:value-of select="'No instances of this term'"/>
-                                </xsl:otherwise>
-                            </xsl:choose>
-                        </h5>
-                        
-                        <xsl:if test="$cached-locations">
-                            <ul class="list-inline">
-                                <xsl:for-each select="$cached-locations">
-                                    <li>
-                                        <a>
-                                            
-                                            <xsl:variable name="cached-location" select="."/>
-                                            
-                                            <xsl:variable name="target-element" as="element()?">
-                                                <xsl:call-template name="target-element">
-                                                    <xsl:with-param name="target-id" select="$cached-location/@id"/>
-                                                </xsl:call-template>
-                                            </xsl:variable>
-                                            
-                                            <xsl:choose>
-                                                <xsl:when test="$target-element">
-                                                    <xsl:call-template name="target-element-href">
-                                                        <xsl:with-param name="target-element" select="$target-element"/>
-                                                        <xsl:with-param name="mark-id" select="$glossary-item/@xml:id"/>
+                            <xsl:if test="$cached-locations">
+                                <ul class="list-inline">
+                                    <xsl:for-each select="$cached-locations">
+                                        <li>
+                                            <a>
+                                                
+                                                <xsl:variable name="cached-location" select="."/>
+                                                
+                                                <xsl:variable name="target-element" as="element()?">
+                                                    <xsl:call-template name="target-element">
+                                                        <xsl:with-param name="target-id" select="$cached-location/@id"/>
                                                     </xsl:call-template>
-                                                </xsl:when>
-                                                <xsl:otherwise>
-                                                    <xsl:attribute name="href" select="$cached-location/@id"/>
-                                                </xsl:otherwise>
-                                            </xsl:choose>
-                                            
-                                            <xsl:if test="$view-mode[not(@client = ('ebook', 'app'))]">
-                                                <xsl:attribute name="data-glossary-location" select="$cached-location/@id"/>
-                                                <!-- marks a target -->
-                                                <xsl:attribute name="data-mark" select="concat('[data-mark-id=&#34;', $glossary-item/@xml:id, '&#34;]')"/>
-                                                <xsl:attribute name="class" select="'scroll-to-anchor'"/>
-                                            </xsl:if>
-                                            
-                                            <xsl:choose>
-                                                <xsl:when test="$target-element">
-                                                    <xsl:call-template name="target-element-label">
-                                                        <xsl:with-param name="target-element" select="$target-element"/>
-                                                    </xsl:call-template>
-                                                </xsl:when>
-                                                <xsl:otherwise>
-                                                    <xsl:value-of select="position()"/>
-                                                </xsl:otherwise>
-                                            </xsl:choose>
-                                            
-                                        </a>
-                                    </li>
-                                </xsl:for-each>
-                            </ul>
-                        </xsl:if>
-                        
-                    </div>
+                                                </xsl:variable>
+                                                
+                                                <xsl:choose>
+                                                    <xsl:when test="$target-element">
+                                                        <xsl:call-template name="target-element-href">
+                                                            <xsl:with-param name="target-element" select="$target-element"/>
+                                                            <xsl:with-param name="mark-id" select="$glossary-item/@xml:id"/>
+                                                        </xsl:call-template>
+                                                    </xsl:when>
+                                                    <xsl:otherwise>
+                                                        <xsl:attribute name="href" select="$cached-location/@id"/>
+                                                    </xsl:otherwise>
+                                                </xsl:choose>
+                                                
+                                                <xsl:if test="$view-mode[not(@client = ('ebook', 'app'))]">
+                                                    <xsl:attribute name="data-glossary-location" select="$cached-location/@id"/>
+                                                    <!-- marks a target -->
+                                                    <xsl:attribute name="data-mark" select="concat('[data-mark-id=&#34;', $glossary-item/@xml:id, '&#34;]')"/>
+                                                    <xsl:attribute name="class" select="'scroll-to-anchor'"/>
+                                                </xsl:if>
+                                                
+                                                <xsl:choose>
+                                                    <xsl:when test="$target-element">
+                                                        <xsl:call-template name="target-element-label">
+                                                            <xsl:with-param name="target-element" select="$target-element"/>
+                                                        </xsl:call-template>
+                                                    </xsl:when>
+                                                    <xsl:otherwise>
+                                                        <xsl:value-of select="position()"/>
+                                                    </xsl:otherwise>
+                                                </xsl:choose>
+                                                
+                                            </a>
+                                        </li>
+                                    </xsl:for-each>
+                                </ul>
+                            </xsl:if>
+                            
+                        </div>
+                    </xsl:if>
                     
                 </div>
                 
@@ -2118,37 +2120,6 @@
             
         </xsl:choose>
         
-    </xsl:template>
-    
-    <xsl:template name="expandable-toh">
-        <xsl:param name="toh" required="yes" as="element(m:toh)"/>
-        <xsl:choose>
-            <xsl:when test="$toh/m:duplicates">
-                <xsl:variable name="expand-id" select="concat('expand-toh-', $toh/@key)"/>
-                <a role="button" data-toggle="collapse" aria-expanded="true" class="collapsed nowrap">
-                    <xsl:attribute name="href" select="concat('#', $expand-id)"/>
-                    <xsl:attribute name="aria-controls" select="$expand-id"/>
-                    <xsl:value-of select="$toh/m:full"/>
-                    <span class="collapsed-show">
-                        <span class="monospace">+</span>
-                    </span>
-                </a>
-                <div class="collapse print-expand">
-                    <xsl:attribute name="id" select="$expand-id"/>
-                    <xsl:for-each select="$toh/m:duplicates/m:duplicate">
-                        <span class="nowrap">
-                            <xsl:value-of select="normalize-space(concat(' / ', m:full/text()))"/>
-                        </span>
-                        <br/>
-                    </xsl:for-each>
-                </div>
-            </xsl:when>
-            <xsl:otherwise>
-                <span class="nowrap">
-                    <xsl:value-of select="$toh/m:full"/>
-                </span>
-            </xsl:otherwise>
-        </xsl:choose>
     </xsl:template>
     
     <xsl:template name="download-label">

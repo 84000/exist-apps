@@ -40,8 +40,7 @@ let $delete-submission :=
         file-upload:delete-file($text-id, $delete-submission-id),
         translation-status:update($text-id)
     )
-    else 
-        ()
+    else ()
 
 (: Process input, if it's posted :)
 let $updated := 
@@ -57,8 +56,7 @@ let $updated :=
         file-upload:process-upload($text-id),
         translation-status:update($text-id)
     )
-    else
-        ()
+    else ()
 
 (: If it's a new version :)
 let $tei-version-str := tei-content:version-str($tei)
@@ -71,11 +69,9 @@ let $commit-version :=
         (: Store associated files :)
         if(tei-content:translation-status-group($tei) eq 'published')then
             store:create(concat($text-id, '.all'))
-        else
-            ()
+        else ()
     )
-    else 
-        ()
+    else ()
 
 return
     common:response(

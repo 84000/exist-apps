@@ -21,10 +21,10 @@ declare function download:file-path($requested-file as xs:string) as xs:string {
         concat($common:data-collection, '/', $file-extension, '/', $file-name)
 };
 
-declare function download:stored-version-str($resource-id as xs:string, $file-extension as xs:string) as xs:string {
+declare function download:stored-version-str($resource-id as xs:string, $file-type as xs:string) as xs:string {
     
-    let $file-collection := concat($common:data-path, '/', $file-extension)
-    let $file-name := concat($resource-id, '.', $file-extension)
+    let $file-collection := concat($common:data-path, '/', $file-type)
+    let $file-name := concat($resource-id, '.', $file-type)
     
     (: Get document version in data store :)
     let $file-versions-doc := doc(concat($file-collection, '/', $download:file-versions-file-name))
@@ -32,7 +32,7 @@ declare function download:stored-version-str($resource-id as xs:string, $file-ex
     
     (: Check the file is there :)
     let $file-exists := 
-        if($file-extension = ('xml', 'rdf', 'html')) then
+        if($file-type = ('xml', 'rdf', 'html', 'cache')) then
             doc-available(concat($file-collection, '/', $file-name))
         else
             util:binary-doc-available(concat($file-collection, '/', $file-name))

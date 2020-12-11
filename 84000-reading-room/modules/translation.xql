@@ -24,7 +24,7 @@ declare variable $translation:view-modes :=
       <view-mode id="editor"            client="browser"  layout="expanded"        glossary="defer-no-cache"  parts="all"                                    />,
       <view-mode id="annotation"        client="browser"  layout="expanded-fixed"  glossary="defer"           parts="all"                                    />,
       <view-mode id="ebook"             client="ebook"    layout="stripped"        glossary="use-cache"       parts="all"                                    />,
-      <view-mode id="pdf"               client="none"     layout="stripped"        glossary="suppress"                                                       />,
+      <view-mode id="pdf"               client="none"     layout="full"            glossary="suppress"                                                       />,
       <view-mode id="app"               client="app"      layout="stripped"        glossary="use-cache"       parts="all"                                    />,
       <view-mode id="tests"             client="none"     layout="stripped"        glossary="suppress"        parts="all"                                    />,
       <view-mode id="glossary-editor"   client="browser"  layout="full"            glossary="no-cache"        parts="all"                                    />,
@@ -214,6 +214,7 @@ declare function translation:downloads($tei as element(tei:TEI), $resource-id as
     
     let $file-name := translation:filename($tei, $resource-id)
     let $tei-version := tei-content:version-str($tei)
+    let $text-id := tei-content:id($tei)
     
     return
         element {QName('http://read.84000.co/ns/1.0', 'downloads')} {
@@ -221,20 +222,26 @@ declare function translation:downloads($tei as element(tei:TEI), $resource-id as
             attribute tei-version {$tei-version},
             attribute resource-id {$resource-id},
             
-            for $type in ('html', 'pdf', 'epub', 'azw3', 'rdf')
+            for $type in ('html', 'pdf', 'epub', 'azw3', 'rdf', 'cache')
+            
+            let $resource-id :=
+                if ($type eq 'cache') then
+                    $text-id
+                else
+                    $resource-id
             
             let $stored-version :=
-            if ($type eq 'html') then
-                $tei-version
-            else
-                download:stored-version-str($resource-id, $type)
-            
-            let $url :=
                 if ($type eq 'html') then
-                    concat('/translation/', $resource-id, '.html')
+                    $tei-version
                 else
-                    concat('/data/', $file-name, '.', $type)
-                
+                    download:stored-version-str($resource-id, $type)
+            
+            let $path :=
+                if ($type = ('html', 'cache')) then
+                    '/translation'
+                else
+                    '/data'
+            
             where (
                 ($include eq 'all')                                                                 (: return all types :)
                 or ($include eq 'any-version' and not($stored-version eq 'none'))                   (: return if there is any version :)
@@ -242,10 +249,14 @@ declare function translation:downloads($tei as element(tei:TEI), $resource-id as
             )
             return
                 element download {
-                    attribute type {$type},
-                    attribute url {$url},
-                    attribute version {$stored-version},
-                    attribute filename {concat($file-name, '.', $type)}
+                    attribute type { $type },
+                    attribute version { $stored-version },
+                    attribute url { concat($path, '/', $resource-id, '.', $type) },
+                    if(not($type = ('html', 'cache'))) then (
+                        attribute download-url { concat($path, '/', $file-name, '.', $type) },
+                        attribute filename { $file-name }
+                    )
+                    else ()
                 }
         }
 };
@@ -399,6 +410,7 @@ declare function translation:parts($tei as element(tei:TEI), $id as xs:string?, 
             let $render := 
                 if($view-mode[@render = ('part-only', 'passage-only')]) then 'hide' 
                 else if($part = ('glossary', 'back')) then 'show'       (: Groups :)
+                else if($view-mode[@id eq 'pdf']) then 'hide'
                 else 'collapse'                                         (: Default :)
             return
                 translation:glossary($tei, $render)
@@ -478,6 +490,7 @@ declare function local:part-content($content as element(tei:div)?, $render as xs
     
     (: Just get a passage :)
     if($render eq 'passage-only')then (
+    
         let $tid := substring-after($passage-id, 'node-')
         let $node := $content//tei:*[@tid eq $tid][1][not(self::tei:head[@type = ($type, 'chapterTitle')])]
         return (
@@ -897,137 +910,207 @@ declare function translation:glossary($tei as element(tei:TEI), $render as xs:st
 
 };
 
-declare function translation:notes-cache($tei as element(tei:TEI), $refresh as xs:boolean?) as element(m:notes-cache) {
-    if($tei[m:notes-cache] and not($refresh)) then
-        $tei/m:notes-cache
-    else
-        element { QName('http://read.84000.co/ns/1.0', 'notes-cache') } {
-            attribute timestamp { current-dateTime() },
-            attribute app-version { $common:app-version },
-            
-            for $note at $index in $tei/tei:text//tei:note[@place eq 'end'][@xml:id]
-                let $part := $note/ancestor::tei:div[@type][not(@type eq 'translation')][last()]
-            return (
-                common:ws(2),
-                element end-note {
-                    attribute id { $note/@xml:id },
-                    attribute part-id { ($part/@xml:id, $part/@type)[1] },
-                    attribute index { $index }
-                }
-            )
-            ,
-            common:ws(1)
-        }
+declare function translation:cache($tei as element(tei:TEI), $create-if-unavailable as xs:boolean?) as element(m:cache) {
+    
+    let $text-id := tei-content:id($tei)
+    let $cache-collection := concat($common:data-path, '/', 'cache')
+    let $cache-file := concat($text-id, '.cache')
+    let $cache-uri := concat($cache-collection, '/', $cache-file)
+    let $cache := doc($cache-uri)/m:cache
+    let $cache-empty := <cache xmlns="http://read.84000.co/ns/1.0"/>
+    
+    let $cache := 
+        if(not(doc-available($cache-uri))) then 
+            if($create-if-unavailable and $tei/tei:text//tei:div) then 
+                let $cache-create := xmldb:store($cache-collection, $cache-file, $cache-empty, 'application/xml')
+                let $set-permissions := (
+                    sm:chown(xs:anyURI($cache-uri), 'admin'),
+                    sm:chgrp(xs:anyURI($cache-uri), 'tei'),
+                    sm:chmod(xs:anyURI($cache-uri), 'rw-rw-r--')
+                )
+                return
+                    doc($cache-uri)/m:cache
+            else 
+                $cache-empty
+        else 
+            $cache
+    
+    return
+        $cache
 };
 
-declare function translation:milestones-cache($tei as element(tei:TEI), $refresh as xs:boolean?) as element(m:milestones-cache) {
-    if($tei[m:milestones-cache] and not($refresh)) then
-        $tei/m:milestones-cache
-    else
-        element { QName('http://read.84000.co/ns/1.0', 'milestones-cache') } {
-            attribute timestamp { current-dateTime() },
-            attribute app-version { $common:app-version },
-            for $part in 
-                $tei/tei:text/tei:front/tei:div[@type]
-                | $tei/tei:text/tei:body/tei:div[@type eq 'translation']/tei:div[@type]
-                | $tei/tei:text/tei:back/tei:div[@type]
-                for $milestone at $index in $part//tei:milestone[@xml:id]
+declare function translation:notes-cache($tei as element(tei:TEI), $refresh as xs:boolean?, $create-if-unavailable as xs:boolean?) as element(m:notes-cache) {
+    
+    let $cache := translation:cache($tei, $create-if-unavailable)
+    
+    return
+        if($cache[m:notes-cache] and not($refresh)) then
+            $cache/m:notes-cache
+        else
+            
+            let $start-time := util:system-dateTime()
+            
+            let $end-notes :=
+                for $note at $index in $tei/tei:text//tei:note[@place eq 'end'][@xml:id]
+                    let $part := $note/ancestor::tei:div[@type][not(@type eq 'translation')][last()]
                 return (
                     common:ws(2),
-                    element milestone {
-                        attribute id { $milestone/@xml:id },
+                    element { QName('http://read.84000.co/ns/1.0', 'end-note') } {
+                        attribute id { $note/@xml:id },
                         attribute part-id { ($part/@xml:id, $part/@type)[1] },
                         attribute index { $index }
                     }
                 )
-            ,
-            common:ws(1)
-        }
-};
-
-declare function translation:folios-cache($tei as element(tei:TEI), $refresh as xs:boolean?) as element(m:folios-cache) {
-    if($tei[m:folios-cache] and not($refresh)) then
-        $tei/m:folios-cache
-    else
-        element { QName('http://read.84000.co/ns/1.0', 'folios-cache') } {
-        
-            attribute timestamp { current-dateTime() },
-            attribute app-version { $common:app-version },
-            attribute tei-version { tei-content:version-str($tei) },
             
-            for $bibl in $tei/tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl[@key]
-            let $resource-id := $bibl/@key
-            let $folios-for-toh := translation:folio-refs-sorted($tei, $resource-id)
+            let $end-time := util:system-dateTime()
+            
             return
-                for $folio in $folios-for-toh
-                return (
-                    common:ws(2),
-                    element folio-ref {
-                        attribute id { $folio/@xml:id },
-                        attribute resource-id { $resource-id },
-                        $folio/@index-in-resource,
-                        $folio/@index-in-sort,
-                        if($folio[@cRef-volume]) then
-                            $folio/@cRef-volume
-                        else ()
-                    }
-                )
-            ,
-            common:ws(1)
-        }
+                element { QName('http://read.84000.co/ns/1.0', 'notes-cache') } {
+                
+                    attribute timestamp { current-dateTime() },
+                    attribute seconds-to-build { functx:total-seconds-from-duration($end-time - $start-time) },
+                    
+                    $end-notes,
+                    
+                    common:ws(1)
+                }
 };
 
-declare function translation:glossary-cache($tei as element(tei:TEI), $refresh-ids as xs:string*) as element(m:glossary-cache) {
+declare function translation:milestones-cache($tei as element(tei:TEI), $refresh as xs:boolean?, $create-if-unavailable as xs:boolean?) as element(m:milestones-cache) {
     
-    (: Just return the cache :)
-    if($tei[m:glossary-cache] and count($refresh-ids) eq 0) then
-        $tei/m:glossary-cache
-        
-    (: Build the cache :)
-    else
+    let $cache := translation:cache($tei, $create-if-unavailable)
     
-        (: Existing cache :)
-        let $glossary-cache := $tei/m:glossary-cache
+    return
+        if($cache[m:milestones-cache] and not($refresh)) then
+            $cache/m:milestones-cache
+        else
+            
+            let $start-time := util:system-dateTime()
+            
+            let $milestones := 
+                for $part in 
+                    $tei/tei:text/tei:front/tei:div[@type]
+                    | $tei/tei:text/tei:body/tei:div[@type eq 'translation']/tei:div[@type]
+                    | $tei/tei:text/tei:back/tei:div[@type]
+                    for $milestone at $index in $part//tei:milestone[@xml:id]
+                    return (
+                        common:ws(2),
+                        element { QName('http://read.84000.co/ns/1.0', 'milestone') } {
+                            attribute id { $milestone/@xml:id },
+                            attribute part-id { ($part/@xml:id, $part/@type)[1] },
+                            attribute index { $index }
+                        }
+                    )
+                    
+            let $end-time := util:system-dateTime()
+            
+            return
+                element { QName('http://read.84000.co/ns/1.0', 'milestones-cache') } {
+                
+                    attribute timestamp { current-dateTime() },
+                    attribute seconds-to-build { functx:total-seconds-from-duration($end-time - $start-time) },
+                    
+                    $milestones,
+                    
+                    common:ws(1)
+                }
+};
+
+declare function translation:folios-cache($tei as element(tei:TEI), $refresh as xs:boolean?, $create-if-unavailable as xs:boolean?) as element(m:folios-cache) {
+
+    let $cache := translation:cache($tei, $create-if-unavailable)
+    
+    return
+        if($cache[m:folios-cache] and not($refresh)) then
+            $cache/m:folios-cache
+        else
         
-        (: TEI glossary items :)
-        let $tei-glossary := $tei//tei:back//tei:list[@type eq 'glossary']/tei:item/tei:gloss[@xml:id]
-        
-        let $resource-id := translation:toh-key($tei, '')
-        
-        (: Glossary expressions :)
-        let $glossary-expressions :=
-            (: We can optimise by passing 'all' instead of all the ids :)
-            if($refresh-ids = 'all') then 
-                glossary:expressions($tei, $resource-id, 'all')
-            else if (count($tei-glossary[@xml:id = $refresh-ids]) gt 0) then
-                glossary:expressions($tei, $resource-id, $refresh-ids)
-            else
-                ()
-        
-        (: Sort glossaries :)
-        let $glossary-sorted :=
-            for $gloss in $tei-glossary
-            let $sort-term := glossary:sort-term($gloss)
-            order by $sort-term/text()
-            return $gloss
-        
-        return
-            element {QName('http://read.84000.co/ns/1.0', 'glossary-cache')} {
+            let $start-time := util:system-dateTime()
+            
+            let $folio-refs :=
+                for $bibl in $tei/tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl[@key]
+                let $resource-id := $bibl/@key
+                let $folios-for-toh := translation:folio-refs-sorted($tei, $resource-id)
+                return
+                    for $folio in $folios-for-toh
+                    return (
+                        common:ws(2),
+                        element { QName('http://read.84000.co/ns/1.0', 'folio-ref') } {
+                            attribute id { $folio/@xml:id },
+                            attribute resource-id { $resource-id },
+                            $folio/@index-in-resource,
+                            $folio/@index-in-sort,
+                            if($folio[@cRef-volume]) then
+                                $folio/@cRef-volume
+                            else ()
+                        }
+                    )
+            
+            let $end-time := util:system-dateTime()
+            
+            return
+            element { QName('http://read.84000.co/ns/1.0', 'folios-cache') } {
             
                 attribute timestamp { current-dateTime() },
-                attribute app-version { $common:app-version },
+                attribute seconds-to-build { functx:total-seconds-from-duration($end-time - $start-time) },
                 
-                (: Process all glossaries :)
+                $folio-refs,
+                
+                common:ws(1)
+                
+            }
+};
+
+declare function translation:glossary-cache($tei as element(tei:TEI), $refresh-ids as xs:string*, $create-if-unavailable as xs:boolean?) as element(m:glossary-cache) {
+    
+    let $cache := translation:cache($tei, $create-if-unavailable)
+    
+    return
+        (: If there is one and there's nothing to refresh, just return the cache :)
+        if($cache[m:glossary-cache] and count($refresh-ids) eq 0) then
+            $cache/m:glossary-cache
+            
+        (: Build the cache :)
+        else
+            
+            let $start-time := util:system-dateTime()
+            
+            (: Existing cache :)
+            let $glossary-cache := $cache/m:glossary-cache
+            
+            (: TEI glossary items :)
+            let $tei-glossary := $tei//tei:back//tei:list[@type eq 'glossary']/tei:item/tei:gloss[@xml:id]
+            
+            let $resource-id := translation:toh-key($tei, '')
+            
+            (: Glossary expressions :)
+            let $glossary-expressions :=
+                (: We can optimise by passing 'all' instead of all the ids :)
+                if($refresh-ids = 'all') then 
+                    glossary:expressions($tei, $resource-id, 'all')
+                else if (count($tei-glossary[@xml:id = $refresh-ids]) gt 0) then
+                    glossary:expressions($tei, $resource-id, $refresh-ids)
+                else
+                    ()
+            
+            (: Sort glossaries :)
+            let $glossary-sorted :=
+                for $gloss in $tei-glossary
+                let $sort-term := glossary:sort-term($gloss)
+                order by $sort-term/text()
+                return $gloss
+            
+            (: Process all glossaries :)
+            let $glosses :=
                 for $gloss at $index in $glossary-sorted
-                let $gloss-id := $gloss/@xml:id
+                    let $gloss-id := $gloss/@xml:id
                 group by $gloss-id
-                let $sort-term := glossary:sort-term($gloss[1])
+                    let $sort-term := glossary:sort-term($gloss[1])
                 return 
-                
                     (: If we processed it then add it with the new $glossary-expressions :)
                     if ($refresh-ids = 'all' or $gloss-id = $refresh-ids) then (
                         common:ws(2),
-                        element gloss {
+                        element { QName('http://read.84000.co/ns/1.0', 'gloss') } {
                             attribute id { $gloss-id },
                             attribute index { $index },
                             attribute timestamp { current-dateTime() },
@@ -1047,14 +1130,13 @@ declare function translation:glossary-cache($tei as element(tei:TEI), $refresh-i
                             common:ws(2)
                         }
                     )
-                    
                     (: Otherwise copy the existing cache :)
                     else (
                         common:ws(2),
                         
                         let $existing-cache := $glossary-cache/m:gloss[@id eq $gloss-id]
                         return
-                            element gloss {
+                            element { QName('http://read.84000.co/ns/1.0', 'gloss') } {
                                 attribute id { $gloss-id },
                                 attribute index { $index },
                                 $sort-term/@word-count ,
@@ -1064,9 +1146,24 @@ declare function translation:glossary-cache($tei as element(tei:TEI), $refresh-i
                             }
                             
                     )
-                ,
-                common:ws(1)
-            }
+            
+            let $end-time := util:system-dateTime()
+            
+            return
+                element { QName('http://read.84000.co/ns/1.0', 'glossary-cache') } {
+                
+                    attribute timestamp { current-dateTime() },
+                    
+                    if($refresh-ids = 'all') then
+                        attribute seconds-to-build { functx:total-seconds-from-duration($end-time - $start-time) }
+                    else
+                        $glossary-cache/@seconds-to-build
+                    ,
+                    
+                    $glosses,
+                    
+                    common:ws(1)
+                }
 };
 
 declare function translation:word-count($tei as element(tei:TEI)) as xs:integer {
