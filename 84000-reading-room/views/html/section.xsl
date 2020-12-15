@@ -1011,20 +1011,15 @@
                                 <xsl:if test="lower-case($section/@id) = 'all-translated'">
                                     
                                     <!-- Location breadcrumbs -->
-                                    <xsl:variable name="parent-section" select="//m:section[@id eq $text/m:source/@parent-id]"/>
-                                    <xsl:if test="$parent-section">
-                                        <hr/>
-                                        <div class="text-muted small">
-                                            <xsl:value-of select="'in '"/>
-                                            <ul class="breadcrumb">
-                                                <xsl:if test="$parent-section">
-                                                    <xsl:call-template name="section-breadcumbs">
-                                                        <xsl:with-param name="section" select="$parent-section"/>
-                                                    </xsl:call-template>
-                                                </xsl:if>
-                                            </ul>
-                                        </div>
-                                    </xsl:if>
+                                    <hr/>
+                                    <div class="text-muted small">
+                                        <xsl:value-of select="'in '"/>
+                                        <ul class="breadcrumb">
+                                            <xsl:call-template name="section-breadcumbs">
+                                                <xsl:with-param name="parent" select="$text/m:parent"/>
+                                            </xsl:call-template>
+                                        </ul>
+                                    </div>
                                     
                                     <!-- Tantric warning -->
                                     <xsl:if test="$text/m:publication/m:tantric-restriction/tei:p">
@@ -1494,13 +1489,13 @@
     
     <xsl:template name="section-breadcumbs">
         
-        <xsl:param name="section"/>
+        <xsl:param name="parent" as="element(m:parent)"/>
         
-        <xsl:variable name="parent-section" select="$section/parent::m:section"/>
+        <xsl:variable name="parent-parent" select="$parent/m:parent"/>
         
-        <xsl:if test="$parent-section and not($parent-section[@id eq 'ALL-TRANSLATED'])">
+        <xsl:if test="$parent-parent and not($parent-parent[@id eq 'ALL-TRANSLATED'])">
             <xsl:call-template name="section-breadcumbs">
-                <xsl:with-param name="section" select="$parent-section"/>
+                <xsl:with-param name="parent" select="$parent-parent"/>
             </xsl:call-template>
         </xsl:if>
         
@@ -1508,13 +1503,13 @@
             <a class="printable">
                 <xsl:choose>
                     <xsl:when test="@type eq 'grouping'">
-                        <xsl:attribute name="href" select="common:internal-link(concat('/section/', $section/@id, '.html'), (), concat('#grouping-', @id), /m:response/@lang)"/>
+                        <xsl:attribute name="href" select="common:internal-link(concat('/section/', $parent/@id, '.html'), (), concat('#grouping-', @id), /m:response/@lang)"/>
                     </xsl:when>
                     <xsl:otherwise>
-                        <xsl:attribute name="href" select="common:internal-link(concat('/section/', $section/@id, '.html'), (), '', /m:response/@lang)"/>
+                        <xsl:attribute name="href" select="common:internal-link(concat('/section/', $parent/@id, '.html'), (), '', /m:response/@lang)"/>
                     </xsl:otherwise>
                 </xsl:choose>
-                <xsl:apply-templates select="$section/m:titles/m:title[@xml:lang='en']/text()"/>
+                <xsl:apply-templates select="$parent/m:titles/m:title[@xml:lang='en']/text()"/>
             </a>
         </li>
     </xsl:template>
