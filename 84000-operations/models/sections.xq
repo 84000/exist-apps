@@ -13,6 +13,6 @@ common:response(
     'operations/sections',
     'operations',
     (
-        section:child-sections(tei-content:tei('lobby', 'section'), true())
+        section:child-sections(tei-content:tei('lobby', 'section'), true(), 'none')
     )
 )

@@ -17,11 +17,11 @@
     <!-- Global variables -->
     <xsl:variable name="translation-id" select="/m:response/m:translation/@id"/>
     <xsl:variable name="toh-key" select="/m:response/m:translation/m:source/@key"/>
-    <xsl:variable name="part-status" select="if(not(/m:response/m:translation//m:part[@render eq 'preview'])) then 'complete' else if(/m:response/m:translation//m:part[@render eq 'show']) then 'part' else 'empty'" as="xs:string"/>
+    <xsl:variable name="part-status" select="if(not(/m:response/m:translation//m:part[@render = ('preview', 'empty')])) then 'complete' else if(/m:response/m:translation//m:part[@render eq 'show']) then 'part' else 'empty'" as="xs:string"/>
     
     <!-- Pre-sort the glossaries by priority -->
     <xsl:variable name="glossary-prioritised" as="element(tei:gloss)*">
-        <xsl:perform-sort select="/m:response/m:translation/m:part[@type eq 'glossary']/tei:gloss[@xml:id]">
+        <xsl:perform-sort select="/m:response/m:translation/m:part[@type eq 'glossary']/tei:div/tei:gloss[@xml:id]">
             <xsl:sort select="key('glossary-cache-gloss', @xml:id)[1]/@word-count ! xs:integer(.)" order="descending"/>
             <xsl:sort select="key('glossary-cache-gloss', @xml:id)[1]/@letter-count ! xs:integer(.)" order="descending"/>
         </xsl:perform-sort>
@@ -986,7 +986,7 @@
         
         <xsl:apply-templates select="$glossary-part/tei:head"/>
         
-        <xsl:for-each select="$glossary-part/tei:gloss[@xml:id]">
+        <xsl:for-each select="$glossary-part/tei:div/tei:gloss[@xml:id]">
             
             <xsl:sort select="key('glossary-cache-gloss', @xml:id)[1]/@index ! xs:integer(.)"/>
             
@@ -1228,7 +1228,7 @@
         <xsl:choose>
             
             <!-- Only show base headers in preview -->
-            <xsl:when test="$part">
+            <xsl:when test="$part/@type eq @type">
                 <div>
                     
                     <xsl:call-template name="class-attribute">
@@ -1359,6 +1359,7 @@
                                 </xsl:otherwise>
                                 
                             </xsl:choose>
+                        
                         </div>
                         
                     </div>

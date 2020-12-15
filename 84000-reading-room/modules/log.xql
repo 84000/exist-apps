@@ -40,7 +40,7 @@ declare function log:log-request($request as xs:string, $app as xs:string, $type
                 <parameters>{local:parameters()}</parameters>
             </request>
         )
-        following $log/m:request[last()]
+        into $log
 };
 
 declare function local:dateTimes($timestamps) as item()* {

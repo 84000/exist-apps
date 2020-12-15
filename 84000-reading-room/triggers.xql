@@ -45,34 +45,34 @@ declare function local:refresh-cache($doc) {
     
     return (
         (: Cache notes :)
-        let $tei-ids := $doc/tei:TEI/tei:text//tei:note[@place eq 'end']/@xml:id
-        let $cache-ids := $cache/m:notes-cache/m:end-note/@id
+        let $tei-ids := $doc/tei:TEI/tei:text//tei:note[@place eq 'end']/@xml:id/string()
+        let $cache-ids := $cache/m:notes-cache/m:end-note/@id/string()
         return
-        if($tei-ids[not(string() = $cache-ids ! string())] or $cache-ids[not(string() = $tei-ids ! string())]) then
+        if($tei-ids[not(. = $cache-ids)] or $cache-ids[not(. = $tei-ids)]) then
             common:update('trigger-notes-cache', $cache/m:notes-cache, translation:notes-cache($doc/tei:TEI, true(), true()), $cache, $cache/m:notes-cache/preceding-sibling::*[1])
         else (),
         
         (: Cache milestones :)
-        let $tei-ids := $doc/tei:TEI/tei:text//tei:milestone/@xml:id
-        let $cache-ids := $cache/m:milestones-cache/m:milestone/@id
+        let $tei-ids := $doc/tei:TEI/tei:text//tei:milestone/@xml:id/string()
+        let $cache-ids := $cache/m:milestones-cache/m:milestone/@id/string()
         return
-        if($tei-ids[not(string() = $cache-ids ! string())] or $cache-ids[not(string() = $tei-ids ! string())]) then
+        if($tei-ids[not(. = $cache-ids)] or $cache-ids[not(. = $tei-ids)]) then
             common:update('trigger-milestones-cache', $cache/m:milestones-cache, translation:milestones-cache($doc/tei:TEI, true(), true()), $cache, $cache/m:milestones-cache/preceding-sibling::*[1])
         else (),
         
         (: Cache folios :)
-        let $tei-ids := $doc/tei:TEI/tei:text/tei:body//tei:ref/@xml:id
-        let $cache-ids := $cache/m:folios-cache/m:folio-ref/@id
+        let $tei-ids := $doc/tei:TEI/tei:text/tei:body//tei:ref/@xml:id/string()
+        let $cache-ids := $cache/m:folios-cache/m:folio-ref/@id/string()
         return
-        if($tei-ids[not(string() = $cache-ids ! string())] or $cache-ids[not(string() = $tei-ids ! string())]) then
+        if($tei-ids[not(. = $cache-ids)] or $cache-ids[not(. = $tei-ids)]) then
             common:update('trigger-cache-folio-refs', $cache/m:folios-cache, translation:folios-cache($doc/tei:TEI, true(), true()), $cache, $cache/m:folios-cache/preceding-sibling::*[1])
         else (),
         
         (: Cache glossary :)
-        let $tei-ids := $doc/tei:TEI//tei:back//tei:list[@type eq 'glossary']/tei:item/tei:gloss/@xml:id
-        let $cache-ids := $cache/m:glossary-cache/m:gloss/@id
+        let $tei-ids := $doc/tei:TEI//tei:back//tei:list[@type eq 'glossary']/tei:item/tei:gloss/@xml:id/string()
+        let $cache-ids := $cache/m:glossary-cache/m:gloss/@id/string()
         return
-        if($tei-ids[not(string() = $cache-ids ! string())] or $cache-ids[not(string() = $tei-ids ! string())]) then
+        if($tei-ids[not(. = $cache-ids)] or $cache-ids[not(. = $tei-ids)]) then
             common:update('trigger-cache-glossary', $cache/m:glossary-cache, translation:glossary-cache($doc/tei:TEI, 'none', true()), $cache, $cache/m:glossary-cache/preceding-sibling::*[1])
         else ()
         

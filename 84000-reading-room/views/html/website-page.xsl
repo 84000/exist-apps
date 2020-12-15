@@ -116,7 +116,7 @@
                 <xsl:attribute name="href" select="concat($front-end-path, '/css/ie10-viewport-bug-workaround.css')"/>
             </link>
             
-            <xsl:if test="not($view-mode[@client eq 'no-client'])">
+            <xsl:if test="not($view-mode) or $view-mode[@client eq 'browser']">
                 
                 <link rel="apple-touch-icon">
                     <xsl:attribute name="href" select="concat($front-end-path, '/favicon/apple-touch-icon.png')"/>
@@ -191,7 +191,7 @@
         <xsl:apply-templates select="$eft-footer"/>
         
         <!-- Don't add js in static mode -->
-        <xsl:if test="not($view-mode[@client eq 'no-client'])">
+        <xsl:if test="not($view-mode) or $view-mode[@client eq 'browser']">
             <xsl:if test="$ga-tracking-id and not($ga-tracking-id eq '')">
                 <!-- Global site tag (gtag.js) - Google Analytics -->
                 <script async="async">
@@ -369,7 +369,7 @@
                 <!-- Place content -->
                 <xsl:copy-of select="$content"/>
                 
-                <xsl:if test="not($view-mode[@client eq 'no-client'])">
+                <xsl:if test="not($view-mode) or $view-mode[@client eq 'browser']">
                     
                     <!-- Foooter components -->
                     <span id="media_test">

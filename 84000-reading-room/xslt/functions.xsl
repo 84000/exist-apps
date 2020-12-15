@@ -314,7 +314,7 @@
         </xsl:choose>
     </xsl:function>
     
-    <!-- Translation status -->
+    <!-- Sponsorship status -->
     <xsl:function name="common:sponsorship-status">
         <xsl:param name="sponsorship-statuses"/>
         <xsl:for-each select="$sponsorship-statuses">

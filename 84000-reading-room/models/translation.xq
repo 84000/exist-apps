@@ -43,10 +43,7 @@ return
         
         (: Set the view-mode which controls variations in the display :)
         let $view-mode :=
-            (:if($view-mode-id eq 'default' and $request-mode eq 'ajax' and not($part eq 'none')) then
-                $translation:view-modes/m:view-mode[@id eq 'ajax-part']
-                
-            else:) if(request:get-parameter('resource-suffix', '') eq 'epub') then
+            if(request:get-parameter('resource-suffix', '') eq 'epub') then
                 $translation:view-modes/m:view-mode[@id eq 'ebook']
                 
             else if($translation:view-modes/m:view-mode[@id eq $view-mode-id]) then
@@ -98,7 +95,7 @@ return
                             $source,
                             
                             (: Don't need these for a passage :)
-                            if (not($view-mode[@layout eq 'part-only'])) then (
+                            if (not($view-mode[@parts eq 'passage'])) then (
                                 translation:long-titles($tei),
                                 translation:publication($tei),
                                 tei-content:ancestors($tei, $source/@key, 1),

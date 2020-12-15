@@ -16,7 +16,7 @@ declare variable $local:tei :=
 declare function local:cache() {
     for $tei in $local:tei
         [m:glossary-cache](:[1]:)
-        (:[tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:idno[@xml:id eq 'UT22084-031-002']]:)
+        (:[tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:idno[@xml:id eq 'UT22084-057-004']]:)
     return (
         (: ID for debug :)
         concat(

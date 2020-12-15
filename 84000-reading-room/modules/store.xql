@@ -178,11 +178,11 @@ declare function store:create($file-name as xs:string) as element() {
             if($file-type eq 'cache') then
             
                 (: set the cache version number, assuming it's up to date :)
-                store:store-version-str(
+                (:store:store-version-str(
                     concat($common:data-path, '/cache'), 
-                    $file-name, 
+                    concat(tei-content:id($tei), '.cache'), 
                     $tei-version
-                )
+                ):)()
             
             else
                 (: Loop through one or more Toh keys :)

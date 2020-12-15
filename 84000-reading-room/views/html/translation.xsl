@@ -133,7 +133,7 @@
                 </div>
             </article>
             
-            <xsl:if test="$view-mode[not(@layout = ('part-only', 'stripped'))]">
+            <xsl:if test="$view-mode[@client eq 'browser'][not(@layout eq 'part-only')]">
                 
                 <!-- Navigation controls -->
                 <div class="nav-controls show-on-scroll-xs hidden-print">
@@ -468,7 +468,8 @@
         <!-- If it's a section that's only partial make it an aside -->
         <xsl:variable name="element" select="if($element eq 'section' and $part[@render eq 'preview']) then 'aside' else $element"/>
         
-        <xsl:if test="$part[not(@render eq 'hide')]">
+        <!-- 'hide' allows the inclusion of content in the xml structure without outputting -->
+        <xsl:if test="$part[@render = ('persist', 'show', 'collapse', 'preview', 'passage')]">
             <xsl:element name="{ $element }">
                 
                 <xsl:attribute name="id" select="$part/@id"/>
@@ -485,7 +486,7 @@
                     <xsl:with-param name="html-classes">
                         
                         <xsl:choose>
-                            <xsl:when test="$part[@render eq 'collapse'] and $view-mode[@layout = ('expanded', 'expanded-fixed', 'stripped')]">
+                            <xsl:when test="$part[@render eq 'collapse'] and $view-mode[@layout = ('expanded', 'expanded-fixed')]">
                                 <!-- .show displays content expanded -->
                                 <xsl:value-of select="'show'"/>
                             </xsl:when>
@@ -498,6 +499,10 @@
                                 <!-- .preview displays content collapsed -->
                                 <xsl:value-of select="'preview'"/>
                             </xsl:when>
+                            <xsl:when test="$part[@render eq 'part-only']">
+                                <!-- .hidden hides content -->
+                                <xsl:value-of select="'hidden'"/>
+                            </xsl:when>
                             <xsl:otherwise>
                                 <!-- .show displays content expanded -->
                                 <xsl:value-of select="'show'"/>
@@ -509,7 +514,7 @@
                 </xsl:call-template>
                 
                 <!-- Add controls to expand / collapse -->
-                <xsl:if test="$view-mode[not(@layout = ('expanded-fixed', 'stripped'))] and $part[@render = ('show', 'collapse', 'preview', 'part-only')]">
+                <xsl:if test="$part[@render = ('show', 'collapse', 'preview')] and $view-mode[not(@layout = ('expanded-fixed'))]">
                     
                     <xsl:call-template name="preview-controls">
                         
@@ -804,7 +809,7 @@
     
     <xsl:template name="body-title">
         
-        <xsl:if test="m:translation/m:part[@type eq 'translation']">
+        <xsl:if test="m:translation/m:part[@type eq 'translation'][@render = ('persist', 'passage')]">
             <aside id="body-title" class="page part-type-translation">
                 
                 <hr class="hidden-print"/>

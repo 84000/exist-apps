@@ -6,20 +6,27 @@
     
     <xsl:template match="/m:response">
         
+        <xsl:variable name="content">
+            
+            <xsl:call-template name="operations-page">
+                
+                <xsl:with-param name="active-tab" select="@model-type"/>
+                
+                <xsl:with-param name="page-content">
+                    
+                    <xsl:apply-templates select="m:section"/>
+                    
+                </xsl:with-param>
+            </xsl:call-template>
+            
+        </xsl:variable>
+        
         <xsl:call-template name="reading-room-page">
             <xsl:with-param name="page-url" select="''"/>
             <xsl:with-param name="page-class" select="'utilities'"/>
-            <xsl:with-param name="page-title" select="'Section Texts | 84000 Utilities'"/>
+            <xsl:with-param name="page-title" select="'Section Texts | 84000 Project Management'"/>
             <xsl:with-param name="page-description" select="'Texts belong to a section of the canon'"/>
-            <xsl:with-param name="content">
-                <xsl:call-template name="utilities-page">
-                    <xsl:with-param name="content">
-                        
-                        <xsl:apply-templates select="m:section"/>
-                        
-                    </xsl:with-param>
-                </xsl:call-template>
-            </xsl:with-param>
+            <xsl:with-param name="content" select="$content"/>
         </xsl:call-template>
         
     </xsl:template>
