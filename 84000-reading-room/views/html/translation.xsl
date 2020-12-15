@@ -6,6 +6,7 @@
     <!-- Look up environment variables -->
     <xsl:variable name="front-end-path" select="$environment/m:url[@id eq 'front-end']/text()"/>
     <xsl:variable name="render-status" select="$environment/m:render-translation/m:status/@status-id"/>
+    <xsl:variable name="requested-part" select="/m:response/m:request/@part"/>
     
     <xsl:template match="/m:response">
         
@@ -46,7 +47,7 @@
                     <div class="row">
                         <div class="col-md-offset-1 col-md-10 col-lg-offset-2 col-lg-8 print-width-override">
 
-                            <xsl:if test="$view-mode[not(@layout eq 'part-only')]">
+                            <xsl:if test="$view-mode[not(@layout eq 'part-only')] or $requested-part = ('all', 'front')">
                                 
                                 <!-- Front matter -->
                                 <xsl:call-template name="front-matter"/>
@@ -421,8 +422,8 @@
             </xsl:with-param>
             <xsl:with-param name="page-title">
                 <xsl:choose>
-                    <xsl:when test="m:translation//m:part[@prefix][@render eq 'show'][@id eq /m:response/m:request/@part]">
-                        <xsl:value-of select="string-join((m:translation//m:part[@prefix][@render eq 'show'][@id eq /m:response/m:request/@part][1]/tei:head[@type eq parent::m:part/@type]/data(), m:translation/m:titles/m:title[@xml:lang eq 'en'], '84000 Reading Room'), ' | ')"/>
+                    <xsl:when test="m:translation//m:part[@prefix][@render eq 'show'][@id eq $requested-part]">
+                        <xsl:value-of select="string-join((m:translation//m:part[@prefix][@render eq 'show'][@id eq $requested-part][1]/tei:head[@type eq parent::m:part/@type]/data(), m:translation/m:titles/m:title[@xml:lang eq 'en'], '84000 Reading Room'), ' | ')"/>
                     </xsl:when>
                     <xsl:otherwise>
                         <xsl:value-of select="concat(m:translation/m:titles/m:title[@xml:lang eq 'en'], ' | 84000 Reading Room')"/>
@@ -558,8 +559,9 @@
     <xsl:template name="front-matter">
         
         <div id="titles">
-        
-            <div class="page page-first">
+            
+            <!-- Main titles -->
+            <div class="page">
                 
                 <div id="main-titles" class="section-panel">
                     <h2 class="text-bo">
@@ -628,6 +630,7 @@
                 
             </div>
             
+            <!-- Long titles -->
             <xsl:if test="count(m:translation/m:long-titles/m:title[text()]) gt 1">
                 <div class="page">
                     
@@ -661,7 +664,7 @@
         
         <div id="imprint">
             
-            <div class="page">
+            <div class="page page-force">
                 
                 <xsl:if test="m:translation[m:source]">
                     
@@ -793,7 +796,7 @@
                     </aside>
                     
                     <!-- Print statement -->
-                    <aside id="print-version" class="visible-print-block text-center page">
+                    <aside id="print-version" class="visible-print-block text-center page page-force">
                         <xsl:call-template name="local-text">
                             <xsl:with-param name="local-key" select="'print-version'"/>
                         </xsl:call-template>
@@ -809,7 +812,7 @@
     
     <xsl:template name="body-title">
         
-        <xsl:if test="m:translation/m:part[@type eq 'translation'][@render = ('persist', 'passage')]">
+        <xsl:if test="m:translation/m:part[@type eq 'translation'][@render = ('persist', 'show', 'passage')]">
             <aside id="body-title" class="page part-type-translation">
                 
                 <hr class="hidden-print"/>

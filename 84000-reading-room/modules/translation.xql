@@ -24,7 +24,7 @@ declare variable $translation:view-modes :=
       <view-mode id="editor"            client="browser"  layout="expanded"        glossary="defer-no-cache"  parts="all"/>,
       <view-mode id="annotation"        client="browser"  layout="expanded-fixed"  glossary="defer"           parts="all"/>,
       <view-mode id="ebook"             client="ebook"    layout="full"            glossary="use-cache"       parts="all"/>,
-      <view-mode id="pdf"               client="none"     layout="full"            glossary="suppress"        parts="part"/>,
+      <view-mode id="pdf"               client="none"     layout="part-only"            glossary="suppress"        parts="part"/>,
       <view-mode id="app"               client="app"      layout="expanded-fixed"  glossary="use-cache"       parts="all"/>,
       <view-mode id="tests"             client="none"     layout="expanded-fixed"  glossary="suppress"        parts="all"/>,
       <view-mode id="glossary-editor"   client="none"     layout="expanded-fixed"  glossary="no-cache"        parts="all"/>,

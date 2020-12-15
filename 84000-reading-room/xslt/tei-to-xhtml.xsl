@@ -1627,7 +1627,7 @@
     <!-- Table of Contents - html rendering -->
     <xsl:template name="table-of-contents">
         
-        <aside id="toc" class="page">
+        <aside id="toc" class="page page-force">
             
             <hr class="hidden-print"/>
             

@@ -61,7 +61,7 @@ declare function local:refresh-cache($doc) {
         else (),
         
         (: Cache folios :)
-        let $tei-ids := $doc/tei:TEI/tei:text/tei:body//tei:ref/@xml:id/string()
+        let $tei-ids := $doc/tei:TEI/tei:text/tei:body//tei:ref[@type eq 'folio']/@xml:id/string()
         let $cache-ids := $cache/m:folios-cache/m:folio-ref/@id/string()
         return
         if($tei-ids[not(. = $cache-ids)] or $cache-ids[not(. = $tei-ids)]) then
