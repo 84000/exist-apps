@@ -451,7 +451,7 @@ declare function translation:summary($tei as element(tei:TEI)) as element()? {
     translation:summary($tei, 'summary', (), '')
 };
 
-declare function translation:render($content as element()*, $show-ids as xs:string*, $passage-id as xs:string?, $view-mode as element(m:view-mode)?, $default as xs:string) as xs:string {
+declare function local:render($content as element()*, $show-ids as xs:string*, $passage-id as xs:string?, $view-mode as element(m:view-mode)?, $default as xs:string) as xs:string {
     
     (: ~ Possible values for render 
         - show          All content + show
@@ -496,7 +496,7 @@ declare function translation:summary($tei as element(tei:TEI), $passage-id as xs
     
     where $summary
     
-    let $render := translation:render($summary, ('summary', 'front'), $passage-id, $view-mode, 'collapse')
+    let $render := local:render($summary, ('summary', 'front'), $passage-id, $view-mode, 'collapse')
     
     return
         translation:part($summary, $render, 'summary', 's', text {'Summary'}, $passage-id)
@@ -512,7 +512,7 @@ declare function translation:acknowledgment($tei as element(tei:TEI), $passage-i
     let $acknowledgment := $tei/tei:text/tei:front/tei:div[@type eq 'acknowledgment']
     where $acknowledgment
     
-    let $render := translation:render($acknowledgment, ('acknowledgment', 'front'), $passage-id, $view-mode, 'collapse')
+    let $render := local:render($acknowledgment, ('acknowledgment', 'front'), $passage-id, $view-mode, 'collapse')
         
     return
         translation:part($acknowledgment, $render, 'acknowledgment', 'ac', text {'Acknowledgements'}, $passage-id)
@@ -527,7 +527,7 @@ declare function translation:preface($tei as element(tei:TEI), $passage-id as xs
     let $preface := $tei/tei:text/tei:front/tei:div[@type eq 'preface']
     where $preface
     
-    let $render := translation:render($preface, ('preface', 'front'), $passage-id, $view-mode, 'preview')
+    let $render := local:render($preface, ('preface', 'front'), $passage-id, $view-mode, 'preview')
 
     return
         translation:part($preface, $render, 'preface', 'pf', text {'Preface'}, $passage-id)
@@ -542,7 +542,7 @@ declare function translation:introduction($tei as element(tei:TEI), $passage-id 
     let $introduction := $tei/tei:text/tei:front/tei:div[@type eq 'introduction']
     where $introduction
     
-    let $render := translation:render($introduction, ('introduction', 'front'), $passage-id, $view-mode, 'preview')
+    let $render := local:render($introduction, ('introduction', 'front'), $passage-id, $view-mode, 'preview')
 
     return
         translation:part($introduction, $render, 'introduction', 'i', text {'Introduction'}, $passage-id)
@@ -565,14 +565,17 @@ declare function translation:body($tei as element(tei:TEI), $passage-id as xs:st
             attribute id { 'translation' },
             attribute nesting { 0 },
             attribute section-index { 1 },
-            attribute render { translation:render($translation, ('body'), $passage-id, $view-mode, 'persist') },
+            attribute render { local:render($translation, ('body'), $passage-id, $view-mode, 'persist') },
             attribute glossarize { 'true' },
             attribute prefix { 'tr' },
+            
+            (: Title shown in the navigation :)
             element {QName('http://www.tei-c.org/ns/1.0', 'head')} {
                 attribute type {'translation'},
                 attribute tid {$head/@tid},
                 $head/text()
             },
+            
             element honoration {
                 data($translation/tei:head[@type eq 'titleHon'])
             },
@@ -600,7 +603,7 @@ declare function translation:body($tei as element(tei:TEI), $passage-id as xs:st
                     else functx:index-of-node($translation/tei:div[@type = ('section', 'chapter')], $chapter)
                 
                 let $render-default := if($chapter/@type = ('colophon', 'homage')) then 'collapse' else 'preview'
-                let $render := translation:render($chapter, ($chapter/@xml:id, 'body'), $passage-id, $view-mode, $render-default)
+                let $render := local:render($chapter, ($chapter/@xml:id, 'body'), $passage-id, $view-mode, $render-default)
             
             return
                 local:part($chapter, $render, $chapter/@type, $chapter-prefix, $chapter-title, $passage-id, 0, $section-index)
@@ -620,7 +623,7 @@ declare function translation:appendix($tei as element(tei:TEI), $passage-id as x
     
     where $appendix
     
-    let $render := translation:render($appendix, ('appendix', 'back'), $passage-id, $view-mode, 'preview')
+    let $render := local:render($appendix, ('appendix', 'back'), $passage-id, $view-mode, 'preview')
 
     return
         
@@ -671,7 +674,7 @@ declare function translation:abbreviations($tei as element(tei:TEI), $passage-id
     let $abbreviations := $tei/tei:text/tei:back/tei:div[@type eq 'notes']
     where $abbreviations[tei:div | tei:list]
     
-    let $render := translation:render($abbreviations, ('abbreviations', 'back'), $passage-id, $view-mode, 'collapse')
+    let $render := local:render($abbreviations, ('abbreviations', 'back'), $passage-id, $view-mode, 'collapse')
 
     return
         translation:part($abbreviations, $render, 'abbreviations', 'ab', text {'Abbreviations'}, ())
@@ -728,7 +731,7 @@ declare function translation:end-notes($tei as element(tei:TEI), $passage-id as 
     
     where $end-notes[tei:note]
     
-    let $render := translation:render($end-notes, ('end-notes', 'back'), $passage-id, $view-mode, 'collapse')
+    let $render := local:render($end-notes, ('end-notes', 'back'), $passage-id, $view-mode, 'collapse')
 
     return
         translation:part($end-notes, $render, 'end-notes', 'n', text {'Notes'}, ())
@@ -745,7 +748,7 @@ declare function translation:bibliography($tei as element(tei:TEI), $passage-id 
     
     where $bibliography//tei:bibl
     
-    let $render := translation:render($bibliography, ('bibliography', 'back'), $passage-id, $view-mode, 'collapse')
+    let $render := local:render($bibliography, ('bibliography', 'back'), $passage-id, $view-mode, 'collapse')
     
     return
         translation:part($bibliography, $render, 'bibliography', 'b', text {'Bibliography'}, ())

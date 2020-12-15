@@ -1277,7 +1277,7 @@
                                 <xsl:value-of select="'rw-heading'"/>
                                 <xsl:value-of select="'heading-section'"/>
                                 <xsl:choose>
-                                    <xsl:when test="@type ne 'section'">
+                                    <xsl:when test="not(@type = ('section', 'colophon', 'homage', 'prologue'))">
                                         <xsl:value-of select="'chapter'"/>
                                     </xsl:when>
                                 </xsl:choose>

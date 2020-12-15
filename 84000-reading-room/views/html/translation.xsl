@@ -812,7 +812,7 @@
     
     <xsl:template name="body-title">
         
-        <xsl:if test="m:translation/m:part[@type eq 'translation'][@render = ('persist', 'show', 'passage')]">
+        <xsl:if test="m:translation/m:part[@type eq 'translation'][@render = ('persist', 'show', 'collapse', 'passage')]">
             <aside id="body-title" class="page part-type-translation">
                 
                 <hr class="hidden-print"/>
@@ -822,6 +822,12 @@
                     <xsl:attribute name="id" select="m:translation/m:part[@type eq 'translation']/@id"/>
                     
                     <div class="rw-heading heading-section chapter">
+                        
+                        <xsl:if test="count(m:translation/m:part[@type eq 'translation']/m:part[@type = ('section', 'chapter')]) gt 1">
+                            <h2>
+                                <xsl:value-of select="'The Translation'"/>
+                            </h2>
+                        </xsl:if>
                         
                         <xsl:if test="m:translation/m:part[@type eq 'translation']/m:honoration[text()]">
                             <h3>
