@@ -17,11 +17,13 @@
                         <div class="alert alert-info small text-center">
                             <p> Each layout example in the list should be checked on <strong>desktop</strong>, <strong>mobile</strong> and <strong>print</strong> each time the styles are
                                 changed. </p>
+                            <p>New layout test TEI can be added to <xsl:value-of select="m:resources/@collection"/>
+                            </p>
                         </div>
                         <ul>
                             <xsl:for-each select="m:resources/m:resource">
                                 <li>
-                                    <xsl:value-of select="@id"/>
+                                    <xsl:value-of select="m:title"/>
                                     <ul>
                                         <xsl:for-each select="m:link">
                                             <li>

@@ -1330,7 +1330,6 @@
                                                 <xsl:call-template name="tid">
                                                     <xsl:with-param name="node" select="."/>
                                                 </xsl:call-template>
-                                                
                                                 <xsl:apply-templates select="node()"/>
                                             </h2>
                                         </xsl:otherwise>
@@ -1344,7 +1343,7 @@
                                         <xsl:call-template name="tid">
                                             <xsl:with-param name="node" select="."/>
                                         </xsl:call-template>
-                                        <xsl:apply-templates select="text()"/>
+                                        <xsl:apply-templates select="node()"/>
                                     </h2>
                                 </xsl:when>
                                 
@@ -1354,7 +1353,7 @@
                                         <xsl:call-template name="tid">
                                             <xsl:with-param name="node" select="."/>
                                         </xsl:call-template>
-                                        <xsl:apply-templates select="text()"/>
+                                        <xsl:apply-templates select="node()"/>
                                     </h3>
                                 </xsl:otherwise>
                                 
