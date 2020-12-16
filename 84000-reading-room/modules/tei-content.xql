@@ -65,7 +65,9 @@ declare function tei-content:tei($resource-id as xs:string, $resource-type as xs
     :)
     
     let $collection := 
-        if($archive-path gt '') then
+        if($archive-path eq 'layout-checks') then
+            collection(concat($common:data-path, '/tei/layout-checks'))
+        else if($archive-path gt '') then
             collection(concat($common:data-path, '/archived/', $archive-path))
         else if($resource-type = ('section', 'pseudo-section')) then
             $tei-content:sections-collection

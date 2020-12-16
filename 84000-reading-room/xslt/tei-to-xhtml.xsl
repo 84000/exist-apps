@@ -1603,7 +1603,7 @@
                     <xsl:attribute name="id" select="$id"/>
                     
                     <xsl:if test="$view-mode[@glossary = ('defer', 'defer-no-cache')] and m:glossarize-context($node) and not(self::tei:head)">
-                        <xsl:attribute name="data-in-view-replace" select="concat('/translation/', $toh-key, '.html?part=', $id, '&amp;view-mode=', if($view-mode[@glossary = ('defer')]) then 'passage' else 'passage-no-cache', '#', $id)"/>
+                        <xsl:attribute name="data-in-view-replace" select="concat(                             '/translation/', $toh-key, '.html',                             '?part=', $id,                              '&amp;view-mode=', if($view-mode[@glossary = ('defer')]) then 'passage' else 'passage-no-cache',                              if(/m:response/m:request[@archive-path gt '']) then concat('&amp;archive-path=', /m:response/m:request/@archive-path) else '',                             '#', $id)                         "/>
                     </xsl:if>
                     
                 </xsl:when>

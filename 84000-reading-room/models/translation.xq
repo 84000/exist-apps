@@ -66,6 +66,7 @@ return
                         attribute resource-suffix { $resource-suffix },
                         attribute doc-type { request:get-parameter('resource-suffix', 'html') },
                         attribute part { $part },
+                        attribute archive-path { $archive-path },
                         $view-mode
                     },
                     
