@@ -30,7 +30,7 @@ declare variable $translation:view-modes :=
       <view-mode id="glossary-editor"   client="none"     layout="expanded-fixed"  glossary="no-cache"        parts="all"/>,
       <view-mode id="ajax-part"         client="ajax"     layout="part-only"       glossary="use-cache"       parts="part"/>,
       <view-mode id="passage"           client="ajax"     layout="part-only"       glossary="use-cache"       parts="passage"/>,
-      <view-mode id="passage-no-cache"  client="ajax"     layout="part-only"       glossary="no-cache"        parts="passage"/>,
+      <view-mode id="passage-no-cache"  client="ajax"     layout="part-only"       glossary="no-cache"        parts="passage"/>
     </view-modes>;
 
 declare function translation:titles($tei as element(tei:TEI)) as element() {
@@ -565,7 +565,7 @@ declare function translation:body($tei as element(tei:TEI), $passage-id as xs:st
             attribute id { 'translation' },
             attribute nesting { 0 },
             attribute section-index { 1 },
-            attribute render { local:render($translation, ('body'), $passage-id, $view-mode, 'persist') },
+            attribute render { local:render($translation, ('body-title', 'body'), $passage-id, $view-mode, 'persist') },
             attribute glossarize { 'true' },
             attribute prefix { 'tr' },
             

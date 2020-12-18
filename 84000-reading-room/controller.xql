@@ -381,6 +381,15 @@ return
             local:dispatch("/models/downloads.xq", "", 
                 <parameters xmlns="http://exist.sourceforge.net/NS/exist"/>
             )
+        
+        (: Sitemap - returns a site map for a multi chapter text - used for PDF generation :)
+        else if ($collection-path eq "sitemap") then
+            (: return the xml :)
+            local:dispatch("/models/sitemap.xq", "", 
+                <parameters xmlns="http://exist.sourceforge.net/NS/exist">
+                    <add-parameter name="resource-id" value="{$resource-id}"/>
+                </parameters>
+            )
             
         else
             (: It's data :)

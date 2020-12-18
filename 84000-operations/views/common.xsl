@@ -166,6 +166,14 @@
                     <xsl:value-of select="'Institutions'"/>
                 </a>
             </li>
+            <li role="presentation">
+                <xsl:if test="$active-tab eq 'operations/sys-config'">
+                    <xsl:attribute name="class" select="'active'"/>
+                </xsl:if>
+                <a href="sys-config.html">
+                    <xsl:value-of select="'System Config'"/>
+                </a>
+            </li>
             <xsl:if test="$active-tab eq 'operations/glossary'">
                 <li role="presentation">
                     <xsl:if test="$active-tab eq 'operations/glossary'">
@@ -253,14 +261,6 @@
                     </a>
                 </li>
             </xsl:if>
-            <li role="presentation">
-                <xsl:if test="$active-tab eq 'operations/sys-config'">
-                    <xsl:attribute name="class" select="'active'"/>
-                </xsl:if>
-                <a href="sys-config.html">
-                    <xsl:value-of select="'System Config'"/>
-                </a>
-            </li>
         </ul>
         
     </xsl:template>
@@ -274,10 +274,10 @@
         <xsl:param name="active"/>
         <div class="panel panel-default no-shadow">
             <div class="panel-heading" role="tab">
-                <xsl:attribute name="id" select="concat('panelHeading', $type)"/>
+                <xsl:attribute name="id" select="concat('panelHeading-', $type)"/>
                 <a role="button" data-toggle="collapse" aria-expanded="false" data-parent="#forms-accordion" class="collapsed">
-                    <xsl:attribute name="href" select="concat('#panel', $type)"/>
-                    <xsl:attribute name="aria-controls" select="concat('panel', $type)"/>
+                    <xsl:attribute name="href" select="concat('#panel-', $type)"/>
+                    <xsl:attribute name="aria-controls" select="concat('panel-', $type)"/>
                     <xsl:if test="$active">
                         <xsl:attribute name="class" select="''"/>
                         <xsl:attribute name="aria-expanded" select="'true'"/>
@@ -297,8 +297,8 @@
                 </a>
             </div>
             <div class="panel-collapse collapse" role="tabpanel">
-                <xsl:attribute name="id" select="concat('panel', $type)"/>
-                <xsl:attribute name="aria-labelledby" select="concat('panelHeading', $type)"/>
+                <xsl:attribute name="id" select="concat('panel-', $type)"/>
+                <xsl:attribute name="aria-labelledby" select="concat('panelHeading-', $type)"/>
                 <xsl:if test="$active">
                     <xsl:attribute name="class" select="'panel-collapse collapse in'"/>
                 </xsl:if>

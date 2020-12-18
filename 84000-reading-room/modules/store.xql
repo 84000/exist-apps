@@ -354,17 +354,15 @@ declare function store:store-new-pdf($file-path as xs:string, $version as xs:str
                     
                     (: Simple api request failed, try batch api :)
                     else if(name($download) eq 'error') then
-                    
-                        let $source-urls := 
-                            for $part in ('front', 'body', 'back')
-                            return
-                                concat($pdf-config/m:html-source-url, '/translation/', $resource-id, '.html', '?view-mode=pdf', '&amp;part=', $part)
+                        
+                        let $sitemap-url := 
+                            concat($pdf-config/m:html-source-url, '/sitemap/', $resource-id, '.xml')
                         
                         let $request-url := 
                             concat(
                                 replace($pdf-config/m:service-endpoint, '/api$', '/batch_api'), 
                                 '?license=', $pdf-config/m:license-key, 
-                                '&amp;urls=', string-join($source-urls ! encode-for-uri(.), ';'),
+                                '&amp;sitemap=', encode-for-uri($sitemap-url),
                                 '&amp;merge=true'
                             )
                         

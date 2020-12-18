@@ -466,6 +466,7 @@
         <xsl:param name="part" as="node()*"/>
         <xsl:param name="css-classes" as="xs:string" select="''"/>
         <xsl:param name="element" as="xs:string" select="'section'"/>
+        
         <!-- If it's a section that's only partial make it an aside -->
         <xsl:variable name="element" select="if($element eq 'section' and $part[@render eq 'preview']) then 'aside' else $element"/>
         
@@ -525,7 +526,7 @@
                         <!-- Provide complete navigation links so they will be followed by crawlers and right-click works -->
                         <xsl:with-param name="get-url">
                             <xsl:if test="$part[@render eq 'preview']">
-                                <xsl:value-of select="concat('?part=', $part/@id, m:view-mode-parameter(), '#', $part/@id)"/>
+                                <xsl:value-of select="concat('?part=', $part/@id, m:view-mode-parameter(()), m:archive-path-parameter(), '#', $part/@id)"/>
                             </xsl:if>
                         </xsl:with-param>
                         
@@ -813,7 +814,16 @@
     <xsl:template name="body-title">
         
         <xsl:if test="m:translation/m:part[@type eq 'translation'][@render = ('persist', 'show', 'collapse', 'passage')]">
-            <aside id="body-title" class="page part-type-translation">
+            <aside id="body-title" class="">
+                
+                <xsl:call-template name="class-attribute">
+                    <xsl:with-param name="html-classes" as="xs:string*">
+                        <xsl:value-of select="'part-type-translation'"/>
+                        <xsl:if test="$view-mode[not(@parts = ('part', 'passage'))] or $requested-part = ('body', 'body-title')">
+                            <xsl:value-of select="'page'"/>
+                        </xsl:if>
+                    </xsl:with-param>
+                </xsl:call-template>
                 
                 <hr class="hidden-print"/>
                 

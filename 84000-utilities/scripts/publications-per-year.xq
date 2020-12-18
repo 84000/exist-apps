@@ -11,9 +11,8 @@ for $fileDesc in $local:tei//tei:TEI/tei:teiHeader/tei:fileDesc[tei:publicationS
     group by $year
     let $count-pages := sum($fileDesc/tei:sourceDesc/tei:bibl[1]/tei:location/@count-pages ! xs:integer(.))
     order by $year
-return
-    (
-        concat($year, ' : ', count($fileDesc), ' publications, ', $count-pages, ' pages'),
-        $fileDesc ! concat(' - ', normalize-space(tei:titleStmt/tei:title[@type = "mainTitle"][@xml:lang = "en"]/text()), ' (', sum(tei:sourceDesc/tei:bibl[1]/tei:location/@count-pages ! xs:integer(.)), ')')
-    )
+return (
+    concat($year, ' : ', count($fileDesc), ' publications, ', $count-pages, ' pages'),
+    $fileDesc ! concat(' - ', normalize-space(tei:titleStmt/tei:title[@type = "mainTitle"][@xml:lang = "en"]/text()), ' (', sum(tei:sourceDesc/tei:bibl[1]/tei:location/@count-pages ! xs:integer(.)), ')')
+)
     

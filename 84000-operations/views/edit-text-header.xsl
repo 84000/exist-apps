@@ -112,7 +112,7 @@
                         
                         <xsl:call-template name="titles-form-panel"/>
                         
-                        <xsl:call-template name="locations-form-panel"/>
+                        <xsl:call-template name="source-form-panel"/>
                         
                         <xsl:call-template name="contributors-form-panel"/>
                         
@@ -131,7 +131,7 @@
         <xsl:call-template name="reading-room-page">
             <xsl:with-param name="page-url" select="''"/>
             <xsl:with-param name="page-class" select="'utilities'"/>
-            <xsl:with-param name="page-title" select="'Text | 84000 Project Management'"/>
+            <xsl:with-param name="page-title" select="concat(m:translation/m:toh/m:full, ' - edit  | 84000 Project Management')"/>
             <xsl:with-param name="page-description" select="'Translator Institutions configuration for 84000 operations team.'"/>
             <xsl:with-param name="content" select="$content"/>
         </xsl:call-template>
@@ -142,7 +142,7 @@
     <xsl:template name="titles-form-panel">
         <xsl:param name="active"/>
         <xsl:call-template name="panel">
-            <xsl:with-param name="type" select="'Titles'"/>
+            <xsl:with-param name="type" select="'titles'"/>
             <xsl:with-param name="title" select="'Titles'"/>
             <xsl:with-param name="active" select="$active"/>
             <xsl:with-param name="form">
@@ -277,15 +277,20 @@
     
     <!-- Contributors in a panel -->
     <xsl:template name="contributors-form-panel">
+        
         <xsl:param name="active"/>
+        
         <xsl:call-template name="panel">
-            <xsl:with-param name="type" select="'Contributors'"/>
+            <xsl:with-param name="type" select="'contributors'"/>
             <xsl:with-param name="title" select="'Contributors'"/>
             <xsl:with-param name="active" select="$active"/>
             <xsl:with-param name="form">
                 <form method="post" class="form-horizontal form-update" id="contributors-form">
+                    
                     <xsl:attribute name="action" select="'edit-text-header.html#contributors-form'"/>
+                    
                     <input type="hidden" name="form-action" value="update-contributors"/>
+                    
                     <input type="hidden" name="post-id">
                         <xsl:attribute name="value" select="m:translation/@id"/>
                     </input>
@@ -317,14 +322,24 @@
                             </div>
                             <hr class="sml-margin"/>
                             <div class="add-nodes-container">
+                                
+                                <xsl:variable name="summary" select="/m:response/m:translation/m:publication/m:contributors/m:summary[1]"/>
+                                <xsl:variable name="translator-team-id" select="substring-after($summary/@ref, 'contributors.xml#')"/>
+                                <xsl:variable name="team-contributors" select="/m:response/m:contributor-persons/m:person[m:team[@id = $translator-team-id]]"/>
+                                <xsl:variable name="other-contributors" select="/m:response/m:contributor-persons/m:person[not(m:team[@id = $translator-team-id])]"/>
+                                
                                 <xsl:call-template name="contributors-controls">
                                     <xsl:with-param name="text-contributors" select="m:translation/m:publication/m:contributors/m:*[self::m:author | self::m:editor | self::m:consultant]"/>
-                                    <xsl:with-param name="contributor-types" select="/m:response/m:contributor-types/m:contributor-type"/>
+                                    <xsl:with-param name="contributor-types" select="/m:response/m:contributor-types/m:contributor-type[@type eq 'translation']"/>
+                                    <xsl:with-param name="team-contributors" select="$team-contributors"/>
+                                    <xsl:with-param name="other-contributors" select="$other-contributors"/>
                                 </xsl:call-template>
+                                
                                 <div>
                                     <a href="#add-nodes" class="add-nodes">
                                         <span class="monospace">+</span> add a contributor </a>
                                 </div>
+                                
                             </div>
                         </div>
                         <div class="col-sm-4">
@@ -400,12 +415,12 @@
     
     <!-- Contributor <select/> -->
     <xsl:template name="select-contributor">
-        <xsl:param name="contributor-id"/>
-        <xsl:param name="control-name"/>
-        <xsl:variable name="summary" select="/m:response/m:translation/m:publication/m:contributors/m:summary[1]"/>
-        <xsl:variable name="translator-team-id" select="substring-after($summary/@ref, 'contributors.xml#')"/>
-        <xsl:variable name="team-contributors" select="/m:response/m:contributor-persons/m:person[m:team[@id = $translator-team-id]]"/>
-        <xsl:variable name="other-contributors" select="/m:response/m:contributor-persons/m:person[not(m:team[@id = $translator-team-id])]"/>
+        
+        <xsl:param name="contributor-id" as="xs:string?"/>
+        <xsl:param name="control-name" as="xs:string"/>
+        <xsl:param name="team-contributors" as="element(m:person)*"/>
+        <xsl:param name="other-contributors" as="element(m:person)*"/>
+        
         <select class="form-control">
             <xsl:attribute name="name" select="$control-name"/>
             <option value="">
@@ -433,21 +448,29 @@
                 </option>
             </xsl:for-each>
         </select>
+        
     </xsl:template>
     
     <!-- Contributors row -->
     <xsl:template name="contributors-controls">
+        
         <xsl:param name="text-contributors" required="yes"/>
         <xsl:param name="contributor-types" required="yes"/>
+        <xsl:param name="team-contributors" as="element(m:person)*"/>
+        <xsl:param name="other-contributors" as="element(m:person)*"/>
+        
         <xsl:choose>
             <xsl:when test="$text-contributors">
-                
                 <xsl:for-each select="$text-contributors">
+                    
                     <xsl:sort select="common:index-of-node($contributor-types, $contributor-types[@node-name eq xs:string(local-name(current()))][@role eq current()/@role])" order="ascending"/>
+                    
                     <xsl:variable name="contributor-id" select="substring-after(./@ref, 'contributors.xml#')"/>
                     <xsl:variable name="contributor-type" select="concat(node-name(.), '-', @role)"/>
                     <xsl:variable name="index" select="common:index-of-node($text-contributors, .)"/>
+                    
                     <div class="form-group add-nodes-group">
+                        
                         <div class="col-sm-3">
                             <xsl:call-template name="select-contributor-type">
                                 <xsl:with-param name="contributor-types" select="$contributor-types"/>
@@ -455,15 +478,20 @@
                                 <xsl:with-param name="selected-value" select="$contributor-type"/>
                             </xsl:call-template>
                         </div>
+                        
                         <div class="col-sm-3">
                             <xsl:call-template name="select-contributor">
                                 <xsl:with-param name="contributor-id" select="$contributor-id"/>
                                 <xsl:with-param name="control-name" select="concat('contributor-id-', $index)"/>
+                                <xsl:with-param name="team-contributors" select="$team-contributors"/>
+                                <xsl:with-param name="other-contributors" select="$other-contributors"/>
                             </xsl:call-template>
                         </div>
+                        
                         <label class="control-label col-sm-2">
                             <xsl:value-of select="'expression:'"/>
                         </label>
+                        
                         <div class="col-sm-4">
                             <input class="form-control" placeholder="same">
                                 <xsl:attribute name="name" select="concat('contributor-expression-', $index)"/>
@@ -472,12 +500,15 @@
                                 </xsl:if>
                             </input>
                         </div>
+                        
                     </div>
+                    
                 </xsl:for-each>
             </xsl:when>
             <xsl:otherwise>
                 <!-- No existing contributors so show an set of controls -->
                 <div class="form-group add-nodes-group">
+                    
                     <div class="col-sm-2">
                         <xsl:call-template name="select-contributor-type">
                             <xsl:with-param name="contributor-types" select="$contributor-types"/>
@@ -485,20 +516,26 @@
                             <xsl:with-param name="selected-value" select="''"/>
                         </xsl:call-template>
                     </div>
+                    
                     <div class="col-sm-4">
                         <xsl:call-template name="select-contributor">
                             <xsl:with-param name="control-name" select="'contributor-id-1'"/>
                             <xsl:with-param name="contributor-id" select="''"/>
+                            <xsl:with-param name="team-contributors" select="$team-contributors"/>
+                            <xsl:with-param name="other-contributors" select="$other-contributors"/>
                         </xsl:call-template>
                     </div>
+                    
                     <label class="control-label col-sm-2">
                         <xsl:value-of select="'expressed as:'"/>
                     </label>
+                    
                     <div class="col-sm-4">
                         <input class="form-control" placeholder="same">
                             <xsl:attribute name="name" select="'contributor-expression-1'"/>
                         </input>
                     </div>
+                    
                 </div>
             </xsl:otherwise>
         </xsl:choose>
@@ -509,7 +546,7 @@
     <xsl:template name="translation-status-form-panel">
         <xsl:param name="active"/>
         <xsl:call-template name="panel">
-            <xsl:with-param name="type" select="'PublicationStatus'"/>
+            <xsl:with-param name="type" select="'publication-status'"/>
             <xsl:with-param name="title" select="'Publication Status'"/>
             <xsl:with-param name="active" select="$active"/>
             <xsl:with-param name="form">
@@ -853,7 +890,7 @@
         <xsl:param name="active"/>
         <xsl:call-template name="panel">
             
-            <xsl:with-param name="type" select="'Submissions'"/>
+            <xsl:with-param name="type" select="'submissions'"/>
             <xsl:with-param name="title" select="'Submissions'"/>
             <xsl:with-param name="active" select="$active"/>
             
@@ -971,34 +1008,59 @@
     </xsl:template>
     
     <!-- Locations in a panel -->
-    <xsl:template name="locations-form-panel">
+    <xsl:template name="source-form-panel">
         <xsl:param name="active"/>
         <xsl:call-template name="panel">
-            <xsl:with-param name="type" select="'Locations'"/>
-            <xsl:with-param name="title" select="'Locations'"/>
+            <xsl:with-param name="type" select="'source'"/>
+            <xsl:with-param name="title" select="'Source'"/>
             <xsl:with-param name="active" select="$active"/>
             <xsl:with-param name="form">
                 <form method="post" class="form-horizontal form-update" id="locations-form">
+                    
                     <xsl:attribute name="action" select="'edit-text-header.html#locations-form'"/>
+                    
                     <input type="hidden" name="form-action" value="update-locations"/>
+                    
                     <input type="hidden" name="post-id">
                         <xsl:attribute name="value" select="m:translation/@id"/>
                     </input>
+                    
                     <xsl:for-each select="m:translation/m:toh">
+                        
                         <xsl:variable name="toh-key" select="./@key"/>
                         <xsl:variable name="toh-location" select="/m:response/m:translation/m:location[@key eq $toh-key][1]"/>
+                        
                         <input type="hidden">
                             <xsl:attribute name="name" select="concat('work-', $toh-key)"/>
                             <xsl:attribute name="value" select="$toh-location/@work"/>
                         </input>
+                        
                         <input type="hidden">
                             <xsl:attribute name="name" select="concat('location-', $toh-key)"/>
                             <xsl:attribute name="value" select="$toh-key"/>
                         </input>
+                        
                         <fieldset>
+                            
                             <legend>
                                 <xsl:value-of select="concat('Toh ', ./m:base)"/>
                             </legend>
+                            
+                            <!--<div class="add-nodes-container">
+                                <xsl:call-template name="contributors-controls">
+                                    <xsl:with-param name="text-contributors" select="m:translation/m:source/m:contributors/m:*[self::m:author | self::m:editor | self::m:consultant]"/>
+                                    <xsl:with-param name="contributor-types" select="/m:response/m:contributor-types/m:contributor-type[@type eq 'source']"/>
+                                    <xsl:with-param name="team-contributors" select="()"/>
+                                    <xsl:with-param name="other-contributors" select="()"/>
+                                </xsl:call-template>
+                                <div>
+                                    <a href="#add-nodes" class="add-nodes">
+                                        <span class="monospace">+</span> add a contributor </a>
+                                </div>
+                            </div>
+                            
+                            <hr class="sml-margin"/>-->
+                            
                             <div class="add-nodes-container">
                                 <xsl:for-each select="$toh-location/m:volume">
                                     <div class="row add-nodes-group">
@@ -1021,12 +1083,13 @@
                                         <span class="monospace">+</span> add a volume </a>
                                 </div>
                             </div>
+                            
                             <div class="row">
                                 <div class="col-sm-9">
                                     <xsl:variable name="sum-volume-pages" select="sum($toh-location/m:volume ! (xs:integer(@end-page) - (xs:integer(@start-page) - 1))) ! xs:integer(.)"/>
                                     <xsl:if test="$sum-volume-pages ne xs:integer($toh-location/@count-pages)">
-                                        <div class="text-danger text-right sml-margin top">
-                                            <xsl:value-of select="concat('The sum of the volumes is ', $sum-volume-pages)"/>
+                                        <div class="text-danger text-right sml-margin top small">
+                                            <xsl:value-of select="concat('[The sum of the above pages is ', $sum-volume-pages, ']')"/>
                                         </div>
                                     </xsl:if>
                                 </div>
@@ -1034,13 +1097,17 @@
                                     <xsl:copy-of select="m:text-input('Page count: ', concat('count-pages-', $toh-key), $toh-location/@count-pages, 6, 'required')"/>
                                 </div>
                             </div>
+                            
                         </fieldset>
+                        
                     </xsl:for-each>
+                    
                     <div class="pull-right">
                         <button type="submit" class="btn btn-primary">
                             <xsl:value-of select="'Save'"/>
                         </button>
                     </div>
+                    
                 </form>
             </xsl:with-param>
         </xsl:call-template>

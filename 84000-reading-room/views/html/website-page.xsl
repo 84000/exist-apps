@@ -27,7 +27,13 @@
     <!-- view-mode [default|editor|annotation|ajax-part|passage|passage-no-cache|ebook|pdf||app|tests|glossary-editor] -->
     <xsl:variable name="view-mode" select="/m:response/m:request/m:view-mode" as="element(m:view-mode)?"/>
     <xsl:function name="m:view-mode-parameter" as="xs:string">
-        <xsl:value-of select="if($view-mode[not(@id eq 'default')]) then concat('&amp;view-mode=', $view-mode/@id)  else ''"/>
+        <xsl:param name="override" as="xs:string?"/>
+        <xsl:variable name="view-mode-id" select="if($override gt '') then $override else if($view-mode[not(@id eq 'default')]) then  $view-mode/@id  else ''"/>
+        <xsl:value-of select="if($view-mode-id gt '') then concat('&amp;view-mode=', $view-mode-id)  else ''"/>
+    </xsl:function>
+    <xsl:variable name="archive-path" select="/m:response/m:request/@archive-path" as="xs:string?"/>
+    <xsl:function name="m:archive-path-parameter" as="xs:string">
+        <xsl:value-of select="if($archive-path gt '') then concat('&amp;archive-path=', $archive-path)  else ''"/>
     </xsl:function>
     
     <!-- doc-type [html|epub|ncx] -->

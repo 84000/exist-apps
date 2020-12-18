@@ -183,7 +183,7 @@ declare function tei-content:title-set($tei as element(tei:TEI), $type as xs:str
     
 };
 
-declare function tei-content:translation-status($tei as element(tei:TEI)) as xs:string {
+declare function tei-content:translation-status($tei as element(tei:TEI)?) as xs:string {
     (: Returns the status of the text :)
     let $status := $tei//tei:teiHeader//tei:publicationStmt/@status/string()
     let $status := 

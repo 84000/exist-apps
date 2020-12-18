@@ -620,21 +620,21 @@
                                             
                                             <xsl:if test="$translation-status/m:action-note[normalize-space(text())]">
                                                 <hr/>
-                                                <div class="collapse-one-line small italic text-danger">
+                                                <div class="collapse-one-line one-line small italic text-danger">
                                                     <xsl:value-of select="concat('Awaiting action from: ', $translation-status/m:action-note, '. ')"/>
                                                 </div>
                                             </xsl:if>
                                             
                                             <xsl:if test="$translation-status/m:progress-note[normalize-space(text())]">
                                                 <hr/>
-                                                <div class="collapse-one-line small italic text-danger">
+                                                <div class="collapse-one-line one-line small italic text-danger">
                                                     <xsl:value-of select="$translation-status/m:progress-note"/>
                                                 </div>
                                             </xsl:if>
                                             
                                             <xsl:if test="$translation-status/m:text-note[normalize-space(text())]">
                                                 <hr/>
-                                                <div class="collapse-one-line small italic text-danger">
+                                                <div class="collapse-one-line one-line small italic text-danger">
                                                     <xsl:value-of select="$translation-status/m:text-note"/>
                                                 </div>
                                             </xsl:if>

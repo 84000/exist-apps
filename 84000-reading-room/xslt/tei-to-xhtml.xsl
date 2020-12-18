@@ -1602,7 +1602,8 @@
                     <xsl:attribute name="id" select="$id"/>
                     
                     <xsl:if test="$view-mode[@glossary = ('defer', 'defer-no-cache')] and m:glossarize-context($node) and not(self::tei:head)">
-                        <xsl:attribute name="data-in-view-replace" select="concat(                             '/translation/', $toh-key, '.html',                             '?part=', $id,                              '&amp;view-mode=', if($view-mode[@glossary = ('defer')]) then 'passage' else 'passage-no-cache',                              if(/m:response/m:request[@archive-path gt '']) then concat('&amp;archive-path=', /m:response/m:request/@archive-path) else '',                             '#', $id)                         "/>
+                        <xsl:variable name="request-view-mode" select="if($view-mode[@glossary = ('defer')]) then 'passage' else 'passage-no-cache'"/>
+                        <xsl:attribute name="data-in-view-replace" select="concat('/translation/', $toh-key, '.html', '?part=', $id, m:view-mode-parameter($request-view-mode), m:archive-path-parameter(), '#', $id)"/>
                     </xsl:if>
                     
                 </xsl:when>
@@ -1832,7 +1833,7 @@
                                     
                                     <xsl:choose>
                                         <xsl:when test="$part[@render eq 'preview']">
-                                            <xsl:attribute name="href" select="concat('?part=', $part/@id, m:view-mode-parameter(), '#', $part/@id)"/>
+                                            <xsl:attribute name="href" select="concat('?part=', $part/@id, m:view-mode-parameter(()), m:archive-path-parameter(), '#', $part/@id)"/>
                                         </xsl:when>
                                         <xsl:otherwise>
                                             <xsl:attribute name="href" select="concat('#', $part/@id)"/>

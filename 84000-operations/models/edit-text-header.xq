@@ -78,27 +78,24 @@ return
         'operations/edit-text-header', 
         'operations', 
         (
-            <request 
-                xmlns="http://read.84000.co/ns/1.0" 
-                id="{ $text-id }"
-                delete-submission="{ $delete-submission-id }"/>,
-            <updates
-                xmlns="http://read.84000.co/ns/1.0" >
-                { $updated }
-            </updates>,
-            <translation 
-                xmlns="http://read.84000.co/ns/1.0" 
-                id="{ $text-id }"
-                document-url="{ tei-content:document-url($tei) }" 
-                locked-by-user="{ tei-content:locked-by-user($tei) }"
-                status="{ tei-content:translation-status($tei) }"
-                status-group="{ tei-content:translation-status-group($tei) }">
-                { 
+            element { QName('http://read.84000.co/ns/1.0', 'request') } {
+                attribute id { $text-id },
+                attribute delete-submission { $delete-submission-id }
+            },
+            element { QName('http://read.84000.co/ns/1.0', 'updates') } {
+                $updated
+            },
+            element { QName('http://read.84000.co/ns/1.0', 'translation') } {
+                attribute id { $text-id },
+                attribute document-url { tei-content:document-url($tei) },
+                attribute locked-by-user { tei-content:locked-by-user($tei) },
+                attribute status { tei-content:translation-status($tei) },
+                attribute status-group { tei-content:translation-status-group($tei) },
                     for $bibl in $tei//tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl
                     return (
-                            translation:toh($tei, $bibl/@key),
-                            translation:location($tei, $bibl/@key),
-                            translation:downloads($tei, $bibl/@key, 'all')
+                        translation:toh($tei, $bibl/@key),
+                        translation:location($tei, $bibl/@key),
+                        translation:downloads($tei, $bibl/@key, 'all')
                     ),
                     element title { 
                         tei-content:title($tei) 
@@ -107,8 +104,7 @@ return
                     translation:publication($tei),
                     translation:contributors($tei, true()),
                     translation:status-updates($tei)
-                }
-            </translation>,
+            },
             element { QName('http://read.84000.co/ns/1.0', 'translation-status') } {
                 translation-status:texts($text-id, true())
             },

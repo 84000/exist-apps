@@ -24,8 +24,8 @@ return
                 return 
                     <resource id="{ $resource-id }">
                         <title>{ tei-content:title($tei) }</title>
-                        <link url="/translation/{ $resource-id }.html?archive-path=layout-checks">HTML</link>
-                        <link url="/translation/{ $resource-id }.html?archive-path=layout-checks&amp;view-mode=ebook">EBOOK</link>
+                        <link url="/translation/{ $resource-id }.html?archive-path=layout-checks">default</link>
+                        <link url="/translation/{ $resource-id }.html?archive-path=layout-checks&amp;view-mode=ebook">ebook</link>
                     </resource>
             }
             </resources>
