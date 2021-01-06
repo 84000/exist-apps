@@ -819,7 +819,7 @@
                 <xsl:call-template name="class-attribute">
                     <xsl:with-param name="html-classes" as="xs:string*">
                         <xsl:value-of select="'part-type-translation'"/>
-                        <xsl:if test="$view-mode[not(@parts = ('part', 'passage'))] or $requested-part = ('body', 'body-title')">
+                        <xsl:if test="$view-mode[not(@parts = ('part', 'passage'))] or $requested-part = ('all', 'body', 'body-title')">
                             <xsl:value-of select="'page'"/>
                         </xsl:if>
                     </xsl:with-param>

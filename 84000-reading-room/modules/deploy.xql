@@ -123,7 +123,7 @@ declare function deploy:push($repo-id as xs:string, $admin-password as xs:string
                 (: Do Git push :)
                 process:execute(('git', 'status'), $git-options),
                 process:execute(('git', 'add', $git-add), $git-options),
-                process:execute(('git', 'commit', "-m", $commit-msg), $git-options),
+                process:execute(('git', 'commit', '-m', $commit-msg), $git-options),
                 process:execute(('git', 'push', 'origin', 'master'), $git-options)
             }
             </push>

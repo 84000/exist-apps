@@ -189,7 +189,13 @@ declare function store:create($file-name as xs:string) as element() {
                 for $toh-key in $toh-keys
                 
                     (: Get document version in data store :)
-                    let $store-version := download:stored-version-str($toh-key, $file-type)
+                    let $store-version := 
+                        (: Check the azw3 version :)
+                        if($file-type eq 'epub' and $file-extension eq 'azw3') then
+                            download:stored-version-str($toh-key, $file-extension)
+                        (: Check the $file-type version :)
+                        else
+                            download:stored-version-str($toh-key, $file-type)
                 
                 return
                     if(compare($store-version, $tei-version) ne 0)then
@@ -363,7 +369,8 @@ declare function store:store-new-pdf($file-path as xs:string, $version as xs:str
                                 replace($pdf-config/m:service-endpoint, '/api$', '/batch_api'), 
                                 '?license=', $pdf-config/m:license-key, 
                                 '&amp;sitemap=', encode-for-uri($sitemap-url),
-                                '&amp;merge=true'
+                                '&amp;merge=true',
+                                '&amp;filename=', encode-for-uri($resource-id), '.pdf'
                             )
                         
                         let $batch_api_request := httpclient:get(xs:anyURI($request-url), false(),())

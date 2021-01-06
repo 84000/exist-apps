@@ -61,7 +61,7 @@
                 <xsl:choose>
                     
                     <xsl:when test="count(m:texts/m:text) gt 0">
-                        <table class="table table-striped table-responsive">
+                        <table class="table table-responsive">
                             <thead>
                                 <tr>
                                     <th>
@@ -89,81 +89,6 @@
                                     <xsl:variable name="group-master-status-updates" select="$group-master-first-text/m:status-updates[1]"/>
                                     <xsl:variable name="group-master-status-id" select="$group-master-first-text/@translation-status"/>
                                     <xsl:variable name="text-marked-up" select="/m:response/m:text-statuses/m:status[@status-id eq $group-status-id][@marked-up eq 'true']"/>
-                                    
-                                    <xsl:variable name="text-links">
-                                        <ul class="list-inline inline-dots sml-margin bottom">
-                                            <xsl:if test="$reading-room-no-cache-path">
-                                                <li>
-                                                    <a class="small">
-                                                        <xsl:attribute name="href" select="concat($reading-room-no-cache-path ,'/translation/', m:toh/@key, '.html')"/>
-                                                        <xsl:attribute name="target" select="concat(m:toh/@key, '.html')"/>
-                                                        <xsl:attribute name="title" select="'View this text by-passing the cache'"/>
-                                                        <xsl:value-of select="'bypass cache'"/>
-                                                    </a>
-                                                </li>
-                                            </xsl:if>
-                                            <li>
-                                                <a class="small">
-                                                    <xsl:attribute name="href" select="concat($reading-room-path ,'/translation/', m:toh/@key, '.html?view-mode=editor')"/>
-                                                    <xsl:attribute name="target" select="concat(m:toh/@key, '.html')"/>
-                                                    <xsl:attribute name="title" select="'View this text in editor mode'"/>
-                                                    <xsl:value-of select="'editor mode'"/>
-                                                </a>
-                                            </li>
-                                            <!--<li>
-                                                <a class="small">
-                                                    <xsl:attribute name="href" select="concat($reading-room-path ,'/translation/', $text-id, '.html?view-mode=annotation')"/>
-                                                    <xsl:attribute name="target" select="concat($text-id, '.html')"/>
-                                                    <xsl:attribute name="title" select="'View this text in annotation mode'"/>
-                                                    <xsl:value-of select="'annotation mode'"/>
-                                                </a>
-                                            </li>-->
-                                            <li>
-                                                <a class="small">
-                                                    <xsl:attribute name="href" select="concat($reading-room-path, '/translation/', m:toh/@key, '.xml')"/>
-                                                    <xsl:attribute name="target" select="concat(m:toh/@key, '.xml')"/>
-                                                    <xsl:attribute name="title" select="'View xml data'"/>
-                                                    <xsl:value-of select="'xml'"/>
-                                                </a>
-                                            </li>
-                                            <li>
-                                                <a class="small">
-                                                    <xsl:attribute name="href" select="concat('/test-translations.html?translation-id=', $text-id)"/>
-                                                    <xsl:attribute name="target" select="concat('test-translation-', $text-id)"/>
-                                                    <xsl:attribute name="title" select="'Run automated tests on this text'"/>
-                                                    <xsl:value-of select="'run tests'"/>
-                                                </a>
-                                            </li>
-                                            <xsl:for-each select="current-group()">
-                                                <li>
-                                                    <a class="small">
-                                                        <xsl:attribute name="href" select="concat($reading-room-path, '/translation/', m:toh/@key, '.rdf')"/>
-                                                        <xsl:attribute name="target" select="concat(m:toh/@key, '.rdf')"/>
-                                                        <xsl:attribute name="title" select="concat('Dynamic rdf data for ', m:toh/@key)"/>
-                                                        <xsl:value-of select="concat(m:toh/@key, '.rdf')"/>
-                                                    </a>
-                                                </li>
-                                            </xsl:for-each>
-                                            <xsl:for-each select="current-group()">
-                                                <li>
-                                                    <a class="small">
-                                                        <xsl:attribute name="href" select="concat($reading-room-path, '/translation/', m:toh/@key, '-en.txt')"/>
-                                                        <xsl:attribute name="title" select="'Download translation as a text file'"/>
-                                                        <xsl:value-of select="concat(m:toh/@key, '-en.txt')"/>
-                                                    </a>
-                                                </li>
-                                            </xsl:for-each>
-                                            <xsl:for-each select="current-group()">
-                                                <li>
-                                                    <a class="small">
-                                                        <xsl:attribute name="href" select="concat($reading-room-path, '/source/', m:toh/@key, '-bo.txt')"/>
-                                                        <xsl:attribute name="title" select="'Download the source as a text file'"/>
-                                                        <xsl:value-of select="concat(m:toh/@key, '-bo.txt')"/>
-                                                    </a>
-                                                </li>
-                                            </xsl:for-each>
-                                        </ul>
-                                    </xsl:variable>
                                     
                                     <xsl:variable name="tei-options">
                                         <xsl:if test="$environment/m:store-conf[@type eq 'client']">
@@ -195,7 +120,7 @@
                                     </xsl:variable>
                                     
                                     <xsl:variable name="file-options">
-                                        <div class="row">
+                                        <div class="row sml-margin bottom">
                                             
                                             <xsl:variable name="file-formats" select="('pdf', 'epub', 'azw3', 'rdf', 'cache')"/>
                                             
@@ -326,7 +251,7 @@
                                         <xsl:attribute name="id" select="$text-id"/>
                                         
                                         <!-- Toh -->
-                                        <td>
+                                        <td rowspan="2">
                                             <xsl:for-each select="current-group()">
                                                 <xsl:if test="position() gt 1">
                                                     <br/>
@@ -341,94 +266,115 @@
                                         </td>
                                         
                                         <!-- Data -->
-                                        <td>
+                                        <td colspan="2">
                                             
-                                            <div class="row">
-                                                
-                                                <xsl:variable name="status-change">
-                                                    <!-- Show if it's a status change -->
-                                                    <xsl:if test="$environment/m:store-conf[@type eq 'client'] and ($diff or not(compare($group-status-id, $group-master-status-id) eq 0))">
-                                                        <div class="center-vertical align-right">
-                                                            <span>
-                                                                <span class="label label-warning">
-                                                                    <xsl:if test="$group-status-id eq '1'">
-                                                                        <xsl:attribute name="class" select="'label label-success'"/>
-                                                                    </xsl:if>
-                                                                    <xsl:value-of select="$group-status-id"/>
-                                                                </span>
-                                                            </span>
-                                                            <xsl:if test="not(compare($group-status-id, $group-master-status-id) eq 0)">
-                                                                <span>
-                                                                    <i class="fa fa-angle-right"/>
-                                                                </span>
-                                                                <span>
-                                                                    <span class="label label-warning">
-                                                                        <xsl:if test="$group-master-status-id eq '1'">
-                                                                            <xsl:attribute name="class" select="'label label-success'"/>
-                                                                        </xsl:if>
-                                                                        <xsl:value-of select="$group-master-status-id"/>
-                                                                    </span>
-                                                                </span>
-                                                            </xsl:if>
-                                                        </div>
-                                                    </xsl:if>
-                                                </xsl:variable>
-                                                
-                                                <div class="col-sm-10">
-                                                    
-                                                    <xsl:if test="$status-change">
-                                                        <xsl:attribute name="class" select="'col-sm-8'"/>
-                                                    </xsl:if>
-                                                    
-                                                    <!-- Title -->
-                                                    <div>
-                                                        <span>
-                                                            <xsl:value-of select="$group-titles/m:title[@xml:lang eq 'en']"/>
-                                                        </span>
-                                                        <span class="small">
-                                                            <xsl:value-of select="' / '"/>
-                                                            <xsl:value-of select="concat(m:location[1]/@count-pages, ' pages')"/>
-                                                        </span>
-                                                        <span class="small">
-                                                            <xsl:value-of select="' / '"/>
-                                                            <a>
-                                                                <xsl:attribute name="href" select="concat($reading-room-path ,'/translation/', $text-id, '.html')"/>
-                                                                <xsl:attribute name="target" select="concat($text-id, '.html')"/>
-                                                                <xsl:attribute name="title" select="concat('Open ', $text-id, '.html in the Reading Room')"/>
-                                                                <xsl:value-of select="$text-id"/>
-                                                            </a>
-                                                        </span>
-                                                        <xsl:for-each select="current-group()">
-                                                            <span class="small">
-                                                                <xsl:value-of select="' / '"/>
-                                                                <a>
-                                                                    <xsl:attribute name="href" select="concat($reading-room-path, '/translation/', m:toh/@key, '.html')"/>
-                                                                    <xsl:attribute name="target" select="concat(m:toh/@key, '.html')"/>
-                                                                    <xsl:attribute name="title" select="concat('Open ', m:toh/@key, '.html in the Reading Room')"/>
-                                                                    <xsl:value-of select="m:toh/@key"/>
-                                                                </a>
-                                                            </span>
-                                                        </xsl:for-each>
-                                                    </div>
-                                                    
-                                                    <!-- Links -->
-                                                    <xsl:copy-of select="$text-links"/>
-                                                    
-                                                </div>
-                                                
-                                                
-                                                <!-- Change of status -->
-                                                <xsl:if test="$status-change">
-                                                    <div class="col-sm-2 sml-margin top">
-                                                        <xsl:copy-of select="$status-change"/>
-                                                    </div>
-                                                </xsl:if>
-                                                
+                                            <!-- Title -->
+                                            <div>
+                                                <span>
+                                                    <xsl:value-of select="$group-titles/m:title[@xml:lang eq 'en']"/>
+                                                </span>
+                                                <span class="small">
+                                                    <xsl:value-of select="' / '"/>
+                                                    <xsl:value-of select="concat(m:location[1]/@count-pages, ' pages')"/>
+                                                </span>
+                                                <span class="small">
+                                                    <xsl:value-of select="' / '"/>
+                                                    <a>
+                                                        <xsl:attribute name="href" select="concat($reading-room-path ,'/translation/', $text-id, '.html')"/>
+                                                        <xsl:attribute name="target" select="concat($text-id, '.html')"/>
+                                                        <xsl:attribute name="title" select="concat('Open ', $text-id, '.html in the Reading Room')"/>
+                                                        <xsl:value-of select="$text-id"/>
+                                                    </a>
+                                                </span>
+                                                <xsl:for-each select="current-group()">
+                                                    <span class="small">
+                                                        <xsl:value-of select="' / '"/>
+                                                        <a>
+                                                            <xsl:attribute name="href" select="concat($reading-room-path, '/translation/', m:toh/@key, '.html')"/>
+                                                            <xsl:attribute name="target" select="concat(m:toh/@key, '.html')"/>
+                                                            <xsl:attribute name="title" select="concat('Open ', m:toh/@key, '.html in the Reading Room')"/>
+                                                            <xsl:value-of select="m:toh/@key"/>
+                                                        </a>
+                                                    </span>
+                                                </xsl:for-each>
                                             </div>
                                             
+                                            <!-- Links -->
+                                            <ul class="list-inline inline-dots sml-margin bottom">
+                                                <xsl:if test="$reading-room-no-cache-path">
+                                                    <li>
+                                                        <a class="small">
+                                                            <xsl:attribute name="href" select="concat($reading-room-no-cache-path ,'/translation/', m:toh/@key, '.html')"/>
+                                                            <xsl:attribute name="target" select="concat(m:toh/@key, '.html')"/>
+                                                            <xsl:attribute name="title" select="'View this text by-passing the cache'"/>
+                                                            <xsl:value-of select="'bypass cache'"/>
+                                                        </a>
+                                                    </li>
+                                                </xsl:if>
+                                                <li>
+                                                    <a class="small">
+                                                        <xsl:attribute name="href" select="concat($reading-room-path ,'/translation/', m:toh/@key, '.html?view-mode=editor')"/>
+                                                        <xsl:attribute name="target" select="concat(m:toh/@key, '.html')"/>
+                                                        <xsl:attribute name="title" select="'View this text in editor mode'"/>
+                                                        <xsl:value-of select="'editor mode'"/>
+                                                    </a>
+                                                </li>
+                                                <!--<li>
+                                                <a class="small">
+                                                    <xsl:attribute name="href" select="concat($reading-room-path ,'/translation/', $text-id, '.html?view-mode=annotation')"/>
+                                                    <xsl:attribute name="target" select="concat($text-id, '.html')"/>
+                                                    <xsl:attribute name="title" select="'View this text in annotation mode'"/>
+                                                    <xsl:value-of select="'annotation mode'"/>
+                                                </a>
+                                            </li>-->
+                                                <li>
+                                                    <a class="small">
+                                                        <xsl:attribute name="href" select="concat($reading-room-path, '/translation/', m:toh/@key, '.xml')"/>
+                                                        <xsl:attribute name="target" select="concat(m:toh/@key, '.xml')"/>
+                                                        <xsl:attribute name="title" select="'View xml data'"/>
+                                                        <xsl:value-of select="'xml'"/>
+                                                    </a>
+                                                </li>
+                                                <li>
+                                                    <a class="small">
+                                                        <xsl:attribute name="href" select="concat('/test-translations.html?translation-id=', $text-id)"/>
+                                                        <xsl:attribute name="target" select="concat('test-translation-', $text-id)"/>
+                                                        <xsl:attribute name="title" select="'Run automated tests on this text'"/>
+                                                        <xsl:value-of select="'run tests'"/>
+                                                    </a>
+                                                </li>
+                                                <xsl:for-each select="current-group()">
+                                                    <li>
+                                                        <a class="small">
+                                                            <xsl:attribute name="href" select="concat($reading-room-path, '/translation/', m:toh/@key, '.rdf')"/>
+                                                            <xsl:attribute name="target" select="concat(m:toh/@key, '.rdf')"/>
+                                                            <xsl:attribute name="title" select="concat('Dynamic rdf data for ', m:toh/@key)"/>
+                                                            <xsl:value-of select="concat(m:toh/@key, '.rdf')"/>
+                                                        </a>
+                                                    </li>
+                                                </xsl:for-each>
+                                                <xsl:for-each select="current-group()">
+                                                    <li>
+                                                        <a class="small">
+                                                            <xsl:attribute name="href" select="concat($reading-room-path, '/translation/', m:toh/@key, '-en.txt')"/>
+                                                            <xsl:attribute name="title" select="'Download translation as a text file'"/>
+                                                            <xsl:value-of select="concat(m:toh/@key, '-en.txt')"/>
+                                                        </a>
+                                                    </li>
+                                                </xsl:for-each>
+                                                <xsl:for-each select="current-group()">
+                                                    <li>
+                                                        <a class="small">
+                                                            <xsl:attribute name="href" select="concat($reading-room-path, '/source/', m:toh/@key, '-bo.txt')"/>
+                                                            <xsl:attribute name="title" select="'Download the source as a text file'"/>
+                                                            <xsl:value-of select="concat(m:toh/@key, '-bo.txt')"/>
+                                                        </a>
+                                                    </li>
+                                                </xsl:for-each>
+                                            </ul>
+                                            
+                                            <!-- Location of tei file -->
                                             <div class="small text-muted sml-margin bottom">
-                                                
-                                                <!-- Location of tei file -->
                                                 <xsl:value-of select="'TEI file: '"/>
                                                 <a class="break">
                                                     <xsl:attribute name="href" select="concat($reading-room-path, '/translation/', $text-id, '.tei')"/>
@@ -436,31 +382,71 @@
                                                     <xsl:attribute name="title" select="@uri"/>
                                                     <xsl:value-of select="@uri"/>
                                                 </a>
-                                                
                                             </div>
                                             
                                             <!-- Version update message -->
-                                            <div class="small italic text-danger sml-margin bottom">
+                                            <div class="small italic text-danger">
                                                 <xsl:choose>
                                                     <xsl:when test="$environment/m:store-conf[@type eq 'client'] and $group-master-status-updates/m:status-update[@update eq 'text-version'][@current-version eq 'true'][text()]">
-                                                        <xsl:value-of select="concat('Collaboration TEI version : ', $group-master-tei-version, ' - ', $group-master-status-updates/m:status-update[@update eq 'text-version'][@current-version eq 'true'][1])"/>
+                                                        <xsl:value-of select="concat('Collaboration TEI: ', $group-master-tei-version, ' - ', $group-master-status-updates/m:status-update[@update eq 'text-version'][@current-version eq 'true'][1])"/>
                                                     </xsl:when>
                                                     <xsl:when test="$environment/m:store-conf[@type eq 'master'] and m:status-updates/m:status-update[@update eq 'text-version'][@current-version eq 'true'][text()]">
-                                                        <xsl:value-of select="concat('Version note : ', m:status-updates/m:status-update[@update eq 'text-version'][@current-version eq 'true'][1])"/>
+                                                        <xsl:value-of select="concat('Version note: ', m:status-updates/m:status-update[@update eq 'text-version'][@current-version eq 'true'][1])"/>
                                                     </xsl:when>
                                                 </xsl:choose>
                                             </div>
                                             
-                                            <div>
-                                                <xsl:copy-of select="$file-options"/>
-                                            </div>
-                                            
                                         </td>
                                         
-                                        <td>
+                                        <td rowspan="2" class="nowrap">
+                                            
+                                            <!-- Local version -->
+                                            <div class="small nowrap">
+                                                <xsl:choose>
+                                                    <xsl:when test="$group-tei-version gt ''">
+                                                        <xsl:value-of select="concat('TEI: ', $group-tei-version)"/>
+                                                    </xsl:when>
+                                                    <xsl:otherwise>
+                                                        <xsl:attribute name="class" select="'text-muted'"/>
+                                                        <xsl:value-of select="'[No version]'"/>
+                                                    </xsl:otherwise>
+                                                </xsl:choose>
+                                            </div>
+                                            
+                                            <!-- Status change -->
+                                            <xsl:if test="$environment/m:store-conf[@type eq 'client'] and ($diff or not(compare($group-status-id, $group-master-status-id) eq 0))">
+                                                <div class="center-vertical full-width sml-margin bottom">
+                                                    <span>
+                                                        <span class="label label-warning">
+                                                            <xsl:if test="$group-status-id eq '1'">
+                                                                <xsl:attribute name="class" select="'label label-success'"/>
+                                                            </xsl:if>
+                                                            <xsl:value-of select="$group-status-id"/>
+                                                        </span>
+                                                    </span>
+                                                    <xsl:if test="not(compare($group-status-id, $group-master-status-id) eq 0)">
+                                                        <span>
+                                                            <i class="fa fa-angle-right"/>
+                                                        </span>
+                                                        <span>
+                                                            <span class="label label-warning">
+                                                                <xsl:if test="$group-master-status-id eq '1'">
+                                                                    <xsl:attribute name="class" select="'label label-success'"/>
+                                                                </xsl:if>
+                                                                <xsl:value-of select="$group-master-status-id"/>
+                                                            </span>
+                                                        </span>
+                                                    </xsl:if>
+                                                </div>
+                                            </xsl:if>
+                                            
+                                            <!-- Get TEI -->
+                                            <div class="sml-margin bottom">
+                                                <xsl:copy-of select="$tei-options"/>
+                                            </div>
                                             
                                             <!-- Update all -->
-                                            <div class="sml-margin bottom">
+                                            <div>
                                                 <a href="#" class="btn btn-info btn-sm disabled">
                                                     <xsl:choose>
                                                         <xsl:when test="$file-options//xhtml:a[@class eq 'store-file'] | $tei-options//xhtml:a[@class eq 'store-file']">
@@ -469,7 +455,7 @@
                                                             <xsl:choose>
                                                                 <xsl:when test="$environment/m:store-conf[@type eq 'client']">
                                                                     <xsl:attribute name="data-loading" select="'Getting updated files...'"/>
-                                                                    <xsl:value-of select="'Get updated files'"/>
+                                                                    <xsl:value-of select="'Get all updated files'"/>
                                                                 </xsl:when>
                                                                 <xsl:when test="$environment/m:store-conf[@type eq 'master']">
                                                                     <xsl:attribute name="data-loading" select="'Creating new files...'"/>
@@ -486,24 +472,16 @@
                                                     </xsl:choose>
                                                 </a>
                                             </div>
+                                        </td>
+                                        
+                                    </tr>
+                                    
+                                    <tr class="sub">
+                                        
+                                        <td>
                                             
-                                            <!-- Local version -->
-                                            <div class="small nowrap sml-margin bottom">
-                                                <xsl:choose>
-                                                    <xsl:when test="$group-tei-version gt ''">
-                                                        <xsl:value-of select="concat('Version: ', $group-tei-version)"/>
-                                                    </xsl:when>
-                                                    <xsl:otherwise>
-                                                        <xsl:attribute name="class" select="'text-muted'"/>
-                                                        <xsl:value-of select="'[No version]'"/>
-                                                    </xsl:otherwise>
-                                                </xsl:choose>
-                                            </div>
-                                            
-                                            <!-- Get TEI -->
-                                            <div class="sml-margin bottom">
-                                                <xsl:copy-of select="$tei-options"/>
-                                            </div>
+                                            <!-- File options -->
+                                            <xsl:copy-of select="$file-options"/>
                                             
                                         </td>
                                         

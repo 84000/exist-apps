@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <eft-header xmlns="http://read.84000.co/ns/1.0">
-    <!-- Updated 04.09.2020 -->
+    <!-- Updated 05.01.2021 -->
     <translation id="tag-line">
         <text xml:lang="en">Translating the words of the Buddha</text>
         <text xml:lang="zh">八萬四千 • 佛典傳譯</text>
@@ -63,8 +63,11 @@
             <item url="https://84000.co/resources/teachings-on-sutra">
                 <label key="label-teachings-on-sutra">Teachings on Sūtra</label>
             </item>
+            <item url="https://84000.co/resources/sutras-for-well-being">
+                <label key="label-well-being">Sūtras for Well-Being</label>
+            </item>
             <item url="https://84000.co/resources/commentaries">
-                <label key="label-commentaries">Commentaries</label>
+                <label key="label-commentaries">Special Offerings</label>
             </item>
             <item url="https://84000.co/resources/resounding">
                 <label key="label-resounding">Resoundings</label>
@@ -138,6 +141,9 @@
             <item url="https://84000.co/about/faq">
                 <label key="label-faq">FAQ</label>
             </item>
+            <item url="https://84000.co/about/reports">
+                <label key="label-reports">Annual Reports</label>
+            </item>
             <item url="https://84000.co/about/contact">
                 <label key="label-contact">Contact</label>
             </item>
@@ -200,8 +206,11 @@
             <item url="https://84000.co/ch-resources/ch-teachings-on-sutra">
                 <label key="label-teachings-on-sutra">八萬四千講經堂</label>
             </item>
+            <item url="https://84000.co/ch-resources/ch-sutras-for-well-being">
+                <label key="label-well-being">「消災祈福」系列經典</label>
+            </item>
             <item url="https://84000.co/ch-resources/ch-commentaries">
-                <label key="label-commentaries">論著</label>
+                <label key="label-commentaries">特殊出版物</label>
             </item>
             <item url="https://84000.co/ch-resources/ch-resounding">
                 <label key="label-resounding">經典迴響</label>
@@ -274,6 +283,9 @@
             </item>
             <item url="https://84000.co/ch-about/ch-faq">
                 <label key="label-faq">常見問題</label>
+            </item>
+            <item url="https://84000.co/ch-about/ch-reports">
+                <label key="label-reports">年度報告</label>
             </item>
             <item url="https://84000.co/ch-about/ch-about-contact">
                 <label key="label-contact">聯繫方式</label>

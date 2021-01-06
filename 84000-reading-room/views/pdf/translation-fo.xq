@@ -1,9 +1,12 @@
 xquery version "3.0";
 
 declare namespace fo="http://www.w3.org/1999/XSL/Format";
-declare namespace t="http://read.84000.co/ns/1.0";
+declare namespace m="http://read.84000.co/ns/1.0";
 declare namespace tei="http://www.tei-c.org/ns/1.0";
 declare namespace xhtml="http://www.w3.org/1999/xhtml";
+
+import module namespace common="http://read.84000.co/common" at "../../modules/common.xql";
+import module namespace translation="http://read.84000.co/translation" at "../../modules/translation.xql";
 
 declare function fo:main($translation) {
     <fo:root xmlns:fo="http://www.w3.org/1999/XSL/Format">
@@ -17,28 +20,28 @@ declare function fo:main($translation) {
         </fo:layout-master-set>
         <fo:page-sequence master-reference="84000">
             <fo:flow flow-name="xsl-region-body">
-                <fo:block font-size="12pt" text-align="center" font-family="Arial" color="gray" margin-bottom="10mm">
+                <fo:block font-size="12pt" text-align="center" font-family="IndUni-P-84000-Regular" color="gray" margin-bottom="10mm">
                      - This is just a provisional pdf to test font rendering using Apache FO - 
                 </fo:block>
                 <fo:block text-align="center" font-size="30pt" font-family="Tibetan" script="tibt" margin-bottom="10mm">
                 {
-                    $translation/t:titles/t:title[@xml:lang = 'bo']/text()
+                    $translation/m:titles/m:title[@xml:lang = 'bo']/text()
                 }
                 </fo:block>
-                <fo:block font-size="44pt" text-align="center" font-family="Arial" margin-bottom="10mm">
+                <fo:block font-size="44pt" text-align="center" font-family="IndUni-P-84000-Regular" margin-bottom="10mm">
                 {
-                    $translation/t:titles/t:title[@xml:lang = 'en']/text()
+                    $translation/m:titles/m:title[@xml:lang = 'en']/text()
                 }
                 </fo:block>
-                <fo:block text-align="center" font-size="30pt" font-family="Times" margin-bottom="10mm">
+                <fo:block text-align="center" font-size="30pt" font-family="IndUni-P-84000-Regular" margin-bottom="10mm">
                 {
-                    $translation/t:titles/t:title[@xml:lang = 'Sa-Ltn']/text()
+                    $translation/m:titles/m:title[@xml:lang = 'Sa-Ltn']/text()
                 }
                 </fo:block>
                 {
-                    for $paragraph in $translation/t:section[@type eq 'summary']/tei:p
+                    for $paragraph in $translation/m:part[@type eq 'summary']/tei:p
                     return
-                        <fo:block font-size="12pt" text-align="justify" font-family="Times" margin-bottom="5mm">
+                        <fo:block font-size="12pt" text-align="justify" font-family="IndUni-P-84000-Regular" margin-bottom="5mm">
                         {
                             $paragraph//text()
                         }
@@ -60,17 +63,26 @@ declare function local:fop-config() {
         <complex-scripts disabled="false"/>
         <renderers>
             <renderer mime="application/pdf">
-            {
-                doc('/db/env/fonts.xml')
-            }
+                <fonts>
+                    <font kerning="yes"
+                        embed-url="file://db/apps/84000-reading-room/views/pdf/resources/fonts/DDC_Uchen.ttf"
+                        encoding-mode="single-byte">
+                        <font-triplet name="Tibetan" style="normal" weight="normal"/>
+                    </font>
+                    <font kerning="yes"
+                        embed-url="file://db/apps/84000-reading-room/views/pdf/resources/fonts/IndUni-P-84000-Regular.otf"
+                        encoding-mode="single-byte">
+                        <font-triplet name="IndUni-P-84000-Regular" style="normal" weight="normal"/>
+                    </font>
+                </fonts>
             </renderer>
         </renderers>
     </fop>
 };
 
-let $data := request:get-data()
-let $pdf := xslfo:render(fo:main($data/t:response/t:translation), "application/pdf", (), local:fop-config())
-let $title := normalize-space($data/t:response/t:translation/t:titles/t:title[@xml:lang = 'en']/text())
+let $data := request:get-data()/m:response
+let $pdf := xslfo:render(fo:main($data/m:translation), "application/pdf", (), local:fop-config())
+let $title := normalize-space($data/m:translation/m:titles/m:title[@xml:lang = 'en']/text())
 
 return
     response:stream-binary($pdf, "media-type=application/pdf", concat($title, ".pdf"))
