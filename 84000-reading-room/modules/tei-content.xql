@@ -81,7 +81,7 @@ declare function tei-content:tei($resource-id as xs:string, $resource-type as xs
         if($resource-type eq 'translation') then
             let $resource-id := lower-case($resource-id)
             return
-                $collection//tei:sourceDesc/tei:bibl[@key eq $resource-id][1]/ancestor::tei:TEI
+                $collection//tei:sourceDesc[tei:bibl/@key = $resource-id][1]/ancestor::tei:TEI
         else if($resource-type eq 'knowledgebase') then
             let $resource-id := lower-case($resource-id)
             return
@@ -123,7 +123,7 @@ declare function tei-content:title($tei as element(tei:TEI)) as xs:string? {
 
 declare function tei-content:title($tei as node(), $type as xs:string?, $lang as xs:string*) as xs:string? {
     
-    $tei//tei:fileDesc/tei:titleStmt/tei:title[@type eq $type][@xml:lang = $lang][1]/text() ! normalize-space(.) ! translate(., '&#x2003;', '&#x20;')
+    $tei//tei:titleStmt/tei:title[@xml:lang = $lang][@type eq $type][text()][1] ! text() ! normalize-space(.) ! translate(., '&#x2003;', '&#x20;')
     
 };
 
@@ -153,6 +153,7 @@ declare function tei-content:title-set($tei as element(tei:TEI), $type as xs:str
     let $sa-ltn := tei-content:title($tei, $type , 'Sa-Ltn')
     
     let $source-bibl := tei-content:source-bibl($tei, '')
+    let $parent-id := $source-bibl/tei:idno/@parent-id
     
     return (
         <title xmlns="http://read.84000.co/ns/1.0" xml:lang="en">{ $en }</title>,
@@ -167,16 +168,16 @@ declare function tei-content:title-set($tei as element(tei:TEI), $type as xs:str
         <title xmlns="http://read.84000.co/ns/1.0" xml:lang="Bo-Ltn">{ $bo-ltn }</title>,
         <title xmlns="http://read.84000.co/ns/1.0" xml:lang="Sa-Ltn">{ $sa-ltn }</title>,        
         if($source-bibl/@type eq 'chapter') then
-            <parent xmlns="http://read.84000.co/ns/1.0">
-                <titles>
-                {
-                    tei-content:title-set(
-                        tei-content:tei($source-bibl/tei:idno/@parent-id, 'section'), 
-                        'mainTitle'
-                    )
-                }
-                </titles>
-            </parent>
+            let $parent-id := $source-bibl/tei:idno/@parent-id
+            let $parent-tei := tei-content:tei($parent-id, 'section')
+            return
+                <parent xmlns="http://read.84000.co/ns/1.0">
+                    <titles>
+                    {
+                        tei-content:title-set($parent-tei, 'mainTitle')
+                    }
+                    </titles>
+                </parent>
         else
             ()
     )

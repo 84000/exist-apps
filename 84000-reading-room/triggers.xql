@@ -20,7 +20,7 @@ declare function trigger:after-update-document($uri as xs:anyURI) {
 
 declare function local:after-update-document-functions($doc) {
 
-    if($doc[tei:TEI/tei:teiHeader/tei:fileDesc[@type="section"]/tei:publicationStmt/tei:idno[@xml:id]]) then (
+    if($doc[tei:TEI/tei:teiHeader/tei:fileDesc[@type = "section"]/tei:publicationStmt/tei:idno[@xml:id]]) then (
     
         local:permanent-ids($doc),
         local:temporary-ids($doc),
@@ -44,11 +44,12 @@ declare function local:refresh-cache($doc) {
     let $cache := translation:cache($doc/tei:TEI, true())
     
     return (
+    
         (: Cache notes :)
         let $tei-ids := $doc/tei:TEI/tei:text//tei:note[@place eq 'end']/@xml:id/string()
         let $cache-ids := $cache/m:notes-cache/m:end-note/@id/string()
         return
-        if($tei-ids[not(. = $cache-ids)] or $cache-ids[not(. = $tei-ids)]) then
+        if(count(($tei-ids[not(. = $cache-ids)], $cache-ids[not(. = $tei-ids)]))) then
             common:update('trigger-notes-cache', $cache/m:notes-cache, translation:notes-cache($doc/tei:TEI, true(), true()), $cache, $cache/m:notes-cache/preceding-sibling::*[1])
         else (),
         
@@ -56,7 +57,7 @@ declare function local:refresh-cache($doc) {
         let $tei-ids := $doc/tei:TEI/tei:text//tei:milestone/@xml:id/string()
         let $cache-ids := $cache/m:milestones-cache/m:milestone/@id/string()
         return
-        if($tei-ids[not(. = $cache-ids)] or $cache-ids[not(. = $tei-ids)]) then
+        if(count(($tei-ids[not(. = $cache-ids)], $cache-ids[not(. = $tei-ids)]))) then
             common:update('trigger-milestones-cache', $cache/m:milestones-cache, translation:milestones-cache($doc/tei:TEI, true(), true()), $cache, $cache/m:milestones-cache/preceding-sibling::*[1])
         else (),
         
@@ -64,7 +65,7 @@ declare function local:refresh-cache($doc) {
         let $tei-ids := $doc/tei:TEI/tei:text/tei:body//tei:ref[@type eq 'folio']/@xml:id/string()
         let $cache-ids := $cache/m:folios-cache/m:folio-ref/@id/string()
         return
-        if($tei-ids[not(. = $cache-ids)] or $cache-ids[not(. = $tei-ids)]) then
+        if(count(($tei-ids[not(. = $cache-ids)], $cache-ids[not(. = $tei-ids)]))) then
             common:update('trigger-cache-folio-refs', $cache/m:folios-cache, translation:folios-cache($doc/tei:TEI, true(), true()), $cache, $cache/m:folios-cache/preceding-sibling::*[1])
         else (),
         
@@ -72,7 +73,7 @@ declare function local:refresh-cache($doc) {
         let $tei-ids := $doc/tei:TEI//tei:back//tei:list[@type eq 'glossary']/tei:item/tei:gloss/@xml:id/string()
         let $cache-ids := $cache/m:glossary-cache/m:gloss/@id/string()
         return
-        if($tei-ids[not(. = $cache-ids)] or $cache-ids[not(. = $tei-ids)]) then
+        if(count(($tei-ids[not(. = $cache-ids)], $cache-ids[not(. = $tei-ids)]))) then
             common:update('trigger-cache-glossary', $cache/m:glossary-cache, translation:glossary-cache($doc/tei:TEI, 'none', true()), $cache, $cache/m:glossary-cache/preceding-sibling::*[1])
         else ()
         
@@ -87,19 +88,21 @@ declare function local:permanent-ids($doc) {
     let $translation-id := tei-content:id($doc/tei:TEI)
     where $translation-id
     return (
-        
-        (: Add any missing @xml:ids :)
-        let $elements-missing-id := (
-            $doc//tei:text//tei:milestone[not(@xml:id) or @xml:id eq '']
-            | $doc//tei:text//tei:note[not(@xml:id) or @xml:id eq '']
-            | $doc//tei:text//tei:ref[@type = ('folio', 'volume')][not(@xml:id) or @xml:id eq '']
-            | $doc//tei:div[@type="notes"]//tei:item[not(@xml:id) or @xml:id eq '']
-            | $doc//tei:div[@type='listBibl']//tei:bibl[not(@xml:id) or @xml:id eq '']
-            | $doc//tei:div[@type='glossary']//tei:gloss[not(@xml:id) or @xml:id eq '']
+    
+        let $elements := (
+            $doc//tei:text//tei:milestone
+            | $doc//tei:text//tei:note
+            | $doc//tei:text//tei:ref[@type = ('folio', 'volume')]
+            | $doc//tei:div[@type="notes"]//tei:item
+            | $doc//tei:div[@type='listBibl']//tei:bibl
+            | $doc//tei:div[@type='glossary']//tei:gloss
         )
         
+        (: Add any missing @xml:ids :)
+        let $elements-missing-id := $elements[not(@xml:id) or @xml:id eq '']
+        
         where $elements-missing-id
-            let $max-id := max($doc//@xml:id ! substring-after(., $translation-id) ! substring(., 2) ! common:integer(.))
+            let $max-id := max($elements/@xml:id ! substring-after(., $translation-id) ! substring(., 2) ! common:integer(.))
             for $element at $index in $elements-missing-id
                 let $new-id := concat($translation-id, '-', xs:string(sum(($max-id, $index))))
             return

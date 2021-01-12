@@ -335,55 +335,47 @@ declare function store:store-new-pdf($file-path as xs:string, $version as xs:str
             let $file-name := lower-case($file-path-tokenized[last()])
             let $resource-id := substring-before($file-name, '.pdf')
             
+            let $options := 
+                <options>
+                    <workingDir>/{ $pdf-config/m:sync-path/text() }</workingDir>
+                    <environment>
+                        <env name="PATH" value="/{ $pdf-config/m:path/text() }"/>
+                        <env name="HOME" value="/{ $pdf-config/m:home/text() }"/>
+                    </environment>
+                </options>
+            
+            let $generate-pdf := 
+                process:execute((
+                    concat('/', $pdf-config/m:chrome-path), 
+                    '--headless', 
+                    concat('--print-to-pdf=', $resource-id, '.pdf'), 
+                    '--print-to-pdf-no-header', 
+                    concat($pdf-config/m:html-source-url, '/translation/', $resource-id, '.html', '?view-mode=pdf')
+                ), $options)
+            
+            (: Upload to database :)
+            let $store-file := 
+                xmldb:store(
+                    $file-collection, 
+                    concat($resource-id, '.pdf'), 
+                    xs:anyURI(concat('file:///', $pdf-config/m:sync-path, '/', $resource-id, '.pdf')), 
+                    'application/pdf'
+                )
+            
             return
-                let $source-url := 
-                    concat($pdf-config/m:html-source-url, '/translation/', $resource-id, '.html', '?view-mode=pdf', '&amp;part=all')
-                
-                let $request-url := 
-                    concat(
-                        $pdf-config/m:service-endpoint, 
-                        '?license=', $pdf-config/m:license-key, 
-                        '&amp;url=', encode-for-uri($source-url)
-                    )
-        
-                let $download := store:http-get-and-store($request-url, $file-collection, $file-name)
-        
-                return
-                    (: Simple api request successful :)
-                    if(name($download) eq 'stored') then
+                if($store-file)then
                     
-                        let $set-file-group:= sm:chgrp(xs:anyURI($file-path), $store:file-group)
-                        let $set-file-permissions:= sm:chmod(xs:anyURI($file-path), $store:file-permissions)
-                        let $store-version-number := store:store-version-str($file-collection, $file-name, $version)
-                        return
-                            <stored xmlns="http://read.84000.co/ns/1.0">{ concat('New version saved as ', $file-path) }</stored>
+                    let $set-file-group:= sm:chgrp(xs:anyURI($file-path), $store:file-group)
+                    let $set-file-permissions:= sm:chmod(xs:anyURI($file-path), $store:file-permissions)
+                    let $store-version-number := store:store-version-str($file-collection, $file-name, $version)
                     
-                    (: Simple api request failed, try batch api :)
-                    else if(name($download) eq 'error') then
+                    return
+                        <stored xmlns="http://read.84000.co/ns/1.0">{ concat('New version saved as ', $file-path) }</stored>
                         
-                        let $sitemap-url := 
-                            concat($pdf-config/m:html-source-url, '/sitemap/', $resource-id, '.xml')
-                        
-                        let $request-url := 
-                            concat(
-                                replace($pdf-config/m:service-endpoint, '/api$', '/batch_api'), 
-                                '?license=', $pdf-config/m:license-key, 
-                                '&amp;sitemap=', encode-for-uri($sitemap-url),
-                                '&amp;merge=true',
-                                '&amp;filename=', encode-for-uri($resource-id), '.pdf'
-                            )
-                        
-                        let $batch_api_request := httpclient:get(xs:anyURI($request-url), false(),())
-                    
-                        return
-                            <error xmlns="http://read.84000.co/ns/1.0">
-                                <message>{ concat('PDF generation failed: ', $download/m:message, '. An email copy has been requested.') }</message>
-                            </error>
-                    
-                    else
-                        <error xmlns="http://read.84000.co/ns/1.0">
-                            <message>{ 'PDF generation failed' }</message>
-                        </error>
+                 else
+                    <error xmlns="http://read.84000.co/ns/1.0">
+                        <message>{ concat('PDF generation failed: (', $file-path, ')') }</message>
+                    </error>
                     
         else
             <error xmlns="http://read.84000.co/ns/1.0">
@@ -405,6 +397,7 @@ declare function store:store-new-epub($file-path as xs:string, $version as xs:st
             let $url := concat($ebook-config/m:epub-source-url, '/translation/', $file-name)
             
             let $download := store:http-download($url, $file-collection, $file-name)
+            
             return
                 if(name($download) eq 'stored') then
                     let $set-file-group:= sm:chgrp(xs:anyURI($file-path), $store:file-group)

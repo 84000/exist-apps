@@ -20,6 +20,9 @@
             <tab page="folios.html" model="utilities/folios">
                 <label>Folios</label>
             </tab>
+            <tab page="cross-references.html" model="utilities/cross-references">
+                <label>Cross-references</label>
+            </tab>
             <tab page="tests.html" model="utilities/tests">
                 <label>Tests</label>
             </tab>

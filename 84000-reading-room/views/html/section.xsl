@@ -103,68 +103,6 @@
                             <xsl:with-param name="section" select="m:section"/>
                         </xsl:call-template>
                         
-                        <xsl:choose>
-                            
-                            <xsl:when test="$section-id eq 'lobby'">
-                                <!-- Do nothing -->
-                            </xsl:when>
-                            
-                            <xsl:when test="$section-id eq 'all-translated'">
-                                
-                                <div class="row">
-                                    <div class="col-xs-12 col-md-offset-2 col-md-8">
-                                        
-                                        <table class="table table-stats">
-                                            <tbody>
-                                                <tr>
-                                                    <td>
-                                                        <xsl:value-of select="concat('Publications: ', format-number(count(m:section/m:texts/m:text), '#,###'))"/>
-                                                    </td>
-                                                    <td>
-                                                        <xsl:value-of select="concat('Total Pages: ', format-number(sum(m:section/m:texts/m:text/m:source/m:location/@count-pages ! xs:integer(.)), '#,###'))"/>
-                                                    </td>
-                                                </tr>
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </div>
-                                
-                            </xsl:when>
-                            
-                            <xsl:otherwise>
-                                <div class="row">
-                                    <div class="col-xs-12 col-md-offset-2 col-md-8">
-                                        
-                                        <!-- stats -->
-                                        <xsl:variable name="count-texts" as="xs:integer?" select="m:section/m:text-stats/m:stat[@type eq 'count-text-descendants']/@value"/>
-                                        <xsl:variable name="count-published" as="xs:integer?" select="m:section/m:text-stats/m:stat[@type eq 'count-published-descendants']/@value"/>
-                                        <xsl:variable name="count-in-progress" as="xs:integer?" select="m:section/m:text-stats/m:stat[@type eq 'count-in-progress-descendants']/@value"/>
-                                        <xsl:variable name="sum-published-pages" as="xs:integer?" select="m:section/m:text-stats/m:stat[@type eq 'sum-pages-published-descendants']/@value"/>
-                                        
-                                        <table class="table table-stats">
-                                            <tbody>
-                                                <tr>
-                                                    <td>
-                                                        <xsl:value-of select="concat('Texts: ', format-number($count-texts, '#,###'))"/>
-                                                    </td>
-                                                    <td>
-                                                        <xsl:value-of select="concat('Published: ', format-number($count-published, '#,###'))"/>
-                                                    </td>
-                                                    <td>
-                                                        <xsl:value-of select="concat('In Progress: ', format-number($count-in-progress, '#,###'))"/>
-                                                    </td>
-                                                    <td>
-                                                        <xsl:value-of select="concat('Not Begun: ', format-number($count-texts - ($count-published + $count-in-progress), '#,###'))"/>
-                                                    </td>
-                                                </tr>
-                                            </tbody>
-                                        </table>
-                                        
-                                    </div>
-                                </div>
-                            </xsl:otherwise>
-                        </xsl:choose>
-                        
                     </div>
                     
                     <!-- Conditions for having a text tab
@@ -174,44 +112,6 @@
                     -->
                     <xsl:variable name="show-texts" select="(m:section/m:texts/m:text or m:section/m:section[@type eq 'grouping']/m:texts/m:text or m:section/m:texts[@published-only eq '1'])"/>
                    
-                    <!-- Content tabs (sections/texts/summary) -->
-                    <xsl:if test="not($section-id = ('lobby', 'all-translated')) and ($show-texts or m:section/m:section[not(@type eq 'grouping')] or m:section/m:about/*)">
-                        <div class="tabs-container-center hidden-print">
-                            <ul class="nav nav-tabs" role="tablist">
-                                
-                                <!-- Texts tab -->
-                                <xsl:if test="$show-texts">
-                                    <li role="presentation" class="active">
-                                        <a href="#texts" aria-controls="texts" role="tab" data-toggle="tab">
-                                            <xsl:value-of select="'Texts'"/>
-                                        </a>
-                                    </li>
-                                </xsl:if>
-                                
-                                <!-- Sub-sections tab -->
-                                <xsl:if test="m:section/m:section[not(@type eq 'grouping')]">
-                                    <li role="presentation">
-                                        <xsl:attribute name="class" select="if(not($show-texts)) then 'active' else ''"/>
-                                        <a href="#sections" aria-controls="sections" role="tab" data-toggle="tab">
-                                            <xsl:value-of select="'Sections'"/>
-                                        </a>
-                                    </li>
-                                </xsl:if>
-                                
-                                <!-- About tab -->
-                                <xsl:if test="m:section/m:about[*]">
-                                    <li role="presentation">
-                                        <a href="#summary" aria-controls="summary" role="tab" data-toggle="tab">
-                                            <xsl:value-of select="'About'"/>
-                                        </a>
-                                    </li>
-                                </xsl:if>
-                                
-                            </ul>
-                        </div>
-                        
-                    </xsl:if>
-                    
                     <!-- Filters Carousel -->
                     <xsl:if test="$carousel-filters">
                         <div id="filters-carousel" class="not-ready hidden-print">
@@ -335,6 +235,107 @@
                                 
                             </div>
                         </div>
+                    </xsl:if>
+                    
+                    <!-- Stats -->
+                    <xsl:choose>
+                        
+                        <xsl:when test="$section-id eq 'lobby'">
+                            <!-- Do nothing -->
+                        </xsl:when>
+                        
+                        <xsl:when test="$section-id eq 'all-translated'">
+                            
+                            <div class="row">
+                                <div class="col-xs-12 col-md-offset-2 col-md-8">
+                                    
+                                    <table class="table table-stats">
+                                        <tbody>
+                                            <tr>
+                                                <td>
+                                                    <xsl:value-of select="concat('Publications: ', format-number(count(m:section/m:texts/m:text), '#,###'))"/>
+                                                </td>
+                                                <td>
+                                                    <xsl:value-of select="concat('Total Pages: ', format-number(sum(m:section/m:texts/m:text/m:source/m:location/@count-pages ! xs:integer(.)), '#,###'))"/>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            
+                        </xsl:when>
+                        
+                        <xsl:otherwise>
+                            <div class="row">
+                                <div class="col-xs-12 col-md-offset-2 col-md-8">
+                                    
+                                    <!-- stats -->
+                                    <xsl:variable name="count-texts" as="xs:integer?" select="m:section/m:text-stats/m:stat[@type eq 'count-text-descendants']/@value"/>
+                                    <xsl:variable name="count-published" as="xs:integer?" select="m:section/m:text-stats/m:stat[@type eq 'count-published-descendants']/@value"/>
+                                    <xsl:variable name="count-in-progress" as="xs:integer?" select="m:section/m:text-stats/m:stat[@type eq 'count-in-progress-descendants']/@value"/>
+                                    <xsl:variable name="sum-published-pages" as="xs:integer?" select="m:section/m:text-stats/m:stat[@type eq 'sum-pages-published-descendants']/@value"/>
+                                    
+                                    <table class="table table-stats">
+                                        <tbody>
+                                            <tr>
+                                                <td>
+                                                    <xsl:value-of select="concat('Texts: ', format-number($count-texts, '#,###'))"/>
+                                                </td>
+                                                <td>
+                                                    <xsl:value-of select="concat('Published: ', format-number($count-published, '#,###'))"/>
+                                                </td>
+                                                <td>
+                                                    <xsl:value-of select="concat('In Progress: ', format-number($count-in-progress, '#,###'))"/>
+                                                </td>
+                                                <td>
+                                                    <xsl:value-of select="concat('Not Begun: ', format-number($count-texts - ($count-published + $count-in-progress), '#,###'))"/>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                    
+                                </div>
+                            </div>
+                        </xsl:otherwise>
+                    </xsl:choose>
+                    
+                    <!-- Content tabs (sections/texts/summary) -->
+                    <xsl:if test="not($section-id = ('lobby', 'all-translated')) and ($show-texts or m:section/m:section[not(@type eq 'grouping')] or m:section/m:about/*)">
+                        <div class="tabs-container-center hidden-print">
+                            <ul class="nav nav-tabs" role="tablist">
+                                
+                                <!-- Texts tab -->
+                                <xsl:if test="$show-texts">
+                                    <li role="presentation" class="active">
+                                        <a href="#texts" aria-controls="texts" role="tab" data-toggle="tab">
+                                            <xsl:value-of select="'Texts'"/>
+                                        </a>
+                                    </li>
+                                </xsl:if>
+                                
+                                <!-- Sub-sections tab -->
+                                <xsl:if test="m:section/m:section[not(@type eq 'grouping')]">
+                                    <li role="presentation">
+                                        <xsl:attribute name="class" select="if(not($show-texts)) then 'active' else ''"/>
+                                        <a href="#sections" aria-controls="sections" role="tab" data-toggle="tab">
+                                            <xsl:value-of select="'Sections'"/>
+                                        </a>
+                                    </li>
+                                </xsl:if>
+                                
+                                <!-- About tab -->
+                                <xsl:if test="m:section/m:about[*]">
+                                    <li role="presentation">
+                                        <a href="#summary" aria-controls="summary" role="tab" data-toggle="tab">
+                                            <xsl:value-of select="'About'"/>
+                                        </a>
+                                    </li>
+                                </xsl:if>
+                                
+                            </ul>
+                        </div>
+                        
                     </xsl:if>
                     
                     <!-- Tab content -->

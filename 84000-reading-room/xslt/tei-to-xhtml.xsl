@@ -73,7 +73,7 @@
                 </xsl:when>
                 
                 <!-- Check if deferred -->
-                <xsl:when test="$view-mode[@glossary = ('defer', 'defer-no-cache')] and ancestor::tei:*[@tid]">
+                <xsl:when test="$view-mode[@glossary = ('defer', 'defer-no-cache')] and not(ancestor::tei:note[@place eq 'end'][@xml:id]) and ancestor::tei:*[@tid]">
                     <xsl:value-of select="false()"/>
                 </xsl:when>
                 
@@ -1375,8 +1375,8 @@
                             <xsl:call-template name="class-attribute">
                                 <xsl:with-param name="base-classes" as="xs:string*">
                                     <xsl:value-of select="'rw-heading heading-section'"/>
-                                    <xsl:if test="@type eq 'floating'">
-                                        <xsl:value-of select="'floating'"/>
+                                    <xsl:if test="@type eq 'nonStructuralBreak'">
+                                        <xsl:value-of select="'supplementary'"/>
                                     </xsl:if>
                                 </xsl:with-param>
                             </xsl:call-template>

@@ -555,10 +555,10 @@ img.logo-84000 {
 .heading-section.chapter h2 {
     text-transform: uppercase;
 }
-.heading-section.floating h4:before {
+.heading-section.supplementary h4:before {
     content: '[';
 }
-.heading-section.floating h4:after {
+.heading-section.supplementary h4:after {
     content: ']';
 }
 .heading-section.nested {

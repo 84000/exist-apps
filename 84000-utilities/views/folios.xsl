@@ -92,7 +92,9 @@
                     <tbody>
                         <xsl:for-each select="m:texts/m:text">
                             <xsl:sort select="number(m:toh/@number)"/>
-                            <xsl:sort select="m:toh/m:base"/>
+                            <xsl:sort select="m:toh/@letter"/>
+                            <xsl:sort select="number(m:toh/@chapter-number)"/>
+                            <xsl:sort select="m:toh/@chapter-letter"/>
                             <xsl:variable name="toh-key" select="m:toh/@key"/>
                             <xsl:variable name="text-row-id" select="concat('text-', position())"/>
                             <tr>
