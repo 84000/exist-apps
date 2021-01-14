@@ -291,11 +291,11 @@
                         <xsl:value-of select="$ref/@target"/>
                     </xsl:attribute>
                     <xsl:choose>
-                        <xsl:when test="$ref[text()]">
+                        <xsl:when test="$ref[data()]">
                             <xsl:attribute name="title">
-                                <xsl:value-of select="$ref/text()"/>
+                                <xsl:value-of select="$ref/data() ! normalize-space(.)"/>
                             </xsl:attribute>
-                            <xsl:apply-templates select="$ref/text()"/>
+                            <xsl:apply-templates select="$ref/node()"/>
                         </xsl:when>
                         <xsl:otherwise>
                             <xsl:attribute name="title">
