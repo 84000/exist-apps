@@ -11,13 +11,31 @@ import module namespace functx="http://www.functx.com";
 
 declare option exist:serialize "method=xml indent=no";
 
-declare function local:ref-context($ref as element(tei:ref)) as element(m:ref-context) {
+declare function local:ref-context($ref as element(tei:ref), $target-tei as element(tei:TEI)?) as element(m:ref-context) {
     let $tei := $ref/ancestor::tei:TEI[1]
     let $text-id := tei-content:id($tei)
+    let $toh-key := translation:toh-key($tei, '')
+    let $target-toh-key := if($target-tei) then translation:toh-key($target-tei, '') else ()
+    let $target := tokenize($ref/@target, '/')[last()]
+    let $target-page := tokenize($target, '#')[1]
+    let $target-hash := tokenize($target, '#')[2]
+    let $target-id-validated := 
+        if(not($target-hash) or $target-tei/descendant::*[@xml:id = $target-hash]) then
+            true()
+        else
+            false()
+    
     (:let $passage := $ref/ancestor-or-self::*[preceding-sibling::tei:milestone[@xml:id]][1]:)
     return 
         element { QName('http://read.84000.co/ns/1.0', 'ref-context') } {
+        
             attribute resource-id { $text-id },
+            attribute toh-key { $toh-key },
+            attribute target-toh-key { $target-toh-key },
+            attribute target-page { $target-page },
+            attribute target-hash { $target-hash },
+            attribute target-id-validated { $target-id-validated },
+            
             translation:titles($tei),
             translation:toh($tei, ''),
             $ref(:,
@@ -33,22 +51,22 @@ common:response(
     for $ref in $tei-content:translations-collection/descendant::tei:ref[matches(@target, '^(http|https)://read\.84000\.co/translation/')]
     let $page-id := substring-after($ref/@target, 'read.84000.co/translation/')
     let $resource-id := tokenize($page-id, '\.')[1]
-    let $tei := tei-content:tei($resource-id, 'translation')
-    let $text-id := if($tei) then tei-content:id($tei) else $resource-id
-    group by $text-id
+    let $target-tei := tei-content:tei($resource-id, 'translation')
+    let $target-text-id := if($target-tei) then tei-content:id($target-tei) else $resource-id
+    group by $target-text-id
     return
-        if($tei) then
+        if($target-tei) then
             element { QName('http://read.84000.co/ns/1.0', 'target-text') } {
             
-                attribute id { $text-id },
-                attribute resource-id { translation:toh-key($tei[1], '') },
-                attribute translation-status-group { tei-content:translation-status-group($tei[1]) },
+                attribute id { $target-text-id },
+                attribute resource-id { translation:toh-key($target-tei[1], '') },
+                attribute translation-status-group { tei-content:translation-status-group($target-tei[1]) },
                 
-                translation:toh($tei[1], $resource-id[1]),
-                translation:titles($tei[1]),
+                translation:toh($target-tei[1], $resource-id[1]),
+                translation:titles($target-tei[1]),
                 for $one-ref in $ref
                 return 
-                    local:ref-context($one-ref)
+                    local:ref-context($one-ref, $target-tei[1])
             }
         
         (: !! Also list refs that point to invalid tohs !! :)
@@ -56,11 +74,11 @@ common:response(
             element { QName('http://read.84000.co/ns/1.0', 'target-text') } {
                 
                 attribute id { '' },
-                attribute resource-id { $resource-id },
+                attribute resource-id { $resource-id[1] },
                 
                 for $one-ref in $ref
                 return 
-                    local:ref-context($one-ref)
+                    local:ref-context($one-ref, ())
                     
             }
 )

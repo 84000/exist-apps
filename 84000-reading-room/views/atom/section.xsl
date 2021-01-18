@@ -146,7 +146,7 @@
                             </eft:title-variants>
                             <xsl:if test="eft:part[@type eq 'summary']/*">
                                 <summary type="text">
-                                    <xsl:value-of select="normalize-space(data(eft:part[@type eq 'summary']/tei:p))"/>
+                                    <xsl:value-of select="data(eft:part[@type eq 'summary']/tei:p) ! normalize-space()"/>
                                 </summary>
                                 <eft:summary>
                                     <xsl:apply-templates select="eft:part[@type eq 'summary']" exclude-result-prefixes="xhtml"/>

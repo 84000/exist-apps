@@ -46,6 +46,26 @@
                     </xsl:otherwise>
                 </xsl:choose>
                 
+                
+                <!-- Texts with invalid hash -->
+                <xsl:variable name="invalid-hashes" select="m:target-text[m:ref-context[@target-id-validated eq 'false']]"/>
+                <div class="heading">
+                    <xsl:value-of select="'Texts with invalid pointers'"/>
+                </div>
+                <xsl:choose>
+                    <xsl:when test="$invalid-hashes">
+                        <xsl:call-template name="target-text-list">
+                            <xsl:with-param name="target-texts" select="$invalid-hashes"/>
+                            <xsl:with-param name="group-id" select="'invalid-hashes'"/>
+                        </xsl:call-template>
+                    </xsl:when>
+                    <xsl:otherwise>
+                        <p class="text-muted italic">
+                            <xsl:value-of select="'None'"/>
+                        </p>
+                    </xsl:otherwise>
+                </xsl:choose>
+                
                 <!-- Published texts with pending refs -->
                 <xsl:variable name="published-pending" select="m:target-text[@translation-status-group eq 'published'][m:ref-context[tei:ref[@rend eq 'pending']]]"/>
                 <div class="heading">
@@ -85,7 +105,7 @@
                 </xsl:choose>
                 
                 <!-- The rest -->
-                <xsl:variable name="remaining-texts" select="m:target-text[not(@id = ($invalid-targets/@id, $published-pending/@id, $non-published-active/@id))]"/>
+                <xsl:variable name="remaining-texts" select="m:target-text[not(@id = ($invalid-targets/@id, $invalid-hashes/@id, $published-pending/@id, $non-published-active/@id))]"/>
                 <div class="heading">
                     <xsl:value-of select="'Remaining texts referenced in other texts'"/>
                 </div>
@@ -155,8 +175,10 @@
                                     
                                     <span>
                                         <!-- Toh / Title -->
-                                        <xsl:value-of select="'Links to '"/>
-                                        <xsl:value-of select="$target-text/m:toh/m:full"/>
+                                        <xsl:value-of select="'&lt;ref/&gt;s targeting '"/>
+                                        <strong>
+                                            <xsl:value-of select="$target-text/m:toh/m:full"/>
+                                        </strong>
                                         <xsl:value-of select=" ' / '"/>
                                         <xsl:value-of select="$target-text/@id"/>
                                         <xsl:value-of select=" ' / '"/>
@@ -240,10 +262,9 @@
                                             
                                             <xsl:value-of select="' ↳ '"/>
                                             
-                                            <span class="small text-muted">
-                                                <xsl:value-of select="'target: '"/>
-                                                <xsl:value-of select="tei:ref/@target"/>
-                                            </span>
+                                            <code class="small">
+                                                <xsl:value-of select="concat('@target=&#34;', tei:ref/@target, '&#34;')"/>
+                                            </code>
                                             
                                             <xsl:value-of select="' '"/>
                                             
@@ -260,31 +281,27 @@
                                                 </xsl:otherwise>
                                             </xsl:choose>
                                             
+                                            <xsl:if test="@target-id-validated eq 'false'">
+                                                <xsl:value-of select="' '"/>
+                                                <span class="label label-danger">
+                                                    <xsl:value-of select="concat(@target-hash, ' not found in ', @target-toh-key)"/>
+                                                </span>
+                                            </xsl:if>
+                                            
                                         </li>
-                                        <xsl:choose>
-                                            <xsl:when test="not(starts-with(tei:ref/@target, $reading-room-path))">
-                                                <li>
-                                                    <a target="_blank" class="small">
-                                                        <xsl:attribute name="href" select="tei:ref/@target"/>
-                                                        <xsl:value-of select="'actual link'"/>
-                                                    </a>
-                                                </li>
-                                                <li>
-                                                    <a target="_blank" class="small">
-                                                        <xsl:attribute name="href" select="concat($reading-room-path, '/translation/', $target-file)"/>
-                                                        <xsl:value-of select="'local link'"/>
-                                                    </a>
-                                                </li>
-                                            </xsl:when>
-                                            <xsl:otherwise>
-                                                <li>
-                                                    <a target="_blank" class="small">
-                                                        <xsl:attribute name="href" select="tei:ref/@target"/>
-                                                        <xsl:value-of select="'link'"/>
-                                                    </a>
-                                                </li>
-                                            </xsl:otherwise>
-                                        </xsl:choose>
+                                        <li>
+                                            <a target="_blank" class="small">
+                                                <xsl:attribute name="href" select="tei:ref/@target"/>
+                                                <xsl:value-of select="'actual link'"/>
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a target="_blank" class="small">
+                                                <xsl:attribute name="href" select="concat($reading-room-path, '/translation/', $target-file)"/>
+                                                <xsl:value-of select="'local link'"/>
+                                            </a>
+                                        </li>
+                                        
                                         
                                     </ul>
                                     
