@@ -350,6 +350,9 @@ declare function store:store-new-pdf($file-path as xs:string, $version as xs:str
                     '--headless', 
                     concat('--print-to-pdf=', $resource-id, '.pdf'), 
                     '--print-to-pdf-no-header', 
+                    '--no-sandbox',
+                    '--run-all-compositor-stages-before-draw',
+                    '--disable-web-security',
                     concat($pdf-config/m:html-source-url, '/translation/', $resource-id, '.html', '?view-mode=pdf')
                 ), $options)
             

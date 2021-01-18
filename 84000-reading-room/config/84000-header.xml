@@ -284,9 +284,9 @@
             <item url="https://84000.co/ch-about/ch-faq">
                 <label key="label-faq">常見問題</label>
             </item>
-            <item url="https://84000.co/ch-about/ch-reports">
+            <!--<item url="https://84000.co/ch-about/ch-reports">
                 <label key="label-reports">年度報告</label>
-            </item>
+            </item>-->
             <item url="https://84000.co/ch-about/ch-about-contact">
                 <label key="label-contact">聯繫方式</label>
             </item>

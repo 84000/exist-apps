@@ -30,22 +30,22 @@ common:response(
     'utilities/cross-references',
     'utilities',
     
-    for $ref in $tei-content:translations-collection/descendant::tei:ref[starts-with(@target, 'https://read.84000.co/translation/')]
-    let $page-id := substring-after($ref/@target, 'https://read.84000.co/translation/')
+    for $ref in $tei-content:translations-collection/descendant::tei:ref[matches(@target, '^(http|https)://read\.84000\.co/translation/')]
+    let $page-id := substring-after($ref/@target, 'read.84000.co/translation/')
     let $resource-id := tokenize($page-id, '\.')[1]
-    group by $resource-id
     let $tei := tei-content:tei($resource-id, 'translation')
+    let $text-id := if($tei) then tei-content:id($tei) else $resource-id
+    group by $text-id
     return
         if($tei) then
             element { QName('http://read.84000.co/ns/1.0', 'target-text') } {
             
-                attribute id { tei-content:id($tei) },
-                attribute resource-id { $resource-id },
-                attribute translation-status-group { tei-content:translation-status-group($tei) },
+                attribute id { $text-id },
+                attribute resource-id { translation:toh-key($tei[1], '') },
+                attribute translation-status-group { tei-content:translation-status-group($tei[1]) },
                 
-                translation:toh($tei, $resource-id),
-                translation:titles($tei),
-                
+                translation:toh($tei[1], $resource-id[1]),
+                translation:titles($tei[1]),
                 for $one-ref in $ref
                 return 
                     local:ref-context($one-ref)

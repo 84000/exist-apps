@@ -35,5 +35,5 @@ declare function local:files-permissions($collection-uri as xs:string, $file-ext
     )
 };
 
-local:files-mimetype-xml('/db/apps/84000-data/translation-memory', 'tmx'),
-local:files-permissions('/db/apps/84000-data/translation-memory', 'tmx', 'translation-memory', 'rw-rw-r--')
+local:files-mimetype-xml('/db/apps/84000-data/cache', 'cache'),
+local:files-permissions('/db/apps/84000-data/cache', 'cache', 'tei', 'rw-rw-r--')

@@ -158,6 +158,8 @@
                                         <xsl:value-of select="'Links to '"/>
                                         <xsl:value-of select="$target-text/m:toh/m:full"/>
                                         <xsl:value-of select=" ' / '"/>
+                                        <xsl:value-of select="$target-text/@id"/>
+                                        <xsl:value-of select=" ' / '"/>
                                         <xsl:value-of select="($target-text/m:titles/m:title[@xml:lang eq 'en'][text()], $target-text/m:titles/m:title[@xml:lang eq 'Sa-Ltn'][text()], $target-text/m:titles/m:title[@xml:lang eq 'Bo-Ltn'][text()])[1]"/>
                                     </span>
                                     
