@@ -60,8 +60,9 @@ let $updated :=
 
 (: If it's a new version :)
 let $tei-version-str := tei-content:version-str($tei)
+let $generate-files := request:get-parameter('generate-files', '')
 let $commit-version := 
-    if($post-id and $store:conf and not(tei-content:is-current-version($tei-version-str, $current-version-str))) then (
+    if($post-id and $store:conf and $generate-files eq '1') then (
         
         (: Commit new version to GitHub :)
         deploy:push('data-tei', (), concat($text-id, ' / ', $tei-version-str), tei-content:document-url($tei)),

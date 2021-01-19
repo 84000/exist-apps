@@ -284,7 +284,7 @@
                                             <xsl:if test="@target-id-validated eq 'false'">
                                                 <xsl:value-of select="' '"/>
                                                 <span class="label label-danger">
-                                                    <xsl:value-of select="concat(@target-hash, ' not found in ', @target-toh-key)"/>
+                                                    <xsl:value-of select="concat('@xml:id=&#34;', @target-hash, '&#34; not found in ', @target-toh-key)"/>
                                                 </span>
                                             </xsl:if>
                                             

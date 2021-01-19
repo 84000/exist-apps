@@ -677,6 +677,18 @@
                                 </div>
                             </div>
                             
+                            <!-- Generate files checkbox -->
+                            <div class="form-group">
+                                <div class="col-sm-offset-3 col-sm-9">
+                                    <div class="checkbox">
+                                        <label>
+                                            <input type="checkbox" name="generate-files" id="generate-files" value="1"/>
+                                            <xsl:value-of select="'Generate associated files (ebooks, PDF) for this version'"/>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            
                             <!-- Action note -->
                             <div class="form-group">
                                 <label class="control-label col-sm-3" for="progress-notes">
