@@ -64,14 +64,14 @@ declare function local:fop-config() {
         <renderers>
             <renderer mime="application/pdf">
                 <fonts>
-                    <font kerning="yes"
-                        embed-url="file://db/apps/84000-reading-room/views/pdf/resources/fonts/DDC_Uchen.ttf"
-                        encoding-mode="single-byte">
+                    <font kerning="no"
+                        embed-url="/db/apps/84000-reading-room/views/pdf/resources/fonts/DDC_Uchen.ttf"
+                        encoding-mode="auto">
                         <font-triplet name="Tibetan" style="normal" weight="normal"/>
                     </font>
                     <font kerning="yes"
-                        embed-url="file://db/apps/84000-reading-room/views/pdf/resources/fonts/IndUni-P-84000-Regular.otf"
-                        encoding-mode="single-byte">
+                        embed-url="/db/apps/84000-reading-room/views/pdf/resources/fonts/IndUni-P-84000-Regular.otf"
+                        encoding-mode="auto">
                         <font-triplet name="IndUni-P-84000-Regular" style="normal" weight="normal"/>
                     </font>
                 </fonts>

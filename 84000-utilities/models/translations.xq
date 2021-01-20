@@ -32,13 +32,12 @@ let $texts-status := $tei-content:text-statuses/m:status[xs:string(@status-id) =
 (: Store a file if requested :)
 let $store-file-name := request:get-parameter('store', '')
 let $store-file := 
-    if($store-file-name gt '') then(
+    if($store-file-name gt '') then (
         if($store-conf[@type eq 'client']/m:translations-master-host) then
             store:download-master($store-file-name, $store-conf/m:translations-master-host)
         else if($store-conf[@type eq 'master']) then
             store:create($store-file-name)
-        else
-            ()
+        else ()
         ,
         if($utilities-url and matches(request:get-uri(), '.*/translations\.html.*')) then
             response:redirect-to(xs:anyURI(concat($utilities-url, '/translations.html?texts-status=',$request-status)))
@@ -50,8 +49,7 @@ let $store-file :=
 let $translations-master := 
     if($request-status eq 'diff' and $store-conf[@type eq 'client']) then
         store:master-downloads-data(xs:anyURI(concat($store-conf/m:translations-master-host, '/downloads.xml?resource-ids=versioned')))
-    else
-        ()
+    else ()
 
 (: Get translations in LOCAL database :)
 let $translations-local := 
@@ -76,8 +74,7 @@ let $translations-local :=
         (: Get the texts with this status :)
         translations:texts($texts-status, (), 'toh', '', 'all', false())
         
-    else
-        ()
+    else ()
 
 (: If this is a client listing by status then get translation versions for these texts in MASTER database for comparison :)
 let $translations-master := 

@@ -12,71 +12,74 @@ declare option exist:serialize "indent=no";
 declare function local:parse-translation($translation as element(m:translation)) {
     
     text { '{{version:' || $translation/m:publication/m:edition || '}}' },
+    text { '&#10;' },
 
-    for $element in $translation/m:part[@type eq 'translation']/m:part/*
+    for $element in $translation/m:part[@type eq 'translation']/*[not(self::tei:head[@type eq 'translation'])]
     return
         local:parse-node($translation, $element)
 };
 
-declare function local:parse-node($translation as element(m:translation), $element as element()*) {
+declare function local:parse-node($translation as element(m:translation), $element as element()) {
     
-    (: These are the content groups. They will be seperated by a return :)
+    (: 
+        These are the content groups.
+        Output the contents.
+        They will be seperated by a return 
+    :)
     if($element[self::m:honoration | self::m:main-title | self::tei:head | self::tei:p | self::tei:ab | self::tei:lg | self::tei:q | self::tei:list | self::tei:trailer | self::tei:label | self::tei:seg | self::tei:milestone])then (
         
-        (: Output milestones with id :)
-        if($element[self::tei:milestone]) then (
-            let $cache-milestone := $translation/m:milestones-cache/m:milestone[@id eq $element/@xml:id]
-            let $part := $element/ancestor::m:part[@prefix][1]
-            return (
-                text { '{{milestone:{label:' || concat($part/@prefix, '.', $cache-milestone/@index) || ',id:' || $element/@xml:id || '}}}' },
-                text {'&#32;'}
-            )
-        )
-        
-        else (
-            (: These are the nodes we want to include :)
-            for $node at $position in ($element//text()[not(ancestor::tei:note | ancestor::m:publication[parent::m:translation])][normalize-space(.) gt ''] | $element//tei:milestone | $element//tei:ref | $element//tei:note)
-            return (
-                (: Add a space before all nodes except the first, unless it's punctuation or followed by punctuation :)
-                if($position gt 1 and not(normalize-space($node) = ('.',',','!','?','”',':',';'))) then
-                    text {'&#32;'}
-                else
-                    ()
-                ,
+        (: These are the nodes we want to output :)
+        let $output-nodes := $element/descendant::text()[not(ancestor::tei:note)][normalize-space(.) gt ''] | $element//tei:milestone | $element//tei:ref | $element//tei:note
+        return (
+            for $node at $position in ($element[self::tei:milestone] | $output-nodes)
+            return
+                
                 (: Output milestones with id :)
                 if($node[self::tei:milestone]) then
                     let $cache-milestone := $translation/m:milestones-cache/m:milestone[@id eq $node/@xml:id]
                     let $part := $node/ancestor::m:part[@prefix][1]
                     where $cache-milestone
-                    return
+                    return (
                         text { '{{milestone:{label:' || concat($part/@prefix, '.', $cache-milestone/@index) || ',id:' || $node/@xml:id || '}}}' }
+                    )
                 
                 (: Output refs with cRef :)
                 else if($node[self::tei:ref]) then
                     let $cache-folio := $translation/m:folios-cache/m:folio-ref[@id eq $node/@xml:id]
                     where $cache-folio
-                    return
+                    return (
                         text { '{{page:{number:' || $cache-folio/@index-in-resource || ',id:' || $node/@xml:id || ',folio:' || $node/@cRef || $cache-folio[@cRef-volume gt ''] ! concat(',volume:', ./@cRef-volume) || '}}}' }
-                
+                    )
                 (: Output notes :)
                 else if($node[self::tei:note]) then
                     let $cache-note := $translation/m:notes-cache/m:end-note[@id eq $node/@xml:id]
                     where $cache-note
-                    return
+                    return (
                         text { '{{note:{index:' || $cache-note/@index || ',id:' || $node/@xml:id || '}}}' }
-
+                    )
+    
                 (: Output text nodes:)
-                else
-                    (: strip the space of the node :)
-                    normalize-space($node)
-            ),
-            (: Add a return character for the last node :)
-            text {'&#10;'}
+                else 
+                   
+                    replace(
+                        replace(
+                            $node
+                        , '[\r\n\t]', '')   (: remove other whitespace :)
+                    , '\s+', ' ')            (: combine multiple spaces :)
+                    
+            ,
+            
+            (: Add a return character for the last node, if there was some output :)
+            if($output-nodes) then
+                text { '&#10;' }
+            else ()
         )
     )
     (: Look for groups down the tree :)
     else if($element[*]) then
-        local:parse-node($translation, $element/*)
+        for $child-element in $element/*
+        return
+            local:parse-node($translation, $child-element)
     else
         ()
 };
@@ -87,7 +90,7 @@ let $string := string-join($parsed-content, '')
 let $binary := util:base64-encode($string)
 
 return
-    response:stream-binary($binary, 'text/plain')(: $string:)
+    response:stream-binary($binary, 'text/plain')(: $string :)
 
 
 

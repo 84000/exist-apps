@@ -390,7 +390,7 @@
                                             <div class="small italic text-danger">
                                                 <xsl:choose>
                                                     <xsl:when test="$environment/m:store-conf[@type eq 'client'] and $group-master-status-updates/m:status-update[@update eq 'text-version'][@current-version eq 'true'][text()]">
-                                                        <xsl:value-of select="concat('Collaboration TEI: ', $group-master-tei-version, ' - ', $group-master-status-updates/m:status-update[@update eq 'text-version'][@current-version eq 'true'][1])"/>
+                                                        <xsl:value-of select="concat('Master TEI: ', $group-master-tei-version, ' - ', $group-master-status-updates/m:status-update[@update eq 'text-version'][@current-version eq 'true'][1])"/>
                                                     </xsl:when>
                                                     <xsl:when test="$environment/m:store-conf[@type eq 'master'] and m:status-updates/m:status-update[@update eq 'text-version'][@current-version eq 'true'][text()]">
                                                         <xsl:value-of select="concat('Version note: ', m:status-updates/m:status-update[@update eq 'text-version'][@current-version eq 'true'][1])"/>
@@ -406,14 +406,22 @@
                                             <div class="small nowrap">
                                                 <xsl:choose>
                                                     <xsl:when test="$group-tei-version gt ''">
-                                                        <xsl:value-of select="concat('TEI: ', $group-tei-version)"/>
+                                                        <xsl:value-of select="concat('Local: ', $group-tei-version)"/>
                                                     </xsl:when>
                                                     <xsl:otherwise>
-                                                        <xsl:attribute name="class" select="'text-muted'"/>
+                                                        <xsl:attribute name="class" select="'small nowrap text-muted'"/>
                                                         <xsl:value-of select="'[No version]'"/>
                                                     </xsl:otherwise>
                                                 </xsl:choose>
                                             </div>
+                                            
+                                            <!-- Collaboration version -->
+                                            <xsl:if test="$environment/m:store-conf[@type eq 'client']">
+                                                <div class="small nowrap">
+                                                    <xsl:value-of select="concat('Master: ', $group-master-tei-version)"/>
+                                                </div>
+                                            </xsl:if>
+                                            
                                             
                                             <!-- Status change -->
                                             <xsl:if test="$environment/m:store-conf[@type eq 'client'] and ($diff or not(compare($group-status-id, $group-master-status-id) eq 0))">

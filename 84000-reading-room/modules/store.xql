@@ -42,6 +42,7 @@ declare function store:download-master($file-name as xs:string, $translations-ma
     
     (: look-up this existing document with this id :)
     let $tei := tei-content:tei($resource-id, 'translation')
+    let $text-id := tei-content:id($tei)
     
     (: Get Tohs if UT number is passed :)
     let $toh-keys := 
@@ -54,76 +55,95 @@ declare function store:download-master($file-name as xs:string, $translations-ma
     
     (: Get local file versions :)
     let $local-downloads-data := translations:downloads($toh-keys)
-    let $local-text := $local-downloads-data/m:text[@id eq upper-case($resource-id)][1]
+    let $local-text := $local-downloads-data/m:text[@id eq $text-id][1]
     let $tei-local-version := $local-text/m:downloads[1]/@tei-version
     let $tei-local-status := $local-text/@translation-status
     
     (: Get master file versions :)
     let $master-downloads-data := store:master-downloads-data(xs:anyURI(concat($translations-master-host, '/downloads.xml?resource-ids=', string-join($toh-keys, ','))))
-    let $master-text := $master-downloads-data//m:text[@id eq upper-case($resource-id)][1]
+    let $master-text := $master-downloads-data//m:text[@id eq $text-id][1]
     let $tei-master-version := $master-text/m:downloads[1]/@tei-version
     let $tei-master-status := $master-text/@translation-status
     
     (: Download the tei from master if the versions differ :)
     let $download-tei :=
-        if($file-extension = ('tei', 'all') and $tei and $master-downloads-data and (not(compare($tei-local-version, $tei-master-version) eq 0) or (not(compare($tei-local-status, $tei-master-status) eq 0)))) then
-            
-            (: get the file name and location :)
-            let $local-text-path := $local-text/@uri
-            let $local-text-path-tokenized := tokenize($local-text-path, '/')
-            
-            let $tei-file-name := $local-text-path-tokenized[last()]
-            let $tei-folder := string-join(subsequence($local-text-path-tokenized, 1, last()-1), '/')
-            
-            where $tei-file-name and $tei-folder
-            return
-                store:http-download(
-                    concat($translations-master-host, '/translation/', upper-case($resource-id), '.tei'), 
-                    $tei-folder, 
-                    $tei-file-name
-                )
-        else ()
+        let $local-text-path := $local-text/@uri
+        let $local-text-path-tokenized := tokenize($local-text-path, '/')
+        let $tei-file-name := $local-text-path-tokenized[last()]
+        let $tei-folder := string-join(subsequence($local-text-path-tokenized, 1, last()-1), '/')
+        where 
+            $file-extension = ('tei', 'all') and $local-text and $master-text and $tei-file-name and $tei-folder
+            and (not(compare($tei-local-version, $tei-master-version) eq 0) or (not(compare($tei-local-status, $tei-master-status) eq 0))) 
+        return
+            store:http-download(
+                concat($translations-master-host, '/translation/', $text-id, '.tei'), 
+                $tei-folder, 
+                $tei-file-name
+            )
     
-    let $downloadable-extensions := ('pdf', 'epub', 'azw3', 'rdf', 'cache')
+    (: Download the cache :)
+    let $download-cache :=
+        let $master-cache := $master-text/m:downloads[1]/m:download[@type eq 'cache']
+        let $local-cache := $local-text/m:downloads[1]/m:download[@type eq 'cache']
+        let $store-collection := concat($common:data-path, '/', 'cache')
+        let $store-file-name := tokenize($local-cache/@url, '/')[last()]
+        where
+            $file-extension = ('cache', 'all') 
+            and $store-file-name and $store-collection
+            and $master-cache[@version]
+            and not($master-cache/@version = ('none', 'unknown', '')) 
+            and not(compare($local-cache/@version, $master-cache/@version) eq 0)
+        return (
+            store:http-download(
+                concat($translations-master-host, $master-cache/@url), 
+                $store-collection,
+                $store-file-name
+            ),
+            store:store-version-str(
+                $store-collection, 
+                $store-file-name,
+                $master-cache/@version
+            )
+        )
     
+    (: Download other files :)
+    let $downloadable-extensions := ('pdf', 'epub', 'azw3', 'rdf')
     let $download-files := 
     
         (: loop through one or all file types in the master data :)
-        for $master-download in 
+        for $master-file in 
             if($file-extension eq 'all') then
-                $master-downloads-data//m:download[@type = $downloadable-extensions]
+                $master-text/m:downloads/m:download[@type = $downloadable-extensions]
             else if ($file-extension = $downloadable-extensions) then 
-                $master-downloads-data//m:download[@type eq $file-extension]
+                $master-text/m:downloads/m:download[@type eq $file-extension]
             else ()
-        
-            (: get equivalent local data :)
-            let $file-resource-id := $master-download/parent::m:downloads/@resource-id
-            let $file-type := $master-download/@type
-            let $local-download := $local-downloads-data//m:downloads[@resource-id eq $file-resource-id]/m:download[@type eq $file-type]
-            let $local-file-name := tokenize($local-download/@url, '/')[last()]
+            
+            let $master-file-resource-id := $master-file/parent::m:downloads/@resource-id
+            let $file-type := $master-file/@type
+            let $local-file := $local-text/m:downloads[@resource-id eq $master-file-resource-id]/m:download[@type eq $file-type]
+            let $store-collection := concat($common:data-path, '/', $local-file/@type)
+            let $store-file-name := tokenize($local-file/@url, '/')[last()]
             
         where 
-            $local-file-name
-            and $master-download[@version]
-            and not($master-download/@version = ('none', 'unknown', '')) 
-            and not(compare($master-download/@version, $local-download/@version) eq 0)
+            $store-file-name and $store-collection
+            and $master-file[@version]
+            and not($master-file/@version = ('none', 'unknown', '')) 
+            and not(compare($master-file/@version, $local-file/@version) eq 0)
         return 
         
             (: Download the latest file from the master and set the version :) 
-            let $file-collection := concat($common:data-path, '/', $file-type)
-            
             let $download-file := 
                 store:http-download(
-                    concat($translations-master-host, $master-download/@url), 
-                    $file-collection, 
-                    $local-file-name
+                    concat($translations-master-host, $master-file/@url), 
+                    $store-collection, 
+                    $store-file-name
                 )
             
             let $store-version-string := 
                 store:store-version-str(
-                    $file-collection, 
-                    $local-file-name, 
-                    $master-download/@version
+                    $store-collection, 
+                    $store-file-name, 
+                    $master-file/@version
                 )
             
             return

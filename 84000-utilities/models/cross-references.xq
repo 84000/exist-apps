@@ -46,39 +46,41 @@ declare function local:ref-context($ref as element(tei:ref), $target-tei as elem
 
 common:response(
     'utilities/cross-references',
-    'utilities',
+    'utilities',(
+        utilities:request(),
     
-    for $ref in $tei-content:translations-collection/descendant::tei:ref[matches(@target, '^(http|https)://read\.84000\.co/translation/')]
-    let $page-id := substring-after($ref/@target, 'read.84000.co/translation/')
-    let $resource-id := tokenize($page-id, '\.')[1]
-    let $target-tei := tei-content:tei($resource-id, 'translation')
-    let $target-text-id := if($target-tei) then tei-content:id($target-tei) else $resource-id
-    group by $target-text-id
-    return
-        if($target-tei) then
-            element { QName('http://read.84000.co/ns/1.0', 'target-text') } {
-            
-                attribute id { $target-text-id },
-                attribute resource-id { translation:toh-key($target-tei[1], '') },
-                attribute translation-status-group { tei-content:translation-status-group($target-tei[1]) },
+        for $ref in $tei-content:translations-collection/descendant::tei:ref[matches(@target, '^(http|https)://read\.84000\.co/translation/')]
+        let $page-id := substring-after($ref/@target, 'read.84000.co/translation/')
+        let $resource-id := tokenize($page-id, '\.')[1]
+        let $target-tei := tei-content:tei($resource-id, 'translation')
+        let $target-text-id := if($target-tei) then tei-content:id($target-tei) else $resource-id
+        group by $target-text-id
+        return
+            if($target-tei) then
+                element { QName('http://read.84000.co/ns/1.0', 'target-text') } {
                 
-                translation:toh($target-tei[1], $resource-id[1]),
-                translation:titles($target-tei[1]),
-                for $one-ref in $ref
-                return 
-                    local:ref-context($one-ref, $target-tei[1])
-            }
-        
-        (: !! Also list refs that point to invalid tohs !! :)
-        else
-            element { QName('http://read.84000.co/ns/1.0', 'target-text') } {
-                
-                attribute id { '' },
-                attribute resource-id { $resource-id[1] },
-                
-                for $one-ref in $ref
-                return 
-                    local:ref-context($one-ref, ())
+                    attribute id { $target-text-id },
+                    attribute resource-id { translation:toh-key($target-tei[1], '') },
+                    attribute translation-status-group { tei-content:translation-status-group($target-tei[1]) },
                     
-            }
+                    translation:toh($target-tei[1], $resource-id[1]),
+                    translation:titles($target-tei[1]),
+                    for $one-ref in $ref
+                    return 
+                        local:ref-context($one-ref, $target-tei[1])
+                }
+            
+            (: !! Also list refs that point to invalid tohs !! :)
+            else
+                element { QName('http://read.84000.co/ns/1.0', 'target-text') } {
+                    
+                    attribute id { '' },
+                    attribute resource-id { $resource-id[1] },
+                    
+                    for $one-ref in $ref
+                    return 
+                        local:ref-context($one-ref, ())
+                        
+                }
+    )
 )
