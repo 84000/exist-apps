@@ -165,23 +165,31 @@
     </xsl:template>
     
     <xsl:template match="tei:mantra">
-        <span>
-            <xsl:call-template name="class-attribute">
-                <xsl:with-param name="base-classes" select="'mantra'"/>
-                <xsl:with-param name="lang" select="@xml:lang"/>
-            </xsl:call-template>
-            <xsl:apply-templates select="node()"/>
-        </span>
+        <xsl:call-template name="match-key">
+            <xsl:with-param name="content">
+                <span>
+                    <xsl:call-template name="class-attribute">
+                        <xsl:with-param name="base-classes" select="'mantra'"/>
+                        <xsl:with-param name="lang" select="@xml:lang"/>
+                    </xsl:call-template>
+                    <xsl:apply-templates select="node()"/>
+                </span>
+            </xsl:with-param>
+        </xsl:call-template>
     </xsl:template>
-
+    
     <xsl:template match="tei:foreign">
-        <span>
-            <xsl:call-template name="class-attribute">
-                <xsl:with-param name="base-classes" select="'foreign'"/>
-                <xsl:with-param name="lang" select="@xml:lang"/>
-            </xsl:call-template>
-            <xsl:apply-templates select="node()"/>
-        </span>
+        <xsl:call-template name="match-key">
+            <xsl:with-param name="content">
+                <span>
+                    <xsl:call-template name="class-attribute">
+                        <xsl:with-param name="base-classes" select="'foreign'"/>
+                        <xsl:with-param name="lang" select="@xml:lang"/>
+                    </xsl:call-template>
+                    <xsl:apply-templates select="node()"/>
+                </span>
+            </xsl:with-param>
+        </xsl:call-template>
     </xsl:template>
     
     <xsl:template match="tei:emph">
@@ -2174,6 +2182,20 @@
         <xsl:param name="prefix" as="xs:string"/>
         <xsl:param name="index" as="xs:string?"/>
         <xsl:value-of select="concat($prefix, '.', if($index gt '') then concat('­', $index) else '')"/>
+    </xsl:template>
+    
+    <!-- Match key -->
+    <xsl:template name="match-key">
+        <xsl:param name="content"/>
+        <xsl:choose>
+            <xsl:when test="@key and not(@key eq $toh-key)">
+                <!-- Ignore -->
+            </xsl:when>
+            <xsl:otherwise>
+                <!-- Add content -->
+                <xsl:sequence select="$content"/>
+            </xsl:otherwise>
+        </xsl:choose>
     </xsl:template>
     
     <!-- Glossarize an element -->
