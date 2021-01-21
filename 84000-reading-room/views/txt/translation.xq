@@ -64,8 +64,8 @@ declare function local:parse-node($translation as element(m:translation), $eleme
                     replace(
                         replace(
                             $node
-                        , '[\r\n\t]', '')   (: remove other whitespace :)
-                    , '\s+', ' ')            (: combine multiple spaces :)
+                        , '[\r\n\t]', '')    (: remove new line characters :)
+                    , '\s+', ' ')            (: condense multiple spaces :)
                     
             ,
             

@@ -121,7 +121,7 @@ declare function local:permanent-ids($doc) {
             let $part-indexes := 
                 for $ancestor-or-self in $part/ancestor-or-self::tei:div[@type = ('section', 'chapter', 'prologue', 'homage', 'colophon')]
                 return (
-                    if($ancestor-or-self[@prefix]) then $ancestor-or-self/@prefix
+                    if($ancestor-or-self[@prefix]) then $ancestor-or-self/@prefix ! replace(., '\W', '-')
                     else if($ancestor-or-self/@type eq 'prologue') then if ($base-type) then 'p' else ()
                     else if($ancestor-or-self/@type eq 'homage') then if ($base-type) then 'h' else ()
                     else if($ancestor-or-self/@type eq 'colophon') then if ($base-type) then 'c' else ()
