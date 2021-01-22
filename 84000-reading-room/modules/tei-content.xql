@@ -94,7 +94,7 @@ declare function tei-content:tei($resource-id as xs:string, $resource-type as xs
             (: Fallback to UT number :)
             let $resource-id := upper-case($resource-id)
             return
-                $collection//tei:publicationStmt[tei:idno/@xml:id eq $resource-id]/ancestor::tei:TEI
+                $collection//tei:publicationStmt/tei:idno[@xml:id eq $resource-id]/ancestor::tei:TEI
         else
             $tei
     
@@ -103,27 +103,19 @@ declare function tei-content:tei($resource-id as xs:string, $resource-type as xs
 declare function tei-content:title($tei as element(tei:TEI)) as xs:string? {
     (: Returns a standardised title in a given tei doc :)
     
-    let $title := $tei//tei:fileDesc/tei:titleStmt/tei:title[@type='mainTitle'][@xml:lang eq 'en'][1]/text() ! normalize-space(.)
-    
-    let $title := 
-        if(not($title gt ''))then
-            $tei//tei:fileDesc/tei:titleStmt/tei:title[@xml:lang eq 'en'][1]/text() ! normalize-space(.)
-        else
-            $title
+    let $title := $tei//tei:titleStmt/tei:title[@xml:lang eq 'en'][normalize-space(text())][1] ! normalize-space(text())
             
-    let $title :=
-        if(not($title gt ''))then
-            concat($tei//tei:fileDesc/tei:titleStmt/tei:title[@xml:lang eq 'Sa-Ltn'][1]/text() ! normalize-space(.), ' (awaiting English title)')
+    return
+        if(not($title))then
+            concat($tei//tei:titleStmt/tei:title[@xml:lang eq 'Sa-Ltn'][normalize-space(text())][1] ! normalize-space(text()), ' (awaiting English title)')
         else
             $title
     
-    return
-        $title ! normalize-space(.) ! translate(., '&#x2003;', '&#x20;')
 };
 
 declare function tei-content:title($tei as node(), $type as xs:string?, $lang as xs:string*) as xs:string? {
     
-    $tei//tei:titleStmt/tei:title[@xml:lang = $lang][@type eq $type][text()][1] ! text() ! normalize-space(.) ! translate(., '&#x2003;', '&#x20;')
+    $tei//tei:fileDesc/tei:titleStmt/tei:title[@xml:lang = $lang][@type eq $type][normalize-space(text())][1] ! normalize-space(text())
     
 };
 
@@ -137,7 +129,7 @@ declare function tei-content:titles($tei as element(tei:TEI)) as element() {
                 xml:lang="{ $title/@xml:lang }"
                 type="{ $title/@type }">
             {
-                $title/text() ! normalize-space(.) ! translate(., '&#x2003;', '&#x20;') 
+                $title/text() ! normalize-space(.)
             }
             </title>
     }
@@ -202,7 +194,9 @@ declare function tei-content:translation-status($tei as element(tei:TEI)?) as xs
 
 declare function tei-content:translation-status-group($tei as element(tei:TEI)) as xs:string? {
     (: Returns the status group of the text :)
-    string($tei-content:text-statuses/m:status[@status-id eq tei-content:translation-status($tei)]/@group)
+    let $translation-status := tei-content:translation-status($tei)
+    return
+        $tei-content:text-statuses/m:status[@status-id eq $translation-status]/@group ! string()
 };
 
 declare function tei-content:text-statuses-sorted() as element(m:text-statuses) {

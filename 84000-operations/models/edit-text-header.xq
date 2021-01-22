@@ -30,7 +30,7 @@ let $tei :=
 
 let $text-id := tei-content:id($tei)
 let $translation-status := translation-status:texts($text-id)
-let $current-version-str := string($translation-status/@version)
+let $current-version-str := $translation-status/@version ! string()
 
 (: Delete a submission :)
 (: The parameter delete-submission also triggers translation-status:update :)
@@ -60,18 +60,19 @@ let $updated :=
 
 (: If it's a new version :)
 let $tei-version-str := tei-content:version-str($tei)
-let $generate-files := request:get-parameter('generate-files', '')
+let $is-new-version := not(tei-content:is-current-version($tei-version-str, $current-version-str))
+let $translation-status-group := tei-content:translation-status-group($tei)
+
+(: Commit new version to GitHub :)
 let $commit-version := 
-    if($post-id and $store:conf and $generate-files eq '1') then (
-        
-        (: Commit new version to GitHub :)
-        deploy:push('data-tei', (), concat($text-id, ' / ', $tei-version-str), tei-content:document-url($tei)),
-        
-        (: Store associated files :)
-        if(tei-content:translation-status-group($tei) eq 'published')then
-            store:create(concat($text-id, '.all'))
-        else ()
-    )
+    if($post-id and $store:conf and $is-new-version) then 
+        deploy:push('data-tei', (), concat($text-id, ' / ', $tei-version-str), tei-content:document-url($tei))
+    else ()
+
+(: Generate new versions of associated files :)
+let $generate-files :=
+    if($form-action eq 'generate-files' and $store:conf and $translation-status-group eq 'published')then
+        store:create(concat($text-id, '.all'))
     else ()
 
 return
@@ -91,20 +92,21 @@ return
                 attribute document-url { tei-content:document-url($tei) },
                 attribute locked-by-user { tei-content:locked-by-user($tei) },
                 attribute status { tei-content:translation-status($tei) },
-                attribute status-group { tei-content:translation-status-group($tei) },
-                    for $bibl in $tei//tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl
-                    return (
-                        translation:toh($tei, $bibl/@key),
-                        translation:location($tei, $bibl/@key),
-                        translation:downloads($tei, $bibl/@key, 'all')
-                    ),
-                    element title { 
-                        tei-content:title($tei) 
-                    },
-                    tei-content:titles($tei),
-                    translation:publication($tei),
-                    translation:contributors($tei, true()),
-                    translation:status-updates($tei)
+                attribute status-group { $translation-status-group },
+                attribute tei-version { $tei-version-str },
+                for $bibl in $tei//tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl
+                return (
+                    translation:toh($tei, $bibl/@key),
+                    translation:location($tei, $bibl/@key),
+                    translation:downloads($tei, $bibl/@key, 'all')
+                ),
+                element title { 
+                    tei-content:title($tei) 
+                },
+                tei-content:titles($tei),
+                translation:publication($tei),
+                translation:contributors($tei, true()),
+                translation:status-updates($tei)
             },
             element { QName('http://read.84000.co/ns/1.0', 'translation-status') } {
                 translation-status:texts($text-id, true())

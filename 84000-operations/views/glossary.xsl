@@ -29,6 +29,10 @@
                 <xsl:with-param name="active-tab" select="@model-type"/>
                 <xsl:with-param name="page-content">
                     
+                    <xsl:call-template name="alert-updated"/>
+                    
+                    <xsl:call-template name="alert-translation-locked"/>
+                    
                     <!-- Page title -->
                     <h3 class="visible-print-block no-top-margin">
                         <xsl:value-of select="'Glossary'"/>
@@ -38,7 +42,7 @@
                     <div class="center-vertical full-width">
                         
                         <!-- Text title / link -->
-                        <div class="h3 sml-margin top bottom">
+                        <div class="h3">
                             <a target="reading-room">
                                 <xsl:attribute name="href" select="concat($reading-room-path, '/translation/', $toh-key, '.html?view-mode=editor')"/>
                                 <xsl:value-of select="$text/m:source/m:toh"/>
@@ -78,11 +82,13 @@
                     </div>
                     
                     <!-- Version row -->
-                    <ul class="list-inline inline-dots small text-muted">
+                    <ul class="list-inline inline-dots no-bottom-margin">
                         
                         <xsl:if test="$text[@tei-version]">
                             <li>
-                                <xsl:value-of select="'Current TEI version:'"/>
+                                <span class="small">
+                                    <xsl:value-of select="'Current TEI version: '"/>
+                                </span>
                                 <span class="label label-default">
                                     <xsl:value-of select="$text/@tei-version"/>
                                 </span>
@@ -91,7 +97,9 @@
                         
                         <xsl:if test="$glossary[@tei-version-cached]">
                             <li>
-                                <xsl:value-of select="'Cached TEI version:'"/>
+                                <span class="small">
+                                    <xsl:value-of select="'Cache version: '"/>
+                                </span>
                                 <span class="label label-default">
                                     <xsl:if test="$cache-old">
                                         <xsl:attribute name="class" select="'label label-warning'"/>
@@ -112,7 +120,9 @@
                             
                             <xsl:when test="$cache-slow">
                                 <li>
-                                    <xsl:value-of select="'The latest location cache took '"/>
+                                    <span class="small">
+                                        <xsl:value-of select="'The latest location cache took '"/>
+                                    </span>
                                     <span class="label label-warning">
                                         <xsl:value-of select="concat(format-number(($glossary/@seconds-to-build ! xs:decimal(.) div 60), '#,###.##'), ' minutes')"/>
                                     </span>
@@ -121,7 +131,9 @@
                             
                             <xsl:when test="$glossary[@seconds-to-build]">
                                 <li>
-                                    <xsl:value-of select="'The latest location cache took '"/>
+                                    <span class="small">
+                                        <xsl:value-of select="'The latest location cache took '"/>
+                                    </span>
                                     <span class="label label-default">
                                         <xsl:value-of select="concat(format-number($glossary/@seconds-to-build, '#,###.##'), ' seconds')"/>
                                     </span>
@@ -133,7 +145,18 @@
                         <li>
                             <a target="_self" class="underline">
                                 <xsl:attribute name="href" select="concat('glossary.html?resource-id=', $request-resource-id, '&amp;form-action=cache-locations-all')"/>
-                                <xsl:value-of select="'Re-cache locations of all items'"/>
+                                <span class="small">
+                                    <xsl:value-of select="'Re-cache locations of all items'"/>
+                                </span>
+                            </a>
+                        </li>
+                        
+                        <li>
+                            <a target="_self" class="underline">
+                                <xsl:attribute name="href" select="concat('edit-text-header.html?id=', $request-resource-id)"/>
+                                <span class="small">
+                                    <xsl:value-of select="'Edit headers'"/>
+                                </span>
                             </a>
                         </li>
                         
@@ -221,9 +244,7 @@
                                 </xsl:call-template>
                             </div>
                             
-                            <div>
-                                <xsl:copy-of select="common:pagination(common:enforce-integer($glossary/@first-record), common:enforce-integer($glossary/@max-records), common:enforce-integer($glossary/@count-records), concat('glossary.html?resource-id=', $request-resource-id, '&amp;filter=', $request-filter, '&amp;search=', $request-search), '')"/>
-                            </div>
+                            <xsl:copy-of select="common:pagination(common:enforce-integer($glossary/@first-record), common:enforce-integer($glossary/@max-records), common:enforce-integer($glossary/@count-records), concat('glossary.html?resource-id=', $request-resource-id, '&amp;filter=', $request-filter, '&amp;search=', $request-search), '')"/>
                             
                         </div>
                     </xsl:if>

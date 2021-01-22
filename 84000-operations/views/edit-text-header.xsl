@@ -16,97 +16,168 @@
                     
                     <xsl:call-template name="alert-translation-locked"/>
                     
-                    <!-- Title -->
-                    <div class="h3 sml-margin top bottom">
-                        <a target="_blank">
-                            <xsl:attribute name="href" select="concat($reading-room-path, '/translation/', m:translation/@id, '.html')"/>
-                            <xsl:value-of select="concat(string-join(m:translation/m:toh/m:full, ' / '), ' : ', m:translation/m:title)"/>
-                        </a>
+                    <xsl:variable name="text-id" select="m:translation/@id"/>
+                    
+                    <!-- Title / status -->
+                    <div class="center-vertical full-width">
+
+                        <div class="h3">
+                            <a target="_blank">
+                                <xsl:attribute name="href" select="concat($reading-room-path, '/translation/', $text-id, '.html')"/>
+                                <xsl:value-of select="concat(string-join(m:translation/m:toh/m:full, ' / '), ' : ', m:translation/m:title)"/>
+                            </a>
+                        </div>
+                        
+                        <span class="text-right">
+                            <xsl:copy-of select="common:translation-status(m:translation/@status-group)"/>
+                        </span>
+                        
                     </div>
                     
-                    <!-- TEI url -->
-                    <div class="small text-muted sml-margin bottom ">
-                        <xsl:value-of select="concat('TEI file: ', m:translation/@document-url)"/>
-                    </div>
-                    
-                    <!-- Status flags -->
-                    <div class="bottom-margin">
+                    <!-- TEI -->
+                    <div class="center-vertical full-width">
                         
-                        <xsl:variable name="next-target-date" select="m:translation-status/m:text[@status-surpassable eq 'true']/m:target-date[@next eq 'true'][1]"/>
-                        
-                        <!-- Due date -->
-                        <xsl:if test="$next-target-date">
-                            <xsl:choose>
-                                <xsl:when test="xs:integer($next-target-date/@due-days) ge 0">
-                                    
-                                    <span class="label label-success">
-                                        <xsl:value-of select="'Due in '"/>
-                                        <xsl:value-of select="$next-target-date/@due-days"/>
-                                        <xsl:value-of select="' days'"/>
-                                    </span>
-                                    
-                                </xsl:when>
-                                <xsl:when test="xs:integer($next-target-date/@due-days) lt 0">
-                                    
-                                    <span class="label label-danger">
-                                        <xsl:value-of select="'Overdue '"/>
-                                        <xsl:value-of select="abs($next-target-date/@due-days)"/>
-                                        <xsl:value-of select="' days'"/>
-                                    </span>
-                                    
-                                </xsl:when>
-                            </xsl:choose>
-                        </xsl:if>
-                        
-                        <!-- Status -->
-                        <xsl:copy-of select="common:translation-status(m:translation/@status-group)"/>
+                        <!-- url -->
+                        <div class="text-muted small">
+                            <xsl:value-of select="concat('TEI file: ', m:translation/@document-url)"/>
+                        </div>
                         
                         <!-- Version -->
-                        <xsl:if test="normalize-space(m:translation/m:publication/m:edition)">
-                            
+                        <span class="text-right">
                             <a class="label label-info">
-                                <xsl:attribute name="href" select="concat($reading-room-path, '/translation/', m:translation/@id, '.tei')"/>
-                                <xsl:attribute name="target" select="concat(m:translation/@id, '.tei')"/>
-                                <xsl:value-of select="concat('TEI ', m:translation/m:publication/m:edition)"/>
+                                <xsl:attribute name="href" select="concat($reading-room-path, '/translation/', $text-id, '.tei')"/>
+                                <xsl:attribute name="target" select="concat($text-id, '.tei')"/>
+                                <xsl:value-of select="concat('Version: ', m:translation/@tei-version)"/>
                             </a>
-                            
-                        </xsl:if>
-                        
-                        <!-- Files -->
-                        <xsl:if test="m:translation/@status eq '1'">
-                            <xsl:for-each select="m:translation/m:downloads">
-                                <xsl:variable name="resource-id" select="@resource-id"/>
-                                <xsl:variable name="tei-version" select="@tei-version"/>
-                                <xsl:for-each select="m:download[@type ne 'html']">
-                                    
-                                    <a href="#" class="label label-danger">
-                                        <xsl:choose>
-                                            <xsl:when test="@version eq $tei-version">
-                                                <xsl:attribute name="href" select="concat($reading-room-path, @url)"/>
-                                                <xsl:attribute name="class" select="'label label-info'"/>
-                                                <xsl:if test="not(@download-url)">
-                                                    <xsl:attribute name="target" select="concat($resource-id, '.', @type)"/>
-                                                </xsl:if>
-                                                <i class="fa fa-check"/>
-                                                <xsl:value-of select="concat(' ', $resource-id, '.', @type)"/>
-                                            </xsl:when>
-                                            <xsl:when test="@version eq 'none'">
-                                                <i class="fa fa-exclamation-circle"/>
-                                                <xsl:value-of select="concat(' ', $resource-id, '.', @type, ' missing')"/>
-                                            </xsl:when>
-                                            <xsl:otherwise>
-                                                <xsl:attribute name="href" select="concat($reading-room-path, '/data/', $resource-id, '.', @type)"/>
-                                                <i class="fa fa-exclamation-circle"/>
-                                                <xsl:value-of select="concat(' ', $resource-id, '.', @type, ' ', @version)"/>
-                                            </xsl:otherwise>
-                                        </xsl:choose>
-                                    </a>
-                                    
-                                </xsl:for-each>
-                            </xsl:for-each>
-                        </xsl:if>
+                        </span>
                         
                     </div>
+                    
+                    <!-- Due date -->
+                    <xsl:variable name="next-target-date" select="m:translation-status/m:text[@status-surpassable eq 'true']/m:target-date[@next eq 'true'][1]"/>
+                    <xsl:if test="$next-target-date">
+                        <div class="center-vertical full-width sml-margin bottom">
+                            
+                            <span class="small">
+                                <xsl:value-of select="'Target dates: '"/>
+                            </span>
+                            
+                            <span class="text-right">
+                                <xsl:choose>
+                                    <xsl:when test="xs:integer($next-target-date/@due-days) ge 0">
+                                        
+                                        <span class="label label-success">
+                                            <xsl:value-of select="'Due in '"/>
+                                            <xsl:value-of select="$next-target-date/@due-days"/>
+                                            <xsl:value-of select="' days'"/>
+                                        </span>
+                                        
+                                    </xsl:when>
+                                    <xsl:when test="xs:integer($next-target-date/@due-days) lt 0">
+                                        
+                                        <span class="label label-danger">
+                                            <xsl:value-of select="'Overdue '"/>
+                                            <xsl:value-of select="abs($next-target-date/@due-days)"/>
+                                            <xsl:value-of select="' days'"/>
+                                        </span>
+                                        
+                                    </xsl:when>
+                                </xsl:choose>
+                            </span>
+                            
+                        </div>
+                    </xsl:if>
+                    
+                    <!-- Files -->
+                    <xsl:if test="m:translation/@status-group eq 'published'">
+                        
+                        <div class="sml-margin bottom">
+                            <xsl:for-each select="m:translation/m:downloads">
+                                
+                                <!-- Status flags -->
+                                <div class="center-vertical full-width">
+                                    
+                                    <xsl:variable name="downloads" select="."/>
+                                    <xsl:variable name="resource-id" select="$downloads/@resource-id"/>
+                                    <xsl:variable name="tei-version" select="$downloads/@tei-version"/>
+                                    
+                                    <span class="small">
+                                        <xsl:value-of select="concat('Associated files for ', /m:response/m:translation/m:toh[@key eq $resource-id]/m:full, ': ')"/>
+                                    </span>
+                                    
+                                    <span class="text-right">
+                                        
+                                        <xsl:for-each select="('cache', 'pdf', 'epub', 'azw3')">
+                                            
+                                            <xsl:variable name="download-type" select="."/>
+                                            <xsl:variable name="download" select="$downloads/m:download[@type eq $download-type]"/>
+                                            
+                                            <a>
+                                                
+                                                <xsl:attribute name="href">
+                                                    <xsl:value-of select="concat($reading-room-path, $download/@url)"/>
+                                                </xsl:attribute>
+                                                
+                                                <xsl:attribute name="target">
+                                                    <xsl:value-of select="$download/@url"/>
+                                                </xsl:attribute>
+                                                
+                                                <xsl:attribute name="class">
+                                                    <xsl:choose>
+                                                        <xsl:when test="$download/@version eq $tei-version">
+                                                            <xsl:value-of select="'label label-info'"/>
+                                                        </xsl:when>
+                                                        <xsl:otherwise>
+                                                            <xsl:value-of select="'label label-danger'"/>
+                                                        </xsl:otherwise>
+                                                    </xsl:choose>
+                                                </xsl:attribute>
+                                                
+                                                <xsl:choose>
+                                                    <xsl:when test="$download/@version eq $tei-version">
+                                                        <i class="fa fa-check"/>
+                                                        <xsl:value-of select="' '"/>
+                                                    </xsl:when>
+                                                    <xsl:otherwise>
+                                                        <i class="fa fa-exclamation-circle"/>
+                                                        <xsl:value-of select="' '"/>
+                                                    </xsl:otherwise>
+                                                </xsl:choose>
+                                                
+                                                <xsl:value-of select="concat(upper-case($download/@type), ': ', $download/@version)"/>
+                                                
+                                            </a>
+                                            
+                                        </xsl:for-each>
+                                        
+                                    </span>
+                                    
+                                </div>
+                            </xsl:for-each>
+                        </div>
+                    
+                        <div class="sml-margin bottom text-right">
+                            
+                            <ul class="list-inline inline-dots">
+                                <xsl:if test="m:translation/m:downloads[not(@tei-version = m:download[@type eq 'cache']/@version)]">
+                                    <li>
+                                        <a class="small">
+                                            <xsl:attribute name="href" select="concat('glossary.html?resource-id=', $text-id)"/>
+                                            <xsl:value-of select="'Generate new cache (glossary tool)'"/>
+                                        </a>
+                                    </li>
+                                </xsl:if>
+                                <li>
+                                    <a class="small">
+                                        <xsl:attribute name="href" select="concat('edit-text-header.html?id=', $text-id, '&amp;form-action=generate-files')"/>
+                                        <xsl:value-of select="'Generate new associated files'"/>
+                                    </a>
+                                </li>
+                            </ul>
+                            
+                        </div>
+                    
+                    </xsl:if>
                     
                     <div class="panel-group" role="tablist" aria-multiselectable="true" id="forms-accordion">
                         
@@ -674,18 +745,6 @@
                                 </div>
                                 <div class="col-sm-5">
                                     <input type="text" name="update-notes" id="update-notes" class="form-control" placeholder="Add a note about this version"/>
-                                </div>
-                            </div>
-                            
-                            <!-- Generate files checkbox -->
-                            <div class="form-group">
-                                <div class="col-sm-offset-3 col-sm-9">
-                                    <div class="checkbox">
-                                        <label>
-                                            <input type="checkbox" name="generate-files" id="generate-files" value="1"/>
-                                            <xsl:value-of select="'Generate associated files (ebooks, PDF) for this version'"/>
-                                        </label>
-                                    </div>
                                 </div>
                             </div>
                             

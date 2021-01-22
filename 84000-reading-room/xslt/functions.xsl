@@ -142,7 +142,7 @@
         <xsl:variable name="count-blocks" select="xs:integer(ceiling($count-records div $max-records))" as="xs:integer"/>
         <xsl:variable name="this-block" select="xs:integer(floor((($first-record -1) + $max-records) div $max-records))" as="xs:integer"/>
         
-        <nav aria-label="Page navigation" class="text-right">
+        <nav aria-label="Page navigation" class="pull-right">
             <ul class="pagination">
                 <li class="disabled">
                     <span>
