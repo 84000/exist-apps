@@ -97,6 +97,7 @@ function common:response($model-type as xs:string, $app-id as xs:string, $data a
                     $common:environment/m:label,
                     $common:environment/m:url,
                     $common:environment/m:google-analytics,
+                    $common:environment/m:html-head,
                     $common:environment/m:render-translation,
                     if($app-id eq 'utilities') then (
                         $common:environment/m:store-conf,

@@ -145,11 +145,12 @@
                 
                 <xsl:copy-of select="$additional-links"/>
                 
+                <xsl:copy-of select="$environment/m:html-head/xhtml:*"/>
+                
                 <meta name="msapplication-config">
                     <xsl:attribute name="content" select="concat($front-end-path, '/favicon/browserconfig.xml')"/>
                 </meta>
                 <meta name="theme-color" content="#ffffff"/>
-                <meta name="google-site-verification" content="kSOl1OtX_JS2nTME2cKv1p3enqSKQURKIy_0Rig4NBE"/>
                 
                 <meta property="og:url">
                     <xsl:attribute name="content" select="$page-url"/>

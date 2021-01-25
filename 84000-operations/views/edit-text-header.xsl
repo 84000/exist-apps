@@ -107,7 +107,7 @@
                                     
                                     <span class="text-right">
                                         
-                                        <xsl:for-each select="('cache', 'pdf', 'epub', 'azw3')">
+                                        <xsl:for-each select="('cache', 'pdf', 'epub', 'azw3', 'rdf')">
                                             
                                             <xsl:variable name="download-type" select="."/>
                                             <xsl:variable name="download" select="$downloads/m:download[@type eq $download-type]"/>
