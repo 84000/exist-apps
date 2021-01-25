@@ -234,8 +234,8 @@ declare function glossary:sort-term($gloss as element(tei:gloss)) as element(m:s
     let $term-letter-count := max($terms-en ! string-length(.))
     return
         element { QName('http://read.84000.co/ns/1.0', 'sort-term') } {
-            attribute word-count { $term-word-count },
-            attribute letter-count { $term-letter-count },
+            attribute word-count { if($term-word-count) then $term-word-count else 0 },
+            attribute letter-count { if($term-letter-count) then $term-letter-count else 0 },
             text { $sort-term }
         }
         

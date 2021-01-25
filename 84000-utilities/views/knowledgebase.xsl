@@ -79,7 +79,7 @@
                         <xsl:value-of select="m:titles/m:title[@xml:lang eq 'en']"/>
                     </span>
                     <small>
-                        <xsl:value-of select="concat(' \ ', @kb-id)"/>
+                        <xsl:value-of select="concat(' / ', @kb-id)"/>
                     </small>
                 </div>
                 <ul class="list-inline inline-dots sml-margin bottom">

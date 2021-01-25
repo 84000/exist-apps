@@ -21,9 +21,9 @@
     
     <!-- Pre-sort the glossaries by priority -->
     <xsl:variable name="glossary-prioritised" as="element(tei:gloss)*">
-        <xsl:perform-sort select="/m:response/m:translation/m:part[@type eq 'glossary']/tei:div/tei:gloss[@xml:id]">
-            <xsl:sort select="key('glossary-cache-gloss', @xml:id)[1]/@word-count ! xs:integer(.)" order="descending"/>
-            <xsl:sort select="key('glossary-cache-gloss', @xml:id)[1]/@letter-count ! xs:integer(.)" order="descending"/>
+        <xsl:perform-sort select="/m:response/m:translation/m:part[@type eq 'glossary']/tei:div/tei:gloss[@xml:id][tei:term[not(@xml:lang)][normalize-space(text())]]">
+            <xsl:sort select="key('glossary-cache-gloss', @xml:id)[1]/@word-count ! common:enforce-integer(.)" order="descending"/>
+            <xsl:sort select="key('glossary-cache-gloss', @xml:id)[1]/@letter-count[not(. eq '')] ! common:enforce-integer(.)" order="descending"/>
         </xsl:perform-sort>
     </xsl:variable>
     
@@ -810,7 +810,7 @@
         
         <xsl:for-each-group select="/m:response/m:translation//tei:note[@place eq 'end'][@xml:id]" group-by="@xml:id">
             
-            <xsl:sort select="key('notes-cache-end-note', @xml:id)[1]/@index ! xs:integer(.)"/>
+            <xsl:sort select="key('notes-cache-end-note', @xml:id)[1]/@index ! common:enforce-integer(.)"/>
             
             <xsl:variable name="end-note" select="."/>
             <xsl:variable name="notes-cache-end-note" select="key('notes-cache-end-note', @xml:id)[1]"/>
@@ -987,7 +987,7 @@
         
         <xsl:for-each select="$glossary-part/tei:div/tei:gloss[@xml:id]">
             
-            <xsl:sort select="key('glossary-cache-gloss', @xml:id)[1]/@index ! xs:integer(.)"/>
+            <xsl:sort select="key('glossary-cache-gloss', @xml:id)[1]/@index ! common:enforce-integer(.)"/>
             
             <xsl:variable name="glossary-item" select="."/>
             <xsl:variable name="glossary-cache-gloss" select="key('glossary-cache-gloss', $glossary-item/@xml:id)[1]"/>
@@ -1143,7 +1143,7 @@
                                         <xsl:value-of select="'1 passage contains this term'"/>
                                     </xsl:when>
                                     <xsl:otherwise>
-                                        <xsl:value-of select="'No instances of this term'"/>
+                                        <xsl:value-of select="'No known locations for this term'"/>
                                     </xsl:otherwise>
                                 </xsl:choose>
                             </h5>

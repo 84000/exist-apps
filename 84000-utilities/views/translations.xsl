@@ -17,13 +17,13 @@
         <xsl:variable name="content">
             
             <div class="container">
-                <div class="center-vertical align-left full-width bottom-margin">
+                
+                <form action="/translations.html" method="post" class="form-horizontal filter-form">
                     
-                    <!-- Select a status -->
-                    <div>
-                        <form action="translations.html" method="post" class="form-horizontal filter-form sml-margin top">
-                            
-                            <!-- Which files to show? -->
+                    <div class="center-vertical full-width bottom-margin">
+                        
+                        <!-- Select a status -->
+                        <div>
                             <select name="texts-status" id="texts-status" class="form-control">
                                 <!-- If it's a client then add an option to view different files -->
                                 <xsl:if test="$environment/m:store-conf[@type eq 'client']">
@@ -44,19 +44,26 @@
                                     </option>
                                 </xsl:for-each>
                             </select>
-                            
-                        </form>
+                        </div>
+                        
+                        <!-- Refresh button -->
+                        <div>
+                            <button class="btn btn-default" type="submit">
+                                <i class="fa fa-refresh"/>
+                            </button>
+                        </div>
+                        
+                        <!-- Show count of texts -->
+                        <div>
+                            <span class="badge badge-notification">
+                                <xsl:value-of select="fn:format-number(count(distinct-values(m:texts/m:text/@id)),'#,##0')"/>
+                            </span>
+                            <xsl:value-of select="' texts with this status'"/>
+                        </div>
+                        
                     </div>
-                    
-                    <!-- Show count of texts -->
-                    <div>
-                        <span class="badge badge-notification">
-                            <xsl:value-of select="fn:format-number(count(distinct-values(m:texts/m:text/@id)),'#,##0')"/>
-                        </span>
-                        <xsl:value-of select="' texts with this status'"/>
-                    </div>
-                    
-                </div>
+                
+                </form>
                 
                 <xsl:choose>
                     
@@ -508,9 +515,12 @@
                     </xsl:when>
                     
                     <xsl:otherwise>
-                        <p class="text-muted italic">
-                            <xsl:value-of select="'No texts with this status'"/>
-                        </p>
+                        <hr/>
+                        <div>
+                            <p class="text-muted italic">
+                                <xsl:value-of select="'No texts with this status'"/>
+                            </p>
+                        </div>
                     </xsl:otherwise>
                     
                 </xsl:choose>
