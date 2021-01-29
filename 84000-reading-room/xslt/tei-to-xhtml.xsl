@@ -250,6 +250,13 @@
                 
                 <xsl:choose>
                     
+                    <!-- Target is an empty page -->
+                    <xsl:when test="$ref[@rend eq 'blank']">
+                        <span class="ref text-muted">
+                            <xsl:value-of select="concat('[', $ref/@cRef, ']')"/>
+                        </span>
+                    </xsl:when>
+                    
                     <xsl:when test="$index">
                         <xsl:choose>
                             

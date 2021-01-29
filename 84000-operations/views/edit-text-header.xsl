@@ -19,7 +19,7 @@
                     <xsl:variable name="text-id" select="m:translation/@id"/>
                     
                     <!-- Title / status -->
-                    <div class="center-vertical full-width">
+                    <div class="center-vertical full-width sml-margin bottom">
 
                         <div class="h3">
                             <a target="_blank">
@@ -35,7 +35,7 @@
                     </div>
                     
                     <!-- TEI -->
-                    <div class="center-vertical full-width">
+                    <div class="center-vertical full-width sml-margin bottom">
                         
                         <!-- url -->
                         <div class="text-muted small">
@@ -91,11 +91,11 @@
                     <!-- Files -->
                     <xsl:if test="m:translation/@status-group eq 'published'">
                         
-                        <div class="sml-margin bottom">
+                        <div>
                             <xsl:for-each select="m:translation/m:downloads">
                                 
                                 <!-- Status flags -->
-                                <div class="center-vertical full-width">
+                                <div class="center-vertical full-width sml-margin bottom">
                                     
                                     <xsl:variable name="downloads" select="."/>
                                     <xsl:variable name="resource-id" select="$downloads/@resource-id"/>
