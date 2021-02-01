@@ -58,8 +58,8 @@ declare function search:search($request as xs:string, $resource-id as xs:string,
         | $published/tei:text//tei:lg[ft:query(., $query, $options)]
         | $published/tei:text//tei:ab[ft:query(., $query, $options)]
         | $published/tei:text//tei:trailer[ft:query(., $query, $options)]
-        | $published/tei:back//tei:bibl[ft:query(., $query, $options)]
-        | $published/tei:back//tei:gloss[ft:query(., $query, $options)]
+        | $published/tei:text/tei:back//tei:bibl[ft:query(., $query, $options)]
+        | $published/tei:text/tei:back//tei:gloss[ft:query(., $query, $options)]
     
     let $result-groups := 
         for $result in $results
@@ -85,6 +85,7 @@ declare function search:search($request as xs:string, $resource-id as xs:string,
     return 
         <search xmlns="http://read.84000.co/ns/1.0" >
             <request>{ $request }</request>
+            <debug>{ $results }</debug>
             {
                 if($resource-id gt '') then
                     <translation id="{ tei-content:id($all[1]) }">

@@ -46,6 +46,9 @@ return
             if(request:get-parameter('resource-suffix', '') eq 'epub') then
                 $translation:view-modes/m:view-mode[@id eq 'ebook']
                 
+            else if(request:get-parameter('resource-suffix', '') eq 'txt') then
+                $translation:view-modes/m:view-mode[@id eq 'txt']
+                
             else if($translation:view-modes/m:view-mode[@id eq $view-mode-id]) then
                 $translation:view-modes/m:view-mode[@id eq $view-mode-id]
                 

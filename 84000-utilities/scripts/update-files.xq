@@ -24,16 +24,17 @@ declare function local:files-mimetype-xml($collection-uri as xs:string, $file-ex
 };
 
 (: Sets group and permissions for all files in collection with the given file extension :)
-declare function local:files-permissions($collection-uri as xs:string, $file-extension as xs:string, $group as xs:string, $permissions as xs:string){
+declare function local:files-permissions($collection-uri as xs:string, $file-extension as xs:string, $owner as xs:string, $group as xs:string, $permissions as xs:string){
     for $file in xmldb:get-child-resources($collection-uri)
     order by $file
     where ends-with($file, '.' || $file-extension)
     return(
+        sm:chown(xs:anyURI(concat($collection-uri, '/', $file)), $owner),
         sm:chgrp(xs:anyURI(concat($collection-uri, '/', $file)), $group),
         sm:chmod(xs:anyURI(concat($collection-uri, '/', $file)), $permissions),
-        concat($file, ' group:', $group, ' permissions:', $permissions)
+        concat($file, ' owner:', $owner, ' group:', $group, ' permissions:', $permissions)
     )
 };
 
-local:files-mimetype-xml('/db/apps/84000-data/cache', 'cache'),
-local:files-permissions('/db/apps/84000-data/cache', 'cache', 'tei', 'rw-rw-r--')
+(:local:files-mimetype-xml('/db/apps/84000-data/cache', 'cache'),:)
+local:files-permissions('/db/apps/84000-data/tei/translations/tengyur/placeholders', 'xml', 'admin', 'tei', 'rw-rw-r--')

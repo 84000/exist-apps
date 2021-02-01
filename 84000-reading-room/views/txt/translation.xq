@@ -90,7 +90,7 @@ let $string := string-join($parsed-content, '')
 let $binary := util:base64-encode($string)
 
 return
-    response:stream-binary($binary, 'text/plain')(: $string :)
+    (: response:stream-binary($binary, 'text/plain') :)$string
 
 
 

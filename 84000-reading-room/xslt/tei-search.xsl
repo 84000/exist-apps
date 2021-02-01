@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" exclude-result-prefixes="#all" version="3.0">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:functx="http://www.functx.com" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" exclude-result-prefixes="#all" version="3.0">
         
     <!-- 
         Converts expanded search result to xhtml
@@ -486,13 +486,56 @@
         </span>
     </xsl:template>
     
+    <xsl:template match="tei:bibl">
+        <p>
+            <xsl:apply-templates select="node()"/>
+        </p>
+    </xsl:template>
+    
     <xsl:template match="tei:gloss">
-        <xsl:for-each select="tei:term">
-            <span>
-                <xsl:apply-templates select="node()"/>
-            </span>
-            <br/>
+        
+        <xsl:variable name="gloss" select="."/>
+        
+        <h4 class="term">
+            <xsl:value-of select="$gloss/tei:term[not(@type)][not(@xml:lang) or @xml:lang eq 'en'][1]/normalize-space(.) ! functx:capitalize-first(.)"/>
+        </h4>
+        
+        <xsl:for-each select="('Bo-Ltn','bo','Sa-Ltn')">
+            
+            <xsl:variable name="term-lang" select="."/>
+            <xsl:variable name="term-lang-terms" select="$gloss/tei:term[not(@type = ('definition','alternative'))][@xml:lang eq $term-lang]"/>
+            
+            <ul class="list-inline inline-dots">
+                <xsl:choose>
+                    <xsl:when test="$term-lang-terms">
+                        <xsl:for-each select="$term-lang-terms">
+                            <li>
+                                
+                                <xsl:choose>
+                                    <xsl:when test="normalize-space(text())">
+                                        <xsl:value-of select="normalize-space(text())"/>
+                                    </xsl:when>
+                                    <xsl:otherwise>
+                                        <xsl:call-template name="text">
+                                            <xsl:with-param name="global-key" select="concat('glossary.term-empty-', lower-case($term-lang))"/>
+                                        </xsl:call-template>
+                                    </xsl:otherwise>
+                                </xsl:choose>
+                                
+                            </li>
+                        </xsl:for-each>
+                    </xsl:when>
+                </xsl:choose>
+            </ul>
+            
         </xsl:for-each>
+        
+        <xsl:for-each select="$gloss/tei:term[@type eq 'definition'][node()]">
+            <p>
+                <xsl:apply-templates select="node()"/>
+            </p>
+        </xsl:for-each>
+        
     </xsl:template>
     
     <xsl:template match="tei:lb">

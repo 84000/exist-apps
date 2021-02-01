@@ -23,6 +23,7 @@ declare variable $translation:view-modes :=
       <view-mode id="default"           client="browser"  layout="full"            glossary="use-cache"       parts="count-sections"/>,
       <view-mode id="editor"            client="browser"  layout="expanded"        glossary="defer-no-cache"  parts="all"/>,
       <view-mode id="annotation"        client="browser"  layout="expanded-fixed"  glossary="defer"           parts="all"/>,
+      <view-mode id="txt"               client="none"     layout="expanded-fixed"  glossary="suppress"        parts="all"/>,
       <view-mode id="ebook"             client="ebook"    layout="expanded-fixed"  glossary="use-cache"       parts="all"/>,
       <view-mode id="pdf"               client="none"     layout="expanded-fixed"  glossary="suppress"        parts="all"/>,
       <view-mode id="app"               client="app"      layout="expanded-fixed"  glossary="use-cache"       parts="all"/>,
@@ -347,13 +348,13 @@ declare function local:part($part as element(tei:div)?, $render as xs:string, $t
 declare function local:part-title($part as element(tei:div)?, $type as xs:string, $label as node()*) as element()* {
     
     let $chapter-title := $part/tei:head[@type eq 'chapterTitle'][text()][1]
-    let $section-title := $part/tei:head[@type eq $type][text()][1]
+    let $section-title := $part/tei:head[@type eq $part/@type][text()][1]
     
     return
         if ($chapter-title) then (
             element {QName('http://www.tei-c.org/ns/1.0', 'head')} {
-                attribute type {$type},
-                attribute tid {$chapter-title/@tid},
+                attribute type { $type },
+                attribute tid { $chapter-title/@tid },
                 $chapter-title/text()
             },
             if ($section-title) then
@@ -364,31 +365,23 @@ declare function local:part-title($part as element(tei:div)?, $type as xs:string
             else ()
         )
         else if ($section-title) then
-            $section-title
+            element {QName('http://www.tei-c.org/ns/1.0', 'head')} {
+                attribute type { $type },
+                attribute tid { $section-title/@tid },
+                $section-title/text()
+            }
         else if ($label) then
             element {QName('http://www.tei-c.org/ns/1.0', 'head')} {
-                attribute type {$type},
+                attribute type { $type },
                 $label
             }
          else ()
 };
 
 declare function local:part-content($content as element(tei:div)?, $render as xs:string, $type as xs:string, $prefix as xs:string?, $passage-id as xs:string?, $nesting as xs:integer, $section-index as xs:integer) as node()* {
-    
-    (: TO DO: move this into the parser :)
-    if($type eq 'abbreviations' and $render = ('persist', 'show', 'collapse', 'hide')) then
-        for $sub-sections in ($content/tei:div | $content/tei:list)
-        return
-            translation:abbreviation-section($sub-sections, 0)
-    
-    (: TO DO: move this into the parser :)
-    else if($type eq 'bibliography' and $render = ('persist', 'show', 'collapse', 'hide')) then
-        for $sub-section in $content/tei:div[@type eq 'section']
-        return
-            translation:bibliography-section($sub-section, 0)
-    
+
     (: No structure in end-notes :)
-    else if($type eq 'end-notes' and $render = ('persist', 'show', 'collapse', 'hide')) then
+    if($type eq 'end-notes' and $render = ('persist', 'show', 'collapse', 'hide')) then
         $content
     
     (: No structure in glossary :)
@@ -408,7 +401,7 @@ declare function local:part-content($content as element(tei:div)?, $render as xs
                     local:part($node, $render, $node/@type, $prefix, (), $passage-id, $nesting + 1, $section-index)
             
             (: Node already included this in section-titles - so skip it :)
-            else if ($node[self::tei:head[@type = ($type, 'chapterTitle')]]) then
+            else if ($node[self::tei:head[@type = ($type, 'chapterTitle', 'listBibl', 'notes')]]) then
                 ()
             
             (: Full, collapsed or hidden rendering - return all nodes (except the above)  :)
@@ -671,54 +664,17 @@ declare function translation:abbreviations($tei as element(tei:TEI)) as element(
 
 declare function translation:abbreviations($tei as element(tei:TEI), $passage-id as xs:string?, $view-mode as element(m:view-mode)?) as element()? {
     
-    let $abbreviations := $tei/tei:text/tei:back/tei:div[@type eq 'notes']
-    where $abbreviations[tei:div | tei:list]
+    let $abbreviations := 
+        element { QName('http://www.tei-c.org/ns/1.0', 'div') } {
+            $tei/tei:text/tei:back/tei:div[@type eq 'notes']/tei:list[@type eq "abbreviations"]
+            | $tei/tei:text/tei:back/tei:div[@type eq 'notes']/tei:div[@type eq "section"][tei:list[@type eq "abbreviations"]]
+        }
+    where $abbreviations//tei:list[@type eq "abbreviations"]
     
     let $render := local:render($abbreviations, ('abbreviations', 'back'), $passage-id, $view-mode, 'collapse')
 
     return
         translation:part($abbreviations, $render, 'abbreviations', 'ab', text {'Abbreviations'}, ())
-
-};
-
-declare function translation:abbreviation-section($section as element(), $nesting as xs:integer) as element()? {
-    
-    if ($section[self::tei:list]) then
-        
-        element {QName('http://read.84000.co/ns/1.0', 'abbreviations')} {
-            for $head in $section/tei:head[@type eq 'abbreviations']
-            return
-                element head {$head/node()}
-            ,
-            for $description in $section/tei:head[@type eq 'description']
-            return
-                element description {$description/node()}
-            ,
-            for $item in $section/tei:item[tei:abbr]
-            return
-                element item {
-                    element abbreviation {$item/tei:abbr/node()},
-                    element explanation {$item/tei:expan/node()}
-                }
-            ,
-            for $footer in $section/tei:item[not(tei:abbr)]
-            return
-                element foot {$footer/node()}
-        }
-    
-    else
-        element {QName('http://www.tei-c.org/ns/1.0', 'div')} {
-            
-            $section/@type,
-            attribute id { $section/@xml:id },
-            attribute nesting { $nesting },
-            
-            $section/tei:head,
-            
-            for $sub-section in ($section/tei:div | $section/tei:list)
-            return
-                translation:abbreviation-section($sub-section, $nesting + 1)
-        }
 
 };
 
@@ -745,7 +701,6 @@ declare function translation:bibliography($tei as element(tei:TEI)) as element()
 declare function translation:bibliography($tei as element(tei:TEI), $passage-id as xs:string?, $view-mode as element(m:view-mode)?) as element()? {
     
     let $bibliography := $tei/tei:text/tei:back/tei:div[@type eq 'listBibl']
-    
     where $bibliography//tei:bibl
     
     let $render := local:render($bibliography, ('bibliography', 'back'), $passage-id, $view-mode, 'collapse')
@@ -753,33 +708,6 @@ declare function translation:bibliography($tei as element(tei:TEI), $passage-id 
     return
         translation:part($bibliography, $render, 'bibliography', 'b', text {'Bibliography'}, ())
 
-};
-
-declare function translation:bibliography-section($section as element(), $nesting as xs:integer) as element(m:section) {
-    element {QName('http://read.84000.co/ns/1.0', 'bibliography')} {
-        
-        attribute id { $section/@xml:id },
-        attribute nesting { $nesting },
-        
-        for $head in $section/tei:head[@type eq 'section']
-        return
-            element title {
-                $head/node()
-            }
-        ,
-        
-        for $item in $section/tei:bibl
-        return
-            element item {
-                attribute id {$item/@xml:id},
-                $item/node()
-            }
-        ,
-        
-        for $sub-section in $section/tei:div[@type eq 'section']
-        return
-            translation:bibliography-section($sub-section, $nesting + 1)
-    }
 };
 
 declare function translation:glossary($tei as element(tei:TEI)) as element()? {

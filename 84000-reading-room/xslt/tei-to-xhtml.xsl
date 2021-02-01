@@ -655,6 +655,43 @@
     </xsl:template>
     
     <!-- Lists -->
+    <xsl:template match="tei:list[@type eq 'abbreviations']">
+        <xsl:call-template name="milestone">
+            <xsl:with-param name="content">
+                <xsl:for-each select="tei:head[@type eq 'abbreviations' and not(lower-case(data()) = ('abbreviations', 'abbreviations:'))]">
+                    <h5>
+                        <xsl:apply-templates select="node()"/>
+                    </h5>
+                </xsl:for-each>
+                <xsl:for-each select="tei:head[@type eq 'description']">
+                    <p>
+                        <xsl:apply-templates select="node()"/>
+                    </p>
+                </xsl:for-each>
+                <table class="table">
+                    <tbody>
+                        <xsl:for-each select="tei:item[tei:abbr]">
+                            <xsl:sort select="tei:abbr"/>
+                            <tr>
+                                <th>
+                                    <xsl:apply-templates select="tei:abbr/node()"/>
+                                </th>
+                                <td>
+                                    <xsl:apply-templates select="tei:expan/node()"/>
+                                </td>
+                            </tr>
+                        </xsl:for-each>
+                    </tbody>
+                </table>
+                <xsl:for-each select="tei:item[not(tei:abbr)]">
+                    <p>
+                        <xsl:apply-templates select="node()"/>
+                    </p>
+                </xsl:for-each>
+            </xsl:with-param>
+            <xsl:with-param name="row-type" select="'list-section'"/>
+        </xsl:call-template>
+    </xsl:template>
     <xsl:template match="tei:list">
         <xsl:call-template name="milestone">
             <xsl:with-param name="content">
@@ -1056,8 +1093,10 @@
                         </h4>
                         
                         <xsl:for-each select="('Bo-Ltn','bo','Sa-Ltn')">
+                            
                             <xsl:variable name="term-lang" select="."/>
                             <xsl:variable name="term-lang-terms" select="$glossary-item/tei:term[not(@type = ('definition','alternative'))][@xml:lang eq $term-lang]"/>
+                            
                             <ul class="list-inline inline-dots">
                                 <xsl:choose>
                                     <xsl:when test="$term-lang-terms">
@@ -1420,7 +1459,6 @@
     </xsl:template>
 
     <xsl:template match="m:part">
-        <!-- Wrap in a div -->
         <div>
             
             <!-- Set the id -->
@@ -1431,74 +1469,10 @@
             
             <!-- If the child is another div it will recurse -->
             <xsl:apply-templates select="node()"/>
+            
         </div>
     </xsl:template>
     
-    <xsl:template match="m:abbreviations">
-        <xsl:call-template name="milestone">
-            <xsl:with-param name="content">
-                <xsl:for-each select="m:head[not(lower-case(text()) = ('abbreviations', 'abbreviations:'))]">
-                    <h5>
-                        <xsl:apply-templates select="node()"/>
-                    </h5>
-                </xsl:for-each>
-                <xsl:for-each select="m:description">
-                    <p>
-                        <xsl:apply-templates select="node()"/>
-                    </p>
-                </xsl:for-each>
-                <table class="table">
-                    <tbody>
-                        <xsl:for-each select="m:item">
-                            <xsl:sort select="m:abbreviation"/>
-                            <tr>
-                                <th>
-                                    <xsl:apply-templates select="m:abbreviation/node()"/>
-                                </th>
-                                <td>
-                                    <xsl:apply-templates select="m:explanation/node()"/>
-                                </td>
-                            </tr>
-                        </xsl:for-each>
-                    </tbody>
-                </table>
-                <xsl:for-each select="m:foot">
-                    <p>
-                        <xsl:apply-templates select="node()"/>
-                    </p>
-                </xsl:for-each>
-            </xsl:with-param>
-            <xsl:with-param name="row-type" select="'list-section'"/>
-        </xsl:call-template>
-    </xsl:template>
-    
-    <xsl:template match="m:bibliography">
-        <xsl:call-template name="milestone">
-            <xsl:with-param name="content">
-                
-                <!-- Title -->
-                <xsl:if test="m:title/text()">
-                    <h5 class="section-label">
-                        <xsl:apply-templates select="m:title/text()"/>
-                    </h5>
-                </xsl:if>
-                
-                <!-- Items -->
-                <xsl:for-each select="m:item">
-                    <p>
-                        <xsl:attribute name="id" select="@id"/>
-                        <xsl:apply-templates select="node()"/>
-                    </p>
-                </xsl:for-each>
-                
-                <!-- Possible nested bibliographies -->
-                <xsl:apply-templates select="m:bibliography"/>
-                
-            </xsl:with-param>
-            <xsl:with-param name="row-type" select="'list-section'"/>
-        </xsl:call-template>
-    </xsl:template>
- 
     <!-- Milestone -->
     <xsl:template name="milestone">
         
