@@ -301,41 +301,44 @@
                     </xsl:choose>
                     
                     <!-- Content tabs (sections/texts/summary) -->
-                    <xsl:if test="not($section-id = ('lobby', 'all-translated')) and ($show-texts or m:section/m:section[not(@type eq 'grouping')] or m:section/m:about/*)">
+                    <xsl:variable name="tabs">
+                        
+                        <!-- Texts tab -->
+                        <xsl:if test="$show-texts and (m:section/m:section[not(@type eq 'grouping')] or m:section/m:about[*])">
+                            <li role="presentation" class="active">
+                                <a href="#texts" aria-controls="texts" role="tab" data-toggle="tab">
+                                    <xsl:value-of select="'Texts'"/>
+                                </a>
+                            </li>
+                        </xsl:if>
+                        
+                        <!-- Sub-sections tab -->
+                        <xsl:if test="m:section/m:section[not(@type eq 'grouping')] and ($show-texts or m:section/m:about[*])">
+                            <li role="presentation">
+                                <xsl:attribute name="class" select="if(not($show-texts)) then 'active' else ''"/>
+                                <a href="#sections" aria-controls="sections" role="tab" data-toggle="tab">
+                                    <xsl:value-of select="'Sections'"/>
+                                </a>
+                            </li>
+                        </xsl:if>
+                        
+                        <!-- About tab -->
+                        <xsl:if test="m:section/m:about[*]">
+                            <li role="presentation">
+                                <a href="#summary" aria-controls="summary" role="tab" data-toggle="tab">
+                                    <xsl:value-of select="'About'"/>
+                                </a>
+                            </li>
+                        </xsl:if>
+                        
+                    </xsl:variable>
+                    
+                    <xsl:if test="not($section-id = ('lobby', 'all-translated')) and $tabs[xhtml:li]">
                         <div class="tabs-container-center hidden-print">
                             <ul class="nav nav-tabs" role="tablist">
-                                
-                                <!-- Texts tab -->
-                                <xsl:if test="$show-texts">
-                                    <li role="presentation" class="active">
-                                        <a href="#texts" aria-controls="texts" role="tab" data-toggle="tab">
-                                            <xsl:value-of select="'Texts'"/>
-                                        </a>
-                                    </li>
-                                </xsl:if>
-                                
-                                <!-- Sub-sections tab -->
-                                <xsl:if test="m:section/m:section[not(@type eq 'grouping')]">
-                                    <li role="presentation">
-                                        <xsl:attribute name="class" select="if(not($show-texts)) then 'active' else ''"/>
-                                        <a href="#sections" aria-controls="sections" role="tab" data-toggle="tab">
-                                            <xsl:value-of select="'Sections'"/>
-                                        </a>
-                                    </li>
-                                </xsl:if>
-                                
-                                <!-- About tab -->
-                                <xsl:if test="m:section/m:about[*]">
-                                    <li role="presentation">
-                                        <a href="#summary" aria-controls="summary" role="tab" data-toggle="tab">
-                                            <xsl:value-of select="'About'"/>
-                                        </a>
-                                    </li>
-                                </xsl:if>
-                                
+                                <xsl:sequence select="$tabs"/>
                             </ul>
                         </div>
-                        
                     </xsl:if>
                     
                     <!-- Tab content -->
@@ -1398,7 +1401,7 @@
                                         </tr>
                                         <tr>
                                             <th>
-                                                <xsl:value-of select="'Translated'"/>
+                                                <xsl:value-of select="'Published'"/>
                                             </th>
                                             <td>
                                                 <xsl:value-of select="format-number($count-published, '#,###')"/>

@@ -355,12 +355,12 @@ declare function local:part-title($part as element(tei:div)?, $type as xs:string
             element {QName('http://www.tei-c.org/ns/1.0', 'head')} {
                 attribute type { $type },
                 attribute tid { $chapter-title/@tid },
-                $chapter-title/text()
+                $chapter-title/node()
             },
             if ($section-title) then
                 element {QName('http://read.84000.co/ns/1.0', 'title-supp')} {
                     $section-title/@tid,
-                    $section-title/text()
+                    $section-title/node()
                 }
             else ()
         )
@@ -368,7 +368,7 @@ declare function local:part-title($part as element(tei:div)?, $type as xs:string
             element {QName('http://www.tei-c.org/ns/1.0', 'head')} {
                 attribute type { $type },
                 attribute tid { $section-title/@tid },
-                $section-title/text()
+                $section-title/node()
             }
         else if ($label) then
             element {QName('http://www.tei-c.org/ns/1.0', 'head')} {
@@ -1163,6 +1163,7 @@ declare function translation:folios($tei as element(tei:TEI), $resource-id as xs
                         attribute page-in-volume {$page-in-volume},
                         attribute page-in-text {$page-in-text},
                         attribute ref-id {$folio-ref/@xml:id},
+                        $folio-ref/@rend,
                         attribute sort-index {
                             if ($folio-ref) then
                                 $folio-ref/@index-in-sort

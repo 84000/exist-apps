@@ -44,7 +44,7 @@
                     <xsl:if test="$request-translation">
                         <input type="hidden" name="resource-id" value="{ $request-translation/@id }"/>
                         <div class="alert alert-warning small top-margin no-bottom-margin" role="alert">
-                            <xsl:value-of select="concat('in ', $request-translation/m:titles/m:title[@xml:lang eq 'en'][1])"/>
+                            <xsl:value-of select="concat('in ', $request-translation/m:titles/m:title[@xml:lang eq 'en'][1] , ' / ', $request-translation/m:toh/m:full[1])"/>
                             <span class="pull-right">
                                 <a class="inline-block alert-link">
                                     <xsl:attribute name="href" select="common:internal-link($action, concat('search=', m:search/m:request/text()), '', /m:response/@lang)"/>
@@ -298,7 +298,20 @@
     </xsl:template>
     
     <xsl:template match="text()">
+        
+        <!--<xsl:variable name="text">
+            <xsl:choose>
+                <xsl:when test="ancestor::tei:term[not(@type)][not(@xml:lang) or @xml:lang eq 'en']">
+                    <xsl:value-of select="functx:capitalize-first(.)"/>
+                </xsl:when>
+                <xsl:otherwise>
+                    <xsl:value-of select="."/>
+                </xsl:otherwise>
+            </xsl:choose>
+        </xsl:variable>-->
+        
         <xsl:value-of select="translate(normalize-space(concat('', translate(., '&#xA;', ''), '')), '', '')"/>
+        
     </xsl:template>
     
     <!--<xsl:function name="common:match-url" as="xs:string">
@@ -409,12 +422,7 @@
                     <!-- Output the match (unless it's only in the note) -->
                     <xsl:if test="not(ancestor::tei:note)">
                         <div>
-                            <xsl:if test="@node-name = ('title', 'head')">
-                                <xsl:attribute name="class" select="''"/>
-                                <xsl:if test="@node-type eq 'chapter'">
-                                    <xsl:attribute name="class" select="'uppercase'"/>
-                                </xsl:if>
-                            </xsl:if>
+                            <xsl:attribute name="class" select="concat('search-match-', @node-name)"/>
                             <!-- Reduce this to a snippet -->
                             <xsl:apply-templates select="node()"/>
                         </div>
@@ -497,37 +505,28 @@
         <xsl:variable name="gloss" select="."/>
         
         <h4 class="term">
-            <xsl:value-of select="$gloss/tei:term[not(@type)][not(@xml:lang) or @xml:lang eq 'en'][1]/normalize-space(.) ! functx:capitalize-first(.)"/>
+            <xsl:apply-templates select="$gloss/tei:term[not(@type)][not(@xml:lang) or @xml:lang eq 'en'][1]"/>
         </h4>
         
         <xsl:for-each select="('Bo-Ltn','bo','Sa-Ltn')">
             
             <xsl:variable name="term-lang" select="."/>
-            <xsl:variable name="term-lang-terms" select="$gloss/tei:term[not(@type = ('definition','alternative'))][@xml:lang eq $term-lang]"/>
+            <xsl:variable name="term-lang-terms" select="$gloss/tei:term[not(@type = ('definition','alternative'))][@xml:lang eq $term-lang][normalize-space(data())]"/>
             
-            <ul class="list-inline inline-dots">
-                <xsl:choose>
-                    <xsl:when test="$term-lang-terms">
+            <xsl:choose>
+                <xsl:when test="$term-lang-terms">
+                    <ul class="list-inline inline-dots">
+                
                         <xsl:for-each select="$term-lang-terms">
                             <li>
-                                
-                                <xsl:choose>
-                                    <xsl:when test="normalize-space(text())">
-                                        <xsl:value-of select="normalize-space(text())"/>
-                                    </xsl:when>
-                                    <xsl:otherwise>
-                                        <xsl:call-template name="text">
-                                            <xsl:with-param name="global-key" select="concat('glossary.term-empty-', lower-case($term-lang))"/>
-                                        </xsl:call-template>
-                                    </xsl:otherwise>
-                                </xsl:choose>
-                                
+                                <xsl:attribute name="class" select="common:lang-class($term-lang)"/>
+                                <xsl:apply-templates select="node()"/>
                             </li>
                         </xsl:for-each>
-                    </xsl:when>
-                </xsl:choose>
-            </ul>
-            
+                        
+                    </ul>
+                </xsl:when>
+            </xsl:choose>
         </xsl:for-each>
         
         <xsl:for-each select="$gloss/tei:term[@type eq 'definition'][node()]">
@@ -560,17 +559,6 @@
             </xsl:when>
             <xsl:otherwise>
                 <xsl:apply-templates select="node()"/>
-            </xsl:otherwise>
-        </xsl:choose>
-    </xsl:template>
-    
-    <xsl:template match="tei:term[parent::m:match[@node-name eq 'gloss']]">
-        <xsl:choose>
-            <xsl:when test="@node-type eq 'definition'">
-                <xsl:apply-templates select="node()"/>
-            </xsl:when>
-            <xsl:otherwise>
-                <xsl:apply-templates select="node()"/> · 
             </xsl:otherwise>
         </xsl:choose>
     </xsl:template>

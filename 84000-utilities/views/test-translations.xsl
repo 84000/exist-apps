@@ -206,7 +206,7 @@
                                 <xsl:variable name="test-result" select="xs:boolean(@pass)"/>
                                 <xsl:variable name="test-details" select="m:details"/>
                                 <td class="icon">
-                                    <xsl:copy-of select="m:test-result($test-result, $cell-id, $toh-key, $text-title, $test-title, $test-domain, $test-details)"/>
+                                    <xsl:sequence select="m:test-result($test-result, $cell-id, $toh-key, $text-title, $test-title, $test-domain, $test-details)"/>
                                 </td>
                             </xsl:for-each>
                             <td class="icon">

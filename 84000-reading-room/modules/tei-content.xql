@@ -289,8 +289,7 @@ declare function tei-content:location($bibl as element(tei:bibl)) as element() {
     <location xmlns="http://read.84000.co/ns/1.0" 
         key="{ $bibl/@key }" 
         work="{ $bibl/tei:location/@work }" 
-        count-pages="{common:integer($bibl/tei:location/@count-pages)}"
-        folio-sort-attribute="{ $bibl/tei:location/@folio-sort-attribute }">
+        count-pages="{common:integer($bibl/tei:location/@count-pages)}">
     { 
         for $volume in $bibl/tei:location/tei:volume
         return
@@ -383,7 +382,7 @@ declare function tei-content:strip-version-number($version-str as xs:string?) as
 };
 
 (: Just the version number part of the edition as numbers e.g. (1,2,3) :)
-declare function tei-content:version-number($version-number-str as xs:string) as xs:integer* {
+declare function tei-content:version-number($version-number-str as xs:string?) as xs:integer* {
     
     (: Split the numbers :)
     let $version-number-split := tokenize(tei-content:strip-version-number($version-number-str), '\.')

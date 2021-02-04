@@ -82,7 +82,7 @@ declare function local:child-texts($texts as element()*) {
             <title-variants>{ eft-json:titles($text/m:title-variants/m:title) }</title-variants>,
             $text/m:toh,
             eft-json:parent-sections($text/m:parent),
-            $text/m:downloads/m:download[not(@type eq 'rdf')],
+            $text/m:downloads/m:download[not(@type = ('rdf', 'cache'))],
             if($text/m:part[@type eq 'summary'][tei:p])then
                 <summary>{ eft-json:tei-to-escaped-xhtml($text/m:part[@type eq 'summary']/tei:p, $xhtml-xsl) }</summary>
             else ()

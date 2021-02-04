@@ -316,6 +316,7 @@
                             <xsl:attribute name="title">
                                 <xsl:value-of select="$ref/@target"/>
                             </xsl:attribute>
+                            <xsl:attribute name="class" select="'break printable'"/>
                             <xsl:value-of select="$ref/@target"/>
                         </xsl:otherwise>
                     </xsl:choose>
@@ -438,6 +439,9 @@
                                 <xsl:when test="self::tei:trailer">
                                     <xsl:value-of select="'trailer'"/>
                                 </xsl:when>
+                                <xsl:when test="self::tei:bibl">
+                                    <xsl:value-of select="'bibl'"/>
+                                </xsl:when>
                             </xsl:choose>
                         </xsl:with-param>
                     </xsl:call-template>
@@ -446,19 +450,7 @@
                     
                 </p>
             </xsl:with-param>
-            <xsl:with-param name="row-type">
-                <xsl:choose>
-                    <xsl:when test="(@rend,@type) = 'mantra'">
-                        <xsl:value-of select="'mantra'"/>
-                    </xsl:when>
-                    <xsl:when test="self::tei:trailer">
-                        <xsl:value-of select="'trailer'"/>
-                    </xsl:when>
-                    <xsl:otherwise>
-                        <xsl:value-of select="'paragraph'"/>
-                    </xsl:otherwise>
-                </xsl:choose>
-            </xsl:with-param>
+            <xsl:with-param name="row-type" select="'paragraph'"/>
         </xsl:call-template>
     </xsl:template>
     
@@ -1106,17 +1098,7 @@
                                                 <xsl:call-template name="class-attribute">
                                                     <xsl:with-param name="base-classes" as="xs:string*">
                                                         <xsl:value-of select="'term'"/>
-                                                        <xsl:choose>
-                                                            <xsl:when test="$term-lang eq 'Bo-Ltn'">
-                                                                <xsl:value-of select="'text-wy'"/>
-                                                            </xsl:when>
-                                                            <xsl:when test="$term-lang eq 'bo'">
-                                                                <xsl:value-of select="'text-bo'"/>
-                                                            </xsl:when>
-                                                            <xsl:when test="$term-lang eq 'Sa-Ltn'">
-                                                                <xsl:value-of select="'text-sa'"/>
-                                                            </xsl:when>
-                                                        </xsl:choose>
+                                                        <xsl:value-of select="common:lang-class($term-lang)"/>
                                                         <xsl:if test="@type = ('semanticReconstruction','transliterationReconstruction')">
                                                             <xsl:value-of select="'reconstructed'"/>
                                                         </xsl:if>
@@ -1276,6 +1258,7 @@
             <xsl:when test="$part/@type eq @type">
                 <div>
                     
+                    <!-- class -->
                     <xsl:call-template name="class-attribute">
                         <xsl:with-param name="base-classes" as="xs:string*">
                             <xsl:value-of select="'rw'"/>
@@ -1283,10 +1266,12 @@
                         </xsl:with-param>
                     </xsl:call-template>
                     
+                    <!-- data-passage-id -->
                     <xsl:if test="$view-mode[not(@client = ('ebook', 'app'))]">
                         <xsl:attribute name="data-passage-id" select="$part/@id"/>
                     </xsl:if>
                     
+                    <!-- gtr -->
                     <xsl:if test="$part[@prefix]">
                         <div class="gtr">
                             <xsl:choose>
@@ -1315,8 +1300,10 @@
                         </div>
                     </xsl:if>
                     
+                    <!-- container -->
                     <div>
                         
+                        <!-- class -->
                         <xsl:call-template name="class-attribute">
                             <xsl:with-param name="base-classes" as="xs:string*">
                                 <xsl:value-of select="'rw-heading'"/>
@@ -1365,7 +1352,7 @@
                                                 <xsl:call-template name="tid">
                                                     <xsl:with-param name="node" select="$title-text"/>
                                                 </xsl:call-template>
-                                                <xsl:apply-templates select="$title-text/text()"/>
+                                                <xsl:apply-templates select="$title-text/node()"/>
                                             </h3>
                                             
                                         </xsl:when>
@@ -1407,6 +1394,7 @@
                         </div>
                         
                     </div>
+                
                 </div>
             </xsl:when>
             
@@ -1568,12 +1556,23 @@
     
     <!-- Temporary id - used to locate serach results -->
     <xsl:template name="tid">
+        
         <xsl:param name="node" required="yes"/>
         
-        <xsl:variable name="id" select="concat('node-', $node/@tid)"/>
-        
         <!-- If a temporary id is present then set the id -->
-        <xsl:if test="$view-mode[not(@client = ('ebook', 'app'))] and $node[@tid]">
+        <xsl:if test="$view-mode[not(@client = ('ebook', 'app'))]">
+            
+            <xsl:variable name="id">
+                <xsl:choose>
+                    <xsl:when test="$node[@tid]">
+                        <xsl:value-of select="concat('node-', $node/@tid)"/>
+                    </xsl:when>
+                    <xsl:when test="$node[@xml:id]">
+                        <xsl:value-of select="$node/@xml:id"/>
+                    </xsl:when>
+                </xsl:choose>
+            </xsl:variable>
+            
             <xsl:choose>
                 
                 <!-- A translation -->
@@ -1581,7 +1580,7 @@
                     
                     <xsl:attribute name="id" select="$id"/>
                     
-                    <xsl:if test="$view-mode[@glossary = ('defer', 'defer-no-cache')] and m:glossarize-context($node) and not(self::tei:head)">
+                    <xsl:if test="$view-mode[@glossary = ('defer', 'defer-no-cache')] and m:glossarize-context($node) and not(self::tei:head) and $node[@tid]">
                         <xsl:variable name="request-view-mode" select="if($view-mode[@glossary = ('defer')]) then 'passage' else 'passage-no-cache'"/>
                         <xsl:attribute name="data-in-view-replace" select="concat('/translation/', $toh-key, '.html', '?part=', $id, m:view-mode-parameter($request-view-mode), m:archive-path-parameter(), '#', $id)"/>
                     </xsl:if>

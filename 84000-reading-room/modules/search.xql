@@ -85,11 +85,11 @@ declare function search:search($request as xs:string, $resource-id as xs:string,
     return 
         <search xmlns="http://read.84000.co/ns/1.0" >
             <request>{ $request }</request>
-            <debug>{ $results }</debug>
             {
                 if($resource-id gt '') then
                     <translation id="{ tei-content:id($all[1]) }">
                     {
+                        translation:toh($all[1], $resource-id),
                         translation:titles($all[1])
                     }
                     </translation>
@@ -136,7 +136,7 @@ declare function search:search($request as xs:string, $resource-id as xs:string,
                                 
                                 (:let $expanded :=
                                     if(not($expanded//exist:match)) then
-                                        util:expand($result, "expand-xincludes=no")
+                                        util:expand($result, "expand-xincludes=yes")
                                     else
                                         $expanded:)
                             
@@ -309,7 +309,7 @@ declare function search:tm-search($request as xs:string, $lang as xs:string, $fi
                                 return
                                     element match {
                                         attribute type { 'tm-unit' },
-                                        attribute location { concat('/translation/', $toh-key, '.html', if($folio[@xml:id]) then concat('?part=', $folio/@xml:id, '#', $folio/@xml:id) else '') },
+                                        attribute location { concat('/translation/', $toh-key, '.html', if($folio[@xml:id]) then concat('#', $folio/@xml:id) else '') },
                                         element tibetan { $expanded/tmx:tuv[@xml:lang eq "bo"]/tmx:seg/node() },
                                         element translation { $expanded/tmx:tuv[@xml:lang eq "en"]/tmx:seg/node() }
                                     }
@@ -504,11 +504,11 @@ declare function local:match-link($result as element(), $search-tei as element()
             
             (:Has an xml:id:)
             if($result/@xml:id) then
-                concat(functx:substring-before-if-contains($search-tei/@link, '#'), '?part=', $result/@xml:id, '#', $result/@xml:id)
+                concat(functx:substring-before-if-contains($search-tei/@link, '#'), '#', $result/@xml:id)
                 
             (: Has an id :)
             else if($result/@tid) then
-                concat(functx:substring-before-if-contains($search-tei/@link, '#'), '?part=', 'node-', $result/@tid, '#node-', $result/@tid)
+                concat(functx:substring-before-if-contains($search-tei/@link, '#'), '#node-', $result/@tid)
             
             (: Toh / Scope :)
             else if(local-name($result) = ('ref', 'biblScope')) then

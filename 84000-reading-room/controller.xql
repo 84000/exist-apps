@@ -247,12 +247,18 @@ return
                     </parameters>
                 )
             else if ($resource-suffix eq 'json') then
-                local:dispatch("/models/section.xq", "/views/json/section.xq", 
-                    <parameters xmlns="http://exist.sourceforge.net/NS/exist">
-                        <add-parameter name="resource-id" value="{$resource-id}"/>
-                        <add-parameter name="resource-suffix" value="json"/>
-                    </parameters>
-                )
+                let $view-path := 
+                    if(request:get-parameter('api-version', '') eq '0.2.0') then
+                        "/views/json/0.2.0/section.xq"
+                    else
+                        "/views/json/section.xq"
+                return
+                    local:dispatch("/models/section.xq", $view-path, 
+                        <parameters xmlns="http://exist.sourceforge.net/NS/exist">
+                            <add-parameter name="resource-id" value="{$resource-id}"/>
+                            <add-parameter name="resource-suffix" value="json"/>
+                        </parameters>
+                    )
             else if ($resource-suffix = ('navigation.atom', 'acquisition.atom')) then
                 local:dispatch("/models/section.xq", "/views/atom/section.xsl", 
                     <parameters xmlns="http://exist.sourceforge.net/NS/exist">

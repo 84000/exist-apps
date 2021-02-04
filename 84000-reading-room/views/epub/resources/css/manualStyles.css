@@ -121,6 +121,9 @@ small, .small {
 .hidden-ebook {
     display: none;
 }
+.break {
+    overflow-wrap: break-word;
+}
 
 /* other scripts */
 .text-bo {
@@ -496,7 +499,7 @@ img.logo-84000 {
 }
 
 /* Bibliography */
-#bibliography p {
+#bibliography p.bibl {
     padding-left: 2em;
     text-indent: -2em;
     margin-top: 14pt;

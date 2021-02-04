@@ -101,10 +101,10 @@ declare function tests:translations($translation-id as xs:string) as item(){
                             'homage', 0),
                         tests:section(
                             element tei:div {
-                                $tei//tei:body//tei:div[@type eq 'translation']/tei:div[@type = ('section', 'chapter')]
+                                $tei//tei:body/tei:div[@type eq 'translation']/tei:div[@type = ('section', 'chapter')]
                             },
                             element xhtml:div {
-                                $toh-html//xhtml:section[(common:contains-class(@class, 'part-type-chapter') or common:contains-class(@class, 'part-type-section'))]
+                                $toh-html//xhtml:section[common:contains-class(@class, ('part-type-chapter', 'part-type-section'))]
                             }, 
                             'body', 1),
                         tests:section(
@@ -361,10 +361,10 @@ declare function tests:section($section-tei as element()*, $section-html as elem
         count($section-html//xhtml:div[common:contains-class(@class, 'line')]) 
     
     let $section-count-tei-note := 
-        count($section-tei//tei:note[@place eq 'end'])
+        count($section-tei//tei:note[@place eq 'end'][@xml:id])
     let $section-count-html-note := 
         count($section-html//xhtml:a[common:contains-class(@class, 'footnote-link')])
-    
+        
     let $section-count-tei-q := 
         count($section-tei//tei:q)
     let $section-count-html-q := 
@@ -426,7 +426,22 @@ declare function tests:section($section-tei as element()*, $section-html as elem
                 <detail>{$section-count-tei-list-item} TEI list item(s), {$section-count-html-list-item} HTML list item(s).</detail>
                 <!--<detail>{$section-count-tei-sections} TEI section(s), {$section-count-html-sections} HTML section(s).</detail>-->
                 <detail>{$section-count-tei-milestones} TEI milestone(s), {$section-count-html-milestones} HTML milestone(s).</detail>
-                <!-- <detail>{string-join($section-tei//tei:milestone[not(@xml:id = $section-html//xhtml:a[common:contains-class(@class, 'milestone from-tei')]/@id)]/@xml:id , ' / ')}</detail>-->
+                {
+                    if(not($section-count-html-note eq $section-count-tei-note)) then
+                        <detail>
+                        {
+                            let $section-tei-note-ids := 
+                                $section-tei//tei:note[@place eq 'end'][@xml:id]/@xml:id/string()
+                            let $section-html-note-ids := 
+                                $section-html//xhtml:a[common:contains-class(@class, 'footnote-link')]/@id/string()
+                            return
+                                'Note anomalies: '
+                                || string-join(($section-tei-note-ids[not(. = $section-html-note-ids)], $section-html-note-ids[not(. = $section-tei-note-ids)]), ', ')
+                        }
+                        </detail>
+                    else ()
+                }
+                
             </details>
         </test>
 };
@@ -466,7 +481,7 @@ declare function tests:abbreviations($tei as element(tei:TEI)*, $html as element
 
 declare function tests:bibliography($tei as element(tei:TEI)*, $html as element()*) as item() {
 
-    let $biblography-count-html := count($html//*[@id eq 'bibliography']//xhtml:p)
+    let $biblography-count-html := count($html//*[@id eq 'bibliography']//xhtml:p[common:contains-class(@class, 'bibl')])
     let $biblography-count-tei := count($tei//tei:back/tei:div[@type='listBibl']//tei:bibl)
     
     return
@@ -517,7 +532,7 @@ declare function tests:glossary($tei as element(tei:TEI)*, $html as element()*) 
     let $glossary-count-tei := count($tei//tei:back/tei:div[@type='glossary']//tei:gloss)
     let $glossary-count-html := count($html//*[@id eq 'glossary']/*[common:contains-class(@class, 'glossary-item')])
     
-    let $tei-terms-raw := $tei//tei:back/tei:div[@type='glossary']//tei:gloss[@xml:id]/tei:term[not(@type = 'definition')][not(@xml:lang) or @xml:lang = ('Sa-Ltn', 'bo', 'Bo-Ltn', 'en')][normalize-space(text()[1])](:[not(tei:ptr)]:)
+    let $tei-terms-raw := $tei//tei:back/tei:div[@type='glossary']//tei:gloss[@xml:id]/tei:term[not(@type = 'definition')][not(@xml:lang) or @xml:lang = ('Sa-Ltn', 'bo', 'Bo-Ltn', 'en')][normalize-space(string-join(data(), ''))](:[not(tei:ptr)]:)
     let $empty-term-placeholders := (common:local-text('glossary.term-empty-sa-ltn', 'en'), common:local-text('glossary.term-empty-bo-ltn', 'en'))
     
     let $tei-terms := (
@@ -526,7 +541,7 @@ declare function tests:glossary($tei as element(tei:TEI)*, $html as element()*) 
     )
     
     let $html-term-elements := 
-        $html//*[@id eq 'glossary']/*[common:contains-class(@class, 'glossary-item')]//*[common:contains-class(@class, 'term')][text()](:[not(xhtml:a[common:contains-class(@class, 'pointer')])]:)
+        $html//*[@id eq 'glossary']/*[common:contains-class(@class, 'glossary-item')]//*[common:contains-class(@class, 'term')][normalize-space(string-join(data(), ''))](:[not(xhtml:a[common:contains-class(@class, 'pointer')])]:)
     
     let $html-terms := 
         $html-term-elements[not(. = $empty-term-placeholders)] ! data(.) (:! tokenize(., '·'):) ! translate(., 'ᴀʙᴄᴅᴇꜰɢʜɪᴊᴋʟᴍɴᴏᴘǫʀsᴛᴜᴠᴡxʏᴢ', 'abcdefghijklmnopqrstuvwxyz') ! lower-case(.) ! tests:normalize-whitespace(.)
@@ -535,9 +550,16 @@ declare function tests:glossary($tei as element(tei:TEI)*, $html as element()*) 
     let $html-terms-not-found := $html-terms[not(. = $tei-terms)]
 
     return
-        <test xmlns="http://read.84000.co/ns/1.0" 
+        <test xmlns="http://read.84000.co/ns/1.0"
             id="glossary"
-            pass="{ if($glossary-count-html > 0 and $glossary-count-html = $glossary-count-tei and count($html-terms) = count($tei-terms) and (count($tei-terms-not-found) + count($html-terms-not-found)) = 0) then 1 else 0 }">
+            pass="{ 
+                if(
+                    $glossary-count-html > 0 
+                    and $glossary-count-html = $glossary-count-tei 
+                    and count($html-terms) = count($tei-terms) 
+                    and (count($tei-terms-not-found) + count($html-terms-not-found)) = 0
+                ) then 1 else 0 
+            }">
             <title>Glossary: The text has at least 1 glossary item and there are the same number in the HTML as in the TEI with no anomalies in the counts of each term.</title>
             <details>
                 <detail>{ $glossary-count-tei } glossary item(s) in the TEI, { $glossary-count-html } glossary item(s) in the HTML.</detail>
@@ -558,7 +580,7 @@ declare function tests:glossary($tei as element(tei:TEI)*, $html as element()*) 
 
 declare function tests:refs($tei as element(tei:TEI)*, $html as element()*, $toh-key as xs:string){
     
-    let $tei-folios := translation:folios($tei, $toh-key)//m:folio
+    let $tei-folios := translation:folios($tei, $toh-key)//m:folio[not(@rend eq 'blank')]
     let $html-refs := $html//xhtml:a[common:contains-class(@class, 'ref')]
     
     let $folio-count-tei := count($tei-folios)
