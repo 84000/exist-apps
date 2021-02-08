@@ -57,6 +57,8 @@ declare function deploy:push($repo-id as xs:string, $admin-password as xs:string
         let $admin-password-correct := deploy:admin-password-correct($admin-password)
         
         let $exist-options := deploy:exist-options()
+        
+        (: Set working dir for repo :)
         let $git-options := deploy:git-options($repo)
         
         let $commit-msg := 
@@ -65,6 +67,10 @@ declare function deploy:push($repo-id as xs:string, $admin-password as xs:string
             else
                 $commit-msg
         
+        (: 
+            Default to git add --all 
+            Unless a specific resource is specified them $repo/m:sync/@sub-dir + file name
+        :)
         let $git-add := 
             if($resource) then
                 let $sync := $repo/m:sync[starts-with($resource, @collection)][1]
@@ -78,50 +84,53 @@ declare function deploy:push($repo-id as xs:string, $admin-password as xs:string
                     concat($sub-dir, $resource-relative)
             else
                 '--all'
-            
+    
     where $git-add
     return
         <result xmlns="http://read.84000.co/ns/1.0" admin-password-correct="{ $admin-password-correct }">
         {
-            (: options debug :)
-            (:$exist-options,
-            $git-options,:)
-            
-            (: sync the data :)
+        
+            (: Sync the data for each $repo/m:sync :)
             for $sync in $repo/m:sync[@collection]
-            
+                
+                (: Sub directory to sync :)
                 let $sub-dir := 
                     if($sync[@sub-dir]) then
                         concat('/',  $sync/@sub-dir)
                     else
                         ''
                 
-                let $backup := 
-                    if($sync[@backup]) then
-                        concat('/',  $sync/@backup)
-                    else
-                        ''
-                
+                (: Do the sync :)
                 let $do-sync := 
                     file:sync(
                         $sync/@collection, 
                         concat($repo/@path, $sub-dir), 
                         ()
                     )
-                    
-                where $do-sync//file:update and $admin-password-correct eq true() and ends-with($backup, '.zip')
+                
                 return (
+                    
+                    (: Return details of the sync :)
                     $do-sync,
-                    process:execute(
-                        ('bin/backup.sh', '-u', 'admin', '-p', $admin-password, '-b', $sync/@collection, '-d', concat($repo/@path, $sub-dir, $backup)), 
-                        $exist-options
-                    )
+                    
+                    (: Create a zip if required :)
+                    let $backup := concat('/',  $sync/@backup)
+                    
+                    where 
+                        $do-sync//file:update 
+                        and $sync[ends-with(@backup, '.zip')] 
+                        and $admin-password-correct eq true()
+                    return 
+                        process:execute(
+                            ('bin/backup.sh', '-u', 'admin', '-p', $admin-password, '-b', $sync/@collection, '-d', concat($repo/@path, $sub-dir, $backup)), 
+                            $exist-options
+                        )
                 )
             ,
             <push>
             {
                 (: Do Git push :)
-                process:execute(('git', 'status'), $git-options),
+                (:process:execute(('git', 'status'), $git-options),:)
                 process:execute(('git', 'add', $git-add), $git-options),
                 process:execute(('git', 'commit', '-m', $commit-msg), $git-options),
                 process:execute(('git', 'push', 'origin', 'master'), $git-options)

@@ -10,15 +10,21 @@ import module namespace store="http://read.84000.co/store" at "../modules/store.
 
 declare variable $local:tei := 
     collection($common:translations-path)//tei:TEI
-        [tei:teiHeader/tei:fileDesc/tei:publicationStmt[@status = $tei-content:marked-up-status-ids]];
+        [tei:teiHeader/tei:fileDesc/tei:publicationStmt[@status = $tei-content:marked-up-status-ids](:[tei:idno/@xml:id eq 'UT22084-031-002']:)];
 
 (: Remove note indexes :)
 declare function local:remove-note-indexes() {
     (# exist:batch-transaction #) {
-     
-        for $note-index in $local:tei//tei:text//tei:note[@index]/@index
-        return
-            update delete $note-index
+        
+        for $tei in $local:tei
+        return (
+            tei-content:id($tei) || ' / ' || count($tei//tei:text//tei:note[@index]),
+            for $note-index in $tei//tei:text//tei:note[@place eq "end"][@index]/@index
+            return (
+                (:$note-index:)
+                update delete $note-index
+            )
+        )
      
      }
 };
@@ -43,6 +49,6 @@ declare function local:cache-glossary() {
     )
 };
 
-(:local:remove-note-indexes(),:)
+local:remove-note-indexes()(:,:)
 (:local:minor-version-increment(),:)
-local:cache-glossary()
+(:local:cache-glossary():)
