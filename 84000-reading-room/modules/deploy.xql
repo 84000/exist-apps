@@ -72,6 +72,7 @@ declare function deploy:push($repo-id as xs:string, $admin-password as xs:string
             Unless a specific resource is specified them $repo/m:sync/@sub-dir + file name
         :)
         let $git-add := 
+            (: There's a file defined so only commit that :)
             if($resource) then
                 let $sync := $repo/m:sync[starts-with($resource, @collection)][1]
                 let $sub-dir := 
@@ -82,6 +83,9 @@ declare function deploy:push($repo-id as xs:string, $admin-password as xs:string
                 let $resource-relative := substring-after($resource, concat($sync/@collection, '/'))
                 return
                     concat($sub-dir, $resource-relative)
+            (: There's a sub-directory defined so only commit that :)
+            else if(count($repo/m:sync[@sub-dir]) eq 1) then
+                $repo/m:sync[1]/@sub-dir/string()
             else
                 '--all'
     
@@ -118,7 +122,7 @@ declare function deploy:push($repo-id as xs:string, $admin-password as xs:string
                     
                     where 
                         $do-sync//file:update 
-                        and $sync[ends-with(@backup, '.zip')] 
+                        and $sync[matches(@backup, '\.zip$')] 
                         and $admin-password-correct eq true()
                     return 
                         process:execute(
