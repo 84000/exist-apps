@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xf="http://exist-db.org/xquery/file" version="3.0" exclude-result-prefixes="#all">
     
     <xsl:import href="../../84000-reading-room/views/html/website-page.xsl"/>
     <xsl:import href="common.xsl"/>
@@ -82,15 +82,29 @@
                         </form>
                         
                         <div class="well well-sm well-code top-margin small monospace">
-                            <xsl:for-each select="//execution">
-                                <strong>
-                                    <xsl:value-of select="concat($environment/m:label, '$ ', commandline/text())"/>
-                                </strong>
-                                <br/>
-                                <xsl:for-each select="stdout/line">
-                                    <xsl:value-of select="concat('  ', text())"/>
-                                    <br/>
-                                </xsl:for-each>
+                            <xsl:for-each select="//execution[commandline] | //xf:sync[xf:update]">
+                                <xsl:choose>
+                                    <xsl:when test="self::execution">
+                                        <strong>
+                                            <xsl:value-of select="concat($environment/m:label, '$ ', commandline/text())"/>
+                                        </strong>
+                                        <br/>
+                                        <xsl:for-each select="stdout/line">
+                                            <xsl:value-of select="concat('  ', text())"/>
+                                            <br/>
+                                        </xsl:for-each>
+                                    </xsl:when>
+                                    <xsl:when test="self::xf:sync">
+                                        <strong>
+                                            <xsl:value-of select="concat('Sync: ', @collection)"/>
+                                        </strong>
+                                        <br/>
+                                        <xsl:for-each select="xf:update">
+                                            <xsl:value-of select="concat('Update: ', @name)"/>
+                                            <br/>
+                                        </xsl:for-each>
+                                    </xsl:when>
+                                </xsl:choose>
                                 <hr/>
                             </xsl:for-each>
                             <strong>
