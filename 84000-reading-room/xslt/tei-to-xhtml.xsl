@@ -2255,7 +2255,10 @@
             </xsl:call-template>
         </xsl:variable>
         
+        <!-- Match whole string or just find -->
         <xsl:variable name="match-complete-data" select="if($text-node/parent::tei:title | $text-node/parent::tei:name) then true() else false()" as="xs:boolean"/>
+        <!-- Exclude itself if this is a glossary definition -->
+        <xsl:variable name="exclude-gloss-ids" select="if($text-node/ancestor::tei:gloss[1]) then $text-node/ancestor::tei:gloss[1]/@xml:id else ()"/>
         
         <!-- Narrow down the glossary items - we don't want to scan them all -->
         <xsl:variable name="match-glossary-items" as="element(tei:gloss)*">
@@ -2264,12 +2267,12 @@
                 <!-- Preferably use the cache -->
                 <xsl:when test="$view-mode[@glossary eq 'use-cache']">
                     <xsl:variable name="cached-location-gloss-ids" select="key('glossary-cache-location', $glossary-location)/parent::m:gloss/@id" as="xs:string*"/>
-                    <xsl:sequence select="$glossary-prioritised[not(@mode eq 'marked')][@xml:id = $cached-location-gloss-ids]"/>
+                    <xsl:sequence select="$glossary-prioritised[not(@mode eq 'marked')][@xml:id = $cached-location-gloss-ids][not(@xml:id = $exclude-gloss-ids)]"/>
                 </xsl:when>
                 
                 <!-- Which items should we scan for? -->
                 <xsl:otherwise>
-                    <xsl:for-each select="$glossary-prioritised[not(@mode eq 'marked')]">
+                    <xsl:for-each select="$glossary-prioritised[not(@mode eq 'marked')][not(@xml:id = $exclude-gloss-ids)]">
                         
                         <xsl:variable name="terms" select="m:glossary-terms-to-match(.)"/>
                         <xsl:variable name="glossary-cache-gloss" select="key('glossary-cache-gloss', @xml:id)[1]"/>
