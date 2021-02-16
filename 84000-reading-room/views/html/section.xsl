@@ -327,7 +327,7 @@
                         <!-- About tab -->
                         <xsl:if test="m:section/m:about[*]">
                             <li role="presentation">
-                                <a href="#summary" aria-controls="summary" role="tab" data-toggle="tab">
+                                <a href="#about" aria-controls="about" role="tab" data-toggle="tab">
                                     <xsl:value-of select="'About'"/>
                                 </a>
                             </li>
@@ -372,7 +372,7 @@
                         
                         <!-- About text -->
                         <xsl:if test="m:section/m:about[*]">
-                            <div role="tabpanel" class="summary">
+                            <div role="tabpanel" id="about" class="summary">
                                 
                                 <xsl:variable name="css-class" as="xs:string*">
                                     <xsl:value-of select="'tab-pane fade'"/>
