@@ -11,7 +11,7 @@
         <xsl:call-template name="epub-page">
             <xsl:with-param name="page-title" select="'The Translation'"/>
             <xsl:with-param name="content">
-                <section epub:type="halftitle" id="body-title" class="heading-section">
+                <section epub:type="halftitle" id="body-title" class="new-page heading-section">
                     
                     <xsl:if test="m:translation/m:part[@type eq 'translation']/m:honoration[text()]">
                         <h2>

@@ -12,7 +12,7 @@
             <xsl:with-param name="page-title" select="'Table of Contents'"/>
             <xsl:with-param name="content">
 
-                <aside>
+                <section class="new-page">
 
                     <xsl:attribute name="id" select="'toc'"/>
 
@@ -50,7 +50,7 @@
                         </ol>
                     </nav>
 
-                </aside>
+                </section>
 
             </xsl:with-param>
         </xsl:call-template>

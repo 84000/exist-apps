@@ -14,7 +14,7 @@
             <xsl:with-param name="page-title" select="$part/tei:head[@type eq $part/@type][1]"/>
             <xsl:with-param name="content">
                 
-                <section epub:type="acknowledgments" class="text">
+                <section epub:type="acknowledgments" class="new-page text">
                     <xsl:apply-templates select="$part"/>
                 </section>
                 

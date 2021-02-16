@@ -4,6 +4,13 @@
     <xsl:import href="website-page.xsl"/>
     
     <xsl:template match="m:section">
+        <h2 class="no-top-margin">
+            <xsl:value-of select="m:titles/m:title[@xml:lang eq 'en']"/>
+            <small class="text-muted">
+                <xsl:value-of select="' / '"/>
+                <xsl:value-of select="@id"/>
+            </small>
+        </h2>
         <table id="ajax-source" class="table table-responsive ajax-target">
             <thead>
                 <tr>

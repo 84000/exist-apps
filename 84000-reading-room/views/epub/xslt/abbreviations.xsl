@@ -14,7 +14,7 @@
             <xsl:with-param name="page-title" select="$part/tei:head[@type eq $part/@type][1]"/>
             <xsl:with-param name="content">
                 
-                <section epub:type="index-legend">
+                <section epub:type="index-legend" class="new-page">
                     <xsl:apply-templates select="$part"/>
                 </section>
                 

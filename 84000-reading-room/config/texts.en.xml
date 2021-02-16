@@ -85,7 +85,7 @@
     <item key="about.progress.translations-remaining-label">Other Translations In Progress</item>
     <item key="about.progress.context-label">completed</item>
     <item key="about.progress.related-pages">
-        <h3>Other Related Pages</h3>
+        <h2>Other Related Pages</h2>
         <ul class="list-unstyled">
             <li>
                 <a href="#commsSiteUrl/about/work-flow">Learn more about what it takes to produce a page of translation</a>
@@ -250,7 +250,7 @@
             <strong>Sponsor A Sūtra</strong> is an opportunity to support the translation of a major text. Some of the long, important
             sūtras require a sizeable amount of funding to ensure the translation continues through to completion. Your support is needed
             for the successful translation of these texts.</p>
-        <h4>How much does it cost to sponsor?</h4>
+        <h2>How much does it cost to sponsor?</h2>
         <p>Sponsorship opportunities are now available in sections of:</p>
         <ul>
             <li>100 pages (US$25,000)</li>
@@ -261,14 +261,14 @@
             access efficiently and effectively. Please note that per sūtra suggested donation amounts are approximations only, and the
             actual cost may be greater or lesser when the overall costs of translation, editorial work, publication, and project management
             are taken into account.</p>
-        <h4>How will the funds be used?</h4>
+        <h2>How will the funds be used?</h2>
         <p>The funds will be used to cover the costs of translation, editorial work, publication, and project management. Please see <a href="#commsSiteUrl/about/work-flow">"What It Takes To Produce A Page of Translation"</a> to learn more about the many
             stages required for high quality translation.</p>
-        <h4>Who can sponsor?</h4>
+        <h2>Who can sponsor?</h2>
         <p>Anyone can make a sponsorship as an individual or family. Sponsorships can also be made in the name of a group (such as a
             company, sangha or temple), with the requirement that the group assigns a single contact person, and that one person will be
             designated as the sole recipient of any acknowledgement letters or gifts from 84000.</p>
-        <h4>How will donors be acknowledged?</h4>
+        <h2>How will donors be acknowledged?</h2>
         <p>Donors will be recognized in the acknowledgements section of the text.</p>
         <p>In appreciation of your generous support, all the names and the dedication messages will be offered for prayers during the
             Dzongsar Monlam prayer festivals held biennially in Bodhgaya, India.</p>

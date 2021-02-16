@@ -11,7 +11,7 @@
             
             <div class="title-band">
                 <div class="container text-center">
-                    <h1>
+                    <h1 class="title">
                         <xsl:value-of select="'Sections with Published Translations'"/>
                     </h1>
                 </div>
@@ -52,7 +52,6 @@
         </xsl:call-template>
         
     </xsl:template>
-    
     
     <xsl:template name="section-checkbox">
         

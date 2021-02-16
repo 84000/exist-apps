@@ -24,10 +24,8 @@
                                     <xsl:value-of select="'The 84000 Knowledge Base'"/>
                                 </li>
                                 
-                                <!--<li>
-                                    <h1>
-                                        <xsl:value-of select="m:knowledgebase/m:page/m:titles/m:title[@xml:lang = 'en']"/>
-                                    </h1>
+                                <!--<li class="title">
+                                    <xsl:value-of select="m:knowledgebase/m:page/m:titles/m:title[@xml:lang = 'en']"/>
                                 </li>-->
                                 
                             </ul>

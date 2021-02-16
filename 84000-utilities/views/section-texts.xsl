@@ -12,6 +12,7 @@
             <xsl:with-param name="page-title" select="'Section Texts | 84000 Utilities'"/>
             <xsl:with-param name="page-description" select="'Texts belong to a section of the canon'"/>
             <xsl:with-param name="content">
+                
                 <xsl:call-template name="utilities-page">
                     <xsl:with-param name="content">
                         
@@ -19,6 +20,7 @@
                         
                     </xsl:with-param>
                 </xsl:call-template>
+                
             </xsl:with-param>
         </xsl:call-template>
         

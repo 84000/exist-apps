@@ -104,7 +104,7 @@
                 <xsl:attribute name="href" select="$page-url"/>
             </link>
             
-            <link rel="stylesheet" type="text/css">
+            <link rel="stylesheet" type="text/css" charset="utf-8">
                 <xsl:choose>
                     <xsl:when test="$page-type = ('communications')">
                         <xsl:attribute name="href" select="concat($front-end-path, '/css/84000-comms.css', $app-version-url-attribute)"/>
@@ -258,9 +258,9 @@
                 </xsl:if>
                 
                 <!-- Alert -->
-                <div id="page-alert" class="collapse">
+                <section id="page-alert" class="collapse">
                     <div class="container"/>
-                </div>
+                </section>
                 <!-- Shared header -->
                 <xsl:apply-templates select="$eft-header"/>
                 
@@ -319,9 +319,9 @@
                 </xsl:if>
                 
                 <!-- Alert -->
-                <div id="page-alert" class="collapse">
+                <section id="page-alert" class="collapse">
                     <div class="container"/>
-                </div>
+                </section>
                 
                 <!-- Place content -->
                 <xsl:sequence select="$content"/>

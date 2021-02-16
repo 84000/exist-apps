@@ -26,7 +26,6 @@ let $archive-path := request:get-parameter('archive-path', ())
 
 let $tei := tei-content:tei($resource-id, 'translation', $archive-path)
 
-where $tei
 return
     (: return all tei data :)
     if($resource-suffix = ('tei')) then
@@ -57,6 +56,7 @@ return
 
         let $canonical-id := $archive-path
         
+        where $source
         return
             
             common:response(
@@ -97,7 +97,7 @@ return
                             
                             translation:titles($tei),
                             $source,
-                            
+                            translation:toh($tei, $source/@key),
                             (: Don't need these for a passage :)
                             if (not($view-mode[@parts eq 'passage'])) then (
                                 translation:long-titles($tei),

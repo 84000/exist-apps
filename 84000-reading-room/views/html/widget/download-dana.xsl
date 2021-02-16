@@ -19,7 +19,7 @@
         <xsl:variable name="content">
             <div class="title-band">
                 <div class="container text-center">
-                    <h1>
+                    <h1 class="title">
                         <xsl:value-of select="$widget-title"/>
                     </h1>
                 </div>

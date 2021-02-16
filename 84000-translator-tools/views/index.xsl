@@ -24,7 +24,7 @@
                             </img>
                         </span>
                         <span>
-                            <h1>
+                            <h1 class="title">
                                 <xsl:value-of select="concat('84000 Community / ', $tab-label)"/>
                             </h1>
                         </span>

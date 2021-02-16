@@ -278,8 +278,8 @@ declare function tests:titles($toh-html as element(), $tei as element(tei:TEI)) 
         $tei//tei:fileDesc/tei:titleStmt/tei:title[@type eq 'longTitle'][@xml:lang = ('Bo-Ltn', 'bo')][text()][1]
     )
     
-    let $html-main-titles := $toh-html//*[@id eq 'main-titles']/*[self::xhtml:h1 | self::xhtml:h2 | self::xhtml:h3 | self::xhtml:h4][text()]
-    let $html-long-titles := $toh-html//*[@id eq 'long-titles']/*[self::xhtml:h1 | self::xhtml:h2 | self::xhtml:h3 | self::xhtml:h4][text()]
+    let $html-main-titles := $toh-html//*[@id eq 'main-titles']/*[common:contains-class(@class, 'title')][data()]
+    let $html-long-titles := $toh-html//*[@id eq 'long-titles']/*[common:contains-class(@class, 'title')][data()]
     
     return
         <test xmlns="http://read.84000.co/ns/1.0"
@@ -288,14 +288,13 @@ declare function tests:titles($toh-html as element(), $tei as element(tei:TEI)) 
             <title>Titles test: The html has the correct number of titles.</title>
             <details>
             { 
-                for $title in $tei-main-titles
+                for $title in $html-main-titles
                 return 
-                    <detail>Main title: {$title/text()}</detail>
-            }
-            { 
+                    <detail>Main title: {$title/data()}</detail>
+                ,
                 for $title in $html-long-titles
                 return 
-                    <detail>Long title: {$title/text()}</detail>
+                    <detail>Long title: {$title/data()}</detail>
             }
             </details>
         </test>
@@ -373,7 +372,7 @@ declare function tests:section($section-tei as element()*, $section-html as elem
     let $section-count-tei-id := 
         count($section-tei//*[@tid][not(ancestor::tei:note)])
     let $section-count-html-id := 
-        count($section-html//*[contains(@id, 'node-')])
+        count($section-html//*[matches(@id, '^node\-')])
     
     let $section-count-tei-list-item := 
         count($section-tei//tei:list[not(ancestor::tei:note)]/tei:item)
@@ -440,6 +439,21 @@ declare function tests:section($section-tei as element()*, $section-html as elem
                         }
                         </detail>
                     else ()
+                    ,
+                    if(not($section-count-html-id eq $section-count-tei-id)) then
+                        <detail>
+                        {
+                            let $section-tei-ids := 
+                                $section-tei//*[@tid][not(ancestor::tei:note)]/@tid/string()
+                            let $section-html-ids := 
+                                $section-html//*[matches(@id, '^node\-')]/replace(@id, '^node\-', '')
+                            return
+                                'Id anomalies: '
+                                || string-join(($section-tei-ids[not(. = $section-html-ids)], $section-html-ids[not(. = $section-tei-ids)]), ', ')
+                        }
+                        </detail>
+                    else ()
+                    
                 }
                 
             </details>

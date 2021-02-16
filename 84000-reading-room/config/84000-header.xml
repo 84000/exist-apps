@@ -52,10 +52,10 @@
                 <label key="label-lobby">The Collection</label>
             </item>
             <item url="https://read.84000.co/section/all-translated.html">
-                <label key="label-all-translated">All Published Translations</label>
+                <label key="label-all-translated">Published Translations</label>
             </item>
             <item url="https://read.84000.co/search.html">
-                <label key="label-search">Search The Reading Room</label>
+                <label key="label-search">Search the Reading Room</label>
             </item>
         </item>
         <item class="resources" url="#resources">

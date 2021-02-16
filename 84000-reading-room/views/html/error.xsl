@@ -22,10 +22,8 @@
                                         <xsl:value-of select="'The Collection'"/>
                                     </a>
                                 </li>
-                                <li>
-                                    <h1>
-                                        <xsl:value-of select="'Error'"/>
-                                    </h1>
+                                <li class="title">
+                                    <xsl:value-of select="'Error'"/>
                                 </li>
                             </ul>
                         </div>
@@ -40,7 +38,7 @@
                                             </span>
                                         </span>
                                         <span class="btn-round-text">
-                                            <xsl:value-of select="'All Published Translations'"/>
+                                            <xsl:value-of select="'Published Translations'"/>
                                         </span>
                                     </a>
                                 </div>

@@ -421,12 +421,12 @@
     
     <xsl:template match="eft:nav-category[eft:item/eft:item]">
         <div>
-            <h2>
+            <h3>
                 <xsl:call-template name="translation-lang-class">
                     <xsl:with-param name="lang" select="$lang"/>
                 </xsl:call-template>
                 <xsl:value-of select="eft:item/eft:label"/>
-            </h2>
+            </h3>
             <p data-match-height="nav-category-description">
                 <xsl:value-of select="eft:item/eft:description"/>
             </p>
@@ -476,13 +476,13 @@
                     <xsl:attribute name="id">
                         <xsl:value-of select="concat($id, '-heading')"/>
                     </xsl:attribute>
-                    <h3 class="panel-title">
+                    <span class="panel-title">
                         <xsl:call-template name="translation-lang-class">
                             <xsl:with-param name="lang" select="$lang"/>
                             <xsl:with-param name="persist-class-str" select="'panel-title'"/>
                         </xsl:call-template>
                         <xsl:value-of select="eft:item/eft:label"/>
-                    </h3>
+                    </span>
                     <span class="text-right">
                         <i class="fa fa-plus collapsed-show"/>
                         <i class="fa fa-minus collapsed-hide"/>
@@ -526,34 +526,16 @@
             <div class="container">
                 <div class="center-vertical-sm full-width">
                     <div>
-                        <xsl:choose>
-                            <xsl:when test="eft:item/eft:item[@url = $active-url]">
-                                <ul class="breadcrumb">
-                                    <li>
-                                        <xsl:call-template name="translation-lang-class">
-                                            <xsl:with-param name="lang" select="$lang"/>
-                                        </xsl:call-template>
-                                        <xsl:value-of select="eft:item/eft:label"/>
-                                    </li>
-                                    <li>
-                                        <h1>
-                                            <xsl:call-template name="translation-lang-class">
-                                                <xsl:with-param name="lang" select="$lang"/>
-                                            </xsl:call-template>
-                                            <xsl:value-of select="eft:item/eft:item[@url = $active-url]/eft:label"/>
-                                        </h1>
-                                    </li>
-                                </ul>
-                            </xsl:when>
-                            <xsl:otherwise>
-                                <h1>
+                        <ul class="breadcrumb">
+                            <xsl:for-each select="eft:item">
+                                <li>
                                     <xsl:call-template name="translation-lang-class">
                                         <xsl:with-param name="lang" select="$lang"/>
                                     </xsl:call-template>
-                                    <xsl:value-of select="eft:item[@url = $active-url]/eft:label"/>
-                                </h1>
-                            </xsl:otherwise>
-                        </xsl:choose>
+                                    <xsl:value-of select="eft:label"/>
+                                </li>
+                            </xsl:for-each>
+                        </ul>
                     </div>
                     <div>
                         <a href="#bookmarks-sidebar" id="bookmarks-btn" class="show-sidebar center-vertical pull-right" role="button" aria-haspopup="true" aria-expanded="false">
@@ -584,10 +566,10 @@
     
     <xsl:template match="eft:bookmarks-sidebar[eft:translation[@id = 'label-bookmarks']]">
         <!-- Bookmarks fly-out -->
-        <div id="bookmarks-sidebar" class="fixed-sidebar collapse width hidden-print">
+        <aside id="bookmarks-sidebar" class="fixed-sidebar collapse width hidden-print">
             <div class="fix-width">
                 <div class="sidebar-content">
-                    <h4>
+                    <h2>
                         <xsl:call-template name="translation-lang-class">
                             <xsl:with-param name="lang" select="$lang"/>
                         </xsl:call-template>
@@ -596,7 +578,7 @@
                             <xsl:with-param name="lang" select="$lang"/>
                             <xsl:with-param name="text-node" select="true()"/>
                         </xsl:call-template>
-                    </h4>
+                    </h2>
                     <table id="bookmarks-list" class="contents-table">
                         <tbody/>
                         <tfoot/>
@@ -610,12 +592,12 @@
                     </span>
                 </button>
             </div>
-        </div>
+        </aside>
     </xsl:template>
     
     <xsl:template match="eft:sharing-panel[eft:item]">
         
-        <div class="panel panel-default">
+        <aside class="panel panel-default">
             <div class="panel-body sharing">
                 <span>
                     <xsl:call-template name="translation-lang-class">
@@ -639,13 +621,13 @@
                     </a>
                 </xsl:for-each>
             </div>
-        </div>
+        </aside>
         
     </xsl:template>
     
     <xsl:template match="eft:shopping-panel[eft:item]">
         
-        <div class="panel panel-default">
+        <aside class="panel panel-default">
             <div class="panel-body shopping">
                 <xsl:for-each select="eft:item">
                     <a target="_blank" class="center-vertical full-width">
@@ -675,7 +657,7 @@
                     </p>
                 </xsl:for-each>
             </div>
-        </div>
+        </aside>
         
     </xsl:template>
     

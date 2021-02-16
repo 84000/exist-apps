@@ -56,27 +56,33 @@ declare function local:dispatch($model as xs:string?, $view as xs:string?, $para
 
 declare function local:dispatch-html($model as xs:string, $view as xs:string, $parameters as node()) as node(){
     <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+    
         <!-- Model -->
         <forward url="{concat($exist:controller, $model)}">
         {
             $parameters//add-parameter 
         }
         </forward>
+        
         <!-- View -->
         <view>
             <forward servlet="XSLTServlet">
                 <set-attribute name="xslt.stylesheet" value="{concat($exist:root, $exist:controller, $view)}"/>
+                <set-header name="Expires" value="{xs:dateTime(current-dateTime()) + xs:dayTimeDuration('P7D')}"/>
                 <set-header name="X-UA-Compatible" value="IE=edge,chrome=1"/>
                 { 
                     $parameters//set-header
                 }
             </forward>
         </view>
+        
+        <!-- Error -->
         <error-handler>
             <forward servlet="XSLTServlet">
                 <set-attribute name="xslt.stylesheet" value="{concat($exist:root, $exist:controller, "/views/html/error.xsl")}"/>
             </forward>
         </error-handler>
+        
     </dispatch>
 };
 

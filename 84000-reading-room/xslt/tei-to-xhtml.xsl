@@ -16,7 +16,7 @@
     
     <!-- Global variables -->
     <xsl:variable name="translation-id" select="/m:response/m:translation/@id"/>
-    <xsl:variable name="toh-key" select="/m:response/m:translation/m:source/@key"/>
+    <xsl:variable name="toh-key" select="/m:response/m:translation/m:toh/@key"/>
     <xsl:variable name="part-status" select="if(not(/m:response/m:translation//m:part[@render = ('preview', 'empty')])) then 'complete' else if(/m:response/m:translation//m:part[@render eq 'show']) then 'part' else 'empty'" as="xs:string"/>
     
     <!-- Pre-sort the glossaries by priority -->
@@ -144,6 +144,11 @@
         
     </xsl:template>
     
+    <!-- Ignore any nodes with a different key - except those that are indexed -->
+    <xsl:template match="tei:*[@key][@key = /m:response/m:translation/m:toh//m:duplicate/@key][not(self::tei:note | self::tei:milestone | tei:gloss)]">
+        <!-- Ignore these -->
+    </xsl:template>
+    
     <xsl:template match="tei:title">
         <span>
             <xsl:call-template name="class-attribute">
@@ -165,31 +170,23 @@
     </xsl:template>
     
     <xsl:template match="tei:mantra">
-        <xsl:call-template name="match-key">
-            <xsl:with-param name="content">
-                <span>
-                    <xsl:call-template name="class-attribute">
-                        <xsl:with-param name="base-classes" select="'mantra'"/>
-                        <xsl:with-param name="lang" select="@xml:lang"/>
-                    </xsl:call-template>
-                    <xsl:apply-templates select="node()"/>
-                </span>
-            </xsl:with-param>
-        </xsl:call-template>
+        <span>
+            <xsl:call-template name="class-attribute">
+                <xsl:with-param name="base-classes" select="'mantra'"/>
+                <xsl:with-param name="lang" select="@xml:lang"/>
+            </xsl:call-template>
+            <xsl:apply-templates select="node()"/>
+        </span>
     </xsl:template>
     
     <xsl:template match="tei:foreign">
-        <xsl:call-template name="match-key">
-            <xsl:with-param name="content">
-                <span>
-                    <xsl:call-template name="class-attribute">
-                        <xsl:with-param name="base-classes" select="'foreign'"/>
-                        <xsl:with-param name="lang" select="@xml:lang"/>
-                    </xsl:call-template>
-                    <xsl:apply-templates select="node()"/>
-                </span>
-            </xsl:with-param>
-        </xsl:call-template>
+        <span>
+            <xsl:call-template name="class-attribute">
+                <xsl:with-param name="base-classes" select="'foreign'"/>
+                <xsl:with-param name="lang" select="@xml:lang"/>
+            </xsl:call-template>
+            <xsl:apply-templates select="node()"/>
+        </span>
     </xsl:template>
     
     <xsl:template match="tei:emph">
@@ -228,10 +225,6 @@
         <xsl:choose>
             
             <xsl:when test="$ref[@rend eq 'hidden']">
-                <!-- Ignore these -->
-            </xsl:when>
-            
-            <xsl:when test="$ref[@key] and $ref[not(@key eq $toh-key)]">
                 <!-- Ignore these -->
             </xsl:when>
             
@@ -421,6 +414,7 @@
     
     <xsl:template match="tei:p | tei:ab | tei:trailer | tei:bibl">
         <xsl:call-template name="milestone">
+            
             <xsl:with-param name="content">
                 <p>
                     
@@ -450,7 +444,21 @@
                     
                 </p>
             </xsl:with-param>
-            <xsl:with-param name="row-type" select="'paragraph'"/>
+            
+            <xsl:with-param name="row-type">
+                <xsl:choose>
+                    <xsl:when test="(@rend,@type) = 'mantra'">
+                        <xsl:value-of select="'mantra'"/>
+                    </xsl:when>
+                    <xsl:when test="self::tei:trailer">
+                        <xsl:value-of select="'trailer'"/>
+                    </xsl:when>
+                    <xsl:otherwise>
+                        <xsl:value-of select="'paragraph'"/>
+                    </xsl:otherwise>
+                </xsl:choose>
+            </xsl:with-param>
+            
         </xsl:call-template>
     </xsl:template>
     
@@ -873,6 +881,7 @@
                                 <!-- marks a target -->
                                 <xsl:attribute name="data-mark" select="concat('[data-mark-id=&#34;', $end-note/@xml:id, '&#34;]')"/>
                                 <xsl:attribute name="class" select="'footnote-number scroll-to-anchor'"/>
+                                <xsl:attribute name="title" select="concat('Go to note ', $notes-cache-end-note/@index, ' in the text')"/>
                                 
                                 <xsl:call-template name="bookmark-label">
                                     <xsl:with-param name="prefix" select="$end-notes-part/@prefix"/>
@@ -1036,7 +1045,7 @@
             </xsl:variable>
             
             <!-- Potential optimisation: only show glossaries with expressions in the text (Could be slower to filter them than to just parse them) -->
-            <div class="rw glossary-item">
+            <section class="rw glossary-item">
                 
                 <xsl:if test="$glossary-item[@xml:id]">
                     
@@ -1076,13 +1085,9 @@
                     
                     <div>
                         
-                        <xsl:if test="$view-mode[not(@client = ('ebook', 'app'))]">
-                            <xsl:attribute name="class" select="'col-md-7 match-this-height print-width-override'"/>
-                        </xsl:if>
-                        
-                        <h4 class="term">
+                        <h3 class="term">
                             <xsl:value-of select="$glossary-item/tei:term[not(@type)][not(@xml:lang) or @xml:lang eq 'en'][1]/normalize-space(.) ! functx:capitalize-first(.)"/>
-                        </h4>
+                        </h3>
                         
                         <xsl:for-each select="('Bo-Ltn','bo','Sa-Ltn')">
                             
@@ -1098,11 +1103,11 @@
                                                 <xsl:call-template name="class-attribute">
                                                     <xsl:with-param name="base-classes" as="xs:string*">
                                                         <xsl:value-of select="'term'"/>
-                                                        <xsl:value-of select="common:lang-class($term-lang)"/>
                                                         <xsl:if test="@type = ('semanticReconstruction','transliterationReconstruction')">
                                                             <xsl:value-of select="'reconstructed'"/>
                                                         </xsl:if>
                                                     </xsl:with-param>
+                                                    <xsl:with-param name="lang" select="$term-lang"/>
                                                 </xsl:call-template>
                                                 
                                                 <xsl:choose>
@@ -1151,18 +1156,12 @@
                     </div>
                     
                     <xsl:if test="$view-mode[not(@id eq 'pdf')]">
-                        <div class="locations">
+                        <div class="locations hidden-print">
                             
-                            <xsl:if test="$view-mode[not(@client = ('ebook', 'app'))]">
-                                
-                                <xsl:attribute name="class" select="'locations col-md-5 hidden-print'"/>
-                                
-                                <hr class="visible-xs-block visible-sm-block"/>
-                                
-                            </xsl:if>
+                            <hr/>
                             
                             <xsl:variable name="count-expressions" select="count($cached-locations)"/>
-                            <h5>
+                            <h4 class="heading">
                                 <xsl:choose>
                                     <xsl:when test="$count-expressions gt 1">
                                         <xsl:value-of select="concat(format-number($count-expressions, '#,###'), ' passages contain this term')"/>
@@ -1174,7 +1173,7 @@
                                         <xsl:value-of select="'No known locations for this term'"/>
                                     </xsl:otherwise>
                                 </xsl:choose>
-                            </h5>
+                            </h4>
                             
                             <xsl:if test="$cached-locations">
                                 <ul class="list-inline">
@@ -1231,206 +1230,186 @@
                     
                 </div>
                 
-            </div>
+            </section>
             
         </xsl:for-each>
     
     </xsl:template>
     
     <!-- Headers -->
+    <!-- About headers -->
     <xsl:template match="tei:head[@type eq 'about']">
-        <h1 class="text-center">
+        <h2>
+            
             <xsl:call-template name="tid">
                 <xsl:with-param name="node" select="."/>
             </xsl:call-template>
+            
+            <!-- Don't duplicate if this is already the title -->
+            <xsl:if test="string-join(data(), '') eq /m:response/m:section/m:titles/m:title[@xml:lang eq 'en']/text()">
+                <xsl:attribute name="class" select="'sr-only'"/>
+            </xsl:if>
+            
             <xsl:apply-templates select="node()"/>
-        </h1>
+            
+        </h2>
     </xsl:template>
-    <xsl:template match="tei:head">
+    <!-- Primary headers -->
+    <xsl:template match="tei:head[@type eq parent::*/@type]">
         
-        <xsl:variable name="part" select="parent::m:part"/>
+        <xsl:variable name="part" select="parent::m:part | parent::tei:div"/>
+        <xsl:variable name="part-nesting" select="$part/@nesting"/>
+        <xsl:variable name="header-tag" as="xs:string">
+            <xsl:choose>
+                <xsl:when test="$part-nesting eq '0'">
+                    <xsl:value-of select="'h2'"/>
+                </xsl:when>
+                <xsl:when test="$part-nesting eq '1'">
+                    <xsl:value-of select="'h3'"/>
+                </xsl:when>
+                <xsl:otherwise>
+                    <xsl:value-of select="'h4'"/>
+                </xsl:otherwise>
+            </xsl:choose>
+        </xsl:variable>
         <xsl:variable name="title-text" select="$part/m:title-text[1]"/>
         <xsl:variable name="title-supp" select="$part/m:title-supp[1]"/>
         
-        <xsl:choose>
+        <!-- .rw container -->
+        <div>
             
-            <!-- Only show base headers in preview -->
-            <xsl:when test="$part/@type eq @type">
-                <div>
-                    
-                    <!-- class -->
-                    <xsl:call-template name="class-attribute">
-                        <xsl:with-param name="base-classes" as="xs:string*">
-                            <xsl:value-of select="'rw'"/>
-                            <xsl:value-of select="'rw-section-head'"/>
-                        </xsl:with-param>
-                    </xsl:call-template>
-                    
-                    <!-- data-passage-id -->
-                    <xsl:if test="$view-mode[not(@client = ('ebook', 'app'))]">
-                        <xsl:attribute name="data-passage-id" select="$part/@id"/>
-                    </xsl:if>
-                    
-                    <!-- gtr -->
-                    <xsl:if test="$part[@prefix]">
-                        <div class="gtr">
-                            <xsl:choose>
-                                
-                                <!-- show a link -->
-                                <xsl:when test="$view-mode[not(@client = ('ebook', 'app'))] and $part[@id]">
-                                    <xsl:call-template name="bookmark-link">
-                                        <xsl:with-param name="bookmark-target-hash" select="$part/@id"/>
-                                        <xsl:with-param name="bookmark-label">
-                                            <xsl:call-template name="bookmark-label">
-                                                <xsl:with-param name="prefix" select="$part/@prefix"/>
-                                            </xsl:call-template>
-                                        </xsl:with-param>
-                                        <xsl:with-param name="bookmark-title" select="text()"/>
-                                    </xsl:call-template>
-                                </xsl:when>
-                                
-                                <!-- or just the text -->
-                                <xsl:otherwise>
+            <!-- .rw container classes -->
+            <xsl:call-template name="class-attribute">
+                <xsl:with-param name="base-classes" as="xs:string*">
+                    <xsl:value-of select="'rw'"/>
+                    <xsl:value-of select="'rw-section-head'"/>
+                </xsl:with-param>
+            </xsl:call-template>
+            
+            <!-- data-passage-id -->
+            <xsl:if test="$view-mode[not(@client = ('ebook', 'app'))]">
+                <xsl:attribute name="data-passage-id" select="$part/@id"/>
+            </xsl:if>
+            
+            <!-- Add a milestone .gtr -->
+            <xsl:if test="$part[@prefix]">
+                <div class="gtr">
+                    <xsl:choose>
+                        
+                        <!-- show a link -->
+                        <xsl:when test="$view-mode[not(@client = ('ebook', 'app'))] and $part[@id]">
+                            <xsl:call-template name="bookmark-link">
+                                <xsl:with-param name="bookmark-target-hash" select="$part/@id"/>
+                                <xsl:with-param name="bookmark-label">
                                     <xsl:call-template name="bookmark-label">
                                         <xsl:with-param name="prefix" select="$part/@prefix"/>
                                     </xsl:call-template>
-                                </xsl:otherwise>
-                                
-                            </xsl:choose>
+                                </xsl:with-param>
+                                <xsl:with-param name="bookmark-title" select="text()"/>
+                            </xsl:call-template>
+                        </xsl:when>
+                        
+                        <!-- or just the text -->
+                        <xsl:otherwise>
+                            <xsl:call-template name="bookmark-label">
+                                <xsl:with-param name="prefix" select="$part/@prefix"/>
+                            </xsl:call-template>
+                        </xsl:otherwise>
+                        
+                    </xsl:choose>
+                </div>
+            </xsl:if>
+            
+            <!-- .rw-heading container -->
+            <div>
+                
+                <!-- .rw-heading container classes -->
+                <xsl:call-template name="class-attribute">
+                    <xsl:with-param name="base-classes" as="xs:string*">
+                        <xsl:value-of select="'rw-heading'"/>
+                        <xsl:value-of select="'heading-section'"/>
+                        <xsl:if test="not(@type = ('section', 'colophon', 'homage', 'prologue'))">
+                            <xsl:value-of select="'chapter'"/>
+                        </xsl:if>
+                        <xsl:if test="$part-nesting">
+                            <xsl:value-of select="concat('nested nested-', $part-nesting)"/>
+                        </xsl:if>
+                    </xsl:with-param>
+                </xsl:call-template>
+                
+                <!-- Add another container element for dots :before and :after -->
+                <header>
+                    
+                    <!-- Supplementary title -->
+                    <xsl:if test="$title-supp[text()]">
+                        <div class="h4">
+                            <xsl:call-template name="tid">
+                                <xsl:with-param name="node" select="$title-supp"/>
+                            </xsl:call-template>
+                            <xsl:apply-templates select="$title-supp/text()"/>
                         </div>
                     </xsl:if>
                     
-                    <!-- container -->
-                    <div>
-                        
-                        <!-- class -->
-                        <xsl:call-template name="class-attribute">
-                            <xsl:with-param name="base-classes" as="xs:string*">
-                                <xsl:value-of select="'rw-heading'"/>
-                                <xsl:value-of select="'heading-section'"/>
-                                <xsl:choose>
-                                    <xsl:when test="not(@type = ('section', 'colophon', 'homage', 'prologue'))">
-                                        <xsl:value-of select="'chapter'"/>
-                                    </xsl:when>
-                                </xsl:choose>
-                                <xsl:if test="$part[@nesting]">
-                                    <xsl:value-of select="concat('nested nested-', $part/@nesting)"/>
-                                </xsl:if>
-                            </xsl:with-param>
+                    <xsl:element name="{ $header-tag }">
+                        <xsl:call-template name="tid">
+                            <xsl:with-param name="node" select="."/>
                         </xsl:call-template>
-                        
-                        <!-- Add container for dots :before and :after -->
-                        <div>
-                            
-                            <!-- Supplementary title -->
-                            <xsl:if test="$title-supp[text()]">
-                                <h4>
-                                    <xsl:call-template name="tid">
-                                        <xsl:with-param name="node" select="$title-supp"/>
-                                    </xsl:call-template>
-                                    <xsl:apply-templates select="$title-supp/text()"/>
-                                </h4>
-                            </xsl:if>
-                            
-                            <!-- Section head -->
-                            <xsl:choose>
-                                
-                                <!-- Make this <h1/> if it's the selected part -->
-                                <xsl:when test="$part[@prefix]">
-                                    
-                                    <xsl:choose>
-                                        <xsl:when test="$title-text[text()]">
-                                            
-                                            <h2>
-                                                <xsl:call-template name="tid">
-                                                    <xsl:with-param name="node" select="."/>
-                                                </xsl:call-template>
-                                                <xsl:apply-templates select="node()"/>
-                                            </h2>
-                                            
-                                            <h3>
-                                                <xsl:call-template name="tid">
-                                                    <xsl:with-param name="node" select="$title-text"/>
-                                                </xsl:call-template>
-                                                <xsl:apply-templates select="$title-text/node()"/>
-                                            </h3>
-                                            
-                                        </xsl:when>
-                                        
-                                        <xsl:otherwise>
-                                            <h2>
-                                                <xsl:call-template name="tid">
-                                                    <xsl:with-param name="node" select="."/>
-                                                </xsl:call-template>
-                                                <xsl:apply-templates select="node()"/>
-                                            </h2>
-                                        </xsl:otherwise>
-                                    </xsl:choose>
-                                    
-                                </xsl:when>
-                                
-                                <!-- Chapter head -->
-                                <xsl:when test="not(@type = ('section', 'colophon', 'homage', 'prologue')) and not($title-text[text()])">
-                                    <h2>
-                                        <xsl:call-template name="tid">
-                                            <xsl:with-param name="node" select="."/>
-                                        </xsl:call-template>
-                                        <xsl:apply-templates select="node()"/>
-                                    </h2>
-                                </xsl:when>
-                                
-                                <!-- Section head -->
-                                <xsl:otherwise>
-                                    <h3>
-                                        <xsl:call-template name="tid">
-                                            <xsl:with-param name="node" select="."/>
-                                        </xsl:call-template>
-                                        <xsl:apply-templates select="node()"/>
-                                    </h3>
-                                </xsl:otherwise>
-                                
-                            </xsl:choose>
-                        
-                        </div>
-                        
-                    </div>
-                
-                </div>
-            </xsl:when>
-            
-            <xsl:otherwise>
-                
-                <xsl:call-template name="milestone">
+                        <xsl:attribute name="class" select="'section-title'"/>
+                        <xsl:apply-templates select="node()"/>
+                    </xsl:element>
                     
-                    <xsl:with-param name="content">
-                        <div>
-                            
-                            <xsl:call-template name="class-attribute">
-                                <xsl:with-param name="base-classes" as="xs:string*">
-                                    <xsl:value-of select="'rw-heading heading-section'"/>
-                                    <xsl:if test="@type eq 'nonStructuralBreak'">
-                                        <xsl:value-of select="'supplementary'"/>
-                                    </xsl:if>
-                                </xsl:with-param>
+                    <xsl:if test="$title-text[text()]">
+                        
+                        <div class="h3">
+                            <xsl:call-template name="tid">
+                                <xsl:with-param name="node" select="$title-text"/>
                             </xsl:call-template>
-                            
-                            <h4>
-                                <xsl:call-template name="tid">
-                                    <xsl:with-param name="node" select="."/>
-                                </xsl:call-template>
-                                <xsl:apply-templates select="node()"/>
-                            </h4>
-                            
+                            <xsl:apply-templates select="$title-text/node()"/>
                         </div>
-                    </xsl:with-param>
+                        
+                    </xsl:if>
                     
-                    <xsl:with-param name="row-type" select="'section-head'"/>
-                    
-                </xsl:call-template>
+                </header>
                 
-            </xsl:otherwise>
+            </div>
             
-        </xsl:choose>
+        </div>
+        
+    </xsl:template>
+    <!-- Other headers, could be anywhere in text -->
+    <xsl:template match="tei:head">
+        
+        <!-- .rw container from milestone template -->
+        <xsl:call-template name="milestone">
+            
+            <xsl:with-param name="content">
+                
+                <!-- .rw-heading container -->
+                <div>
+                    
+                    <xsl:call-template name="class-attribute">
+                        <xsl:with-param name="base-classes" as="xs:string*">
+                            <xsl:value-of select="'rw-heading'"/>
+                            <xsl:value-of select="'heading-section'"/>
+                            <xsl:if test="@type eq 'nonStructuralBreak'">
+                                <xsl:value-of select="'supplementary'"/>
+                            </xsl:if>
+                        </xsl:with-param>
+                    </xsl:call-template>
+                    
+                    <header class="h3">
+                        <xsl:call-template name="tid">
+                            <xsl:with-param name="node" select="."/>
+                        </xsl:call-template>
+                        <xsl:apply-templates select="node()"/>
+                    </header>
+                    
+                </div>
+            </xsl:with-param>
+            
+            <xsl:with-param name="row-type" select="'section-head'"/>
+            
+        </xsl:call-template>
         
     </xsl:template>
     <xsl:template match="m:title-text">
@@ -1446,7 +1425,7 @@
         </span>
     </xsl:template>
 
-    <xsl:template match="m:part">
+    <xsl:template match="m:part | tei:div">
         <div>
             
             <!-- Set the id -->
@@ -1606,7 +1585,7 @@
     <!-- Table of Contents - html rendering -->
     <xsl:template name="table-of-contents">
         
-        <aside id="toc" class="page page-force">
+        <section id="toc" class="page page-force">
             
             <hr class="hidden-print"/>
             
@@ -1622,11 +1601,11 @@
                     </xsl:call-template>
                 </div>
                 <div class="rw-heading heading-section chapter">
-                    <div>
-                        <h2>
+                    <header>
+                        <h2 class="section-title">
                             <xsl:value-of select="'Table of Contents'"/>
                         </h2>
-                    </div>
+                    </header>
                 </div>
             </div>
             
@@ -1685,7 +1664,7 @@
                 </table>
             </div>
             
-        </aside>
+        </section>
         
     </xsl:template>
     <!-- Recurse through toc - html and epub (controlled by doc-type) -->
@@ -1941,9 +1920,13 @@
     </xsl:template>
 
     <xsl:template name="class-attribute">
+        
         <xsl:param name="base-classes" as="xs:string*"/>
         <xsl:param name="lang" as="xs:string?"/>
         <xsl:param name="html-classes" as="xs:string*"/>
+        
+        <xsl:variable name="lang-class" select="common:lang-class(normalize-space($lang))"/>
+        
         <xsl:variable name="css-classes" as="xs:string*">
             <xsl:if test="count($base-classes[normalize-space()]) gt 0">
                 <xsl:value-of select="string-join($base-classes[normalize-space()], ' ')"/>
@@ -1951,11 +1934,31 @@
             <xsl:if test="count($html-classes[normalize-space()]) gt 0 and $view-mode[not(@client = ('ebook', 'app'))]">
                 <xsl:value-of select="string-join($html-classes[normalize-space()], ' ')"/>
             </xsl:if>
-            <xsl:value-of select="normalize-space(common:lang-class($lang))"/>
+            <xsl:value-of select="$lang-class"/>
         </xsl:variable>
+        
         <xsl:if test="count($css-classes[normalize-space()]) gt 0">
             <xsl:attribute name="class" select="string-join($css-classes[normalize-space()], ' ')"/>
         </xsl:if>
+        
+        <xsl:choose>
+            <xsl:when test="$lang-class eq 'text-bo'">
+                <xsl:attribute name="lang" select="'bo'"/>
+            </xsl:when>
+            <xsl:when test="$lang-class eq 'text-sa'">
+                <xsl:attribute name="lang" select="'sa-LTN'"/>
+            </xsl:when>
+            <xsl:when test="$lang-class eq 'text-wy'">
+                <xsl:attribute name="lang" select="'bo-LTN'"/>
+            </xsl:when>
+            <xsl:when test="$lang-class eq 'text-zh'">
+                <xsl:attribute name="lang" select="'zh'"/>
+            </xsl:when>
+            <xsl:when test="$lang-class eq 'text-en'">
+                <xsl:attribute name="lang" select="'en'"/>
+            </xsl:when>
+        </xsl:choose>
+        
     </xsl:template>
     
     <xsl:template name="target-element" as="element()?">
@@ -2162,20 +2165,6 @@
         <xsl:param name="prefix" as="xs:string"/>
         <xsl:param name="index" as="xs:string?"/>
         <xsl:value-of select="concat($prefix, '.', if($index gt '') then concat('­', $index) else '')"/>
-    </xsl:template>
-    
-    <!-- Match key -->
-    <xsl:template name="match-key">
-        <xsl:param name="content"/>
-        <xsl:choose>
-            <xsl:when test="@key and not(@key eq $toh-key)">
-                <!-- Ignore -->
-            </xsl:when>
-            <xsl:otherwise>
-                <!-- Add content -->
-                <xsl:sequence select="$content"/>
-            </xsl:otherwise>
-        </xsl:choose>
     </xsl:template>
     
     <!-- Glossarize an element -->

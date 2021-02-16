@@ -15,17 +15,17 @@
                     
                     <xsl:attribute name="id" select="'titles'"/>
                     
-                    <section epub:type="halftitlepage" class="heading-section">
+                    <section epub:type="halftitlepage" class="new-page heading-section">
                     
-                        <h2 class="text-bo">
+                        <h2 class="main-title text-bo">
                             <xsl:apply-templates select="m:translation/m:titles/m:title[@xml:lang eq 'bo']"/>
                         </h2>
                         
-                        <h1>
+                        <h1 class="main-title">
                             <xsl:apply-templates select="m:translation/m:titles/m:title[@xml:lang eq 'en']"/>
                         </h1>
                         
-                        <h2 class="text-sa">
+                        <h2 class="main-title text-sa">
                             <xsl:apply-templates select="m:translation/m:titles/m:title[@xml:lang eq 'Sa-Ltn']"/>
                         </h2>
                         
@@ -33,7 +33,7 @@
                     
                     </section>
                     
-                    <section epub:type="titlepage">
+                    <section epub:type="titlepage" class="new-page">
                         
                         <div class="heading-section">
                             

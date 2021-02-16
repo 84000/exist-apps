@@ -20,7 +20,7 @@
                         </img>
                     </span>
                     <span>
-                        <h1>
+                        <h1 class="title">
                             <xsl:value-of select="'Project Management'"/>
                         </h1>
                     </span>

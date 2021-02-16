@@ -62,6 +62,9 @@
             <tab model="utilities/validate">
                 <label>TEI File Validation</label>
             </tab>
+            <tab model="utilities/section-texts">
+                <label>Texts in a Section</label>
+            </tab>
         </tabs>
     </xsl:variable>
     
@@ -81,7 +84,7 @@
                         </img>
                     </span>
                     <span>
-                        <h1>
+                        <h1 class="title">
                             <xsl:value-of select="concat('Utilities / ', $tabs//m:tab[@model eq $model-type]/m:label)"/>
                         </h1>
                     </span>

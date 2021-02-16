@@ -40,9 +40,11 @@
                         </xsl:call-template>
                     </xsl:when>
                     <xsl:otherwise>
-                        <p class="text-muted italic">
-                            <xsl:value-of select="'None'"/>
-                        </p>
+                        <div class="item">
+                           <p class="text-muted italic">
+                               <xsl:value-of select="'None'"/>
+                           </p>
+                        </div>
                     </xsl:otherwise>
                 </xsl:choose>
                 
@@ -60,9 +62,11 @@
                         </xsl:call-template>
                     </xsl:when>
                     <xsl:otherwise>
-                        <p class="text-muted italic">
-                            <xsl:value-of select="'None'"/>
-                        </p>
+                        <div class="item">
+                            <p class="text-muted italic">
+                                <xsl:value-of select="'None'"/>
+                            </p>
+                        </div>
                     </xsl:otherwise>
                 </xsl:choose>
                 
@@ -79,9 +83,11 @@
                         </xsl:call-template>
                     </xsl:when>
                     <xsl:otherwise>
-                        <p class="text-muted italic">
-                            <xsl:value-of select="'None'"/>
-                        </p>
+                        <div class="item">
+                            <p class="text-muted italic">
+                                <xsl:value-of select="'None'"/>
+                            </p>
+                        </div>
                     </xsl:otherwise>
                 </xsl:choose>
                 
@@ -98,9 +104,11 @@
                         </xsl:call-template>
                     </xsl:when>
                     <xsl:otherwise>
-                        <p class="text-muted italic">
-                            <xsl:value-of select="'None'"/>
-                        </p>
+                        <div class="item">
+                            <p class="text-muted italic">
+                                <xsl:value-of select="'None'"/>
+                            </p>
+                        </div>
                     </xsl:otherwise>
                 </xsl:choose>
                 
@@ -117,9 +125,11 @@
                         </xsl:call-template>
                     </xsl:when>
                     <xsl:otherwise>
-                        <p class="text-muted italic">
-                            <xsl:value-of select="'None'"/>
-                        </p>
+                        <div class="item">
+                            <p class="text-muted italic">
+                                <xsl:value-of select="'None'"/>
+                            </p>
+                        </div>
                     </xsl:otherwise>
                 </xsl:choose>
                 

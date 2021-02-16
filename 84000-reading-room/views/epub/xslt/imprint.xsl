@@ -16,7 +16,7 @@
                     
                     <xsl:attribute name="id" select="'imprint'"/>
                     
-                    <section epub:type="imprint" class="margin-bottom">
+                    <section epub:type="imprint" class="new-page">
                         <div class="margin-bottom">
                             <p>
                                 <xsl:value-of select="concat('First published ', format-date(m:translation/m:publication/m:publication-date, '[Y]'))"/>
@@ -44,17 +44,14 @@
                         </div>
                     </section>
                     
-                    <section>
-                        <xsl:if test="m:translation/m:publication/m:tantric-restriction/tei:p">
-                            <xsl:attribute name="class" select="'margin-bottom'"/>
-                        </xsl:if>
+                    <section class="new-page">
                         <xsl:call-template name="local-text">
                             <xsl:with-param name="local-key" select="'print-version'"/>
                         </xsl:call-template>
                     </section>
                     
                     <xsl:if test="m:translation/m:publication/m:tantric-restriction/tei:p">
-                        <section>
+                        <section class="new-page">
                             <div id="tantric-warning" class="alert alert-danger">
                                 <xsl:for-each select="m:translation/m:publication/m:tantric-restriction/tei:p">
                                     <p>

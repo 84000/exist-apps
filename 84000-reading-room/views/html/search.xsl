@@ -15,13 +15,19 @@
                         <div>
                             <ul class="breadcrumb">
                                 <li>
-                                    <xsl:value-of select="'Search The Reading Room'"/>
+                                    <a>
+                                        <xsl:attribute name="href" select="common:internal-link('/section/lobby.html', (), '', /m:response/@lang)"/>
+                                        <xsl:value-of select="'The Collection'"/>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="search.html">
+                                        <xsl:value-of select="'Search the Reading Room'"/>
+                                    </a>
                                 </li>
                                 <xsl:if test="m:search/m:request[text()]">
                                     <li>
-                                        <h1>
-                                            <xsl:value-of select="m:search/m:request/text()"/>
-                                        </h1>
+                                        <xsl:value-of select="m:search/m:request/text()"/>
                                     </li>
                                 </xsl:if>
                             </ul>
@@ -39,7 +45,7 @@
                                             </span>
                                         </span>
                                         <span class="btn-round-text">
-                                            <xsl:value-of select="'All Published Translations'"/>
+                                            <xsl:value-of select="'Published Translations'"/>
                                         </span>
                                     </a>
                                 </div>
@@ -73,18 +79,18 @@
             </xsl:variable>
             <xsl:apply-templates select="$bookmarks-sidebar"/>
             
-            <div class="content-band">
+            <main class="content-band">
                 <div class="container">
                     
-                    <div id="title" class="text-center">
-                        <div class="row">
-                            <div class="col-sm-offset-2 col-sm-8">
-                                <div class="title">
-                                    <h1>Search The Reading Room</h1>
-                                    <hr/>
-                                    <p>Our database contains both the translated texts and titles and summaries for other works within the Kangyur and Tengyur where available.</p>
-                                </div>
-                            </div>
+                    <div class="section-title row">
+                        <div class="col-sm-offset-2 col-sm-8">
+                            <h1 class="title main-title">
+                                <xsl:value-of select="'Search the Reading Room'"/>
+                            </h1>
+                            <hr/>
+                            <p>
+                                <xsl:value-of select="'Our database contains both the translated texts and titles and summaries for other works within the Kangyur and Tengyur where available.'"/>
+                            </p>
                         </div>
                     </div>
                     
@@ -94,7 +100,8 @@
                     </xsl:call-template>
                     
                 </div>
-            </div>
+            </main>
+            
         </xsl:variable>
         
         <!-- Compile with page template -->

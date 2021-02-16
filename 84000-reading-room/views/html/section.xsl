@@ -20,6 +20,7 @@
             <xsl:variable name="carousel-filters" select="$filters[m:display[@key eq 'carousel']]"/>
             <xsl:variable name="sidebar-filters" select="$filters[m:display[@key eq 'sidebar']]"/>
             
+            <!-- Title band -->
             <div class="title-band hidden-print">
                 <div class="container">
                     <div class="center-vertical-sm full-width">
@@ -39,9 +40,7 @@
                                 <xsl:copy-of select="common:breadcrumb-items(m:section/m:parent | m:section/m:parent//m:parent, /m:response/@lang)"/>
                                 
                                 <li>
-                                    <h1>
-                                        <xsl:value-of select="m:section/m:titles/m:title[@xml:lang = 'en']"/>
-                                    </h1>
+                                    <xsl:value-of select="m:section/m:titles/m:title[@xml:lang = 'en']"/>
                                 </li>
                                 
                             </ul>
@@ -60,7 +59,7 @@
                                                 </span>
                                             </span>
                                             <span class="btn-round-text">
-                                                <xsl:value-of select="'All Published Translations'"/>
+                                                <xsl:value-of select="'Published Translations'"/>
                                             </span>
                                         </a>
                                     </div>
@@ -94,16 +93,14 @@
             </xsl:variable>
             <xsl:apply-templates select="$bookmarks-sidebar"/>
             
-            <div id="section-content" class="content-band">
+            <main id="section-content" class="content-band">
                 <div class="container">
                     
-                    <div id="title">
-                        
-                        <xsl:call-template name="section-title">
-                            <xsl:with-param name="section" select="m:section"/>
-                        </xsl:call-template>
-                        
-                    </div>
+                    <!-- Section title -->
+                    <xsl:call-template name="section-title">
+                        <xsl:with-param name="section" select="m:section"/>
+                        <xsl:with-param name="primary-section" select="true()"/>
+                    </xsl:call-template>
                     
                     <!-- Conditions for having a text tab
                         - There are texts
@@ -114,7 +111,11 @@
                    
                     <!-- Filters Carousel -->
                     <xsl:if test="$carousel-filters">
-                        <div id="filters-carousel" class="not-ready hidden-print">
+                        <section id="filters-carousel" class="not-ready hidden-print">
+                            
+                            <h2 class="sr-only">
+                                <xsl:value-of select="'Filter our list of published translations'"/>
+                            </h2>
                             
                             <div class="viewport">
                                 <ul class="list-unstyled slider">
@@ -131,11 +132,11 @@
                                         <a class="filter-panel" data-match-height="carousel-filters">
                                             <xsl:attribute name="href" select="concat(lower-case(m:section/@id), '.html', '#section-content')"/>
                                             <xsl:attribute name="data-ajax-target" select="'#section-content'"/>
-                                            <h3>
+                                            <div class="h3">
                                                 <xsl:value-of select="'All Publications'"/>
-                                            </h3>
+                                            </div>
                                             <p class="small">
-                                                <xsl:value-of select="'All the texts we have published so far.'"/>
+                                                <xsl:value-of select="'All the texts we have published so far'"/>
                                             </p>
                                         </a>
                                         
@@ -157,9 +158,9 @@
                                             <a class="filter-panel" data-match-height="carousel-filters">
                                                 <xsl:attribute name="href" select="concat(lower-case(/m:response/m:section/@id), '.html', '?filter-id=', @xml:id, '#section-content')"/>
                                                 <xsl:attribute name="data-ajax-target" select="'#section-content'"/>
-                                                <h3>
+                                                <div class="h3">
                                                     <xsl:value-of select="tei:head[@type eq 'filter']"/>
-                                                </h3>
+                                                </div>
                                                 <div class="small">
                                                     <xsl:apply-templates select="$filter/tei:p"/>
                                                 </div>
@@ -185,7 +186,7 @@
                                 </span>
                             </a>
                             
-                        </div>
+                        </section>
                     </xsl:if>
                     
                     <!-- Advanced filters button -->
@@ -200,9 +201,9 @@
                                     <div class="panel panel-default">
                                         <div class="panel-body text-center">
                                             
-                                            <h3 class="no-top-margin no-bottom-margin">
+                                            <div class="h4 no-top-margin no-bottom-margin text-danger">
                                                 <xsl:value-of select="'Advanced Filters...'"/>
-                                            </h3>
+                                            </div>
                                             
                                             <xsl:choose>
                                                 <xsl:when test="m:section/m:texts[m:filter[@max-pages or @section-id]]">
@@ -298,6 +299,7 @@
                                 </div>
                             </div>
                         </xsl:otherwise>
+                    
                     </xsl:choose>
                     
                     <!-- Content tabs (sections/texts/summary) -->
@@ -344,7 +346,7 @@
                     <!-- Tab content -->
                     <div class="tab-content">
                         
-                        <!-- Sections -->
+                        <!-- Sub-sections -->
                         <xsl:if test="not($section-id = ('all-translated'))">
                             <div role="tabpanel" id="sections">
                                 
@@ -368,9 +370,9 @@
                             </div>
                         </xsl:if>
                         
-                        <!-- Summary -->
+                        <!-- About text -->
                         <xsl:if test="m:section/m:about[*]">
-                            <div role="tabpanel" id="summary">
+                            <div role="tabpanel" class="summary">
                                 
                                 <xsl:variable name="css-class" as="xs:string*">
                                     <xsl:value-of select="'tab-pane fade'"/>
@@ -444,7 +446,7 @@
                                             <i class="fa fa-list"/>
                                         </span>
                                         <span class="btn-round-text">
-                                            <xsl:value-of select="'All Published Translations'"/>
+                                            <xsl:value-of select="'Published Translations'"/>
                                         </span>
                                     </a>
                                 </div>
@@ -464,7 +466,7 @@
                     </div>
                     
                 </div>
-            </div>
+            </main>
             
             <!-- Ebook help modal -->
             <div class="modal fade hidden-print" tabindex="-1" role="dialog" id="ebook-help" aria-labelledby="ebook-help-label">
@@ -476,11 +478,11 @@
                                     <i class="fa fa-times"/>
                                 </span>
                             </button>
-                            <h4 class="modal-title" id="ebook-help-label">
+                            <h2 class="modal-title" id="ebook-help-label">
                                 <xsl:call-template name="local-text">
                                     <xsl:with-param name="local-key" select="'ebook-help-title'"/>
                                 </xsl:call-template>
-                            </h4>
+                            </h2>
                         </div>
                         <div class="modal-body">
                             <xsl:call-template name="local-text">
@@ -493,132 +495,148 @@
             
             <!-- Filters sidebar -->
             <xsl:if test="$filters">
-                <div id="filters-sidebar" class="fixed-sidebar collapse width hidden-print">
+                <section id="filters-sidebar" class="fixed-sidebar collapse width hidden-print">
+                    
+                    <h2 class="sr-only">
+                        <xsl:value-of select="'More options to filter our list of published translations'"/>
+                    </h2>
                     
                     <div class="fix-width">
                         
                         <div class="sidebar-content">
                             
                             <xsl:if test="$sidebar-filters">
-                                
-                                <h5>
-                                    <xsl:value-of select="'Pre-configured filters'"/>
-                                </h5>
-                                
-                                <div class="filter-panel">
+                                <section>
                                     
-                                    <div class="center-vertical full-width">
-                                        
-                                        <a>
-                                            <xsl:attribute name="href" select="concat(lower-case(m:section/@id), '.html', '#section-content')"/>
-                                            <xsl:attribute name="data-ajax-target" select="'#section-content'"/>
-                                            <xsl:attribute name="id" select="concat(m:section/@id, '-filter-label')"/>
-                                            <xsl:value-of select="'All Published Translations (no filter)'"/>
-                                        </a>
-                                        
-                                    </div>
-                                </div>
-                        
-                                <xsl:for-each select="$sidebar-filters">
-                                    <xsl:variable name="filter" select="."/>
+                                    <h3>
+                                        <xsl:value-of select="'Pre-configured filters'"/>
+                                    </h3>
                                     
                                     <div class="filter-panel">
-                                        
-                                        <xsl:if test="/m:response/m:request[@filter-id eq $filter/@xml:id]">
-                                            <xsl:attribute name="class" select="'filter-panel active'"/>
-                                        </xsl:if>
                                         
                                         <div class="center-vertical full-width">
                                             
                                             <a>
-                                                <xsl:attribute name="href" select="concat(lower-case(/m:response/m:section/@id), '.html', '?filter-id=', $filter/@xml:id, '#section-content')"/>
+                                                <xsl:attribute name="href" select="concat(lower-case(m:section/@id), '.html', '#section-content')"/>
                                                 <xsl:attribute name="data-ajax-target" select="'#section-content'"/>
-                                                <xsl:attribute name="id" select="concat($filter/@xml:id, '-filter-label')"/>
-                                                <xsl:value-of select="$filter/tei:head[@type eq 'filter']"/>
+                                                <xsl:attribute name="id" select="concat(m:section/@id, '-filter-label')"/>
+                                                <xsl:value-of select="'All Published Translations (no filter)'"/>
                                             </a>
                                             
+                                        </div>
+                                    </div>
+                                    
+                                    <xsl:for-each select="$sidebar-filters">
+                                        <xsl:variable name="filter" select="."/>
+                                        
+                                        <div class="filter-panel">
+                                            
+                                            <xsl:if test="/m:response/m:request[@filter-id eq $filter/@xml:id]">
+                                                <xsl:attribute name="class" select="'filter-panel active'"/>
+                                            </xsl:if>
+                                            
+                                            <div class="center-vertical full-width">
+                                                
+                                                <a>
+                                                    <xsl:attribute name="href" select="concat(lower-case(/m:response/m:section/@id), '.html', '?filter-id=', $filter/@xml:id, '#section-content')"/>
+                                                    <xsl:attribute name="data-ajax-target" select="'#section-content'"/>
+                                                    <xsl:attribute name="id" select="concat($filter/@xml:id, '-filter-label')"/>
+                                                    <xsl:value-of select="$filter/tei:head[@type eq 'filter']"/>
+                                                </a>
+                                                
+                                                <xsl:if test="$filter[tei:p]">
+                                                    <span class="text-right">
+                                                        <a role="button" data-toggle="collapse" data-parent="#accordion" aria-expanded="false">
+                                                            
+                                                            <xsl:attribute name="href" select="concat('#', $filter/@xml:id, '-filter-abstract')"/>
+                                                            <xsl:attribute name="aria-controls" select="concat($filter/@xml:id, '-filter-abstract')"/>
+                                                            
+                                                            <i class="fa fa-plus collapsed-show"/>
+                                                            <i class="fa fa-minus collapsed-hide"/>
+                                                        </a>
+                                                    </span>
+                                                </xsl:if>
+                                                
+                                            </div>
+                                            
                                             <xsl:if test="$filter[tei:p]">
-                                                <span class="text-right">
-                                                    <a role="button" data-toggle="collapse" data-parent="#accordion" aria-expanded="false">
-                                                        
-                                                        <xsl:attribute name="href" select="concat('#', $filter/@xml:id, '-filter-abstract')"/>
-                                                        <xsl:attribute name="aria-controls" select="concat($filter/@xml:id, '-filter-abstract')"/>
-                                                        
-                                                        <i class="fa fa-plus collapsed-show"/>
-                                                        <i class="fa fa-minus collapsed-hide"/>
-                                                    </a>
-                                                </span>
+                                                <div class="collapse" role="tabpanel" aria-expanded="false">
+                                                    <xsl:attribute name="id" select="concat($filter/@xml:id, '-filter-abstract')"/>
+                                                    <xsl:attribute name="aria-labelledby" select="concat($filter/@xml:id, '-filter-label')"/>
+                                                    <div class="small text-muted sml-margin top bottom">
+                                                        <xsl:apply-templates select="$filter/tei:p"/>
+                                                    </div>
+                                                </div>
                                             </xsl:if>
                                             
                                         </div>
-                                        
-                                        <xsl:if test="$filter[tei:p]">
-                                            <div class="collapse" role="tabpanel" aria-expanded="false">
-                                                <xsl:attribute name="id" select="concat($filter/@xml:id, '-filter-abstract')"/>
-                                                <xsl:attribute name="aria-labelledby" select="concat($filter/@xml:id, '-filter-label')"/>
-                                                <div class="small text-muted sml-margin top bottom">
-                                                    <xsl:apply-templates select="$filter/tei:p"/>
-                                                </div>
-                                            </div>
-                                        </xsl:if>
-                                        
-                                    </div>
-                                </xsl:for-each>
-                                
+                                    </xsl:for-each>
+                                    
+                                </section>
                             </xsl:if>
                             
                             <form method="get" class="form-horizontal top-margin bottom-margin" data-ajax-target="#section-content">
                                 
                                 <xsl:attribute name="action" select="concat(lower-case(m:section/@id), '.html')"/>
                                 
-                                <input type="hidden" name="translations-order">
-                                    <xsl:attribute name="value" select="/m:response/m:request/@translations-order"/>
-                                </input>
-                                
-                                <h5>
-                                    <xsl:value-of select="'Sections with Published Translations'"/>
-                                </h5>
-                                
-                                <div class="bottom-margin">
+                                <section>
                                     
-                                    <div id="section-checkbox" class="loading">
-                                        <!-- Project Progress, get from ajax -->
-                                        <xsl:attribute name="data-onload-replace">
-                                            <xsl:choose>
-                                                <xsl:when test="$lang eq 'zh'">
-                                                    <xsl:value-of select="concat('{&#34;#section-checkbox&#34;:&#34;', $reading-room-path,'/widget/section-checkbox.html?lang=', $lang ,'#section-checkbox&#34;}')"/>
-                                                </xsl:when>
-                                                <xsl:otherwise>
-                                                    <xsl:value-of select="concat('{&#34;#section-checkbox&#34;:&#34;', $reading-room-path,'/widget/section-checkbox.html#section-checkbox&#34;}')"/>
-                                                </xsl:otherwise>
-                                            </xsl:choose>
-                                        </xsl:attribute>
+                                    <h3>
+                                        <xsl:value-of select="'Sections with Published Translations'"/>
+                                    </h3>
+                                    
+                                    <input type="hidden" name="translations-order">
+                                        <xsl:attribute name="value" select="/m:response/m:request/@translations-order"/>
+                                    </input>
+                                    
+                                    <div class="bottom-margin">
+                                        
+                                        <div id="section-checkbox" class="loading">
+                                            <!-- Project Progress, get from ajax -->
+                                            <xsl:attribute name="data-onload-replace">
+                                                <xsl:choose>
+                                                    <xsl:when test="$lang eq 'zh'">
+                                                        <xsl:value-of select="concat('{&#34;#section-checkbox&#34;:&#34;', $reading-room-path,'/widget/section-checkbox.html?lang=', $lang ,'#section-checkbox&#34;}')"/>
+                                                    </xsl:when>
+                                                    <xsl:otherwise>
+                                                        <xsl:value-of select="concat('{&#34;#section-checkbox&#34;:&#34;', $reading-room-path,'/widget/section-checkbox.html#section-checkbox&#34;}')"/>
+                                                    </xsl:otherwise>
+                                                </xsl:choose>
+                                            </xsl:attribute>
+                                        </div>
+                                        
                                     </div>
                                     
-                                </div>
+                                </section>
                                 
-                                <h5>
-                                    <xsl:value-of select="'Filter by number of pages'"/>
-                                </h5>
+                                <section>
+                                    
+                                    <h3>
+                                        <xsl:value-of select="'Filter by number of pages'"/>
+                                    </h3>
+                                    
+                                    <div class="form-group">
+                                        <label for="filter-max-pages" class="col-sm-3 control-label text-left">
+                                            <xsl:value-of select="'Max. pages'"/>
+                                        </label>
+                                        <div class="col-sm-3">
+                                            <input type="number" name="filter-max-pages" class="form-control" id="filter-max-pages">
+                                                <xsl:attribute name="value" select="m:request/m:filter[@max-pages][1]/@max-pages"/>
+                                            </input>
+                                        </div>
+                                        <div class="col-sm-6">
+                                            <button type="submit" class="btn btn-primary pull-right">
+                                                <xsl:value-of select="'Apply'"/>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    
+                                </section>
                                 
-                                <div class="form-group">
-                                    <label for="filter-max-pages" class="col-sm-3 control-label text-left">
-                                        <xsl:value-of select="'Max. pages'"/>
-                                    </label>
-                                    <div class="col-sm-3">
-                                        <input type="number" name="filter-max-pages" class="form-control" id="filter-max-pages">
-                                            <xsl:attribute name="value" select="m:request/m:filter[@max-pages][1]/@max-pages"/>
-                                        </input>
-                                    </div>
-                                    <div class="col-sm-6">
-                                        <button type="submit" class="btn btn-primary pull-right">
-                                            <xsl:value-of select="'Apply'"/>
-                                        </button>
-                                    </div>
-                                </div>
                             </form>
                             
                         </div>
+                    
                     </div>
                     
                     <div class="fixed-btn-container close-btn-container right">
@@ -629,7 +647,7 @@
                         </button>
                     </div>
                     
-                </div>
+                </section>
             </xsl:if>
             
         </xsl:variable>
@@ -679,70 +697,83 @@
     <xsl:template name="section-title">
         
         <xsl:param name="section"/>
+        <xsl:param name="primary-section" as="xs:boolean" select="false()"/>
         
-        <div class="row">
+        <div class="section-title row">
             <div class="col-md-offset-2 col-md-8">
-                <div class="title">
+                    
+                <xsl:if test="lower-case($section/@id) eq 'lobby'">
+                    <div>
+                        <img class="logo">
+                            <xsl:attribute name="src" select="concat($front-end-path,'/imgs/logo.png')"/>
+                            <xsl:attribute name="alt" select="'84000 logo'"/>
+                        </img>
+                    </div>
+                </xsl:if>
+                
+                <xsl:element name="{ if($primary-section) then 'h1' else 'div' }">
+                    <xsl:attribute name="class" select="'title main-title'"/>
                     <xsl:choose>
                         <xsl:when test="lower-case($section/@id) eq 'lobby'">
-                            <div>
-                                <img class="logo">
-                                    <xsl:attribute name="src" select="concat($front-end-path,'/imgs/logo.png')"/>
-                                    <xsl:attribute name="alt" select="'84000 logo'"/>
-                                </img>
-                            </div>
-                            <h1>
-                                <xsl:value-of select="'Welcome to the Reading Room'"/>
-                            </h1>
+                            <xsl:value-of select="'Welcome to the Reading Room'"/>
                         </xsl:when>
                         <xsl:otherwise>
-                            <h1>
-                                <xsl:value-of select="normalize-space($section/m:titles/m:title[@xml:lang = 'en'])"/>
-                            </h1>
+                            <xsl:value-of select="normalize-space($section/m:titles/m:title[@xml:lang = 'en'])"/>
                         </xsl:otherwise>
                     </xsl:choose>
-                    
-                    <xsl:if test="$section/m:titles/m:title[@xml:lang = 'bo']/text() or $section/m:titles/m:title[@xml:lang = 'Bo-Ltn']/text()">
-                        <hr/>
-                        <h4>
-                            <span class="text-bo">
-                                <xsl:value-of select="normalize-space($section/m:titles/m:title[@xml:lang = 'bo'])"/>
-                            </span>
-                            <xsl:if test="$section/m:titles/m:title[@xml:lang = 'Bo-Ltn']/text()">
-                                <xsl:value-of select="' · '"/>
-                                <span class="text-wy">
-                                    <xsl:value-of select="normalize-space($section/m:titles/m:title[@xml:lang = 'Bo-Ltn'])"/>
-                                </span>
-                            </xsl:if>
-                        </h4>
-                    </xsl:if>
-                    
-                    <xsl:if test="$section/m:titles/m:title[@xml:lang = 'Sa-Ltn']/text()">
-                        <hr/>
-                        <h4 class="text-sa">
-                            <xsl:value-of select="normalize-space($section/m:titles/m:title[@xml:lang = 'Sa-Ltn'])"/>
-                        </h4>
-                    </xsl:if>
-                    
-                    <xsl:if test="$section/m:abstract/*">
-                        <hr/>
-                        <div id="abstract">
-                            <xsl:apply-templates select="$section/m:abstract/*"/>
-                        </div>
-                    </xsl:if>
-                    
-                    <xsl:if test="$section/m:warning/tei:p">
-                        <div class="top-margin">
-                            <xsl:call-template name="tantra-warning">
-                                <xsl:with-param name="id" select="'title'"/>
-                                <xsl:with-param name="node" select="$section/m:warning"/>
+                </xsl:element>
+                
+                <xsl:if test="$section/m:titles/m:title[@xml:lang = 'bo']/text() or $section/m:titles/m:title[@xml:lang = 'Bo-Ltn']/text()">
+                    <hr/>
+                    <div class="title">
+                        <span>
+                            <xsl:call-template name="class-attribute">
+                                <xsl:with-param name="lang" select="'bo'"/>
                             </xsl:call-template>
-                        </div>
-                    </xsl:if>
-                    
-                </div>
+                            <xsl:value-of select="normalize-space($section/m:titles/m:title[@xml:lang = 'bo'])"/>
+                        </span>
+                        <xsl:if test="$section/m:titles/m:title[@xml:lang = 'Bo-Ltn']/text()">
+                            <xsl:value-of select="' · '"/>
+                            <span>
+                                <xsl:call-template name="class-attribute">
+                                    <xsl:with-param name="lang" select="'Bo-Ltn'"/>
+                                </xsl:call-template>
+                                <xsl:value-of select="normalize-space($section/m:titles/m:title[@xml:lang = 'Bo-Ltn'])"/>
+                            </span>
+                        </xsl:if>
+                    </div>
+                </xsl:if>
+                
+                <xsl:if test="$section/m:titles/m:title[@xml:lang = 'Sa-Ltn']/text()">
+                    <hr/>
+                    <div>
+                        <xsl:call-template name="class-attribute">
+                            <xsl:with-param name="lang" select="'Sa-Ltn'"/>
+                            <xsl:with-param name="base-classes" select="'title'"/>
+                        </xsl:call-template>
+                        <xsl:value-of select="normalize-space($section/m:titles/m:title[@xml:lang = 'Sa-Ltn'])"/>
+                    </div>
+                </xsl:if>
+                
+                <xsl:if test="$section/m:abstract/*">
+                    <hr/>
+                    <div id="abstract">
+                        <xsl:apply-templates select="$section/m:abstract/*"/>
+                    </div>
+                </xsl:if>
+                
+                <xsl:if test="$section/m:warning/tei:p">
+                    <div class="top-margin">
+                        <xsl:call-template name="tantra-warning">
+                            <xsl:with-param name="id" select="'title'"/>
+                            <xsl:with-param name="node" select="$section/m:warning"/>
+                        </xsl:call-template>
+                    </div>
+                </xsl:if>
+                
             </div>
         </div>
+    
     </xsl:template>
     
     <xsl:template name="section-texts">
@@ -751,6 +782,73 @@
         <xsl:param name="filter" as="element(tei:div)*"/>
         
         <div class="text-list">
+            
+            <!-- Print headers -->
+            <xsl:if test="$section/m:texts[m:text]">
+                
+                <!-- Title -->
+                <div class="visible-print-block">
+                    <xsl:choose>
+                        <xsl:when test="$filter">
+                            <h2>
+                                <xsl:value-of select="'Published Translations Filtered by: '"/>
+                                <xsl:value-of select="$filter/tei:head[@type eq 'filter']/data()"/>
+                            </h2>
+                        </xsl:when>
+                        <xsl:when test="lower-case($section/@id) eq 'all-translated'">
+                            <h2>
+                                <xsl:value-of select="'All Published Translations'"/>
+                            </h2>
+                        </xsl:when>
+                        <xsl:otherwise>
+                            <h2>
+                                <xsl:value-of select="'Texts in this Section'"/>
+                            </h2>
+                        </xsl:otherwise>
+                    </xsl:choose>
+                </div>
+                
+                <!-- Sort / Published only filter -->
+                <xsl:choose>
+                    <xsl:when test="lower-case($section/@id) eq 'all-translated'">
+                        
+                        <!-- Sort -->
+                        <div class="visible-print-block text-italic">
+                            <xsl:choose>
+                                <xsl:when test="/m:response/m:request/@translations-order eq 'latest'">
+                                    <xsl:value-of select="'Sorted by most recent publications'"/>
+                                </xsl:when>
+                                <xsl:when test="/m:response/m:request/@translations-order eq 'shortest'">
+                                    <xsl:value-of select="'Sorted by shortest first'"/>
+                                </xsl:when>
+                                <xsl:when test="/m:response/m:request/@translations-order eq 'longest'">
+                                    <xsl:value-of select="'Sorted by longest first'"/>
+                                </xsl:when>
+                                <xsl:otherwise>
+                                    <xsl:value-of select="'Sorted by Tohoku number'"/>
+                                </xsl:otherwise>
+                            </xsl:choose>
+                        </div>
+                        
+                    </xsl:when>
+                    <xsl:otherwise>
+                        
+                        <!-- Published only -->
+                        <div class="visible-print-block italic">
+                            <xsl:choose>
+                                <xsl:when test="m:section/m:texts/@published-only eq '1'">
+                                    <xsl:value-of select="'Listing published translations only'"/>
+                                </xsl:when>
+                                <xsl:otherwise>
+                                    <xsl:value-of select="'Listing all texts'"/>
+                                </xsl:otherwise>
+                            </xsl:choose>
+                        </div>
+                        
+                    </xsl:otherwise>
+                </xsl:choose>
+                
+            </xsl:if>
             
             <!-- Row headers -->
             <div class="row table-headers hidden-print">
@@ -849,65 +947,8 @@
                     </form>
                 
                 </div>
+                
             </div>
-            
-            <!-- Print title -->
-            <xsl:if test="$section/m:texts[m:text]">
-                <div class="visible-print-block">
-                    <xsl:choose>
-                        <xsl:when test="$filter">
-                            <div class="well">
-                                <h4 class="underline no-top-margin">
-                                    <xsl:value-of select="'Filter:'"/>
-                                </h4>
-                                <h2>
-                                    <xsl:value-of select="tei:head[@type eq 'filter']"/>
-                                </h2>
-                                <xsl:apply-templates select="$filter"/>
-                            </div>
-                        </xsl:when>
-                        <xsl:otherwise>
-                            <h2>
-                                <xsl:value-of select="'Texts in this Section'"/>
-                            </h2>
-                        </xsl:otherwise>
-                    </xsl:choose>
-                </div>
-            </xsl:if>
-            
-            <!-- Print header -->
-            <xsl:choose>
-                <xsl:when test="lower-case($section/@id) eq 'all-translated'">
-                    <div class="visible-print-block text-italic">
-                        <xsl:choose>
-                            <xsl:when test="/m:response/m:request/@translations-order eq 'latest'">
-                                <xsl:value-of select="'Sorted by most recent publications'"/>
-                            </xsl:when>
-                            <xsl:when test="/m:response/m:request/@translations-order eq 'shortest'">
-                                <xsl:value-of select="'Sorted by shortest first'"/>
-                            </xsl:when>
-                            <xsl:when test="/m:response/m:request/@translations-order eq 'longest'">
-                                <xsl:value-of select="'Sorted by longest first'"/>
-                            </xsl:when>
-                            <xsl:otherwise>
-                                <xsl:value-of select="'Sorted by Tohoku number'"/>
-                            </xsl:otherwise>
-                        </xsl:choose>
-                    </div>
-                </xsl:when>
-                <xsl:otherwise>
-                    <div class="visible-print-block italic">
-                        <xsl:choose>
-                            <xsl:when test="m:section/m:texts/@published-only eq '1'">
-                                <xsl:value-of select="'Listing published translations only'"/>
-                            </xsl:when>
-                            <xsl:otherwise>
-                                <xsl:value-of select="'Listing all texts'"/>
-                            </xsl:otherwise>
-                        </xsl:choose>
-                    </div>
-                </xsl:otherwise>
-            </xsl:choose>
             
             <!-- Text rows -->
             <!-- Texts can either be direct children of the section or a sub-section which is a grouping -->
@@ -917,18 +958,20 @@
                 
                 <xsl:variable name="texts" select="m:texts/m:text"/>
                 
-                <div class="list-grouping">
+                <section class="list-grouping">
                     
                     <!-- Change the class and add a title if they are a grouped sub-section -->
-                    <xsl:if test="@nesting gt '1' and $texts">
-                        <xsl:attribute name="class" select="'list-grouping border'"/>
-                        <xsl:attribute name="id" select="concat('grouping-', @id)"/>
-                        <div class=" text-center bottom-margin">
-                            <xsl:call-template name="section-title">
-                                <xsl:with-param name="section" select="."/>
-                            </xsl:call-template>
-                        </div>
-                    </xsl:if>
+                    <xsl:choose>
+                        <xsl:when test="@nesting gt '1' and $texts">
+                            <xsl:attribute name="class" select="'list-grouping border'"/>
+                            <xsl:attribute name="id" select="concat('grouping-', @id)"/>
+                            <header class="text-center top-margin bottom-margin">
+                                <xsl:call-template name="section-title">
+                                    <xsl:with-param name="section" select="."/>
+                                </xsl:call-template>
+                            </header>
+                        </xsl:when>
+                    </xsl:choose>
                     
                     <!-- loop through the texts -->
                     <xsl:for-each select="$texts">
@@ -989,7 +1032,7 @@
                             <div class="col-md-7 col-lg-8">
                                 
                                 <!-- English title -->
-                                <h4 class="title-en">
+                                <h3 class="item-title">
                                     <xsl:choose>
                                         <xsl:when test="$text/m:titles/m:title[@xml:lang='en'][not(@type)]/text()">
                                             <xsl:choose>
@@ -1010,7 +1053,7 @@
                                             </em>
                                         </xsl:otherwise>
                                     </xsl:choose>
-                                </h4>
+                                </h3>
                                 
                                 <xsl:if test="lower-case($section/@id) = 'all-translated'">
                                     
@@ -1039,7 +1082,10 @@
                                 <!-- Tibetan title -->
                                 <xsl:if test="$text/m:titles/m:title[@xml:lang = 'bo']/text()">
                                     <hr/>
-                                    <span class="text-bo">
+                                    <span>
+                                        <xsl:call-template name="class-attribute">
+                                            <xsl:with-param name="lang" select="'bo'"/>
+                                        </xsl:call-template>
                                         <xsl:value-of select="normalize-space($text/m:titles/m:title[@xml:lang = 'bo'])"/>
                                     </span>
                                 </xsl:if>
@@ -1054,7 +1100,10 @@
                                             <hr/>
                                         </xsl:otherwise>
                                     </xsl:choose>
-                                    <span class="text-wy">
+                                    <span>
+                                        <xsl:call-template name="class-attribute">
+                                            <xsl:with-param name="lang" select="'Bo-Ltn'"/>
+                                        </xsl:call-template>
                                         <xsl:value-of select="normalize-space($text/m:titles/m:title[@xml:lang = 'Bo-Ltn'])"/>
                                     </span>
                                 </xsl:if>
@@ -1062,13 +1111,16 @@
                                 <!-- Sanskrit title -->
                                 <xsl:if test="$text/m:titles/m:title[@xml:lang = 'Sa-Ltn'][text()]">
                                     <hr/>
-                                    <span class="text-sa">
+                                    <span>
+                                        <xsl:call-template name="class-attribute">
+                                            <xsl:with-param name="lang" select="'Sa-Ltn'"/>
+                                        </xsl:call-template>
                                         <xsl:value-of select="normalize-space($text/m:titles/m:title[@xml:lang = 'Sa-Ltn'])"/> 
                                     </span>
                                 </xsl:if>
                                 
                                 <!-- Summary and title variants -->
-                                <xsl:if test="$text/m:section[@type eq 'summary'][tei:p] or $text/m:title-variants/m:title[text()]">
+                                <xsl:if test="$text/m:part[@type eq 'summary'][tei:p] or $text/m:title-variants/m:title[text()]">
                                     
                                     <hr class="hidden-print"/>
                                     
@@ -1083,11 +1135,13 @@
                                         <xsl:attribute name="id" select="concat('summary-detail-', $toh-key)"/>
                                         <div class="well well-sm">
                                             
-                                            <xsl:if test="$text/m:section[@type eq 'summary'][tei:p]">
+                                            <xsl:if test="$text/m:part[@type eq 'summary'][tei:p]">
                                                 <h4>
                                                     <xsl:value-of select="'Summary'"/>
                                                 </h4>
-                                                <xsl:apply-templates select="$text/m:section[@type eq 'summary']/tei:p"/>
+                                                <div class="summary">
+                                                    <xsl:apply-templates select="$text/m:part[@type eq 'summary']/tei:p"/>
+                                                </div>
                                             </xsl:if>
                                             
                                             <xsl:if test="$text/m:title-variants/m:title[text()]">
@@ -1202,15 +1256,16 @@
                         </div>
                     </xsl:for-each>
                 
-                    <!-- No texts -->
-                    <xsl:if test="not($texts)">
-                        <p class="top-margin text-center text-muted italic">
-                            <xsl:value-of select="'No published translations found with this filter'"/>
-                        </p>
-                    </xsl:if>
-                </div>
+                </section>
             
             </xsl:for-each>
+            
+            <!-- No texts -->
+            <xsl:if test="not($section[m:texts/m:text] | $section/m:section[@type eq 'grouping'][m:texts/m:text])">
+                <p class="top-margin text-center text-muted italic">
+                    <xsl:value-of select="'No published translations found for these criteria'"/>
+                </p>
+            </xsl:if>
         
         </div>
     
@@ -1235,7 +1290,7 @@
                 
                 <xsl:variable name="sub-section-id" select="@id"/>
                 
-                    <div>
+                    <section>
                         
                         <xsl:variable name="col-offset-2">
                             <xsl:choose>
@@ -1291,7 +1346,6 @@
                             </xsl:choose>
                         </xsl:variable>
                         
-                        
                         <xsl:variable name="col-offset-4">
                             <xsl:choose>
                                 <xsl:when test="position() &gt; (floor($count-sections div 4) * 4)">
@@ -1340,34 +1394,52 @@
                         
                         <xsl:attribute name="class" select="normalize-space(string-join(($col-offset-2, $col-offset-3, $col-offset-4, 'print-centered-margins'), ' '))"/>
                         
-                        <div class="section-panel">
+                        <div class="ornamental-panel">
                             
                             <xsl:if test="@type eq 'pseudo-section'">
-                                <xsl:attribute name="class" select="'section-panel pseudo-section'"/>
+                                <xsl:attribute name="class" select="'ornamental-panel pseudo-section'"/>
                             </xsl:if>
                             
                             <div data-match-height="outline-section" data-match-height-media=".sm,.md,.lg">
                                 
                                 <a target="_self" class="block-link printable">
+                                    
                                     <xsl:attribute name="href" select="common:internal-link(concat('/section/', @id/string(), '.html'), (), '', /m:response/@lang)"/>
-                                    <h3>
+                                    
+                                    <h3 class="title main-title">
                                         <xsl:value-of select="m:titles/m:title[@xml:lang='en']/text()"/> 
                                     </h3>
+                                    
                                     <xsl:if test="m:titles/m:title[@xml:lang='bo']/text()">
-                                        <h4 class="text-bo">
+                                        <div>
+                                            <xsl:call-template name="class-attribute">
+                                                <xsl:with-param name="lang" select="'bo'"/>
+                                                <xsl:with-param name="base-classes" select="'title'"/>
+                                            </xsl:call-template>
                                             <xsl:value-of select="m:titles/m:title[@xml:lang='bo']/text()"/>
-                                        </h4>
+                                        </div>
                                     </xsl:if>
+                                    
                                     <xsl:if test="m:titles/m:title[@xml:lang='Bo-Ltn']/text()">
-                                        <h4 class="text-wy">
+                                        <div>
+                                            <xsl:call-template name="class-attribute">
+                                                <xsl:with-param name="lang" select="'Bo-Ltn'"/>
+                                                <xsl:with-param name="base-classes" select="'title'"/>
+                                            </xsl:call-template>
                                             <xsl:value-of select="m:titles/m:title[@xml:lang='Bo-Ltn']/text()"/>
-                                        </h4>
+                                        </div>
                                     </xsl:if>
+                                    
                                     <xsl:if test="m:titles/m:title[@xml:lang='Sa-Ltn']/text()">
-                                        <h4 class="text-sa">
+                                        <div>
+                                            <xsl:call-template name="class-attribute">
+                                                <xsl:with-param name="lang" select="'Sa-Ltn'"/>
+                                                <xsl:with-param name="base-classes" select="'title'"/>
+                                            </xsl:call-template>
                                             <xsl:value-of select="m:titles/m:title[@xml:lang='Sa-Ltn']/text()"/>
-                                        </h4>
+                                        </div>
                                     </xsl:if>
+                                    
                                 </a>
                                 
                                 <div class="notes">
@@ -1428,7 +1500,7 @@
                             </div>
                             
                         </div>
-                    </div>
+                    </section>
                 
             </xsl:for-each>
         </div>

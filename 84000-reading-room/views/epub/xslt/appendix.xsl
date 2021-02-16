@@ -14,7 +14,7 @@
             <xsl:with-param name="page-title" select="'Appendix'"/>
             <xsl:with-param name="content">
                 
-                <section epub:type="appendix" class="text">
+                <section epub:type="appendix" class="new-page text">
                     <xsl:apply-templates select="$part/tei:*"/>
                 </section>
                 

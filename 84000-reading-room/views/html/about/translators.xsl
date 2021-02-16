@@ -18,9 +18,9 @@
                         <xsl:for-each select="m:contributor-teams/m:team">
                             <xsl:variable name="team-id" select="@xml:id"/>
                             <div>
-                                <h3>
+                                <h2>
                                     <xsl:value-of select="m:label"/>
-                                </h3>
+                                </h2>
                                 <ul class="list-unstyled">
                                     <xsl:for-each select="m:person">
                                         <li>
@@ -35,11 +35,11 @@
                     <div class="col-sm-4">
                         <div class="about-stats">
                             
-                            <h4>
+                            <h2>
                                 <xsl:call-template name="local-text">
                                     <xsl:with-param name="local-key" select="'summary-title'"/>
                                 </xsl:call-template>
-                            </h4>
+                            </h2>
                             
                             <div>
                                 <xsl:attribute name="class" select="concat('stat ', common:position-to-color(1, 'id'))"/>
@@ -79,11 +79,11 @@
                             
                             <hr/>
                             
-                            <h4>
+                            <h2>
                                 <xsl:call-template name="local-text">
                                     <xsl:with-param name="local-key" select="'affiliation-title'"/>
                                 </xsl:call-template>
-                            </h4>
+                            </h2>
                             
                             <xsl:variable name="affiliations-count-all" select="count(distinct-values(//m:team/m:person[m:affiliation]/@xml:id))" as="xs:integer"/>
                             <xsl:variable name="affiliations-count-academic" select="count(distinct-values(//m:team/m:person[count(m:affiliation) eq 1][m:affiliation[@type eq 'academic']]/@xml:id))" as="xs:integer"/>
@@ -169,11 +169,11 @@
                             
                             <hr/>
                             
-                            <h4>
+                            <h2>
                                 <xsl:call-template name="local-text">
                                     <xsl:with-param name="local-key" select="'region-title'"/>
                                 </xsl:call-template>
-                            </h4>
+                            </h2>
                             
                             <xsl:for-each select="m:contributor-regions/m:region">
                                 <div>
@@ -232,26 +232,29 @@
                         <xsl:copy-of select="$eft-header/m:navigation[@xml:lang eq $lang]/m:item/m:item[m:item[@url eq $active-url]]"/>
                     </m:nav-sidebar>
                 </xsl:variable>
-                <div class="nav-sidebar">
-                    <xsl:apply-templates select="$nav-sidebar"/>
-                </div>
                 
-                <div id="project-progress">
+                <aside class="nav-sidebar">
+                    <xsl:apply-templates select="$nav-sidebar"/>
+                </aside>
+                
+                <aside>
                     <!-- Project Progress, get from ajax -->
-                    <xsl:attribute name="data-onload-replace">
-                        <xsl:choose>
-                            <xsl:when test="$lang eq 'zh'">
-                                <xsl:value-of select="concat('{&#34;#project-progress&#34;:&#34;', $reading-room-path,'/widget/progress-chart.html#eft-progress-chart-panel&#34;}')"/>
-                            </xsl:when>
-                            <xsl:otherwise>
-                                <xsl:value-of select="concat('{&#34;#project-progress&#34;:&#34;', $reading-room-path,'/widget/progress-chart.html?lang=', $lang ,'#eft-progress-chart-panel&#34;}')"/>
-                            </xsl:otherwise>
-                        </xsl:choose>
-                    </xsl:attribute>                            
-                    <div class="panel panel-default">
-                        <div class="panel-body loading"/>
+                    <div id="project-progress">
+                        <xsl:attribute name="data-onload-replace">
+                            <xsl:choose>
+                                <xsl:when test="$lang eq 'zh'">
+                                    <xsl:value-of select="concat('{&#34;#project-progress&#34;:&#34;', $reading-room-path,'/widget/progress-chart.html#eft-progress-chart-panel&#34;}')"/>
+                                </xsl:when>
+                                <xsl:otherwise>
+                                    <xsl:value-of select="concat('{&#34;#project-progress&#34;:&#34;', $reading-room-path,'/widget/progress-chart.html?lang=', $lang ,'#eft-progress-chart-panel&#34;}')"/>
+                                </xsl:otherwise>
+                            </xsl:choose>
+                        </xsl:attribute>                            
+                        <div class="panel panel-default">
+                            <div class="panel-body loading"/>
+                        </div>
                     </div>
-                </div>
+                </aside>
                 
             </xsl:with-param>
             

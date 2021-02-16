@@ -82,7 +82,7 @@
                         </form>
                         
                         <div class="well well-sm well-code top-margin small monospace">
-                            <xsl:for-each select="//execution[commandline] | //xf:sync[xf:update]">
+                            <xsl:for-each select="//execution[commandline] | //xf:sync">
                                 <xsl:choose>
                                     <xsl:when test="self::execution">
                                         <strong>
@@ -99,10 +99,17 @@
                                             <xsl:value-of select="concat('Sync: ', @collection)"/>
                                         </strong>
                                         <br/>
-                                        <xsl:for-each select="xf:update">
-                                            <xsl:value-of select="concat('Update: ', @name)"/>
-                                            <br/>
-                                        </xsl:for-each>
+                                        <xsl:choose>
+                                            <xsl:when test="xf:update">
+                                                <xsl:for-each select="xf:update">
+                                                    <xsl:value-of select="concat('Updated: ', @name)"/>
+                                                    <br/>
+                                                </xsl:for-each>
+                                            </xsl:when>
+                                            <xsl:otherwise>
+                                                <xsl:value-of select="'No updates'"/>
+                                            </xsl:otherwise>
+                                        </xsl:choose>
                                     </xsl:when>
                                 </xsl:choose>
                                 <hr/>

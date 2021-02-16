@@ -32,8 +32,6 @@ h6 {
     width: 100%;
     text-align: inherit;
 }
-section,
-aside,
 .new-page {
     display: block;
     page-break-before: always;
@@ -75,7 +73,7 @@ h5.section-label {
     margin-top: 24pt;
     line-height: 1.5;
 }
-h1, h2, h3, h4 {
+h1, h2, h3, h4, header {
     text-align: center;
 }
 
@@ -439,6 +437,10 @@ img.logo-84000 {
     font-size: 13pt;
 }
 
+#titles .main-title.text-bo:before {
+    content: '༄༅། །';
+}
+
 #titles .translator {
     margin-top: 24pt;
     padding: 10pt 15pt;
@@ -521,17 +523,14 @@ img.logo-84000 {
 .glossary-item .alternative {
     display: none;
 }
-.glossary-item h4, 
+.glossary-item h3, 
 .glossary-item p,
 .glossary-item ul {
     margin-bottom: .25em;
 }
-.glossary-item .locations {
-    border-top: 1px solid #ddd;
-    padding-top: .5em;
-}
-.glossary-item .locations h5 {
+.glossary-item .locations h4 {
     font-size: .75em;
+    text-align: left;
 }
 .glossary-item .locations li {
     font-size: .75em;

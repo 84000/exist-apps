@@ -9,17 +9,18 @@
         <xsl:call-template name="about">
             
             <xsl:with-param name="sub-content">
+                
                 <div class="bottom-margin">
                     <xsl:call-template name="local-text">
                         <xsl:with-param name="local-key" select="'page-intro'"/>
                     </xsl:call-template>
                 </div>
                 
-                <h3>
+                <h2>
                     <xsl:call-template name="local-text">
                         <xsl:with-param name="local-key" select="'kangyur-summary-heading'"/>
                     </xsl:call-template>
-                </h3>
+                </h2>
                 <xsl:call-template name="outline-summary">
                     <xsl:with-param name="outline-summary" select="m:outline-summary[@work eq 'UT4CZ5369']"/>
                 </xsl:call-template>
@@ -28,11 +29,11 @@
                     <xsl:with-param name="local-key" select="'outlook'"/>
                 </xsl:call-template>
                 
-                <h3>
+                <h2>
                     <xsl:call-template name="local-text">
                         <xsl:with-param name="local-key" select="'combined-summary-heading'"/>
                     </xsl:call-template>
-                </h3>
+                </h2>
                 <xsl:call-template name="outline-summary">
                     <xsl:with-param name="outline-summary" select="m:outline-summary"/>
                 </xsl:call-template>
@@ -89,11 +90,10 @@
                     
                 </div>
                 
-                <div>
-                    <xsl:call-template name="local-text">
-                        <xsl:with-param name="local-key" select="'related-pages'"/>
-                    </xsl:call-template>
-                </div>
+                <xsl:call-template name="local-text">
+                    <xsl:with-param name="local-key" select="'related-pages'"/>
+                </xsl:call-template>
+                
             </xsl:with-param>
             
             <xsl:with-param name="side-content">

@@ -8,21 +8,16 @@
         <xsl:call-template name="about">
             
             <xsl:with-param name="sub-content">
-                <!--<h3>
-                <xsl:call-template name="local-text">
-                    <xsl:with-param name="local-key" select="'page-heading'"/>
-                </xsl:call-template>
-            </h3>-->
                 
                 <xsl:call-template name="local-text">
                     <xsl:with-param name="local-key" select="'page-intro'"/>
                 </xsl:call-template>
                 
-                <h3>
+                <h2>
                     <xsl:call-template name="local-text">
                         <xsl:with-param name="local-key" select="'text-list-title'"/>
                     </xsl:call-template>
-                </h3>
+                </h2>
                 
                 <div id="accordion" class="list-group accordion" role="tablist" aria-multiselectable="false">
                     
@@ -90,7 +85,6 @@
                         
                     </xsl:for-each>
                     
-                    
                     <xsl:variable name="remainder-title-app-text" as="xs:string">
                         <xsl:call-template name="local-text">
                             <xsl:with-param name="local-key" select="'text-list-remainder-title'"/>
@@ -149,26 +143,29 @@
                 <xsl:call-template name="local-text">
                     <xsl:with-param name="local-key" select="'footer'"/>
                 </xsl:call-template>
+                
             </xsl:with-param>
             
             <xsl:with-param name="side-content">
                 
-                <div id="project-progress">
+                <aside>
                     <!-- Project Progress, get from ajax -->
-                    <xsl:attribute name="data-onload-replace">
-                        <xsl:choose>
-                            <xsl:when test="$lang eq 'zh'">
-                                <xsl:value-of select="concat('{&#34;#project-progress&#34;:&#34;', $reading-room-path,'/widget/progress-chart.html#eft-progress-chart-panel&#34;}')"/>
-                            </xsl:when>
-                            <xsl:otherwise>
-                                <xsl:value-of select="concat('{&#34;#project-progress&#34;:&#34;', $reading-room-path,'/widget/progress-chart.html?lang=', $lang ,'#eft-progress-chart-panel&#34;}')"/>
-                            </xsl:otherwise>
-                        </xsl:choose>
-                    </xsl:attribute>                            
-                    <div class="panel panel-default">
-                        <div class="panel-body loading"/>
+                    <div id="project-progress">
+                        <xsl:attribute name="data-onload-replace">
+                            <xsl:choose>
+                                <xsl:when test="$lang eq 'zh'">
+                                    <xsl:value-of select="concat('{&#34;#project-progress&#34;:&#34;', $reading-room-path,'/widget/progress-chart.html#eft-progress-chart-panel&#34;}')"/>
+                                </xsl:when>
+                                <xsl:otherwise>
+                                    <xsl:value-of select="concat('{&#34;#project-progress&#34;:&#34;', $reading-room-path,'/widget/progress-chart.html?lang=', $lang ,'#eft-progress-chart-panel&#34;}')"/>
+                                </xsl:otherwise>
+                            </xsl:choose>
+                        </xsl:attribute>                            
+                        <div class="panel panel-default">
+                            <div class="panel-body loading"/>
+                        </div>
                     </div>
-                </div>
+                </aside>
                 
             </xsl:with-param>
             
@@ -177,6 +174,4 @@
 
     </xsl:template>
     
-    
-
 </xsl:stylesheet>

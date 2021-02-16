@@ -7,11 +7,6 @@
         
         <xsl:call-template name="about">
             <xsl:with-param name="sub-content">
-                <!--<h2>
-                    <xsl:call-template name="local-text">
-                        <xsl:with-param name="local-key" select="'page-subtitle'"/>
-                    </xsl:call-template>
-                </h2>-->
                 <xsl:call-template name="local-text">
                     <xsl:with-param name="local-key" select="'page-introduction'"/>
                 </xsl:call-template>
@@ -86,26 +81,29 @@
                         <xsl:copy-of select="$eft-header/m:navigation[@xml:lang eq $lang]/m:item/m:item[m:item[@url eq $active-url]]"/>
                     </m:nav-sidebar>
                 </xsl:variable>
-                <div class="nav-sidebar">
-                    <xsl:apply-templates select="$nav-sidebar"/>
-                </div>
                 
-                <div id="project-progress">
+                <aside class="nav-sidebar">
+                    <xsl:apply-templates select="$nav-sidebar"/>
+                </aside>
+                
+                <aside>
                     <!-- Project Progress, get from ajax -->
-                    <xsl:attribute name="data-onload-replace">
-                        <xsl:choose>
-                            <xsl:when test="$lang eq 'zh'">
-                                <xsl:value-of select="concat('{&#34;#project-progress&#34;:&#34;', $reading-room-path,'/widget/progress-chart.html?lang=', $lang ,'#eft-progress-chart-panel&#34;}')"/>
-                            </xsl:when>
-                            <xsl:otherwise>
-                                <xsl:value-of select="concat('{&#34;#project-progress&#34;:&#34;', $reading-room-path,'/widget/progress-chart.html#eft-progress-chart-panel&#34;}')"/>
-                            </xsl:otherwise>
-                        </xsl:choose>
-                    </xsl:attribute>                            
-                    <div class="panel panel-default">
-                        <div class="panel-body loading"/>
+                    <div id="project-progress">
+                        <xsl:attribute name="data-onload-replace">
+                            <xsl:choose>
+                                <xsl:when test="$lang eq 'zh'">
+                                    <xsl:value-of select="concat('{&#34;#project-progress&#34;:&#34;', $reading-room-path,'/widget/progress-chart.html?lang=', $lang ,'#eft-progress-chart-panel&#34;}')"/>
+                                </xsl:when>
+                                <xsl:otherwise>
+                                    <xsl:value-of select="concat('{&#34;#project-progress&#34;:&#34;', $reading-room-path,'/widget/progress-chart.html#eft-progress-chart-panel&#34;}')"/>
+                                </xsl:otherwise>
+                            </xsl:choose>
+                        </xsl:attribute>                            
+                        <div class="panel panel-default">
+                            <div class="panel-body loading"/>
+                        </div>
                     </div>
-                </div>
+                </aside>
                 
             </xsl:with-param>
             

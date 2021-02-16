@@ -13,13 +13,13 @@
         <xsl:call-template name="epub-page">
             <xsl:with-param name="page-title" select="$part/tei:head[@type eq $part/@type][1]"/>
             <xsl:with-param name="content">
-                <aside epub:type="glossary">
+                <section epub:type="glossary" class="new-page">
                     
                     <xsl:attribute name="id" select="$part/@id"/>
                     
                     <xsl:call-template name="glossary"/>
                     
-                </aside>
+                </section>
             </xsl:with-param>
         </xsl:call-template>
         

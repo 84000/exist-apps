@@ -13,7 +13,7 @@
         <xsl:call-template name="epub-page">
             <xsl:with-param name="page-title" select="$part/tei:head[@type eq $part/@type][1]"/>
             <xsl:with-param name="content">
-                <section epub:type="abstract" class="text">
+                <section epub:type="abstract" class="new-page text">
                     
                     <xsl:apply-templates select="$part"/>
                     

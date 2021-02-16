@@ -819,7 +819,8 @@ declare function translation:milestones-cache($tei as element(tei:TEI), $refresh
                 for $part in 
                     $tei/tei:text/tei:front/tei:div[@type]
                     | $tei/tei:text/tei:body/tei:div[@type eq 'translation']/tei:div[@type]
-                    | $tei/tei:text/tei:back/tei:div[@type]
+                    | $tei/tei:text/tei:back/tei:div[@type eq 'appendix']/tei:div[@type]
+                    | $tei/tei:text/tei:back/tei:div[not(@type eq 'appendix')]
                     for $milestone at $index in $part//tei:milestone[@xml:id]
                     return (
                         common:ws(2),

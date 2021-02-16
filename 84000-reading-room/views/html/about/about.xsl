@@ -12,7 +12,7 @@
         
         <xsl:variable name="title-band">
             <m:title-band>
-                <xsl:copy-of select="$eft-header/m:navigation[@xml:lang eq $lang]/m:item/m:item[@url eq $active-url or m:item[@url eq $active-url]] | $eft-header/m:translation"/>
+                <xsl:copy-of select="$eft-header/m:navigation[@xml:lang eq $lang]//m:item[descendant-or-self::m:item[@url eq $active-url]] | $eft-header/m:translation"/>
             </m:title-band>
         </xsl:variable>
         <xsl:variable name="bookmarks-sidebar">
@@ -79,7 +79,7 @@
                             
                             <article>
                                 
-                                <h1 class="sr-only">
+                                <h1>
                                     <xsl:value-of select="$page-title"/>
                                 </h1>
                                 
@@ -90,7 +90,7 @@
                             
                         </div>
                         
-                        <aside class="col-md-4 col-lg-3">
+                        <div class="col-md-4 col-lg-3">
                             
                             <xsl:variable name="sharing-panel">
                                 <m:sharing-panel>
@@ -109,7 +109,7 @@
                             </xsl:variable>
                             <xsl:apply-templates select="$shopping-panel"/>
                             
-                        </aside>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -133,7 +133,7 @@
         
         <xsl:param name="text"/>
         
-        <h4 class="title-en">
+        <h4 class="item-title">
             <xsl:variable name="title" as="xs:string*">
                 <xsl:if test="$text/m:titles/m:parent">
                     <xsl:value-of select="concat($text/m:titles/m:parent/m:titles/m:title[@xml:lang eq 'en'], ', ')"/>
@@ -152,6 +152,7 @@
                 </xsl:otherwise>
             </xsl:choose>
         </h4>
+        
     </xsl:template>
     
     <xsl:template name="text-list-subtitles">
@@ -254,7 +255,7 @@
         <xsl:param name="show-count" required="no" as="xs:integer?"/>
         <xsl:param name="content" required="no" as="node()*"/>
         
-        <div class="list-group-item">
+        <section class="list-group-item">
             
             <div role="tab">
                 
@@ -266,14 +267,14 @@
                     <xsl:attribute name="aria-controls" select="concat($id, '-detail')"/>
                     
                     <span>
-                        <span class="h4 list-group-item-heading">
+                        <h3 class="list-group-item-heading">
                             <xsl:value-of select="concat($title, ' ')"/>
                             <xsl:if test="$show-count">
                                 <span class="badge badge-notification">
                                     <xsl:value-of select="$show-count"/>
                                 </span>
                             </xsl:if>
-                        </span>
+                        </h3>
                     </span>
                     
                     <span class="text-right">
@@ -295,7 +296,7 @@
                 
             </div>
             
-        </div>
+        </section>
     </xsl:template>
     
     <xsl:template name="text-list">
