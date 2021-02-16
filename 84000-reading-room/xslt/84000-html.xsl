@@ -21,9 +21,9 @@
     </xsl:template>
     
     <xsl:template match="eft:eft-header">
-        <nav class="navbar navbar-default">
+        <div class="navbar navbar-default">
             
-            <div class="brand-header">
+            <header class="brand-header">
                 <div class="container">
                     <div class="navbar-header">
                         <div class="navbar-brand center-vertical full-width">
@@ -73,11 +73,10 @@
                         </div>
                     </div>
                 </div>
-                
-            </div>
+            </header>
             
             <div class="container">
-                <div id="navbar" class="navbar-collapse collapse" role="navigation" aria-label="Main navigation" aria-expanded="false">
+                <nav id="navbar" class="navbar-collapse collapse" role="navigation" aria-label="Main navigation" aria-expanded="false">
                     
                     <!-- Main navigation -->
                     <ul class="nav navbar-nav">
@@ -286,7 +285,7 @@
                         
                     </ul>
                     
-                </div>
+                </nav>
             </div>
             
             <xsl:if test="eft:social[@xml:lang = $lang]/eft:item[@url = '#wechat-qcode']">
@@ -310,7 +309,7 @@
                 </div>
             </xsl:if>
             
-        </nav>
+        </div>
     </xsl:template>
     
     <xsl:template match="eft:eft-footer">

@@ -1394,10 +1394,10 @@
                         
                         <xsl:attribute name="class" select="normalize-space(string-join(($col-offset-2, $col-offset-3, $col-offset-4, 'print-centered-margins'), ' '))"/>
                         
-                        <div class="ornamental-panel">
+                        <div class="ornamental-panel section">
                             
                             <xsl:if test="@type eq 'pseudo-section'">
-                                <xsl:attribute name="class" select="'ornamental-panel pseudo-section'"/>
+                                <xsl:attribute name="class" select="'ornamental-panel section pseudo-section'"/>
                             </xsl:if>
                             
                             <div data-match-height="outline-section" data-match-height-media=".sm,.md,.lg">

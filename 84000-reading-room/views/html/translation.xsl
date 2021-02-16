@@ -560,7 +560,7 @@
                     
                     <div>
                         <xsl:call-template name="class-attribute">
-                            <xsl:with-param name="base-classes" select="'title'"/>
+                            <xsl:with-param name="base-classes" select="'title yig-go'"/>
                             <xsl:with-param name="lang" select="'bo'"/>
                         </xsl:call-template>
                         <xsl:apply-templates select="m:translation/m:titles/m:title[@xml:lang eq 'bo']"/>
