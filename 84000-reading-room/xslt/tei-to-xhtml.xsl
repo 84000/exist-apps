@@ -150,13 +150,12 @@
     </xsl:template>
     
     <xsl:template match="tei:title">
-        <span>
+        <cite>
             <xsl:call-template name="class-attribute">
-                <xsl:with-param name="base-classes" select="'title'"/>
                 <xsl:with-param name="lang" select="@xml:lang"/>
             </xsl:call-template>
             <xsl:apply-templates select="node()"/>
-        </span>
+        </cite>
     </xsl:template>
     
     <xsl:template match="tei:name">

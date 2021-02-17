@@ -139,7 +139,7 @@
                                                                         </xsl:otherwise>
                                                                     </xsl:choose>
                                                                 </xsl:attribute>
-                                                                <div class="title">
+                                                                <div>
                                                                     <xsl:call-template name="translation-lang-class">
                                                                         <xsl:with-param name="lang" select="$lang"/>
                                                                         <xsl:with-param name="persist-class-str" select="'title'"/>

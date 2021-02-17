@@ -91,9 +91,6 @@ h1, h2, h3, h4, header {
 .italic {
     font-style: italic;
 }
-.title {
-    font-style: italic;
-}
 .name {
     font-style: italic;
     font-weight: bold;
@@ -143,6 +140,9 @@ small, .small {
 }
 
 /* blockquote */
+cite {
+    font-style: italic;
+}
 blockquote {
     padding: 0;
     margin-bottom: 0;
