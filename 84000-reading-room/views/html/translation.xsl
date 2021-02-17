@@ -9,7 +9,7 @@
     <xsl:variable name="requested-part" select="/m:response/m:request/@part"/>
     <xsl:variable name="page-title" as="node()*">
         <xsl:sequence select="/m:response/m:translation/m:titles/m:title[@xml:lang eq 'en']"/>
-        <xsl:sequence select="/m:response/m:translation//m:part[@prefix][@render eq 'show'][@id eq $requested-part][1]/tei:head[@type eq parent::m:part/@type]"/>
+        <xsl:sequence select="/m:response/m:translation//m:part[@prefix][@render eq 'show'][1]/tei:head[@type eq parent::m:part/@type]"/>
     </xsl:variable>
     
     <xsl:template match="/m:response">
@@ -551,65 +551,37 @@
     
     <xsl:template name="front-matter">
         
-        <section id="titles">
-            
-            <!-- Main titles -->
+        <!-- Include an additional page warning about incompleteness of rendering -->
+        <xsl:if test="count($page-title) gt 1 or not($part-status eq 'complete')">
             <div class="page">
                 
-                <div id="main-titles" class="ornamental-panel">
-                    
-                    <div>
-                        <xsl:call-template name="class-attribute">
-                            <xsl:with-param name="base-classes" select="'title yig-go'"/>
-                            <xsl:with-param name="lang" select="'bo'"/>
-                        </xsl:call-template>
-                        <xsl:apply-templates select="m:translation/m:titles/m:title[@xml:lang eq 'bo']"/>
-                    </div>
-                    
-                    <h1 class="title main-title">
+                <xsl:if test="count($page-title) gt 1">
+                    <h1 class="h2 text-center top-margin">
                         <xsl:for-each select="$page-title">
                             <xsl:choose>
                                 <xsl:when test="self::m:title">
-                                    <xsl:value-of select="."/>
+                                    <small>
+                                        <xsl:value-of select="."/>
+                                    </small>
                                 </xsl:when>
                                 <xsl:otherwise>
-                                    <span class="sr-only">
+                                    <br/>
+                                    <span class="dot-parenth">
                                         <xsl:value-of select="' '"/>
                                         <xsl:value-of select="."/>
+                                        <xsl:value-of select="' '"/>
                                     </span>
                                 </xsl:otherwise>
                             </xsl:choose>
                         </xsl:for-each>
                     </h1>
-                    
-                    <xsl:if test="m:translation/m:titles/m:title[@xml:lang eq 'Sa-Ltn'][text()]">
-                        <div>
-                            <xsl:call-template name="class-attribute">
-                                <xsl:with-param name="base-classes" select="'title'"/>
-                                <xsl:with-param name="lang" select="'Sa-Ltn'"/>
-                            </xsl:call-template>
-                            <xsl:apply-templates select="m:translation/m:titles/m:title[@xml:lang eq 'Sa-Ltn']"/>
-                        </div>
-                    </xsl:if>
-                </div>
-                
-                <xsl:if test="count(m:translation/m:long-titles/m:title[text()]) eq 1 and m:translation/m:long-titles/m:title[@xml:lang eq 'Bo-Ltn'][text()]">
-                    <div id="long-titles">
-                        <div>
-                            <xsl:call-template name="class-attribute">
-                                <xsl:with-param name="base-classes" select="'title'"/>
-                                <xsl:with-param name="lang" select="'Bo-Ltn'"/>
-                            </xsl:call-template>
-                            <xsl:apply-templates select="m:translation/m:long-titles/m:title[@xml:lang eq 'Bo-Ltn']"/>
-                        </div>
-                    </div>
                 </xsl:if>
                 
                 <!-- Warn the user not to print a partial view -->
                 <xsl:if test="not($part-status eq 'complete')">
                     <div class="visible-print-block">
                         
-                        <div class="well text-center margin-top hidden-pdf">
+                        <div class="well text-center top-margin hidden-pdf">
                             
                             <p class="uppercase">
                                 <xsl:call-template name="text">
@@ -641,6 +613,52 @@
                             
                         </div>
                         
+                    </div>
+                </xsl:if>
+                
+            </div>
+        </xsl:if>
+        
+        <section id="titles">
+            
+            <!-- Main titles -->
+            <div class="page">
+                
+                <div id="main-titles" class="ornamental-panel">
+                    
+                    <div>
+                        <xsl:call-template name="class-attribute">
+                            <xsl:with-param name="base-classes" select="'title yig-go'"/>
+                            <xsl:with-param name="lang" select="'bo'"/>
+                        </xsl:call-template>
+                        <xsl:apply-templates select="m:translation/m:titles/m:title[@xml:lang eq 'bo']"/>
+                    </div>
+                    
+                    <xsl:element name="{ if(count($page-title) gt 1) then 'div' else 'h1' }">
+                        <xsl:attribute name="class" select="'title main-title'"/>
+                        <xsl:value-of select="/m:response/m:translation/m:titles/m:title[@xml:lang eq 'en']"/>
+                    </xsl:element>
+                    
+                    <xsl:if test="m:translation/m:titles/m:title[@xml:lang eq 'Sa-Ltn'][text()]">
+                        <div>
+                            <xsl:call-template name="class-attribute">
+                                <xsl:with-param name="base-classes" select="'title'"/>
+                                <xsl:with-param name="lang" select="'Sa-Ltn'"/>
+                            </xsl:call-template>
+                            <xsl:apply-templates select="m:translation/m:titles/m:title[@xml:lang eq 'Sa-Ltn']"/>
+                        </div>
+                    </xsl:if>
+                </div>
+                
+                <xsl:if test="count(m:translation/m:long-titles/m:title[text()]) eq 1 and m:translation/m:long-titles/m:title[@xml:lang eq 'Bo-Ltn'][text()]">
+                    <div id="long-titles">
+                        <div>
+                            <xsl:call-template name="class-attribute">
+                                <xsl:with-param name="base-classes" select="'title'"/>
+                                <xsl:with-param name="lang" select="'Bo-Ltn'"/>
+                            </xsl:call-template>
+                            <xsl:apply-templates select="m:translation/m:long-titles/m:title[@xml:lang eq 'Bo-Ltn']"/>
+                        </div>
                     </div>
                 </xsl:if>
                 
@@ -840,7 +858,7 @@
     
     <xsl:template name="body-title">
         
-        <xsl:if test="m:translation/m:part[@type eq 'translation'][@render = ('persist', 'show', 'collapse', 'passage')]">
+        <xsl:if test="m:translation/m:part[@type eq 'translation']">
             <section id="body-title">
                 
                 <xsl:call-template name="class-attribute">

@@ -115,7 +115,7 @@
         </xsl:variable>
         
         <xsl:call-template name="reading-room-page">
-            <xsl:with-param name="page-url" select="concat('http://read.84000.co/section/', m:section/@id, '.html')"/>
+            <xsl:with-param name="page-url" select="m:source/@page-url"/>
             <xsl:with-param name="page-class" select="'reading-room source'"/>
             <xsl:with-param name="page-title" select="string-join((concat(m:translation/m:toh/m:full, ' Vol.', m:source/m:page[1]/@volume, ' F.', m:source/m:page[1]/@folio-in-volume), 'Tibetan Source', '84000 Reading Room'), ' | ')"/>
             <xsl:with-param name="page-description" select="normalize-space(m:section/m:abstract/tei:p[1]/text())"/>

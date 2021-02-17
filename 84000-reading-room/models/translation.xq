@@ -53,8 +53,13 @@ return
                 
             else
                 $translation:view-modes/m:view-mode[@id eq 'default']
-
-        let $canonical-id := $archive-path
+        
+        let $parts := translation:parts($tei, $part, $view-mode)
+        
+        let $canonical-id := (
+            $archive-path ! concat('id=', .), 
+            $parts//descendant-or-self::m:part[@prefix][@render eq 'show'][1] ! concat('part=', @id)
+        )
         
         where $source
         return
@@ -107,7 +112,7 @@ return
                             )
                             else ()
                             ,
-                            translation:parts($tei, $part, $view-mode)
+                            $parts
                         ),
                         
                         (: Include caches :)

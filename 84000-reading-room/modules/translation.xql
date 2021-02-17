@@ -192,9 +192,9 @@ declare function translation:filename($tei as element(tei:TEI), $resource-id as 
 
 };
 
-declare function translation:relative-html($resource-id as xs:string, $condition as xs:string?) as xs:string {
+declare function translation:relative-html($resource-id as xs:string, $condition as xs:string*) as xs:string {
 
-    concat('/translation/', $resource-id, '.html', if($condition gt '') then concat('?id=', $condition) else '')
+    concat('/translation/', $resource-id, '.html', if(count($condition) gt 0) then concat('?', string-join($condition, '&amp;')) else '')
     
 };
 
@@ -204,7 +204,7 @@ declare function translation:local-html($resource-id as xs:string) as xs:string 
     
 };
 
-declare function translation:canonical-html($resource-id as xs:string, $condition as xs:string?) as xs:string {
+declare function translation:canonical-html($resource-id as xs:string, $condition as xs:string*) as xs:string {
 
     (: This must point to the distribution server - files generated on other servers must point to the canonical page :)
     concat('https://read.84000.co', translation:relative-html($resource-id, $condition))
@@ -431,19 +431,6 @@ declare function local:part-content($content as element(tei:div)?, $render as xs
 
 };
 
-declare function local:passage-in-content($content as element()*, $passage-id as xs:string?) as element()? {
-    
-    if(starts-with($passage-id, 'node-')) then
-        $content//tei:*[@tid eq substring-after($passage-id, 'node-')][1]
-    else 
-        $content//tei:*[@xml:id eq $passage-id][1]
-        
-};
-
-declare function translation:summary($tei as element(tei:TEI)) as element()? {
-    translation:summary($tei, 'summary', (), '')
-};
-
 declare function local:render($content as element()*, $show-ids as xs:string*, $passage-id as xs:string?, $view-mode as element(m:view-mode)?, $default as xs:string) as xs:string {
     
     (: ~ Possible values for render 
@@ -474,6 +461,19 @@ declare function local:render($content as element()*, $show-ids as xs:string*, $
     else
         $default
     
+};
+
+declare function local:passage-in-content($content as element()*, $passage-id as xs:string?) as element()? {
+    
+    if(starts-with($passage-id, 'node-')) then
+        $content//tei:*[@tid eq substring-after($passage-id, 'node-')][1]
+    else 
+        $content//tei:*[@xml:id eq $passage-id][1]
+        
+};
+
+declare function translation:summary($tei as element(tei:TEI)) as element()? {
+    translation:summary($tei, 'summary', (), '')
 };
 
 declare function translation:summary($tei as element(tei:TEI), $passage-id as xs:string?, $view-mode as element(m:view-mode)?, $lang as xs:string) as element()? {
@@ -558,7 +558,6 @@ declare function translation:body($tei as element(tei:TEI), $passage-id as xs:st
             attribute id { 'translation' },
             attribute nesting { 0 },
             attribute section-index { 1 },
-            attribute render { local:render($translation, ('body-title', 'body'), $passage-id, $view-mode, 'persist') },
             attribute glossarize { 'true' },
             attribute prefix { 'tr' },
             
