@@ -14,7 +14,7 @@
             <div class="title-band">
                 <div class="container">
                     <div class="center-vertical-sm full-width">
-                        <div>
+                        <nav role="navigation" aria-label="Breadcrumbs">
                             <ul class="breadcrumb">
                                 <li>
                                     <a>
@@ -26,7 +26,7 @@
                                     <xsl:value-of select="'Error'"/>
                                 </li>
                             </ul>
-                        </div>
+                        </nav>
                         <div>
                             <div class="center-vertical pull-right">
                                 <div>

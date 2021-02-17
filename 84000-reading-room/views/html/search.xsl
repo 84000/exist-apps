@@ -12,7 +12,7 @@
                 <div class="container">
                     <div class="center-vertical-sm full-width">
                         
-                        <div>
+                        <nav role="navigation" aria-label="Breadcrumbs">
                             <ul class="breadcrumb">
                                 <li>
                                     <a>
@@ -31,7 +31,7 @@
                                     </li>
                                 </xsl:if>
                             </ul>
-                        </div>
+                        </nav>
                         
                         <div>
                             <div class="center-vertical pull-right">

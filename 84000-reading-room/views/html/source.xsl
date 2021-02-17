@@ -22,19 +22,21 @@
                 <div class="container">
                     <div class="center-vertical center-aligned text-center">
                     
-                        <div>
+                        <nav role="navigation" aria-label="Breadcrumbs">
                             <ul class="breadcrumb">
                                 
-                                <li>
-                                    <xsl:value-of select="$work-string"/>
-                                </li>
+                                <xsl:sequence select="common:breadcrumb-items(m:translation/m:parent/descendant-or-self::m:parent, /m:response/@lang)"/>
                                 
                                 <li>
-                                    <xsl:value-of select="m:back-link/m:title"/>
+                                    <a>
+                                        <xsl:attribute name="href" select="common:internal-link(concat('/translation/', m:translation/m:toh/@key, '.html'), (), '', /m:response/@lang)"/>
+                                        <xsl:value-of select="m:translation/m:titles/m:title[@xml:lang eq 'en']"/>
+                                    </a>
                                 </li>
                                 
                             </ul>
-                        </div>
+                        </nav>
+                        
                     </div>
                 </div>
             </div>
@@ -107,6 +109,7 @@
                             </p>
                         </div>
                     </xsl:if>
+                    
                 </div>
             </div>
         </xsl:variable>
@@ -114,7 +117,7 @@
         <xsl:call-template name="reading-room-page">
             <xsl:with-param name="page-url" select="concat('http://read.84000.co/section/', m:section/@id, '.html')"/>
             <xsl:with-param name="page-class" select="'reading-room source'"/>
-            <xsl:with-param name="page-title" select="concat('Tibetan Source | ', m:back-link/m:title, ' Vol.', m:source/m:page[1]/@volume, ' F.', m:source/m:page[1]/@folio-in-volume, ' | 84000 Reading Room')"/>
+            <xsl:with-param name="page-title" select="string-join((concat(m:translation/m:toh/m:full, ' Vol.', m:source/m:page[1]/@volume, ' F.', m:source/m:page[1]/@folio-in-volume), 'Tibetan Source', '84000 Reading Room'), ' | ')"/>
             <xsl:with-param name="page-description" select="normalize-space(m:section/m:abstract/tei:p[1]/text())"/>
             <xsl:with-param name="content" select="$content"/>
         </xsl:call-template>

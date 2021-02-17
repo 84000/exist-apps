@@ -35,11 +35,11 @@
                 <div class="title-band hidden-print">
                     <div class="container">
                         <div class="center-vertical center-aligned text-center">
-                            <div>
+                            <nav role="navigation" aria-label="Breadcrumbs">
                                 <ul id="outline" class="breadcrumb">
-                                    <xsl:copy-of select="common:breadcrumb-items(m:translation/m:parent | m:translation/m:parent//m:parent, /m:response/@lang)"/>
+                                    <xsl:sequence select="common:breadcrumb-items(m:translation/m:parent/descendant-or-self::m:parent, /m:response/@lang)"/>
                                 </ul>
-                            </div>
+                            </nav>
                         </div>
                     </div>
                 </div>

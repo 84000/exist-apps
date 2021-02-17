@@ -18,7 +18,7 @@
                     <div class="center-vertical-sm full-width">
                         
                         <div>
-                            <ul class="breadcrumb">
+                            <nav role="navigation" aria-label="Breadcrumbs">
                                 
                                 <li>
                                     <xsl:value-of select="'The 84000 Knowledge Base'"/>
@@ -28,7 +28,7 @@
                                     <xsl:value-of select="m:knowledgebase/m:page/m:titles/m:title[@xml:lang = 'en']"/>
                                 </li>-->
                                 
-                            </ul>
+                            </nav>
                         </div>
                         
                         <div>

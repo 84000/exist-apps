@@ -81,17 +81,18 @@ return
                     id="{ tei-content:id($tei) }"
                     status="{ tei-content:translation-status($tei) }"
                     status-group="{ tei-content:translation-status-group($tei) }">
-                    { 
-                       $translation-text  
+                    {
+                        translation:titles($tei),
+                        tei-content:ancestors($tei, $resource-id, 1), 
+                        translation:toh($tei, $resource-id),
+                        $translation-text  
                     }
                 </translation>,
                 
                 (: Include back link to the passage in the text :)
                 <back-link 
                     xmlns="http://read.84000.co/ns/1.0"
-                    url="{ concat($common:environment/m:url[@id eq 'reading-room'], '/translation/', $resource-id, '.html', '?part=', $ref-1/@xml:id, '#', $ref-1/@xml:id) }">
-                    <title>{ tei-content:title($tei) }</title>
-                </back-link>
+                    url="{ concat($common:environment/m:url[@id eq 'reading-room'], '/translation/', $resource-id, '.html', '?part=', $ref-1/@xml:id, '#', $ref-1/@xml:id) }"/>
                 
             )
             

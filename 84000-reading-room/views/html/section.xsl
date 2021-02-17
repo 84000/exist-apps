@@ -25,7 +25,7 @@
                 <div class="container">
                     <div class="center-vertical-sm full-width">
                         
-                        <div>
+                        <nav role="navigation" aria-label="Breadcrumbs">
                             <ul class="breadcrumb">
                                 
                                 <xsl:if test="$section-id eq 'all-translated'">
@@ -37,14 +37,14 @@
                                     </li>
                                 </xsl:if>
                                 
-                                <xsl:copy-of select="common:breadcrumb-items(m:section/m:parent | m:section/m:parent//m:parent, /m:response/@lang)"/>
+                                <xsl:sequence select="common:breadcrumb-items(m:section/m:parent/descendant-or-self::m:parent, /m:response/@lang)"/>
                                 
                                 <li>
                                     <xsl:value-of select="m:section/m:titles/m:title[@xml:lang = 'en']"/>
                                 </li>
                                 
                             </ul>
-                        </div>
+                        </nav>
                         
                         <div>
                             <div class="center-vertical pull-right">
@@ -1059,14 +1059,12 @@
                                     
                                     <!-- Location breadcrumbs -->
                                     <hr/>
-                                    <div class="text-muted small">
+                                    <nav role="navigation" aria-label="Breadcrumbs" class="text-muted small">
                                         <xsl:value-of select="'in '"/>
                                         <ul class="breadcrumb">
-                                            <xsl:call-template name="section-breadcumbs">
-                                                <xsl:with-param name="parent" select="$text/m:parent"/>
-                                            </xsl:call-template>
+                                            <xsl:sequence select="common:breadcrumb-items($text/m:parent/descendant-or-self::m:parent, /m:response/@lang)"/>
                                         </ul>
-                                    </div>
+                                    </nav>
                                     
                                     <!-- Tantric warning -->
                                     <xsl:if test="$text/m:publication/m:tantric-restriction/tei:p">
@@ -1561,33 +1559,6 @@
                 <xsl:value-of select="' pages of the Degé Tengyur'"/>
             </xsl:when>
         </xsl:choose>
-    </xsl:template>
-    
-    <xsl:template name="section-breadcumbs">
-        
-        <xsl:param name="parent" as="element(m:parent)"/>
-        
-        <xsl:variable name="parent-parent" select="$parent/m:parent"/>
-        
-        <xsl:if test="$parent-parent and not($parent-parent[@id eq 'ALL-TRANSLATED'])">
-            <xsl:call-template name="section-breadcumbs">
-                <xsl:with-param name="parent" select="$parent-parent"/>
-            </xsl:call-template>
-        </xsl:if>
-        
-        <li>
-            <a class="printable">
-                <xsl:choose>
-                    <xsl:when test="@type eq 'grouping'">
-                        <xsl:attribute name="href" select="common:internal-link(concat('/section/', $parent/@id, '.html'), (), concat('#grouping-', @id), /m:response/@lang)"/>
-                    </xsl:when>
-                    <xsl:otherwise>
-                        <xsl:attribute name="href" select="common:internal-link(concat('/section/', $parent/@id, '.html'), (), '', /m:response/@lang)"/>
-                    </xsl:otherwise>
-                </xsl:choose>
-                <xsl:apply-templates select="$parent/m:titles/m:title[@xml:lang='en']/text()"/>
-            </a>
-        </li>
     </xsl:template>
     
 </xsl:stylesheet>
