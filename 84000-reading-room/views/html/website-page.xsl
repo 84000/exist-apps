@@ -100,10 +100,6 @@
                 <xsl:value-of select="$page-title"/>
             </title>
             
-            <link rel="canonical">
-                <xsl:attribute name="href" select="$page-url"/>
-            </link>
-            
             <link rel="stylesheet" type="text/css" charset="utf-8">
                 <xsl:choose>
                     <xsl:when test="$page-type = ('communications')">
@@ -123,6 +119,10 @@
             </link>
             
             <xsl:if test="not($view-mode) or $view-mode[@client eq 'browser']">
+                
+                <link rel="canonical">
+                    <xsl:attribute name="href" select="$page-url"/>
+                </link>
                 
                 <link rel="apple-touch-icon">
                     <xsl:attribute name="href" select="concat($front-end-path, '/favicon/apple-touch-icon.png')"/>
