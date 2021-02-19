@@ -26,6 +26,9 @@
             <xsl:when test="lower-case($lang) = 'zh'">
                 <xsl:value-of select="'text-zh'"/>
             </xsl:when>
+            <xsl:when test="lower-case($lang) = 'ja'">
+                <xsl:value-of select="'text-ja'"/>
+            </xsl:when>
             <xsl:otherwise>
                 <xsl:value-of select="''"/>
             </xsl:otherwise>
