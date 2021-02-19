@@ -20,11 +20,11 @@ declare function local:data-item($text-id as xs:string, $toh as xs:string, $type
     }
 };
 
-declare function local:title($title as element(tei:title)?) as element(m:title) {
+declare function local:title($title as element(tei:title)?, $type as xs:string, $lang as xs:string) as element(m:title) {
     
     element { QName('http://read.84000.co/ns/1.0', 'title') } {
-        $title/@type,
-        $title/@xml:lang,
+        attribute type { $type },
+        attribute xml:lang { $lang },
         $title/text()
     }
     
@@ -71,7 +71,7 @@ declare function local:contributor($author as element(tei:author)) as element()*
     let $contributor-Bo-Ltn := $contributors[@xml:lang eq 'Bo-Ltn'][1]
     let $contributor-Sa-Ltn := $contributors[@xml:lang eq 'Sa-Ltn'][1]
     
-    let $contributor-ref := replace(($contributor-Bo-Ltn, $contributor-Sa-Ltn)[1]/text(), '\W+', '-')
+    let $contributor-ref := replace(($contributor-Bo-Ltn, $contributor-Sa-Ltn)[1]/text() ! lower-case(.), "[^a-zA-Z0-9']", "-")
     
     return (
             element { QName('http://read.84000.co/ns/1.0', if($contributor-Bo-Ltn[@type]) then $contributor-Bo-Ltn/@type else $type) } {
@@ -122,9 +122,13 @@ element { QName('http://read.84000.co/ns/1.0', 'tengyur-data') } {
     return
     for $tei in $local:tengyur-tei[tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl[tei:idno[@parent-id = $current-block]]]
         let $titles := $tei/tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:title
-        let $title-Bo-Ltn := $titles[@type eq 'mainTitle'][@xml:lang eq 'Bo-Ltn'][1]
-        let $title-Sa-Ltn := $titles[@type eq 'mainTitle'][@xml:lang eq 'Sa-Ltn'][1]
-        let $title-en := $titles[@type eq 'mainTitle'][@xml:lang eq 'en'][1]
+
+        let $local-titles := 
+            for $type in ('mainTitle', 'longTitle', 'otherTitle')
+            for $lang in ('Bo-Ltn', 'Sa-Ltn', 'en')
+            return
+                local:title($titles[@type eq $type][@xml:lang eq $lang][1], $type, $lang)
+                
         let $bibls := $tei/tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl[tei:idno[@parent-id = $current-block]]
         let $authors := $bibls/tei:author
         let $author-1 := $authors[1]
@@ -150,16 +154,13 @@ element { QName('http://read.84000.co/ns/1.0', 'tengyur-data') } {
                     attribute label { $toh/m:full/text() }
                 },
                 
-                (: 3 main titles required :)
-                local:title($title-Bo-Ltn),
-                local:title($title-Sa-Ltn),
-                local:title($title-en),
+                $local-titles,
                 
                 (: other titles :)
-                for $title in $titles[not(data() = ($title-Bo-Ltn, $title-Sa-Ltn, $title-en))]
+                for $title in $titles[not(data() = $local-titles/data())]
                 order by $title/@type
                 return
-                    local:title($title)
+                    local:title($title, $title/@type, $title/@xml:lang)
                 ,
                 (: main author required :)
                 if($author-1) then

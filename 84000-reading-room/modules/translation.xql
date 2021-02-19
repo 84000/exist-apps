@@ -330,7 +330,7 @@ declare function local:part($part as element(tei:div)?, $render as xs:string, $t
                 if($prefix) then
                     attribute prefix { $prefix }
                 else (),
-                if($type = ('summary', 'introduction', 'translation', 'appendix', 'glossary')) then
+                if($type = ('summary', 'introduction', 'translation', 'appendix', 'end-notes', 'glossary')) then
                     attribute glossarize { 'true' }
                 else (),
                 

@@ -73,7 +73,7 @@
                 </xsl:when>
                 
                 <!-- Check if deferred -->
-                <xsl:when test="$view-mode[@glossary = ('defer', 'defer-no-cache')] and not(ancestor::tei:note[@place eq 'end'][@xml:id]) and ancestor::tei:*[@tid]">
+                <xsl:when test="$view-mode[@glossary = ('defer', 'defer-no-cache')] and ancestor::tei:*[@tid]">
                     <xsl:value-of select="false()"/>
                 </xsl:when>
                 
@@ -851,7 +851,7 @@
         
         <xsl:apply-templates select="$end-notes-part/tei:head"/>
         
-        <xsl:for-each-group select="/m:response/m:translation//tei:note[@place eq 'end'][@xml:id]" group-by="@xml:id">
+        <xsl:for-each select="$end-notes-part//tei:note[@place eq 'end'][@xml:id]">
             
             <xsl:sort select="key('notes-cache-end-note', @xml:id)[1]/@index ! common:enforce-integer(.)"/>
             
@@ -923,7 +923,7 @@
                 
             </div>
             
-        </xsl:for-each-group>
+        </xsl:for-each>
         
     </xsl:template>
     
