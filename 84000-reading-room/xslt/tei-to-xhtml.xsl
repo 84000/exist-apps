@@ -1684,7 +1684,7 @@
                     <xsl:choose>
                         
                         <!-- Create a link/label -->
-                        <xsl:when test="$part/tei:head[@type eq $part/@type][text()]">
+                        <xsl:when test="$part/tei:head[@type eq $part/@type][data()]">
                             <li>
                                 <a>
                                     
@@ -1696,7 +1696,7 @@
                                         <xsl:value-of select="concat($part/@prefix, '. ')"/>
                                     </xsl:if>
                                     
-                                    <xsl:apply-templates select="$part/tei:head[@type eq $part/@type]/text()"/>
+                                    <xsl:apply-templates select="$part/tei:head[@type eq $part/@type][1]/node()[not(self::tei:note)]"/>
                                     
                                 </a>
                                 
@@ -1728,7 +1728,7 @@
                     <xsl:choose>
                         
                         <!-- Create a new nav point -->
-                        <xsl:when test="$part/tei:head[@type eq $part/@type][text()]">
+                        <xsl:when test="$part/tei:head[@type eq $part/@type][data()]">
                             <navPoint xmlns="http://www.daisy.org/z3986/2005/ncx/">
                                 
                                 <xsl:attribute name="id" select="$part/@id"/>
@@ -1737,7 +1737,7 @@
                                 
                                 <navLabel>
                                     <text>
-                                        <xsl:apply-templates select="$part/tei:head[@type eq $part/@type]/text()"/>
+                                        <xsl:apply-templates select="$part/tei:head[@type eq $part/@type][1]/text()"/>
                                     </text>
                                 </navLabel>
                                 
@@ -1771,7 +1771,7 @@
                 <xsl:otherwise>
                     
                     <!-- Link to the section -->
-                    <xsl:if test="$part/tei:head[@type eq $part/@type][text()]">
+                    <xsl:if test="$part/tei:head[@type eq $part/@type][data()]">
                         <tr>
                             <td>
                                 <xsl:choose>
@@ -1797,7 +1797,7 @@
                                         </xsl:otherwise>
                                     </xsl:choose>
                                     
-                                    <xsl:apply-templates select="$part/tei:head[@type eq $part/@type][1]/text()"/>
+                                    <xsl:apply-templates select="$part/tei:head[@type eq $part/@type][1]/node()[not(self::tei:note)]"/>
                                     
                                 </a>
                             </td>
@@ -1807,10 +1807,10 @@
                     <xsl:choose>
                         
                         <!-- Create an expandable block for sub-sections -->
-                        <xsl:when test="$sub-parts/tei:head[text()]">
+                        <xsl:when test="$sub-parts/tei:head[data()]">
                             
                             <xsl:variable name="count-chapters" select="count($sub-parts[@type eq 'chapter'])"/>
-                            <xsl:variable name="count-sections" select="count($sub-parts[tei:head[text()]])"/>
+                            <xsl:variable name="count-sections" select="count($sub-parts[tei:head[data()]])"/>
                             <xsl:variable name="sub-parts-label">
                                 <xsl:choose>
                                     <xsl:when test="$count-chapters eq 1">
