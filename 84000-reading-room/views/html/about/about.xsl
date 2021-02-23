@@ -75,20 +75,17 @@
             <div class="content-band">
                 <div class="container">
                     <div class="row">
-                        <div class="col-md-8 col-lg-9">
+                        
+                        <main class="col-md-8 col-lg-9">
                             
-                            <article>
-                                
-                                <h1>
-                                    <xsl:value-of select="$page-title"/>
-                                </h1>
-                                
-                                <!-- Passed content -->
-                                <xsl:copy-of select="$sub-content"/>
-                                
-                            </article>
+                            <h1>
+                                <xsl:value-of select="$page-title"/>
+                            </h1>
                             
-                        </div>
+                            <!-- Passed content -->
+                            <xsl:copy-of select="$sub-content"/>
+                            
+                        </main>
                         
                         <div class="col-md-4 col-lg-3">
                             

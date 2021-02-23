@@ -141,16 +141,16 @@
             <xsl:if test="$view-mode[@client eq 'browser'][not(@layout eq 'part-only')]">
                 
                 <!-- Navigation controls -->
-                <div class="nav-controls show-on-scroll-xs hidden-print">
+                <nav class="nav-controls show-on-scroll-xs hidden-print" aria-label="Navigation icons">
                     
                     <div id="navigation-btn-container" class="fixed-btn-container">
-                        <a href="#contents-sidebar" class="btn-round show-sidebar">
+                        <a href="#contents-sidebar" class="btn-round show-sidebar" aria-haspopup="true" title="Show the side navigation panel">
                             <i class="fa fa-bars" aria-hidden="true"/>
                         </a>
                     </div>
                     
                     <div id="bookmarks-btn-container" class="fixed-btn-container">
-                        <a href="#bookmarks-sidebar" id="bookmarks-btn" class="btn-round show-sidebar" aria-haspopup="true">
+                        <a href="#bookmarks-sidebar" id="bookmarks-btn" class="btn-round show-sidebar" aria-haspopup="true" title="Show the bookmarks panel">
                             <i class="fa fa-bookmark"/>
                             <span class="badge badge-notification">0</span>
                         </a>
@@ -159,7 +159,7 @@
                     <div id="link-to-trans-top-container" class="fixed-btn-container">
                         
                         <!-- Link to the start of the section / defaults to the start of the page -->
-                        <a class="btn-round scroll-to-anchor link-to-top" title="top">
+                        <a class="btn-round scroll-to-anchor link-to-top" title="Go to the top of the page">
                             <xsl:attribute name="href" select="'#top'"/>
                             <i class="fa fa-arrow-up" aria-hidden="true"/>
                         </a>
@@ -172,7 +172,7 @@
                         </button>
                     </div>
                     
-                </div>
+                </nav>
                 
                 <!-- General pop-up for notes and glossary -->
                 <div id="popup-footer" class="fixed-footer collapse hidden-print">
@@ -229,10 +229,10 @@
                                 <xsl:value-of select="'Search this translation'"/>
                             </h4>
                             
-                            <form action="/search.html" method="post" class="form-horizontal bottom-margin">
+                            <form action="/search.html" method="post" role="search" class="form-horizontal bottom-margin">
                                 <input type="hidden" name="resource-id" value="{ m:translation/@id }"/>
                                 <div class="input-group">
-                                    <input type="text" name="search" id="search" class="form-control" placeholder="Search" required="required" value=""/>
+                                    <input type="search" name="search" id="search" class="form-control" placeholder="Search" required="required" aria-label="Search text" value=""/>
                                     <span class="input-group-btn">
                                         <button type="submit" class="btn btn-primary">
                                             <i class="fa fa-search"/>
@@ -810,10 +810,10 @@
                 <xsl:if test="m:translation[@status = $render-status]/m:downloads[m:download[@type = ('pdf', 'epub', 'azw3')]]">
                     
                     <!-- Download options -->
-                    <aside class="download-options hidden-print text-center bottom-margin">
+                    <nav class="download-options hidden-print text-center bottom-margin" aria-label="download-options-header">
                         
-                        <header>
-                            <xsl:value-of select="'This translation is also available to download'"/>
+                        <header id="download-options-header">
+                            <xsl:value-of select="'Options for downloading this publication'"/>
                         </header>
                         
                         <xsl:for-each select="m:translation/m:downloads/m:download[@type = ('pdf', 'epub', 'azw3')]">
@@ -839,7 +839,7 @@
                             <i class="fa fa-print"/>
                         </a>-->
                         
-                    </aside>
+                    </nav>
                     
                     <!-- Print statement -->
                     <aside id="print-version" class="visible-print-block text-center page page-force">

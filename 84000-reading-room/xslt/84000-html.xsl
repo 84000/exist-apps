@@ -23,7 +23,7 @@
     <xsl:template match="eft:eft-header">
         <div class="navbar navbar-default">
             
-            <header class="brand-header">
+            <div class="brand-header" role="banner">
                 <div class="container">
                     <div class="navbar-header">
                         <div class="navbar-brand center-vertical full-width">
@@ -48,7 +48,7 @@
                                 <xsl:call-template name="translation">
                                     <xsl:with-param name="translation-id" select="'tag-line'"/>
                                     <xsl:with-param name="lang" select="$lang"/>
-                                    <xsl:with-param name="text-node" select="false()"/>
+                                    <xsl:with-param name="text-node" select="true()"/>
                                 </xsl:call-template>
                             </span>
                             
@@ -73,10 +73,10 @@
                         </div>
                     </div>
                 </div>
-            </header>
+            </div>
             
-            <div class="container">
-                <nav id="navbar" class="navbar-collapse collapse" role="navigation" aria-label="Main navigation" aria-expanded="false">
+            <div class="container" role="navigation">
+                <nav id="navbar" class="navbar-collapse collapse" aria-label="Main navigation" aria-expanded="false">
                     
                     <!-- Main navigation -->
                     <ul class="nav navbar-nav">
@@ -463,7 +463,7 @@
     
     <xsl:template match="eft:nav-sidebar[eft:item/eft:item]">
         <xsl:variable name="id" select="'nav-sidebar'"/>
-        <div class="panel panel-default">
+        <nav class="panel panel-default">
             <div class="panel-heading" role="tab">
                 <a class="center-vertical full-width collapsed" role="button" data-toggle="collapse" aria-expanded="false">
                     <xsl:attribute name="href">
@@ -475,7 +475,7 @@
                     <xsl:attribute name="id">
                         <xsl:value-of select="concat($id, '-heading')"/>
                     </xsl:attribute>
-                    <span class="panel-title">
+                    <span class="panel-title" id="nav-sidebar-title">
                         <xsl:call-template name="translation-lang-class">
                             <xsl:with-param name="lang" select="$lang"/>
                             <xsl:with-param name="persist-class-str" select="'panel-title'"/>
@@ -499,24 +499,26 @@
                     <xsl:value-of select="eft:item/eft:description"/>
                 </p>
             </div>
-            <div class="list-group">
+            <ul class="list-group">
                 <xsl:for-each select="eft:item/eft:item">
-                    <a class="list-group-item">
-                        <xsl:attribute name="href">
-                            <xsl:call-template name="local-url">
-                                <xsl:with-param name="url" select="@url"/>
-                            </xsl:call-template>
-                        </xsl:attribute>
-                        <xsl:if test="@url = $active-url">
-                            <xsl:attribute name="class">
-                                <xsl:value-of select="'list-group-item active'"/>
+                    <li>
+                        <a class="list-group-item">
+                            <xsl:attribute name="href">
+                                <xsl:call-template name="local-url">
+                                    <xsl:with-param name="url" select="@url"/>
+                                </xsl:call-template>
                             </xsl:attribute>
-                        </xsl:if>
-                        <xsl:value-of select="eft:label"/>
-                    </a>
+                            <xsl:if test="@url = $active-url">
+                                <xsl:attribute name="class">
+                                    <xsl:value-of select="'list-group-item active'"/>
+                                </xsl:attribute>
+                            </xsl:if>
+                            <xsl:value-of select="eft:label"/>
+                        </a>
+                    </li>
                 </xsl:for-each>
-            </div>
-        </div>
+            </ul>
+        </nav>
     </xsl:template>
     
     <xsl:template match="eft:title-band[eft:item]">
@@ -596,9 +598,9 @@
     
     <xsl:template match="eft:sharing-panel[eft:item]">
         
-        <aside class="panel panel-default">
-            <div class="panel-body sharing">
-                <span>
+        <aside class="panel panel-default" aria-label="Social media sharing links">
+            <nav class="panel-body sharing">
+                <span id="sharing-panel-title">
                     <xsl:call-template name="translation-lang-class">
                         <xsl:with-param name="lang" select="$lang"/>
                     </xsl:call-template>
@@ -619,21 +621,21 @@
                         </i>
                     </a>
                 </xsl:for-each>
-            </div>
+            </nav>
         </aside>
         
     </xsl:template>
     
     <xsl:template match="eft:shopping-panel[eft:item]">
         
-        <aside class="panel panel-default">
+        <aside class="panel panel-default" aria-label="A link to smile.amazon.com">
             <div class="panel-body shopping">
                 <xsl:for-each select="eft:item">
                     <a target="_blank" class="center-vertical full-width">
                         <xsl:attribute name="href">
                             <xsl:value-of select="@url"/>
                         </xsl:attribute>
-                        <div>
+                        <div id="shopping-panel-title">
                             <xsl:call-template name="translation-lang-class">
                                 <xsl:with-param name="lang" select="$lang"/>
                             </xsl:call-template>
@@ -777,7 +779,7 @@
                 </input>
             </xsl:if>
             <div class="input-group search-controls">
-                <input type="text" name="s" class="form-control">
+                <input type="search" name="s" class="form-control" aria-label="Search text">
                     <xsl:attribute name="placeholder">
                         <xsl:call-template name="translation">
                             <xsl:with-param name="translation-id" select="'placeholder-search'"/>

@@ -22,7 +22,7 @@ declare variable $translation:view-modes :=
     <view-modes xmlns="http://read.84000.co/ns/1.0">
       <view-mode id="default"           client="browser"  layout="full"            glossary="use-cache"       parts="count-sections"/>,
       <view-mode id="editor"            client="browser"  layout="expanded"        glossary="defer-no-cache"  parts="all"/>,
-      <view-mode id="annotation"        client="browser"  layout="expanded-fixed"  glossary="defer"           parts="all"/>,
+      <view-mode id="annotation"        client="browser"  layout="expanded-fixed"  glossary="use-cache"       parts="all"/>,
       <view-mode id="txt"               client="none"     layout="expanded-fixed"  glossary="suppress"        parts="all"/>,
       <view-mode id="ebook"             client="ebook"    layout="expanded-fixed"  glossary="use-cache"       parts="all"/>,
       <view-mode id="pdf"               client="none"     layout="expanded-fixed"  glossary="suppress"        parts="all"/>,

@@ -1155,7 +1155,7 @@
                     </div>
                     
                     <xsl:if test="$view-mode[not(@id eq 'pdf')]">
-                        <div class="locations hidden-print">
+                        <div class="locations hidden-print" role="navigation" aria-label="Locations of this term in the text">
                             
                             <hr/>
                             
@@ -1608,7 +1608,7 @@
                 </div>
             </div>
             
-            <div class="rw">
+            <nav class="rw" aria-label="Table of Contents">
                 <table class="contents-table">
                     <tbody>
                         
@@ -1661,7 +1661,7 @@
                         
                     </tbody>
                 </table>
-            </div>
+            </nav>
             
         </section>
         

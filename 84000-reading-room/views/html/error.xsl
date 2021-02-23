@@ -52,7 +52,7 @@
             <div class="content-band client-error">
                 <div class="container">
                     <div class="row">
-                        <div class="col-md-8 col-lg-9">
+                        <main class="col-md-8 col-lg-9">
                             <h2>Sorry, there was an error</h2>
                             <p>Please select a navigation option above</p>
                             <xsl:if test="$environment/@debug eq '1'">
@@ -65,7 +65,7 @@
                                     <xsl:value-of select="exception/message"/>
                                 </p>
                             </xsl:if>
-                        </div>
+                        </main>
                         <aside class="col-md-4 col-lg-3">
                             <div id="project-progress">
                                 <!-- Project Progress, get from ajax -->

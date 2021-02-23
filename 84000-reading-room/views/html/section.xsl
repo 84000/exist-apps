@@ -111,9 +111,9 @@
                    
                     <!-- Filters Carousel -->
                     <xsl:if test="$carousel-filters">
-                        <section id="filters-carousel" class="not-ready hidden-print">
+                        <nav id="filters-carousel" class="not-ready hidden-print" aria-labelledby="filters-carousel-header">
                             
-                            <h2 class="sr-only">
+                            <h2 id="filters-carousel-header" class="sr-only">
                                 <xsl:value-of select="'Filter our list of published translations'"/>
                             </h2>
                             
@@ -186,7 +186,7 @@
                                 </span>
                             </a>
                             
-                        </section>
+                        </nav>
                     </xsl:if>
                     
                     <!-- Advanced filters button -->
@@ -194,7 +194,7 @@
                         <div class="row">
                             <div class="col-sm-6 col-sm-offset-3">
                                 
-                                <a role="button" aria-haspopup="true" aria-expanded="false" class="show-sidebar no-underline">
+                                <a class="show-sidebar no-underline" role="button" aria-haspopup="true" aria-expanded="false">
                                     <xsl:attribute name="href" select="'#filters-sidebar'"/>
                                     <xsl:attribute name="aria-controls" select="'filters-sidebar'"/>
                                     
@@ -425,7 +425,7 @@
                     <hr class="hidden-print"/>
                     
                     <!-- Footer options -->
-                    <div class="row hidden-print">
+                    <nav class="row hidden-print" aria-label="Quick links">
                         <div class="col-md-offset-2 col-md-8">
                             <div class="row">
                                 <div class="col-sm-4 bottom-margin-xs">
@@ -463,7 +463,7 @@
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    </nav>
                     
                 </div>
             </main>
@@ -506,9 +506,9 @@
                         <div class="sidebar-content">
                             
                             <xsl:if test="$sidebar-filters">
-                                <section>
+                                <nav aria-labelledby="sidebar-filters-list-header">
                                     
-                                    <h3>
+                                    <h3 id="sidebar-filters-list-header">
                                         <xsl:value-of select="'Pre-configured filters'"/>
                                     </h3>
                                     
@@ -572,7 +572,7 @@
                                         </div>
                                     </xsl:for-each>
                                     
-                                </section>
+                                </nav>
                             </xsl:if>
                             
                             <form method="get" class="form-horizontal top-margin bottom-margin" data-ajax-target="#section-content">
@@ -1059,12 +1059,12 @@
                                     
                                     <!-- Location breadcrumbs -->
                                     <hr/>
-                                    <nav role="navigation" aria-label="Breadcrumbs" class="text-muted small">
+                                    <div role="navigation" aria-label="The location of this text in The Collection" class="text-muted small">
                                         <xsl:value-of select="'in '"/>
                                         <ul class="breadcrumb">
                                             <xsl:sequence select="common:breadcrumb-items($text/m:parent/descendant-or-self::m:parent, /m:response/@lang)"/>
                                         </ul>
-                                    </nav>
+                                    </div>
                                     
                                     <!-- Tantric warning -->
                                     <xsl:if test="$text/m:publication/m:tantric-restriction/tei:p">

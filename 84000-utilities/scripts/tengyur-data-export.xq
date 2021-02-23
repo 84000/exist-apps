@@ -71,7 +71,7 @@ declare function local:contributor($author as element(tei:author)) as element()*
     let $contributor-Bo-Ltn := $contributors[@xml:lang eq 'Bo-Ltn'][1]
     let $contributor-Sa-Ltn := $contributors[@xml:lang eq 'Sa-Ltn'][1]
     
-    let $contributor-ref := replace(($contributor-Bo-Ltn, $contributor-Sa-Ltn)[1]/text() ! lower-case(.), "[^a-zA-Z0-9']", "-")
+    let $contributor-ref := replace(($contributor-Bo-Ltn, $contributor-Sa-Ltn)[1]/text() ! lower-case(.), "[^a-zA-Z0-9']+", "-")
     
     return (
             element { QName('http://read.84000.co/ns/1.0', if($contributor-Bo-Ltn[@type]) then $contributor-Bo-Ltn/@type else $type) } {
@@ -118,13 +118,13 @@ declare function local:spreadsheet-data( $tengyur-data as element(m:tengyur-data
 let $tengyur-data :=
 element { QName('http://read.84000.co/ns/1.0', 'tengyur-data') } {
     
-    let $current-block := (:"O1JC76301JC10474":)("O1JC76301JC10651","O1JC76301JC10703")
+    let $current-block := "O1JC76301JC10823"(:("O1JC76301JC10651","O1JC76301JC10703"):)
     return
     for $tei in $local:tengyur-tei[tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl[tei:idno[@parent-id = $current-block]]]
         let $titles := $tei/tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:title
 
         let $local-titles := 
-            for $type in ('mainTitle', 'longTitle', 'otherTitle')
+            for $type in ('mainTitle'(:, 'longTitle', 'otherTitle':))
             for $lang in ('Bo-Ltn', 'Sa-Ltn', 'en')
             return
                 local:title($titles[@type eq $type][@xml:lang eq $lang][1], $type, $lang)
@@ -174,4 +174,4 @@ element { QName('http://read.84000.co/ns/1.0', 'tengyur-data') } {
             }
 }
 
-return local:spreadsheet-data($tengyur-data)(:$tengyur-data:)
+return (:local:spreadsheet-data($tengyur-data):)$tengyur-data

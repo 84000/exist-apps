@@ -46,7 +46,7 @@
                     <div id="ajax-source" class="ajax-target">
                         
                         <xsl:for-each select="m:source/m:page">
-                            <article>
+                            <main>
                                 
                                 <xsl:variable name="folio-string" as="xs:string">
                                     <xsl:choose>
@@ -69,7 +69,7 @@
                                 
                                 <hr/>
                                 
-                                <footer class="container footer" id="source-footer">
+                                <div class="container footer" id="source-footer">
                                     
                                     <div id="ekangyur-description-{ position() }" class="well well-sml collapse text-center">
                                         <xsl:call-template name="local-text">
@@ -86,9 +86,9 @@
                                         </p>
                                     </div>
                                     
-                                </footer>
+                                </div>
                                 
-                            </article>
+                            </main>
                         </xsl:for-each>
                         
                     </div>

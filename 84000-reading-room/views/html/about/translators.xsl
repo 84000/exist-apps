@@ -6,6 +6,7 @@
     <xsl:template match="/m:response">
         
         <xsl:call-template name="about">
+            
             <xsl:with-param name="sub-content">
                 
                 <xsl:call-template name="local-text">
@@ -233,11 +234,11 @@
                     </m:nav-sidebar>
                 </xsl:variable>
                 
-                <aside class="nav-sidebar">
+                <aside class="nav-sidebar" aria-label="Other pages in this group">
                     <xsl:apply-templates select="$nav-sidebar"/>
                 </aside>
                 
-                <aside>
+                <aside aria-label="A chart showing the progress of the project">
                     <!-- Project Progress, get from ajax -->
                     <div id="project-progress">
                         <xsl:attribute name="data-onload-replace">

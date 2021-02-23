@@ -74,7 +74,7 @@
             <div class="content-band">
                 <div class="container">
                     <div class="row">
-                        <article class="col-md-8 col-lg-9">
+                        <main class="col-md-8 col-lg-9">
                             
                             <section id="front-matter">
                                 <xsl:call-template name="front-matter"/>
@@ -88,7 +88,7 @@
                                 <xsl:call-template name="bibliography"/>
                             </section>
                             
-                        </article>
+                        </main>
                         
                         <aside class="col-md-4 col-lg-3">
                             

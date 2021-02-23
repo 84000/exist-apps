@@ -78,7 +78,8 @@ declare function store:download-master($file-name as xs:string, $translations-ma
             store:http-download(
                 concat($translations-master-host, '/translation/', $text-id, '.tei'), 
                 $tei-folder, 
-                $tei-file-name
+                $tei-file-name,
+                'tei'
             )
     
     (: Download the cache :)
@@ -97,7 +98,8 @@ declare function store:download-master($file-name as xs:string, $translations-ma
             store:http-download(
                 concat($translations-master-host, $master-cache/@url), 
                 $store-collection,
-                $store-file-name
+                $store-file-name,
+                'tei'
             ),
             store:store-version-str(
                 $store-collection, 
@@ -136,7 +138,8 @@ declare function store:download-master($file-name as xs:string, $translations-ma
                 store:http-download(
                     concat($translations-master-host, $master-file/@url), 
                     $store-collection, 
-                    $store-file-name
+                    $store-file-name,
+                    $store:file-group
                 )
             
             let $store-version-string := 
@@ -185,7 +188,7 @@ declare function store:create($file-name as xs:string) as element() {
     let $toh-keys := 
         if($tei/tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl[@key eq lower-case($resource-id)]) then
             (: It's a valid Toh :)
-            lower-case($resource-id)
+            $tei/tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl[@key eq lower-case($resource-id)]/@key ! string()
         else
             (: It's not a valid Toh but it got the tei so it must be a valid UT :)
             $tei/tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl/@key ! string()
@@ -365,7 +368,7 @@ declare function store:store-new-pdf($file-path as xs:string, $version as xs:str
                 </options>
             
             let $generate-pdf := 
-                process:execute((
+                 process:execute((
                     concat('/', $pdf-config/m:chrome-path), 
                     '--headless', 
                     concat('--print-to-pdf=', $resource-id, '.pdf'), 
@@ -373,6 +376,7 @@ declare function store:store-new-pdf($file-path as xs:string, $version as xs:str
                     '--no-sandbox',
                     '--run-all-compositor-stages-before-draw',
                     '--disable-web-security',
+                    '--virtual-time-budget=10000',
                     concat($pdf-config/m:html-source-url, '/translation/', $resource-id, '.html', '?view-mode=pdf')
                 ), $options)
             
@@ -419,7 +423,7 @@ declare function store:store-new-epub($file-path as xs:string, $version as xs:st
             let $file-name := lower-case($file-path-tokenized[last()])
             let $url := concat($ebook-config/m:epub-source-url, '/translation/', $file-name)
             
-            let $download := store:http-download($url, $file-collection, $file-name)
+            let $download := store:http-download($url, $file-collection, $file-name, $store:file-group)
             
             return
                 if(name($download) eq 'stored') then
@@ -534,7 +538,7 @@ declare function store:store-new-rdf($file-path as xs:string, $version as xs:str
             let $file-name := lower-case($file-path-tokenized[last()])
             let $url := concat($rdf-url, '/translation/', $file-name)
             
-            let $download := store:http-download($url, $file-collection, $file-name)
+            let $download := store:http-download($url, $file-collection, $file-name, $store:file-group)
             return
                 if(name($download) eq 'stored') then
                     let $set-file-group:= sm:chgrp(xs:anyURI($file-path), $store:file-group)
@@ -560,7 +564,7 @@ declare function store:store-new-rdf($file-path as xs:string, $version as xs:str
             </error>
 };
 
-declare function store:http-download($file-url as xs:string, $collection as xs:string, $file-name as xs:string) as item()* {
+declare function store:http-download($file-url as xs:string, $collection as xs:string, $file-name as xs:string, $auth-group as xs:string) as item()* {
 
     let $request := <hc:request href="{ $file-url }" method="GET"/>
     let $response := hc:send-request($request)
@@ -595,6 +599,9 @@ declare function store:http-download($file-url as xs:string, $collection as xs:s
                     $body
             
             let $store-file := xmldb:store($collection, $file-name, $file, $mime-type)
+            let $store-file-uri := xs:anyURI(concat($collection, '/', $file-name))
+            let $set-file-group:= sm:chgrp($store-file-uri, $auth-group)
+            let $set-file-permissions:= sm:chmod($store-file-uri, $store:file-permissions)
             
             return
                 <stored xmlns="http://read.84000.co/ns/1.0">{ $store-file }</stored>

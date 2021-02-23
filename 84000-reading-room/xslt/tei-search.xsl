@@ -21,7 +21,7 @@
             
             <div class="col-md-10 col-md-offset-1 col-lg-8 col-lg-offset-2">
                 
-                <form method="post" class="form-horizontal">
+                <form method="post" role="search" class="form-horizontal">
                     <xsl:attribute name="action" select="$action"/>
                     
                     <xsl:if test="$lang eq 'zh'">
@@ -31,7 +31,7 @@
                     </xsl:if>
                     
                     <div class="input-group">
-                        <input type="text" name="search" id="search" class="form-control" placeholder="Search" required="required">
+                        <input type="search" name="search" id="search" class="form-control" aria-label="Search text" placeholder="Search" required="required">
                             <xsl:attribute name="value" select="m:search/m:request/text()"/>
                         </input>
                         <span class="input-group-btn">
