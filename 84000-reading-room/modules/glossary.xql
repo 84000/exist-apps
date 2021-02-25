@@ -496,6 +496,7 @@ declare function glossary:translation-data($tei as element(tei:TEI), $resource-i
                     translation:titles($tei),
                     translation:long-titles($tei),
                     $source,
+                    translation:toh($tei, $source/@key),
                     translation:publication($tei),
                     translation:parts($tei, 'all', $view-mode),
                     
