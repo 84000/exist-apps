@@ -280,7 +280,7 @@ br+*,
 .footnote-number,
 br+.rw > p,
 .rw:first-child > p,
-.rw.first-child > p,
+.rw.rw-first > p,
 .rw.rw-label+.rw > p,
 .rw.rw-list-head +.rw > p,
 .rw-section-head+.rw > p,
@@ -319,7 +319,7 @@ br+.rw > p,
 }
 
 /* additional avoid page breaks */
-.nested-section > .first-child,
+.nested-section > .rw-first,
 .footnote-number {
     page-break-after: avoid;
 }
@@ -539,18 +539,12 @@ img.logo-84000 {
 }
 
 /* Headings */
-.heading-section h1, 
-.heading-section h2, 
-.heading-section h3, 
-.heading-section h4,
+.heading-section header > *,
 .heading-section p {
     margin-top: 12pt;
     font-weight: normal;
 }
-.heading-section h1:first-child, 
-.heading-section h2:first-child, 
-.heading-section h3:first-child, 
-.heading-section h4:first-child, 
+.heading-section header > *:first-child,
 .heading-section p:first-child {
     margin-top: 0px;
 }

@@ -118,7 +118,7 @@ declare function local:spreadsheet-data( $tengyur-data as element(m:tengyur-data
 let $tengyur-data :=
 element { QName('http://read.84000.co/ns/1.0', 'tengyur-data') } {
     
-    let $current-block := "O1JC76301JC10908"(:("O1JC76301JC10651","O1JC76301JC10703"):)
+    let $current-block := "O1JC76301JC10956"(:("O1JC76301JC10651","O1JC76301JC10703"):)
     return
     for $tei in $local:tengyur-tei[tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl[tei:idno[@parent-id = $current-block]]]
         let $titles := $tei/tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:title

@@ -47,6 +47,10 @@
                 <xsl:when test="not(normalize-space(.)) and common:index-of-node(../node(), .) = (1, count(../node()))">
                     <xsl:value-of select="normalize-space(.)"/>
                 </xsl:when>
+                <!-- If it's trailed by a note then remove the whitespace -->
+                <xsl:when test="following-sibling::tei:*[1][self::tei:note[@place = 'end']]">
+                    <xsl:value-of select="common:normalize-data(replace(data(.), '\s+$', ''))"/>
+                </xsl:when>
                 <xsl:otherwise>
                     <xsl:value-of select="common:normalize-data(data(.))"/>
                 </xsl:otherwise>
@@ -745,7 +749,7 @@
     <xsl:template match="tei:item[parent::tei:list]">
         <xsl:call-template name="milestone">
             <xsl:with-param name="content">
-                <div class="list-item">
+                <div>
                     
                     <xsl:attribute name="class">
                         <xsl:value-of select="'list-item'"/>
@@ -1462,7 +1466,7 @@
                             <xsl:value-of select="'rw'"/>
                             <xsl:value-of select="concat('rw-', $row-type)"/>
                             <xsl:if test="count(preceding-sibling::tei:*) eq 0">
-                                <xsl:value-of select="'first-child'"/>
+                                <xsl:value-of select="'rw-first'"/>
                             </xsl:if>
                         </xsl:with-param>
                     </xsl:call-template>
