@@ -6,6 +6,12 @@
     <xsl:variable name="front-end-path" select="$environment/m:url[@id eq 'front-end']/text()" as="xs:string"/>
     <xsl:variable name="operations-path" select="$environment/m:url[@id eq 'operations']/text()"/>
     
+    <xsl:template match="exist:match">
+        <span class="mark">
+            <xsl:apply-templates select="text()"/>
+        </span>
+    </xsl:template>
+    
     <!-- Page header -->
     <xsl:template name="operations-page">
         <xsl:param name="active-tab"/>
@@ -468,12 +474,16 @@
                             
                             <div class="small">
                                 
-                                <!-- Contribution -->
-                                <xsl:variable name="contribution" select="m:contribution"/>
-                                <xsl:if test="$contribution">
-                                    <div class="text-warning">
-                                        <xsl:value-of select="/m:response/m:contributor-types/m:contributor-type[@node-name eq $contribution/@node-name][@role eq $contribution/@role]/m:label"/>
-                                    </div>
+                                <!-- Contributions -->
+                                <xsl:if test="m:contribution">
+                                    <ul class="list-inline inline-dots">
+                                        <xsl:for-each select="m:contribution">
+                                            <xsl:variable name="contribution" select="."/>
+                                            <li class="text-warning">
+                                                <xsl:value-of select="/m:response/m:contributor-types/m:contributor-type[@node-name eq $contribution/@node-name][@role eq $contribution/@role]/m:label"/>
+                                            </li>
+                                        </xsl:for-each>
+                                    </ul>    
                                 </xsl:if>
                                 
                                 <!-- Acknowledgment statement -->

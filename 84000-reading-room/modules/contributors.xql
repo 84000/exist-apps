@@ -72,17 +72,17 @@ declare function contributors:acknowledgements($contributor-uri as xs:string) as
         ]
         
         (: Get their expression in this text :)
-        let $translation-contributor := (
+        let $translation-contributions := (
             $tei//tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:author[@ref eq $contributor-uri]
             | $tei//tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:editor[@ref eq $contributor-uri]
             | $tei//tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:consultant[@ref eq $contributor-uri]
-        )[1]
+        )
         
         let $id := substring-after($contributor-uri, 'contributors.xml#')
         
         let $contributor-name := 
-            if($translation-contributor/text()) then
-                $translation-contributor/text()
+            if($translation-contributions[text()]) then
+                $translation-contributions[text()][1]/text()
             else
                 $contributors:contributors/m:contributors/m:person[@xml:id eq $id]/m:label/text()
         
@@ -93,10 +93,10 @@ declare function contributors:acknowledgements($contributor-uri as xs:string) as
         let $marked-paragraphs := common:mark-nodes($acknowledgment/tei:p, $mark-contributor-name, 'phrase')
         
     return
-        local:acknowledgement($tei, $marked-paragraphs[exist:match], $translation-contributor)
+        local:acknowledgement($tei, $marked-paragraphs[exist:match], $translation-contributions)
 };
 
-declare function local:acknowledgement($tei as element(tei:TEI), $paragraphs as element()*, $contribution as element()?) as element(m:acknowledgement)* {
+declare function local:acknowledgement($tei as element(tei:TEI), $paragraphs as element()*, $contributions as element()*) as element(m:acknowledgement)* {
 
     element { QName('http://read.84000.co/ns/1.0', 'acknowledgement') } {
         attribute translation-id { tei-content:id($tei) },
@@ -104,6 +104,8 @@ declare function local:acknowledgement($tei as element(tei:TEI), $paragraphs as 
         attribute translation-status-group { tei-content:translation-status-group($tei) },
         element m:title { text { tei-content:title($tei) } },
         translation:toh($tei, ''),
+        for $contribution in $contributions
+        return
         element m:contribution {
             attribute node-name { local-name($contribution) },
             $contribution/@role,
