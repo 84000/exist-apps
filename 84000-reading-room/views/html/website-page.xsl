@@ -120,9 +120,11 @@
             
             <xsl:if test="not($view-mode) or $view-mode[@client eq 'browser']">
                 
-                <link rel="canonical">
-                    <xsl:attribute name="href" select="$page-url"/>
-                </link>
+                <xsl:if test="$page-url gt ''">
+                    <link rel="canonical">
+                        <xsl:attribute name="href" select="$page-url"/>
+                    </link>
+                </xsl:if>
                 
                 <link rel="apple-touch-icon">
                     <xsl:attribute name="href" select="concat($front-end-path, '/favicon/apple-touch-icon.png')"/>

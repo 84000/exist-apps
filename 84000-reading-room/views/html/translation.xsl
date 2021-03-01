@@ -415,7 +415,7 @@
         <!-- Pass the content to the page -->
         <xsl:call-template name="reading-room-page">
             
-            <xsl:with-param name="page-url" select="m:translation/@canonical-html"/>
+            <xsl:with-param name="page-url" select="(m:translation/@canonical-html, '')[1]"/>
             <xsl:with-param name="page-class">
                 <xsl:value-of select="'reading-room'"/>
                 <xsl:value-of select="' translation'"/>

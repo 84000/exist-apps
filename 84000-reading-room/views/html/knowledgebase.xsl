@@ -112,7 +112,7 @@
         
         <!-- Pass the content to the page -->
         <xsl:call-template name="website-page">
-            <xsl:with-param name="page-url" select="m:knowledgebase/m:page/@page-url"/>
+            <xsl:with-param name="page-url" select="(m:knowledgebase/m:page/@page-url, '')[1]"/>
             <xsl:with-param name="page-class" select="'reading-room translation'"/>
             <xsl:with-param name="page-title" select="concat(m:knowledgebase/m:page/m:titles/m:title[@xml:lang eq 'en'][@type eq 'mainTitle']/text(), ' | 84000 Reading Room')"/>
             <xsl:with-param name="page-description" select="normalize-space(data(m:knowledgebase/m:page/m:summary/tei:p[1]))"/>
