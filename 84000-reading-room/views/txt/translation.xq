@@ -26,7 +26,7 @@ declare function local:parse-node($translation as element(m:translation), $eleme
         Output the contents.
         They will be seperated by a return 
     :)
-    if($element[self::m:honoration | self::m:main-title | self::tei:head | self::tei:p | self::tei:ab | self::tei:lg | self::tei:q | self::tei:list | self::tei:trailer | self::tei:label | self::tei:seg | self::tei:milestone])then (
+    if($element[self::m:honoration | self::m:main-title | self::tei:head | self::tei:p | self::tei:ab | self::tei:l | self::tei:q | self::tei:list | self::tei:trailer | self::tei:label | self::tei:seg | self::tei:milestone])then (
         
         (: These are the nodes we want to output :)
         let $output-nodes := $element/descendant::text()[not(ancestor::tei:note)][normalize-space(.) gt ''] | $element//tei:milestone | $element//tei:ref | $element//tei:note
@@ -64,7 +64,7 @@ declare function local:parse-node($translation as element(m:translation), $eleme
                     replace(
                         replace(
                             $node
-                        , '[\r\n\t]', '')    (: remove new line characters :)
+                        , '[\r\n\t]', ' ')    (: remove new line characters :)
                     , '\s+', ' ')            (: condense multiple spaces :)
                     
             ,
@@ -75,7 +75,7 @@ declare function local:parse-node($translation as element(m:translation), $eleme
             else ()
         )
     )
-    (: Look for groups down the tree :)
+    (: Look for groups down the tree :) 
     else if($element[*]) then
         for $child-element in $element/*
         return

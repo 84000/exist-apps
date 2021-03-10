@@ -45,91 +45,106 @@
                     <div class="row">
                         <div class="col-items div-list no-border-top">
                             
-                            <xsl:for-each select="m:contributor-persons/m:person">
+                            <xsl:for-each-group select="m:contributor-persons/m:person" group-by="@start-letter">
                                 
                                 <xsl:sort select="@start-letter"/>
                                 
-                                <xsl:variable name="person-id" select="@xml:id"/>
-                                
-                                <div class="item">
+                                <div>
                                     
-                                    <xsl:copy-of select="common:marker(@start-letter, if(preceding-sibling::m:person[1]/@start-letter) then preceding-sibling::m:person[1]/@start-letter else '')"/>
+                                    <a class="marker">
+                                        <xsl:attribute name="name" select="@start-letter"/>
+                                        <xsl:attribute name="id" select="concat('marker-', @start-letter)"/>
+                                        <xsl:value-of select="@start-letter"/>
+                                    </a>
                                     
-                                    <div class="row">
-                                        <div class="col-sm-5">
+                                    <xsl:for-each select="fn:current-group()">
+                                        
+                                        <xsl:sort select="m:sort-name"/>
+                                        
+                                        <xsl:variable name="person-id" select="@xml:id"/>
+                                        
+                                        <div class="item">
                                             
-                                            <div class="center-vertical full-width">
-                                                <span>
-                                                    <a>
-                                                        <xsl:attribute name="href" select="concat('/edit-translator.html?id=', $person-id)"/>
-                                                        <xsl:value-of select="m:sort-name"/>
-                                                    </a>
-                                                    <span class="small text-muted">
-                                                        <xsl:value-of select="concat(' / ', $person-id)"/>
-                                                    </span>
-                                                </span>
-                                                <span class="text-right">
-                                                    <xsl:if test="@count-contributions gt '0'">
-                                                        <xsl:value-of select="' '"/>
-                                                        <span class="badge badge-notification">
-                                                            <xsl:value-of select="@count-contributions"/>
+                                            <div class="row">
+                                                <div class="col-sm-5">
+                                                    
+                                                    <div class="center-vertical full-width">
+                                                        <span>
+                                                            <a>
+                                                                <xsl:attribute name="href" select="concat('/edit-translator.html?id=', $person-id)"/>
+                                                                <xsl:value-of select="m:label"/>
+                                                            </a>
+                                                            <span class="small text-muted">
+                                                                <xsl:value-of select="concat(' / ', $person-id)"/>
+                                                            </span>
                                                         </span>
+                                                        <span class="text-right">
+                                                            <xsl:if test="@count-contributions gt '0'">
+                                                                <xsl:value-of select="' '"/>
+                                                                <span class="badge badge-notification">
+                                                                    <xsl:value-of select="@count-contributions"/>
+                                                                </span>
+                                                            </xsl:if>
+                                                        </span>
+                                                        
+                                                    </div>
+                                                    
+                                                    <ul class="list-inline inline-dots small">
+                                                        <xsl:if test="m:affiliation[@type eq 'academic']">
+                                                            <li class="text-success">
+                                                                <xsl:value-of select="'Academic'"/>
+                                                            </li>
+                                                        </xsl:if>
+                                                        <xsl:if test="m:affiliation[@type eq 'practitioner']">
+                                                            <li class="text-warning">
+                                                                <xsl:value-of select="'Practitioner'"/>
+                                                            </li>
+                                                        </xsl:if>
+                                                    </ul>
+                                                </div>
+                                                <div class="col-sm-3">
+                                                    <xsl:if test="m:team">
+                                                        <ul>
+                                                            <xsl:for-each select="m:team">
+                                                                <xsl:variable name="team-id" select="@id"/>
+                                                                <li>
+                                                                    <xsl:value-of select="/m:response/m:contributor-teams/m:team[@xml:id eq $team-id]/m:label"/>
+                                                                </li>
+                                                            </xsl:for-each>
+                                                        </ul>
                                                     </xsl:if>
-                                                </span>
-                                                
+                                                </div>
+                                                <div class="col-sm-4">
+                                                    <xsl:if test="m:institution">
+                                                        <ul>
+                                                            <xsl:for-each select="m:institution">
+                                                                <xsl:variable name="institution-id" select="@id"/>
+                                                                <li>
+                                                                    <xsl:value-of select="/m:response/m:contributor-institutions/m:institution[@xml:id eq $institution-id]/m:label"/>
+                                                                </li>
+                                                            </xsl:for-each>
+                                                        </ul>
+                                                    </xsl:if>
+                                                </div>
                                             </div>
                                             
-                                            <ul class="list-inline inline-dots small">
-                                                <xsl:if test="m:affiliation[@type eq 'academic']">
-                                                    <li class="text-success">
-                                                        <xsl:value-of select="'Academic'"/>
-                                                    </li>
-                                                </xsl:if>
-                                                <xsl:if test="m:affiliation[@type eq 'practitioner']">
-                                                    <li class="text-warning">
-                                                        <xsl:value-of select="'Practitioner'"/>
-                                                    </li>
-                                                </xsl:if>
-                                            </ul>
-                                        </div>
-                                        <div class="col-sm-3">
-                                            <xsl:if test="m:team">
-                                                <ul>
-                                                    <xsl:for-each select="m:team">
-                                                        <xsl:variable name="team-id" select="@id"/>
-                                                        <li>
-                                                            <xsl:value-of select="/m:response/m:contributor-teams/m:team[@xml:id eq $team-id]/m:label"/>
-                                                        </li>
-                                                    </xsl:for-each>
-                                                </ul>
+                                            <xsl:if test="m:acknowledgement">
+                                                <div class="row">
+                                                    <xsl:call-template name="acknowledgements">
+                                                        <xsl:with-param name="acknowledgements" select="m:acknowledgement"/>
+                                                        <xsl:with-param name="group" select="''"/>
+                                                        <xsl:with-param name="css-class" select="'col-sm-12'"/>
+                                                        <xsl:with-param name="link-href" select="'/edit-text-header.html?id=@translation-id'"/>
+                                                    </xsl:call-template>
+                                                </div>
                                             </xsl:if>
                                         </div>
-                                        <div class="col-sm-4">
-                                            <xsl:if test="m:institution">
-                                                <ul>
-                                                    <xsl:for-each select="m:institution">
-                                                        <xsl:variable name="institution-id" select="@id"/>
-                                                        <li>
-                                                            <xsl:value-of select="/m:response/m:contributor-institutions/m:institution[@xml:id eq $institution-id]/m:label"/>
-                                                        </li>
-                                                    </xsl:for-each>
-                                                </ul>
-                                            </xsl:if>
-                                        </div>
-                                    </div>
+                                        
+                                    </xsl:for-each>
                                     
-                                    <xsl:if test="m:acknowledgement">
-                                        <div class="row">
-                                            <xsl:call-template name="acknowledgements">
-                                                <xsl:with-param name="acknowledgements" select="m:acknowledgement"/>
-                                                <xsl:with-param name="group" select="''"/>
-                                                <xsl:with-param name="css-class" select="'col-sm-12'"/>
-                                                <xsl:with-param name="link-href" select="'/edit-text-header.html?id=@translation-id'"/>
-                                            </xsl:call-template>
-                                        </div>
-                                    </xsl:if>
                                 </div>
-                            </xsl:for-each>
+                                
+                            </xsl:for-each-group>
                             
                         </div>
                         

@@ -44,64 +44,81 @@
                     <div class="row">
                         <div class="col-items div-list no-border-top">
                             
-                            <xsl:for-each select="m:sponsors/m:sponsor">
-                                <xsl:sort select="@start-letter"/>
-                                <xsl:variable name="sponsor-id" select="@xml:id"/>
+                            <xsl:for-each-group select="m:sponsors/m:sponsor" group-by="@start-letter">
                                 
-                                <div class="item">
+                                <xsl:sort select="@start-letter"/>
+                                
+                                <div>
                                     
-                                    <xsl:copy-of select="common:marker(@start-letter, if(preceding-sibling::m:sponsor[1]/@start-letter) then preceding-sibling::m:sponsor[1]/@start-letter else '')"/>
+                                    <a class="marker">
+                                        <xsl:attribute name="name" select="@start-letter"/>
+                                        <xsl:attribute name="id" select="concat('marker-', @start-letter)"/>
+                                        <xsl:value-of select="@start-letter"/>
+                                    </a>
                                     
-                                    <div class="row">
-                                        <div class="col-sm-9">
-                                            <a>
-                                                <xsl:attribute name="href" select="concat('/edit-sponsor.html?id=', $sponsor-id)"/>
-                                                <xsl:value-of select="m:label"/>
-                                                <xsl:if test="m:internal-name">
-                                                    <xsl:value-of select="concat(' / ', m:internal-name)"/>
-                                                </xsl:if>
-                                            </a>
-                                            <xsl:if test="m:country/text()">
-                                                <span>
-                                                    <xsl:value-of select="concat(' / ', m:country)"/>
-                                                </span>
+                                    <xsl:for-each select="fn:current-group()">
+                                        
+                                        <xsl:sort select="m:sort-name"/>
+                                        
+                                        <xsl:variable name="sponsor-id" select="@xml:id"/>
+                                        
+                                        <div class="item">
+                                            
+                                            <div class="row">
+                                                <div class="col-sm-9">
+                                                    <a>
+                                                        <xsl:attribute name="href" select="concat('/edit-sponsor.html?id=', $sponsor-id)"/>
+                                                        <xsl:value-of select="m:label"/>
+                                                        <xsl:if test="m:internal-name">
+                                                            <xsl:value-of select="concat(' / ', m:internal-name)"/>
+                                                        </xsl:if>
+                                                    </a>
+                                                    <xsl:if test="m:country/text()">
+                                                        <span>
+                                                            <xsl:value-of select="concat(' / ', m:country)"/>
+                                                        </span>
+                                                    </xsl:if>
+                                                    <span class="small text-muted">
+                                                        <xsl:value-of select="concat(' / ', $sponsor-id)"/>
+                                                    </span>
+                                                </div>
+                                                <div class="col-sm-3 text-right">
+                                                    <xsl:if test="m:type[@id eq 'matching-funds']">
+                                                        <span class="label label-danger">
+                                                            <xsl:value-of select="'Matching'"/>
+                                                        </span>
+                                                    </xsl:if>
+                                                    <xsl:if test="m:type[@id eq 'founding']">
+                                                        <span class="label label-info">
+                                                            <xsl:value-of select="'Founding'"/>
+                                                        </span>
+                                                    </xsl:if>
+                                                    <xsl:if test="m:type[@id eq 'sutra']">
+                                                        <span class="label label-warning">
+                                                            <xsl:value-of select="'Sutra'"/>
+                                                        </span>
+                                                    </xsl:if>
+                                                </div>
+                                            </div>
+                                            
+                                            <xsl:if test="m:acknowledgement">
+                                                <div class="row">
+                                                    <xsl:call-template name="acknowledgements">
+                                                        <xsl:with-param name="acknowledgements" select="m:acknowledgement"/>
+                                                        <xsl:with-param name="group" select="''"/>
+                                                        <xsl:with-param name="css-class" select="'col-sm-12'"/>
+                                                        <xsl:with-param name="link-href" select="'/edit-text-sponsors.html?id=@translation-id'"/>
+                                                    </xsl:call-template>
+                                                </div>
                                             </xsl:if>
-                                            <span class="small text-muted">
-                                                <xsl:value-of select="concat(' / ', $sponsor-id)"/>
-                                            </span>
+                                            
                                         </div>
-                                        <div class="col-sm-3 text-right">
-                                            <xsl:if test="m:type[@id eq 'matching-funds']">
-                                                <span class="label label-danger">
-                                                    <xsl:value-of select="'Matching'"/>
-                                                </span>
-                                            </xsl:if>
-                                            <xsl:if test="m:type[@id eq 'founding']">
-                                                <span class="label label-info">
-                                                    <xsl:value-of select="'Founding'"/>
-                                                </span>
-                                            </xsl:if>
-                                            <xsl:if test="m:type[@id eq 'sutra']">
-                                                <span class="label label-warning">
-                                                    <xsl:value-of select="'Sutra'"/>
-                                                </span>
-                                            </xsl:if>
-                                        </div>
-                                    </div>
-                                    
-                                    <xsl:if test="m:acknowledgement">
-                                        <div class="row">
-                                            <xsl:call-template name="acknowledgements">
-                                                <xsl:with-param name="acknowledgements" select="m:acknowledgement"/>
-                                                <xsl:with-param name="group" select="''"/>
-                                                <xsl:with-param name="css-class" select="'col-sm-12'"/>
-                                                <xsl:with-param name="link-href" select="'/edit-text-sponsors.html?id=@translation-id'"/>
-                                            </xsl:call-template>
-                                        </div>
-                                    </xsl:if>
+                                        
+                                    </xsl:for-each>
                                     
                                 </div>
-                            </xsl:for-each>
+                                
+                            </xsl:for-each-group>
                             
                         </div>
                         

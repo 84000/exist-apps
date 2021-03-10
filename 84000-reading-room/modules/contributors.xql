@@ -11,25 +11,20 @@ declare namespace tei="http://www.tei-c.org/ns/1.0";
 
 declare variable $contributors:contributors := doc(concat($common:data-path, '/operations/contributors.xml'));
 declare variable $contributors:texts := collection($common:translations-path);
-declare variable $contributors:person-prefixes := '(Dr\.|Prof\.|Ven\.)';
+declare variable $contributors:person-prefixes := '(Dr\.|Prof\.|Ven\.|Rev\.)';
 declare variable $contributors:team-prefixes := '(Dr\.|The|Prof\.)';
-declare variable $contributors:institution-prefixes := '(The|University\sof)';
+declare variable $contributors:institution-prefixes := '(The|University\s+of)';
 
 declare function contributors:persons($include-acknowledgements as xs:boolean, $count-contributions as xs:boolean) as element(m:contributor-persons) {
     
-    let $contributors := 
+    element { QName('http://read.84000.co/ns/1.0', 'contributor-persons') } {
         for $contributor in $contributors:contributors/m:contributors/m:person
-        order by normalize-space(replace($contributor/m:label, $contributors:person-prefixes, ''))
-        return $contributor
+            let $person := contributors:person($contributor/@xml:id, $include-acknowledgements, $count-contributions)
+            order by $person/m:sort-name
+        return
+            $person
+    }
     
-    return
-        <contributor-persons xmlns="http://read.84000.co/ns/1.0">
-        {
-            for $contributor in $contributors
-            return
-                contributors:person($contributor/@xml:id, $include-acknowledgements, $count-contributions)
-        }
-        </contributor-persons>
 };
 
 declare function contributors:person($id as xs:string, $include-acknowledgements as xs:boolean, $count-contributions as xs:boolean) as element(m:person) {
@@ -53,7 +48,7 @@ declare function contributors:person($id as xs:string, $include-acknowledgements
             else ()
             ,
             $contributor/*,
-            element sort-name { replace($contributor/m:label, concat($contributors:person-prefixes, '\s(.*)'), '$2, $1') },
+            element sort-name { lower-case(replace($contributor/m:label, concat($contributors:person-prefixes, '\s+'), '')) },
             if($include-acknowledgements) then
                 contributors:acknowledgements($contributor-uri)
             else
@@ -150,8 +145,8 @@ declare function contributors:team($id as xs:string, $include-acknowledgements a
         element { node-name($team) } {
             $team/@*,
             attribute start-letter { upper-case(substring(normalize-space(replace($team/m:label, $contributors:team-prefixes, '')), 1, 1)) },
+            element sort-name { lower-case(replace($team/m:label, concat($contributors:team-prefixes, '\s+'), '')) },
             $team/* ,
-            element sort-name { replace($team/m:label, concat($contributors:team-prefixes, '\s(.*)'), '$2, $1') },
             if($include-acknowledgements) then
                 for $tei in $contributors:texts//tei:TEI[tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:author[@ref eq $team-id]]
                     let $acknowledgement := $tei/tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:*[@ref eq concat('contributors.xml#', $team/@xml:id)]
@@ -216,8 +211,8 @@ declare function contributors:institutions($include-persons as xs:boolean) as el
                 element { node-name($institution) } {
                     $institution/@*,
                     attribute start-letter { upper-case(substring(normalize-space(replace($institution/m:label/text(), $contributors:institution-prefixes, '')), 1, 1)) },
+                    element sort-name { lower-case(replace($institution/m:label, concat($contributors:institution-prefixes, '\s+'), '')) },
                     $institution/*,
-                    element sort-name { replace($institution/m:label/text(), concat($contributors:institution-prefixes, '\s(.*)'), '$2, $1') },
                     if($include-persons) then
                         $contributors:contributors/m:contributors/m:person[m:institution/@id eq $institution/@xml:id]
                     else
@@ -279,49 +274,52 @@ declare function contributors:institution-types($include-stats as xs:boolean) as
         }
 };
 
-declare function local:next-id() as xs:integer {
+declare function contributors:next-person-id() as xs:integer {
     max($contributors:contributors/m:contributors/m:person/@xml:id ! substring-after(., 'person-') ! common:integer(.)) + 1
 };
 
 declare function contributors:update-person($person as element(m:person)?) as xs:string {
     
     let $person-id :=
-        if($person/@xml:id) then
+        if($person[@xml:id]) then
             $person/@xml:id
         else
-            concat('person-', xs:string(local:next-id()))
+            concat('person-', xs:string(contributors:next-person-id()))
     
     let $request-parameter-names := common:sort-trailing-number-in-string(request:get-parameter-names(), '-')
     
     let $new-value := 
-        <person xmlns="http://read.84000.co/ns/1.0" 
-            xml:id="{ $person-id }">{
+        element { QName('http://read.84000.co/ns/1.0', 'person') } {
+        
+            attribute xml:id { $person-id },
             
-                $common:line-ws,
-                <label>{  request:get-parameter('name', '') }</label>,
-                
-                for $request-parameter-name in $request-parameter-names
-                return
-                    if(starts-with($request-parameter-name, 'institution-id-') and request:get-parameter($request-parameter-name, '') gt '') then (
+            $common:line-ws,
+            
+            element label {  
+                request:get-parameter('name', '') 
+            },
+            
+            for $request-parameter-name in $request-parameter-names
+            return
+                if(starts-with($request-parameter-name, 'institution-id-') and request:get-parameter($request-parameter-name, '') gt '') then (
+                    $common:line-ws,
+                    <institution id="{ request:get-parameter($request-parameter-name, '') }"/>
+                )
+                else if(starts-with($request-parameter-name, 'team-id-') and request:get-parameter($request-parameter-name, '') gt '') then (
+                    $common:line-ws,
+                    <team id="{ request:get-parameter($request-parameter-name, '') }"/>
+                )
+                else if($request-parameter-name eq 'affiliation[]') then
+                    for $affiliation in request:get-parameter('affiliation[]', '')
+                    return (
                         $common:line-ws,
-                        <institution id="{ request:get-parameter($request-parameter-name, '') }"/>
+                        <affiliation type="{ $affiliation }"/>
                     )
-                    else if(starts-with($request-parameter-name, 'team-id-') and request:get-parameter($request-parameter-name, '') gt '') then (
-                        $common:line-ws,
-                        <team id="{ request:get-parameter($request-parameter-name, '') }"/>
-                    )
-                    else if($request-parameter-name eq 'affiliation[]') then
-                        for $affiliation in request:get-parameter('affiliation[]', '')
-                        return (
-                            $common:line-ws,
-                            <affiliation type="{ $affiliation }"/>
-                        )
-                    else
-                        ()
-                 ,
-                 $common:node-ws
-            }
-        </person>
+                else
+                    ()
+             ,
+             $common:node-ws
+        }
     
     let $parent := $contributors:contributors/m:contributors
     

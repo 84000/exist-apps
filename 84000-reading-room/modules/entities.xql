@@ -13,15 +13,21 @@ import module namespace tei-content="http://read.84000.co/tei-content" at "tei-c
 import module namespace translation="http://read.84000.co/translation" at "translation.xql";
 import module namespace functx="http://www.functx.com";
 
-declare variable $entities:entities := doc(concat($common:data-path, '/operations/entities.xml'));
-declare variable $entities:types := ('eft-glossary-term', 'eft-glossary-person', 'eft-glossary-place', 'eft-glossary-text');
+declare variable $entities:entities := doc(concat($common:data-path, '/operations/entities.xml'))/m:entities;
+declare variable $entities:types := (
+    'eft-glossary-term', 
+    'eft-glossary-person', 
+    'eft-glossary-place', 
+    'eft-glossary-text', 
+    'eft-attribution-person'
+);
 declare variable $entities:instance-types := ('glossary-item');
 
 declare function entities:entities($instance-ids as xs:string*) as element() {
     
     element { QName('http://read.84000.co/ns/1.0', 'entities') }{
         if(count($instance-ids) gt 0) then
-            $entities:entities/m:entities/m:entity[m:instance[@id = $instance-ids]]
+            $entities:entities/m:entity[m:instance[@id = $instance-ids]]
         else
             ()
     }
@@ -30,7 +36,7 @@ declare function entities:entities($instance-ids as xs:string*) as element() {
 
 declare function entities:update-entity($entity-id as xs:string?) as element()? {
     
-    let $parent := $entities:entities/m:entities
+    let $parent := $entities:entities
     
     let $existing-entity := $parent/m:entity[@xml:id eq $entity-id]
     
@@ -144,7 +150,7 @@ declare function entities:next-id() as xs:string {
 
 declare function entities:match($entity-id as xs:string, $target-entity-id as xs:string) as element()* {
     
-    let $parent := $entities:entities/m:entities
+    let $parent := $entities:entities
     let $entity := $parent/m:entity[@xml:id eq $entity-id]
     let $target-entity := $parent/m:entity[@xml:id eq $target-entity-id]
     
@@ -183,7 +189,7 @@ declare function entities:match($entity-id as xs:string, $target-entity-id as xs
 declare function entities:exclude($entity-ids as xs:string*) as element()* {
     
     for $target-entity-id in $entity-ids
-        let $target-entity := $entities:entities/m:entities/m:entity[@xml:id eq  $target-entity-id]
+        let $target-entity := $entities:entities/m:entity[@xml:id eq  $target-entity-id]
     where $target-entity
     return
         for $exclude-entity-id in $entity-ids[not(. =  $target-entity-id)]
@@ -199,7 +205,7 @@ declare function entities:exclude($entity-ids as xs:string*) as element()* {
 
 declare function entities:match-instance($entity-id as xs:string, $instance-id as xs:string, $instance-type as xs:string) as element()* {
     
-    let $entity := $entities:entities/m:entities/m:entity[@xml:id eq $entity-id][1]
+    let $entity := $entities:entities/m:entity[@xml:id eq $entity-id][1]
     let $existing-instance := $entity/m:instance[@id eq  $instance-id][1]
     let $new-instance := 
         element { QName('http://read.84000.co/ns/1.0', 'instance') } {
@@ -215,7 +221,7 @@ declare function entities:match-instance($entity-id as xs:string, $instance-id a
 
 declare function entities:remove-instance($instance-id as xs:string) as element()* {
 
-    let $existing-value := $entities:entities/m:entities/m:entity/m:instance[@id eq  $instance-id][1]
+    let $existing-value := $entities:entities/m:entity/m:instance[@id eq  $instance-id][1]
     where $existing-value
     return
         common:update('entity-exclude', $existing-value, (), $existing-value/parent::m:entity, ())

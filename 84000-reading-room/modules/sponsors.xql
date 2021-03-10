@@ -41,6 +41,7 @@ declare function sponsors:sponsor($id as xs:string, $include-acknowledgements as
         element { node-name($sponsor) } {
             $sponsor/@*,
             attribute start-letter { upper-case(substring(normalize-space(replace($sponsor/m:label, $sponsors:prefixes, '')), 1, 1)) },
+            element sort-name { lower-case(replace($sponsor/m:label, concat($sponsors:prefixes, '\s+'), '')) },
             $sponsor/m:label,
             $sponsor/m:country,
             $sponsor/m:type,

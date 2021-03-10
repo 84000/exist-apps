@@ -44,46 +44,67 @@
                     <div class="row">
                         <div class="col-items div-list no-border-top">
                             
-                            <xsl:for-each select="m:contributor-institutions/m:institution">
+                            <xsl:for-each-group select="m:contributor-institutions/m:institution" group-by="@start-letter">
+                                
                                 <xsl:sort select="@start-letter"/>
-                                <xsl:variable name="institution-id" select="@xml:id"/>
-                                <xsl:variable name="region-id" select="@region-id"/>
-                                <xsl:variable name="institution-type-id" select="@institution-type-id"/>
-                                <div class="item">
+                                
+                                <div>
                                     
-                                    <xsl:copy-of select="common:marker(@start-letter, if(preceding-sibling::m:institution[1]/@start-letter) then preceding-sibling::m:institution[1]/@start-letter else '')"/>
+                                    <a class="marker">
+                                        <xsl:attribute name="name" select="@start-letter"/>
+                                        <xsl:attribute name="id" select="concat('marker-', @start-letter)"/>
+                                        <xsl:value-of select="@start-letter"/>
+                                    </a>
                                     
-                                    <div class="row">
-                                        <div class="col-sm-6">
-                                            <a>
-                                                <xsl:attribute name="href" select="concat('/edit-translator-institution.html?id=', $institution-id)"/>
-                                                <xsl:value-of select="m:sort-name"/>
-                                            </a>
-                                        </div>
+                                    <xsl:for-each select="fn:current-group()">
                                         
-                                        <div class="col-sm-3">
-                                            <xsl:value-of select="/m:response/m:contributor-regions/m:region[@id eq $region-id]/m:label"/>
-                                        </div>
+                                        <xsl:sort select="m:sort-name"/>
                                         
-                                        <div class="col-sm-3">
-                                            <xsl:value-of select="/m:response/m:contributor-institution-types/m:institution-type[@id eq $institution-type-id]/m:label"/>
-                                        </div>
+                                        <xsl:variable name="institution-id" select="@xml:id"/>
+                                        <xsl:variable name="region-id" select="@region-id"/>
+                                        <xsl:variable name="institution-type-id" select="@institution-type-id"/>
                                         
-                                        <xsl:if test="/m:response/m:request/@include-contributors eq 'true'">
-                                            <div class="col-sm-12">
-                                                <ul>
-                                                    <xsl:for-each select="/m:response/m:contributor-persons/m:person[m:institution/@id = $institution-id]">
-                                                        <li>
-                                                            <xsl:value-of select="m:label"/>
-                                                        </li>
-                                                    </xsl:for-each>
-                                                </ul>
+                                        <div class="item">
+                                            
+                                            <xsl:copy-of select="common:marker(@start-letter, if(preceding-sibling::m:institution[1]/@start-letter) then preceding-sibling::m:institution[1]/@start-letter else '')"/>
+                                            
+                                            <div class="row">
+                                                <div class="col-sm-6">
+                                                    <a>
+                                                        <xsl:attribute name="href" select="concat('/edit-translator-institution.html?id=', $institution-id)"/>
+                                                        <xsl:value-of select="m:sort-name"/>
+                                                    </a>
+                                                </div>
+                                                
+                                                <div class="col-sm-3">
+                                                    <xsl:value-of select="/m:response/m:contributor-regions/m:region[@id eq $region-id]/m:label"/>
+                                                </div>
+                                                
+                                                <div class="col-sm-3">
+                                                    <xsl:value-of select="/m:response/m:contributor-institution-types/m:institution-type[@id eq $institution-type-id]/m:label"/>
+                                                </div>
+                                                
+                                                <xsl:if test="/m:response/m:request/@include-contributors eq 'true'">
+                                                    <div class="col-sm-12">
+                                                        <ul>
+                                                            <xsl:for-each select="/m:response/m:contributor-persons/m:person[m:institution/@id = $institution-id]">
+                                                                <li>
+                                                                    <xsl:value-of select="m:label"/>
+                                                                </li>
+                                                            </xsl:for-each>
+                                                        </ul>
+                                                    </div>
+                                                </xsl:if>
                                             </div>
-                                        </xsl:if>
-                                    </div>
+                                            
+                                        </div>
+                                        
+                                        
+                                    </xsl:for-each>
                                     
                                 </div>
-                            </xsl:for-each>
+                                
+                            </xsl:for-each-group>
                             
                         </div>
                         

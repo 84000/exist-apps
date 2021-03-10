@@ -21,7 +21,7 @@
     
     <!-- Pre-sort the glossaries by priority -->
     <xsl:variable name="glossary-prioritised" as="element(tei:gloss)*">
-        <xsl:perform-sort select="/m:response/m:translation/m:part[@type eq 'glossary']/tei:div/tei:gloss[@xml:id][tei:term[not(@xml:lang)][normalize-space(text())]]">
+        <xsl:perform-sort select="/m:response/m:translation/m:part[@type eq 'glossary']/tei:div/tei:gloss[@xml:id][tei:term[not(@xml:lang)][not(@type)][normalize-space(text())]]">
             <xsl:sort select="key('glossary-cache-gloss', @xml:id)[1]/@word-count ! common:enforce-integer(.)" order="descending"/>
             <xsl:sort select="key('glossary-cache-gloss', @xml:id)[1]/@letter-count[not(. eq '')] ! common:enforce-integer(.)" order="descending"/>
         </xsl:perform-sort>
@@ -46,6 +46,10 @@
                 -->
                 <xsl:when test="not(normalize-space(.)) and common:index-of-node(../node(), .) = (1, count(../node()))">
                     <xsl:value-of select="normalize-space(.)"/>
+                </xsl:when>
+                <!-- If it's following by a note then leave the whitespace -->
+                <xsl:when test="preceding-sibling::tei:*[1][self::tei:note[@place = 'end']]">
+                    <xsl:value-of select="common:normalize-data(data(.))"/>
                 </xsl:when>
                 <!-- If it's trailed by a note then remove the whitespace -->
                 <xsl:when test="following-sibling::tei:*[1][self::tei:note[@place = 'end']]">

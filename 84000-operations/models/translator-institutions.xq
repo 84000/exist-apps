@@ -27,6 +27,8 @@ return
             contributors:institutions(false()),
             contributors:regions(false()),
             contributors:institution-types(false()),
-            contributors:persons(false(), false())
+            if($include-contributors) then
+                contributors:persons(false(), false())
+            else ()
         )
     )

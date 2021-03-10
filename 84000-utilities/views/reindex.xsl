@@ -63,7 +63,7 @@
                                 <a href="?collection=reading-room-config">Reading Room config</a>
                             </li>
                             <li>
-                                <a href="?collection=file-versions">File versions</a>
+                                <a href="?collection=related-files">Related files</a>
                             </li>
                         </ul>
                         

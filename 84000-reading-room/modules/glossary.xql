@@ -369,7 +369,7 @@ declare function glossary:similar-items($glossary-item as element(m:item)?, $sea
         let $instance-ids := ($entity/m:instance/@id, $glossary-item/@xml:id) ! distinct-values(.)
         let $instance-items := glossary:items($instance-ids, false())
         let $instance-terms := ($instance-items//m:term[@xml:lang = ('bo', 'Sa-Ltn')] | $instance-items//m:alternatives[@xml:lang = ('bo', 'Sa-Ltn')]) ! distinct-values(.)
-        let $exclude-ids := ($entities:entities/m:entities/m:entity[@xml:id = $entity/m:exclude/@id]/m:instance/@id, $glossary-item/@xml:id, $instance-ids) ! distinct-values(.)
+        let $exclude-ids := ($entities:entities/m:entity[@xml:id = $entity/m:exclude/@id]/m:instance/@id, $glossary-item/@xml:id, $instance-ids) ! distinct-values(.)
         let $search-string := normalize-space($search-string)
         
         let $search-query :=
@@ -529,7 +529,7 @@ declare function glossary:translation-data($tei as element(tei:TEI), $resource-i
 
 declare function glossary:filter($tei as element(tei:TEI), $resource-id as xs:string, $filter as xs:string, $search as xs:string) as element(m:part) {
     
-    let $entity-instance-ids := $entities:entities/m:entities/m:entity/m:instance/@id/string()
+    let $entity-instance-ids := $entities:entities/m:entity/m:instance/@id/string()
     
     let $glossary-cache := translation:glossary-cache($tei, (), false())
     

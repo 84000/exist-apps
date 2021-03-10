@@ -49,11 +49,11 @@ declare function local:contributor($author as element(tei:author)) as element()*
         return 
             element { QName('http://read.84000.co/ns/1.0', 'contributor') } {
                 attribute type { 
-                    if(matches($author-tokenized, '^a[\.:]\s*')) then
+                    if(matches($author-tokenized[1], '^a[\.:]\s*')) then
                         'author'
-                    else if(matches($author-tokenized, '^r[\.:]\s*')) then
+                    else if(matches($author-tokenized[1], '^r[\.:]\s*')) then
                         'reviser'
-                    else if(matches($author-tokenized, '^t[\.:]\s*')) then
+                    else if(matches($author-tokenized[1], '^t[\.:]\s*')) then
                         'translator'
                     else $type
                 },
@@ -118,9 +118,13 @@ declare function local:spreadsheet-data( $tengyur-data as element(m:tengyur-data
 let $tengyur-data :=
 element { QName('http://read.84000.co/ns/1.0', 'tengyur-data') } {
     
-    let $current-block := "O1JC76301JC10956"(:("O1JC76301JC10651","O1JC76301JC10703"):)
+    (:let $current-block := ("O1JC76301JC21614"):)
+    let $lowest-toh := 1305
+    let $highest-toh := 1400
+    
     return
-    for $tei in $local:tengyur-tei[tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl[tei:idno[@parent-id = $current-block]]]
+    for $tei in $local:tengyur-tei(:[tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl[tei:idno[@parent-id = $current-block]]]:)
+            
         let $titles := $tei/tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:title
 
         let $local-titles := 
@@ -129,49 +133,56 @@ element { QName('http://read.84000.co/ns/1.0', 'tengyur-data') } {
             return
                 local:title($titles[@type eq $type][@xml:lang eq $lang][1], $type, $lang)
                 
-        let $bibls := $tei/tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl[tei:idno[@parent-id = $current-block]]
+        let $bibls := $tei/tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl[tei:location[@work = 'UT23703']]
         let $authors := $bibls/tei:author
         let $author-1 := $authors[1]
         let $tohs := 
             for $bibl in $bibls
             return translation:toh($tei, $bibl/@key)
         let $tohs-1 := $tohs[1]
+        let $toh-number := $tohs-1/@number[. gt ''] ! xs:integer(.)
+    
+    where 
+        $toh-number ge $lowest-toh
+        and $toh-number le $highest-toh
+        (:and count($bibls) gt 1:)
+    
     order by 
-        $tohs-1/@number[. gt ''] ! xs:integer(.), 
+        $toh-number, 
         $tohs-1/@letter, 
-        $tohs-1/@chapter-number[. gt ''] ! xs:integer(.), 
+        $tohs-1/@chapter-number[. gt ''] ! xs:integer(.),
         $tohs-1/@chapter-letter
-         
-        return 
-            element { QName('http://read.84000.co/ns/1.0', 'text') } {
-                
-                attribute text-id { tei-content:id($tei) },
-                
-                for $toh in $tohs
-                return
-                element { QName('http://read.84000.co/ns/1.0', 'toh') } {
-                    attribute key { $toh/@key },
-                    attribute label { $toh/m:full/text() }
-                },
-                
-                $local-titles,
-                
-                (: other titles :)
-                for $title in $titles[not(data() = $local-titles/data())]
-                order by $title/@type
-                return
-                    local:title($title, $title/@type, $title/@xml:lang)
-                ,
-                (: main author required :)
-                if($author-1) then
-                    local:contributor($author-1)
-                else (),
-                
-                (: other authors :)
-                for $author in $authors[not(data() = $author-1/data())]
-                return
-                    local:contributor($author)
-            }
+    
+    return 
+        element { QName('http://read.84000.co/ns/1.0', 'text') } {
+            
+            attribute text-id { tei-content:id($tei) },
+            
+            for $toh in $tohs
+            return
+            element { QName('http://read.84000.co/ns/1.0', 'toh') } {
+                attribute key { $toh/@key },
+                attribute label { $toh/m:full/text() }
+            },
+            
+            $local-titles,
+            
+            (: other titles :)
+            for $title in $titles[not(data() = $local-titles/data())]
+            order by $title/@type
+            return
+                local:title($title, $title/@type, $title/@xml:lang)
+            ,
+            (: main author required :)
+            if($author-1) then
+                local:contributor($author-1)
+            else (),
+            
+            (: other authors :)
+            for $author in $authors[not(data() = $author-1/data())]
+            return
+                local:contributor($author)
+        }
 }
 
 return (:local:spreadsheet-data($tengyur-data):)$tengyur-data

@@ -26,7 +26,7 @@ let $reindex-collections as xs:string* :=
         $source:source-data-path
     else if(request:get-parameter('collection', '') eq 'reading-room-config') then
         $common:app-config
-    else if(request:get-parameter('collection', '') eq 'file-versions') then (
+    else if(request:get-parameter('collection', '') eq 'related-files') then (
         concat($common:data-path, '/azw3'),
         concat($common:data-path, '/epub'),
         concat($common:data-path, '/pdf'),

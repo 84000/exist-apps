@@ -60,7 +60,7 @@
                                 </xsl:variable>
                                 
                                 <h1 class="title text-center">
-                                    <xsl:value-of select="concat($work-string, ' volume ', @volume, ', ', $folio-string)"/>
+                                    <xsl:value-of select="concat('Degé ', $work-string, ' volume ', @volume, ', ', $folio-string)"/>
                                 </h1>
                                 
                                 <div class="container top-margin">
