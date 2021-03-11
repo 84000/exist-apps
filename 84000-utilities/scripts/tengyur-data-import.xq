@@ -9,7 +9,7 @@ import module namespace entities="http://read.84000.co/entities" at "../../84000
 
 declare variable $local:tengyur-tei := 
     collection($common:translations-path)//tei:TEI[tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl/tei:location/@work = 'UT23703'];
-    
+
 declare variable $local:import-filename := "tengyur-data-1109-1179_PH_new_v2.xml";
 declare variable $local:import-texts := doc(concat('/db/apps/84000-data/uploads/tengyur-data/', $local:import-filename))//m:text;
 

@@ -11,12 +11,25 @@ declare variable $exist:resource external;
 declare variable $exist:controller external;
 declare variable $exist:prefix external;
 declare variable $exist:root external;
-declare variable $resource-id := lower-case(substring-before($exist:resource, "."));
-declare variable $resource-suffix := lower-case(substring-after($exist:resource, "."));
-declare variable $collection-path := lower-case(substring-before(substring-after($exist:path, "/"), "/"));
-declare variable $controller-root := lower-case(substring-after($exist:controller, "/"));
+declare variable $path := lower-case(substring-before($exist:path, $exist:resource));
+declare variable $resource-id := lower-case(replace($exist:resource, '\..*', ''));
+declare variable $resource-suffix := lower-case(replace($exist:resource, '.*\.', ''));
+declare variable $collection-path := lower-case(tokenize($exist:path, '/')[2]);
 declare variable $redirects := doc('/db/system/config/db/system/redirects.xml')/m:redirects;
 declare variable $user-name := common:user-name();
+(:declare variable $var-debug := 
+    <debug>
+        <var name="exist:path" value="{ $exist:path }"/>
+        <var name="exist:resource" value="{ $exist:resource }"/>
+        <var name="exist:controller" value="{ $exist:controller }"/>
+        <var name="exist:prefix" value="{ $exist:prefix }"/>
+        <var name="exist:root" value="{ $exist:root }"/>
+        <var name="path" value="{ $path }"/>
+        <var name="resource-id" value="{ $resource-id }"/>
+        <var name="resource-suffix" value="{ $resource-suffix }"/>
+        <var name="collection-path" value="{ $collection-path }"/>
+        <var name="user-name" value="{ $user-name }"/>
+    </debug>;:)
 
 declare function local:dispatch($model as xs:string?, $view as xs:string?, $parameters as node()?) as node(){
     <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
@@ -116,7 +129,7 @@ declare function local:auth($redirect){
 (: Log the request :)
 (: Suspend this, we don't really use it and it's become an overhead (since deferred parsing was added?) :)
 (: Perhaps re-instate when we understand the slowness :)
-let $log-request := log:log-request(concat($exist:controller, $exist:path), $controller-root, $collection-path, $resource-id, $resource-suffix)
+let $log-request := log:log-request(concat($exist:controller, $exist:path), lower-case(substring-after($exist:controller, "/")), $collection-path, $resource-id, $resource-suffix)
 
 (: Process the request :)
 return
@@ -152,12 +165,16 @@ return
             )
         
         (: Spreadsheet test :)
-        else if (lower-case($exist:resource) eq 'spreadsheet.xlsx') then
-            local:dispatch("/views/spreadsheet/spreadsheet.xq", "", <parameters/>)
+        (:else if (lower-case($exist:resource) eq 'spreadsheet.xlsx') then
+            local:dispatch("/views/spreadsheet/spreadsheet.xq", "", <parameters/>):)
         
         (: Test :)
-        else if ($collection-path eq "test") then
-            local:dispatch($exist:path, "", <parameters/>)
+        (:else if ($collection-path eq "test") then
+            local:dispatch($exist:path, "", <parameters/>):)
+        
+        (: These are URIs redirected from purl.84000.co :)
+        else if ($path eq "/resource/core/") then
+            local:redirect($common:environment/m:url[@id eq 'reading-room'] || '/translation/' || substring-after(lower-case($exist:resource), 'wae') || '.html')
         
         (: Translation :)
         else if ($collection-path eq "translation") then

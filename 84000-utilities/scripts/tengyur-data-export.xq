@@ -49,11 +49,11 @@ declare function local:contributor($author as element(tei:author)) as element()*
         return 
             element { QName('http://read.84000.co/ns/1.0', 'contributor') } {
                 attribute type { 
-                    if(matches($author-tokenized[1], '^a[\.:]\s*')) then
+                    if(matches($author-string, '^a[\.:]\s*')) then
                         'author'
-                    else if(matches($author-tokenized[1], '^r[\.:]\s*')) then
+                    else if(matches($author-string, '^r[\.:]\s*')) then
                         'reviser'
-                    else if(matches($author-tokenized[1], '^t[\.:]\s*')) then
+                    else if(matches($author-string, '^t[\.:]\s*')) then
                         'translator'
                     else $type
                 },
