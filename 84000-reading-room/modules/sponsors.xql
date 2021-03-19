@@ -14,6 +14,16 @@ declare variable $sponsors:sponsors := doc(concat($common:data-path, '/operation
 declare variable $sponsors:texts := collection($common:translations-path);
 declare variable $sponsors:prefixes := '(Dr\.|Prof\.)';
 
+declare function sponsors:sponsor-uri($sponsor-id as xs:string) as xs:string {
+    lower-case(concat('sponsors.xml#', $sponsor-id))
+    (: Switch to eft: prefix once this version is on Distribution and can accept that prefix :)
+    (:lower-case(concat('eft:', $sponsor-id)):)
+};
+
+declare function sponsors:sponsor-id($sponsor-uri as xs:string) as xs:string {
+    lower-case(replace($sponsor-uri, '^(eft:|sponsors\.xml#)', '', 'i'))
+};
+
 declare function sponsors:sponsors($sponsor-ids as xs:string*, $include-acknowledgements as xs:boolean, $include-internal-names as xs:boolean) as element() {
 
     let $sponsors-ordered := 
@@ -51,7 +61,7 @@ declare function sponsors:sponsor($id as xs:string, $include-acknowledgements as
                 ()
             ,
             if($include-acknowledgements) then
-                sponsors:acknowledgements(concat('sponsors.xml#', $sponsor/@xml:id))
+                sponsors:acknowledgements(sponsors:sponsor-uri($sponsor/@xml:id))
             else
                 ()
         }
@@ -59,11 +69,11 @@ declare function sponsors:sponsor($id as xs:string, $include-acknowledgements as
 
 declare function sponsors:acknowledgements($uri as xs:string) as element()* {
     
-    for $tei in $sponsors:texts//tei:TEI[tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:sponsor/@ref eq $uri]
+    let $sponsor-id := sponsors:sponsor-id($uri)
     
-        let $translation-sponsor := $tei//tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:sponsor[@ref eq $uri][1]
-        
-        let $sponsor-id := substring-after($uri, 'sponsors.xml#')
+    for $tei in $sponsors:texts//tei:TEI[tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:sponsor[@ref][ends-with(@ref, $sponsor-id)]]
+    
+        let $translation-sponsor := $tei//tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:sponsor[@ref][ends-with(@ref, $sponsor-id)][1]
         
         let $sponsor-name := 
             if($translation-sponsor/text() gt '') then

@@ -117,10 +117,15 @@ declare function local:spreadsheet-data( $tengyur-data as element(m:tengyur-data
 
 let $tengyur-data :=
 element { QName('http://read.84000.co/ns/1.0', 'tengyur-data') } {
+
+    element export {
+        attribute timestamp { current-dateTime() },
+        attribute user { common:user-name() }
+    },
     
     (:let $current-block := ("O1JC76301JC21614"):)
-    let $lowest-toh := 1305
-    let $highest-toh := 1400
+    let $lowest-toh := 1401
+    let $highest-toh := 1606
     
     return
     for $tei in $local:tengyur-tei(:[tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl[tei:idno[@parent-id = $current-block]]]:)

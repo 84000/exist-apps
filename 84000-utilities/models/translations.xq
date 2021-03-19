@@ -27,7 +27,7 @@ let $default-status :=
 let $request-status :=  request:get-parameter('texts-status', $default-status)
 
 (: Validate the status :)
-let $texts-status := $tei-content:text-statuses/m:status[xs:string(@status-id) = $request-status][not(@status-id eq '0')]/@status-id
+let $texts-status := $tei-content:text-statuses/m:status[@status-id/string() eq $request-status][not(@status-id eq '0')]/@status-id
 
 (: Store a file if requested :)
 let $store-file-name := request:get-parameter('store', '')
@@ -38,13 +38,13 @@ let $store-file :=
         else if($store-conf[@type eq 'master']) then
             store:create($store-file-name)
         else ()
-        ,
+        (:,
         if($utilities-url and matches(request:get-uri(), '.*/translations\.html.*')) then
             response:redirect-to(xs:anyURI(concat($utilities-url, '/translations.html?texts-status=',$request-status)))
-        else ()
+        else ():)
     )
     else ()
-
+(:return ():)
 (: If this is a client doing a version diff then first get translation versions in MASTER database for comparison :)
 let $translations-master := 
     if($request-status eq 'diff' and $store-conf[@type eq 'client']) then

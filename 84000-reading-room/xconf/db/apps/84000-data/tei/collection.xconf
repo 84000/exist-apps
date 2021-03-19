@@ -71,9 +71,9 @@
                 <field name="kb-id" match="@eft:kb-id" type="xs:string"/>
             </create>
             
-            <create qname="tei:sourceDesc">
-                <field name="translation-key" match="tei:bibl/@key" type="xs:string"/>
-                <field name="translation-type" match="tei:bibl/@type" type="xs:string"/>
+            <create qname="tei:bibl">
+                <field name="translation-key" match="@key" type="xs:string"/>
+                <field name="translation-type" match="@type" type="xs:string"/>
             </create>
             
             <create qname="tei:location">
@@ -88,10 +88,10 @@
                 <field name="section-type" match="@type" type="xs:string"/>
             </create>
             
-            <create qname="tei:notesStmt">
-                <field name="audit-update" match="tei:note/@update" type="xs:string"/>
-                <field name="audit-value" match="tei:note/@value" type="xs:string"/>
-                <field name="audit-date-time" match="tei:note/@date-time" type="xs:dateTime"/>
+            <create qname="tei:note">
+                <field name="audit-update" match="@update" type="xs:string"/>
+                <field name="audit-value" match="@value" type="xs:string"/>
+                <field name="audit-date-time" match="@date-time" type="xs:dateTime"/>
             </create>
             
             <create qname="tei:title">

@@ -66,6 +66,7 @@
                         <div class="row">
                             <div class="col-sm-6">
                                 <div class="add-nodes-container">
+                                    
                                     <xsl:choose>
                                         <xsl:when test="m:sponsorship-status/m:text">
                                             <xsl:for-each select="m:sponsorship-status/m:text">
@@ -102,6 +103,7 @@
                                             <xsl:value-of select="'add a text'"/>
                                         </a>
                                     </div>
+                                    
                                 </div>
                             </div>
                             <div class="col-sm-6">
@@ -114,6 +116,7 @@
                         <legend>
                             <xsl:value-of select="'Money'"/>
                         </legend>
+                        
                         <xsl:variable name="configured-cost" select="m:sponsorship-status/m:cost"/>
                         <xsl:variable name="estimated-cost" select="m:sponsorship-status/m:estimate/m:cost"/>
                         <xsl:variable name="sum-cost-parts" select="sum($configured-cost/m:part/@amount)"/>
@@ -225,6 +228,7 @@
                             
                         </div>
                     </fieldset>
+                    
                     <fieldset class="add-nodes-container">
                         <legend>
                             <xsl:value-of select="'Sponsors'"/>
@@ -252,6 +256,7 @@
                             </a>
                         </div>
                     </fieldset>
+                    
                 </div>
                 <div class="col-sm-4">
                     <div class="text-bold">
@@ -333,7 +338,9 @@
         <xsl:param name="text-sponsors" required="yes"/>
         <xsl:param name="all-sponsors" required="yes"/>
         <xsl:for-each select="$text-sponsors">
-            <xsl:variable name="id" select="substring-after(@ref, 'sponsors.xml#')"/>
+            
+            <xsl:variable name="sponsor-id" select="lower-case(replace(@ref, '^(eft:|sponsors\.xml#)', '', 'i'))"/>
+            
             <div class="form-group add-nodes-group">
                 <div class="col-sm-5">
                     <select class="form-control">
@@ -343,8 +350,8 @@
                         </option>
                         <xsl:for-each select="$all-sponsors">
                             <option>
-                                <xsl:attribute name="value" select="concat('sponsors.xml#', @xml:id)"/>
-                                <xsl:if test="@xml:id eq $id">
+                                <xsl:attribute name="value" select="@xml:id"/>
+                                <xsl:if test="@xml:id eq $sponsor-id">
                                     <xsl:attribute name="selected" select="'selected'"/>
                                 </xsl:if>
                                 <xsl:choose>

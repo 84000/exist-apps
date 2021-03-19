@@ -472,6 +472,7 @@
     </xsl:template>
     
     <xsl:template name="sponsors">
+        
         <xsl:param name="sponsor-expressions" required="no" as="element(m:sponsors)?"/>
         <xsl:param name="sponsors" required="no" as="element(m:sponsors)?"/>
         <xsl:param name="sponsorship-status" required="no" as="element(m:sponsorship-status)?"/>
@@ -480,13 +481,13 @@
             <hr/>
             <xsl:variable name="sponsor-strings" as="xs:string*">
                 <xsl:for-each select="$sponsor-expressions/m:sponsor">
-                    <xsl:variable name="sponsor-id" select="substring-after(@ref, 'sponsors.xml#')"/>
+                    <xsl:variable name="sponsor-id" select="replace(@ref, '^(EFT:|sponsors\.xml#)', '', 'i')"/>
                     <xsl:choose>
                         <xsl:when test="normalize-space(text())">
                             <xsl:value-of select="normalize-space(text())"/>
                         </xsl:when>
                         <xsl:otherwise>
-                            <xsl:value-of select="normalize-space($sponsors/m:sponsor[@xml:id eq $sponsor-id]/m:label)"/>
+                            <xsl:value-of select="normalize-space($sponsors/m:sponsor[@xml:id eq lower-case($sponsor-id)]/m:label)"/>
                         </xsl:otherwise>
                     </xsl:choose>
                 </xsl:for-each>

@@ -657,7 +657,7 @@
             <xsl:with-param name="page-url" select="concat('https://read.84000.co/section/', m:section/@id, '.html')"/>
             <xsl:with-param name="page-class" select="'reading-room section'"/>
             <xsl:with-param name="page-title" select="concat(m:section/m:titles/m:title[@xml:lang = 'en'], ' | 84000 Reading Room')"/>
-            <xsl:with-param name="page-description" select="normalize-space(m:section/m:abstract/tei:p[1]/text())"/>
+            <xsl:with-param name="page-description" select="normalize-space(m:section/m:abstract/tei:p[1]/data())"/>
             <xsl:with-param name="content" select="$content"/>
             <xsl:with-param name="additional-links">
                 
@@ -1034,7 +1034,7 @@
                                 <!-- English title -->
                                 <h3 class="item-title">
                                     <xsl:choose>
-                                        <xsl:when test="$text/m:titles/m:title[@xml:lang='en'][not(@type)]/text()">
+                                        <xsl:when test="$text/m:titles/m:title[@xml:lang eq 'en'][not(@type)]/text()">
                                             <xsl:choose>
                                                 <xsl:when test="@status-group = 'published'">
                                                     <a>

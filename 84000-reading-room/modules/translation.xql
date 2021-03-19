@@ -25,7 +25,7 @@ declare variable $translation:view-modes :=
       <view-mode id="annotation"        client="browser"  layout="expanded-fixed"  glossary="use-cache"       parts="all"/>,
       <view-mode id="txt"               client="none"     layout="expanded-fixed"  glossary="suppress"        parts="all"/>,
       <view-mode id="ebook"             client="ebook"    layout="expanded-fixed"  glossary="use-cache"       parts="all"/>,
-      <view-mode id="pdf"               client="none"     layout="expanded-fixed"  glossary="suppress"        parts="all"/>,
+      <view-mode id="pdf"               client="pdf"      layout="expanded-fixed"  glossary="suppress"        parts="all"/>,
       <view-mode id="app"               client="app"      layout="expanded-fixed"  glossary="use-cache"       parts="all"/>,
       <view-mode id="tests"             client="none"     layout="expanded-fixed"  glossary="suppress"        parts="all"/>,
       <view-mode id="glossary-editor"   client="none"     layout="expanded-fixed"  glossary="no-cache"        parts="all"/>,
@@ -421,7 +421,7 @@ declare function local:part-content($content as element(tei:div)?, $render as xs
             (: Partial rendering - return some nodes (except the above) :)
             else if ($render eq 'preview' and ($nesting eq 0 or $section-index eq 1)) then 
                 if ($node-index le 8) then
-                    if(string-length(string-join(data($node/preceding-sibling::tei:*))) lt 500) then
+                    if(string-length(string-join($node/preceding-sibling::tei:* ! data(.), '')) lt 500) then
                         $node
                     else ()
                 else ()
@@ -778,8 +778,10 @@ declare function translation:notes-cache($tei as element(tei:TEI), $refresh as x
             let $start-time := util:system-dateTime()
             
             let $end-notes :=
+            
                 for $note at $index in $tei/tei:text//tei:note[@place eq 'end'][@xml:id]
-                    let $part := $note/ancestor::tei:div[@type][not(@type eq 'translation')][last()]
+                    (: Lowest level @typed part, except root :)
+                    let $part := $note/ancestor::tei:div[@type][not(@type = ('translation', 'appendix'))][last()]
                 return (
                     common:ws(2),
                     element { QName('http://read.84000.co/ns/1.0', 'end-note') } {
@@ -1264,7 +1266,7 @@ declare function translation:sponsors($tei as element(tei:TEI), $include-acknowl
     
     let $translation-sponsors := $tei/tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:sponsor
     
-    let $sponsor-ids := $translation-sponsors ! substring-after(./@ref, 'sponsors.xml#')
+    let $sponsor-ids := $translation-sponsors ! sponsors:sponsor-id(@ref)
     
     let $sponsors := sponsors:sponsors($sponsor-ids, false(), false())
     
@@ -1278,28 +1280,28 @@ declare function translation:sponsors($tei as element(tei:TEI), $include-acknowl
                 
                 (: Use the label from the entities file unless it's specified in the tei :)
                 let $sponsor-strings :=
-                for $translation-sponsor in $translation-sponsors
-                let $translation-sponsor-text := $translation-sponsor
-                let $translation-sponsor-id := substring-after($translation-sponsor/@ref, 'sponsors.xml#')
-                let $sponsor-label-text := $sponsors/m:sponsor[@xml:id eq $translation-sponsor-id]/m:label
-                return
-                    if ($translation-sponsor-text gt '') then
-                        $translation-sponsor-text
-                    else
-                        if ($sponsor-label-text gt '') then
-                            $sponsor-label-text
+                    for $translation-sponsor in $translation-sponsors
+                        let $translation-sponsor-text := $translation-sponsor
+                        let $translation-sponsor-id := sponsors:sponsor-id($translation-sponsor/@ref)
+                        let $sponsor-label-text := $sponsors/m:sponsor[@xml:id eq $translation-sponsor-id]/m:label
+                    return
+                        if ($translation-sponsor-text gt '') then
+                            $translation-sponsor-text
                         else
-                            ()
+                            if ($sponsor-label-text gt '') then
+                                $sponsor-label-text
+                            else
+                                ()
                 
                 let $count-sponsor-strings := count($sponsor-strings)
                 
                 let $marked-paragraphs :=
-                if ($acknowledgment/tei:p and $sponsor-strings) then
-                    let $mark-sponsor-strings := $sponsor-strings ! normalize-space(lower-case(replace(., $sponsors:prefixes, '')))
-                    return
-                        common:mark-nodes($acknowledgment/tei:p, $mark-sponsor-strings, 'phrase')
-                else
-                    ()
+                    if ($acknowledgment/tei:p and $sponsor-strings) then
+                        let $mark-sponsor-strings := $sponsor-strings ! normalize-space(lower-case(replace(., $sponsors:prefixes, '')))
+                        return
+                            common:mark-nodes($acknowledgment/tei:p, $mark-sponsor-strings, 'phrase')
+                    else
+                        ()
                 
                 return
                     element tei:div {
@@ -1340,22 +1342,24 @@ declare function translation:contributors($tei as element(tei:TEI), $include-ack
     
     let $translation-contributors := $tei/tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:*[self::tei:author | self::tei:editor | self::tei:consultant]
     
-    let $contributor-ids := $translation-contributors ! substring-after(./@ref, 'contributors.xml#')
+    let $contributor-ids := $translation-contributors/@ref ! contributors:contributor-id(.)
     
     let $contributors := $contributors:contributors/m:contributors/m:person[@xml:id = $contributor-ids]
     
     let $acknowledgment := $tei/tei:text/tei:front/tei:div[@type eq "acknowledgment"]
     
     return
-        element {QName('http://read.84000.co/ns/1.0', 'contributors')} {
-            (
+        element {QName('http://read.84000.co/ns/1.0', 'contributors')} {(
+        
             $contributors,
+            
             if ($include-acknowledgements) then
                 
                 (: Use the label from the entities file unless it's specified in the tei :)
                 let $contributor-strings :=
                 for $translation-contributor in $translation-contributors
-                let $contributor := $contributors[@xml:id eq substring-after($translation-contributor/@ref, 'contributors.xml#')]
+                let $contributor-id := contributors:contributor-id($translation-contributor/@ref)
+                let $contributor := $contributors[@xml:id eq $contributor-id]
                 return
                     if ($translation-contributor/text()) then
                         $translation-contributor
@@ -1378,8 +1382,8 @@ declare function translation:contributors($tei as element(tei:TEI), $include-ack
             
             else
                 ()
-            )
-        }
+                
+        )}
 };
 
 declare function translation:status-updates($tei as element()) as element(m:status-updates) {
@@ -1398,14 +1402,14 @@ declare function translation:status-updates($tei as element()) as element(m:stat
                 $status-update/@value,
                 $status-update/@date-time,
                 $status-update/@user,
-                attribute days-from-now {days-from-duration(xs:dateTime($status-update/@date-time) - current-dateTime())},
+                attribute days-from-now { days-from-duration(xs:dateTime($status-update/@date-time) - current-dateTime()) },
                 if ($status-update[@update eq 'translation-status'] and $status-update[@value eq $translation-status]) then
-                    attribute current-status {true()}
+                    attribute current-status { true() }
                 else
                     ()
                 ,
                 if ($status-update[@update eq 'text-version'] and $status-update-version-number-str eq $tei-version-number-str) then
-                    attribute current-version {true()}
+                    attribute current-version { true() }
                 else
                     ()
                 ,

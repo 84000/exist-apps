@@ -262,81 +262,74 @@ declare function update-translation:title-statement($tei as element(tei:TEI)) as
             
             (: Just copy them :)
             for $existing-node in $existing-value/*[self::tei:title]
-            return
-                (
+            return (
                 $node-ws,
                 $existing-node
-                )
+            )
         ,
         
-        if ($form-action eq 'update-contributors') then
-            (
+        if ($form-action eq 'update-contributors') then (
             
             (: Add all the contributors from the request :)
             
             (: Translator main :)
-            let $translator-team-id := request:get-parameter('translator-team-id', '')
+            let $translator-team-id := request:get-parameter('translator-team-id', '') ! lower-case(.)
                 
-                where $translator-team-id gt ''
-            return
-                (
+            where $translator-team-id gt ''
+            return (
                 $node-ws,
                 element {QName("http://www.tei-c.org/ns/1.0", "author")} {
                     
                     attribute role {'translatorMain'},
-                    attribute ref {$translator-team-id},
+                    attribute ref { contributors:contributor-uri($translator-team-id) },
                     
                     (: Carry over the text :)
-                    if ($existing-value/tei:author[@role eq 'translatorMain'][@ref eq $translator-team-id]) then
+                    if (contributors:contributor-id($existing-value/tei:author[@role eq 'translatorMain']/@ref) eq $translator-team-id) then
                         $existing-value/tei:author[@role eq 'translatorMain']/node()
-                    else
-                        ()
+                    else ()
                 }
-                )
+            )
             ,
             
             (: Add other contributors from the request :)
             for $contributor-id-param in common:sort-trailing-number-in-string(request:get-parameter-names()[starts-with(., 'contributor-id-')], '-')
             
-            let $contributor-id := request:get-parameter($contributor-id-param, '')
-            let $contributor-index := substring-after($contributor-id-param, 'contributor-id-')
-            let $contributor-type := request:get-parameter(concat('contributor-type-', $contributor-index), '')
-            let $contributor-type-tokenized := tokenize($contributor-type, '-')
-            let $contributor-node-name := $contributor-type-tokenized[1]
-            let $contributor-role :=
-            if (count($contributor-type-tokenized) eq 2) then
-                $contributor-type-tokenized[2]
-            else
-                ''
-            let $contributor-expression := request:get-parameter(concat('contributor-expression-', $contributor-index), '')
-            let $contributor-expression :=
-            if ($contributor-expression gt '') then
-                $contributor-expression
-            else
-                $contributors:contributors//m:person[@xml:id eq substring-after($contributor-id, 'contributors.xml#')]/m:label/text()
-                
-                where $contributor-id gt '' and $contributor-node-name and $contributor-role
-            return
-                (
+                let $contributor-id := request:get-parameter($contributor-id-param, '')
+                let $contributor-index := substring-after($contributor-id-param, 'contributor-id-')
+                let $contributor-type := request:get-parameter(concat('contributor-type-', $contributor-index), '')
+                let $contributor-type-tokenized := tokenize($contributor-type, '-')
+                let $contributor-node-name := $contributor-type-tokenized[1]
+                let $contributor-role :=
+                    if (count($contributor-type-tokenized) eq 2) then
+                        $contributor-type-tokenized[2]
+                    else
+                        ''
+                let $contributor-expression := request:get-parameter(concat('contributor-expression-', $contributor-index), '')
+                let $contributor-expression :=
+                    if ($contributor-expression gt '') then
+                        $contributor-expression
+                    else
+                        $contributors:contributors//m:person[@xml:id eq $contributor-id]/m:label/text()
+                    
+            where $contributor-id gt '' and $contributor-node-name and $contributor-role
+            return (
                 $node-ws,
                 element {QName("http://www.tei-c.org/ns/1.0", $contributor-node-name)} {
                     attribute role {$contributor-role},
-                    attribute ref {$contributor-id},
+                    attribute ref { contributors:contributor-uri($contributor-id) },
                     text {$contributor-expression}
                 }
-                )
             )
+        )
         else
             (: Just copy them :)
             for $existing-node in $existing-value/*[self::tei:author | self::tei:editor | self::tei:consultant]
-            return
-                (
+            return (
                 $node-ws,
                 $existing-node
-                )
+            )
         ,
-        if ($form-action eq 'update-sponsorship') then
-            (
+        if ($form-action eq 'update-sponsorship') then (
             
             (: Add all the sponsors from the request :)
             for $sponsor-id-param in common:sort-trailing-number-in-string(request:get-parameter-names()[starts-with(., 'sponsor-id-')], '-')
@@ -348,34 +341,31 @@ declare function update-translation:title-statement($tei as element(tei:TEI)) as
             if ($sponsor-expression gt '') then
                 $sponsor-expression
             else
-                $sponsors:sponsors//m:sponsor[@xml:id eq substring-after($sponsor-id, 'sponsors.xml#')]/m:label/text()
+                $sponsors:sponsors//m:sponsor[@xml:id eq $sponsor-id]/m:label/text()
                 
                 where $sponsor-id gt ''
-            return
-                (
+            return (
                 $node-ws,
                 element {QName("http://www.tei-c.org/ns/1.0", "sponsor")} {
-                    attribute ref {$sponsor-id},
+                    attribute ref { sponsors:sponsor-uri($sponsor-id) },
                     text {$sponsor-expression}
                 }
-                )
             )
+        )
         else
             (: Just copy them :)
             for $existing-node in $existing-value/*[self::tei:sponsor]
-            return
-                (
+            return (
                 $node-ws,
                 $existing-node
-                )
+             )
         ,
         (: Copy anything else in case there are comments or something :)
         for $existing-node in $existing-value/*[not(. instance of text())][not(self::tei:title | self::tei:author | self::tei:editor | self::tei:consultant | self::tei:sponsor)]
-        return
-            (
+        return (
             $node-ws,
             $existing-node
-            )
+        )
         ,
         $container-ws
     }

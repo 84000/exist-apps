@@ -352,7 +352,7 @@ declare function tests:section($section-tei as element()*, $section-html as elem
     let $section-count-tei-p := 
         count($section-tei//*[self::tei:p | self::tei:ab | self::tei:trailer | self::tei:bibl])
     let $section-count-html-p := 
-        count($section-html//xhtml:p) 
+        count($section-html//xhtml:p[not(common:contains-class(@class, 'ref-prologue'))]) 
         
     let $section-count-tei-line := 
         count($section-tei//tei:l[parent::tei:lg][not(ancestor::tei:note)])

@@ -114,11 +114,11 @@
                 </xsl:choose>
             </link>
             
-            <link rel="stylesheet" type="text/css">
-                <xsl:attribute name="href" select="concat($front-end-path, '/css/ie10-viewport-bug-workaround.css')"/>
-            </link>
-            
             <xsl:if test="not($view-mode) or $view-mode[@client eq 'browser']">
+                
+                <link rel="stylesheet" type="text/css">
+                    <xsl:attribute name="href" select="concat($front-end-path, '/css/ie10-viewport-bug-workaround.css')"/>
+                </link>
                 
                 <xsl:if test="$page-url gt ''">
                     <link rel="canonical">

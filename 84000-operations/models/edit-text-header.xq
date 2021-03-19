@@ -115,7 +115,7 @@ return
             contributors:persons(false(), false()),
             contributors:teams(true(), false(), false()),
             $tei-content:title-types,
-            doc('../config/contributor-types.xml'),
+            $contributors:contributor-types,
             doc('../config/submission-checklist.xml')
         )
     )

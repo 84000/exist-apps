@@ -346,6 +346,7 @@ declare function store:store-new-html($file-path as xs:string, $version as xs:st
             </error>
 };
 :)
+
 declare function store:store-new-pdf($file-path as xs:string, $version as xs:string) as element() {
     
     let $pdf-config := $store:conf/m:pdfs
@@ -366,43 +367,33 @@ declare function store:store-new-pdf($file-path as xs:string, $version as xs:str
                         <env name="HOME" value="/{ $pdf-config/m:home/text() }"/>
                     </environment>
                 </options>
-            
-            let $generate-pdf := 
-                 process:execute((
-                    concat('/', $pdf-config/m:chrome-path), 
-                    '--headless', 
-                    concat('--print-to-pdf=', $resource-id, '.pdf'), 
-                    '--print-to-pdf-no-header', 
-                    '--no-sandbox',
-                    '--run-all-compositor-stages-before-draw',
-                    '--disable-web-security',
-                    '--virtual-time-budget=10000',
-                    concat($pdf-config/m:html-source-url, '/translation/', $resource-id, '.html', '?view-mode=pdf')
-                ), $options)
-            
-            (: Upload to database :)
-            let $store-file := 
-                xmldb:store(
-                    $file-collection, 
-                    concat($resource-id, '.pdf'), 
-                    xs:anyURI(concat('file:///', $pdf-config/m:sync-path, '/', $resource-id, '.pdf')), 
-                    'application/pdf'
-                )
-            
-            return
-                if($store-file)then
-                    
-                    let $set-file-group:= sm:chgrp(xs:anyURI($file-path), $store:file-group)
-                    let $set-file-permissions:= sm:chmod(xs:anyURI($file-path), $store:file-permissions)
-                    let $store-version-number := store:store-version-str($file-collection, $file-name, $version)
-                    
-                    return
-                        <stored xmlns="http://read.84000.co/ns/1.0">{ concat('New version saved as ', $file-path) }</stored>
+                
+                (: Use node/puppeteer to generate PDF :)
+                let $generate-pdf := process:execute(('node', 'generatePDF.js', $resource-id), $options)
+               
+                (: Upload to database :)
+                let $store-file := 
+                    xmldb:store(
+                        $file-collection, 
+                        concat($resource-id, '.pdf'), 
+                        xs:anyURI(concat('file:///', $pdf-config/m:sync-path, '/', $resource-id, '.pdf')), 
+                        'application/pdf'
+                    )
+                
+                return
+                    if($store-file)then
                         
-                 else
-                    <error xmlns="http://read.84000.co/ns/1.0">
-                        <message>{ concat('PDF generation failed: (', $file-path, ')') }</message>
-                    </error>
+                        let $set-file-group:= sm:chgrp(xs:anyURI($file-path), $store:file-group)
+                        let $set-file-permissions:= sm:chmod(xs:anyURI($file-path), $store:file-permissions)
+                        let $store-version-number := store:store-version-str($file-collection, $file-name, $version)
+                        
+                        return
+                            <stored xmlns="http://read.84000.co/ns/1.0">{ concat('New version saved as ', $file-path) }</stored>
+                            
+                     else
+                        <error xmlns="http://read.84000.co/ns/1.0">
+                            <message>{ concat('PDF generation failed: (', $file-path, ')') }</message>
+                        </error>
                     
         else
             <error xmlns="http://read.84000.co/ns/1.0">

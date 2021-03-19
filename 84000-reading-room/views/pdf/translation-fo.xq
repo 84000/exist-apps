@@ -23,7 +23,7 @@ declare function fo:main($translation) {
                 <fo:block font-size="12pt" text-align="center" font-family="IndUni-P-84000-Regular" color="gray" margin-bottom="10mm">
                      - This is just a provisional pdf to test font rendering using Apache FO - 
                 </fo:block>
-                <fo:block text-align="center" font-size="30pt" font-family="Tibetan" script="tibt" margin-bottom="10mm">
+                <fo:block text-align="center" font-size="30pt" font-family="Tibetan" margin-bottom="10mm">
                 {
                     $translation/m:titles/m:title[@xml:lang = 'bo']/text()
                 }
@@ -65,7 +65,7 @@ declare function local:fop-config() {
             <renderer mime="application/pdf">
                 <fonts>
                     <font kerning="no"
-                        embed-url="/db/apps/84000-reading-room/views/pdf/resources/fonts/DDC_Uchen.ttf"
+                        embed-url="/db/apps/84000-reading-room/views/pdf/resources/fonts/Jomolhari-Regular.ttf"
                         encoding-mode="auto">
                         <font-triplet name="Tibetan" style="normal" weight="normal"/>
                     </font>

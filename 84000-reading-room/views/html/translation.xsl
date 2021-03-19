@@ -520,7 +520,9 @@
                     </xsl:when>
                     
                     <xsl:otherwise>
+
                         <xsl:apply-templates select="$part/m:* | $part/tei:*"/>
+                        
                     </xsl:otherwise>
                     
                 </xsl:choose>
@@ -555,6 +557,7 @@
         <xsl:if test="count($page-title) gt 1 or not($part-status eq 'complete')">
             <div class="page">
                 
+                <!-- h1 should reflect that it's a part -->
                 <xsl:if test="count($page-title) gt 1">
                     <h1 class="h2 text-center top-margin">
                         <xsl:for-each select="$page-title">
@@ -621,86 +624,42 @@
         
         <section id="titles">
             
+            <xsl:variable name="main-titles" select="m:translation/m:titles/m:title[text()]"/>
+            <xsl:variable name="long-titles" select="m:translation/m:long-titles/m:title[text()]"/>
+            
             <!-- Main titles -->
             <div class="page">
                 
                 <div id="main-titles" class="ornamental-panel">
                     
-                    <div>
-                        <xsl:call-template name="class-attribute">
-                            <xsl:with-param name="base-classes" select="'title yig-go'"/>
-                            <xsl:with-param name="lang" select="'bo'"/>
-                        </xsl:call-template>
-                        <xsl:apply-templates select="m:translation/m:titles/m:title[@xml:lang eq 'bo']"/>
-                    </div>
+                    <xsl:apply-templates select="$main-titles[@xml:lang eq 'bo']"/>
                     
                     <xsl:element name="{ if(count($page-title) gt 1) then 'div' else 'h1' }">
                         <xsl:attribute name="class" select="'title main-title'"/>
-                        <xsl:value-of select="/m:response/m:translation/m:titles/m:title[@xml:lang eq 'en']"/>
+                        <xsl:value-of select="$main-titles[@xml:lang eq 'en']"/>
                     </xsl:element>
                     
-                    <xsl:if test="m:translation/m:titles/m:title[@xml:lang eq 'Sa-Ltn'][text()]">
-                        <div>
-                            <xsl:call-template name="class-attribute">
-                                <xsl:with-param name="base-classes" select="'title'"/>
-                                <xsl:with-param name="lang" select="'Sa-Ltn'"/>
-                            </xsl:call-template>
-                            <xsl:apply-templates select="m:translation/m:titles/m:title[@xml:lang eq 'Sa-Ltn']"/>
-                        </div>
-                    </xsl:if>
+                    <xsl:apply-templates select="$main-titles[@xml:lang eq 'Sa-Ltn']"/>
+                
                 </div>
                 
-                <xsl:if test="count(m:translation/m:long-titles/m:title[text()]) eq 1 and m:translation/m:long-titles/m:title[@xml:lang eq 'Bo-Ltn'][text()]">
+                <xsl:if test="count($long-titles) eq 1 and $long-titles[@xml:lang eq 'Bo-Ltn'][text()]">
                     <div id="long-titles">
-                        <div>
-                            <xsl:call-template name="class-attribute">
-                                <xsl:with-param name="base-classes" select="'title'"/>
-                                <xsl:with-param name="lang" select="'Bo-Ltn'"/>
-                            </xsl:call-template>
-                            <xsl:apply-templates select="m:translation/m:long-titles/m:title[@xml:lang eq 'Bo-Ltn']"/>
-                        </div>
+                        <xsl:apply-templates select="$long-titles[@xml:lang eq 'Bo-Ltn']"/>
                     </div>
                 </xsl:if>
                 
             </div>
             
             <!-- Long titles -->
-            <xsl:if test="count(m:translation/m:long-titles/m:title[text()]) gt 1">
+            <xsl:if test="count($long-titles) gt 1">
                 <div class="page">
                     
                     <div id="long-titles">
-                        <xsl:if test="m:translation/m:long-titles/m:title[@xml:lang eq 'bo'][text()]">
-                            <div>
-                                <xsl:call-template name="class-attribute">
-                                    <xsl:with-param name="base-classes" select="'title'"/>
-                                    <xsl:with-param name="lang" select="'bo'"/>
-                                </xsl:call-template>
-                                <xsl:apply-templates select="m:translation/m:long-titles/m:title[@xml:lang eq 'bo']"/>
-                            </div>
-                        </xsl:if>
-                        <xsl:if test="m:translation/m:long-titles/m:title[@xml:lang eq 'Bo-Ltn'][text()]">
-                            <div>
-                                <xsl:call-template name="class-attribute">
-                                    <xsl:with-param name="base-classes" select="'title'"/>
-                                    <xsl:with-param name="lang" select="'Bo-Ltn'"/>
-                                </xsl:call-template>
-                                <xsl:apply-templates select="m:translation/m:long-titles/m:title[@xml:lang eq 'Bo-Ltn']"/>
-                            </div>
-                        </xsl:if>
-                        <xsl:if test="m:translation/m:long-titles/m:title[@xml:lang eq 'en'][text()]">
-                            <div class="title">
-                                <xsl:apply-templates select="m:translation/m:long-titles/m:title[@xml:lang eq 'en']"/>
-                            </div>
-                        </xsl:if>
-                        <xsl:if test="m:translation/m:long-titles/m:title[@xml:lang eq 'Sa-Ltn'][text()]">
-                            <div>
-                                <xsl:call-template name="class-attribute">
-                                    <xsl:with-param name="base-classes" select="'title'"/>
-                                    <xsl:with-param name="lang" select="'Sa-Ltn'"/>
-                                </xsl:call-template>
-                                <xsl:apply-templates select="m:translation/m:long-titles/m:title[@xml:lang eq 'Sa-Ltn']"/>
-                            </div>
-                        </xsl:if>
+                        <xsl:apply-templates select="$long-titles[@xml:lang eq 'bo']"/>
+                        <xsl:apply-templates select="$long-titles[@xml:lang eq 'Bo-Ltn']"/>
+                        <xsl:apply-templates select="$long-titles[@xml:lang eq 'en']"/>
+                        <xsl:apply-templates select="$long-titles[@xml:lang eq 'Sa-Ltn']"/>
                     </div>
                     
                 </div>

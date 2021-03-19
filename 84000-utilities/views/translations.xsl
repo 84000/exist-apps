@@ -5,6 +5,7 @@
     <xsl:import href="common.xsl"/>
     
     <xsl:key name="master-texts" match="/m:response/m:translations-master//m:text" use="@id"/>
+    <xsl:key name="master-downloads" match="/m:response/m:translations-master//m:text/m:downloads" use="@resource-id"/>
     
     <xsl:template match="/m:response">
         
@@ -140,7 +141,7 @@
                                                         <xsl:variable name="toh" select="m:toh"/>
                                                         <xsl:variable name="text-downloads" select="m:downloads/m:download"/>
                                                         <xsl:variable name="file-version" select="$text-downloads[@type eq $file-format]/@version"/>
-                                                        <xsl:variable name="master-downloads" select="/m:response/m:translations-master//m:text/m:downloads[@resource-id eq $toh/@key]"/>
+                                                        <xsl:variable name="master-downloads" select="key('master-downloads', $toh/@key)"/>
                                                         <xsl:variable name="master-file-version" select="$master-downloads/m:download[@type eq $file-format]/@version"/>
                                                         
                                                         <div class="sml-margin bottom">
@@ -531,13 +532,43 @@
         <xsl:variable name="page-alert">
             <xsl:if test="m:updated">
                 <div id="page-alert" class="collapse in info" role="alert">
-                    <xsl:if test="m:updated//m:error">
-                        <xsl:attribute name="class" select="'collapse in danger'"/>
-                    </xsl:if>
-                    <h2 class="sml-margin top bottom">
-                        <xsl:value-of select="'File updated'"/>
-                    </h2>
-                    <xsl:value-of select="m:updated"/>
+                    <div class="container">
+                        
+                        <xsl:choose>
+                            <xsl:when test="m:updated//m:error">
+                                <xsl:attribute name="class" select="'collapse in danger'"/>
+                                <h2 class="sml-margin top bottom">
+                                    <xsl:value-of select="'Update error'"/>
+                                </h2>
+                            </xsl:when>
+                            <xsl:otherwise>
+                                <h2 class="sml-margin top bottom">
+                                    <xsl:value-of select="'File updated'"/>
+                                </h2>
+                            </xsl:otherwise>
+                        </xsl:choose>
+                        
+                        <xsl:if test="m:updated//m:stored">
+                            <ul class="list-inline inline-dots">
+                                <xsl:for-each select="m:updated//m:stored">
+                                    <li>
+                                        <xsl:value-of select="."/>
+                                    </li>
+                                </xsl:for-each>
+                            </ul>
+                        </xsl:if>
+                        
+                        <xsl:if test="m:updated//m:message">
+                            <ul class="list-inline inline-dots">
+                                <xsl:for-each select="m:updated//m:message">
+                                    <li>
+                                        <xsl:value-of select="."/>
+                                    </li>
+                                </xsl:for-each>
+                            </ul>
+                        </xsl:if>
+                        
+                    </div>
                 </div>
             </xsl:if>
         </xsl:variable>

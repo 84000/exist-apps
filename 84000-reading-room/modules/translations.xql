@@ -134,17 +134,27 @@ declare function translations:summary($work as xs:string) as element() {
 };
 
 declare function translations:texts($status as xs:string*, $resource-ids as xs:string*, $sort as xs:string, $deduplicate as xs:string, $include-downloads as xs:string, $include-folios as xs:boolean) as element() {
-
-    let $teis := 
-        $tei-content:translations-collection//tei:TEI[
-            tei:teiHeader/tei:fileDesc
-                [if(count($status[not(. = '')]) gt 0) then (tei:publicationStmt/@status = $status) else true()]
-                [if(count($resource-ids[not(. = '')]) gt 0) then (tei:publicationStmt/tei:idno/@xml:id | tei:sourceDesc/tei:bibl/@key = $resource-ids) else true()]
-        ]
+    
+    let $teis := $tei-content:translations-collection//tei:TEI
+    
+    let $teis :=
+        if(count($status[not(. = '')]) gt 0) then
+            $teis[tei:teiHeader/tei:fileDesc/tei:publicationStmt[@status = $status]]
+        else
+            $teis
+    
+    let $teis :=
+        if(count($resource-ids[not(. = '')]) gt 0) then (
+            $teis[tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:idno[@xml:id = $resource-ids]]
+            | $teis[tei:teiHeader/tei:fileDesc/tei:sourceDesc[tei:bibl[@key = $resource-ids]]]
+        )
+        else
+            $teis
     
     let $texts := 
         for $tei in $teis
-            let $include-downloads := if ($include-downloads eq '' and tei-content:translation-status-group($tei) eq 'published') then 'all' else $include-downloads
+            let $translation-status-group := tei-content:translation-status-group($tei)
+            let $include-downloads := if ($include-downloads eq '' and $translation-status-group eq 'published') then 'all' else $include-downloads
             (: If $sort = 'persist' then sort based on the $resource-ids :)
         return
             if($deduplicate = ('text', 'sponsorship')) then
@@ -490,11 +500,10 @@ declare function translations:downloads($resource-ids as xs:string*) as element(
     {
         for $tei in 
             if($resource-ids = 'versioned') then
-                $tei-content:translations-collection//tei:TEI[tei:teiHeader/tei:fileDesc/tei:editionStmt/tei:edition/text()]
+                $tei-content:translations-collection//tei:TEI[tei:teiHeader/tei:fileDesc/tei:editionStmt/tei:edition[text()]]
             else if(count($resource-ids) gt 0) then
                 $tei-content:translations-collection//tei:TEI[tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl[@key = $resource-ids]]
-            else
-                ()
+            else ()
             
         let $text-id := tei-content:id($tei)
         where $text-id

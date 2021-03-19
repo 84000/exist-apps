@@ -18,7 +18,7 @@
                     <section epub:type="halftitlepage" class="new-page heading-section">
                     
                         <h2 class="main-title text-bo">
-                            <xsl:apply-templates select="m:translation/m:titles/m:title[@xml:lang eq 'bo']"/>
+                            <xsl:apply-templates select="concat('༄༅། །', m:translation/m:titles/m:title[@xml:lang eq 'bo'])"/>
                         </h2>
                         
                         <h1 class="main-title">

@@ -28,7 +28,7 @@
             <xsl:otherwise>
                 <xsl:variable name="local-key" select="tokenize($global-key, '\.')"/>
                 <xsl:variable name="common-key" select="string-join(('about', 'common', $local-key[last()]), '.')"/>
-                <xsl:variable name="text-item" select="key('text-items', $common-key, /)[1]"/>
+                <xsl:variable name="text-item" select="key('text-items', $common-key, $root)[1]"/>
                 <!--<xsl:variable name="text-item" select="$text-items[@key eq $common-key][1]"/>-->
                 <xsl:if test="$text-item">
                     <xsl:call-template name="normalize-nodes-space">

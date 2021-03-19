@@ -65,38 +65,45 @@ declare function tei-content:tei($resource-id as xs:string, $resource-type as xs
     :)
     
     let $collection := 
-        if($archive-path eq 'layout-checks') then
+        (: Layout checks :)
+        if(lower-case($resource-id) = ('toh00', 'ut22084-000-000')) then
             collection(concat($common:data-path, '/tei/layout-checks'))
+        
+        (: Archived copy :)
         else if($archive-path gt '') then
             collection(concat($common:data-path, '/archived/', $archive-path))
+        
+        (: Section :)
         else if($resource-type = ('section', 'pseudo-section')) then
             $tei-content:sections-collection
+        
+        (: Knowledge base :)
         else if($resource-type eq 'knowledgebase') then
             $tei-content:knowledgebase-collection
+        
+        (: Default to translation :)
         else 
             $tei-content:translations-collection
     
-    (: based on Tohoku number :)
+    (: Lookup key :)
     let $tei := 
-        if($resource-type eq 'translation') then
-            let $resource-id := lower-case($resource-id)
-            return
+        let $resource-id := lower-case($resource-id)
+        return
+            if($resource-type eq 'translation') then
                 $collection//tei:sourceDesc[tei:bibl/@key = $resource-id][1]/ancestor::tei:TEI
-        else if($resource-type eq 'knowledgebase') then
-            let $resource-id := lower-case($resource-id)
-            return
+            else if($resource-type eq 'knowledgebase') then
                 $collection//tei:publicationStmt/tei:idno[@m:kb-id eq $resource-id][1]/ancestor::tei:TEI
-        else
-            ()
+            else ()
     
-    return 
-        if(not($tei)) then
-            (: Fallback to UT number :)
-            let $resource-id := upper-case($resource-id)
-            return
+    (: Fallback to UT number :)
+    let $tei := 
+        let $resource-id := upper-case($resource-id)
+        return
+            if(not($tei)) then
                 $collection//tei:publicationStmt/tei:idno[@xml:id eq $resource-id]/ancestor::tei:TEI
-        else
-            $tei
+            else $tei
+    
+    return $tei
     
 };
 
@@ -121,57 +128,62 @@ declare function tei-content:title($tei as node(), $type as xs:string?, $lang as
 
 declare function tei-content:titles($tei as element(tei:TEI)) as element() {
 
-    <titles xmlns="http://read.84000.co/ns/1.0">
-    {
+    element { QName('http://read.84000.co/ns/1.0', 'titles') } {
         for $title in $tei//tei:fileDesc/tei:titleStmt/tei:title
         return
-            <title 
-                xml:lang="{ $title/@xml:lang }"
-                type="{ $title/@type }">
-            {
+            element title {
+                $title/@*,
                 $title/text() ! normalize-space(.)
             }
-            </title>
     }
-    </titles>
     
 };
 
 declare function tei-content:title-set($tei as element(tei:TEI), $type as xs:string) as element()* {
     
-    let $bo := tei-content:title($tei, $type , 'bo')
-    let $bo-ltn := tei-content:title($tei, $type , ('Bo-Ltn', ''))
-    let $en := tei-content:title($tei, $type , ('eng', 'en'))
-    let $sa-ltn := tei-content:title($tei, $type , 'Sa-Ltn')
+    let $titles := $tei//tei:fileDesc/tei:titleStmt/tei:title[@type eq $type][normalize-space(text())]
     
     let $source-bibl := tei-content:source-bibl($tei, '')
-    let $parent-id := $source-bibl/tei:idno/@parent-id
+    
+    let $en := $titles[@xml:lang = ('eng', 'en')][@type eq $type][normalize-space(text())][1]
+    let $bo-ltn := $titles[@xml:lang = ('Bo-Ltn', '')][@type eq $type][normalize-space(text())][1]
+    let $bo := $titles[@xml:lang eq 'bo'][@type eq $type][normalize-space(text())][1]
+    let $sa-ltn := $titles[@xml:lang eq 'Sa-Ltn'][@type eq $type][normalize-space(text())][1]
     
     return (
-        <title xmlns="http://read.84000.co/ns/1.0" xml:lang="en">{ $en }</title>,
-        <title xmlns="http://read.84000.co/ns/1.0" xml:lang="bo">
-        {
-            if(not($bo) and $bo-ltn) then
-                common:bo-from-wylie($bo-ltn)
+        element { QName('http://read.84000.co/ns/1.0', 'title') }{
+            attribute xml:lang { 'en' },
+            $en/@*[not(name(.) = ('xml:lang', 'type'))],
+            $en/text() ! normalize-space(.)
+        },
+        element { QName('http://read.84000.co/ns/1.0', 'title') }{
+            attribute xml:lang { 'bo' },
+            $en/@*[not(name(.) = ('xml:lang', 'type'))],
+            if(not($bo/text()) and $bo-ltn/text()) then
+                common:bo-from-wylie($bo-ltn/text() ! normalize-space(.))
             else
-                $bo
-        }
-        </title>,
-        <title xmlns="http://read.84000.co/ns/1.0" xml:lang="Bo-Ltn">{ $bo-ltn }</title>,
-        <title xmlns="http://read.84000.co/ns/1.0" xml:lang="Sa-Ltn">{ $sa-ltn }</title>,        
-        if($source-bibl/@type eq 'chapter') then
+                $bo/text() ! normalize-space(.)
+        },
+        element { QName('http://read.84000.co/ns/1.0', 'title') }{
+            attribute xml:lang { 'Bo-Ltn' },
+            $bo-ltn/@*[not(name(.) = ('xml:lang', 'type'))],
+            $bo-ltn/text() ! normalize-space(.)
+        },
+        element { QName('http://read.84000.co/ns/1.0', 'title') }{
+            attribute xml:lang { 'Sa-Ltn' },
+            $sa-ltn/@*[not(name(.) = ('xml:lang', 'type'))],
+            $sa-ltn/text() ! normalize-space(.)
+        },
+        if($source-bibl[@type eq 'chapter']) then
             let $parent-id := $source-bibl/tei:idno/@parent-id
             let $parent-tei := tei-content:tei($parent-id, 'section')
             return
-                <parent xmlns="http://read.84000.co/ns/1.0">
-                    <titles>
-                    {
+                element { QName('http://read.84000.co/ns/1.0', 'parent') }{
+                    element titles {
                         tei-content:title-set($parent-tei, 'mainTitle')
                     }
-                    </titles>
-                </parent>
-        else
-            ()
+                }
+        else ()
     )
     
 };

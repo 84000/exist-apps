@@ -22,12 +22,12 @@ body {
     color: #000000;
     font-family: "IndUni-P";
 }
-h1,
-h2,
-h3,
-h4,
-h5,
-h6 {
+h1, .h1,
+h2, .h2,
+h3, .h3,
+h4, .h4,
+h5, .h5,
+h6, .h6 {
     display: block;
     width: 100%;
     text-align: inherit;
@@ -49,31 +49,31 @@ a {
 }
 
 /* headings */
-h1 {
+h1, .h1 {
     font-size: 1.4em;
     line-height: 1.4em;
 }
-h2 {
+h2, .h2 {
     font-size: 1.3em;
 }
-h3 {
+h3, .h3 {
     font-size: 1.2em;
 }
-h4{
+h4, .h4 {
     font-size: 1.1em;
 }
-h5 {
+h5, .h5 {
     font-size: 1em;
 }
-h1 small {
+h1 small, .h1 small {
     display: block;
     margin-top: 8pt;
 }
-h5.section-label {
+h5.section-label, .h5.section-label {
     margin-top: 24pt;
     line-height: 1.5;
 }
-h1, h2, h3, h4, header {
+h1, h2, h3, h4, .h1, .h2, .h3, .h4, header {
     text-align: center;
 }
 
@@ -122,8 +122,12 @@ small, .small {
 
 /* other scripts */
 .text-bo {
-    font-family: "DDC Uchen";
-    line-height: 2em;
+    font-family: "Jomolhari" !important;
+    font-size: 1.3em;
+    line-height: 1em;
+    vertical-align: text-top;
+    font-style: normal !important;
+    font-weight: normal !important;
 }
 .text-sa {
     font-style: italic;
@@ -156,11 +160,11 @@ blockquote .line-group .line {
 }
 
 /* text section */
-.text h2 {
+.text h2 , .text .h2 {
     font-weight: normal;
     page-break-after: avoid;
 }
-.text h4 {
+.text h4 .text .h4 {
     margin-top: 22pt;
     page-break-after: avoid;
 }
@@ -416,11 +420,11 @@ img.logo-84000 {
     text-align: center;
 }
 
-#titles h1,
-#titles h2,
+#titles h1, #titles .h1,
+#titles h2, #titles .h2,
 #titles p,
-#body-title h1,
-#body-title h2 {
+#body-title h1, #body-title .h1,
+#body-title h2, #body-title .h2 {
     font-weight: normal;
 }
 
@@ -430,15 +434,11 @@ img.logo-84000 {
     margin-top: 20%;
 }
 
-#titles h2,
-#titles h3,
+#titles h2, #titles .h2,
+#titles h3, #titles .h3,
 #titles p,
-#body-title h2 {
-    font-size: 13pt;
-}
-
-#titles .main-title.text-bo:before {
-    content: '༄༅། །';
+#body-title h2, #body-title .h2 {
+    font-size: 1em;
 }
 
 #titles .translator {
@@ -523,7 +523,7 @@ img.logo-84000 {
 .glossary-item .alternative {
     display: none;
 }
-.glossary-item h3, 
+.glossary-item h3, .glossary-item .h3, 
 .glossary-item p,
 .glossary-item ul {
     margin-bottom: .25em;
@@ -539,7 +539,10 @@ img.logo-84000 {
 }
 
 /* Headings */
-.heading-section header > *,
+.heading-section h1, .heading-section .h1,
+.heading-section h2, .heading-section .h2,
+.heading-section h3, .heading-section .h3,
+.heading-section h4, .heading-section .h4,
 .heading-section p {
     margin-top: 12pt;
     font-weight: normal;
@@ -548,13 +551,16 @@ img.logo-84000 {
 .heading-section p:first-child {
     margin-top: 0px;
 }
-.heading-section.chapter h2 {
+.heading-section.chapter h2,
+.heading-section.chapter .h2 {
     text-transform: uppercase;
 }
-.heading-section.supplementary h4:before {
+.heading-section.supplementary h4:before,
+.heading-section.supplementary .h4:before{
     content: '[';
 }
-.heading-section.supplementary h4:after {
+.heading-section.supplementary h4:after,
+.heading-section.supplementary .h4:after{
     content: ']';
 }
 .heading-section.nested {

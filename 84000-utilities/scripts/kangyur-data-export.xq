@@ -7,15 +7,20 @@ declare namespace owl="http://www.w3.org/2002/07/owl#";
 import module namespace common="http://read.84000.co/common" at "../../84000-reading-room/modules/common.xql";
 import module namespace tei-content="http://read.84000.co/tei-content" at "../../84000-reading-room/modules/tei-content.xql";
 import module namespace translation="http://read.84000.co/translation" at "../../84000-reading-room/modules/translation.xql";
+import module namespace contributors="http://read.84000.co/contributors" at "../../84000-reading-room/modules/contributors.xql";
 
 declare variable $local:kangyur-tei := collection($common:translations-path)//tei:TEI[tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl/tei:location/@work = 'UT4CZ5369'];
 declare variable $local:text-refs := doc(concat($common:data-path, '/config/linked-data/text-refs.xml'));
-declare variable $local:contributors := doc(concat($common:data-path, '/operations/contributors.xml'));
     
 element { QName('http://read.84000.co/ns/1.0', 'attributions') } {
     
     namespace {"rdf"} { "http://www.w3.org/1999/02/22-rdf-syntax-ns#" },
     namespace {"owl"} { "http://www.w3.org/2002/07/owl#" },
+    
+    element export {
+        attribute timestamp { current-dateTime() },
+        attribute user { common:user-name() }
+    },
 
     for $tei in $local:kangyur-tei(:[tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl/@key eq 'toh13']:)
         
@@ -48,10 +53,10 @@ element { QName('http://read.84000.co/ns/1.0', 'attributions') } {
                 element work {
                     attribute type { 'tibetanSource' },
                     element label {
-                        if($tei/tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:title[@type eq "mainTitle"][@xml:lang eq "bo"]) then 
-                            $tei/tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:title[@type eq "mainTitle"][@xml:lang eq "bo"]/text()
-                        else if($tei/tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:title[@type eq "mainTitle"][@xml:lang eq "Bo-Ltn"]) then
-                            common:bo-from-wylie($tei/tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:title[@type eq "mainTitle"][@xml:lang eq "Bo-Ltn"]/text())
+                        if($tei/tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:title[@type eq "mainTitle"][@xml:lang eq "Bo-Ltn"][text()]) then 
+                            $tei/tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:title[@type eq "mainTitle"][@xml:lang eq "Bo-Ltn"]/text()
+                        else if($tei/tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:title[@type eq "mainTitle"][@xml:lang eq "bo"][text()]) then
+                            common:wylie-from-bo($tei/tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:title[@type eq "mainTitle"][@xml:lang eq "bo"]/text())
                         else ()
                     },
                     element rdf:type {
@@ -65,7 +70,7 @@ element { QName('http://read.84000.co/ns/1.0', 'attributions') } {
                     ,
                     for $author in $bibl/tei:author[normalize-space(text())]
                     let $author-tokenized := tokenize(replace($author/data(), '^[atr][0-9]*[\.:]\s*', ''), '[,:]') ! normalize-space(.)
-                    let $author-id := replace($author-tokenized[1] ! common:normalized-chars(.) ! upper-case(.), "[^A-Z0-9]+", "-")
+                    let $author-id := replace($author-tokenized[1] ! lower-case(.) ! common:normalized-chars(.), "[^a-z0-9]+", "-")
                     return
                     element attribution {
                         attribute role {
@@ -82,7 +87,7 @@ element { QName('http://read.84000.co/ns/1.0', 'attributions') } {
                             attribute revision { replace($author, '^r([0-9]+)([\.:]\s*.*)', '$1') }
                         else ()
                          ,
-                        attribute resource { concat('EFT:', $author-id) },
+                        attribute resource { lower-case(concat('eft:', $author-id)) },
                         for $author-string in $author-tokenized
                         return
                         element label { $author-string }
@@ -100,12 +105,13 @@ element { QName('http://read.84000.co/ns/1.0', 'attributions') } {
                 attribute target-media { 'text/tei' },
                 attribute url { 'https://read.84000-translate.org/translation/' || $text-id || '.tei'  }
             },:)
-            for $contributor in $tei/tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:*[@role = ('dharmaMaster', 'translatorMain', 'translatorEng', 'reviser', 'advisor', 'associateEditor', 'finalReviewer', 'externalReviewer')]
+            for $contributor in $tei/tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:*[@ref gt ''][@role = ('dharmaMaster', 'translatorMain', 'translatorEng', 'reviser', 'advisor', 'associateEditor', 'finalReviewer', 'externalReviewer')]
+            let $contributor-id := lower-case(replace($contributor/@ref/string(), '^(eft:|contributors\.xml#)', '', 'i'))(:contributors:contributor-id($contributor/@ref/string()):)
             return
             element attribution {
                 $contributor/@role,
-                attribute resource { upper-case(replace($contributor/@ref, '^contributors\.xml#', 'EFT:')) },
-                $local:contributors//*[@xml:id eq replace($contributor/@ref, '^contributors\.xml#', '')]/m:label
+                attribute resource { lower-case(concat('eft:', $contributor-id)) },
+                $contributors:contributors//*[@xml:id eq $contributor-id]/m:label
             }
         }
     }

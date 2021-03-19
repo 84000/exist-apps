@@ -356,6 +356,10 @@
             <xsl:with-param name="title" select="'Contributors'"/>
             <xsl:with-param name="active" select="$active"/>
             <xsl:with-param name="form">
+                
+                <xsl:variable name="summary" select="/m:response/m:translation/m:publication/m:contributors/m:summary[1]"/>
+                <xsl:variable name="translator-team-id" select="lower-case(replace($summary/@ref, '^(eft:|contributors\.xml#)', '', 'i'))"/>
+                
                 <form method="post" class="form-horizontal form-update" id="contributors-form">
                     
                     <xsl:attribute name="action" select="'edit-text-header.html#contributors-form'"/>
@@ -368,7 +372,6 @@
                     
                     <div class="row">
                         <div class="col-sm-8">
-                            <xsl:variable name="translator-team-id" select="substring-after(m:translation/m:publication/m:contributors/m:summary[1]/@ref, 'contributors.xml#')"/>
                             <div class="form-group">
                                 <label class="control-label col-sm-3">
                                     <xsl:value-of select="'Translator Team'"/>
@@ -381,11 +384,11 @@
                                         </option>
                                         <xsl:for-each select="/m:response/m:contributor-teams/m:team">
                                             <option>
-                                                <xsl:attribute name="value" select="concat('contributors.xml#', @xml:id)"/>
+                                                <xsl:attribute name="value" select="@xml:id"/>
                                                 <xsl:if test="@xml:id eq $translator-team-id">
                                                     <xsl:attribute name="selected" select="'selected'"/>
                                                 </xsl:if>
-                                                <xsl:value-of select="m:sort-name"/>
+                                                <xsl:value-of select="m:label/text()"/>
                                             </option>
                                         </xsl:for-each>
                                     </select>
@@ -394,8 +397,6 @@
                             <hr class="sml-margin"/>
                             <div class="add-nodes-container">
                                 
-                                <xsl:variable name="summary" select="/m:response/m:translation/m:publication/m:contributors/m:summary[1]"/>
-                                <xsl:variable name="translator-team-id" select="substring-after($summary/@ref, 'contributors.xml#')"/>
                                 <xsl:variable name="team-contributors" select="/m:response/m:contributor-persons/m:person[m:team[@id = $translator-team-id]]"/>
                                 <xsl:variable name="other-contributors" select="/m:response/m:contributor-persons/m:person[not(m:team[@id = $translator-team-id])]"/>
                                 
@@ -500,22 +501,22 @@
             <xsl:if test="$team-contributors">
                 <xsl:for-each select="$team-contributors">
                     <option>
-                        <xsl:attribute name="value" select="concat('contributors.xml#', @xml:id)"/>
+                        <xsl:attribute name="value" select="@xml:id"/>
                         <xsl:if test="@xml:id eq $contributor-id">
                             <xsl:attribute name="selected" select="'selected'"/>
                         </xsl:if>
-                        <xsl:value-of select="m:sort-name"/>
+                        <xsl:value-of select="m:label/text()"/>
                     </option>
                 </xsl:for-each>
                 <option value="">-</option>
             </xsl:if>
             <xsl:for-each select="$other-contributors">
                 <option>
-                    <xsl:attribute name="value" select="concat('contributors.xml#', @xml:id)"/>
+                    <xsl:attribute name="value" select="@xml:id"/>
                     <xsl:if test="@xml:id eq $contributor-id">
                         <xsl:attribute name="selected" select="'selected'"/>
                     </xsl:if>
-                    <xsl:value-of select="m:sort-name"/>
+                    <xsl:value-of select="m:label/text()"/>
                 </option>
             </xsl:for-each>
         </select>
@@ -536,7 +537,7 @@
                     
                     <xsl:sort select="common:index-of-node($contributor-types, $contributor-types[@node-name eq xs:string(local-name(current()))][@role eq current()/@role])" order="ascending"/>
                     
-                    <xsl:variable name="contributor-id" select="substring-after(./@ref, 'contributors.xml#')"/>
+                    <xsl:variable name="contributor-id" select="lower-case(replace(@ref, '^(eft:|contributors\.xml#)', '', 'i'))"/>
                     <xsl:variable name="contributor-type" select="concat(node-name(.), '-', @role)"/>
                     <xsl:variable name="index" select="common:index-of-node($text-contributors, .)"/>
                     

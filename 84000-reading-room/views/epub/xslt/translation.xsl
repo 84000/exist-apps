@@ -13,14 +13,20 @@
             <xsl:with-param name="content">
                 <section epub:type="halftitle" id="body-title" class="new-page heading-section">
                     
+                    <xsl:if test="count(m:translation/m:part[@type eq 'translation']/m:part[@type = ('section', 'chapter')]) gt 1">
+                        <div class="h3">
+                            <xsl:value-of select="'The Translation'"/>
+                        </div>
+                    </xsl:if>
+                    
                     <xsl:if test="m:translation/m:part[@type eq 'translation']/m:honoration[text()]">
-                        <h2>
+                        <div class="h2">
                             <xsl:apply-templates select="m:translation/m:part[@type eq 'translation']/m:honoration"/>
-                        </h2>
+                        </div>
                     </xsl:if>
                     
                     <xsl:if test="m:translation/m:part[@type eq 'translation']/m:main-title[text()]">
-                        <h1>
+                        <div class="h1">
                             <xsl:apply-templates select="m:translation/m:part[@type eq 'translation']/m:main-title"/>
                             <xsl:if test="m:translation/m:part[@type eq 'translation']/m:sub-title[text()]">
                                 <br/>
@@ -28,7 +34,7 @@
                                     <xsl:apply-templates select="m:translation/m:part[@type eq 'translation']/m:sub-title"/>
                                 </small>
                             </xsl:if>
-                        </h1>
+                        </div>
                     </xsl:if>
                     
                 </section>

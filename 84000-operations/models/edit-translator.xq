@@ -41,6 +41,6 @@ return
             $contributor,
             contributors:teams(true(), false(), false()),
             contributors:institutions(false()),
-            doc('../config/contributor-types.xml')
+            $contributors:contributor-types
         )
     )
