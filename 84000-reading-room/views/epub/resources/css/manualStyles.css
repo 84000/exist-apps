@@ -162,11 +162,9 @@ blockquote .line-group .line {
 /* text section */
 .text h2 , .text .h2 {
     font-weight: normal;
-    page-break-after: avoid;
 }
 .text h4 .text .h4 {
     margin-top: 22pt;
-    page-break-after: avoid;
 }
 .text br {
     display: none;
@@ -319,10 +317,23 @@ br+.rw > p,
     padding-top: .25em;
     vertical-align: baseline;
     overflow-wrap: break-word;
-    page-break-after: avoid;
 }
 
 /* additional avoid page breaks */
+.gtr, 
+.rw-section-head {
+    page-break-after: avoid;
+    page-break-inside: avoid;
+}
+.gtr * , 
+.rw-section-head * {
+    page-break-after: avoid;
+    page-break-inside: avoid;
+}
+.gtr + .rw,
+.rw-section-head + .rw,
+.gtr + .rw *,
+.rw-section-head + .rw *,
 .nested-section > .rw-first,
 .footnote-number {
     page-break-after: avoid;

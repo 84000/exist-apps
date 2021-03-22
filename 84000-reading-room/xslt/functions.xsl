@@ -415,7 +415,9 @@
     <xsl:function name="common:normalize-data" as="xs:string?">
         
         <xsl:param name="arg" as="xs:string?"/>
-        <xsl:sequence select="replace($arg, '\s+', ' ')"/>
+        <!-- Shrink whitespace to one space -->
+        <!-- Add zero-width joiner to em-dash - regex includes zwj i.e. &zwj;*— -->
+        <xsl:sequence select="replace(replace($arg, '\s+', ' '), '‍*—', '‍—')"/>
         
     </xsl:function>
     

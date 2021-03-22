@@ -1492,6 +1492,7 @@
         <xsl:choose>
             
             <xsl:when test="$translation">
+                
                 <div>
                     
                     <!-- Set id -->
@@ -1565,7 +1566,7 @@
                     <xsl:sequence select="$content"/>
                     
                 </div>
-                
+
             </xsl:when>
             
             <xsl:otherwise>
