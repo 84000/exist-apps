@@ -20,10 +20,10 @@ declare variable $local:tei :=
     else 
         'contributor-types.xml already migrated'
     
-    (: Migrate contributor refs contributors.xml#person-123 -> EFT:PERSON-123 :)
-    (: Migrate sponsor refs sponsors.xml#sponsor-123 -> EFT:sponsor-123 :)
-    (: Only run after this version is on Distribution and can accept the new prefix :)
-    (: DON'T FORGET TO SWITCH OFF THE TRIGGER!! :),
+    (:(\: Migrate contributor refs contributors.xml#person-123 -> EFT:PERSON-123 :\)
+    (\: Migrate sponsor refs sponsors.xml#sponsor-123 -> EFT:sponsor-123 :\)
+    (\: Only run after this version is on Distribution and can accept the new prefix :\)
+    (\: DON'T FORGET TO SWITCH OFF THE TRIGGER!! :\),
     (# exist:batch-transaction #) {
         
         for $tei in $local:tei[tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:*[@ref]]
@@ -38,5 +38,5 @@ declare variable $local:tei :=
             )
         )
      
-     }
+     }:)
 )

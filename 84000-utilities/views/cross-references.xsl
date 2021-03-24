@@ -48,6 +48,26 @@
                     </xsl:otherwise>
                 </xsl:choose>
                 
+                <!-- Refs with invalid domains -->
+                <xsl:variable name="invalid-domains" select="m:target-text[m:ref-context[@target-domain-validated eq 'false']]"/>
+                <div class="heading text-danger">
+                    <xsl:value-of select="'Link(s) to invalid domains: '"/>
+                </div>
+                <xsl:choose>
+                    <xsl:when test="$invalid-domains">
+                        <xsl:call-template name="target-text-list">
+                            <xsl:with-param name="target-texts" select="$invalid-domains"/>
+                            <xsl:with-param name="group-id" select="'invalid-domains'"/>
+                        </xsl:call-template>
+                    </xsl:when>
+                    <xsl:otherwise>
+                        <div class="item">
+                            <p class="text-muted italic">
+                                <xsl:value-of select="'None'"/>
+                            </p>
+                        </div>
+                    </xsl:otherwise>
+                </xsl:choose>
                 
                 <!-- Texts with invalid hash -->
                 <xsl:variable name="invalid-hashes" select="m:target-text[m:ref-context[@target-id-validated eq 'false']]"/>
@@ -273,6 +293,9 @@
                                             <xsl:value-of select="' ↳ '"/>
                                             
                                             <code class="small">
+                                                <xsl:if test="@target-domain-validated eq 'false'">
+                                                    <xsl:attribute name="class" select="'small red-alert'"/>
+                                                </xsl:if>
                                                 <xsl:value-of select="concat('@target=&#34;', tei:ref/@target, '&#34;')"/>
                                             </code>
                                             

@@ -53,11 +53,11 @@
                 <div class="container">
                     <div class="row">
                         <main class="col-md-8 col-lg-9">
-                            <h2>Sorry, there was an error</h2>
+                            <h1>Sorry, there was an error</h1>
                             <p>Please select a navigation option above</p>
                             <xsl:if test="$environment/@debug eq '1'">
                                 <hr/>
-                                <h3>Debug information:</h3>
+                                <h2>Debug information:</h2>
                                 <p class="text-bold">
                                     <xsl:value-of select="exception/path"/>
                                 </p>

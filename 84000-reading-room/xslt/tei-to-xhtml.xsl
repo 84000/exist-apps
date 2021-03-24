@@ -17,6 +17,7 @@
     <!-- Global variables -->
     <xsl:variable name="translation" select="/m:response/m:translation"/>
     <xsl:variable name="section" select="/m:response/m:section"/>
+    <xsl:variable name="requested-part" select="/m:response/m:request/@part"/>
     <xsl:variable name="translation-id" select="$translation/@id"/>
     <xsl:variable name="toh-key" select="$translation/m:toh/@key"/>
     <xsl:variable name="part-status" select="if(not($translation//m:part[@render = ('preview', 'empty')])) then 'complete' else if($translation//m:part[@render eq 'show']) then 'part' else 'empty'" as="xs:string"/>
@@ -83,12 +84,12 @@
                 </xsl:when>
                 
                 <!-- Check if deferred -->
-                <xsl:when test="$view-mode[@glossary = ('defer', 'defer-no-cache')] and ancestor::tei:*[@tid]">
+                <xsl:when test="$view-mode[@glossary = ('defer', 'editor-defer')] and (ancestor::tei:*[@tid] or ancestor::tei:note[@place eq 'end'][@xml:id] or ancestor::tei:note[@place eq 'end'][@xml:id] or ancestor::tei:gloss[@xml:id])">
                     <xsl:value-of select="false()"/>
                 </xsl:when>
                 
                 <!-- TEI elements we don't want to process -->
-                <xsl:when test="parent::tei:ptr | parent::tei:lb | parent::tei:milestone | parent::tei:term[not(@type eq 'definition')] | ancestor::tei:head">
+                <xsl:when test="parent::tei:ptr | parent::tei:ref[@target] | parent::tei:lb | parent::tei:milestone | parent::tei:term[not(@type eq 'definition')] | ancestor::tei:head">
                     <xsl:value-of select="false()"/>
                 </xsl:when>
                 
@@ -436,7 +437,7 @@
         <!-- Collect adjacent refs -->
         <xsl:variable name="ref-text-1-group" select="$ref-text-1/../tei:ref" as="node()*"/>
         <!-- Collect associated nodes -->
-        <xsl:variable name="ref-prologue" select="$ref-text-1-group/../node()[self::tei:ref or (preceding-sibling::tei:ref = $ref-text-1-group and following-sibling::tei:ref = $ref-text-1-group)]" as="node()*"/>
+        <xsl:variable name="ref-prologue" select="$ref-text-1-group/../node()[(self::tei:ref or (preceding-sibling::tei:ref = $ref-text-1-group and following-sibling::tei:ref = $ref-text-1-group)) or (self::tei:note[@place eq 'end'] and preceding-sibling::tei:ref = $ref-text-1-group)]" as="node()*"/>
 
         <!-- Output the ref prologue -->
         <xsl:if test="$ref-prologue">
@@ -881,7 +882,9 @@
                 </xsl:otherwise>
                 
             </xsl:choose>
+            
             <xsl:value-of select="$notes-cache-end-note/@index"/>
+            
         </a>
         
     </xsl:template>
@@ -906,6 +909,11 @@
                 
                 <xsl:if test="$view-mode[not(@client = ('ebook', 'app'))]">
                     <xsl:attribute name="data-passage-id" select="$end-note/@xml:id"/>
+                </xsl:if>
+                
+                <xsl:if test="$view-mode[@glossary = ('defer', 'editor-defer')]">
+                    <xsl:variable name="request-view-mode" select="if($view-mode[@glossary = ('defer')]) then 'passage' else 'editor-passage'"/>
+                    <xsl:attribute name="data-in-view-replace" select="concat('/translation/', $toh-key, '.html', '?part=', $end-note/@xml:id, m:view-mode-parameter($request-view-mode), m:archive-path-parameter(), '#', concat('end-note-', $end-note/@xml:id))"/>
                 </xsl:if>
                 
                 <div class="gtr">
@@ -1020,8 +1028,8 @@
                         <xsl:value-of select="false()"/>
                     </xsl:when>
                     
-                    <!-- Check ifs deferred -->
-                    <xsl:when test="$view-mode[@glossary = ('defer', 'defer-no-cache')] and ancestor::tei:*[@tid]">
+                    <!-- Check if deferred -->
+                    <xsl:when test="$view-mode[@glossary = ('defer', 'editor-defer')] and ancestor::tei:*[@tid]">
                         <xsl:value-of select="false()"/>
                     </xsl:when>
                     
@@ -1073,7 +1081,7 @@
         
         <xsl:apply-templates select="$glossary-part/tei:head"/>
         
-        <xsl:for-each select="$glossary-part/tei:div/tei:gloss[@xml:id]">
+        <xsl:for-each select="$glossary-part//tei:gloss[@xml:id][$glossary-part[not(@render eq 'passage')] or @xml:id eq $requested-part]">
             
             <xsl:sort select="key('glossary-cache-gloss', @xml:id, $root)[1]/@index ! common:enforce-integer(.)"/>
             
@@ -1090,15 +1098,20 @@
             <!-- Potential optimisation: only show glossaries with expressions in the text (Could be slower to filter them than to just parse them) -->
             <section class="rw glossary-item">
                 
-                <xsl:if test="$glossary-item[@xml:id]">
+                <!--<xsl:if test="$glossary-item[@xml:id]">-->
                     
-                    <xsl:attribute name="id" select="$glossary-item/@xml:id"/>
-                    
-                    <xsl:if test="$view-mode[not(@client = ('ebook', 'app'))]">
-                        <xsl:attribute name="data-passage-id" select="$glossary-item/@xml:id"/>
-                    </xsl:if>
-                    
+                <xsl:attribute name="id" select="$glossary-item/@xml:id"/>
+                
+                <xsl:if test="$view-mode[not(@client = ('ebook', 'app'))]">
+                    <xsl:attribute name="data-passage-id" select="$glossary-item/@xml:id"/>
                 </xsl:if>
+                
+                <xsl:if test="$view-mode[@glossary = ('defer', 'editor-defer')]">
+                    <xsl:variable name="request-view-mode" select="if($view-mode[@glossary = ('defer')]) then 'passage' else 'editor-passage'"/>
+                    <xsl:attribute name="data-in-view-replace" select="concat('/translation/', $toh-key, '.html', '?part=', $glossary-item/@xml:id, m:view-mode-parameter($request-view-mode), m:archive-path-parameter(), '#', $glossary-item/@xml:id)"/>
+                </xsl:if>
+                    
+                <!--</xsl:if>-->
                 
                 <div class="gtr">
                     <xsl:choose>
@@ -1172,7 +1185,7 @@
                             
                         </xsl:for-each>
                         
-                        <xsl:if test="$view-mode[@id = ('editor', 'annotation', 'tests')]">
+                        <xsl:if test="$view-mode[@id = ('editor', 'annotation', 'tests', 'editor-passage')]">
                             <xsl:for-each select="$glossary-item/tei:term[@type eq 'alternative'][normalize-space(data())]">
                                 <p class="term alternative">
                                     <xsl:value-of select="normalize-space(data())"/>
@@ -1189,7 +1202,7 @@
                             </p>
                         </xsl:for-each>
                         
-                        <xsl:if test="$view-mode[@id = ('editor')] and $environment/m:url[@id eq 'operations']">
+                        <xsl:if test="$view-mode[@id = ('editor', 'editor-passage')] and $environment/m:url[@id eq 'operations']">
                             <a target="84000-glossary-tool" class="underline small">
                                 <xsl:attribute name="href" select="concat($environment/m:url[@id eq 'operations']/text(), '/glossary.html', '?resource-id=', $translation-id, '&amp;glossary-id=', $glossary-item/@xml:id, '&amp;max-records=1')"/>
                                 <xsl:value-of select="'Open in the glossary editor'"/>
@@ -1603,8 +1616,8 @@
                     
                     <xsl:attribute name="id" select="$id"/>
                     
-                    <xsl:if test="$view-mode[@glossary = ('defer', 'defer-no-cache')] and m:glossarize-context($node) and not(self::tei:head) and $node[@tid]">
-                        <xsl:variable name="request-view-mode" select="if($view-mode[@glossary = ('defer')]) then 'passage' else 'passage-no-cache'"/>
+                    <xsl:if test="$view-mode[@glossary = ('defer', 'editor-defer')] and m:glossarize-context($node) and not(self::tei:head) and $node[@tid]">
+                        <xsl:variable name="request-view-mode" select="if($view-mode[@glossary = ('defer')]) then 'passage' else 'editor-passage'"/>
                         <xsl:attribute name="data-in-view-replace" select="concat('/translation/', $toh-key, '.html', '?part=', $id, m:view-mode-parameter($request-view-mode), m:archive-path-parameter(), '#', $id)"/>
                     </xsl:if>
                     
@@ -1909,6 +1922,7 @@
                                             </span>
                                             <xsl:value-of select="$sub-parts-label"/>
                                         </span>
+                                        
                                     </a>
                                     
                                     <!-- Expandable box -->
@@ -2314,6 +2328,7 @@
         
         <!-- Match whole string or just find -->
         <xsl:variable name="match-complete-data" select="if($text-node/parent::tei:title | $text-node/parent::tei:name) then true() else false()" as="xs:boolean"/>
+        
         <!-- Exclude itself if this is a glossary definition -->
         <xsl:variable name="exclude-gloss-ids" select="if($text-node/ancestor::tei:gloss[1]) then $text-node/ancestor::tei:gloss[1]/@xml:id else ()"/>
         
@@ -2489,7 +2504,7 @@
                             <xsl:value-of select="'glossary-link'"/>
                             
                             <!-- Check if the location is cached and flag it if not -->
-                            <xsl:if test="$view-mode[@glossary = ('no-cache', 'defer-no-cache')]">
+                            <xsl:if test="$view-mode[@glossary = ('no-cache', 'editor-defer')]">
                                 <xsl:variable name="glossary-cache-gloss" select="key('glossary-cache-gloss', $glossary-id, $root)[1]" as="element(m:gloss)*"/>
                                 <xsl:if test="not($glossary-cache-gloss/m:location[@id/string() eq $glossary-location])">
                                     <xsl:value-of select="'not-cached'"/>

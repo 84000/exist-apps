@@ -90,7 +90,7 @@ declare function tei-content:tei($resource-id as xs:string, $resource-type as xs
         let $resource-id := lower-case($resource-id)
         return
             if($resource-type eq 'translation') then
-                $collection//tei:sourceDesc[tei:bibl/@key = $resource-id][1]/ancestor::tei:TEI
+                $collection//tei:sourceDesc/tei:bibl[@key = $resource-id][1]/ancestor::tei:TEI
             else if($resource-type eq 'knowledgebase') then
                 $collection//tei:publicationStmt/tei:idno[@m:kb-id eq $resource-id][1]/ancestor::tei:TEI
             else ()
@@ -100,7 +100,7 @@ declare function tei-content:tei($resource-id as xs:string, $resource-type as xs
         let $resource-id := upper-case($resource-id)
         return
             if(not($tei)) then
-                $collection//tei:publicationStmt/tei:idno[@xml:id eq $resource-id]/ancestor::tei:TEI
+                $collection//tei:publicationStmt/id($resource-id)/ancestor::tei:TEI
             else $tei
     
     return $tei
@@ -145,10 +145,10 @@ declare function tei-content:title-set($tei as element(tei:TEI), $type as xs:str
     
     let $source-bibl := tei-content:source-bibl($tei, '')
     
-    let $en := $titles[@xml:lang = ('eng', 'en')][@type eq $type][normalize-space(text())][1]
-    let $bo-ltn := $titles[@xml:lang = ('Bo-Ltn', '')][@type eq $type][normalize-space(text())][1]
-    let $bo := $titles[@xml:lang eq 'bo'][@type eq $type][normalize-space(text())][1]
-    let $sa-ltn := $titles[@xml:lang eq 'Sa-Ltn'][@type eq $type][normalize-space(text())][1]
+    let $en := $titles[@xml:lang = ('eng', 'en')][1]
+    let $bo-ltn := $titles[@xml:lang = ('Bo-Ltn', '')][1]
+    let $bo := $titles[@xml:lang eq 'bo'][1]
+    let $sa-ltn := $titles[@xml:lang eq 'Sa-Ltn'][1]
     
     return (
         element { QName('http://read.84000.co/ns/1.0', 'title') }{

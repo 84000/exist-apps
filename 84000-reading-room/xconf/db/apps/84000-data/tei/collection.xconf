@@ -131,6 +131,7 @@
                 <field name="ref-type" match="@type" type="xs:string"/>
                 <field name="ref-rend" match="@rend" type="xs:string"/>
                 <field name="ref-cref" match="@cRef" type="xs:string" case="no"/>
+                <field name="ref-target" match="@target" type="xs:string" case="no"/>
             </create>
             
             <create qname="tei:note">

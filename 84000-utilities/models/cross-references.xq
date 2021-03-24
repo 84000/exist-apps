@@ -12,6 +12,7 @@ import module namespace functx="http://www.functx.com";
 declare option exist:serialize "method=xml indent=no";
 
 declare function local:ref-context($ref as element(tei:ref), $target-tei as element(tei:TEI)?) as element(m:ref-context) {
+
     let $tei := $ref/ancestor::tei:TEI[1]
     let $text-id := tei-content:id($tei)
     let $toh-key := translation:toh-key($tei, '')
@@ -20,11 +21,16 @@ declare function local:ref-context($ref as element(tei:ref), $target-tei as elem
     let $target-page := tokenize($target, '#')[1]
     let $target-hash := tokenize($target, '#')[2]
     let $target-id-validated := 
-        if(not($target-hash) or $target-tei/descendant::*[@xml:id = $target-hash]) then
+        if(not($target-hash) or $target-tei/id($target-hash)) then
             true()
         else
             false()
-    
+    let $target-domain-validated := 
+        if($ref[matches(@target, '^(http|https)://read\.84000\.co/translation/')]) then
+            true()
+        else
+            false()
+            
     (:let $passage := $ref/ancestor-or-self::*[preceding-sibling::tei:milestone[@xml:id]][1]:)
     return 
         element { QName('http://read.84000.co/ns/1.0', 'ref-context') } {
@@ -35,6 +41,7 @@ declare function local:ref-context($ref as element(tei:ref), $target-tei as elem
             attribute target-page { $target-page },
             attribute target-hash { $target-hash },
             attribute target-id-validated { $target-id-validated },
+            attribute target-domain-validated { $target-domain-validated },
             
             translation:titles($tei),
             translation:toh($tei, ''),
@@ -49,8 +56,8 @@ common:response(
     'utilities',(
         utilities:request(),
     
-        for $ref in $tei-content:translations-collection/descendant::tei:ref[matches(@target, '^(http|https)://read\.84000\.co/translation/')]
-        let $page-id := substring-after($ref/@target, 'read.84000.co/translation/')
+        for $ref in $tei-content:translations-collection/descendant::tei:ref[matches(@target, '^(http|https)://read\.84000.*/translation/')]
+        let $page-id := substring-after($ref/@target, '/translation/')
         let $resource-id := tokenize($page-id, '\.')[1]
         let $target-tei := tei-content:tei($resource-id, 'translation')
         let $target-text-id := if($target-tei) then tei-content:id($target-tei) else $resource-id

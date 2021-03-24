@@ -38,7 +38,7 @@ declare function entities:update-entity($entity-id as xs:string?) as element()? 
     
     let $parent := $entities:entities
     
-    let $existing-entity := $parent/m:entity[@xml:id eq $entity-id]
+    let $existing-entity := $parent/id($entity-id)[self::m:entity]
     
     let $entity-id :=
         if(not($existing-entity)) then
@@ -151,8 +151,8 @@ declare function entities:next-id() as xs:string {
 declare function entities:match($entity-id as xs:string, $target-entity-id as xs:string) as element()* {
     
     let $parent := $entities:entities
-    let $entity := $parent/m:entity[@xml:id eq $entity-id]
-    let $target-entity := $parent/m:entity[@xml:id eq $target-entity-id]
+    let $entity := $parent/id($entity-id)[self::m:entity]
+    let $target-entity := $parent/id($target-entity-id)[self::m:entity]
     
     let $target-entity-new := 
         element { node-name($target-entity) } {
@@ -189,7 +189,8 @@ declare function entities:match($entity-id as xs:string, $target-entity-id as xs
 declare function entities:exclude($entity-ids as xs:string*) as element()* {
     
     for $target-entity-id in $entity-ids
-        let $target-entity := $entities:entities/m:entity[@xml:id eq  $target-entity-id]
+        let $target-entity := $entities:entities/id($target-entity-id)[self::m:entity]
+        
     where $target-entity
     return
         for $exclude-entity-id in $entity-ids[not(. =  $target-entity-id)]

@@ -6,7 +6,7 @@
     <!-- Look up environment variables -->
     <xsl:variable name="front-end-path" select="$environment/m:url[@id eq 'front-end']/text()"/>
     <xsl:variable name="render-status" select="$environment/m:render-translation/m:status/@status-id"/>
-    <xsl:variable name="requested-part" select="/m:response/m:request/@part"/>
+    
     <xsl:variable name="page-title" as="node()*">
         <xsl:sequence select="/m:response/m:translation/m:titles/m:title[@xml:lang eq 'en']"/>
         <xsl:sequence select="/m:response/m:translation//m:part[@prefix][@render eq 'show'][1]/tei:head[@type eq parent::m:part/@type]"/>

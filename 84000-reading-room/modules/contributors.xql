@@ -41,7 +41,7 @@ declare function contributors:persons($include-acknowledgements as xs:boolean, $
 
 declare function contributors:person($person-id as xs:string, $include-acknowledgements as xs:boolean, $count-contributions as xs:boolean) as element(m:person) {
     
-    let $contributor := $contributors:contributors/m:contributors/m:person[@xml:id eq lower-case($person-id)]
+    let $contributor := $contributors:contributors/id(lower-case($person-id))[self::m:person]
     
     return
         element { node-name($contributor) } {
@@ -88,7 +88,7 @@ declare function contributors:acknowledgements($contributor-id as xs:string) as 
             if($translation-contributions[text()]) then
                 $translation-contributions[text()][1]/text()
             else
-                $contributors:contributors/m:contributors/m:person[@xml:id eq $contributor-id]/m:label/text()
+                $contributors:contributors/id(lower-case($contributor-id))[self::m:person]/m:label/text()
         
         let $acknowledgment := $tei//tei:front/tei:div[@type eq "acknowledgment"]
         
@@ -145,9 +145,9 @@ declare function contributors:teams($include-hidden as xs:boolean, $include-ackn
         }
 };
 
-declare function contributors:team($team-id as xs:string, $include-acknowledgements as xs:boolean, $include-persons as xs:boolean) as element() {
+declare function contributors:team($team-id as xs:string, $include-acknowledgements as xs:boolean, $include-persons as xs:boolean) as element(m:team) {
     
-    let $team := $contributors:contributors/m:contributors/m:team[@xml:id eq lower-case($team-id)]
+    let $team := $contributors:contributors/id(lower-case($team-id))[self::m:team]
     let $team-persons := $contributors:contributors/m:contributors/m:person[m:team/@id eq lower-case($team-id)]
     let $team-ref := contributors:contributor-uri($team/@xml:id)
     let $team-texts := $contributors:texts//tei:TEI[tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:author[@ref eq $team-ref]]
