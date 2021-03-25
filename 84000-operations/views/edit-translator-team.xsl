@@ -38,7 +38,7 @@
                                     <legend>
                                         <xsl:choose>
                                             <xsl:when test="$team-id">
-                                                ID: <xsl:value-of select="$team-id"/>
+                                                <xsl:value-of select="concat('ID: ', $team-id)"/>
                                             </xsl:when>
                                             <xsl:otherwise>New team </xsl:otherwise>
                                         </xsl:choose>
@@ -95,13 +95,13 @@
                             
                             <div class="col-sm-6">
                                 
-                                <section>
+                                <section class="bottom-margin">
                                     
                                     <xsl:variable name="section-id" select="'team-persons'"/>
                                     <xsl:attribute name="id" select="$section-id"/>
                                     
                                     <xsl:if test="count(m:team/m:person) gt 10">
-                                        <xsl:attribute name="class" select="'preview-list preview'"/>
+                                        <xsl:attribute name="class" select="'preview-list preview bottom-margin'"/>
                                         
                                         <xsl:call-template name="preview-controls">
                                             

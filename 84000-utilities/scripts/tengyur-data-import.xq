@@ -1,6 +1,7 @@
 xquery version "3.0";
 declare namespace tei="http://www.tei-c.org/ns/1.0";
 declare namespace m="http://read.84000.co/ns/1.0";
+declare namespace ex="http://exist-db.org/collection-config/1.0";
 
 import module namespace common="http://read.84000.co/common" at "../../84000-reading-room/modules/common.xql";
 import module namespace tei-content="http://read.84000.co/tei-content" at "../../84000-reading-room/modules/tei-content.xql";
@@ -11,9 +12,13 @@ import module namespace functx="http://www.functx.com";
 declare variable $local:tengyur-tei := 
     collection($common:translations-path)//tei:TEI[tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl/tei:location/@work = 'UT23703'];
 
-declare variable $local:import-texts := collection('/db/apps/84000-data/uploads/tengyur-data');
+declare variable $local:import-texts := collection('/db/apps/84000-data/uploads/tengyur-import');
 
-declare function local:merge-element ($element as element(), $import-text as element(m:text), $import-file-name as xs:string) {
+declare function local:merge-element ($element as element(), $import-text as element(m:text)) {
+    
+    let $import-file-name := $import-text/parent::m:tengyur-data/m:head[1]/m:doc[1]/@doc_id/string()
+    where $import-file-name
+    return
     
     (: Titles :)
     if(local-name($element) eq 'titleStmt') then
@@ -275,7 +280,7 @@ declare function local:merge-element ($element as element(), $import-text as ele
             
             for $node in $element/*[not(self::tei:link)](:[not(@import eq $import-file-name)]:)
             return
-                local:merge-element($node, $import-text, $import-file-name)
+                local:merge-element($node, $import-text)
             ,
             for $link in $import-text/m:rel
             return
@@ -296,7 +301,7 @@ declare function local:merge-element ($element as element(), $import-text as ele
             for $node in $element/node()
             return
                 if($node instance of element()) then
-                    local:merge-element($node, $import-text, $import-file-name)
+                    local:merge-element($node, $import-text)
                 else if($node instance of text() and normalize-space($node)) then
                     $node
                 else ()
@@ -306,22 +311,75 @@ declare function local:merge-element ($element as element(), $import-text as ele
 
 (: DON'T FORGET TO DISABLE TRIGGER :)
 element { QName('http://read.84000.co/ns/1.0', 'imported') } {
-   
-    for $import-text in $local:import-texts//m:text(:[@text-id = ('UT23703-001-001','UT23703-001-019', 'UT23703-001-046','UT23703-001-053')]:)
-    let $import-file-name := $import-text/parent::m:tengyur-data/m:head[1]/m:doc[1]/@doc_id/string()
-    where $import-file-name = ((:"tengyur-data-1109-1179_PH_new_v2.2.xml","tengyur-data-1305-1345_PH_new_v2.2.xml",:)"tengyur-data-1346-1400_PH_new_v2.2.xml")
-        let $tei := tei-content:tei($import-text/@text-id, 'translation')
-        let $fileDesc := $tei/tei:teiHeader/tei:fileDesc
-    return
-    if($fileDesc) then
-        let $fileDesc-merged := local:merge-element ($fileDesc, $import-text, $import-file-name)
+    
+    let $import-texts :=
+        for $import-text in $local:import-texts//m:text(:[@text-id = ('UT23703-001-001','UT23703-001-019', 'UT23703-001-046','UT23703-001-053')]:)
+        let $import-file-name := $import-text/parent::m:tengyur-data/m:head[1]/m:doc[1]/@doc_id/string()
+        (:where $import-file-name = (
+            (\:"tengyur-data-1109-1179_PH_new_v2.2.xml",
+            "tengyur-data-1305-1345_PH_new_v2.2.xml",
+            "tengyur-data-1180-1304_PH_new_v2.xml",
+            "tengyur-data-1541-1606_PH_new_v2.2.xml":\)
+        ):)
+        return $import-text
+    
+    let $import-text-ids := $import-texts/@text-id/string()
+    let $tei-texts := $local:tengyur-tei/id($import-text-ids)/ancestor::tei:TEI
+
+    let $validation-issues := 
+        for $import-text in $import-texts
+        
+        let $import-text-id := $import-text/@text-id/string()
+        let $tei-text := $tei-texts/id($import-text-id)/ancestor::tei:TEI
+        let $import-text-toh-keys := $import-text/m:toh/@key/string()
+        let $tei-text-toh-keys := $tei-text/tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl/@key/string()
+        
+        order by $import-text-toh-keys[1]
         return (
-            (:$import-text,:)
-            (:$fileDesc-merged,:)
-            common:update(tei-content:id($tei), $fileDesc, $fileDesc-merged, (), ())
+            if(not($tei-text)) then
+                element missing-tei-text { attribute id { $import-text-id } }
+            else (),
+            if(count(($import-text-toh-keys[not(. = $tei-text-toh-keys)], $tei-text-toh-keys[not(. = $import-text-toh-keys)]))) then
+                element mismatch-toh-keys {
+                
+                    attribute id { $import-text-id },
+                    
+                    $tei-text-toh-keys ! element tei-toh { attribute key { . } },
+                    $import-text-toh-keys ! element import-toh { attribute key { . } },
+                    
+                    element tei-title-bo {
+                        if($tei-text/tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:title[@xml:lang eq 'Bo-Ltn'][@type eq 'mainTitle'][string()]) then
+                            $tei-text/tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:title[@xml:lang eq 'Bo-Ltn'][@type eq 'mainTitle']/string()
+                        else
+                            $tei-text/tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:title[@xml:lang eq 'bo'][@type eq 'mainTitle']/string() ! common:wylie-from-bo(.)
+                    },
+                    element import-title-bo {
+                        $import-text/m:title[@xml:lang eq 'Bo'][@type eq 'mainTitle']/string() ! common:wylie-from-bo(.)
+                    }
+                }
+            else ()
         )
+    
+    return 
+    (:if(doc(concat('/db/system/config',$common:tei-path, '/collection.xconf'))/ex:collection/ex:triggers) then
+        <warning>{ 'DISABLE TRIGGERS BEFORE RUNNING SCRIPT' }</warning>
+    else:) if( $validation-issues ) then
+        $validation-issues
     else
-        <error>{$import-text/@text-id}</error>
+        (: Do the import :)
+        for $import-text in $import-texts
+            let $tei := tei-content:tei($import-text/@text-id, 'translation')
+            let $fileDesc := $tei/tei:teiHeader/tei:fileDesc
+        return
+        if($fileDesc) then
+            let $fileDesc-merged := local:merge-element ($fileDesc, $import-text)
+            return (
+                (:$import-text,:)
+                $fileDesc-merged(:,:)
+                (:common:update(tei-content:id($tei), $fileDesc, $fileDesc-merged, (), ()):)
+            )
+        else
+            <error>{$import-text/@text-id}</error>
         
 
 }

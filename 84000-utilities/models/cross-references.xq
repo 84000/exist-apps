@@ -21,10 +21,15 @@ declare function local:ref-context($ref as element(tei:ref), $target-tei as elem
     let $target-page := tokenize($target, '#')[1]
     let $target-hash := tokenize($target, '#')[2]
     let $target-id-validated := 
-        if(not($target-hash) or $target-tei/id($target-hash)) then
+        if(not($target-hash)) then
+            true()
+        else if($target-tei/id($target-hash)) then
+            true()
+        else if($target-tei/id(substring-after($target-hash, 'end-note-'))[self::tei:note][@place eq 'end']) then
             true()
         else
             false()
+    
     let $target-domain-validated := 
         if($ref[matches(@target, '^(http|https)://read\.84000\.co/translation/')]) then
             true()

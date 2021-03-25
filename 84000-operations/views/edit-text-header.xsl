@@ -47,7 +47,7 @@
                             <a class="label label-info">
                                 <xsl:attribute name="href" select="concat($reading-room-path, '/translation/', $text-id, '.tei')"/>
                                 <xsl:attribute name="target" select="concat($text-id, '.tei')"/>
-                                <xsl:value-of select="concat('Version: ', m:translation/@tei-version)"/>
+                                <xsl:value-of select="concat('TEI VERSION: ', m:translation/@tei-version)"/>
                             </a>
                         </span>
                         
