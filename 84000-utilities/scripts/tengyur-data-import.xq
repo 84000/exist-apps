@@ -14,6 +14,17 @@ declare variable $local:tengyur-tei :=
 
 declare variable $local:import-texts := collection('/db/apps/84000-data/uploads/tengyur-import');
 
+(: ~ Standalone xpath to check what's been done
+
+declare namespace tei="http://www.tei-c.org/ns/1.0";
+
+for $note in collection('/db/apps/84000-data/tei/translations/tengyur/placeholders')//tei:notesStmt/tei:note[@import]
+let $import-id := $note/@import/string()
+group by $import-id
+return $import-id
+
+:)
+
 declare function local:merge-element ($element as element(), $import-text as element(m:text)) {
     
     let $import-file-name := $import-text/parent::m:tengyur-data/m:head[1]/m:doc[1]/@doc_id/string()
@@ -241,7 +252,7 @@ declare function local:merge-element ($element as element(), $import-text as ele
             $element/@*,
             
             (: Copy notes that are not from this import :)
-            $element/*[not(@import eq $import-file-name)],
+            $element/*[not(@import(: eq $import-file-name:))],
             
             (: Note the import :)
             element { QName('http://www.tei-c.org/ns/1.0', 'note') } {
@@ -315,12 +326,12 @@ element { QName('http://read.84000.co/ns/1.0', 'imported') } {
     let $import-texts :=
         for $import-text in $local:import-texts//m:text(:[@text-id = ('UT23703-001-001','UT23703-001-019', 'UT23703-001-046','UT23703-001-053')]:)
         let $import-file-name := $import-text/parent::m:tengyur-data/m:head[1]/m:doc[1]/@doc_id/string()
-        (:where $import-file-name = (
-            (\:"tengyur-data-1109-1179_PH_new_v2.2.xml",
-            "tengyur-data-1305-1345_PH_new_v2.2.xml",
-            "tengyur-data-1180-1304_PH_new_v2.xml",
-            "tengyur-data-1541-1606_PH_new_v2.2.xml":\)
-        ):)
+        where $import-file-name = (
+            "tengyur-data-1109-1179_PH_new_v2.3.xml",
+            "tengyur-data-1180-1304_PH_new_v2.3.xml",
+            "tengyur-data-1305-1345_PH_new_v2.3.xml",
+            "tengyur-data-1346-1400_PH_new_v2.3.xml"
+        )
         return $import-text
     
     let $import-text-ids := $import-texts/@text-id/string()
@@ -361,9 +372,9 @@ element { QName('http://read.84000.co/ns/1.0', 'imported') } {
         )
     
     return 
-    (:if(doc(concat('/db/system/config',$common:tei-path, '/collection.xconf'))/ex:collection/ex:triggers) then
+    if(doc(concat('/db/system/config',$common:tei-path, '/collection.xconf'))/ex:collection/ex:triggers) then
         <warning>{ 'DISABLE TRIGGERS BEFORE RUNNING SCRIPT' }</warning>
-    else:) if( $validation-issues ) then
+    else if( $validation-issues ) then
         $validation-issues
     else
         (: Do the import :)
@@ -375,11 +386,10 @@ element { QName('http://read.84000.co/ns/1.0', 'imported') } {
             let $fileDesc-merged := local:merge-element ($fileDesc, $import-text)
             return (
                 (:$import-text,:)
-                $fileDesc-merged(:,:)
-                (:common:update(tei-content:id($tei), $fileDesc, $fileDesc-merged, (), ()):)
+                (:$fileDesc-merged,:)
+                common:update(tei-content:id($tei), $fileDesc, $fileDesc-merged, (), ())
             )
         else
             <error>{$import-text/@text-id}</error>
         
-
 }

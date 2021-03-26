@@ -151,6 +151,12 @@ declare function search:search($request as xs:string, $resource-id as xs:string,
                                     $expanded
                                 }
                                 </match>
+                            ,
+                            
+                            (: Notes cache :)
+                            if($results//tei:note[@place eq 'end'][@xml:id]) then
+                                translation:notes-cache($tei, false(), false())
+                            else ()
                         }
                         </item>
                 }
@@ -326,7 +332,6 @@ declare function search:tm-search($request as xs:string, $lang as xs:string, $fi
                                     element wylie { ($expanded/tei:term[not(@type = ('definition','alternative'))][@xml:lang eq "Bo-Ltn"][exist:match], $expanded/tei:term[not(@type = ('definition','alternative'))][@xml:lang eq "Bo-Ltn"])[1] },
                                     element sanskrit { ($expanded/tei:term[not(@type = ('definition','alternative'))][@xml:lang eq "Sa-Ltn"][exist:match], $expanded/tei:term[not(@type = ('definition','alternative'))][@xml:lang eq "Sa-Ltn"])[1] }
                                 }
-                                
                         }
                     else
                         ()

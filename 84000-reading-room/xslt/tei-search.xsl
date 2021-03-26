@@ -428,7 +428,7 @@
             
             <xsl:otherwise>
                 <!-- Everything else is listed as a search-match -->
-                <div class="search-match small">
+                <div class="search-match">
                     
                     <!-- Output the match (unless it's only in the note) -->
                     <xsl:if test="not(ancestor::tei:note)">
@@ -440,11 +440,13 @@
                     </xsl:if>
                     
                     <!-- Output related notes if they have matches too -->
-                    <xsl:for-each select="descendant::tei:note[descendant::exist:match]">
-                        <div class="row">
+                    <xsl:for-each select="descendant::tei:note[descendant::exist:match][@place eq 'end'][@xml:id]">
+                        <xsl:variable name="end-note" select="."/>
+                        <xsl:variable name="cache-note" select="ancestor::m:item[1]/m:notes-cache/m:end-note[@id eq $end-note/@xml:id]"/>
+                        <div class="row search-match-note">
                             <div class="col-sm-1">
                                 <span>
-                                    <xsl:value-of select="@index"/>
+                                    <xsl:value-of select="concat('n.', $cache-note/@index)"/>
                                 </span>
                             </div>
                             <div class="col-sm-11">
@@ -475,14 +477,10 @@
     </xsl:template>
     
     <xsl:template match="tei:note">
+        <xsl:variable name="end-note" select="."/>
+        <xsl:variable name="cache-note" select="ancestor::m:item[1]/m:notes-cache/m:end-note[@id eq $end-note/@xml:id]"/>
         <sup>
-            <xsl:attribute name="href">
-                <xsl:value-of select="concat('#footnote-', @index)"/>
-            </xsl:attribute>
-            <xsl:attribute name="id">
-                <xsl:value-of select="concat('footnote-link', @index)"/>
-            </xsl:attribute>
-            <xsl:value-of select="@index"/>
+            <xsl:value-of select="$cache-note/@index"/>
         </sup>
     </xsl:template>
     

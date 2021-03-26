@@ -23,9 +23,9 @@ declare function fo:main($translation) {
                 <fo:block font-size="12pt" text-align="center" font-family="IndUni-P-84000-Regular" color="gray" margin-bottom="10mm">
                      - This is just a provisional pdf to test font rendering using Apache FO - 
                 </fo:block>
-                <fo:block text-align="center" font-size="30pt" font-family="Tibetan" margin-bottom="10mm">
+                <fo:block text-align="center" font-size="30pt" font-family="Tibetan" margin-bottom="10mm" script="tibt">
                 {
-                    $translation/m:titles/m:title[@xml:lang = 'bo']/text()
+                    $translation/m:titles/m:title[@xml:lang = 'bo']/text() ! normalize-unicode(.)
                 }
                 </fo:block>
                 <fo:block font-size="44pt" text-align="center" font-family="IndUni-P-84000-Regular" margin-bottom="10mm">
@@ -60,7 +60,6 @@ declare function local:fop-config() {
         <strict-validation>false</strict-validation>
         <!-- Base URL for resolving relative URLs -->
         <base>./</base>
-        <complex-scripts disabled="false"/>
         <renderers>
             <renderer mime="application/pdf">
                 <fonts>
