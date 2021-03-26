@@ -20,15 +20,18 @@
             <tab page="folios.html" model="utilities/folios">
                 <label>Folios</label>
             </tab>
+            <tab page="linked-texts.html" model="utilities/linked-texts">
+                <label>Linked Texts</label>
+            </tab>
             <tab page="cross-references.html" model="utilities/cross-references">
                 <label>Cross-references</label>
             </tab>
             <tab page="tests.html" model="utilities/tests">
                 <label>Tests</label>
             </tab>
-            <tab page="layout-checks.html" model="utilities/layout-checks">
+            <!--<tab page="layout-checks.html" model="utilities/layout-checks">
                 <label>Layout Checks</label>
-            </tab>
+            </tab>-->
             <tab page="requests.html" model="utilities/requests">
                 <label>Page requests</label>
             </tab>

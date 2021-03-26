@@ -51,7 +51,6 @@
                             </li>
                             <li>
                                 <xsl:value-of select="'Run Automated Tests'"/>
-                                
                                 <div class="text-muted small">
                                     <xsl:value-of select="'These pages runs automated tests on the reading room app and shows the results.'"/>
                                     <br/>
@@ -77,6 +76,33 @@
                                             <xsl:value-of select="'Searches'"/>
                                         </a>
                                     </li>
+                                </ul>
+                            </li>
+                            <li>
+                                <xsl:value-of select="'Run Layout Checks'"/>
+                                <div class="text-danger small">
+                                    Each layout example in the list should be checked on <strong>desktop</strong>, <strong>mobile</strong> and <strong>print</strong> each time the styles are changed.
+                                </div>
+                                <div class="text-muted small">
+                                    New layout test TEI can be added to <xsl:value-of select="m:layout-checks/@collection"/>
+                                </div>
+                                <ul>
+                                    <xsl:for-each select="m:layout-checks/m:resource">
+                                        <li>
+                                            <xsl:value-of select="m:title"/>
+                                            <ul>
+                                                <xsl:for-each select="m:link">
+                                                    <li>
+                                                        <a>
+                                                            <xsl:attribute name="href" select="concat($reading-room-path, @url)"/>
+                                                            <xsl:attribute name="target" select="parent::m:resource/@id"/>
+                                                            <xsl:value-of select="text()"/>
+                                                        </a>
+                                                    </li>
+                                                </xsl:for-each>
+                                            </ul>
+                                        </li>
+                                    </xsl:for-each>
                                 </ul>
                             </li>
                             <li>

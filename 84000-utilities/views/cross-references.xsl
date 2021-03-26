@@ -13,16 +13,8 @@
         <xsl:variable name="content">
             
             <div class="alert alert-info small text-center">
-                <p>
-                    <xsl:text>
-                        This page lists the cross references between texts, specifically ref nodes with a  target attribute refering to the 84000 Reading Room &lt;ref target="https://read.84000.co/translation/..."/&gt; 
-                    </xsl:text>
-                </p>
-                <p>
-                    <xsl:text>
-                        Pending references are those with the attribute @rend="pending". On publishing a text links pointing to it texts should be resolved and the pending attribute removed.
-                    </xsl:text>
-                </p>
+                <p>This page tracks and validates cross references between texts, specifically tei:ref nodes with a target attribute refering to the 84000 Reading Room <br/>i.e. &lt;ref target="https://read.84000.co/translation/..."/&gt;</p>
+                <p>Pending references are those with the attribute @rend="pending". On publishing a text links pointing to it texts should be resolved and the pending attribute removed.</p>
             </div>
         
             <!-- Prioritise invalid targets -->
