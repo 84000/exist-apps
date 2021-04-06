@@ -37,7 +37,7 @@
                             <!-- Published flag -->
                             <span class="label label-warning">
                                 <xsl:choose>
-                                    <xsl:when test="@translation-status-group eq 'published'">
+                                    <xsl:when test="@status-group eq 'published'">
                                         <xsl:attribute name="class" select="'label label-success'"/>
                                         <xsl:value-of select="'Text published'"/>
                                     </xsl:when>
@@ -86,7 +86,7 @@
                                                     <!-- Published flag -->
                                                     <span class="label label-warning">
                                                         <xsl:choose>
-                                                            <xsl:when test="m:text/@translation-status-group eq 'published'">
+                                                            <xsl:when test="m:text/@status-group eq 'published'">
                                                                 <xsl:attribute name="class" select="'label label-success'"/>
                                                                 <xsl:value-of select="'Text published'"/>
                                                             </xsl:when>
