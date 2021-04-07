@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:common="http://read.84000.co/common" xmlns:epub="http://www.idpf.org/2007/ops" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:functx="http://www.functx.com" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:common="http://read.84000.co/common" xmlns:epub="http://www.idpf.org/2007/ops" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:functx="http://www.functx.com" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" version="3.0" exclude-result-prefixes="#all">
     
     <!-- Transforms tei to xhtml -->
     
@@ -604,9 +604,9 @@
                                         </xsl:for-each>
                                     </xsl:variable>
                                     
-                                    <xsl:for-each select="$labels/*:span">
+                                    <xsl:for-each select="$labels/xhtml:span">
                                         <xsl:sequence select="."/>
-                                        <xsl:value-of select="if(position() eq count($labels/*:span)) then '' else '; '"/>
+                                        <xsl:value-of select="if(position() eq count($labels/xhtml:span)) then '' else '; '"/>
                                     </xsl:for-each>
                                     
                                 </h5>
@@ -645,9 +645,10 @@
                                         
                                     </xsl:variable>
                                     
-                                    <xsl:for-each select="$datas/*:span">
+                                    <xsl:for-each select="$datas/xhtml:span">
                                         <xsl:sequence select="."/>
-                                        <xsl:value-of select="if(position() eq count($datas/*:span)) then '.' else '; '"/>
+                                        <!-- concatenate items with ; -->
+                                        <xsl:value-of select="if(position() ne count($datas/xhtml:span)) then '; ' else '.'"/>
                                     </xsl:for-each>
                                     
                                 </p>
@@ -658,8 +659,7 @@
                     <!-- Render the table version for html -->
                     <xsl:if test="$view-mode[not(@id = ('ebook', 'pdf'))]">
                         <div class="table-responsive hidden-print hidden-ebook">
-                            
-                            <table class="table">
+                            <table class="table table-unpad">
                                 <tbody>
                                     <xsl:for-each select="tei:row">
                                         <tr>
@@ -705,7 +705,8 @@
                     <xsl:value-of select="concat($label, ': ')"/>
                 </span>
             </xsl:if>
-            <xsl:value-of select="$data"/>
+            <!-- Strip trailing punctuation for concatenation -->
+            <xsl:value-of select="replace($data, '\W+$', '')"/>
         </span>
     </xsl:template>
     <xsl:template match="tei:cell">
@@ -1148,82 +1149,74 @@
                 </div>
                 
                 <div>
+                      
+                    <h3 class="term">
+                        <xsl:value-of select="$glossary-item/tei:term[not(@type)][not(@xml:lang) or @xml:lang eq 'en'][1]/normalize-space(.) ! functx:capitalize-first(.)"/>
+                    </h3>
                     
-                    <xsl:if test="$view-mode[not(@client = ('ebook', 'app'))]">
-                        <xsl:attribute name="class" select="'row'"/>
-                    </xsl:if>
+                    <xsl:for-each select="('Bo-Ltn','bo','Sa-Ltn')">
+                        
+                        <xsl:variable name="term-lang" select="."/>
+                        <xsl:variable name="term-lang-terms" select="$glossary-item/tei:term[not(@type = ('definition','alternative'))][@xml:lang eq $term-lang]"/>
+                        
+                        <ul class="list-inline inline-dots">
+                            <xsl:choose>
+                                <xsl:when test="$term-lang-terms">
+                                    <xsl:for-each select="$term-lang-terms">
+                                        <li>
+                                            
+                                            <xsl:call-template name="class-attribute">
+                                                <xsl:with-param name="base-classes" as="xs:string*">
+                                                    <xsl:value-of select="'term'"/>
+                                                    <xsl:if test="@type = ('reconstruction', 'semanticReconstruction','transliterationReconstruction')">
+                                                        <xsl:value-of select="'reconstructed'"/>
+                                                    </xsl:if>
+                                                </xsl:with-param>
+                                                <xsl:with-param name="lang" select="$term-lang"/>
+                                            </xsl:call-template>
+                                            
+                                            <xsl:choose>
+                                                <xsl:when test="normalize-space(text())">
+                                                    <xsl:value-of select="normalize-space(text())"/>
+                                                </xsl:when>
+                                                <xsl:otherwise>
+                                                    <xsl:call-template name="text">
+                                                        <xsl:with-param name="global-key" select="concat('glossary.term-empty-', lower-case($term-lang))"/>
+                                                    </xsl:call-template>
+                                                </xsl:otherwise>
+                                            </xsl:choose>
+                                            
+                                        </li>
+                                    </xsl:for-each>
+                                </xsl:when>
+                            </xsl:choose>
+                        </ul>
+                        
+                    </xsl:for-each>
                     
-                    <div>
-                        
-                        <h3 class="term">
-                            <xsl:value-of select="$glossary-item/tei:term[not(@type)][not(@xml:lang) or @xml:lang eq 'en'][1]/normalize-space(.) ! functx:capitalize-first(.)"/>
-                        </h3>
-                        
-                        <xsl:for-each select="('Bo-Ltn','bo','Sa-Ltn')">
-                            
-                            <xsl:variable name="term-lang" select="."/>
-                            <xsl:variable name="term-lang-terms" select="$glossary-item/tei:term[not(@type = ('definition','alternative'))][@xml:lang eq $term-lang]"/>
-                            
-                            <ul class="list-inline inline-dots">
-                                <xsl:choose>
-                                    <xsl:when test="$term-lang-terms">
-                                        <xsl:for-each select="$term-lang-terms">
-                                            <li>
-                                                
-                                                <xsl:call-template name="class-attribute">
-                                                    <xsl:with-param name="base-classes" as="xs:string*">
-                                                        <xsl:value-of select="'term'"/>
-                                                        <xsl:if test="@type = ('reconstruction', 'semanticReconstruction','transliterationReconstruction')">
-                                                            <xsl:value-of select="'reconstructed'"/>
-                                                        </xsl:if>
-                                                    </xsl:with-param>
-                                                    <xsl:with-param name="lang" select="$term-lang"/>
-                                                </xsl:call-template>
-                                                
-                                                <xsl:choose>
-                                                    <xsl:when test="normalize-space(text())">
-                                                        <xsl:value-of select="normalize-space(text())"/>
-                                                    </xsl:when>
-                                                    <xsl:otherwise>
-                                                        <xsl:call-template name="text">
-                                                            <xsl:with-param name="global-key" select="concat('glossary.term-empty-', lower-case($term-lang))"/>
-                                                        </xsl:call-template>
-                                                    </xsl:otherwise>
-                                                </xsl:choose>
-                                                
-                                            </li>
-                                        </xsl:for-each>
-                                    </xsl:when>
-                                </xsl:choose>
-                            </ul>
-                            
-                        </xsl:for-each>
-                        
-                        <xsl:if test="$view-mode[@id = ('editor', 'annotation', 'tests', 'editor-passage')]">
-                            <xsl:for-each select="$glossary-item/tei:term[@type eq 'alternative'][normalize-space(data())]">
-                                <p class="term alternative">
-                                    <xsl:value-of select="normalize-space(data())"/>
-                                </p>
-                            </xsl:for-each>
-                        </xsl:if>
-                        
-                        <xsl:for-each select="$glossary-item/tei:term[@type eq 'definition'][node()]">
-                            <p>
-                                <xsl:call-template name="class-attribute">
-                                    <xsl:with-param name="base-classes" select="'definition'"/>
-                                </xsl:call-template>
-                                <xsl:apply-templates select="node()"/>
+                    <xsl:if test="$view-mode[@id = ('editor', 'annotation', 'tests', 'editor-passage')]">
+                        <xsl:for-each select="$glossary-item/tei:term[@type eq 'alternative'][normalize-space(data())]">
+                            <p class="term alternative">
+                                <xsl:value-of select="normalize-space(data())"/>
                             </p>
                         </xsl:for-each>
-                        
-                        <xsl:if test="$view-mode[@id = ('editor', 'editor-passage')] and $environment/m:url[@id eq 'operations']">
-                            <a target="84000-glossary-tool" class="underline small">
-                                <xsl:attribute name="href" select="concat($environment/m:url[@id eq 'operations']/text(), '/glossary.html', '?resource-id=', $translation-id, '&amp;glossary-id=', $glossary-item/@xml:id, '&amp;max-records=1')"/>
-                                <xsl:value-of select="'Open in the glossary editor'"/>
-                            </a>
-                        </xsl:if>
-                        
-                    </div>
+                    </xsl:if>
+                    
+                    <xsl:for-each select="$glossary-item/tei:term[@type eq 'definition'][node()]">
+                        <p>
+                            <xsl:call-template name="class-attribute">
+                                <xsl:with-param name="base-classes" select="'definition'"/>
+                            </xsl:call-template>
+                            <xsl:apply-templates select="node()"/>
+                        </p>
+                    </xsl:for-each>
+                    
+                    <xsl:if test="$view-mode[@id = ('editor', 'editor-passage')] and $environment/m:url[@id eq 'operations']">
+                        <a target="84000-glossary-tool" class="underline small">
+                            <xsl:attribute name="href" select="concat($environment/m:url[@id eq 'operations']/text(), '/glossary.html', '?resource-id=', $translation-id, '&amp;glossary-id=', $glossary-item/@xml:id, '&amp;max-records=1')"/>
+                            <xsl:value-of select="'Open in the glossary editor'"/>
+                        </a>
+                    </xsl:if>
                     
                     <xsl:if test="$view-mode[not(@id eq 'pdf')]">
                         <div class="locations hidden-print" role="navigation" aria-label="Locations of this term in the text">

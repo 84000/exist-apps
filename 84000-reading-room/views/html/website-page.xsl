@@ -94,7 +94,9 @@
             
             <meta http-equiv="Content-Type" content="text/html;charset=utf-8"/>
             <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=0"/>
-            <meta name="description" content="84000 is a non-profit global initiative to translate the words of the Buddha and make them available to everyone."/>
+            <meta name="description">
+                <xsl:attribute name="content" select="$page-description"/>
+            </meta>
             
             <title>
                 <xsl:value-of select="$page-title"/>
