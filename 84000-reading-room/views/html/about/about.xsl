@@ -8,6 +8,7 @@
         
         <xsl:param name="sub-content"/>
         <xsl:param name="side-content"/>
+        <xsl:param name="page-class"/>
         
         <xsl:variable name="title-band">
             <m:title-band>
@@ -141,7 +142,7 @@
         
         <xsl:call-template name="website-page">
             <xsl:with-param name="page-url" select="concat('http://read.84000.co/', /m:response/@model-type, '.html')"/>
-            <xsl:with-param name="page-class" select="'about'"/>
+            <xsl:with-param name="page-class" select="if($page-class gt '') then $page-class else 'about'"/>
             <xsl:with-param name="page-title" select="concat($page-title, ' | 84000 Translating the Words of the Buddha')"/>
             <xsl:with-param name="page-description" select="$page-description"/>
             <xsl:with-param name="content" select="$content"/>
