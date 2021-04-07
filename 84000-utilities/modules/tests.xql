@@ -350,9 +350,9 @@ declare function tests:section($section-tei as element()*, $section-html as elem
     let $section-tei-type := $section-tei/ancestor::tei:TEI/tei:teiHeader/tei:fileDesc/@type
     
     let $section-count-tei-p := 
-        count($section-tei//*[self::tei:p | self::tei:ab | self::tei:trailer | self::tei:bibl])
+        count($section-tei//*[self::tei:p | self::tei:ab | self::tei:trailer | self::tei:bibl][not(ancestor::tei:note)])
     let $section-count-html-p := 
-        count($section-html//xhtml:p[not(common:contains-class(@class, 'ref-prologue'))]) 
+        count($section-html//xhtml:p[not(common:contains-class(@class, ('ref-prologue', 'table-as-list-row')))]) 
         
     let $section-count-tei-line := 
         count($section-tei//tei:l[parent::tei:lg][not(ancestor::tei:note)])

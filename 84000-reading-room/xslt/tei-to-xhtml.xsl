@@ -611,7 +611,9 @@
                                     
                                 </h5>
                                 
-                                <p>
+                                <p class="table-as-list-row">
+                                    <!-- .table-as-list-row used in automated tests -->
+                                    
                                     <xsl:variable name="datas">
                                         
                                         <!-- Output the values -->
@@ -682,9 +684,11 @@
                         </div>
                     </xsl:if>
                     
-                    <div class="table-notes">
-                        <xsl:apply-templates select="tei:note"/>
-                    </div>
+                    <xsl:if test="tei:note">
+                        <div class="table-notes">
+                            <xsl:apply-templates select="tei:note"/>
+                        </div>
+                    </xsl:if>
                     
                 </div>
                 
