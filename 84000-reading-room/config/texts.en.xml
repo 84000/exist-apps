@@ -101,7 +101,7 @@
     <item key="about.impact.page-quote">“It’s not just the heritage of one tradition, one civilization or one nation – it’s the heritage of
         the world. The Kangyur and Tengyur will really contribute to the happiness, peace and freedom of all mankind.”</item>
     <item key="about.impact.page-quote-author">Tulku Pema Wangyal Rinpoche</item>
-    <item key="about.impact.page-introduction">
+    <item key="about.impact.page-intro">
         <p>Canonical texts have been the source of Buddhist traditions over the centuries. To have the entire Tibetan Buddhist Canon in English has the potential to transform the way we view, study, reference, and practice Buddhist philosophy, history, and its teachings. Imagine if our understanding of the Bible was still mediated through the handful of people who could read Aramaic?</p>
         <p>By 2035, we will complete the translation and publication of the Kangyur. The last time this body of texts was translated into another language was an initiative that began in 900 AD.</p>
     </item>
@@ -246,7 +246,7 @@
     <item key="about.sponsor-a-sutra.page-intro">
         <p class="intro">84000: Translating the Words of the Buddha aims to <strong>translate</strong> all of the Buddha’s words into modern languages,
             and <strong>make them available</strong> to everyone.</p>
-        <p>
+        <p class="page-description">
             <strong>Sponsor A Sūtra</strong> is an opportunity to support the translation of a major text. Some of the long, important
             sūtras require a sizeable amount of funding to ensure the translation continues through to completion. Your support is needed
             for the successful translation of these texts.</p>

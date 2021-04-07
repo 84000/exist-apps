@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" version="3.0" exclude-result-prefixes="#all">
     
     <xsl:import href="../../../xslt/tei-to-xhtml.xsl"/>
     
@@ -8,24 +8,30 @@
         
         <xsl:param name="sub-content"/>
         <xsl:param name="side-content"/>
-        <xsl:param name="page-class"/>
         
         <xsl:variable name="title-band">
             <m:title-band>
                 <xsl:copy-of select="$eft-header/m:navigation[@xml:lang eq $lang]//m:item[descendant-or-self::m:item[@url eq $active-url]] | $eft-header/m:translation"/>
             </m:title-band>
         </xsl:variable>
+        
         <xsl:variable name="bookmarks-sidebar">
             <m:bookmarks-sidebar>
                 <xsl:copy-of select="$eft-header/m:translation"/>
             </m:bookmarks-sidebar>
         </xsl:variable>
         
-        <xsl:variable name="page-title">
-            <!--<xsl:call-template name="local-text">
-                <xsl:with-param name="local-key" select="'page-title'"/>
-            </xsl:call-template>-->
-            <xsl:value-of select="$eft-header/m:navigation[@xml:lang eq $lang]/m:item//m:item[@url eq $active-url]/m:label"/>
+        <xsl:variable name="page-title" as="xs:string">
+            <xsl:choose>
+                <xsl:when test="$eft-header/m:navigation[@xml:lang eq $lang]/m:item//m:item[@url eq $active-url][m:label]">
+                    <xsl:value-of select="$eft-header/m:navigation[@xml:lang eq $lang]/m:item//m:item[@url eq $active-url]/m:label"/>
+                </xsl:when>
+                <xsl:otherwise>
+                    <xsl:call-template name="local-text">
+                        <xsl:with-param name="local-key" select="'page-title'"/>
+                    </xsl:call-template>
+                </xsl:otherwise>
+            </xsl:choose>
         </xsl:variable>
         
         <!-- Content variable -->
@@ -113,11 +119,31 @@
             
         </xsl:variable>
         
+        <xsl:variable name="page-intro">
+            <xsl:call-template name="local-text">
+                <xsl:with-param name="local-key" select="'page-intro'"/>
+            </xsl:call-template>
+        </xsl:variable>
+        
+        <xsl:variable name="page-description" as="xs:string">
+            <xsl:choose>
+                <xsl:when test="$page-intro[xhtml:p[@class eq 'page-description']]">
+                    <xsl:value-of select="normalize-space($page-intro/xhtml:p[@class eq 'page-description']/data())"/>
+                </xsl:when>
+                <xsl:when test="$page-intro[xhtml:p]">
+                    <xsl:value-of select="normalize-space($page-intro/xhtml:p[1]/data())"/>
+                </xsl:when>
+                <xsl:otherwise>
+                    <xsl:value-of select="$page-title"/>
+                </xsl:otherwise>
+            </xsl:choose>
+        </xsl:variable>
+        
         <xsl:call-template name="website-page">
             <xsl:with-param name="page-url" select="concat('http://read.84000.co/', /m:response/@model-type, '.html')"/>
-            <xsl:with-param name="page-class" select="$page-class"/>
+            <xsl:with-param name="page-class" select="'about'"/>
             <xsl:with-param name="page-title" select="concat($page-title, ' | 84000 Translating the Words of the Buddha')"/>
-            <xsl:with-param name="page-description" select="''"/>
+            <xsl:with-param name="page-description" select="$page-description"/>
             <xsl:with-param name="content" select="$content"/>
             <xsl:with-param name="additional-links">
                 <script src="https://code.highcharts.com/highcharts.js"/>

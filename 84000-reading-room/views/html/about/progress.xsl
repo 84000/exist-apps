@@ -107,8 +107,6 @@
                 </div>
             </xsl:with-param>
             
-            <xsl:with-param name="page-class" select="'about'"/>
-            
         </xsl:call-template>
         
     </xsl:template>

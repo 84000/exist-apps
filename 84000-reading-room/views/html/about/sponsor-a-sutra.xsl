@@ -169,7 +169,6 @@
                 
             </xsl:with-param>
             
-            <xsl:with-param name="page-class" select="'how-you-can-help'"/>
         </xsl:call-template>
 
     </xsl:template>
