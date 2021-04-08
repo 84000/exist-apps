@@ -136,7 +136,12 @@ small, .small {
     font-style: italic;
 }
 .text-zh {
+    font-family: "NotoSansTC" !important;
+    font-size: 1.2em;
+    line-height: 1em;
+    vertical-align: text-top;
     font-style: normal !important;
+    font-weight: normal !important;
 }
 
 .reconstructed:before {
@@ -520,7 +525,7 @@ img.logo-84000 {
 
 /* Glossary */
 .glossary-item {
-    margin-bottom: 20pt;
+    margin-bottom: 12pt;
     page-break-inside: avoid;
 }
 .glossary-item .term {
@@ -534,7 +539,10 @@ img.logo-84000 {
 .glossary-item .alternative {
     display: none;
 }
-.glossary-item h3, .glossary-item .h3, 
+.glossary-item h3, 
+.glossary-item .h3, 
+.glossary-item h4,  
+.glossary-item .h4, 
 .glossary-item p,
 .glossary-item ul {
     margin-bottom: .25em;
@@ -542,6 +550,7 @@ img.logo-84000 {
 .glossary-item .locations h4 {
     font-size: .75em;
     text-align: left;
+    font-weight: bold;
 }
 .glossary-item .locations li {
     font-size: .75em;

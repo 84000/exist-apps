@@ -1113,8 +1113,6 @@
             <!-- Potential optimisation: only show glossaries with expressions in the text (Could be slower to filter them than to just parse them) -->
             <section class="rw glossary-item">
                 
-                <!--<xsl:if test="$glossary-item[@xml:id]">-->
-                    
                 <xsl:attribute name="id" select="$glossary-item/@xml:id"/>
                 
                 <xsl:if test="$view-mode[not(@client = ('ebook', 'app'))]">
@@ -1125,8 +1123,6 @@
                     <xsl:variable name="request-view-mode" select="if($view-mode[@glossary = ('defer')]) then 'passage' else 'editor-passage'"/>
                     <xsl:attribute name="data-in-view-replace" select="concat('/translation/', $toh-key, '.html', '?part=', $glossary-item/@xml:id, m:view-mode-parameter($request-view-mode), m:archive-path-parameter(), '#', $glossary-item/@xml:id)"/>
                 </xsl:if>
-                    
-                <!--</xsl:if>-->
                 
                 <div class="gtr">
                     <xsl:choose>
@@ -1154,46 +1150,53 @@
                         <xsl:value-of select="$glossary-item/tei:term[not(@type)][not(@xml:lang) or @xml:lang eq 'en'][1]/normalize-space(.) ! functx:capitalize-first(.)"/>
                     </h3>
                     
-                    <xsl:for-each select="('Bo-Ltn','bo','Sa-Ltn')">
+                    <!-- Output terms grouped and ordered by language -->
+                    <xsl:for-each select="('Bo-Ltn','bo','Sa-Ltn', 'zh')">
                         
                         <xsl:variable name="term-lang" select="."/>
                         <xsl:variable name="term-lang-terms" select="$glossary-item/tei:term[not(@type = ('definition','alternative'))][@xml:lang eq $term-lang]"/>
+                        <xsl:variable name="term-empty-text">
+                            <xsl:call-template name="text">
+                                <xsl:with-param name="global-key" select="concat('glossary.term-empty-', lower-case($term-lang))"/>
+                            </xsl:call-template>
+                        </xsl:variable>
                         
-                        <ul class="list-inline inline-dots">
-                            <xsl:choose>
-                                <xsl:when test="$term-lang-terms">
-                                    <xsl:for-each select="$term-lang-terms">
-                                        <li>
-                                            
-                                            <xsl:call-template name="class-attribute">
-                                                <xsl:with-param name="base-classes" as="xs:string*">
-                                                    <xsl:value-of select="'term'"/>
-                                                    <xsl:if test="@type = ('reconstruction', 'semanticReconstruction','transliterationReconstruction')">
-                                                        <xsl:value-of select="'reconstructed'"/>
-                                                    </xsl:if>
-                                                </xsl:with-param>
-                                                <xsl:with-param name="lang" select="$term-lang"/>
-                                            </xsl:call-template>
-                                            
-                                            <xsl:choose>
-                                                <xsl:when test="normalize-space(text())">
-                                                    <xsl:value-of select="normalize-space(text())"/>
-                                                </xsl:when>
-                                                <xsl:otherwise>
-                                                    <xsl:call-template name="text">
-                                                        <xsl:with-param name="global-key" select="concat('glossary.term-empty-', lower-case($term-lang))"/>
-                                                    </xsl:call-template>
-                                                </xsl:otherwise>
-                                            </xsl:choose>
-                                            
-                                        </li>
-                                    </xsl:for-each>
-                                </xsl:when>
-                            </xsl:choose>
-                        </ul>
+                        <xsl:if test="$term-lang-terms or $term-empty-text gt ''">
+                            <ul class="list-inline inline-dots">
+                                <xsl:choose>
+                                    <xsl:when test="$term-lang-terms">
+                                        <xsl:for-each select="$term-lang-terms">
+                                            <li>
+                                                
+                                                <xsl:call-template name="class-attribute">
+                                                    <xsl:with-param name="base-classes" as="xs:string*">
+                                                        <xsl:value-of select="'term'"/>
+                                                        <xsl:if test="@type = ('reconstruction', 'semanticReconstruction','transliterationReconstruction')">
+                                                            <xsl:value-of select="'reconstructed'"/>
+                                                        </xsl:if>
+                                                    </xsl:with-param>
+                                                    <xsl:with-param name="lang" select="$term-lang"/>
+                                                </xsl:call-template>
+                                                
+                                                <xsl:choose>
+                                                    <xsl:when test="normalize-space(text())">
+                                                        <xsl:value-of select="normalize-space(text())"/>
+                                                    </xsl:when>
+                                                    <xsl:otherwise>
+                                                        <xsl:value-of select="$term-empty-text"/>
+                                                    </xsl:otherwise>
+                                                </xsl:choose>
+                                                
+                                            </li>
+                                        </xsl:for-each>
+                                    </xsl:when>
+                                </xsl:choose>
+                            </ul>
+                        </xsl:if>
                         
                     </xsl:for-each>
                     
+                    <!-- Alternatives -->
                     <xsl:if test="$view-mode[@id = ('editor', 'annotation', 'tests', 'editor-passage')]">
                         <xsl:for-each select="$glossary-item/tei:term[@type eq 'alternative'][normalize-space(data())]">
                             <p class="term alternative">
@@ -1202,6 +1205,7 @@
                         </xsl:for-each>
                     </xsl:if>
                     
+                    <!-- Definition -->
                     <xsl:for-each select="$glossary-item/tei:term[@type eq 'definition'][node()]">
                         <p>
                             <xsl:call-template name="class-attribute">
@@ -1211,6 +1215,7 @@
                         </p>
                     </xsl:for-each>
                     
+                    <!-- Link to glossary tool -->
                     <xsl:if test="$view-mode[@id = ('editor', 'editor-passage')] and $environment/m:url[@id eq 'operations']">
                         <a target="84000-glossary-tool" class="underline small">
                             <xsl:attribute name="href" select="concat($environment/m:url[@id eq 'operations']/text(), '/glossary.html', '?resource-id=', $translation-id, '&amp;glossary-id=', $glossary-item/@xml:id, '&amp;max-records=1')"/>
@@ -1218,10 +1223,9 @@
                         </a>
                     </xsl:if>
                     
+                    <!-- Expressions -->
                     <xsl:if test="$view-mode[not(@id eq 'pdf')]">
                         <div class="locations hidden-print" role="navigation" aria-label="Locations of this term in the text">
-                            
-                            <hr/>
                             
                             <xsl:variable name="count-expressions" select="count($cached-locations)"/>
                             <h4 class="heading">

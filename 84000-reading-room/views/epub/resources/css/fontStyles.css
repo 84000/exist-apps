@@ -8,6 +8,10 @@
   src: url(../fonts/Jomolhari-Regular.ttf);
 }
 @font-face {
+  font-family: "NotoSansTC";
+  src: url(../fonts/NotoSansTC-Regular.otf);
+}
+@font-face {
   font-family: "IndUni-P";
   src: url(../fonts/IndUni-P-Regular.otf);
 }
