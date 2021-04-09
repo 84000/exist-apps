@@ -60,6 +60,9 @@
         </item>
         <item class="resources" url="#resources">
             <label key="label-resources">Resources</label>
+            <item url="https://84000.co/resources/translator-training">
+                <label key="label-translator-training">For Translators</label>
+            </item>
             <item url="https://84000.co/resources/teachings-on-sutra">
                 <label key="label-teachings-on-sutra">Teachings on Sūtra</label>
             </item>
@@ -72,12 +75,9 @@
             <item url="https://84000.co/resources/resounding">
                 <label key="label-resounding">Resoundings</label>
             </item>
-            <item url="https://84000.co/resources/translator-training">
-                <label key="label-translator-training">Translator Training</label>
-            </item>
-            <item url="https://84000.co/resources/translator-resources">
+            <!--<item url="https://84000.co/resources/translator-resources">
                 <label key="label-translator-resources">Translator Resources</label>
-            </item>
+            </item>-->
             <item url="https://84000.co/resources/quotes">
                 <label key="label-quotes">Quotes</label>
             </item>
@@ -284,9 +284,9 @@
             <item url="https://84000.co/ch-about/ch-faq">
                 <label key="label-faq">常見問題</label>
             </item>
-            <!--<item url="https://84000.co/ch-about/ch-reports">
-                <label key="label-reports">年度報告</label>
-            </item>-->
+            <item url="https://84000.co/ch-about/ch-reports">
+                <label key="label-reports">進度報告</label>
+            </item>
             <item url="https://84000.co/ch-about/ch-about-contact">
                 <label key="label-contact">聯繫方式</label>
             </item>
