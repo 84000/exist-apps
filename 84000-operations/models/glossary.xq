@@ -104,13 +104,21 @@ return
                 attribute entity-id { request:get-parameter('entity-id', '') },
                 attribute item-tab { request:get-parameter('tab-id', '') },
                 element search { request:get-parameter('search', '') },
-                element similar-search { request:get-parameter('similar-search', '') }
+                element similar-search { request:get-parameter('similar-search', '') },
+                $translation:view-modes/m:view-mode[@id eq 'glossary-editor']
             },
-            element { QName('http://read.84000.co/ns/1.0', 'text') }{
+            element { QName('http://read.84000.co/ns/1.0', 'translation') }{
                 attribute id { tei-content:id($tei) },
                 attribute tei-version { tei-content:version-str($tei) },
+                attribute document-url { tei-content:document-url($tei) },
+                attribute locked-by-user { tei-content:locked-by-user($tei) },
                 translation:titles($tei),
-                tei-content:source($tei, $resource-id)
+                tei-content:source($tei, $resource-id),
+                translation:glossary($tei),
+                translation:notes-cache($tei, false(), false()),
+                translation:milestones-cache($tei, false(), false()),
+                translation:folios-cache($tei, false(), false()),
+                $glossary-cache
             },
             element { QName('http://read.84000.co/ns/1.0', 'glossary') } {
             
@@ -144,7 +152,7 @@ return
                             
                             (: Add glossary expressions :)
                             (: They may already be included if we did an expressions filter :)
-                            if(not($glossary-item/m:expressions)) then
+                            if(not($glossary-item[m:expressions])) then
                                 element { node-name($glossary-item-expressions) }{
                                     $glossary-item-expressions/@*,
                                     $glossary-item-expressions/*[descendant::xhtml:*[@data-glossary-id eq $glossary-item/@id]]

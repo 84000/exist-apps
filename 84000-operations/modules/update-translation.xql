@@ -127,8 +127,7 @@ declare function update-translation:publication-status($tei as element(tei:TEI))
                     
                     let $do-update := common:update('publication-statement', $existing-value, $new-value, $parent, $insert-following)
                     
-                    return
-                        (
+                    return (
                         
                         $do-update,
                         
@@ -137,12 +136,11 @@ declare function update-translation:publication-status($tei as element(tei:TEI))
                             local:add-note($tei, 'translation-status', $request-status, $request-status)
                         else
                             ()
-                        )
-            else
-                ()
-                
-                (: editionStmt :)
-                (: Do this second and force a version update if there was a change to the publicationStmt :)
+                    )
+            else ()
+            
+            (: editionStmt :)
+            (: Do this second and force a version update if there was a change to the publicationStmt :)
             let $existing-value := $parent/tei:editionStmt
             let $insert-following := $parent/tei:titleStmt
             
@@ -241,8 +239,7 @@ declare function update-translation:title-statement($tei as element(tei:TEI)) as
             let $title-type := request:get-parameter(concat('title-type-', $title-index), '')
             let $title-lang := request:get-parameter(concat('title-lang-', $title-index), '')
                 where $title-text gt ''
-            return
-                (
+            return (
                 (: Add whitespace before node :)
                 $node-ws,
                 (: Add title node :)
@@ -256,7 +253,7 @@ declare function update-translation:title-statement($tei as element(tei:TEI)) as
                             $title-text
                     }
                 }
-                )
+            )
         
         else
             
@@ -530,7 +527,7 @@ declare function update-translation:update-glossary($tei as element(tei:TEI), $g
     let $existing-item := $parent/tei:item[tei:gloss/@xml:id eq $glossary-id]
     
     (: If it's an update and the main term is '' then don't construct the new value e.g. remove existing :)
-    let $remove := (request:get-parameter('form-action', '') eq 'update-glossary' and request:get-parameter('term-main-text-1', '') eq '')
+    let $remove := (request:get-parameter('form-action', '') eq 'update-glossary' and request:get-parameter('main-term', '') eq '')
     
     let $tei-version := tei-content:version-str($tei)
     
@@ -559,40 +556,36 @@ declare function update-translation:update-glossary($tei as element(tei:TEI), $g
                     else
                         $existing-item/tei:gloss/@mode
                     ,
-                        
-                    (: Get the terms from the request :)
-                    for $term-param in common:sort-trailing-number-in-string(request:get-parameter-names()[starts-with(., 'term-main-text-')], '-')
-                    let $term-index := substring-after($term-param, 'term-main-text-')
+                    
+                    (: Main (English) term :)
+                    common:ws(7),
+                    element {QName('http://www.tei-c.org/ns/1.0', 'term')} {
+                        text {
+                            request:get-parameter('main-term', '')
+                        }
+                    },
+                    
+                    (: Source terms and alternatives :)
+                    for $term-param in common:sort-trailing-number-in-string(request:get-parameter-names()[starts-with(., 'term-text-')], '-')
+                    let $term-index := substring-after($term-param, 'term-text-')
                     let $term-text := request:get-parameter($term-param, '')
-                    let $term-lang := common:valid-lang(request:get-parameter(concat('term-main-lang-', $term-index), ''))
-                        where $term-text gt ''
+                    let $term-lang := common:valid-lang(request:get-parameter(concat('term-lang-', $term-index), ''))
+                    where $term-text gt ''
                     return(
                         common:ws(7),
                         element {QName('http://www.tei-c.org/ns/1.0', 'term')} {
-                            if ($term-lang gt '' and not($term-lang eq 'en')) then
+                            (: If more than one en term is passed then make it an alternative :)
+                            if($term-lang = 'en') then
+                                attribute type {'alternative'}
+                            else 
                                 attribute xml:lang {$term-lang}
-                            else
-                                ()
                             ,
-                            text {$term-text}
-                        }
-                    ),
-                        
-                    (: Get the alternatives from the request :)
-                    for $term-param in common:sort-trailing-number-in-string(request:get-parameter-names()[starts-with(., 'term-alternative-text-')], '-')
-                    let $term-index := substring-after($term-param, 'term-alternative-text-')
-                    let $term-text := request:get-parameter($term-param, '')
-                    let $term-lang := common:valid-lang(request:get-parameter(concat('term-alternative-lang-', $term-index), ''))
-                        where $term-text gt ''
-                    return (
-                        common:ws(7),
-                        element {QName('http://www.tei-c.org/ns/1.0', 'term')} {
-                            attribute type {'alternative'},
-                            if ($term-lang gt '' and not($term-lang eq 'en')) then
-                                attribute xml:lang {$term-lang}
-                            else()
-                            ,
-                            text {$term-text}
+                            text {
+                                if ($term-lang eq 'Sa-Ltn') then
+                                    replace($term-text, '\-', '­')
+                                else
+                                    $term-text
+                            }
                         }
                     ),
                         

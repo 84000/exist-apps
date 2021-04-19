@@ -18,16 +18,16 @@
             </div>
         
             <!-- Prioritise invalid targets -->
-            <xsl:variable name="invalid-targets" select="m:target-text[m:ref-context[@target-toh-key eq '']]"/>
+            <xsl:variable name="invalid-targets" select="m:target-text[m:ref-context[not(@target-toh-key) or @target-toh-key eq '']]"/>
             <xsl:call-template name="target-text-list">
                 <xsl:with-param name="target-texts" select="$invalid-targets"/>
                 <xsl:with-param name="group-id" select="'invalid-targets'"/>
                 <xsl:with-param name="group-title" select="'Link(s) to invalid resources '"/>
-                <xsl:with-param name="count-issues" select="count($invalid-targets/m:ref-context[@target-toh-key eq ''])"/>
+                <xsl:with-param name="count-issues" select="count($invalid-targets/m:ref-context[not(@target-toh-key) or @target-toh-key eq ''])"/>
             </xsl:call-template>
         
             <!-- Refs with invalid domains -->
-            <xsl:variable name="invalid-domains" select="m:target-text[m:ref-context[@target-domain-validated eq 'false']]"/>
+            <xsl:variable name="invalid-domains" select="m:target-text[not(@id = ($invalid-targets/@id))][m:ref-context[@target-domain-validated eq 'false']]"/>
             <xsl:call-template name="target-text-list">
                 <xsl:with-param name="target-texts" select="$invalid-domains"/>
                 <xsl:with-param name="group-id" select="'invalid-domains'"/>
@@ -36,7 +36,7 @@
             </xsl:call-template>
         
             <!-- Texts with invalid hash -->
-            <xsl:variable name="invalid-hashes" select="m:target-text[m:ref-context[@target-id-validated eq 'false']]"/>
+            <xsl:variable name="invalid-hashes" select="m:target-text[not(@id = ($invalid-targets/@id))][m:ref-context[@target-id-validated eq 'false']]"/>
             <xsl:call-template name="target-text-list">
                 <xsl:with-param name="target-texts" select="$invalid-hashes"/>
                 <xsl:with-param name="group-id" select="'invalid-hashes'"/>
@@ -45,7 +45,7 @@
             </xsl:call-template>
         
             <!-- Published texts with pending refs -->
-            <xsl:variable name="published-pending" select="m:target-text[@translation-status-group eq 'published'][m:ref-context[tei:ref[@rend eq 'pending']]]"/>
+            <xsl:variable name="published-pending" select="m:target-text[not(@id = ($invalid-targets/@id))][@translation-status-group eq 'published'][m:ref-context[tei:ref[@rend eq 'pending']]]"/>
             <xsl:call-template name="target-text-list">
                 <xsl:with-param name="target-texts" select="$published-pending"/>
                 <xsl:with-param name="group-id" select="'published-pending'"/>
@@ -54,7 +54,7 @@
             </xsl:call-template>
         
             <!-- Not-published texts with active refs -->
-            <xsl:variable name="non-published-active" select="m:target-text[not(@translation-status-group eq 'published')][m:ref-context[tei:ref[not(@rend eq 'pending')]]]"/>
+            <xsl:variable name="non-published-active" select="m:target-text[not(@id = ($invalid-targets/@id))][not(@translation-status-group eq 'published')][m:ref-context[tei:ref[not(@rend eq 'pending')]]]"/>
             <xsl:call-template name="target-text-list">
                 <xsl:with-param name="target-texts" select="$non-published-active"/>
                 <xsl:with-param name="group-id" select="'non-published-active'"/>
@@ -63,7 +63,7 @@
             </xsl:call-template>
         
             <!-- The rest -->
-            <xsl:variable name="remaining-texts" select="m:target-text[not(@id = ($invalid-targets/@id, $invalid-domains/@id, $invalid-hashes/@id, $published-pending/@id, $non-published-active/@id))]"/>
+            <xsl:variable name="remaining-texts" select="m:target-text[not(@id = ($invalid-targets/@id))][not(@id = ($invalid-targets/@id, $invalid-domains/@id, $invalid-hashes/@id, $published-pending/@id, $non-published-active/@id))]"/>
             <xsl:call-template name="target-text-list">
                 <xsl:with-param name="target-texts" select="$remaining-texts"/>
                 <xsl:with-param name="group-id" select="'remainder'"/>

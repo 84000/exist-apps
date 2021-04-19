@@ -428,16 +428,11 @@ declare function translations:filtered-text($tei as element(tei:TEI), $toh-key a
             sponsorship:text-status($text-id, false()),
             if($include-sponsors) then
                 translation:sponsors($tei, true())
-            else
-                (),
-            if($include-downloads gt '')then
-                translation:downloads($tei, $toh-key, $include-downloads)
-            else
-                (),
+            else (),
+            translation:downloads($tei, $toh/@key, $include-downloads),
             if($include-folios) then
                 translation:folios($tei, $toh-key)
-            else
-                ()
+            else ()
         }
 };
 
@@ -485,7 +480,7 @@ declare function translations:translation-status-texts($status as xs:string*) as
     
     <translation-status-texts xmlns="http://read.84000.co/ns/1.0">
     {
-        for $tei in $tei-content:translations-collection//tei:TEI[tei:teiHeader/tei:fileDesc[tei:publicationStmt/@status = $status]]
+        for $tei in $tei-content:translations-collection//tei:TEI[tei:teiHeader/tei:fileDesc/tei:publicationStmt[@status = $status]]
             for $toh-key in $tei//tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl/@key
         return
             translations:filtered-text($tei, $toh-key, false(), '', false())
@@ -501,10 +496,14 @@ declare function translations:downloads($resource-ids as xs:string*) as element(
         for $tei in 
             if($resource-ids = 'versioned') then
                 $tei-content:translations-collection//tei:TEI[tei:teiHeader/tei:fileDesc/tei:editionStmt/tei:edition[text()]]
+            else if($resource-ids = 'translations') then
+                $tei-content:translations-collection//tei:TEI[tei:teiHeader/tei:fileDesc/tei:publicationStmt[@status = $tei-content:marked-up-status-ids]]
+            else if($resource-ids = 'placeholders') then
+                $tei-content:translations-collection//tei:TEI[tei:teiHeader/tei:fileDesc[tei:publicationStmt[not(@status = $tei-content:marked-up-status-ids)]][tei:editionStmt/tei:edition[text()]]]
             else if(count($resource-ids) gt 0) then
                 $tei-content:translations-collection//tei:TEI[tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl[@key = $resource-ids]]
             else ()
-            
+        
         let $text-id := tei-content:id($tei)
         where $text-id
         return
@@ -514,7 +513,7 @@ declare function translations:downloads($resource-ids as xs:string*) as element(
                 attribute file-name { util:unescape-uri(replace(base-uri($tei), ".+/(.+)$", "$1"), 'UTF-8') },
                 attribute translation-status { tei-content:translation-status($tei) },
                 for $resource-id in 
-                    if($resource-ids = 'versioned') then
+                    if($resource-ids = ('versioned', 'translations', 'placeholders')) then
                         $tei/tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl/@key
                     else
                         $tei/tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl[@key = $resource-ids]/@key

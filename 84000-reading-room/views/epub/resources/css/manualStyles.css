@@ -212,7 +212,6 @@ blockquote .line-group .line {
     margin-top: 0px;
     margin-bottom: 5pt;
 }
-
 .table-as-list .section-label {
     margin-top: 0px;
     margin-bottom: 0px;
@@ -376,6 +375,15 @@ br+.rw > p,
 .list.list-bullet.nesting-5 > .rw > .list-item > .rw > p,
 .list.list-bullet.nesting-5 > .rw > .list-item > .rw > .section-label {
     padding-left: 72pt;
+}
+.list.list-bullet.dots > .rw-list-item > .list-item > .rw > p {
+    text-indent: -12pt;
+}
+.list.list-bullet.dots > .rw-list-item > .list-item > .rw > p:before {
+    content: "\2022";
+    display: inline-block;
+    width: 12pt;
+    text-indent: 0px;
 }
 
 /* Section lists are spaced vertically */

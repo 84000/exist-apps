@@ -33,7 +33,7 @@ declare function store:master-downloads-data($translations-master-request as xs:
 
 };
 
-declare function store:download-master($file-name as xs:string, $translations-master-host as xs:string) as element()? {
+declare function store:download-master($file-name as xs:string, $translations-master-host as xs:string, $new-versions-only as xs:boolean) as element()? {
     
     (: Extract elements from the file name :)
     let $file-name-tokenized := tokenize($file-name, '\.')
@@ -72,8 +72,16 @@ declare function store:download-master($file-name as xs:string, $translations-ma
         let $tei-file-name := $local-text-path-tokenized[last()]
         let $tei-folder := string-join(subsequence($local-text-path-tokenized, 1, last()-1), '/')
         where 
-            $file-extension = ('tei', 'all') and $local-text and $master-text and $tei-file-name and $tei-folder
-            and (not(compare($tei-local-version, $tei-master-version) eq 0) or (not(compare($tei-local-status, $tei-master-status) eq 0))) 
+            $file-extension = ('tei', 'all') 
+            and $local-text 
+            and $master-text 
+            and $tei-file-name 
+            and $tei-folder
+            and (
+                not($new-versions-only)
+                or not(compare($tei-local-version, $tei-master-version) eq 0)
+                or not(compare($tei-local-status, $tei-master-status) eq 0)
+            )
         return
             store:http-download(
                 concat($translations-master-host, '/translation/', $text-id, '.tei'), 
@@ -93,7 +101,10 @@ declare function store:download-master($file-name as xs:string, $translations-ma
             and $store-file-name and $store-collection
             and $master-cache[@version]
             and not($master-cache/@version = ('none', 'unknown', '')) 
-            and not(compare($local-cache/@version, $master-cache/@version) eq 0)
+            and (
+                not($new-versions-only)
+                or not(compare($local-cache/@version, $master-cache/@version) eq 0)
+            )
         return (
             store:http-download(
                 concat($translations-master-host, $master-cache/@url), 
@@ -127,10 +138,14 @@ declare function store:download-master($file-name as xs:string, $translations-ma
             let $store-file-name := tokenize($local-file/@url, '/')[last()]
             
         where 
-            $store-file-name and $store-collection
+            $store-file-name 
+            and $store-collection
             and $master-file[@version]
             and not($master-file/@version = ('none', 'unknown', '')) 
-            and not(compare($master-file/@version, $local-file/@version) eq 0)
+            and (
+                not($new-versions-only)
+                or not(compare($master-file/@version, $local-file/@version) eq 0)
+            )
         return 
         
             (: Download the latest file from the master and set the version :) 

@@ -100,7 +100,7 @@ declare function tei-content:tei($resource-id as xs:string, $resource-type as xs
         let $resource-id := upper-case($resource-id)
         return
             if(not($tei)) then
-                $collection//tei:publicationStmt/id($resource-id)/ancestor::tei:TEI
+                $collection//tei:publicationStmt/tei:idno[@xml:id eq $resource-id]/ancestor::tei:TEI
             else $tei
     
     return $tei

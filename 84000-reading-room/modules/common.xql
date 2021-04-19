@@ -524,9 +524,9 @@ declare function common:auth-path($path as xs:string) as xs:boolean {
 };
 
 declare function common:valid-lang($lang as xs:string) as xs:string {
-    if(lower-case($lang) eq 'bo-ltn') then
+    if(lower-case($lang) = ('bo-ltn', 'bo-latn')) then
         'Bo-Ltn'
-    else if(lower-case($lang) eq 'sa-ltn') then
+    else if(lower-case($lang) = ('sa-ltn', 'sa-latn')) then
         'Sa-Ltn'
     else if(lower-case($lang) eq 'bo') then
         'bo'

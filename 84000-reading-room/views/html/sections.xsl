@@ -19,9 +19,11 @@
             <xsl:otherwise>
                 <xsl:for-each select="m:structure/m:test[@pass eq '0']">
                     <div class="alert alert-danger small">
+                        
                         <p>
                             <xsl:value-of select="concat('Failed test: ', m:title)"/>
                         </p>
+                        
                         <ol>
                             <xsl:for-each select="m:details/m:detail">
                                 <li>
@@ -29,6 +31,24 @@
                                 </li>
                             </xsl:for-each>
                         </ol>
+                        
+                        <xsl:if test="/m:response[@model-type eq 'utilities/sections'][@user-name eq 'admin'] and /m:response/m:environment/m:store-conf[@type eq 'client']">
+                            <xsl:choose>
+                                <xsl:when test="@id eq 'unmatched-ids'">
+                                    <a href="/sections.html?resolve=unmatched-ids" class="btn btn-default btn-sm" target="_self">
+                                        <xsl:attribute name="data-loading" select="'Getting TEI files with unmatched @source-ids...'"/>
+                                        <xsl:value-of select="'Get TEI files with unmatched @source-ids from Collaboration'"/>
+                                    </a>
+                                </xsl:when>
+                                <xsl:when test="@id eq 'unmatched-tei'">
+                                    <a href="/sections.html?resolve=unmatched-tei" class="btn btn-default btn-sm" target="_self">
+                                        <xsl:attribute name="data-loading" select="'Updating TEI files with invalid @source-ids...'"/>
+                                        <xsl:value-of select="'Update TEI files with invalid @source-ids from Collaboration'"/>
+                                    </a>
+                                </xsl:when>
+                            </xsl:choose>
+                        </xsl:if>
+                        
                     </div>
                 </xsl:for-each>
             </xsl:otherwise>

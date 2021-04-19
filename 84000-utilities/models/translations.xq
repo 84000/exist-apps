@@ -16,46 +16,44 @@ declare option exist:serialize "method=xml indent=no";
 let $store-conf := $common:environment/m:store-conf
 let $utilities-url := $common:environment/m:url[@id eq 'utilities']
 
-(: If client then default to diff view :)
-let $default-status := 
-    if($store-conf[@type eq 'client']) then
-        'diff'
-    else
-        '1'
-
 (: Get requested status :)
-let $request-status :=  request:get-parameter('texts-status', $default-status)
+let $request-page-filter :=  request:get-parameter('page-filter', '')
+
+(: Get search parameters :)
+let $request-toh-min := request:get-parameter('toh-min', '')
+let $request-toh-max := request:get-parameter('toh-max', '')
 
 (: Validate the status :)
-let $texts-status := $tei-content:text-statuses/m:status[@status-id/string() eq $request-status][not(@status-id eq '0')]/@status-id
-
+let $texts-status := 
+    if(not($request-page-filter = ('new-version-translations', 'new-version-placeholders', 'search'))) then 
+        $tei-content:text-statuses/m:status[@status-id/string() eq $request-page-filter][not(@status-id eq '0')]/@status-id
+    else ()
+    
 (: Store a file if requested :)
-let $store-file-name := request:get-parameter('store', '')
 let $store-file := 
-    if($store-file-name gt '') then (
-        if($store-conf[@type eq 'client']/m:translations-master-host) then
-            store:download-master($store-file-name, $store-conf/m:translations-master-host)
+    for $store-file-name in request:get-parameter('store[]', '')[not(. eq '')]
+    return 
+        if($store-conf[@type eq 'client'][m:translations-master-host]) then
+            store:download-master($store-file-name, $store-conf/m:translations-master-host, true())
         else if($store-conf[@type eq 'master']) then
             store:create($store-file-name)
         else ()
-        (:,
-        if($utilities-url and matches(request:get-uri(), '.*/translations\.html.*')) then
-            response:redirect-to(xs:anyURI(concat($utilities-url, '/translations.html?texts-status=',$request-status)))
-        else ():)
-    )
-    else ()
-(:return ():)
+
 (: If this is a client doing a version diff then first get translation versions in MASTER database for comparison :)
 let $translations-master := 
-    if($request-status eq 'diff' and $store-conf[@type eq 'client']) then
-        store:master-downloads-data(xs:anyURI(concat($store-conf/m:translations-master-host, '/downloads.xml?resource-ids=versioned')))
+    if($store-conf[@type eq 'client']) then
+        if($request-page-filter eq 'new-version-translations') then 
+            store:master-downloads-data(xs:anyURI(concat($store-conf/m:translations-master-host, '/downloads.xml?resource-ids=translations')))
+        else if ($request-page-filter eq 'new-version-placeholders') then
+            store:master-downloads-data(xs:anyURI(concat($store-conf/m:translations-master-host, '/downloads.xml?resource-ids=placeholders')))
+        else ()
     else ()
 
 (: Get translations in LOCAL database :)
 let $translations-local := 
-    if($request-status eq 'diff' and $translations-master) then
+    if($request-page-filter = ('new-version-translations', 'new-version-placeholders') and $translations-master) then
     
-        (: Filter out all the texts with a different version from master :)
+        (: Filter out all the texts with the same version as master :)
         let $local-texts := translations:texts((), $translations-master//m:text/m:downloads/@resource-id, 'toh', '', 'all', false())
         return
             element { node-name($local-texts) } {
@@ -68,7 +66,12 @@ let $translations-local :=
                 return
                     $local-text
             }
-    
+            
+    else if($request-page-filter = ('search') and ($request-toh-min gt '' or $request-toh-max gt '')) then
+        
+        (: Search Toh range :)
+        translations:filtered-texts('all', (), '', '', '', '', $request-toh-min, $request-toh-max, 'text', '', '')
+        
     else if($texts-status) then
     
         (: Get the texts with this status :)
@@ -78,7 +81,7 @@ let $translations-local :=
 
 (: If this is a client listing by status then get translation versions for these texts in MASTER database for comparison :)
 let $translations-master := 
-    if(not($request-status eq 'diff') and $store-conf[@type eq 'client'] and $translations-local[m:text]) then
+    if(not($request-page-filter = ('new-version-translations', 'new-version-placeholders')) and $store-conf[@type eq 'client'] and $translations-local[m:text]) then
         store:master-downloads-data(xs:anyURI(concat($store-conf/m:translations-master-host, '/downloads.xml?resource-ids=', string-join($translations-local/m:text/m:toh/@key, ','))))
     else
         $translations-master

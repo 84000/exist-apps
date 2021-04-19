@@ -659,7 +659,11 @@
                     <!-- Render the table version for html -->
                     <xsl:if test="$view-mode[not(@id = ('ebook', 'pdf'))]">
                         <div class="table-responsive hidden-print hidden-ebook">
-                            <table class="table table-unpad">
+                            <table>
+                                <xsl:call-template name="class-attribute">
+                                    <xsl:with-param name="base-classes" select="'table table-unpad'"/>
+                                    <xsl:with-param name="html-classes" select="@rend"/>
+                                </xsl:call-template>
                                 <tbody>
                                     <xsl:for-each select="tei:row">
                                         <tr>
@@ -811,6 +815,7 @@
                                     <xsl:value-of select="'list-bullet'"/>
                                 </xsl:otherwise>
                             </xsl:choose>
+                            <xsl:value-of select="@rend"/>
                             <xsl:if test="ancestor::tei:list[not(@type eq 'section')]">
                                 <xsl:value-of select="concat('nesting-', count(ancestor::tei:list[not(@type eq 'section')]))"/>
                             </xsl:if>
@@ -2338,10 +2343,10 @@
         </xsl:variable>
         
         <!-- Match whole string or just find -->
-        <xsl:variable name="match-complete-data" select="if($text-node/parent::tei:title | $text-node/parent::tei:name) then true() else false()" as="xs:boolean"/>
+        <xsl:variable name="match-complete-data" select="if($text-node[parent::tei:title | parent::tei:name]) then true() else false()" as="xs:boolean"/>
         
         <!-- Exclude itself if this is a glossary definition -->
-        <xsl:variable name="exclude-gloss-ids" select="if($text-node/ancestor::tei:gloss[1]) then $text-node/ancestor::tei:gloss[1]/@xml:id else ()"/>
+        <xsl:variable name="exclude-gloss-ids" select="if($text-node[ancestor::tei:gloss]) then $text-node/ancestor::tei:gloss[1]/@xml:id else if($text-node[ancestor::m:item[parent::m:glossary]]) then $text-node/ancestor::m:item[1]/@id else ()"/>
         
         <!-- Narrow down the glossary items - we don't want to scan them all -->
         <xsl:variable name="match-glossary-items" as="element(tei:gloss)*">
@@ -2549,12 +2554,17 @@
         <xsl:choose>
             
             <!-- Get the xml:id from the container -->
-            <xsl:when test="$node/ancestor::tei:*[@xml:id]">
+            <xsl:when test="$node[ancestor::tei:*[@xml:id]]">
                 <xsl:value-of select="$node/ancestor::tei:*[@xml:id][1]/@xml:id"/>
             </xsl:when>
             
+            <!-- Get the xml:id from the container -->
+            <xsl:when test="$node[ancestor::m:item[parent::m:glossary][@id]]">
+                <xsl:value-of select="$node/ancestor::m:item[@id][1]/@id"/>
+            </xsl:when>
+            
             <!-- Look for a nearest milestone -->
-            <xsl:when test="$node/ancestor::tei:*/preceding-sibling::tei:milestone[@xml:id]">
+            <xsl:when test="$node[ancestor::tei:*/preceding-sibling::tei:milestone[@xml:id]]">
                 <xsl:value-of select="$node/ancestor::tei:*[preceding-sibling::tei:milestone[@xml:id]][1]/preceding-sibling::tei:milestone[@xml:id][1]/@xml:id"/>
             </xsl:when>
             
@@ -2575,6 +2585,10 @@
             
             <xsl:when test="$view-mode[@glossary eq 'suppress']">
                 <xsl:value-of select="false()"/>
+            </xsl:when>
+            
+            <xsl:when test="$node[ancestor-or-self::m:definition]">
+                <xsl:value-of select="true()"/>
             </xsl:when>
             
             <xsl:when test="$node[not(ancestor::m:part[@glossarize])]">

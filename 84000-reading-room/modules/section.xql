@@ -109,7 +109,7 @@ declare function section:child-sections($tei as element(tei:TEI), $include-text-
             for $tei in 
                 (: published only :)
                 if($include-texts = ('children-published', 'descendants-published')) then
-                    $child-texts[tei:teiHeader/tei:fileDesc[tei:publicationStmt[@status = $tei-content:published-status-ids]]]
+                    $child-texts[tei:teiHeader/tei:fileDesc[tei:publicationStmt[@status/string() = $tei-content:published-status-ids]]]
                 else
                     $child-texts
             
@@ -121,8 +121,8 @@ declare function section:child-sections($tei as element(tei:TEI), $include-text-
             ()
     
     let $child-texts-fileDesc := $child-texts/tei:teiHeader/tei:fileDesc
-    let $child-texts-fileDesc-published := $child-texts-fileDesc[tei:publicationStmt[@status = $tei-content:published-status-ids]](:[range:field(("translation-status"), "=", $tei-content:published-status-ids)]:)
-    let $child-texts-fileDesc-in-progress := $child-texts-fileDesc[tei:publicationStmt[@status = $tei-content:in-progress-status-ids]](:[range:field(("translation-status"), "=", $tei-content:in-progress-status-ids)]:)
+    let $child-texts-fileDesc-published := $child-texts-fileDesc[tei:publicationStmt[@status/string() = $tei-content:published-status-ids]](:[range:field(("translation-status"), "=", $tei-content:published-status-ids)]:)
+    let $child-texts-fileDesc-in-progress := $child-texts-fileDesc[tei:publicationStmt[@status/string() = $tei-content:in-progress-status-ids]](:[range:field(("translation-status"), "=", $tei-content:in-progress-status-ids)]:)
     
     let $child-texts-bibls := $child-texts-fileDesc/tei:sourceDesc/tei:bibl[tei:idno[@parent-id eq $id]]
     let $child-texts-bibls-published := $child-texts-fileDesc-published/tei:sourceDesc/tei:bibl[tei:idno[@parent-id eq $id]](:[range:field(("parent-id"), "eq", $id)]:)

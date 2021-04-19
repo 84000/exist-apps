@@ -92,7 +92,7 @@
                         </h1>
                     </span>
                     <span>
-                        <a href="#navigation-sidebar" class="center-vertical pull-right show-sidebar">
+                        <a href="#navigation-sidebar" class="center-vertical align-right show-sidebar">
                             <span class="btn-round-text">
                                 <xsl:value-of select="'Navigation'"/>
                             </span>

@@ -40,7 +40,7 @@
             </div>
         </div>
         
-        <div class="content-band">
+        <main class="content-band">
             <div class="container">
                 <xsl:call-template name="tabs">
                     <xsl:with-param name="active-tab" select="$active-tab"/>
@@ -49,7 +49,7 @@
                     <xsl:copy-of select="$page-content"/>
                 </div>
             </div>
-        </div>
+        </main>
         
         <!-- Link to top of page -->
         <div class="hidden-print">

@@ -641,112 +641,91 @@ declare function tests:structure() as element() {
 
     let $sections-structure := doc(concat($common:data-path, '/config/tests/sections-structure.xml'))
     
-    let $sections := $section:sections
-    let $texts := $section:texts
+    let $tei-section-ids := $section:sections//tei:idno/@xml:id/string()[not(. = ('ALL-TRANSLATED'))]
+    let $structure-section-ids := $sections-structure//m:section/@source-id/string()
+    let $tei-text-source-ids := $section:texts//tei:idno/@source-id/string()
+    let $structure-text-ids := $sections-structure//m:text/@source-id/string()
     
-    let $section-ids-unmatched := 
-        for $source-id in $sections-structure//m:section/@source-id
-        return
-            if(not($sections//tei:idno[@xml:id = $source-id])) then
-                <detail xmlns="http://read.84000.co/ns/1.0">Section node { xs:string($source-id) } has no associated TEI file.</detail>
-            else
-                ()
-                
-    let $text-ids-unmatched := 
-        for $source-id in $sections-structure//m:text/@source-id
-        return
-            if(not($texts//tei:idno[@source-id = $source-id])) then
-                <detail xmlns="http://read.84000.co/ns/1.0">Text node { xs:string($source-id) } has no associated TEI file.</detail>
-            else
-                ()
+    let $structure-section-ids-unmatched := 
+    for $source-id in $structure-section-ids[not(. = $tei-section-ids)]
+    return
+        <detail xmlns="http://read.84000.co/ns/1.0">Section source-id={ xs:string($source-id) } has no associated TEI file</detail>
     
-    let $section-tei-unmatched := 
-        for $source-id in $sections//tei:idno/@xml:id[not(. = ('LOBBY', 'ALL-TRANSLATED'))]
-        return
-            if(not($sections-structure//m:section[@source-id = $source-id])) then
-                <detail xmlns="http://read.84000.co/ns/1.0">Section TEI { base-uri($source-id) } has no associated outline node.</detail>
-            else
-                ()
-
-    let $text-tei-unmatched := 
-        for $source-id in $texts//tei:idno/@source-id
-        return
-            if(not($sections-structure//m:text[@source-id = $source-id])) then
-                <detail xmlns="http://read.84000.co/ns/1.0">Text TEI { base-uri($source-id) } has no associated outline node.</detail>
-            else
-                ()
+    let $structure-text-ids-unmatched := 
+    for $source-id in $structure-text-ids[not(. = $tei-text-source-ids)]
+    return
+        <detail xmlns="http://read.84000.co/ns/1.0">Text source-id={ xs:string($source-id) } has no associated TEI file</detail>
+    
+    let $tei-section-unmatched := 
+    for $section-id in $tei-section-ids[not(. = $structure-section-ids)]
+    return
+        <detail xmlns="http://read.84000.co/ns/1.0">Section TEI source-id={ $section-id } has no reference in the sections structure</detail>
+    
+    let $tei-text-unmatched := 
+    for $text-source-id in $tei-text-source-ids[not(. = $structure-text-ids)]
+    return
+        <detail xmlns="http://read.84000.co/ns/1.0">Text TEI source-id={ $text-source-id } has no reference in the sections structure</detail>
     
     let $unmatched-section-texts := tests:match-text-count($sections-structure/m:sections-structure)
+     
+    (:let $structure-text-ids-duplicated := 
+    for $text-id in $structure-text-ids
+    where count($structure-text-ids[. eq $text-id]) gt 1
+    return
+        <detail xmlns="http://read.84000.co/ns/1.0">Text source-id={ data($text-id) } occurs more than once in the sections structure</detail>:)
     
-    let $text-tei-duplicated := 
-        for $text-id in $texts//tei:idno/@xml:id
-        return
-            if(count($texts//tei:idno[@xml:id  eq $text-id]) gt 1) then
-                <detail xmlns="http://read.84000.co/ns/1.0">Text { data($text-id) } is duplicated.</detail>
-            else
-                ()
+    let $tei-text-ids-duplicated := 
+    for $text-id in $tei-text-source-ids
+    where count($tei-text-source-ids[. eq $text-id]) gt 1
+    return
+        <detail xmlns="http://read.84000.co/ns/1.0">Text source-id={ data($text-id) } occurs more than once in the TEI</detail>
+    
+    let $tei-text-unsorted-count := count(collection(concat($common:translations-path, '/unsorted'))//tei:TEI)
     
     return
         <results xmlns="http://read.84000.co/ns/1.0">
             <structure>
-                <test id="unmatched-ids" pass="{ if (count(($section-ids-unmatched | $text-ids-unmatched)) eq 0) then 1 else 0 }">
-                    <title>All nodes must have an associated TEI file.</title>
-                    {
-                        if ($section-ids-unmatched | $text-ids-unmatched) then
-                            <details>
-                            {
-                                $section-ids-unmatched
-                            }
-                            {
-                                $text-ids-unmatched
-                            }
-                            </details>
-                        else
-                            ()
-                    }
+            {
+                let $details := ($structure-section-ids-unmatched | $structure-text-ids-unmatched)
+                return
+                    <test id="unmatched-ids" pass="{ if (count($details) eq 0) then 1 else 0 }">
+                        <title>All sections structure nodes must have a TEI file</title>
+                        { if($details) then <details>{ $details }</details> else () }
+                    </test>
+                ,
+                let $details := ($tei-section-unmatched | $tei-text-unmatched)
+                return
+                    <test id="unmatched-tei" pass="{ if (count($details) eq 0) then 1 else 0 }">
+                        <title>All TEI files must be referenced in the sections structure</title>
+                        { if($details) then <details>{ $details }</details> else () }
+                    </test>
+                ,
+                let $details := $unmatched-section-texts
+                return
+                    <test id="unmatched-section-texts" pass="{ if (count($details) eq 0) then 1 else 0 }">
+                        <title>All sections must have the correct number of child texts</title>
+                        { if($details) then <details>{ $details }</details> else () }
+                    </test>
+                ,
+                (:let $details := $structure-text-ids-duplicated
+                return
+                    <test id="tei-text-duplicated" pass="{ if (count($details) eq 0) then 1 else 0 }">
+                        <title>There should be no duplicate source-ids in the sections structure</title>
+                        { if($details) then <details>{ $details }</details> else () }
+                    </test>
+                ,:)
+                let $details := $tei-text-ids-duplicated
+                return
+                    <test id="tei-text-duplicated" pass="{ if (count($details) eq 0) then 1 else 0 }">
+                        <title>There should be no duplicate source-ids in the TEI</title>
+                        { if($details) then <details>{ $details }</details> else () }
+                    </test>
+                ,
+                <test id="tei-text-unsorted-count" pass="{ if ($tei-text-unsorted-count eq 0) then 1 else 0 }">
+                    <title>There should be no TEI files in the sorted folder</title>
+                    { if($tei-text-unsorted-count gt 0) then <details><detail>There is/are { $tei-text-unsorted-count } unsorted TEI files</detail></details> else () }
                 </test>
-                <test id="unmatched-tei" pass="{ if (count(($section-tei-unmatched | $text-tei-unmatched)) eq 0) then 1 else 0 }">
-                    <title>All TEI files must have an associated node.</title>
-                    {
-                        if ($section-tei-unmatched | $text-tei-unmatched) then
-                            <details>
-                            {
-                                $section-tei-unmatched
-                            }
-                            {
-                                $text-tei-unmatched
-                            }
-                            </details>
-                        else
-                            ()
-                    }
-                </test>
-                <test id="unmatched-section-texts" pass="{ if (count($unmatched-section-texts) eq 0) then 1 else 0 }">
-                    <title>All sections must have the correct number of child texts.</title>
-                    {
-                        if ($unmatched-section-texts) then
-                            <details>
-                            {
-                                $unmatched-section-texts
-                            }
-                            </details>
-                        else
-                            ()
-                    }
-                </test>
-                <test id="text-tei-duplicated" pass="{ if (count($text-tei-duplicated) eq 0) then 1 else 0 }">
-                    <title>There should be no duplicate text ids.</title>
-                    {
-                        if ($text-tei-duplicated) then
-                            <details>
-                            {
-                                $text-tei-duplicated
-                            }
-                            </details>
-                        else
-                            ()
-                    }
-                </test>
+            }
             </structure>
         </results>
         
@@ -762,15 +741,13 @@ declare function tests:match-text-count($sections-structure) as element()* {
     (
         if($count-texts-in-structure ne $count-texts-in-tei) then
             <detail xmlns="http://read.84000.co/ns/1.0" ref="section-texts-{ $source-id }">
-                Section { $source-id } should have { $count-texts-in-structure } TEI files but has { $count-texts-in-tei }.
+                Section { $source-id } should have { $count-texts-in-structure } TEI files but has { $count-texts-in-tei }
             </detail>
-        else
-            ()
+        else ()
         ,
         if($section/m:section) then
             tests:match-text-count($section)
-        else
-            ()
+        else ()
     )
 };
 

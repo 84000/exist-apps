@@ -12,33 +12,45 @@
         <xsl:variable name="environment" select="/m:response/m:environment"/>
         <xsl:variable name="reading-room-path" select="$environment/m:url[@id eq 'reading-room']/text()"/>
         <xsl:variable name="reading-room-no-cache-path" select="$environment/m:url[@id eq 'reading-room-no-cache']/text()"/>
-        <xsl:variable name="texts-status" select="/m:response/m:request/m:parameter[@name eq 'texts-status']/text()"/>
-        <xsl:variable name="diff" select="not($texts-status) or $texts-status eq 'diff'"/>
+        <xsl:variable name="page-filter" select="/m:response/m:request/m:parameter[@name eq 'page-filter']/text()"/>
+        <xsl:variable name="toh-min" select="/m:response/m:request/m:parameter[@name eq 'toh-min']/text()"/>
+        <xsl:variable name="toh-max" select="/m:response/m:request/m:parameter[@name eq 'toh-max']/text()"/>
         
         <xsl:variable name="content">
             
             <div class="container">
                 
-                <form action="/translations.html" method="post" class="form-horizontal filter-form">
+                <form action="/translations.html" method="post" class="form-horizontal filter-form clearfix">
                     
-                    <div class="center-vertical full-width bottom-margin">
+                    <div class="center-vertical full-width align-left bottom-margin">
                         
                         <!-- Select a status -->
                         <div>
-                            <select name="texts-status" id="texts-status" class="form-control">
-                                <!-- If it's a client then add an option to view different files -->
+                            <select name="page-filter" id="page-filter" class="form-control">
+                                <option value="search">
+                                    <xsl:if test="not($page-filter) or $page-filter eq 'search'">
+                                        <xsl:attribute name="selected" select="'selected'"/>
+                                    </xsl:if>
+                                    <xsl:value-of select="'Search'"/>
+                                </option>
                                 <xsl:if test="$environment/m:store-conf[@type eq 'client']">
-                                    <option value="diff">
-                                        <xsl:if test="$diff">
+                                    <option value="new-version-translations">
+                                        <xsl:if test="$page-filter eq 'new-version-translations'">
                                             <xsl:attribute name="selected" select="'selected'"/>
                                         </xsl:if>
-                                        <xsl:value-of select="'Texts where there is a new version of the TEI'"/>
+                                        <xsl:value-of select="'New Versions - Translations'"/>
+                                    </option>
+                                    <option value="new-version-placeholders">
+                                        <xsl:if test="$page-filter eq 'new-version-placeholders'">
+                                            <xsl:attribute name="selected" select="'selected'"/>
+                                        </xsl:if>
+                                        <xsl:value-of select="'New Versions - Placeholders'"/>
                                     </option>
                                 </xsl:if>
                                 <xsl:for-each select="m:text-statuses/m:status[not(@status-id eq '0')]">
                                     <option>
                                         <xsl:attribute name="value" select="@status-id"/>
-                                        <xsl:if test="@status-id eq $texts-status">
+                                        <xsl:if test="@status-id eq $page-filter">
                                             <xsl:attribute name="selected" select="'selected'"/>
                                         </xsl:if>
                                         <xsl:value-of select="concat(@status-id, ' / ', text())"/>
@@ -55,16 +67,46 @@
                         </div>
                         
                         <!-- Show count of texts -->
-                        <div>
+                        <div class="text-right">
                             <span class="badge badge-notification">
                                 <xsl:value-of select="fn:format-number(count(distinct-values(m:texts/m:text/@id)),'#,##0')"/>
                             </span>
-                            <xsl:value-of select="' texts with this status'"/>
+                            <xsl:value-of select="' matching texts'"/>
                         </div>
                         
                     </div>
-                
                 </form>
+                
+                <xsl:choose>
+                    
+                    <xsl:when test="not($page-filter) or $page-filter eq 'search'">
+                        <form action="/translations.html" method="post" class="form-inline bottom-margin">
+                            <input type="hidden" name="page-filter" value="search"/>
+                            <div class="form-group">
+                                <label for="toh-min">Tohoku:</label>
+                                <input type="number" name="toh-min" class="form-control" id="toh-min" maxlength="5" placeholder="min.">
+                                    <xsl:attribute name="value" select="/m:response/m:request/m:parameter[@name eq 'toh-min']/text()"/>
+                                </input>
+                                <input type="number" name="toh-max" class="form-control" id="toh-max" maxlength="5" placeholder="max.">
+                                    <xsl:attribute name="value" select="/m:response/m:request/m:parameter[@name eq 'toh-max']/text()"/>
+                                </input>
+                                <button type="submit" class="btn btn-primary">Search</button>
+                            </div>
+                        </form>
+                    </xsl:when>
+                    
+                    <xsl:when test="$page-filter eq 'new-version-placeholders' and m:texts[m:text]">
+                        <form action="/translations.html" method="post" class="form-inline bottom-margin">
+                            <input type="hidden" name="page-filter" value="new-version-placeholders"/>
+                            <xsl:for-each-group select="m:texts/m:text" group-by="@id">
+                                <input type="hidden" name="store[]" value="{ concat(@id, '.all') }"/>
+                            </xsl:for-each-group>
+                            <button type="submit" class="btn btn-danger btn-sml">Get all updated placeholder files</button>                            
+                        </form>
+                    </xsl:when>
+                    
+                </xsl:choose>
+                
                 
                 <xsl:choose>
                     
@@ -105,7 +147,7 @@
                                                 <!-- If outdated then offer to get from master -->
                                                 <xsl:when test="($group-master-tei-version gt '' and not(compare($group-master-tei-version, $group-tei-version) eq 0)) or (not(compare($group-status-id, $group-master-status-id) eq 0))">
                                                     <a class="store-file">
-                                                        <xsl:attribute name="href" select="concat('/translations.html?store=', $text-id, '.tei', if($texts-status) then concat('&amp;texts-status=', $texts-status) else '', '#', $text-id)"/>
+                                                        <xsl:attribute name="href" select="m:store-link(concat($text-id, '.tei'), $page-filter, $toh-min, $toh-max, $text-id)"/>
                                                         <xsl:attribute name="title" select="'Get updated TEI'"/>
                                                         <xsl:attribute name="data-loading" select="'Getting updated TEI...'"/>
                                                         <span class="label label-warning">
@@ -149,7 +191,7 @@
                                                             <!-- Title / Link -->
                                                             <div>
                                                                 <a href="#" class="small underline disabled">
-                                                                    <xsl:if test="not($file-version eq 'none')">
+                                                                    <xsl:if test="$file-version[not(. eq 'none')]">
                                                                         <xsl:attribute name="href" select="concat($reading-room-path, $text-downloads[@type eq $file-format]/@url)"/>
                                                                         <xsl:attribute name="class" select="'small underline'"/>
                                                                     </xsl:if>
@@ -197,7 +239,7 @@
                                                                         <!-- Versions don't match so offer create option -->
                                                                         <xsl:if test="$group-tei-version gt '' and $file-format = ('pdf', 'epub', 'azw3', 'rdf') and not(compare($file-version, $group-tei-version) eq 0) and $text-marked-up">
                                                                             <a class="store-file">
-                                                                                <xsl:attribute name="href" select="concat('/translations.html?store=', $toh/@key, '.', $file-format, if($texts-status) then concat('&amp;texts-status=', $texts-status) else '', '#', $text-id)"/>
+                                                                                <xsl:attribute name="href" select="m:store-link(concat($toh/@key, '.', $file-format), $page-filter, $toh-min, $toh-max, $text-id)"/>
                                                                                 <xsl:attribute name="title" select="'Update this file'"/>
                                                                                 <xsl:attribute name="data-loading" select="'Updating this file...'"/>
                                                                                 <span class="label label-primary">
@@ -222,7 +264,7 @@
                                                                             <!-- If outdated then offer to get from master -->
                                                                             <xsl:when test="not(compare($file-version, $master-downloads/@tei-version) eq 0)">
                                                                                 <a class="store-file">
-                                                                                    <xsl:attribute name="href" select="concat('/translations.html?store=', $toh/@key, '.', $file-format, if($texts-status) then concat('&amp;texts-status=', $texts-status) else '', '#', $text-id)"/>
+                                                                                    <xsl:attribute name="href" select="m:store-link(concat($toh/@key, '.', $file-format), $page-filter, $toh-min, $toh-max, $text-id)"/>
                                                                                     <xsl:attribute name="title" select="'Get updated file'"/>
                                                                                     <xsl:attribute name="data-loading" select="'Getting updated file...'"/>
                                                                                     <span class="label label-warning">
@@ -432,7 +474,7 @@
                                             
                                             
                                             <!-- Status change -->
-                                            <xsl:if test="$environment/m:store-conf[@type eq 'client'] and ($diff or not(compare($group-status-id, $group-master-status-id) eq 0))">
+                                            <xsl:if test="$environment/m:store-conf[@type eq 'client'] and ($page-filter = ('new-version-translations', 'new-version-placeholders') or not(compare($group-status-id, $group-master-status-id) eq 0))">
                                                 <div class="row sml-margin bottom">
                                                     <div class="col-sm-12">
                                                         <div class="center-vertical align-left">
@@ -473,7 +515,7 @@
                                                     <xsl:choose>
                                                         <xsl:when test="$file-options//xhtml:a[@class eq 'store-file'] | $tei-options//xhtml:a[@class eq 'store-file']">
                                                             <xsl:attribute name="class" select="'btn btn-danger btn-sm'"/>
-                                                            <xsl:attribute name="href" select="concat('/translations.html?store=', $text-id, '.all', if($texts-status) then concat('&amp;texts-status=', $texts-status) else '', '#', $text-id)"/>
+                                                            <xsl:attribute name="href" select="m:store-link(concat($text-id, '.all'), $page-filter, $toh-min, $toh-max, $text-id)"/>
                                                             <xsl:choose>
                                                                 <xsl:when test="$environment/m:store-conf[@type eq 'client']">
                                                                     <xsl:attribute name="data-loading" select="'Getting updated files...'"/>
@@ -516,10 +558,9 @@
                     </xsl:when>
                     
                     <xsl:otherwise>
-                        <hr/>
-                        <div>
+                        <div class="clearfix">
                             <p class="text-muted italic">
-                                <xsl:value-of select="'No texts with this status'"/>
+                                <xsl:value-of select="'No matching texts'"/>
                             </p>
                         </div>
                     </xsl:otherwise>
@@ -593,6 +634,15 @@
         <xsl:param name="date-time" as="xs:dateTime" required="yes"/>
         <xsl:param name="user-name" as="xs:string" required="yes"/>
         <xsl:value-of select="concat($action-text, ' at ', format-dateTime($date-time, '[H01]:[m01] on [FNn,*-3], [D1o] [MNn,*-3] [Y01]'), ' by ', $user-name)"/>
+    </xsl:function>
+
+    <xsl:function name="m:store-link">
+        <xsl:param name="store-file" as="xs:string" required="yes"/>
+        <xsl:param name="page-filter" as="xs:string?"/>
+        <xsl:param name="toh-min" as="xs:string?"/>
+        <xsl:param name="toh-max" as="xs:string?"/>
+        <xsl:param name="text-id" as="xs:string?"/>
+        <xsl:value-of select="concat('/translations.html?store[]=', ($store-file, '')[1], '&amp;page-filter=', ($page-filter, '')[1], '&amp;toh-min=', ($toh-min, '')[1], '&amp;toh-max=', ($toh-max, '')[1], '#', ($text-id, '')[1])"/>
     </xsl:function>
     
 </xsl:stylesheet>

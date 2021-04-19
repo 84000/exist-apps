@@ -291,8 +291,7 @@ declare function local:glossary-item($gloss as element(tei:gloss), $include-cont
                 element definition {
                     $term/node()
                 }
-            else
-                ()
+            else ()
         ,
         
         (: Include the context :)
@@ -460,7 +459,7 @@ declare function glossary:translation-data($tei as element(tei:TEI), $resource-i
     
     (: The translation data for a glossary query - we need text-id and toh-key :)
     let $source := tei-content:source($tei, $resource-id)
-    let $view-mode := $translation:view-modes/m:view-mode[@id eq 'glossary-editor']
+    let $view-mode := $translation:view-modes/m:view-mode[@id eq 'glossary-check']
     
     return
         common:response(

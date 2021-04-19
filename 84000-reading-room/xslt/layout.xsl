@@ -73,7 +73,7 @@
     <xsl:template name="expandable-toh">
         <xsl:param name="toh" required="yes" as="element(m:toh)"/>
         <xsl:choose>
-            <xsl:when test="$toh/m:duplicates">
+            <xsl:when test="$toh[m:duplicates]">
                 <xsl:variable name="expand-id" select="concat('expand-toh-', $toh/@key)"/>
                 <a role="button" data-toggle="collapse" aria-expanded="true" class="collapsed nowrap">
                     <xsl:attribute name="href" select="concat('#', $expand-id)"/>

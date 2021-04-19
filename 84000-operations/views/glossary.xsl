@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:output="http://www.w3.org/2010/xslt-xquery-serialization" xmlns:common="http://read.84000.co/common" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" version="3.0" exclude-result-prefixes="#all">
     
-    <xsl:import href="../../84000-reading-room/views/html/website-page.xsl"/>
+    <!--<xsl:import href="../../84000-reading-room/views/html/website-page.xsl"/>-->
+    <xsl:import href="../../84000-reading-room/xslt/tei-to-xhtml.xsl"/>
     <xsl:import href="common.xsl"/>
     
     <xsl:variable name="request-resource-id" select="/m:response/m:request/@resource-id"/>
@@ -14,12 +15,14 @@
     <xsl:variable name="request-glossary-id" select="/m:response/m:request/@glossary-id"/>
     <xsl:variable name="request-item-tab" select="/m:response/m:request/@item-tab"/>
     
-    <xsl:variable name="text" select="/m:response/m:text[1]"/>
+    <xsl:variable name="text" select="/m:response/m:translation[1]"/>
     <xsl:variable name="glossary" select="/m:response/m:glossary[1]"/>
     <xsl:variable name="text-id" select="$text/@id"/>
     <xsl:variable name="toh-key" select="$text/m:source/@key"/>
     <xsl:variable name="cache-slow" select="if($glossary[@seconds-to-build]/@seconds-to-build ! xs:decimal(.) gt 120) then true() else false()" as="xs:boolean"/>
     <xsl:variable name="cache-old" select="if(compare($text/@tei-version, $glossary/@tei-version-cached) ne 0) then true() else false()" as="xs:boolean"/>
+    
+    <xsl:variable name="term-langs" select="('', 'en', 'Bo-Ltn', 'bo', 'Sa-Ltn', 'zh')" as="xs:string*"/>
     
     <xsl:template match="/m:response">
         
@@ -39,7 +42,7 @@
                     </h3>
                     
                     <!-- Page title / add new link / cache all link -->
-                    <div class="center-vertical full-width">
+                    <div class="center-vertical full-width sml-margin bottom">
                         
                         <!-- Text title / link -->
                         <div class="h3">
@@ -82,7 +85,7 @@
                     </div>
                     
                     <!-- Version row -->
-                    <ul class="list-inline inline-dots no-bottom-margin">
+                    <ul class="list-inline inline-dots  sml-margin bottom">
                         
                         <xsl:if test="$text[@tei-version]">
                             <li>
@@ -293,7 +296,7 @@
                                 <small>
                                     <xsl:value-of select="' / '"/>
                                     <a target="reading-room">
-                                        <xsl:attribute name="href" select="concat($reading-room-path, '/translation/', $toh-key, '.html#', $loop-glossary-id, '&amp;view-mode=editor')"/>
+                                        <xsl:attribute name="href" select="concat($reading-room-path, '/translation/', $toh-key, '.html?view-mode=editor', '#', $loop-glossary-id)"/>
                                         <xsl:value-of select="$loop-glossary-id"/>
                                     </a>
                                 </small>
@@ -546,7 +549,7 @@
                                                         </p>
                                                         
                                                         <div class="form-group">
-                                                            <div class="col-sm-offset-4 col-sm-4">
+                                                            <div class="col-sm-offset-2 col-sm-8">
                                                                 <div class="input-group">
                                                                     <input type="text" name="similar-search" class="form-control" id="similar-search" value="{ $request-similar-search }" placeholder="Widen search..."/>
                                                                     <div class="input-group-btn">
@@ -930,55 +933,68 @@
         
         <xsl:param name="glossary" as="element(m:item)?"/>
         
-        <xsl:variable name="terms" select="$glossary/m:term"/>
-        
         <input type="hidden" name="glossary-id" value="{ $glossary/@id }"/>
         
+        <xsl:variable name="main-term" select="$glossary/m:term[not(@type)][not(@xml:lang) or @xml:lang eq 'en'][1]"/>
+        <xsl:variable name="element-id" select="concat('main-term-', $glossary/@id)"/>
+        <div class="form-group">
+            <label for="{ $element-id }" class="col-sm-2 control-label">
+                <xsl:value-of select="'Main Term'"/>
+            </label>
+            <div class="col-sm-2">
+                <input type="text" class="form-control" value="English" disabled="disabled"/>
+            </div>
+            <div class="col-sm-6">
+                <input type="text" name="main-term" id="{ $element-id }" value="{ $main-term/text() }" class="form-control"/>
+            </div>
+        </div>
+        
+        <xsl:variable name="source-terms" select="$glossary/m:term[not(@type)][not(@xml:lang eq 'en')]"/>
+        <xsl:variable name="source-terms-count" select="count($source-terms)"/>
         <div class="add-nodes-container">
             
-            <xsl:for-each select="(1 to (if(count($terms) gt 0) then count($terms) else 3))">
+            <!-- Add input for Sanskrit and Wylie if this is new -->
+            <xsl:for-each select="(1 to (if($source-terms-count gt 0) then count($source-terms) else 2))">
+                
                 <xsl:variable name="index" select="."/>
-                <xsl:variable name="element-name" select="concat('term-main-text-', $index)"/>
-                <xsl:variable name="element-id" select="concat('term-main-text-', $glossary/@id, '-', $index)"/>
-                <div class="form-group add-nodes-group">
-                    <xsl:if test="$index eq 1">
-                        <label for="{ $element-id }" class="col-sm-2 control-label">
-                            <xsl:value-of select="'Term'"/>
-                        </label>
-                    </xsl:if>
-                    <div class="col-sm-2">
-                        <xsl:if test="not($index eq 1)">
-                            <xsl:attribute name="class" select="'col-sm-offset-2 col-sm-2'"/>
-                        </xsl:if>
-                        <xsl:call-template name="select-language">
-                            <xsl:with-param name="selected-language">
-                                <xsl:choose>
-                                    <xsl:when test="not($terms[$index]) and $index eq 1">
-                                        <xsl:value-of select="'en'"/>
-                                    </xsl:when>
-                                    <xsl:when test="not($terms[$index]) and $index eq 2">
-                                        <xsl:value-of select="'Bo-Ltn'"/>
-                                    </xsl:when>
-                                    <xsl:when test="not($terms[$index]) and $index eq 3">
-                                        <xsl:value-of select="'Sa-Ltn'"/>
-                                    </xsl:when>
-                                    <xsl:otherwise>
-                                        <xsl:value-of select="$terms[$index]/@xml:lang"/>
-                                    </xsl:otherwise>
-                                </xsl:choose>
-                            </xsl:with-param>
-                            <xsl:with-param name="input-name" select="concat('term-main-lang-', $index)"/>
-                            <xsl:with-param name="input-id" select="concat('term-main-lang-', $glossary/@id, '-',$index)"/>
-                        </xsl:call-template>
-                    </div>
-                    <div class="col-sm-6">
-                        <input type="text" name="{ $element-name }" id="{ $element-id }" value="{ $terms[$index]/text() }" class="form-control"/>
-                    </div>
-                </div>
+                
+                <xsl:variable name="element-lang" as="xs:string">
+                    <xsl:choose>
+                        <xsl:when test="not($source-terms[$index]) and $index eq 1">
+                            <xsl:value-of select="'Bo-Ltn'"/>
+                        </xsl:when>
+                        <xsl:when test="not($source-terms[$index]) and $index eq 2">
+                            <xsl:value-of select="'Sa-Ltn'"/>
+                        </xsl:when>
+                        <xsl:otherwise>
+                            <xsl:value-of select="$source-terms[$index]/@xml:lang"/>
+                        </xsl:otherwise>
+                    </xsl:choose>
+                </xsl:variable>
+                
+                <xsl:call-template name="glossary-term">
+                    <xsl:with-param name="element" select="$source-terms[$index]"/>
+                    <xsl:with-param name="index" select="$index"/>
+                    <xsl:with-param name="lang" select="$element-lang"/>
+                    <xsl:with-param name="glossary-id" select="$glossary/@id"/>
+                </xsl:call-template>
+                
+            </xsl:for-each>
+            
+            <!-- Add alternatives as Additional English terms -->
+            <xsl:for-each select="$glossary/m:alternative">
+                
+                <xsl:call-template name="glossary-term">
+                    <xsl:with-param name="element" select="."/>
+                    <xsl:with-param name="index" select="$source-terms-count + position()"/>
+                    <xsl:with-param name="lang" select="'en'"/>
+                    <xsl:with-param name="glossary-id" select="$glossary/@id"/>
+                </xsl:call-template>
+                
             </xsl:for-each>
             
             <div class="form-group">
-                <div class="col-sm-offset-2 col-sm-10">
+                <div class="col-sm-offset-2 col-sm-2">
                     <a href="#add-nodes" class="add-nodes">
                         <span class="monospace">
                             <xsl:value-of select="'+'"/>
@@ -986,50 +1002,12 @@
                         <xsl:value-of select="' add a term'"/>
                     </a>
                 </div>
-            </div>
-            
-        </div>
-        
-        <xsl:variable name="alternative-spellings" select="$glossary/m:alternative"/>
-        <div class="add-nodes-container">
-            
-            <xsl:for-each select="(1 to (if(count($alternative-spellings) gt 0) then count($alternative-spellings) else 1))">
-                <xsl:variable name="index" select="."/>
-                <xsl:variable name="element-name" select="concat('term-alternative-text-', $index)"/>
-                <xsl:variable name="element-id" select="concat('term-alternative-text-', $glossary/@id, '-', $index)"/>
-                <div class="form-group add-nodes-group">
-                    <xsl:if test="$index eq 1">
-                        <label for="{ $element-id }" class="col-sm-2 control-label">
-                            <xsl:value-of select="'Alt. spelling'"/>
-                        </label>
-                    </xsl:if>
-                    <div class="col-sm-2">
-                        <xsl:if test="not($index eq 1)">
-                            <xsl:attribute name="class" select="'col-sm-offset-2 col-sm-2'"/>
-                        </xsl:if>
-                        <xsl:call-template name="select-language">
-                            <xsl:with-param name="selected-language" select="$alternative-spellings[$index]/@xml:lang"/>
-                            <xsl:with-param name="input-name" select="concat('term-alternative-lang-', $index)"/>
-                            <xsl:with-param name="input-id" select="concat('term-alternative-lang-', $glossary/@id, '-', $index)"/>
-                        </xsl:call-template>
-                    </div>
-                    <div class="col-sm-6">
-                        <input type="text" name="{ $element-name }" id="{ $element-id }" value="{ $alternative-spellings[$index]/text() }" class="form-control"/>
-                    </div>
-                </div>
-            </xsl:for-each>
-            
-            <div class="form-group">
-                <div class="col-sm-offset-2 col-sm-10">
-                    <a href="#add-nodes" class="add-nodes">
-                        <span class="monospace">
-                            <xsl:value-of select="'+'"/>
-                        </span>
-                        <xsl:value-of select="' add an alternative spelling'"/>
-                    </a>
+                <div class="col-sm-8">
+                    <p class="text-muted small">
+                        <xsl:value-of select="'Standard hyphens added to Sanskrit strings will be converted to soft-hyphens when saved'"/>
+                    </p>
                 </div>
             </div>
-            
         </div>
         
         <div class="form-group">
@@ -1116,7 +1094,7 @@
                 <xsl:value-of select="'Definition'"/>
             </label>
             
-            <div class="col-sm-6 add-nodes-container">
+            <div class="col-sm-8 add-nodes-container">
                 
                 <xsl:for-each select="(1 to (if(count($definitions) gt 0) then count($definitions) else 1))">
                     <xsl:variable name="index" select="."/>
@@ -1195,6 +1173,52 @@
         
     </xsl:template>
     
+    <xsl:template name="glossary-term">
+        
+        <xsl:param name="element"/>
+        <xsl:param name="index" as="xs:integer"/>
+        <xsl:param name="lang" as="xs:string"/>
+        <xsl:param name="glossary-id" as="xs:string"/>
+        
+        <xsl:param name="element-id" select="concat('term-text-', $glossary-id, '-', $index)"/>
+        
+        <div class="form-group add-nodes-group">
+            
+            <xsl:if test="$index eq 1">
+                <label for="{ $element-id }" class="col-sm-2 control-label">
+                    <xsl:value-of select="'Source Term'"/>
+                </label>
+            </xsl:if>
+            
+            <div class="col-sm-2">
+                <xsl:if test="not($index eq 1)">
+                    <xsl:attribute name="class" select="'col-sm-offset-2 col-sm-2'"/>
+                </xsl:if>
+                <xsl:call-template name="select-language">
+                    <xsl:with-param name="selected-language" select="$lang"/>
+                    <xsl:with-param name="input-name" select="concat('term-lang-', $index)"/>
+                    <xsl:with-param name="input-id" select="concat('term-lang-', $glossary-id, '-',$index)"/>
+                </xsl:call-template>
+            </div>
+            
+            <div class="col-sm-6">
+                <input type="text" name="{ concat('term-text-', $index) }" id="{ $element-id }" class="form-control">
+                    <xsl:attribute name="value">
+                        <xsl:choose>
+                            <xsl:when test="$lang eq 'Sa-Ltn'">
+                                <xsl:attribute name="value" select="replace($element/text(), '­', '-')"/>
+                            </xsl:when>
+                            <xsl:otherwise>
+                                <xsl:attribute name="value" select="$element/text()"/>
+                            </xsl:otherwise>
+                        </xsl:choose>
+                    </xsl:attribute>
+                </input>
+            </div>
+            
+        </div>
+    </xsl:template>
+    
     <xsl:template name="text-glossaries">
         
         <xsl:param name="glossaries" as="element(m:item)*" required="yes"/>
@@ -1216,7 +1240,6 @@
                             </li>
                             <!-- Link to Reading Room -->
                             <li>
-                                
                                 <a target="reading-room" class="small">
                                     <xsl:attribute name="href" select="concat($reading-room-path, '/translation/', m:text/@id, '.html#', @id)"/>
                                     <xsl:value-of select="@id"/>
@@ -1295,17 +1318,20 @@
             
             <div class="div-list no-border-top no-padding-top">
                 <xsl:for-each select="$entity/m:instance[@type eq 'glossary-item']/m:item">
+                    
+                    <xsl:variable name="item" select="."/>
+                    
                     <div class="item">
                         
                         <ul class="list-inline inline-dots no-top-margin item-row">
                             <!-- Term -->
                             <li>
-                                <xsl:value-of select="m:term[@xml:lang eq 'en'][1]"/>
+                                <xsl:value-of select="$item/m:term[@xml:lang eq 'en'][1]"/>
                             </li>
                             <!-- Link to Reading Room -->
                             <li>
                                 <a target="reading-room" class="small">
-                                    <xsl:attribute name="href" select="concat($reading-room-path, '/translation/', m:text/@id, '.html#', @id)"/>
+                                    <xsl:attribute name="href" select="concat($reading-room-path, '/translation/', $item/m:text/@id, '.html#', @id)"/>
                                     <xsl:value-of select="@id"/>
                                 </a>
                             </li>
@@ -1314,11 +1340,11 @@
                                 <xsl:choose>
                                     <xsl:when test="not(@id eq $loop-glossary/@id)">
                                         <xsl:call-template name="link">
-                                            <xsl:with-param name="resource-id" select="m:text/@id"/>
-                                            <xsl:with-param name="glossary-id" select="@id"/>
+                                            <xsl:with-param name="resource-id" select="$item/m:text/@id"/>
+                                            <xsl:with-param name="glossary-id" select="$item/@id"/>
                                             <xsl:with-param name="link-text" select="'edit'"/>
                                             <xsl:with-param name="link-class" select="'small'"/>
-                                            <xsl:with-param name="link-target" select="concat('glossary-', m:text/@id)"/>
+                                            <xsl:with-param name="link-target" select="concat('glossary-', $item/m:text/@id)"/>
                                             <xsl:with-param name="max-records" select="1"/>
                                         </xsl:call-template>
                                     </xsl:when>
@@ -1347,7 +1373,7 @@
                         
                         <!-- Text -->
                         <div class="item-row small">
-                            <xsl:value-of select="concat('In ', m:text/m:toh, ' / ', m:text/m:title)"/>
+                            <xsl:value-of select="concat('In ', $item/m:text/m:toh, ' / ', $item/m:text/m:title)"/>
                         </div>
                         
                     </div>
@@ -1393,7 +1419,7 @@
                 <option value=""/>
             </xsl:if>
             <option value="en">
-                <xsl:if test="$selected-language eq 'en'">
+                <xsl:if test="$selected-language = ('','en')">
                     <xsl:attribute name="selected" select="'selected'"/>
                 </xsl:if>
                 <xsl:value-of select="'English'"/>
@@ -1422,6 +1448,13 @@
                 </xsl:if>
                 <xsl:value-of select="'Chinese'"/>
             </option>
+            <xsl:if test="not($selected-language = $term-langs)">
+                <option>
+                    <xsl:attribute name="value" select="$selected-language"/>
+                    <xsl:attribute name="selected" select="'selected'"/>
+                    <xsl:value-of select="$selected-language"/>
+                </option>
+            </xsl:if>
         </select>
         
     </xsl:template>
@@ -1498,10 +1531,13 @@
     <xsl:template name="definition">
         <xsl:param name="item"/>
         <xsl:if test="$item/m:definition[node()]">
-            <div class="text-muted">
+            <div class="text-muted small">
                 <xsl:for-each select="$item/m:definition[node()]">
-                    <p class="small">
-                        <xsl:sequence select="node()"/>
+                    <xsl:variable name="definition-html">
+                        <xsl:apply-templates select="node()"/>
+                    </xsl:variable>
+                    <p class="definition">
+                        <xsl:apply-templates select="$definition-html"/>
                     </p>
                 </xsl:for-each>
             </div>
@@ -1573,6 +1609,7 @@
         
     </xsl:template>
     
+    <!-- Localise links in html -->
     <xsl:template match="xhtml:a">
         
         <xsl:variable name="link" select="."/>
@@ -1590,17 +1627,19 @@
                         </xsl:call-template>
                     </xsl:when>
                     <xsl:when test="$link[@data-bookmark]">
-                        <!-- Possibly add &mark=$glossary-item/@id to this to highlight the target - need to split the href though to insert the parameter -->
-                        <xsl:value-of select="concat($reading-room-path, '/translation/', $toh-key, '.html', $link/@href)"/>
+                        <xsl:value-of select="concat($reading-room-path, '/translation/', $toh-key, '.html?view-mode=editor', $link/@href)"/>
                     </xsl:when>
                     <xsl:when test="$link[@data-glossary-location]">
-                        <xsl:value-of select="concat($reading-room-path, '/translation/', $toh-key, '.html', $link/@href)"/>
+                        <xsl:value-of select="concat($reading-room-path, '/translation/', $toh-key, '.html?view-mode=editor', $link/@href)"/>
                     </xsl:when>
                     <xsl:when test="$link[@data-ref]">
-                        <xsl:value-of select="concat($reading-room-path, substring-before($link/@href, '#'), '&amp;highlight=', string-join($glossary-item/m:term[@xml:lang eq 'bo'], ','), '#', substring-after($link/@href, '#'))"/>
+                        <xsl:variable name="link-href-tokenized" select="tokenize($link/@href, '#')"/>
+                        <xsl:variable name="link-href-query" select="$link-href-tokenized[1]"/>
+                        <xsl:variable name="link-href-hash" select="if(count($link-href-tokenized) gt 1) then concat('#', $link-href-tokenized[last()]) else ()"/>
+                        <xsl:value-of select="concat($reading-room-path, $link-href-query, if(contains($link-href-query, '?')) then '&amp;' else '?', 'highlight=', string-join($glossary-item/m:term[@xml:lang eq 'bo'], ','), $link-href-hash)"/>
                     </xsl:when>
                     <xsl:otherwise>
-                        <xsl:value-of select="concat($reading-room-path, $link/@href)"/>
+                        <xsl:value-of select="$link/@href"/>
                     </xsl:otherwise>
                 </xsl:choose>
             </xsl:attribute>
@@ -1617,7 +1656,17 @@
                 </xsl:choose>
             </xsl:attribute>
             
-            <xsl:attribute name="target" select="$toh-key"/>
+            <xsl:attribute name="target">
+                <xsl:choose>
+                    <xsl:when test="$link[@data-glossary-id]">
+                        <xsl:value-of select="'_self'"/>
+                    </xsl:when>
+                    <xsl:otherwise>
+                        <xsl:value-of select="$toh-key"/>
+                    </xsl:otherwise>
+                </xsl:choose>
+            </xsl:attribute>
+            
             
             <xsl:sequence select="node()"/>
             

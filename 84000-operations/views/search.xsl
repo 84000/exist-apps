@@ -364,13 +364,14 @@
                                     </xsl:choose>
                                 </div>
                             </div>
+                        
                         </div>
                     </form>
                     
                     <!-- Results summary -->
                     <xsl:if test="m:texts">
                         <div class="well well-sm small">
-                            Summary: 
+                            <xsl:value-of select="'Summary: '"/>
                             <strong>
                                 <xsl:value-of select="format-number(count(m:texts/m:text), '#,###')"/>
                             </strong>
@@ -473,6 +474,7 @@
                                                     </xsl:call-template>
                                                 </xsl:otherwise>
                                             </xsl:choose>
+                                            
                                         </td>
                                         <xsl:if test="not(/m:response/m:texts[@sort eq 'status'])">
                                             <td>

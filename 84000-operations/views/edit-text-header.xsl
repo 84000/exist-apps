@@ -258,7 +258,7 @@
                         <div class="col-sm-12">
                             <div class="center-vertical full-width">
                                 <div>
-                                    <p class="text-muted">
+                                    <p class="text-muted small">
                                         <xsl:value-of select="'* Standard hyphens can be added to Sanskrit strings and will be converted to soft-hyphens when saved'"/>
                                     </p>
                                 </div>
@@ -461,6 +461,7 @@
                         </div>
                     </div>
                 </form>
+            
             </xsl:with-param>
         </xsl:call-template>
     </xsl:template>

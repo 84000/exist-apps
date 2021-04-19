@@ -28,7 +28,8 @@ declare variable $translation:view-modes :=
       <view-mode id="pdf"               client="pdf"      layout="expanded-fixed"  glossary="suppress"        parts="all"/>,
       <view-mode id="app"               client="app"      layout="expanded-fixed"  glossary="use-cache"       parts="all"/>,
       <view-mode id="tests"             client="none"     layout="expanded-fixed"  glossary="suppress"        parts="all"/>,
-      <view-mode id="glossary-editor"   client="none"     layout="expanded-fixed"  glossary="no-cache"        parts="all"/>,
+      <view-mode id="glossary-editor"   client="browser"  layout="full"            glossary="use-cache"       parts="passage"/>,
+      <view-mode id="glossary-check"    client="none"     layout="expanded-fixed"  glossary="no-cache"        parts="all"/>,
       <view-mode id="ajax-part"         client="ajax"     layout="part-only"       glossary="use-cache"       parts="part"/>,
       <view-mode id="passage"           client="ajax"     layout="part-only"       glossary="use-cache"       parts="passage"/>,
       <view-mode id="editor-passage"    client="ajax"     layout="part-only"       glossary="no-cache"        parts="passage"/>
@@ -120,7 +121,7 @@ declare function translation:toh-str($bibl as element(tei:bibl)) as xs:string? {
 };
 
 declare function translation:toh-full($bibl as element(tei:bibl)) as xs:string? {
-    normalize-space(string-join($bibl/tei:ref//text(), ' +'))
+    normalize-space(string-join($bibl/tei:ref//text()[normalize-space(.)], ' +'))
 };
 
 declare function translation:toh($tei as element(tei:TEI), $resource-id as xs:string) as element() {
@@ -213,17 +214,21 @@ declare function translation:canonical-html($resource-id as xs:string, $conditio
 
 declare function translation:downloads($tei as element(tei:TEI), $resource-id as xs:string, $include as xs:string) as element() {
     
-    let $file-name := translation:filename($tei, $resource-id)
     let $tei-version := tei-content:version-str($tei)
-    let $text-id := tei-content:id($tei)
     
     return
         element {QName('http://read.84000.co/ns/1.0', 'downloads')} {
         
-            attribute tei-version {$tei-version},
-            attribute resource-id {$resource-id},
+            attribute tei-version { $tei-version },
+            attribute resource-id { $resource-id },
             
-            for $type in ('html', 'pdf', 'epub', 'azw3', 'rdf', 'cache')
+            (: Only return download elements if $include defined :)
+            for $type in 
+                if($include gt '')then
+                    ('html', 'pdf', 'epub', 'azw3', 'rdf', 'cache')
+                else ()
+            
+            let $text-id := tei-content:id($tei)
             
             let $resource-id :=
                 if ($type eq 'cache') then
@@ -254,8 +259,11 @@ declare function translation:downloads($tei as element(tei:TEI), $resource-id as
                     attribute version { $stored-version },
                     attribute url { concat($path, '/', $resource-id, '.', $type) },
                     if(not($type = ('html', 'cache'))) then (
-                        attribute download-url { concat($path, '/', $file-name, '.', $type) },
-                        attribute filename { $file-name }
+                        let $file-name := translation:filename($tei, $resource-id)
+                        return (
+                            attribute download-url { concat($path, '/', $file-name, '.', $type) },
+                            attribute filename { $file-name }
+                        )
                     )
                     else ()
                 }
