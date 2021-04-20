@@ -588,17 +588,20 @@ declare function update-translation:update-glossary($tei as element(tei:TEI), $g
                             }
                         }
                     ),
-                        
+                    
                     (: Get the definitions from the request :)
                     for $term-param in common:sort-trailing-number-in-string(request:get-parameter-names()[starts-with(., 'term-definition-text-')], '-')
                     let $term-text := request:get-parameter($term-param, '')
                     let $term-text-markup := common:markup($term-text, 'http://www.tei-c.org/ns/1.0')
-                        where $term-text gt '' and $term-text-markup
+                    where $term-text gt ''
                     return (
                         common:ws(7),
                         element {QName('http://www.tei-c.org/ns/1.0', 'term')} {
                             attribute type {'definition'},
-                            $term-text-markup
+                            if($term-text-markup) then
+                                $term-text-markup
+                            else
+                                $term-text
                         }
                     ),
                         

@@ -166,7 +166,7 @@ declare function common:ws($indent as xs:integer) as xs:string {
 (: Markup string :)
 (: TO DO: replace with proper markup function :)
 declare function common:markup($markdown as xs:string, $namespace as xs:string) as node()* {
-    functx:change-element-ns-deep(<nodes>{common:unescape($markdown)}</nodes>, $namespace, '')/node()
+    functx:change-element-ns-deep(<nodes>{ common:unescape($markdown) }</nodes>, $namespace, '')/node()
 };
 
 (: Markdown nodes :)
@@ -337,12 +337,9 @@ function common:bo-ltn($string as xs:string) as xs:string {
 };
 
 declare function common:unescape($text as xs:string*) as node()* {
-    let $html := util:parse-html($text)
-    return
-        if($html/HTML/xhtml:body) then
-            $html/HTML/xhtml:body/node()
-        else
-            $html/HTML/BODY/node()
+
+    parse-xml(concat('<doc>',$text,'</doc>'))/doc/node()
+    
 };
 
 declare function common:mark-nodes($nodes as node()*, $strings as xs:string*, $mode as xs:string) as node()* {

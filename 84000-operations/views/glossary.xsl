@@ -1004,7 +1004,7 @@
                 </div>
                 <div class="col-sm-8">
                     <p class="text-muted small">
-                        <xsl:value-of select="'Standard hyphens added to Sanskrit strings will be converted to soft-hyphens when saved'"/>
+                        <xsl:value-of select="'Additional English terms will be added as alternative spellings'"/>
                     </p>
                 </div>
             </div>
@@ -1047,7 +1047,7 @@
             
             <div class="col-sm-8">
                 <p class="sml-margin top text-muted small">
-                    <xsl:value-of select="'NOTE: Glossary type will be deprecated in favour of entity types'"/>
+                    <xsl:value-of select="'Standard hyphens added to Sanskrit strings will be converted to soft-hyphens when saved'"/>
                 </p>
             </div>
             
@@ -1186,7 +1186,7 @@
             
             <xsl:if test="$index eq 1">
                 <label for="{ $element-id }" class="col-sm-2 control-label">
-                    <xsl:value-of select="'Source Term'"/>
+                    <xsl:value-of select="'Equivalent'"/>
                 </label>
             </xsl:if>
             
@@ -1500,7 +1500,7 @@
         
         <xsl:param name="item" as="element(m:item)"/>
         
-        <ul class="list-inline inline-dots no-bottom-margin small">
+        <ul class="list-inline inline-dots no-bottom-margin">
             <xsl:for-each select="$item/m:term[not(@xml:lang eq 'en')]">
                 <xsl:sort select="@xml:lang"/>
                 <li>
