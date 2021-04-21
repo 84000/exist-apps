@@ -12,6 +12,10 @@
   src: url(../fonts/NotoSansTC-Regular.otf);
 }
 @font-face {
+  font-family: "NotoSansJP";
+  src: url(../fonts/NotoSansJP-Regular.otf);
+}
+@font-face {
   font-family: "IndUni-P";
   src: url(../fonts/IndUni-P-Regular.otf);
 }

@@ -124,7 +124,7 @@ small, .small {
 .text-bo {
     font-family: "Jomolhari" !important;
     font-size: 1.3em;
-    line-height: 1em;
+    line-height: 1rem;
     vertical-align: text-top;
     font-style: normal !important;
     font-weight: normal !important;
@@ -137,12 +137,18 @@ small, .small {
 }
 .text-zh {
     font-family: "NotoSansTC" !important;
-    font-size: 1.2em;
-    line-height: 1em;
+    /* font-size: 1.2em; */
+    line-height: 1rem;
     font-style: normal !important;
     font-weight: normal !important;
 }
-
+.text-ja {
+    font-family: "NotoSansJP" !important;
+    /* font-size: 1.2em; */
+    line-height: 1rem;
+    font-style: normal !important;
+    font-weight: normal !important;
+}
 .reconstructed:before {
     content: '*' !important;
 }
