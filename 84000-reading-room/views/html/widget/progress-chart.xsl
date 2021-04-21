@@ -39,12 +39,12 @@
                                                             <xsl:call-template name="text">
                                                                 <xsl:with-param name="global-key" select="concat('widget.progress-chart.tab-title-', $tab)"/>
                                                             </xsl:call-template>
-                                                            <br/>
+                                                            <!--<br/>
                                                             <small class="text-muted">
                                                                 <xsl:call-template name="text">
                                                                     <xsl:with-param name="global-key" select="concat('widget.progress-chart.tab-subtitle-', $tab)"/>
                                                                 </xsl:call-template>
-                                                            </small>
+                                                            </small>-->
                                                         </a>
                                                     </li>
                                                 </xsl:for-each>
@@ -60,11 +60,11 @@
                                                         <xsl:if test="$tab eq 'kangyur'">
                                                             <xsl:attribute name="class" select="'tab-pane fade in active'"/>
                                                         </xsl:if>
-                                                        <p class="bottom-margin small">
+                                                        <div class="bottom-margin small">
                                                             <xsl:call-template name="text">
                                                                 <xsl:with-param name="global-key" select="concat('widget.progress-chart.tab-description-', $tab)"/>
                                                             </xsl:call-template>
-                                                        </p>
+                                                        </div>
                                                         <xsl:choose>
                                                             <xsl:when test="$tab eq 'kangyur'">
                                                                 <xsl:call-template name="progress-pie-chart">
