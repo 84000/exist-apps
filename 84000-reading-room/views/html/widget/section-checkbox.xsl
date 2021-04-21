@@ -17,29 +17,31 @@
                 </div>
             </div>
             
-            <div class="content-band">
-                <div class="container">
-                    <div class="row">
-                        <div class="col-sm-6 col-sm-offset-3">
-                            
-                            <div id="filters-sidebar">
-                                <form class="form-horizontal">
-                                    
-                                    <div id="section-checkbox">
-                                        <xsl:for-each select="m:section/m:section">
-                                            <xsl:call-template name="section-checkbox">
-                                                <xsl:with-param name="section" select="."/>
-                                            </xsl:call-template>
-                                        </xsl:for-each>
-                                    </div>
-                                    
-                                </form>
+            <main class="content-band">
+                <div class="content-band">
+                    <div class="container">
+                        <div class="row">
+                            <div class="col-sm-6 col-sm-offset-3">
+                                
+                                <div id="filters-sidebar">
+                                    <form class="form-horizontal">
+                                        
+                                        <div id="section-checkbox">
+                                            <xsl:for-each select="m:section/m:section">
+                                                <xsl:call-template name="section-checkbox">
+                                                    <xsl:with-param name="section" select="."/>
+                                                </xsl:call-template>
+                                            </xsl:for-each>
+                                        </div>
+                                        
+                                    </form>
+                                </div>
+                                
                             </div>
-                            
                         </div>
                     </div>
                 </div>
-            </div>
+            </main>
             
         </xsl:variable>
         

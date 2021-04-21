@@ -89,6 +89,9 @@
                                 <li>
                                     Download dāna <a href="{ $reading-room-path }/widget/download-dana.html?resource-id=UT22084-001-001" target="download-dana">en</a> | <a href="{ $reading-room-path }/widget/download-dana.html?resource-id=UT22084-001-001&amp;lang=zh" target="download-dana">zh</a>
                                 </li>
+                                <li>
+                                    Section checkbox <a href="{ $reading-room-path }/widget/section-checkbox.html" target="section-checkbox">en</a> | <a href="{ $reading-room-path }/widget/section-checkbox.html?lang=zh" target="section-checkbox">zh</a>
+                                </li>
                             </ul>
                         </div>
                     </div>

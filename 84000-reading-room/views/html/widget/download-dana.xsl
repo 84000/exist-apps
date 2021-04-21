@@ -17,6 +17,7 @@
         </xsl:variable>
         
         <xsl:variable name="content">
+            
             <div class="title-band">
                 <div class="container text-center">
                     <h1 class="title">
@@ -24,6 +25,7 @@
                     </h1>
                 </div>
             </div>
+            
             <div class="content-band">
                 <div class="container text-center" id="dana-description">
                     <div class="row">
@@ -69,6 +71,7 @@
                     </div>
                 </div>
             </div>
+            
         </xsl:variable>
         
         <xsl:call-template name="widget-page">
