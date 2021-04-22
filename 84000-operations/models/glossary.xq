@@ -92,8 +92,9 @@ let $glossary-cache := translation:glossary-cache($tei, (), false())
 return
     common:response(
         'operations/glossary',
-        'operations', 
-        (
+        'operations', (
+        
+            (: Request parameters :)
             element { QName('http://read.84000.co/ns/1.0', 'request') }{
                 attribute resource-id { request:get-parameter('resource-id', '') },
                 attribute first-record { request:get-parameter('first-record', 1) },
@@ -107,6 +108,8 @@ return
                 element similar-search { request:get-parameter('similar-search', '') },
                 $translation:view-modes/m:view-mode[@id eq 'glossary-editor']
             },
+            
+            (: Translation data :)
             element { QName('http://read.84000.co/ns/1.0', 'translation') }{
                 attribute id { tei-content:id($tei) },
                 attribute tei-version { tei-content:version-str($tei) },
@@ -114,12 +117,14 @@ return
                 attribute locked-by-user { tei-content:locked-by-user($tei) },
                 translation:titles($tei),
                 tei-content:source($tei, $resource-id),
-                translation:glossary($tei),
+                translation:parts($tei, (), $translation:view-modes/m:view-mode[@id eq 'glossary-editor']),
                 translation:notes-cache($tei, false(), false()),
                 translation:milestones-cache($tei, false(), false()),
                 translation:folios-cache($tei, false(), false()),
                 $glossary-cache
             },
+            
+            (: Additional glossary data for selected items :)
             element { QName('http://read.84000.co/ns/1.0', 'glossary') } {
             
                 $glossary-filtered/@*,
@@ -127,7 +132,6 @@ return
                 attribute count-records { count($glossary-filtered/m:item) },
                 attribute first-record { $first-record },
                 attribute max-records { $max-records },
-                $glossary-cache/@seconds-to-build,
                 attribute tei-version-cached { store:stored-version-str($resource-id, 'cache') },
                 
                 let $glossary-filtered-subsequence := subsequence($glossary-filtered/m:item, $first-record, $max-records)
@@ -158,13 +162,6 @@ return
                                     $glossary-item-expressions/*[descendant::xhtml:*[@data-glossary-id eq $glossary-item/@id]]
                                 }
                             else (),
-                            
-                            (: Add glossary cache :)
-                            if($glossary-cache) then
-                                element cache {
-                                    $glossary-cache/m:gloss[@id eq $glossary-item/@id]/m:location
-                                }
-                            else(),
                             
                             (: Add markdorn of the definition :)
                             element markdown {

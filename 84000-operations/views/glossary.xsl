@@ -19,7 +19,7 @@
     <xsl:variable name="glossary" select="/m:response/m:glossary[1]"/>
     <xsl:variable name="text-id" select="$text/@id"/>
     <xsl:variable name="toh-key" select="$text/m:source/@key"/>
-    <xsl:variable name="cache-slow" select="if($glossary[@seconds-to-build]/@seconds-to-build ! xs:decimal(.) gt 120) then true() else false()" as="xs:boolean"/>
+    <xsl:variable name="cache-slow" select="if($text/m:glossary-cache/@seconds-to-build ! xs:decimal(.) gt 120) then true() else false()" as="xs:boolean"/>
     <xsl:variable name="cache-old" select="if(compare($text/@tei-version, $glossary/@tei-version-cached) ne 0) then true() else false()" as="xs:boolean"/>
     
     <xsl:variable name="term-langs" select="('', 'en', 'Bo-Ltn', 'bo', 'Sa-Ltn', 'zh')" as="xs:string*"/>
@@ -127,18 +127,18 @@
                                         <xsl:value-of select="'The latest location cache took '"/>
                                     </span>
                                     <span class="label label-warning">
-                                        <xsl:value-of select="concat(format-number(($glossary/@seconds-to-build ! xs:decimal(.) div 60), '#,###.##'), ' minutes')"/>
+                                        <xsl:value-of select="concat(format-number(($text/m:glossary-cache/@seconds-to-build ! xs:decimal(.) div 60), '#,###.##'), ' minutes')"/>
                                     </span>
                                 </li>
                             </xsl:when>
                             
-                            <xsl:when test="$glossary[@seconds-to-build]">
+                            <xsl:when test="$text/m:glossary-cache[@seconds-to-build]">
                                 <li>
                                     <span class="small">
                                         <xsl:value-of select="'The latest location cache took '"/>
                                     </span>
                                     <span class="label label-default">
-                                        <xsl:value-of select="concat(format-number($glossary/@seconds-to-build, '#,###.##'), ' seconds')"/>
+                                        <xsl:value-of select="concat(format-number($text/m:glossary-cache/@seconds-to-build, '#,###.##'), ' seconds')"/>
                                     </span>
                                 </li>
                             </xsl:when>
@@ -167,7 +167,7 @@
                     
                     <!-- Filter / Pagination -->
                     <xsl:if test="not($request-filter eq 'blank-form')">
-                        <div class="center-vertical full-width">
+                        <div class="center-vertical full-width sml-margin bottom">
                             <div>
                                 <xsl:call-template name="form">
                                     <xsl:with-param name="form-class" select="'form-inline'"/>
@@ -201,7 +201,7 @@
                                                     </xsl:if>
                                                     <xsl:value-of select="'New locations'"/>
                                                     <xsl:if test="$cache-slow">
-                                                        <xsl:value-of select="concat(' - takes ', format-number(($glossary/@seconds-to-build ! xs:decimal(.) div 60), '#,###'), ' mins!')"/>
+                                                        <xsl:value-of select="concat(' (takes ', format-number(($text/m:glossary-cache/@seconds-to-build ! xs:decimal(.) div 60), '#,###'), ' mins)')"/>
                                                     </xsl:if>
                                                 </option>
                                                 <option value="no-expressions">
@@ -210,10 +210,11 @@
                                                     </xsl:if>
                                                     <xsl:value-of select="'No locations'"/>
                                                     <xsl:if test="$cache-slow">
-                                                        <xsl:value-of select="concat(' - takes ', format-number(($glossary/@seconds-to-build ! xs:decimal(.) div 60), '#,###'), ' mins!')"/>
+                                                        <xsl:value-of select="concat(' (takes ', format-number(($text/m:glossary-cache/@seconds-to-build ! xs:decimal(.) div 60), '#,###'), ' mins)')"/>
                                                     </xsl:if>
                                                 </option>
                                             </select>
+                                            
                                         </div>
                                         
                                         <div class="input-group">
@@ -225,6 +226,7 @@
                                             <input type="text" name="search" id="search" class="form-control" size="10" maxlength="100">
                                                 <xsl:attribute name="value" select="$request-search"/>
                                             </input>
+                                            
                                         </div>
                                         
                                         <div class="input-group">
@@ -236,6 +238,7 @@
                                             <input type="number" name="max-records" id="max-records" class="form-control" size="3" min="1" max="100">
                                                 <xsl:attribute name="value" select="$request-max-records"/>
                                             </input>
+                                            
                                         </div>
                                         
                                         <div class="input-group">
@@ -247,7 +250,9 @@
                                 </xsl:call-template>
                             </div>
                             
-                            <xsl:copy-of select="common:pagination(common:enforce-integer($glossary/@first-record), common:enforce-integer($glossary/@max-records), common:enforce-integer($glossary/@count-records), concat('glossary.html?resource-id=', $request-resource-id, '&amp;filter=', $request-filter, '&amp;search=', $request-search), '')"/>
+                            <div>
+                                <xsl:copy-of select="common:pagination(common:enforce-integer($glossary/@first-record), common:enforce-integer($glossary/@max-records), common:enforce-integer($glossary/@count-records), concat('glossary.html?resource-id=', $request-resource-id, '&amp;filter=', $request-filter, '&amp;search=', $request-search), '')"/>
+                            </div>
                             
                         </div>
                     </xsl:if>
@@ -276,7 +281,8 @@
                         
                         <xsl:variable name="loop-glossary" select="."/>
                         <xsl:variable name="loop-glossary-id" select="$loop-glossary/@id"/>
-                        <xsl:variable name="locations-cached" select="$loop-glossary/m:expressions/m:location[@id = $loop-glossary/m:cache/m:location/@id]"/>
+                        <xsl:variable name="loop-glossary-cache" select="$text/m:glossary-cache/m:gloss[@id eq $loop-glossary-id]"/>
+                        <xsl:variable name="locations-cached" select="$loop-glossary/m:expressions/m:location[@id = $loop-glossary-cache/m:location/@id]"/>
                         <xsl:variable name="locations-not-cached" select="$loop-glossary/m:expressions/m:location[not(@id = $locations-cached/@id)]"/>
                         
                         <div>
@@ -376,7 +382,7 @@
                                                 <xsl:value-of select="concat('Locations: ', count($loop-glossary/m:expressions/m:location), ' ')"/>
                                             </li>
                                             <xsl:choose>
-                                                <xsl:when test="not($loop-glossary/m:cache)">
+                                                <xsl:when test="not($loop-glossary-cache)">
                                                     <li>
                                                         <span class="label label-danger">
                                                             <xsl:value-of select="'Not cached'"/>
@@ -425,7 +431,7 @@
                                                                         <p class="small text-muted text-center">
                                                                             <xsl:value-of select="'Once you have confirmed that these are the valid instances of this glossary entry, please select the option to cache the locations.'"/>
                                                                             <br/>
-                                                                            <xsl:value-of select="'An instances will not appear in the Reading Room until the location is cached.'"/>
+                                                                            <xsl:value-of select="'An instance will not appear in the Reading Room until the location is cached.'"/>
                                                                         </p>
                                                                     </div>
                                                                     
@@ -1548,7 +1554,7 @@
         
         <xsl:variable name="location-id" select="@id" as="xs:string"/>
         <xsl:variable name="glossary-item" select="parent::m:expressions/parent::m:item"/>
-        <xsl:variable name="cache-location" select="$glossary-item/m:cache/m:location[@id = $location-id]"/>
+        <xsl:variable name="cache-location" select="$text/m:glossary-cache/m:gloss[@id eq $glossary-item/@id]/m:location[@id = $location-id]"/>
         
         <div class="item editor-mode translation rw-full-width small pad">
             
@@ -1559,6 +1565,7 @@
             <xsl:apply-templates select="xhtml:*"/>
             
         </div>
+        
     </xsl:template>
     
     <!-- Copy xhtml nodes -->
@@ -1630,6 +1637,9 @@
                         <xsl:value-of select="concat($reading-room-path, '/translation/', $toh-key, '.html?view-mode=editor', $link/@href)"/>
                     </xsl:when>
                     <xsl:when test="$link[@data-glossary-location]">
+                        <xsl:value-of select="concat($reading-room-path, '/translation/', $toh-key, '.html?view-mode=editor', $link/@href)"/>
+                    </xsl:when>
+                    <xsl:when test="$link[@data-pointer-type eq 'id']">
                         <xsl:value-of select="concat($reading-room-path, '/translation/', $toh-key, '.html?view-mode=editor', $link/@href)"/>
                     </xsl:when>
                     <xsl:when test="$link[@data-ref]">

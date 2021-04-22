@@ -28,7 +28,7 @@ declare variable $translation:view-modes :=
       <view-mode id="pdf"               client="pdf"      layout="expanded-fixed"  glossary="suppress"        parts="all"/>,
       <view-mode id="app"               client="app"      layout="expanded-fixed"  glossary="use-cache"       parts="all"/>,
       <view-mode id="tests"             client="none"     layout="expanded-fixed"  glossary="suppress"        parts="all"/>,
-      <view-mode id="glossary-editor"   client="browser"  layout="full"            glossary="use-cache"       parts="passage"/>,
+      <view-mode id="glossary-editor"   client="browser"  layout="full"            glossary="use-cache"       parts="glossary"/>,
       <view-mode id="glossary-check"    client="none"     layout="expanded-fixed"  glossary="no-cache"        parts="all"/>,
       <view-mode id="ajax-part"         client="ajax"     layout="part-only"       glossary="use-cache"       parts="part"/>,
       <view-mode id="passage"           client="ajax"     layout="part-only"       glossary="use-cache"       parts="passage"/>,
@@ -457,6 +457,11 @@ declare function local:render($content as element()*, $show-ids as xs:string*, $
         'show'
     else if($passage-id = ('all')) then 
         'collapse'
+    else if($view-mode[@parts = ('glossary')]) then 
+        if($content[@type eq 'glossary']) then
+            'passage'
+        else
+            'empty'
     else if($view-mode[@parts = ('passage')]) then 
         if(local:passage-in-content($content, $passage-id)) then
             'passage'
@@ -728,6 +733,7 @@ declare function translation:glossary($tei as element(tei:TEI), $passage-id as x
     
     let $glossary := 
         element { QName('http://www.tei-c.org/ns/1.0', 'div') } {
+            attribute type { 'glossary' },
             $tei/tei:text/tei:back//tei:list[@type eq 'glossary']/tei:item/tei:gloss[@xml:id]
         }
     
@@ -735,6 +741,8 @@ declare function translation:glossary($tei as element(tei:TEI), $passage-id as x
     
     let $render := 
         if($passage-id = ('glossary', 'back')) then 
+            'show'
+        else if($view-mode[@parts eq 'glossary']) then
             'show'
         else if($passage-id = ('all')) then 
             'collapse'
@@ -1371,13 +1379,16 @@ declare function translation:contributors($tei as element(tei:TEI), $include-ack
                 (: Use the label from the entities file unless it's specified in the tei :)
                 let $contributor-strings :=
                 for $translation-contributor in $translation-contributors
-                let $contributor-id := contributors:contributor-id($translation-contributor/@ref)
-                let $contributor := $contributors[@xml:id eq $contributor-id]
+                let $contributor-id := 
+                    if($translation-contributor[@ref]) then
+                        contributors:contributor-id($translation-contributor/@ref)
+                    else ''
+                    
                 return
                     if ($translation-contributor/text()) then
                         $translation-contributor
-                    else
-                        $contributor/m:label
+                    else 
+                        $contributors[@xml:id eq $contributor-id]/m:label
                 
                 let $marked-paragraphs :=
                 if ($acknowledgment/tei:p and $contributor-strings) then

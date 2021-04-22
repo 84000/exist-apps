@@ -373,6 +373,9 @@
                 </xsl:if>
             </xsl:variable>
             
+            <!-- Set a data value to flag these -->
+            <xsl:attribute name="data-pointer-type" select="$target-type"/>
+            
             <!-- Set the href and class -->
             <xsl:choose>
                 
@@ -1220,14 +1223,6 @@
                         </p>
                     </xsl:for-each>
                     
-                    <!-- Link to glossary tool -->
-                    <xsl:if test="$view-mode[@id = ('editor', 'editor-passage')] and $environment/m:url[@id eq 'operations']">
-                        <a target="84000-glossary-tool" class="underline small">
-                            <xsl:attribute name="href" select="concat($environment/m:url[@id eq 'operations']/text(), '/glossary.html', '?resource-id=', $translation-id, '&amp;glossary-id=', $glossary-item/@xml:id, '&amp;max-records=1')"/>
-                            <xsl:value-of select="'Open in the glossary editor'"/>
-                        </a>
-                    </xsl:if>
-                    
                     <!-- Expressions -->
                     <xsl:if test="$view-mode[not(@id eq 'pdf')]">
                         <div class="locations hidden-print" role="navigation" aria-label="Locations of this term in the text">
@@ -1298,6 +1293,14 @@
                             </xsl:if>
                             
                         </div>
+                    </xsl:if>
+                    
+                    <!-- Link to glossary tool -->
+                    <xsl:if test="$view-mode[@id = ('editor', 'editor-passage')] and $environment/m:url[@id eq 'operations']">
+                        <a target="84000-glossary-tool" class="underline small">
+                            <xsl:attribute name="href" select="concat($environment/m:url[@id eq 'operations']/text(), '/glossary.html', '?resource-id=', $translation-id, '&amp;glossary-id=', $glossary-item/@xml:id, '&amp;max-records=1')"/>
+                            <xsl:value-of select="'Open in the glossary editor'"/>
+                        </a>
                     </xsl:if>
                     
                 </div>

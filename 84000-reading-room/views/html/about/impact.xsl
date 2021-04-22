@@ -8,71 +8,82 @@
         <xsl:call-template name="about">
             
             <xsl:with-param name="sub-content">
+                
                 <xsl:call-template name="local-text">
                     <xsl:with-param name="local-key" select="'page-intro'"/>
                 </xsl:call-template>
-                <hr/>
-                <div class="about-stats">
-                    <div class="row">
-                        <div class="col-sm-4">
-                            <div class="stat green">
-                                <xsl:call-template name="local-text">
-                                    <xsl:with-param name="local-key" select="'visitors-per-week-stat'"/>
-                                </xsl:call-template>
+                
+                <div class="row">
+                    <div class="col-lg-9">
+                        <hr/>
+                        <div class="about-stats">
+                            <div class="row">
+                                <div class="col-sm-4">
+                                    <div class="stat green">
+                                        <xsl:call-template name="local-text">
+                                            <xsl:with-param name="local-key" select="'visitors-per-week-stat'"/>
+                                        </xsl:call-template>
+                                    </div>
+                                </div>
+                                <div class="col-sm-8">
+                                    <xsl:call-template name="local-text">
+                                        <xsl:with-param name="local-key" select="'visitors-description'"/>
+                                    </xsl:call-template>
+                                </div>
                             </div>
-                        </div>
-                        <div class="col-sm-8">
-                            <xsl:call-template name="local-text">
-                                <xsl:with-param name="local-key" select="'visitors-description'"/>
-                            </xsl:call-template>
-                        </div>
-                    </div>
-                    <hr/>
-                    <div class="row">
-                        <div class="col-sm-4">
-                            <div class="stat blue">
-                                <xsl:call-template name="local-text">
-                                    <xsl:with-param name="local-key" select="'reach-countries-stat'"/>
-                                </xsl:call-template>
+                            <hr/>
+                            <div class="row">
+                                <div class="col-sm-4">
+                                    <div class="stat blue">
+                                        <xsl:call-template name="local-text">
+                                            <xsl:with-param name="local-key" select="'reach-countries-stat'"/>
+                                        </xsl:call-template>
+                                    </div>
+                                </div>
+                                <div class="col-sm-8">
+                                    <xsl:call-template name="local-text">
+                                        <xsl:with-param name="local-key" select="'reach-description'"/>
+                                    </xsl:call-template>
+                                </div>
                             </div>
-                        </div>
-                        <div class="col-sm-8">
-                            <xsl:call-template name="local-text">
-                                <xsl:with-param name="local-key" select="'reach-description'"/>
-                            </xsl:call-template>
-                        </div>
-                    </div>
-                    <hr/>
-                    <div class="row">
-                        <div class="col-sm-4">
-                            <div class="stat orange">
-                                <xsl:call-template name="local-text">
-                                    <xsl:with-param name="local-key" select="'engagement-minutes-stat'"/>
-                                </xsl:call-template>
+                            <hr/>
+                            <div class="row">
+                                <div class="col-sm-4">
+                                    <div class="stat orange">
+                                        <xsl:call-template name="local-text">
+                                            <xsl:with-param name="local-key" select="'engagement-minutes-stat'"/>
+                                        </xsl:call-template>
+                                    </div>
+                                </div>
+                                <div class="col-sm-8">
+                                    <xsl:call-template name="local-text">
+                                        <xsl:with-param name="local-key" select="'engagement-description'"/>
+                                    </xsl:call-template>
+                                </div>
                             </div>
-                        </div>
-                        <div class="col-sm-8">
-                            <xsl:call-template name="local-text">
-                                <xsl:with-param name="local-key" select="'engagement-description'"/>
-                            </xsl:call-template>
-                        </div>
-                    </div>
-                    <hr/>
-                    <div class="row">
-                        <div class="col-sm-4">
-                            <div class="stat red">
-                                <xsl:call-template name="local-text">
-                                    <xsl:with-param name="local-key" select="'popular-views-stat'"/>
-                                </xsl:call-template>
+                            <hr/>
+                            <div>
+                                <!-- Project Progress, get from ajax -->
+                                <div id="project-progress">
+                                    <xsl:attribute name="data-onload-replace">
+                                        <xsl:choose>
+                                            <xsl:when test="$lang eq 'zh'">
+                                                <xsl:value-of select="concat('{&#34;#project-progress&#34;:&#34;', $reading-room-path,'/widget/progress-chart.html?lang=', $lang ,'#eft-progress-chart-panel&#34;}')"/>
+                                            </xsl:when>
+                                            <xsl:otherwise>
+                                                <xsl:value-of select="concat('{&#34;#project-progress&#34;:&#34;', $reading-room-path,'/widget/progress-chart.html#eft-progress-chart-panel&#34;}')"/>
+                                            </xsl:otherwise>
+                                        </xsl:choose>
+                                    </xsl:attribute>                            
+                                    <div class="panel panel-default">
+                                        <div class="panel-body loading"/>
+                                    </div>
+                                </div>
                             </div>
-                        </div>
-                        <div class="col-sm-8">
-                            <xsl:call-template name="local-text">
-                                <xsl:with-param name="local-key" select="'popular-description'"/>
-                            </xsl:call-template>
                         </div>
                     </div>
                 </div>
+                
             </xsl:with-param>
             
             <xsl:with-param name="side-content">
@@ -85,25 +96,6 @@
                 
                 <aside class="nav-sidebar">
                     <xsl:apply-templates select="$nav-sidebar"/>
-                </aside>
-                
-                <aside>
-                    <!-- Project Progress, get from ajax -->
-                    <div id="project-progress">
-                        <xsl:attribute name="data-onload-replace">
-                            <xsl:choose>
-                                <xsl:when test="$lang eq 'zh'">
-                                    <xsl:value-of select="concat('{&#34;#project-progress&#34;:&#34;', $reading-room-path,'/widget/progress-chart.html?lang=', $lang ,'#eft-progress-chart-panel&#34;}')"/>
-                                </xsl:when>
-                                <xsl:otherwise>
-                                    <xsl:value-of select="concat('{&#34;#project-progress&#34;:&#34;', $reading-room-path,'/widget/progress-chart.html#eft-progress-chart-panel&#34;}')"/>
-                                </xsl:otherwise>
-                            </xsl:choose>
-                        </xsl:attribute>                            
-                        <div class="panel panel-default">
-                            <div class="panel-body loading"/>
-                        </div>
-                    </div>
                 </aside>
                 
             </xsl:with-param>

@@ -50,21 +50,25 @@
                                                 </xsl:for-each>
                                             </ul>
                                             
-                                            <div class="tab-content pad border">
+                                            <div class="tab-content panel-padding panel-border">
                                                 <xsl:variable name="outline-summary" select="m:outline-summary"/>
                                                 <xsl:variable name="replace-text" select="m:replace-text"/>
                                                 <xsl:for-each select="('kangyur', 'combined')">
                                                     <xsl:variable name="tab" select="." as="xs:string"/>
                                                     <div role="tabpanel" class="tab-pane fade">
+                                                        
                                                         <xsl:attribute name="id" select="concat('eft-progress-chart-', $tab, '-tab')"/>
+                                                        
                                                         <xsl:if test="$tab eq 'kangyur'">
                                                             <xsl:attribute name="class" select="'tab-pane fade in active'"/>
                                                         </xsl:if>
+                                                        
                                                         <div class="bottom-margin small">
                                                             <xsl:call-template name="text">
                                                                 <xsl:with-param name="global-key" select="concat('widget.progress-chart.tab-description-', $tab)"/>
                                                             </xsl:call-template>
                                                         </div>
+                                                        
                                                         <xsl:choose>
                                                             <xsl:when test="$tab eq 'kangyur'">
                                                                 <xsl:call-template name="progress-pie-chart">
@@ -86,7 +90,7 @@
                                                 </xsl:for-each>
                                             </div>
                                             
-                                            <div class="text-center pad border">
+                                            <div class="text-center panel-padding panel-border">
                                                 
                                                 <div>
                                                     <a class="btn btn-warning uppercase">

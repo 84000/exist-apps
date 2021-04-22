@@ -108,31 +108,28 @@
     <item key="about.impact.visitors-per-week-stat">
         <div class="heading">Visitors</div>
         <div class="data">
-            <span>#visitorsPerWeekFormatted </span> per week</div>
+            <span>#visitorsPerWeekFormatted</span> per week</div>
     </item>
     <item key="about.impact.visitors-description">
-        <p>We are thrilled to welcome visitors from around the world to our website 2,500 times per week. Given that the 41 sūtras in our
-            online Reading Room are downloadable in three formats, we hope many more are reading these sūtras offline.</p>
+        <p>Our online Reading Room - a digital library of English language translations of the words of the Buddha - sees over #visitorsPerWeekFormatted visitors every week.</p>
     </item>
     <item key="about.impact.reach-countries-stat">
         <div class="heading">Reach</div>
         <div class="data">
-            <span>#reachCountriesFormatted </span> countries</div>
+            <span>#reachCountriesFormatted</span> countries</div>
     </item>
     <item key="about.impact.reach-description">
-        <p>84000: Translating the Words of the Buddha has been accessed in 242 countries and regions around the world!</p>
+        <p>Our site is regularly visited by people from over #reachCountriesFormatted countries around the world.</p>
     </item>
     <item key="about.impact.engagement-minutes-stat">
         <div class="heading">Engagement</div>
         <div class="data">
-            <span>#engagementMinutesFormatted</span> spent over 10 mins on the site</div>
+            <span>#annualDownloadsFormatted</span> downloads</div>
     </item>
     <item key="about.impact.engagement-description">
-        <p>It is so encouraging to see that visitors are spending longer durations on our site than ever before, with over 6,000 people
-            spending a minimum of ten minutes on our site and 1,378 spending well over half an hour. The functions available in our
-            state-of-the-art online Reading Room offer readers the most intuitive and supportive experience in which to study the sūtras.</p>
+        <p>In 2020 alone, our readers downloaded #annualDownloadsFormatted sūtras from our online Reading Room.</p>
     </item>
-    <item key="about.impact.popular-views-stat">
+    <!--<item key="about.impact.popular-views-stat">
         <div class="heading">Most popular</div>
         <div class="data">
             <span>#topTextViewsFormatted</span> views of the top 5 sūtras</div>
@@ -163,7 +160,7 @@
     <item key="about.impact.countries-title">Countries where our readers come from</item>
     <item key="about.impact.countries-legend">*The flags above are selected examples of the countries where our readers come from. The list
         is not exhaustive.</item>
-    <item key="about.impact.countries-timestamp">Information updated on: Aug 5, 2018</item>
+    <item key="about.impact.countries-timestamp">Information updated on: Aug 5, 2018</item>-->
 
     <!-- Sponsors -->
     <item key="about.sponsors.header-img-src">#feSiteUrl/imgs/about-headers/sponsors.jpg</item>

@@ -136,6 +136,7 @@
     </xsl:function>
     
     <xsl:function name="common:pagination">
+        
         <xsl:param name="first-record" as="xs:integer"/>
         <xsl:param name="max-records" as="xs:integer"/>
         <xsl:param name="count-records" as="xs:integer"/>
@@ -145,7 +146,7 @@
         <xsl:variable name="count-blocks" select="xs:integer(ceiling($count-records div $max-records))" as="xs:integer"/>
         <xsl:variable name="this-block" select="xs:integer(floor((($first-record -1) + $max-records) div $max-records))" as="xs:integer"/>
         
-        <nav aria-label="Page navigation" class="pull-right">
+        <nav aria-label="Page navigation" class="pagination-nav pull-right">
             <ul class="pagination">
                 <li class="disabled">
                     <span>
@@ -173,9 +174,9 @@
                         <xsl:copy-of select="common:pagination-link(((($count-blocks - 1) * $max-records) + 1), $max-records, $base-url, $append-to-url, 'fa-last', concat('Page ', format-number($count-blocks, '#,###')))"/>
                     </li>
                 </xsl:if>
-                
             </ul>
         </nav>
+        
     </xsl:function>
     
     <xsl:function name="common:pagination-link">
@@ -432,7 +433,8 @@
     <xsl:function name="common:matches-regex-exact" as="xs:string">
         
         <xsl:param name="strings" as="xs:string*"/>
-        <xsl:value-of select="concat('^\s*(', string-join($strings[normalize-space(.)] ! normalize-space(.) ! common:escape-for-regex(.), '|'), ')\s*$')"/>
+        <xsl:variable name="strings-combined" select="string-join($strings ! normalize-space(.) ! common:escape-for-regex(.), '|')"/>
+        <xsl:value-of select="concat('^\s*(', $strings-combined, ')(s|es|&#34;s|s&#34;)?\s*$')"/>
         
     </xsl:function>
     

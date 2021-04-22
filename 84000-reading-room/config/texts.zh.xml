@@ -130,7 +130,7 @@
     <item key="about.impact.engagement-description">
         <p>我們的讀者在雲端藏經閣花的時間比以往更多，有6000多人閱覽至少10分鐘，也有1378人停留超過半小時。我們先進的雲端藏經閣提供讀者們前所未有的經典閱讀體驗。</p>
     </item>
-    <item key="about.impact.popular-views-stat">
+    <!--<item key="about.impact.popular-views-stat">
         <div class="heading">熱門經典的 <br/> 閱覽次數</div>
         <div class="data">
             <span>#topTextViewsFormatted</span>
@@ -159,7 +159,7 @@
     </item>
     <item key="about.impact.countries-title">讀者來源:</item>
     <item key="about.impact.countries-legend">*備註：以上圖案僅列出部分讀者所處國家與地區，並非全數。</item>
-    <item key="about.impact.countries-timestamp">最後更新日期：2018年8月5日</item>
+    <item key="about.impact.countries-timestamp">最後更新日期：2018年8月5日</item>-->
     
     <!-- Sponsors -->
     <!--<item key="about.sponsors.page-title">贊助人</item>-->
