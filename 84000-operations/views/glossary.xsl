@@ -941,6 +941,7 @@
         
         <input type="hidden" name="glossary-id" value="{ $glossary/@id }"/>
         
+        <!-- Main term -->
         <xsl:variable name="main-term" select="$glossary/m:term[not(@type)][not(@xml:lang) or @xml:lang eq 'en'][1]"/>
         <xsl:variable name="element-id" select="concat('main-term-', $glossary/@id)"/>
         <div class="form-group">
@@ -955,6 +956,7 @@
             </div>
         </div>
         
+        <!-- Equivalent terms -->
         <xsl:variable name="source-terms" select="$glossary/m:term[not(@type)][not(@xml:lang eq 'en')]"/>
         <xsl:variable name="source-terms-count" select="count($source-terms)"/>
         <div class="add-nodes-container">
@@ -1016,6 +1018,7 @@
             </div>
         </div>
         
+        <!-- Type term|person|place|text -->
         <div class="form-group">
             
             <label for="{ concat('glossary-type-', $glossary/@id) }" class="col-sm-2 control-label">
@@ -1059,6 +1062,7 @@
             
         </div>
         
+        <!-- Mode match|marked -->
         <div class="form-group">
             
             <label for="{ concat('glossary-mode-', $glossary/@id) }" class="col-sm-2 control-label">
@@ -1093,6 +1097,7 @@
             
         </div>
         
+        <!-- Definition -->
         <xsl:variable name="definitions" select="$glossary/m:markdown/m:definition"/>
         <div class="form-group no-bottom-margin">
             
@@ -1113,7 +1118,7 @@
                     </div>
                 </xsl:for-each>
                 
-                <div class="sml-margin top bottom-margin">
+                <div class="sml-margin top">
                     <a href="#add-nodes" class="add-nodes">
                         <span class="monospace">
                             <xsl:value-of select="'+'"/>
@@ -1124,7 +1129,10 @@
                 
             </div>
             
-            <!--<div class="col-sm-4">
+        </div>
+        
+        <div class="row sml-margin top">
+            <div class="col-sm-offset-2 col-sm-8">
                 <div class="panel panel-default">
                     <div class="panel-heading" role="tab">
                         <a href="{ concat('#tag-reference-', $glossary/@id) }" aria-controls="{ concat('tag-reference-', $glossary/@id) }" id="{ concat('#tag-reference-heading-', $glossary/@xml:id) }" class="center-vertical full-width collapsed" role="button" data-toggle="collapse" aria-expanded="false">
@@ -1139,7 +1147,7 @@
                     </div>
                     <div id="{ concat('tag-reference-', $glossary/@id) }" aria-labelledby="{ concat('#tag-reference-heading-', $glossary/@id) }" class="panel-body collapse" role="tabpanel" aria-expanded="false">
                         <p class="small text-muted">
-                            <xsl:value-of select="'These are the valid tags for glossary definitions'"/>
+                            <xsl:value-of select="'These are the valid tags that can be used in glossary definitions. For more details refer to the 84000 TEI guidelines.'"/>
                         </p>
                         <p>
                             <xsl:variable name="serialization-parameters" as="element(output:serialization-parameters)">
@@ -1152,12 +1160,19 @@
                             </xsl:variable>
                             <xsl:variable name="samples">
                                 <term type="ignore">affliction</term>
+                                <distinct>dhāraṇī</distinct>
+                                <emph>Reality</emph>
                                 <foreign xml:lang="Sa-Ltn">āyatana</foreign>
+                                <hi rend="small-caps">bce</hi>
+                                <mantra xml:lang="Sa-Ltn">oṃ</mantra>
+                                <ptr target="#UT22084-001-001"/>
+                                <ref target="http://tripitaka.cbeta.org/T15n0599 ">cbeta.org</ref>
+                                <title xml:lang="en">The Rice Seedling</title>
                             </xsl:variable>
                             <xsl:for-each select="$samples/*">
                                 <p>
                                     <code>
-                                        <xsl:value-of select="replace(normalize-space(serialize(., $serialization-parameters)), '\sxmlns\S+', ' ')"/>
+                                        <xsl:value-of select="replace(normalize-space(serialize(., $serialization-parameters)), '\s*xmlns=&#34;\S*&#34;', '')"/>
                                     </code>
                                 </p>
                             </xsl:for-each>
@@ -1165,9 +1180,9 @@
                         
                     </div>
                 </div>
-            </div>-->
-            
+            </div>
         </div>
+            
         
         <div class="form-group">
             <div class="col-sm-offset-2 col-sm-2">

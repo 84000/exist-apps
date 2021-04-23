@@ -426,7 +426,7 @@
         
         <xsl:param name="strings" as="xs:string*"/>
         <xsl:variable name="strings-combined" select="string-join($strings ! normalize-space(.) ! common:escape-for-regex(.), '|')"/>
-        <xsl:value-of select="concat('(^|[^-\w])(', $strings-combined, ')(s|es|&#34;s|s&#34;)?([^-\w]|$)')"/>
+        <xsl:value-of select="concat('(^|[^-\w])(', $strings-combined, ')(s|es|''s|s'')?([^-\w]|$)')"/>
         
     </xsl:function>
     
@@ -434,7 +434,7 @@
         
         <xsl:param name="strings" as="xs:string*"/>
         <xsl:variable name="strings-combined" select="string-join($strings ! normalize-space(.) ! common:escape-for-regex(.), '|')"/>
-        <xsl:value-of select="concat('^\s*(', $strings-combined, ')(s|es|&#34;s|s&#34;)?\s*$')"/>
+        <xsl:value-of select="concat('^\s*(', $strings-combined, ')(s|es|''s|s'')?\s*$')"/>
         
     </xsl:function>
     
