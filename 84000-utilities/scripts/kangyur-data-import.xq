@@ -13,7 +13,7 @@ import module namespace functx="http://www.functx.com";
 
 declare variable $local:kangyur-work-id := 'UT4CZ5369';
 declare variable $local:kangyur-tei := collection($common:translations-path)//tei:TEI[tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl[tei:location/@work = $local:kangyur-work-id]];
-declare variable $local:import-texts := doc('/db/apps/84000-data/uploads/kangyur-import/new-kangyur-data-for-import.xml')/m:attributions/m:text[@id][@id eq 'UT22084-033-001'];
+declare variable $local:import-texts := doc('/db/apps/84000-data/uploads/kangyur-import/new-kangyur-data.xml')/m:attributions/m:text[@id][@id eq 'UT22084-033-001'];
 
 let $lowest-toh := 12
 let $highest-toh := 12
@@ -23,7 +23,7 @@ let $validation-issues :=
     let $import-text-id := $import-text/@id/string()
     let $tei-text := $local:kangyur-tei/id($import-text-id)/ancestor::tei:TEI
     let $import-text-toh-keys := $import-text/m:bibl[@type eq 'toh']/@key/string()
-    let $tei-text-toh-keys := $tei-text/tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl/@key/string()
+    let $tei-text-toh-keys := $tei-text/tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl[tei:location/@work = $local:kangyur-work-id]/@key/string()
     order by $import-text-toh-keys[1]
     return (
         
@@ -69,9 +69,9 @@ let $validation-issues :=
                 $attribution-labels-without-lang,
                 $sa-labels-with-whitespace
             }
-        ,
+        (:,
         
-        (: Check for URIs :)
+        (\: Check for URIs :\)
         let $attribution-without-uri := $import-text//m:work[@type eq 'tibetanSource']/m:attribution[not(owl:sameAs[@rdf:resource])]
         where $attribution-without-uri
         return
@@ -79,7 +79,7 @@ let $validation-issues :=
                 attribute type { 'attribution-without-uri' },
                 attribute id { $import-text-id },
                 $attribution-without-uri
-            }
+            }:)
     )
 
 return
@@ -89,8 +89,8 @@ if(doc(concat('/db/system/config',$common:tei-path, '/collection.xconf'))/ex:col
     element { QName('http://read.84000.co/ns/1.0', 'warning') } { 'DISABLE TRIGGERS BEFORE RUNNING SCRIPT' }
 
 (: Check for validation issues :)
-(:else if( $validation-issues ) then
-    $validation-issues:)
+else if( $validation-issues ) then
+    $validation-issues
 
 (: Process the import :)
 else
@@ -128,10 +128,17 @@ else
                 let $tei-bibl := $tei/tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl[@key eq $import-bibl/@key]
                 
                 let $tei-bibl-authors-new := 
-                    for $attribution in $import-bibl/m:work[@type eq 'tibetanSource']/m:attribution[owl:sameAs[@rdf:resource]]
+                    for $attribution in $import-bibl/m:work[@type eq 'tibetanSource']/m:attribution
+                    
+                    let $attribution-import-id := concat($import-id, '#', substring-after($attribution/@resource, 'eft:'))
                     
                     (: Create/find an entity based in the BDRC URI :)
-                    let $contributor-entity := $entities:entities/m:entity[owl:sameAs[@rdf:resource eq $attribution/owl:sameAs/@rdf:resource]][1]
+                    let $contributor-entity := 
+                        if($attribution[owl:sameAs[@rdf:resource]]) then
+                            $entities:entities/m:entity[owl:sameAs[@rdf:resource eq $attribution/owl:sameAs/@rdf:resource]][1]
+                        else if($attribution[@resource]) then
+                            $entities:entities/m:entity[m:source[@key eq $attribution-import-id]][1]
+                        else ()
                     
                     let $import-entity-labels := 
                         for $label in $attribution/m:label
@@ -160,14 +167,15 @@ else
                         (: Update the existing record :)
                         if($contributor-entity) then
                             element { QName('http://read.84000.co/ns/1.0', 'entity') } {
+                            
                                 (: Copy existing :)
                                 $contributor-entity/@*,
-                                (: Existing labels :)
                                 for $label in $contributor-entity/m:label
                                 return (
                                     common:ws(2),
                                     $label
                                 ),
+                                
                                 (: Additional labels :)
                                 for $label in $import-entity-labels
                                 where $label[not(text() = $contributor-entity/m:label/text())]
@@ -175,51 +183,70 @@ else
                                     common:ws(2),
                                     $label
                                 ),
+                                
                                 (: Other elements :)
                                 for $contributor-element in $contributor-entity/*[not(self::m:label)]
                                 return (
                                     common:ws(2),
                                     $contributor-element
                                 ),
+                                
                                 common:ws(1)
                             }
-                        else
-                            (: New record :)
+                        
+                        (: New record :)
+                        else if($attribution[owl:sameAs[@rdf:resource]] | $attribution[@resource]) then
                             element { QName('http://read.84000.co/ns/1.0', 'entity') } {
                                 attribute xml:id { entities:next-id() },
+                                
+                                (: labels :)
                                 for $label in $import-entity-labels
                                 return (
                                     common:ws(2),
                                     $label
                                 ),
-                                for $sameAs in $attribution/owl:sameAs[@rdf:resource]
-                                return (
-                                    common:ws(2),
-                                    $sameAs
-                                ),
+                                
+                                (: reference :)
+                                if($attribution[owl:sameAs[@rdf:resource]]) then (
+                                    for $sameAs in $attribution/owl:sameAs[@rdf:resource]
+                                    return (
+                                        common:ws(2),
+                                        $sameAs
+                                    )
+                                )
+                                else ()
+                                ,
+                                
+                                (: source :)
                                 common:ws(2),
                                 element source {
-                                    attribute key { $import-id }
+                                    attribute key { $attribution-import-id }
                                 },
+                                
+                                (: type :)
                                 common:ws(2),
                                 element type {
                                     attribute type { 'eft-attribution-person' }
                                 },
                                 common:ws(1)
                             }
+                        else ()
                     
-                    let $update-entities := common:update('entity', $contributor-entity, $new-entity, $entities:entities, ())
+                    let $update-entities := 
+                        if($new-entity) then 
+                            common:update('entity', $contributor-entity, $new-entity, $entities:entities, ())
+                        else ()
+                    
                     
                     let $contributor-id := 
                         if($new-entity[@xml:id]) then
                             concat('eft:', $new-entity/@xml:id)
-                        else
-                            concat('IMPORT-ERROR:', $import-id)
+                        else ()
                     
                     let $element-name :=
                         if($attribution[@role = ('translationplace', 'revisionplace')]) then
                             'place'
-                        else if($attribution[@role = ('reviser', 'reviser')]) then
+                        else if($attribution[matches(@role, '^reviser\.*')]) then
                             'editor'
                         else
                             'author'
@@ -229,14 +256,16 @@ else
                             'translation'
                         else if($attribution[@role = ('revisionplace')]) then
                             'revision'
-                        else if($attribution[matches(@role, '^translator\.Pandita$')]) then
+                        else if($attribution[matches(@role, '^translator\.*Pandita$')]) then
                             'translatorPandita'
                         else if($attribution[matches(@role, '^translator\.*')]) then
                             'translatorTib'
-                        else if($attribution[matches(@role, '^revis\.+Pandita$')]) then
+                        else if($attribution[matches(@role, '^reviser\.*Pandita$')]) then
                             'reviserPandita'
-                        else if($attribution[matches(@role, '^revis\.+')]) then
+                        else if($attribution[matches(@role, '^reviser\.*')]) then
                             'reviser'
+                        else if($attribution[matches(@role, '^reciter\.*')]) then
+                            'reciter'
                         else
                             'author'
                     
@@ -249,29 +278,37 @@ else
                             if($attribution[@revision]) then
                                 $attribution/@revision
                             else (),
-                            attribute ref { $contributor-id },
+                            if($contributor-id) then 
+                                attribute ref { $contributor-id }
+                            else (),
                             $import-entity-labels[1]/text()
                         }
                 
                 let $tei-bibl-new := 
                     element { node-name($tei-bibl) } {
                         $tei-bibl/@*,
-                        for $tei-bibl-node in $tei-bibl/*
-                        return
-                            if($tei-bibl-node[preceding-sibling::*[1][self::tei:biblScope]]) then (
-                                $tei-bibl-authors-new,
-                                $tei-bibl-node
+                        for $tei-bibl-node in $tei-bibl/*[not(self::tei:author | self::tei:editor | self::tei:place)]
+                        return (
+                            common:ws(5),
+                            $tei-bibl-node,
+                            if($tei-bibl-node[self::tei:biblScope]) then (
+                                for $tei-bibl-author-new in $tei-bibl-authors-new
+                                return (
+                                    common:ws(5),
+                                    $tei-bibl-author-new
+                                )
                             )
-                            else if($tei-bibl-node[self::tei:author | self::tei:editor | self::tei:place]) then
-                                ()
-                            else
-                                $tei-bibl-node
+                            else ()
+                        ),
+                        common:ws(4)
                     }
                 
                 return (
                     (: Visual check :)
                     $tei-bibl/tei:ref,
                     $import-bibl/m:label,
+                    
+                    (: Do the update :)
                     common:update($import-text/@id, $tei-bibl, $tei-bibl-new, (), ())
                 )
             }

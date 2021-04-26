@@ -618,11 +618,11 @@ declare function common:update($request-parameter as xs:string, $existing-value 
         
     else 
         
-        (: Add a return character before elements so it's not too unreadable :)
-        let $padding-ws :=
-            if(not($new-value instance of xs:anyAtomicType) and functx:node-kind($new-value) eq 'element') then
-                text { $common:node-ws }
-            else ()
+        (: Add whitespace so it's not too unreadable :)
+        let $new-value :=
+            if(($insert-following or $insert-into) and not($new-value instance of xs:anyAtomicType) and functx:node-kind($new-value) eq 'element') then
+                (text { $common:chr-tab }, $new-value, text { $common:chr-nl })
+            else $new-value
         
         (: Return <updated/> :)
         return
@@ -632,30 +632,29 @@ declare function common:update($request-parameter as xs:string, $existing-value 
                 attribute node { $request-parameter },             
                 
                 (: Do the update :)
-                if(not($existing-value) and $new-value) then        (: Insert :)
-            
-                    if($insert-following) then                      (: Insert following :)
-                    (
-                        update insert ($padding-ws, $new-value) following $insert-following,
+                if(not($existing-value) and $new-value) then            (: Insert :)
+                
+                    if($insert-following) then (                        (: Insert following :)
+                        update insert $new-value following $insert-following,
                         attribute update { 'insert' }
                     )
-                    else if($insert-into) then                      (: Insert wherever :)
-                    (
-                        update insert ($padding-ws, $new-value) into $insert-into,
+                    else if($insert-into) then (                        (: Insert wherever :)
+                        update insert $new-value into $insert-into,
                         attribute update { 'insert' }
                     )
-                    else
-                        ()
+                    else ()
                     
-                else if($existing-value and not($new-value)) then   (: Delete:)
-                (
+                else if($existing-value and not($new-value)) then (     (: Delete:)
+                
                     update delete $existing-value,
                     attribute update { 'delete' }
+                    
                 )
-                else                                                (: Replace :)
-                (
+                else (                                                  (: Replace :)
+                
                     update replace $existing-value with $new-value,
                     attribute update { 'replace' }
+                    
                 )
             }
 };
