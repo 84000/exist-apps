@@ -124,8 +124,8 @@ element { QName('http://read.84000.co/ns/1.0', 'tengyur-data') } {
     },
     
     (:let $current-block := ("O1JC76301JC21614"):)
-    let $lowest-toh := 2217
-    let $highest-toh := 2500
+    let $lowest-toh := 2501
+    let $highest-toh := 2669
     
     return
     for $tei in $local:tengyur-tei(:[tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl[tei:idno[@parent-id = $current-block]]]:)

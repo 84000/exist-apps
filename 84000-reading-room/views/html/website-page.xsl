@@ -52,6 +52,9 @@
             <xsl:when test="/m:response/@model-type eq 'search'">
                 <xsl:value-of select="common:internal-link('https://read.84000.co/search.html', (), '', $lang)"/>
             </xsl:when>
+            <xsl:when test="/m:response/@model-type eq 'glossary'">
+                <xsl:value-of select="common:internal-link('https://read.84000.co/glossary.html', (), '', $lang)"/>
+            </xsl:when>
             <xsl:when test="/m:response/@model-type eq 'about/sponsors'">
                 <xsl:value-of select="common:internal-link('https://read.84000.co/about/sponsors.html', (), '', $lang)"/>
             </xsl:when>
@@ -262,9 +265,10 @@
                 </xsl:if>
                 
                 <!-- Alert -->
-                <section id="page-alert" class="collapse">
+                <section id="page-alert" class="fixed-footer fix-height collapse">
                     <div class="container"/>
                 </section>
+                
                 <!-- Shared header -->
                 <xsl:apply-templates select="$eft-header"/>
                 
@@ -323,7 +327,7 @@
                 </xsl:if>
                 
                 <!-- Alert -->
-                <section id="page-alert" class="collapse">
+                <section id="page-alert" class="fixed-footer fix-height collapse">
                     <div class="container"/>
                 </section>
                 

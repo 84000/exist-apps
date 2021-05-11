@@ -1001,6 +1001,8 @@
                                     <xsl:value-of select="concat(' / ', m:base)"/>
                                 </xsl:for-each>
                                 
+                                <xsl:value-of select="' '"/>
+                                
                                 <span class="visible-xs-inline visible-sm-inline col-sm-pull-right italic small">
                                     <xsl:choose>
                                         <xsl:when test="@status-group eq 'published'">
@@ -1009,18 +1011,18 @@
                                                     <xsl:value-of select="concat(' Published ', format-date($text/m:publication/m:publication-date, '[FNn,*-3], [D1o] [MNn,*-3] [Y]'))"/>
                                                 </xsl:when>
                                                 <xsl:otherwise>
-                                                    <xsl:value-of select="' Published'"/>
+                                                    <xsl:value-of select="'Published'"/>
                                                 </xsl:otherwise>
                                             </xsl:choose>
                                         </xsl:when>
-                                        <xsl:when test="@status-group eq 'translated'">
-                                            <xsl:value-of select="' Translation in progress'"/>
+                                        <xsl:when test="@status-group = ('translated', 'in-translation')">
+                                            <xsl:value-of select="'Translation in progress'"/>
                                         </xsl:when>
-                                        <xsl:when test="@status-group eq 'in-translation'">
-                                             <xsl:value-of select="' Translation in progress'"/>
+                                        <xsl:when test="@status-group eq 'in-application'">
+                                            <xsl:value-of select="'Application pending'"/>
                                         </xsl:when>
                                         <xsl:otherwise>
-                                            <xsl:value-of select="' Translation not Started'"/>
+                                            <xsl:value-of select="'Translation not Started'"/>
                                         </xsl:otherwise>
                                     </xsl:choose>
                                 </span>
@@ -1240,6 +1242,11 @@
                                     <xsl:when test="@status-group eq 'in-translation'">
                                         <div class="small italic sml-margin bottom text-warning visible-md visible-lg">
                                             <xsl:value-of select="'Translation in progress'"/>
+                                        </div>
+                                    </xsl:when>
+                                    <xsl:when test="@status-group eq 'in-application'">
+                                        <div class="small italic sml-margin bottom text-warning visible-md visible-lg">
+                                            <xsl:value-of select="'Application pending'"/>
                                         </div>
                                     </xsl:when>
                                     <xsl:otherwise>

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:ops="http://operations.84000.co" xmlns:common="http://read.84000.co/common" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" version="3.0" exclude-result-prefixes="#all">
     
     <xsl:import href="../../84000-reading-room/views/html/website-page.xsl"/>
     <xsl:import href="common.xsl"/>
@@ -489,6 +489,9 @@
                                                         <xsl:when test="@status-group eq 'in-translation'">
                                                             <xsl:attribute name="class" select="'label label-warning'"/>
                                                         </xsl:when>
+                                                        <xsl:when test="@status-group eq 'in-application'">
+                                                            <xsl:attribute name="class" select="'label label-danger'"/>
+                                                        </xsl:when>
                                                         <xsl:otherwise>
                                                             <xsl:attribute name="class" select="'label label-default'"/>
                                                         </xsl:otherwise>
@@ -582,7 +585,7 @@
                                             <xsl:value-of select="concat('vol. ' , $end-volume/@number, ', p. ', $end-volume/@end-page)"/>
                                         </td>
                                         <td>
-                                            <xsl:copy-of select="common:sponsorship-status(m:sponsorship-status/m:status)"/>
+                                            <xsl:copy-of select="ops:sponsorship-status(m:sponsorship-status/m:status)"/>
                                         </td>
                                     </tr>
                                     

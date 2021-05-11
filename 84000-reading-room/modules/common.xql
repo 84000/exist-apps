@@ -337,9 +337,12 @@ function common:bo-ltn($string as xs:string) as xs:string {
 };
 
 declare function common:unescape($text as xs:string*) as node()* {
-
-    parse-xml(concat('<doc>',$text,'</doc>'))/doc/node()
-    
+    try {
+        parse-xml(concat('<doc>',$text,'</doc>'))/doc/node()
+    }
+    catch err:FODC0006 {
+        text { $text }
+    }  
 };
 
 declare function common:mark-nodes($nodes as node()*, $strings as xs:string*, $mode as xs:string) as node()* {
@@ -481,7 +484,7 @@ function common:limit-str($str as xs:string, $limit as xs:integer) as xs:string 
 };
 
 declare function common:add-selected($element as element(), $selected-value as xs:string?) as element() {
-    if(not($selected-value) and $element/@value eq '' or $element/@value eq $selected-value) then
+    if($selected-value gt '' and $element[@value eq $selected-value] or $element[@id eq $selected-value]) then
         element { node-name($element) } {
             $element/@*,
             attribute selected { 'selected' },
@@ -489,6 +492,15 @@ declare function common:add-selected($element as element(), $selected-value as x
         }
     else
         $element
+};
+
+declare function common:add-selected-children($element as element(), $selected-value as xs:string?) as element() {
+    element { node-name($element) } {
+        $element/@*,
+        for $element-child in $element/*
+        return
+            common:add-selected($element-child, $selected-value)
+    }
 };
 
 declare function common:epub-resource($file as xs:string) as xs:base64Binary {
@@ -537,7 +549,7 @@ declare function common:valid-lang($lang as xs:string) as xs:string {
 
 declare function common:letter-variations($letter as xs:string) as xs:string* {
     (: this shouldn't be necessary if collation were working!?? :)
-    let $letter := lower-case($letter)
+    let $letter := lower-case(common:normalized-chars($letter))
     return
         if($letter eq 'a') then ('a','ā')
         else if($letter eq 'd') then ('d','ḍ')
@@ -595,8 +607,7 @@ function common:contains-class($string as xs:string?, $class as xs:string*) as x
 (: Generic update fumction :)
 declare function common:update($request-parameter as xs:string, $existing-value as item()?, $new-value as item()?, $insert-into as node()?, $insert-following as node()?) as element()? {
     
-    (:
-    <debug>
+    (:<debug>
         <request-parameter>{$request-parameter}</request-parameter>
         <existing-value>{$existing-value}</existing-value>
         <new-value>{$new-value}</new-value>
@@ -619,10 +630,10 @@ declare function common:update($request-parameter as xs:string, $existing-value 
     else 
         
         (: Add whitespace so it's not too unreadable :)
-        let $new-value :=
-            if(($insert-following or $insert-into) and not($new-value instance of xs:anyAtomicType) and functx:node-kind($new-value) eq 'element') then
-                (text { $common:chr-tab }, $new-value, text { $common:chr-nl })
-            else $new-value
+        let $padding-ws :=
+            if(not($new-value instance of xs:anyAtomicType) and functx:node-kind($new-value) eq 'element') then
+                text { $common:node-ws }
+            else ()
         
         (: Return <updated/> :)
         return
@@ -635,11 +646,11 @@ declare function common:update($request-parameter as xs:string, $existing-value 
                 if(not($existing-value) and $new-value) then            (: Insert :)
                 
                     if($insert-following) then (                        (: Insert following :)
-                        update insert $new-value following $insert-following,
+                        update insert ($padding-ws, $new-value) following $insert-following,
                         attribute update { 'insert' }
                     )
                     else if($insert-into) then (                        (: Insert wherever :)
-                        update insert $new-value into $insert-into,
+                        update insert ($padding-ws, $new-value) into $insert-into,
                         attribute update { 'insert' }
                     )
                     else ()

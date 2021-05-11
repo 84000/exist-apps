@@ -72,7 +72,7 @@
         <xsl:param name="sa-string" as="xs:string"/>
         <xsl:variable name="in" select="'āḍḥīḷḹṃṇñṅṛṝṣśṭūṁ'"/>
         <xsl:variable name="out" select="'adhillmnnnrrsstum'"/>
-        <xsl:value-of select="translate(lower-case($sa-string), $in, $out)"/>
+        <xsl:value-of select="translate(lower-case(normalize-unicode(normalize-space($sa-string))), $in, $out)"/>
     </xsl:function>
     
     <xsl:function name="common:normalize-bo">
@@ -82,7 +82,7 @@
             - Add a zero-length break after a beginning shad
             - Add a she to the end
         -->
-        <xsl:value-of select="             replace(replace(replace($bo-string, '\s+', ' '), '(།)(\S)', '$1​$2'), '་\s+$', '་')"/>                  
+        <xsl:value-of select="replace(replace(replace($bo-string, '\s+', ' '), '(།)(\S)', '$1​$2'), '་\s+$', '་')"/>                  
     </xsl:function>
     
     <xsl:function name="common:alphanumeric" as="xs:string*">
@@ -310,6 +310,11 @@
                     <xsl:value-of select="'In progress'"/>
                 </span>
             </xsl:when>
+            <xsl:when test="$status-group eq 'in-application'">
+                <span class="label label-danger in-progress">
+                    <xsl:value-of select="'Application pending'"/>
+                </span>
+            </xsl:when>
             <xsl:otherwise>
                 <span class="label label-default">
                     <xsl:value-of select="'Not Started'"/>
@@ -445,7 +450,6 @@
         
     </xsl:function>
     
-    
     <xsl:function name="functx:replace-multi" as="xs:string?">
         
         <xsl:param name="arg" as="xs:string?"/>
@@ -482,6 +486,26 @@
         <xsl:param name="value" as="xs:anyAtomicType?"/>
         
         <xsl:sequence select="if(functx:is-a-number($value)) then xs:integer($value) else 0"/>
+        
+    </xsl:function>
+    
+    <xsl:function name="common:mark-string" as="node()*">
+        <xsl:param name="string" as="xs:string?"/>
+        <xsl:param name="regex" as="xs:string?"/>
+        
+        <xsl:analyze-string select="$string" regex="{ $regex }" flags="i">
+            
+            <xsl:matching-substring>
+                <span class="mark">
+                    <xsl:value-of select="."/>
+                </span>
+            </xsl:matching-substring>
+            
+            <xsl:non-matching-substring>
+                <xsl:value-of select="."/>
+            </xsl:non-matching-substring>
+            
+        </xsl:analyze-string>     
         
     </xsl:function>
     

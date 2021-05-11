@@ -1,11 +1,8 @@
 xquery version "3.0" encoding "UTF-8";
 (:
-    Accepts the resource-id parameter
-    Returns the translation xml
-    -------------------------------------------------------------
-    This does most of the processing of the TEI into a simple xml
-    format. This should then be transformed into json/html/pdf/epub
-    or other formats.
+    Accepts the resource-id and resource-suffix parameters
+    Returns knowledgbase content xml
+    -------------------------------------------------------------------
 :)
 
 declare namespace m="http://read.84000.co/ns/1.0";

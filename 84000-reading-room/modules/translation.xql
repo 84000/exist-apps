@@ -1442,3 +1442,19 @@ declare function translation:status-updates($tei as element()) as element(m:stat
     }
 };
 
+declare function translation:replace-text($resource-id as xs:string) as element(m:replace-text) {
+    element { QName('http://read.84000.co/ns/1.0', 'replace-text')} {
+        element value {
+            attribute key { '#CurrentDateTime' },
+            text { format-dateTime(current-dateTime(), '[h].[m01][Pn] on [FNn], [D1o] [MNn] [Y0001]') }
+        },
+        element value {
+            attribute key { '#LinkToSelf' },
+            text { translation:local-html($resource-id) }
+        },
+        element value {
+            attribute key { '#canonicalHTML' },
+            text { translation:canonical-html($resource-id, '') }
+        }
+    }
+};

@@ -48,9 +48,9 @@
                 <xsl:if test="$log-click">
                     <xsl:value-of select="' log-click'"/>
                 </xsl:if>
-                <xsl:if test="$get-url">
+                <!--<xsl:if test="$get-url">
                     <xsl:value-of select="' scroll-to-anchor'"/>
-                </xsl:if>
+                </xsl:if>-->
             </xsl:attribute>
             
             <span class="btn-round">
@@ -99,6 +99,70 @@
                 </span>
             </xsl:otherwise>
         </xsl:choose>
+    </xsl:template>
+    
+    <!-- Expandable box -->
+    <xsl:template name="expand-item">
+        
+        <xsl:param name="id" required="yes" as="xs:string"/>
+        <xsl:param name="title" required="yes" as="node()*"/>
+        <xsl:param name="accordion-selector" required="yes" as="xs:string"/>
+        <xsl:param name="active" as="xs:boolean" select="false()"/>
+        <xsl:param name="content" required="no" as="node()*"/>
+        
+        <div class="list-group-item collapse-background">
+            
+            <xsl:if test="$active">
+                <xsl:attribute name="class" select="'list-group-item collapse-background show-background'"/>
+            </xsl:if>
+            
+            <div role="tab">
+                
+                <xsl:attribute name="id" select="concat('expand-item-', $id, '-heading')"/>
+                
+                <div class="center-vertical full-width">
+                    
+                    <div>
+                        <xsl:copy-of select="$title"/>
+                    </div>
+                    
+                    <a class="text-right collapsed" role="button" data-toggle="collapse" aria-expanded="false">
+                        
+                        <xsl:attribute name="href" select="concat('#expand-item-', $id, '-detail')"/>
+                        <xsl:attribute name="aria-controls" select="concat('expand-item-',$id, '-detail')"/>
+                        <xsl:attribute name="data-parent" select="$accordion-selector"/>
+                        
+                        <xsl:if test="$active">
+                            <xsl:attribute name="class" select="'text-right'"/>
+                            <xsl:attribute name="aria-expanded" select="'true'"/>
+                        </xsl:if>
+                        
+                        <span>
+                            <i class="fa fa-plus collapsed-show"/>
+                            <i class="fa fa-minus collapsed-hide"/>
+                        </span>
+                    </a>
+                    
+                </div>
+            </div>
+            
+            <div class="panel-collapse collapse" role="tabpanel" aria-expanded="false">
+                
+                <xsl:attribute name="id" select="concat('expand-item-',$id, '-detail')"/>
+                <xsl:attribute name="aria-labelledby" select="concat('expand-item-',$id, '-heading')"/>
+                
+                <xsl:if test="$active">
+                    <xsl:attribute name="class" select="'panel-collapse collapse in'"/>
+                    <xsl:attribute name="aria-expanded" select="'true'"/>
+                </xsl:if>
+                
+                <div class="panel-body no-padding">
+                    <xsl:copy-of select="$content"/>
+                </div>
+                
+            </div>
+            
+        </div>
     </xsl:template>
     
 </xsl:stylesheet>

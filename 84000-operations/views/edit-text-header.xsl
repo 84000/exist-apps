@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:ops="http://operations.84000.co" xmlns:common="http://read.84000.co/common" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" version="3.0" exclude-result-prefixes="#all">
     
     <xsl:import href="../../84000-reading-room/views/html/website-page.xsl"/>
     <xsl:import href="common.xsl"/>
@@ -29,7 +29,7 @@
                         </div>
                         
                         <span class="text-right">
-                            <xsl:copy-of select="common:translation-status(m:translation/@status-group)"/>
+                            <xsl:sequence select="ops:translation-status(m:translation/@status-group)"/>
                         </span>
                         
                     </div>
@@ -1138,16 +1138,16 @@
                                 <xsl:for-each select="$toh-location/m:volume">
                                     <div class="row add-nodes-group">
                                         <div class="col-sm-3">
-                                            <xsl:copy-of select="m:text-input('Volume: ', concat('volume-', $toh-key, '-', position()), @number, 6, 'required')"/>
+                                            <xsl:copy-of select="ops:text-input('Volume: ', concat('volume-', $toh-key, '-', position()), @number, 6, 'required')"/>
                                         </div>
                                         <div class="col-sm-3">
-                                            <xsl:copy-of select="m:text-input('First page: ', concat('start-page-', $toh-key, '-', position()), @start-page, 6, 'required')"/>
+                                            <xsl:copy-of select="ops:text-input('First page: ', concat('start-page-', $toh-key, '-', position()), @start-page, 6, 'required')"/>
                                         </div>
                                         <div class="col-sm-3">
-                                            <xsl:copy-of select="m:text-input('Last page: ', concat('end-page-', $toh-key, '-', position()), @end-page, 6, 'required')"/>
+                                            <xsl:copy-of select="ops:text-input('Last page: ', concat('end-page-', $toh-key, '-', position()), @end-page, 6, 'required')"/>
                                         </div>
                                         <div class="col-sm-3">
-                                            <xsl:copy-of select="m:text-input('Count: ', concat('count-pages-', $toh-key, '-', position()), sum(@end-page - (@start-page - 1)), 6, 'disabled')"/>
+                                            <xsl:copy-of select="ops:text-input('Count: ', concat('count-pages-', $toh-key, '-', position()), sum(@end-page - (@start-page - 1)), 6, 'disabled')"/>
                                         </div>
                                     </div>
                                 </xsl:for-each>
@@ -1167,7 +1167,7 @@
                                     </xsl:if>
                                 </div>
                                 <div class="col-sm-3">
-                                    <xsl:copy-of select="m:text-input('Page count: ', concat('count-pages-', $toh-key), $toh-location/@count-pages, 6, 'required')"/>
+                                    <xsl:copy-of select="ops:text-input('Page count: ', concat('count-pages-', $toh-key), $toh-location/@count-pages, 6, 'required')"/>
                                 </div>
                             </div>
                             

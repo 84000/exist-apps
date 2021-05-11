@@ -6,21 +6,21 @@
     <!-- Output as website page -->
     <xsl:import href="../views/html/website-page.xsl"/>
     
-    <!-- Useful keys -->
-    <xsl:key name="translation-parts" match="/m:response/m:translation//m:part[@id]" use="@id"/>
-    <xsl:key name="glossary-cache-gloss" match="/m:response/m:translation/m:glossary-cache/m:gloss" use="@id"/>
-    <xsl:key name="glossary-cache-location" match="/m:response/m:translation/m:glossary-cache/m:gloss/m:location" use="@id"/>
-    <xsl:key name="folios-cache-ref" match="/m:response/m:translation/m:folios-cache/m:folio-ref" use="@id"/>
-    <xsl:key name="notes-cache-end-note" match="/m:response/m:translation/m:notes-cache/m:end-note" use="@id"/>
-    <xsl:key name="milestones-cache-milestone" match="/m:response/m:translation/m:milestones-cache/m:milestone" use="@id"/>
-    
     <!-- Global variables -->
     <xsl:variable name="translation" select="/m:response/m:translation"/>
     <xsl:variable name="section" select="/m:response/m:section"/>
     <xsl:variable name="requested-part" select="/m:response/m:request/@part"/>
-    <xsl:variable name="translation-id" select="$translation/@id"/>
     <xsl:variable name="toh-key" select="$translation/m:toh/@key"/>
     <xsl:variable name="part-status" select="if(not($translation//m:part[@render = ('preview', 'empty')])) then 'complete' else if($translation//m:part[@render eq 'show']) then 'part' else 'empty'" as="xs:string"/>
+    
+    <!-- Useful keys -->
+    <xsl:key name="translation-parts" match="m:translation//m:part[@id]" use="@id"/>
+    <xsl:key name="glossary-cache-gloss" match="m:translation/m:glossary-cache/m:gloss" use="@id"/>
+    <xsl:key name="glossary-cache-location" match="m:translation/m:glossary-cache/m:gloss/m:location" use="@id"/>
+    <xsl:key name="folios-cache-ref" match="m:translation/m:folios-cache/m:folio-ref" use="@id"/>
+    <xsl:key name="notes-cache-end-note" match="m:translation/m:notes-cache/m:end-note" use="@id"/>
+    <xsl:key name="milestones-cache-milestone" match="m:translation/m:milestones-cache/m:milestone" use="@id"/>
+    <xsl:key name="entity-instance" match="m:entities/m:entity/m:instance" use="@id"/>
     
     <!-- Pre-sort the glossaries by priority -->
     <xsl:variable name="glossary-prioritised" as="element(tei:gloss)*">
@@ -94,7 +94,7 @@
                 </xsl:when>
                 
                 <!-- EFT elements we don't want to process -->
-                <xsl:when test="parent::m:honoration | parent::m:main-title  | parent::m:sub-title | parent::m:title-supp | parent::m:match">
+                <xsl:when test="parent::m:honoration | parent::m:main-title  | parent::m:sub-title | parent::m:title-supp | parent::m:title-text | parent::m:match">
                     <xsl:value-of select="false()"/>
                 </xsl:when>
                 
@@ -898,6 +898,7 @@
                 <xsl:otherwise>
                     <xsl:attribute name="href" select="concat('#end-note-', $note/@xml:id)"/>
                     <xsl:attribute name="data-href-part" select="'end-notes'"/>
+                    <xsl:attribute name="data-href-relative" select="concat('/translation/', $toh-key, '.html', '#end-note-', $note/@xml:id)"/>
                     <xsl:call-template name="class-attribute">
                         <xsl:with-param name="base-classes" select="'footnote-link'"/>
                         <xsl:with-param name="html-classes" select="'pop-up'"/>
@@ -950,6 +951,8 @@
                                 
                                 <xsl:attribute name="href" select="concat('#', $end-note/@xml:id)"/>
                                 <xsl:attribute name="data-href-part" select="$part/@id"/>
+                                <xsl:attribute name="data-href-relative" select="concat('/translation/', $toh-key, '.html', '#', $end-note/@xml:id)"/>
+                                
                                 <!-- marks a target -->
                                 <xsl:attribute name="data-mark" select="concat('[data-mark-id=&#34;', $end-note/@xml:id, '&#34;]')"/>
                                 <xsl:attribute name="class" select="'footnote-number scroll-to-anchor'"/>
@@ -1225,7 +1228,7 @@
                     
                     <!-- Expressions -->
                     <xsl:if test="$view-mode[not(@id eq 'pdf')]">
-                        <div class="locations hidden-print" role="navigation" aria-label="Locations of this term in the text">
+                        <div class="footer hidden-print" role="navigation" aria-label="Locations of this term in the text">
                             
                             <xsl:variable name="count-expressions" select="count($cached-locations)"/>
                             <h4 class="heading">
@@ -1242,55 +1245,40 @@
                                 </xsl:choose>
                             </h4>
                             
-                            <xsl:if test="$cached-locations">
-                                <ul class="list-inline">
-                                    <xsl:for-each select="$cached-locations">
-                                        <li>
-                                            <a>
-                                                
-                                                <xsl:variable name="cached-location" select="."/>
-                                                
-                                                <xsl:variable name="target-element" as="element()?">
-                                                    <xsl:call-template name="target-element">
-                                                        <xsl:with-param name="target-id" select="$cached-location/@id"/>
-                                                    </xsl:call-template>
-                                                </xsl:variable>
-                                                
-                                                <xsl:choose>
-                                                    <xsl:when test="$target-element">
-                                                        <xsl:call-template name="target-element-href">
-                                                            <xsl:with-param name="target-element" select="$target-element"/>
-                                                            <xsl:with-param name="mark-id" select="$glossary-item/@xml:id"/>
-                                                        </xsl:call-template>
-                                                    </xsl:when>
-                                                    <xsl:otherwise>
-                                                        <xsl:attribute name="href" select="$cached-location/@id"/>
-                                                    </xsl:otherwise>
-                                                </xsl:choose>
-                                                
-                                                <xsl:if test="$view-mode[not(@client = ('ebook', 'app'))]">
-                                                    <xsl:attribute name="data-glossary-location" select="$cached-location/@id"/>
-                                                    <!-- marks a target -->
-                                                    <xsl:attribute name="data-mark" select="concat('[data-mark-id=&#34;', $glossary-item/@xml:id, '&#34;]')"/>
-                                                    <xsl:attribute name="class" select="'scroll-to-anchor'"/>
-                                                </xsl:if>
-                                                
-                                                <xsl:choose>
-                                                    <xsl:when test="$target-element">
-                                                        <xsl:call-template name="target-element-label">
-                                                            <xsl:with-param name="target-element" select="$target-element"/>
-                                                        </xsl:call-template>
-                                                    </xsl:when>
-                                                    <xsl:otherwise>
-                                                        <xsl:value-of select="position()"/>
-                                                    </xsl:otherwise>
-                                                </xsl:choose>
-                                                
-                                            </a>
-                                        </li>
-                                    </xsl:for-each>
-                                </ul>
-                            </xsl:if>
+                            <xsl:call-template name="cached-locations">
+                                <xsl:with-param name="cached-locations" select="$cached-locations"/>
+                                <xsl:with-param name="glossary-id" select="$glossary-item/@xml:id"/>
+                            </xsl:call-template>
+                            
+                        </div>
+                    </xsl:if>
+                    
+                    <!-- Link to glossary -->
+                    <xsl:variable name="entity" select="key('entity-instance', $glossary-item/@xml:id, $root)/parent::m:entity"/>
+                    <xsl:if test="$entity">
+                        <div class="footer hidden-print">
+                            
+                            <xsl:variable name="count-instances" select="count($entity/m:instance)"/>
+                            <h4 class="heading">
+                                <xsl:choose>
+                                    <xsl:when test="$count-instances gt 2">
+                                        <xsl:value-of select="concat(format-number($count-instances -1, '#,###'), ' other glossaries reference this term')"/>
+                                    </xsl:when>
+                                    <xsl:when test="$count-instances eq 2">
+                                        <xsl:value-of select="'1 other glossary references this term'"/>
+                                    </xsl:when>
+                                    <xsl:otherwise>
+                                        <xsl:value-of select="'No other glossaries reference this term'"/>
+                                    </xsl:otherwise>
+                                </xsl:choose>
+                            </h4>
+                            
+                            <p>
+                                <a target="84000-glossary">
+                                    <xsl:attribute name=" href" select="concat('/glossary.html?entity-id=', $entity/@xml:id)"/>
+                                    <xsl:value-of select="'View this term in the combined glossary.'"/>
+                                </a>
+                            </p>
                             
                         </div>
                     </xsl:if>
@@ -1298,7 +1286,7 @@
                     <!-- Link to glossary tool -->
                     <xsl:if test="$view-mode[@id = ('editor', 'editor-passage')] and $environment/m:url[@id eq 'operations']">
                         <a target="84000-glossary-tool" class="underline small">
-                            <xsl:attribute name="href" select="concat($environment/m:url[@id eq 'operations']/text(), '/glossary.html', '?resource-id=', $translation-id, '&amp;glossary-id=', $glossary-item/@xml:id, '&amp;max-records=1')"/>
+                            <xsl:attribute name="href" select="concat($environment/m:url[@id eq 'operations']/data(), '/glossary.html', '?resource-id=', $glossary-part/parent::m:translation/@id, '&amp;glossary-id=', $glossary-item/@xml:id, '&amp;max-records=1')"/>
                             <xsl:value-of select="'Open in the glossary editor'"/>
                         </a>
                     </xsl:if>
@@ -1309,6 +1297,63 @@
             
         </xsl:for-each>
     
+    </xsl:template>
+    <xsl:template name="cached-locations">
+        
+        <xsl:param name="cached-locations" as="element(m:location)*"/>
+        <xsl:param name="glossary-id" as="xs:string"/>
+        <xsl:param name="translation-root" select="$root"/>
+        
+        <xsl:if test="$cached-locations">
+            <ul class="list-inline">
+                <xsl:for-each select="$cached-locations">
+                    <li>
+                        <a>
+                            
+                            <xsl:variable name="cached-location" select="."/>
+                            
+                            <xsl:variable name="target-element" as="element()?">
+                                <xsl:call-template name="target-element">
+                                    <xsl:with-param name="target-id" select="$cached-location/@id"/>
+                                    <xsl:with-param name="translation-root" select="$translation-root"/>
+                                </xsl:call-template>
+                            </xsl:variable>
+                            
+                            <xsl:choose>
+                                <xsl:when test="$target-element">
+                                    <xsl:call-template name="target-element-href">
+                                        <xsl:with-param name="target-element" select="$target-element"/>
+                                        <xsl:with-param name="mark-id" select="$glossary-id"/>
+                                    </xsl:call-template>
+                                </xsl:when>
+                                <xsl:otherwise>
+                                    <xsl:attribute name="href" select="concat('#', $cached-location/@id)"/>
+                                </xsl:otherwise>
+                            </xsl:choose>
+                            
+                            <xsl:if test="$view-mode[not(@client = ('ebook', 'app'))]">
+                                <xsl:attribute name="data-glossary-location" select="$cached-location/@id"/>
+                                <!-- marks a target -->
+                                <xsl:attribute name="data-mark" select="concat('[data-mark-id=&#34;', $glossary-id, '&#34;]')"/>
+                                <xsl:attribute name="class" select="'scroll-to-anchor'"/>
+                            </xsl:if>
+                            
+                            <xsl:choose>
+                                <xsl:when test="$target-element">
+                                    <xsl:call-template name="target-element-label">
+                                        <xsl:with-param name="target-element" select="$target-element"/>
+                                    </xsl:call-template>
+                                </xsl:when>
+                                <xsl:otherwise>
+                                    <xsl:value-of select="position()"/>
+                                </xsl:otherwise>
+                            </xsl:choose>
+                            
+                        </a>
+                    </li>
+                </xsl:for-each>
+            </ul>
+        </xsl:if>
     </xsl:template>
     
     <!-- Headers -->
@@ -2041,11 +2086,12 @@
     <xsl:template name="target-element" as="element()?">
         
         <xsl:param name="target-id" as="xs:string"/>
+        <xsl:param name="translation-root" select="$root"/>
         
-        <xsl:variable name="target" select="key('translation-parts', $target-id, $root)[1]"/>
-        <xsl:variable name="target" select="if($target) then $target else key('notes-cache-end-note', $target-id, $root)[1]"/>
-        <xsl:variable name="target" select="if($target) then $target else key('milestones-cache-milestone', $target-id, $root)[1]"/>
-        <xsl:variable name="target" select="if($target) then $target else key('glossary-cache-gloss', $target-id, $root)[1]"/>
+        <xsl:variable name="target" select="key('translation-parts', $target-id, $translation-root)[1]"/>
+        <xsl:variable name="target" select="if($target) then $target else key('notes-cache-end-note', $target-id, $translation-root)[1]"/>
+        <xsl:variable name="target" select="if($target) then $target else key('milestones-cache-milestone', $target-id, $translation-root)[1]"/>
+        <xsl:variable name="target" select="if($target) then $target else key('glossary-cache-gloss', $target-id, $translation-root)[1]"/>
         
         <xsl:sequence select="$target"/>
         
@@ -2067,6 +2113,7 @@
                         <!-- Hash only, so it will be appended to page location on right-click and won't be followed by crawlers -->
                         <xsl:attribute name="href" select="concat('#', $target-element/@id)"/>
                         <xsl:attribute name="data-href-part" select="'glossary'"/>
+                        <xsl:attribute name="data-href-relative" select="concat('/translation/', $toh-key, '.html', '#', $target-element/@id)"/>
                         <xsl:if test="$mark-id">
                             <!-- marks a target -->
                             <xsl:attribute name="data-mark" select="concat('[data-mark-id=&#34;', $mark-id, '&#34;]')"/>
@@ -2084,6 +2131,7 @@
                         <!-- Hash only, so it will be appended to page location on right-click and won't be followed by crawlers -->
                         <xsl:attribute name="href" select="concat('#end-note-', $target-element/@id)"/>
                         <xsl:attribute name="data-href-part" select="'end-notes'"/>
+                        <xsl:attribute name="data-href-relative" select="concat('/translation/', $toh-key, '.html', '#', $target-element/@id)"/>
                         <xsl:if test="$mark-id">
                             <!-- marks a target -->
                             <xsl:attribute name="data-mark" select="concat('[data-mark-id=&#34;', $mark-id, '&#34;]')"/>
@@ -2101,6 +2149,7 @@
                         <!-- Hash only, so it will be appended to page location on right-click and won't be followed by crawlers -->
                         <xsl:attribute name="href" select="concat('#', $target-element/@id)"/>
                         <xsl:attribute name="data-href-part" select="$target-element/@id"/>
+                        <xsl:attribute name="data-href-relative" select="concat('/translation/', $toh-key, '.html', '#', $target-element/@id)"/>
                         <xsl:if test="$mark-id">
                             <!-- marks a target -->
                             <xsl:attribute name="data-mark" select="concat('[data-mark-id=&#34;', $mark-id, '&#34;]')"/>
@@ -2118,6 +2167,7 @@
                         <!-- Hash only, so it will be appended to page location on right-click and won't be followed by crawlers -->
                         <xsl:attribute name="href" select="concat('#', $target-element/@id)"/>
                         <xsl:attribute name="data-href-part" select="$target-element/@id"/>
+                        <xsl:attribute name="data-href-relative" select="concat('/translation/', $toh-key, '.html', '#', $target-element/@id)"/>
                         <xsl:if test="$mark-id">
                             <!-- marks a target -->
                             <xsl:attribute name="data-mark" select="concat('[data-mark-id=&#34;', $mark-id, '&#34;]')"/>
@@ -2231,6 +2281,7 @@
         <a title="Bookmark this section">
             <!-- Hash only, so it will be appended to page location on right-click and won't be followed by crawlers -->
             <xsl:attribute name="href" select="concat('#', $bookmark-target-hash)"/>
+            <xsl:attribute name="data-href-relative" select="concat('/translation/', $toh-key, '.html', '#', $bookmark-target-hash)"/>
             <xsl:attribute name="data-bookmark" select="string-join(($translation/m:titles/m:title[@xml:lang eq 'en'], if($bookmark-title gt '') then $bookmark-title else $bookmark-label), ' / ')"/>
             <xsl:attribute name="class" select="$link-class"/>
             <xsl:value-of select="$bookmark-label"/>
@@ -2299,6 +2350,7 @@
                     <xsl:when test="$view-mode[not(@client = ('ebook', 'app'))]">
                         <a>
                             <xsl:attribute name="href" select="concat('#', $matching-glossary/@xml:id)"/>
+                            <xsl:attribute name="data-href-relative" select="concat('/translation/', $toh-key, '.html', '#', $matching-glossary/@xml:id)"/>
                             <xsl:attribute name="data-glossary-id" select="$matching-glossary/@xml:id"/>
                             <xsl:attribute name="data-match-mode" select="'marked'"/>
                             <xsl:attribute name="data-glossary-location">
@@ -2510,6 +2562,7 @@
                 <a>
                     
                     <xsl:attribute name="href" select="concat('#', $glossary-id)"/>
+                    <xsl:attribute name="data-href-relative" select="concat('/translation/', $toh-key, '.html', '#', $glossary-id)"/>
                     <xsl:attribute name="data-glossary-id" select="$glossary-id"/>
                     <xsl:attribute name="data-match-mode" select="'matched'"/>
                     <xsl:attribute name="data-glossary-location" select="$glossary-location"/>
@@ -2595,6 +2648,10 @@
             </xsl:when>
             
             <xsl:when test="$node[not(ancestor::m:part[@glossarize])]">
+                <xsl:value-of select="false()"/>
+            </xsl:when>
+            
+            <xsl:when test="$node[ancestor-or-self::*[@rend eq 'ignoreGlossary']]">
                 <xsl:value-of select="false()"/>
             </xsl:when>
             

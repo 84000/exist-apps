@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:common="http://read.84000.co/common" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" xmlns:exslt="http://exslt.org/common" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:ops="http://operations.84000.co" xmlns:common="http://read.84000.co/common" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" xmlns:exslt="http://exslt.org/common" version="3.0" exclude-result-prefixes="#all">
     
     <xsl:variable name="environment" select="/m:response/m:environment"/>
     <xsl:variable name="reading-room-path" select="$environment/m:url[@id eq 'reading-room']/text()" as="xs:string"/>
@@ -14,6 +14,7 @@
     
     <!-- Page header -->
     <xsl:template name="operations-page">
+        
         <xsl:param name="active-tab"/>
         <xsl:param name="page-content" required="yes"/>
         
@@ -315,134 +316,6 @@
         </div>
     </xsl:template>
     
-    <!-- <input type="text"/> -->
-    <xsl:function name="m:text-input">
-        <xsl:param name="label"/>
-        <xsl:param name="name"/>
-        <xsl:param name="value"/>
-        <xsl:param name="size" as="xs:integer"/>
-        <xsl:param name="css-class"/>
-        <div class="form-group">
-            <label>
-                <xsl:attribute name="class" select="concat('control-label col-sm-', xs:string(12 - $size))"/>
-                <xsl:attribute name="for" select="$name"/>
-                <xsl:value-of select="$label"/>
-            </label>
-            <div>
-                <xsl:attribute name="class" select="concat('col-sm-', $size)"/>
-                <input type="text" class="form-control">
-                    <xsl:attribute name="name" select="$name"/>
-                    <xsl:attribute name="id" select="$name"/>
-                    <xsl:attribute name="value" select="$value"/>
-                    <xsl:attribute name="class" select="concat('form-control', ' ', $css-class)"/>
-                    <xsl:if test="contains($css-class, 'disabled')">
-                        <xsl:attribute name="disabled" select="'disabled'"/>
-                    </xsl:if>
-                    <xsl:if test="contains($css-class, 'required')">
-                        <xsl:attribute name="required" select="'required'"/>
-                    </xsl:if>
-                </input>
-            </div>
-        </div>
-    </xsl:function>
-    
-    <!-- Sequence of <input type="text"/> elements -->
-    <xsl:function name="m:text-multiple-input">
-        <xsl:param name="label"/>
-        <xsl:param name="name"/>
-        <xsl:param name="values"/>
-        <xsl:param name="size" as="xs:integer"/>
-        <xsl:param name="css-class"/>
-        <xsl:for-each select="$values">
-            <xsl:choose>
-                <xsl:when test="position() = 1">
-                    <xsl:copy-of select="m:text-input($label, concat($name, '-', position()), text(), $size, $css-class)"/>
-                </xsl:when>
-                <xsl:otherwise>
-                    <xsl:copy-of select="m:text-input('+', concat($name, '-', position()), text(), $size, $css-class)"/>
-                </xsl:otherwise>
-            </xsl:choose>
-        </xsl:for-each>
-        <xsl:copy-of select="m:text-input('+', concat($name, '-', (count($values) + 1)), '', $size, $css-class)"/>
-    </xsl:function>
-    
-    <!-- <select/> -->
-    <xsl:function name="m:select-input">
-        <!-- $options sequence requires @value and @selected attributes -->
-        <xsl:param name="label"/>
-        <xsl:param name="name"/>
-        <xsl:param name="size" as="xs:integer"/>
-        <xsl:param name="rows"/>
-        <xsl:param name="options"/>
-        <div class="form-group">
-            <label>
-                <xsl:attribute name="class" select="concat('control-label col-sm-', xs:string(12 - $size))"/>
-                <xsl:attribute name="for" select="$name"/>
-                <xsl:value-of select="$label"/>
-            </label>
-            <div class="col-sm-10">
-                <xsl:attribute name="class" select="concat('col-sm-', $size)"/>
-                <select class="form-control">
-                    <xsl:attribute name="name" select="$name"/>
-                    <xsl:attribute name="id" select="$name"/>
-                    <xsl:if test="$rows gt 1">
-                        <xsl:attribute name="multiple" select="'multiple'"/>
-                        <xsl:attribute name="size" select="$rows"/>
-                    </xsl:if>
-                    <xsl:for-each select="$options">
-                        <option>
-                            <xsl:attribute name="value" select="@value"/>
-                            <xsl:if test="@selected eq 'selected'">
-                                <xsl:attribute name="selected" select="@selected"/>
-                            </xsl:if>
-                            <xsl:value-of select="text()"/>
-                        </option>
-                    </xsl:for-each>
-                </select>
-            </div>
-        </div>
-    </xsl:function>
-    
-    <!-- <select/> variation -->
-    <xsl:function name="m:select-input-name">
-        <!-- $options sequence requires m:name, m:label or text() and @xml:id or @id elements -->
-        <xsl:param name="label"/>
-        <xsl:param name="name"/>
-        <xsl:param name="size" as="xs:integer"/>
-        <xsl:param name="options"/>
-        <xsl:param name="selected-id"/>
-        <div class="form-group">
-            <xsl:if test="$label">
-                <label>
-                    <xsl:attribute name="class" select="concat('control-label col-sm-', xs:string(12 - $size))"/>
-                    <xsl:attribute name="for" select="$name"/>
-                    <xsl:value-of select="$label"/>
-                </label>
-            </xsl:if>
-            <div>
-                <xsl:attribute name="class" select="concat('col-sm-', $size)"/>
-                <select class="form-control">
-                    <xsl:attribute name="name" select="$name"/>
-                    <xsl:attribute name="id" select="$name"/>
-                    <option value="">
-                        <xsl:value-of select="'[none]'"/>
-                    </option>
-                    <xsl:for-each select="$options">
-                        <xsl:variable name="option-id" select="(@xml:id, @id)[1]"/>
-                        <xsl:variable name="text" select="if (m:name | m:label) then (m:name | m:label)[1] else text()"/>
-                        <option>
-                            <xsl:attribute name="value" select="$option-id"/>
-                            <xsl:if test="$option-id eq $selected-id">
-                                <xsl:attribute name="selected" select="'selected'"/>
-                            </xsl:if>
-                            <xsl:value-of select="$text"/>
-                        </option>
-                    </xsl:for-each>
-                </select>
-            </div>
-        </div>
-    </xsl:function>
-    
     <!-- Acknowledgements -->
     <xsl:template name="acknowledgements">
         <xsl:param name="acknowledgements" required="yes"/>
@@ -467,8 +340,8 @@
                                     <xsl:value-of select="m:toh/m:full"/> / <xsl:value-of select="m:title"/>
                                 </a>
                                 <span class="text-right">
-                                    <xsl:copy-of select="common:sponsorship-status(m:sponsorship-status/m:status)"/>
-                                    <xsl:copy-of select="common:translation-status(@translation-status-group)"/>
+                                    <xsl:copy-of select="ops:sponsorship-status(m:sponsorship-status/m:status)"/>
+                                    <xsl:copy-of select="ops:translation-status(@translation-status-group)"/>
                                 </span>
                             </div>
                             
@@ -512,8 +385,136 @@
         
     </xsl:template>
     
+    <!-- <input type="text"/> -->
+    <xsl:function name="ops:text-input">
+        <xsl:param name="label"/>
+        <xsl:param name="name"/>
+        <xsl:param name="value"/>
+        <xsl:param name="size" as="xs:integer"/>
+        <xsl:param name="css-class"/>
+        <div class="form-group">
+            <label>
+                <xsl:attribute name="class" select="concat('control-label col-sm-', xs:string(12 - $size))"/>
+                <xsl:attribute name="for" select="$name"/>
+                <xsl:value-of select="$label"/>
+            </label>
+            <div>
+                <xsl:attribute name="class" select="concat('col-sm-', $size)"/>
+                <input type="text" class="form-control">
+                    <xsl:attribute name="name" select="$name"/>
+                    <xsl:attribute name="id" select="$name"/>
+                    <xsl:attribute name="value" select="$value"/>
+                    <xsl:attribute name="class" select="concat('form-control', ' ', $css-class)"/>
+                    <xsl:if test="contains($css-class, 'disabled')">
+                        <xsl:attribute name="disabled" select="'disabled'"/>
+                    </xsl:if>
+                    <xsl:if test="contains($css-class, 'required')">
+                        <xsl:attribute name="required" select="'required'"/>
+                    </xsl:if>
+                </input>
+            </div>
+        </div>
+    </xsl:function>
+    
+    <!-- Sequence of <input type="text"/> elements -->
+    <xsl:function name="ops:text-multiple-input">
+        <xsl:param name="label"/>
+        <xsl:param name="name"/>
+        <xsl:param name="values"/>
+        <xsl:param name="size" as="xs:integer"/>
+        <xsl:param name="css-class"/>
+        <xsl:for-each select="$values">
+            <xsl:choose>
+                <xsl:when test="position() = 1">
+                    <xsl:sequence select="ops:text-input($label, concat($name, '-', position()), text(), $size, $css-class)"/>
+                </xsl:when>
+                <xsl:otherwise>
+                    <xsl:sequence select="ops:text-input('+', concat($name, '-', position()), text(), $size, $css-class)"/>
+                </xsl:otherwise>
+            </xsl:choose>
+        </xsl:for-each>
+        <xsl:sequence select="ops:text-input('+', concat($name, '-', (count($values) + 1)), '', $size, $css-class)"/>
+    </xsl:function>
+    
+    <!-- <select/> -->
+    <xsl:function name="ops:select-input">
+        <!-- $options sequence requires @value and @selected attributes -->
+        <xsl:param name="label"/>
+        <xsl:param name="name"/>
+        <xsl:param name="size" as="xs:integer"/>
+        <xsl:param name="rows"/>
+        <xsl:param name="options"/>
+        <div class="form-group">
+            <label>
+                <xsl:attribute name="class" select="concat('control-label col-sm-', xs:string(12 - $size))"/>
+                <xsl:attribute name="for" select="$name"/>
+                <xsl:value-of select="$label"/>
+            </label>
+            <div class="col-sm-10">
+                <xsl:attribute name="class" select="concat('col-sm-', $size)"/>
+                <select class="form-control">
+                    <xsl:attribute name="name" select="$name"/>
+                    <xsl:attribute name="id" select="$name"/>
+                    <xsl:if test="$rows gt 1">
+                        <xsl:attribute name="multiple" select="'multiple'"/>
+                        <xsl:attribute name="size" select="$rows"/>
+                    </xsl:if>
+                    <xsl:for-each select="$options">
+                        <option>
+                            <xsl:attribute name="value" select="@value"/>
+                            <xsl:if test="@selected eq 'selected'">
+                                <xsl:attribute name="selected" select="@selected"/>
+                            </xsl:if>
+                            <xsl:value-of select="text()"/>
+                        </option>
+                    </xsl:for-each>
+                </select>
+            </div>
+        </div>
+    </xsl:function>
+    
+    <!-- <select/> variation -->
+    <xsl:function name="ops:select-input-name">
+        <!-- $options sequence requires m:name, m:label or text() and @xml:id or @id elements -->
+        <xsl:param name="label"/>
+        <xsl:param name="name"/>
+        <xsl:param name="size" as="xs:integer"/>
+        <xsl:param name="options"/>
+        <xsl:param name="selected-id"/>
+        <div class="form-group">
+            <xsl:if test="$label">
+                <label>
+                    <xsl:attribute name="class" select="concat('control-label col-sm-', xs:string(12 - $size))"/>
+                    <xsl:attribute name="for" select="$name"/>
+                    <xsl:value-of select="$label"/>
+                </label>
+            </xsl:if>
+            <div>
+                <xsl:attribute name="class" select="concat('col-sm-', $size)"/>
+                <select class="form-control">
+                    <xsl:attribute name="name" select="$name"/>
+                    <xsl:attribute name="id" select="$name"/>
+                    <option value="">
+                        <xsl:value-of select="'[none]'"/>
+                    </option>
+                    <xsl:for-each select="$options">
+                        <xsl:variable name="option-id" select="(@xml:id, @id)[1]"/>
+                        <xsl:variable name="text" select="if (m:name | m:label) then (m:name | m:label)[1] else text()"/>
+                        <option>
+                            <xsl:attribute name="value" select="$option-id"/>
+                            <xsl:if test="$option-id eq $selected-id">
+                                <xsl:attribute name="selected" select="'selected'"/>
+                            </xsl:if>
+                            <xsl:value-of select="$text"/>
+                        </option>
+                    </xsl:for-each>
+                </select>
+            </div>
+        </div>
+    </xsl:function>
+    
     <!-- Translation status -->
-    <xsl:function name="common:translation-status">
+    <xsl:function name="ops:translation-status">
         <xsl:param name="status-group"/>
         <xsl:choose>
             <xsl:when test="$status-group eq 'published'">
@@ -531,6 +532,11 @@
                     <xsl:value-of select="'In progress'"/>
                 </span>
             </xsl:when>
+            <xsl:when test="$status-group eq 'in-application'">
+                <span class="label label-danger in-progress">
+                    <xsl:value-of select="'Application pending'"/>
+                </span>
+            </xsl:when>
             <xsl:otherwise>
                 <span class="label label-default">
                     <xsl:value-of select="'Not Started'"/>
@@ -540,7 +546,7 @@
     </xsl:function>
     
     <!-- Sponsorship status -->
-    <xsl:function name="common:sponsorship-status">
+    <xsl:function name="ops:sponsorship-status">
         <xsl:param name="sponsorship-statuses"/>
         <xsl:for-each select="$sponsorship-statuses">
             <xsl:if test="not(@id eq 'no-sponsorship')">

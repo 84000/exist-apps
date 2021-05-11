@@ -275,25 +275,25 @@
     <item key="widget.progress-panel.published-count-after-label">已發布頁數</item>
     
     <!-- Progress chart widget -->
-    <item key="widget.progress-chart.tab-title-kangyur">目標一</item>
+    <item key="widget.progress-chart.tab-title-kangyur">25年目標</item>
     <item key="widget.progress-chart.tab-description-kangyur">
-        <p>將《甘珠爾》（佛陀言教）全部翻譯完成</p>
+        <p>將藏文《甘珠爾》（佛陀言教）全部翻譯完成</p>
         <ul class="list-unstyled">
             <li>總頁數：<strong>70,000頁</strong>
             </li>
-            <li>目標完成時間：<strong>25年</strong>
+            <li>目標完成時間：<strong>2035年</strong>
             </li>
         </ul>
     </item>
     <!--<item key="widget.progress-chart.tab-subtitle-kangyur">約70,000頁</item>-->
     <!--<item key="widget.progress-chart.tab-description-kangyur">您的支持，讓我們能夠在2035年實現25年將整套《甘珠爾》翻譯完成的目標。</item>-->
-    <item key="widget.progress-chart.tab-title-combined">目標二</item>
+    <item key="widget.progress-chart.tab-title-combined">百年目標</item>
     <item key="widget.progress-chart.tab-description-combined">
-        <p>將藏文大藏經（《甘珠爾》以及《丹珠爾》）全部翻譯完成</p>
+        <p>將藏文大藏經《甘珠爾》與《丹珠爾》全部翻譯完成</p>
         <ul class="list-unstyled">
             <li>總頁數：<strong>231,800頁</strong>
             </li>
-            <li>目標完成時間：<strong>100年</strong>
+            <li>目標完成時間：<strong>2110年</strong>
             </li>
         </ul>
     </item>

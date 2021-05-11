@@ -21,7 +21,8 @@
                                     </a>
                                 </li>
                                 <li>
-                                    <a href="search.html">
+                                    <a>
+                                        <xsl:attribute name="href" select="common:internal-link('search.html', (), '', /m:response/@lang)"/>
                                         <xsl:value-of select="'Search the Reading Room'"/>
                                     </a>
                                 </li>

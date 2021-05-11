@@ -572,7 +572,7 @@
         
         <xsl:variable name="page-alert">
             <xsl:if test="m:updated">
-                <div id="page-alert" class="collapse in info" role="alert">
+                <div id="page-alert" class="fixed-footer fix-height collapse in info" role="alert">
                     <div class="container">
                         
                         <xsl:choose>

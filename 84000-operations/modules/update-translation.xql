@@ -1,5 +1,7 @@
 module namespace update-translation = "http://operations.84000.co/update-translation";
 
+import module namespace update-entity = "http://operations.84000.co/update-entity" at "update-entity.xql";
+
 import module namespace common = "http://read.84000.co/common" at "../../84000-reading-room/modules/common.xql";
 import module namespace tei-content = "http://read.84000.co/tei-content" at "../../84000-reading-room/modules/tei-content.xql";
 import module namespace sponsors = "http://read.84000.co/sponsors" at "../../84000-reading-room/modules/sponsors.xql";
@@ -7,7 +9,7 @@ import module namespace contributors = "http://read.84000.co/contributors" at ".
 import module namespace sponsorship = "http://read.84000.co/sponsorship" at "../../84000-reading-room/modules/sponsorship.xql";
 import module namespace translation = "http://read.84000.co/translation" at "../../84000-reading-room/modules/translation.xql";
 import module namespace glossary = "http://read.84000.co/glossary" at "../../84000-reading-room/modules/glossary.xql";
-import module namespace entities = "http://read.84000.co/entities" at "../../84000-reading-room/modules/entities.xql";
+
 import module namespace translation-status = "http://read.84000.co/translation-status" at "translation-status.xql";
 import module namespace store = "http://read.84000.co/store" at "../../84000-reading-room/modules/store.xql";
 
@@ -271,6 +273,7 @@ declare function update-translation:title-statement($tei as element(tei:TEI)) as
             
             (: Translator main :)
             let $translator-team-id := request:get-parameter('translator-team-id', '') ! lower-case(.)
+            let $existing-translator-team := $existing-value/tei:author[@role eq 'translatorMain']
                 
             where $translator-team-id gt ''
             return (
@@ -281,9 +284,10 @@ declare function update-translation:title-statement($tei as element(tei:TEI)) as
                     attribute ref { contributors:contributor-uri($translator-team-id) },
                     
                     (: Carry over the text :)
-                    if (contributors:contributor-id($existing-value/tei:author[@role eq 'translatorMain']/@ref) eq $translator-team-id) then
-                        $existing-value/tei:author[@role eq 'translatorMain']/node()
+                    if ($existing-translator-team[@ref] and contributors:contributor-id($existing-translator-team/@ref) eq $translator-team-id) then
+                        $existing-translator-team/node()
                     else ()
+                    
                 }
             )
             ,
@@ -574,18 +578,22 @@ declare function update-translation:update-glossary($tei as element(tei:TEI), $g
                     return(
                         common:ws(7),
                         element {QName('http://www.tei-c.org/ns/1.0', 'term')} {
-                            (: If more than one en term is passed then make it an alternative :)
+                        
+                            (: Lang - if more than one en term is passed then make it an alternative :)
                             if($term-lang = 'en') then
                                 attribute type {'alternative'}
                             else 
                                 attribute xml:lang {$term-lang}
                             ,
+                            
+                            (: Text - if Sanskrit parse hyphens :)
                             text {
                                 if ($term-lang eq 'Sa-Ltn') then
                                     replace($term-text, '\-', '­')
                                 else
                                     $term-text
                             }
+                            
                         }
                     ),
                     
@@ -636,7 +644,7 @@ declare function update-translation:update-glossary($tei as element(tei:TEI), $g
         (: If we are removing then also remove the entity instance and refresh the cache :)
         if ($remove) then (
             update-translation:cache-glossary($tei, 'none'),
-            entities:remove-instance($glossary-id)
+            update-entity:remove-instance($glossary-id)
         )
         else
             ()

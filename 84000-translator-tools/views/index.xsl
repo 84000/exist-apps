@@ -165,6 +165,7 @@
     <xsl:template name="glossary">
         
         <div id="cumulative-glossary">
+            
             <div class="center-vertical full-width">
                 <div>
                     <ul class="nav nav-pills">

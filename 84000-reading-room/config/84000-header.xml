@@ -57,6 +57,9 @@
             <item url="https://read.84000.co/search.html">
                 <label key="label-search">Search the Reading Room</label>
             </item>
+            <item url="https://read.84000.co/glossary.html">
+                <label key="label-search">Glossary</label>
+            </item>
         </item>
         <item class="resources" url="#resources">
             <label key="label-resources">Resources</label>
@@ -199,6 +202,9 @@
             </item>
             <item url="https://read.84000.co/search.html?lang=zh">
                 <label key="label-search">雲端藏經閣檢索</label>
+            </item>
+            <item url="https://read.84000.co/glossary.html?lang=zh">
+                <label key="label-search">Browse Glossary Terms</label>
             </item>
         </item>
         <item class="resources" url="#resources">

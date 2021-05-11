@@ -33,6 +33,7 @@ declare variable $tei-content:text-statuses :=
 declare variable $tei-content:published-status-ids := $tei-content:text-statuses/m:status[@group = ('published')]/@status-id;
 declare variable $tei-content:in-progress-status-ids := $tei-content:text-statuses/m:status[@group = ('translated', 'in-translation')]/@status-id;
 declare variable $tei-content:marked-up-status-ids := $tei-content:text-statuses/m:status[@marked-up = 'true']/@status-id;
+
 declare variable $tei-content:title-types :=
     <title-types xmlns="http://read.84000.co/ns/1.0">
         <title-type id="mainTitle">Main</title-type>

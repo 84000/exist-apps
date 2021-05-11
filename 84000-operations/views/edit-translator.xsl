@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:ops="http://operations.84000.co" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" version="3.0" exclude-result-prefixes="#all">
     
     <xsl:import href="../../84000-reading-room/views/html/website-page.xsl"/>
     <xsl:import href="common.xsl"/>
@@ -46,7 +46,7 @@
                                         </xsl:choose>
                                     </legend>
                                     
-                                    <xsl:copy-of select="m:text-input('Name','name', m:person/m:label, 9, 'required')"/>
+                                    <xsl:copy-of select="ops:text-input('Name','name', m:person/m:label, 9, 'required')"/>
                                     
                                     <div class="form-group">
                                         <div class="col-sm-offset-3 col-sm-4">
@@ -80,13 +80,13 @@
                                             <xsl:when test="m:person/m:team">
                                                 <xsl:for-each select="m:person/m:team">
                                                     <div class="add-nodes-group">
-                                                        <xsl:copy-of select="m:select-input-name('Team', concat('team-id-', position()), 9, /m:response/m:contributor-teams/m:team, @id)"/>
+                                                        <xsl:copy-of select="ops:select-input-name('Team', concat('team-id-', position()), 9, /m:response/m:contributor-teams/m:team, @id)"/>
                                                     </div>
                                                 </xsl:for-each>
                                             </xsl:when>
                                             <xsl:otherwise>
                                                 <div class="add-nodes-group">
-                                                    <xsl:copy-of select="m:select-input-name('Team', 'team-id-1', 9, /m:response/m:contributor-teams/m:team, '')"/>
+                                                    <xsl:copy-of select="ops:select-input-name('Team', 'team-id-1', 9, /m:response/m:contributor-teams/m:team, '')"/>
                                                 </div>
                                             </xsl:otherwise>
                                         </xsl:choose>
@@ -107,13 +107,13 @@
                                             <xsl:when test="m:person/m:institution">
                                                 <xsl:for-each select="m:person/m:institution">
                                                     <div class="add-nodes-group">
-                                                        <xsl:copy-of select="m:select-input-name('Institution', concat('institution-id-', position()), 9, /m:response/m:contributor-institutions/m:institution, @id)"/>
+                                                        <xsl:copy-of select="ops:select-input-name('Institution', concat('institution-id-', position()), 9, /m:response/m:contributor-institutions/m:institution, @id)"/>
                                                     </div>
                                                 </xsl:for-each>
                                             </xsl:when>
                                             <xsl:otherwise>
                                                 <div class="add-nodes-group">
-                                                    <xsl:copy-of select="m:select-input-name('Institution', 'institution-id-1', 9, /m:response/m:contributor-institutions/m:institution, '')"/>
+                                                    <xsl:copy-of select="ops:select-input-name('Institution', 'institution-id-1', 9, /m:response/m:contributor-institutions/m:institution, '')"/>
                                                 </div>
                                             </xsl:otherwise>
                                         </xsl:choose>

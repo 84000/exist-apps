@@ -14,7 +14,7 @@ declare namespace tei = "http://www.tei-c.org/ns/1.0";
 import module namespace common="http://read.84000.co/common" at "../modules/common.xql";
 import module namespace tei-content="http://read.84000.co/tei-content" at "../modules/tei-content.xql";
 import module namespace translation="http://read.84000.co/translation" at "../modules/translation.xql";
-import module namespace search="http://read.84000.co/search" at "../modules/search.xql";
+import module namespace entities="http://read.84000.co/entities" at "../modules/entities.xql";
 
 declare option exist:serialize "method=xml indent=no";
 
@@ -123,21 +123,11 @@ return
                         
                     },
                     
+                    (: Entities :)
+                    entities:entities($parts[@id eq 'glossary']/tei:div[@type eq 'glossary']/tei:gloss/@xml:id/string()),
+                    
                     (: Calculated strings :)
-                    element { QName('http://read.84000.co/ns/1.0', 'replace-text')} {
-                        element value {
-                            attribute key { '#CurrentDateTime' },
-                            text { format-dateTime(current-dateTime(), '[h].[m01][Pn] on [FNn], [D1o] [MNn] [Y0001]') }
-                        },
-                        element value {
-                            attribute key { '#LinkToSelf' },
-                            text { translation:local-html($source/@key) }
-                        },
-                        element value {
-                            attribute key { '#canonicalHTML' },
-                            text { translation:canonical-html($source/@key, $canonical-id) }
-                        }
-                    }
+                    translation:replace-text($source/@key)
                 )
             )
             

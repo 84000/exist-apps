@@ -19,7 +19,6 @@ declare variable $glossary:translations :=
     collection($common:translations-path)//tei:TEI
         [tei:teiHeader/tei:fileDesc/tei:publicationStmt
             [@status = $tei-content:published-status-ids]
-            (:[tei:idno/@xml:id = ("UT22084-031-002", "UT22084-066-018")] Restrict files for testing :)
         ];
 
 declare variable $glossary:types := ('term', 'person', 'place', 'text');
@@ -73,6 +72,99 @@ declare function local:lang-field($valid-lang as xs:string) as xs:string {
         'full-term'
 };
 
+declare function glossary:glossary-entities($type as xs:string*, $lang as xs:string, $search as xs:string) as element() {
+    
+    (: Search for terms :)
+    let $valid-lang := common:valid-lang($lang)
+    let $valid-type := local:valid-type($type)
+    let $normalized-search := common:alphanumeric(common:normalized-chars(lower-case($search)))
+    
+    let $regex := 
+        (: More than one letter :)
+        if(string-length($normalized-search) gt 1) then
+            concat('(^|\s+)', string-join(tokenize($normalized-search, '\s+'), '.*\s+'))
+        (: Single letter - only match begininning of string :)
+        else
+            if($valid-lang eq 'en') then
+                concat('^(The\s+|A\s+|An\s+)?(', string-join(common:letter-variations($normalized-search), '|'), ')')
+            else if($valid-lang eq 'Sa-Ltn') then
+                concat('^\s*(', string-join(common:letter-variations($normalized-search), '|'), ')')
+            else
+                concat('^\s*', $normalized-search, '')
+    
+    let $glossary-ids :=
+        $glossary:translations//tei:back//tei:gloss[@xml:id]
+            [if($valid-type gt '') then (@type eq $valid-type) else true()]
+            [tei:term
+                [not(@type = ('definition', 'alternative'))]
+                [if($valid-lang eq 'en') then not(@xml:lang) else (@xml:lang eq $valid-lang)]
+                [matches(., $regex, 'i')]
+            ]/@xml:id
+    
+    return (:<debug>{ $regex }</debug>:)
+        glossary:glossary-entities(entities:entities(subsequence($glossary-ids, 1, 1024))/m:entity, false())
+};
+
+declare function glossary:glossary-entities($entities as element(m:entity)*, $include-context as xs:boolean) as element() {
+    
+    <entities xmlns="http://read.84000.co/ns/1.0">
+    {
+        for $entity in $entities
+        return
+            (: Copy entity :)
+            element { node-name($entity) }{
+                
+                $entity/@*,
+                $entity/*[not(self::m:label or self::m:instance)],
+                
+                (: If there's no primary label assign one :)
+                if(not($entity/m:label[@primary eq 'true'])) then
+                    for $label at $index in $entity/m:label
+                    return (
+                        element { node-name($label) } {
+                            $label/@*,
+                            if($index eq 1) then
+                                attribute primary { true() }
+                            else (),
+                            $label/node()
+                        },
+                        if($index eq 1) then
+                            if($label[@xml:lang eq 'bo']) then
+                                element label {
+                                    attribute xml:lang { 'Bo-Ltn' },
+                                    attribute primary-transliterated { true() },
+                                    text {
+                                        common:wylie-from-bo(normalize-space($label/text()))
+                                    }
+                                }
+                            else if($label[@xml:lang eq 'Bo-Ltn']) then
+                                element label {
+                                    attribute xml:lang { 'bo' },
+                                    attribute primary-transliterated { true() },
+                                    text {
+                                        common:bo-from-wylie(normalize-space($label/text()))
+                                    }
+                                }
+                            else ()
+                        else ()
+                    )
+                (: Otherwise copy labels :)
+                else $entity/m:label
+                ,
+                (: Process instance adding items :)
+                for $instance in $entity/m:instance
+                return
+                    element { node-name($instance) } {
+                        $instance/@*,
+                        $instance/*[not(local-name(.) eq 'item')],
+                        glossary:items($instance/@id, $include-context)
+                    }
+            }
+    }
+    </entities>
+
+};
+
 declare function glossary:glossary-terms($type as xs:string*, $lang as xs:string, $search as xs:string, $include-count as xs:boolean) as element() {
     
     let $valid-lang := common:valid-lang($lang)
@@ -94,7 +186,7 @@ declare function glossary:glossary-terms($type as xs:string*, $lang as xs:string
             
             (: this shouldn't be necessary if collation were working!?? :)
             let $alt-searches := common:letter-variations($normalized-search)
-                
+            
             return
                 if($valid-lang = ('en', '')) then
                     $glossary:translations//tei:back//tei:gloss[@xml:id][@type = $valid-type]/tei:term
@@ -219,9 +311,8 @@ declare function glossary:items($glossary-ids as xs:string*, $include-context as
     
     for $gloss in 
         if(count($glossary-ids) gt 0) then
-            $glossary:translations//tei:back//tei:gloss[@xml:id = $glossary-ids]
-        else
-            ()
+            $glossary:translations//tei:back//id($glossary-ids)[self::tei:gloss]
+        else ()
     return
         local:glossary-item($gloss, $include-context)     
 };
@@ -300,6 +391,7 @@ declare function local:glossary-item($gloss as element(tei:gloss), $include-cont
             let $tei := $gloss/ancestor::tei:TEI
             let $fileDesc := $tei/tei:teiHeader/tei:fileDesc
             let $translation-id := tei-content:id($tei)
+            (:let $cache := translation:cache($tei, false()):)
             
             return
                 element { QName('http://read.84000.co/ns/1.0', 'text') } {
@@ -336,7 +428,8 @@ declare function local:glossary-item($gloss as element(tei:gloss), $include-cont
                     },
                     element edition {
                         $fileDesc/tei:editionStmt/tei:edition[1]/text() ! concat(normalize-space(.), ' ') ! normalize-space(.) 
-                    }
+                    }(:,
+                    $cache:)
                 }
         else
             ()
@@ -360,44 +453,59 @@ declare function glossary:matching-items($term as xs:string, $lang as xs:string)
 declare function glossary:similar-items($glossary-item as element(m:item)?, $search-string as xs:string?) as element(m:item)* {
     
     (: Potential matches for the passed glossary item :)
-    
     if($glossary-item) then
     
         (: Get similar entities :)
-        let $entity := entities:entities($glossary-item/@xml:id)/m:entity
-        let $instance-ids := ($entity/m:instance/@id, $glossary-item/@xml:id) ! distinct-values(.)
+        let $entity := entities:entities($glossary-item/@id)/m:entity
+        let $instance-ids := ($entity/m:instance/@id, $glossary-item/@id) ! distinct-values(.)
         let $instance-items := glossary:items($instance-ids, false())
-        let $instance-terms := ($instance-items//m:term[@xml:lang = ('bo', 'Sa-Ltn')] | $instance-items//m:alternatives[@xml:lang = ('bo', 'Sa-Ltn')]) ! distinct-values(.)
-        let $exclude-ids := ($entities:entities/m:entity[@xml:id = $entity/m:exclude/@id]/m:instance/@id, $glossary-item/@xml:id, $instance-ids) ! distinct-values(.)
+        let $combined-terms := (
+            $glossary-item/m:term[@xml:lang = ('Bo-Ltn', 'Sa-Ltn')]
+            | $glossary-item/m:alternatives[@xml:lang = ('Bo-Ltn', 'Sa-Ltn')]
+            | $instance-items/m:term[@xml:lang = ('Bo-Ltn', 'Sa-Ltn')]
+            | $instance-items/m:alternatives[@xml:lang = ('Bo-Ltn', 'Sa-Ltn')]
+        ) ! distinct-values(.)
+        
+        let $exclude-ids := (
+            $entities:entities/m:entity[@xml:id = $entity/m:exclude/@id]/m:instance/@id, 
+            $glossary-item/@id, 
+            $instance-ids
+        ) ! distinct-values(.)
+        
         let $search-string := normalize-space($search-string)
         
         let $search-query :=
             <query>
-                <bool>
-                {
-                    for $term in $instance-terms
-                    let $normalized-term := common:alphanumeric(common:normalized-chars($term))
-                    where $normalized-term gt ''
-                    return
-                        <phrase>{ $normalized-term }</phrase>
-                    ,
-                    if($search-string gt '') then
-                        <phrase>{ $search-string }</phrase>
-                    else ()
-                }
-                </bool>
+            {
+                for $term in $combined-terms
+                let $normalized-term := common:alphanumeric(common:normalized-chars($term))
+                where $normalized-term gt ''
+                return
+                    <phrase occur="must" slop="0">{ $normalized-term }</phrase>
+                ,
+                if($search-string gt '') then
+                    <phrase occur="should" slop="20">{ $search-string }</phrase>
+                else ()
+            }
             </query>
         
-        for $similar-item in 
-            $glossary:translations//tei:back//tei:gloss
-                [not(@xml:id = $exclude-ids)]
-                [tei:term[@xml:lang = ('bo', 'Sa-Ltn')]/ft:query(., $search-query, local:lookup-options())]
-        
-        order by ft:score($similar-item) descending
-        return
-             local:glossary-item($similar-item, true())
-    else
-        ()
+        return (
+            (:$glossary-item,:)
+            for $similar-item in 
+                $glossary:translations//tei:back//tei:gloss
+                    [not(@xml:id = $exclude-ids)]
+                    [
+                        tei:term
+                            [not(@type eq 'definition')]
+                            [@xml:lang = ('Bo-Ltn', 'Sa-Ltn')]
+                            [ft:query(., $search-query, local:lookup-options())]
+                    ]
+            
+            order by ft:score($similar-item) descending
+            return
+                 local:glossary-item($similar-item, true())
+        )
+    else ()
 };
 
 declare function glossary:cumulative-glossary($chunk as xs:integer) as element() {
@@ -507,20 +615,7 @@ declare function glossary:translation-data($tei as element(tei:TEI), $resource-i
                 },
                 
                 (: Calculated strings :)
-                element { QName('http://read.84000.co/ns/1.0', 'replace-text')} {
-                    element value {
-                        attribute key { '#CurrentDateTime' },
-                        text { format-dateTime(current-dateTime(), '[h].[m01][Pn] on [FNn], [D1o] [MNn] [Y0001]') }
-                    },
-                    element value {
-                        attribute key { '#LinkToSelf' },
-                        text { translation:local-html($source/@key) }
-                    },
-                    element value {
-                        attribute key { '#canonicalHTML' },
-                        text { translation:canonical-html($source/@key, '') }
-                    }
-                }
+                translation:replace-text($source/@key)
             )
         )
 
@@ -628,6 +723,8 @@ declare function glossary:expressions($tei as element(tei:TEI), $resource-id as 
     
     return
         element { QName('http://read.84000.co/ns/1.0', 'expressions') }{
+            attribute text-id { tei-content:id($tei) },
+            attribute resource-id { $resource-id },
             glossary:expression-locations($translation-html, $glossary-ids)
         }
 };
@@ -674,7 +771,59 @@ declare function glossary:expression-locations($translation-html as element(xhtm
             
             $expression-location
         }
-        
 
 };
+
+declare function glossary:item-html($tei as element(tei:TEI), $resource-id as xs:string, $glossary-id as xs:string*) as element() {
+    
+    (: The translation data for a glossary query - we need text-id and toh-key :)
+    let $source := tei-content:source($tei, $resource-id)
+    let $view-mode := $translation:view-modes/m:view-mode[@id eq 'passage']
+    
+    let $translation-data :=
+        common:response(
+            'translation',
+            $common:app-id,
+            (
+                (: Include request parameters :)
+                element { QName('http://read.84000.co/ns/1.0', 'request')} {
+                    attribute resource-id { $resource-id },
+                    attribute resource-suffix { 'html' },
+                    attribute doc-type { 'html' },
+                    attribute part { $glossary-id },
+                    $view-mode
+                },
+                
+                (: Compile all the translation data :)
+                element { QName('http://read.84000.co/ns/1.0', 'translation')} {
+                    attribute id { tei-content:id($tei) },
+                    attribute status { tei-content:translation-status($tei) },
+                    attribute status-group { tei-content:translation-status-group($tei) },
+                    attribute relative-html { translation:relative-html($source/@key, '') },
+                    attribute canonical-html { translation:canonical-html($source/@key, '') },
+                    
+                    (: Parts relevant to glossary :)
+                    translation:titles($tei),
+                    $source,
+                    translation:toh($tei, $source/@key),
+                    translation:parts($tei, $glossary-id, $view-mode),
+                    
+                    (: Include caches - not glossary, this causes a recursion problem :)
+                    translation:cache($tei, false())/m:*
+                },
+                
+                (: Calculated strings :)
+                translation:replace-text($source/@key)
+            )
+        )
+    
+    return
+        transform:transform(
+            $translation-data,
+            doc(concat($common:app-path, "/views/html/translation.xsl")), 
+            <parameters/>
+        )
+
+};
+
 
