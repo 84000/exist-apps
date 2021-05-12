@@ -605,7 +605,7 @@ function common:contains-class($string as xs:string?, $class as xs:string*) as x
 }; 
 
 (: Generic update fumction :)
-declare function common:update($request-parameter as xs:string, $existing-value as item()?, $new-value as item()?, $insert-into as node()?, $insert-following as node()?) as element()? {
+declare function common:update($request-parameter as xs:string, $existing-value as item()?, $new-value as item()?, $insert-into as element()?, $insert-following as node()?) as element()? {
     
     (:<debug>
         <request-parameter>{$request-parameter}</request-parameter>

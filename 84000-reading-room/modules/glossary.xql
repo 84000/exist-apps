@@ -134,7 +134,7 @@ declare function glossary:glossary-entities($entities as element(m:entity)*, $in
                                     attribute xml:lang { 'Bo-Ltn' },
                                     attribute primary-transliterated { true() },
                                     text {
-                                        common:wylie-from-bo(normalize-space($label/text()))
+                                        common:wylie-from-bo(normalize-space($label/text())) ! replace(., '/$', '')
                                     }
                                 }
                             else if($label[@xml:lang eq 'Bo-Ltn']) then

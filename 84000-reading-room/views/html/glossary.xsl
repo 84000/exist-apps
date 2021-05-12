@@ -129,6 +129,22 @@
                     <form action="/glossary.html" method="post" role="search" class="form-horizontal">
                         <div class="row">
                             
+                            <!-- Search form -->
+                            <div class="col-md-4 col-lg-3">
+                                <div id="search-controls" class="input-group full-width">
+                                    <input type="text" name="search" class="form-control" placeholder="Search...">
+                                        <xsl:if test="string-length($search-text) gt 1">
+                                            <xsl:attribute name="value" select="$search-text"/>
+                                        </xsl:if>
+                                    </input>
+                                    <span class="input-group-btn">
+                                        <button type="submit" class="btn btn-primary">
+                                            <i class="fa fa-search"/>
+                                        </button>
+                                    </span>
+                                </div>
+                            </div>
+                            
                             <!-- Nav pills -->
                             <div class="col-md-8 col-lg-9">
                                 <div class="center-vertical-md full-width">
@@ -233,22 +249,6 @@
                                 </div>
                             </div>
                             
-                            <!-- Search form -->
-                            <div class="col-md-4 col-lg-3">
-                                <div id="search-controls" class="input-group full-width">
-                                    <input type="text" name="search" class="form-control" placeholder="Search...">
-                                        <xsl:if test="string-length($search-text) gt 1">
-                                            <xsl:attribute name="value" select="$search-text"/>
-                                        </xsl:if>
-                                    </input>
-                                    <span class="input-group-btn">
-                                        <button type="submit" class="btn btn-primary">
-                                            <i class="fa fa-search"/>
-                                        </button>
-                                    </span>
-                                </div>
-                            </div>
-                            
                         </div>
                     </form>
                     
@@ -279,6 +279,87 @@
                     <div id="glossary-results" class="row">
                         <xsl:choose>
                             <xsl:when test="$show-entity | $entities">
+                                
+                                <!-- Entity list -->
+                                <div id="entity-list" class="col-md-4 col-lg-3">
+                                    <xsl:if test="$entities">
+                                        
+                                        <div class="results-summary">
+                                            <span>
+                                                <span class="badge badge-notification">
+                                                    <xsl:value-of select="count($entities)"/>
+                                                </span>
+                                            </span>
+                                            <span class="btn-round-text">
+                                                <xsl:choose>
+                                                    <xsl:when test="count($entities) eq 1">
+                                                        <xsl:value-of select="' match'"/>
+                                                    </xsl:when>
+                                                    <xsl:otherwise>
+                                                        <xsl:value-of select="' matches'"/>
+                                                    </xsl:otherwise>
+                                                </xsl:choose>
+                                            </span>
+                                        </div>
+                                        
+                                        <nav role="navigation">
+                                            <div class="results-list">
+                                                <xsl:for-each select="$entities">
+                                                    
+                                                    <xsl:variable name="entity" select="."/>
+                                                    <xsl:variable name="primary-label" select="($entity/m:label[@primary eq 'true'], $entity/m:label[1])[1]"/>
+                                                    <xsl:variable name="primary-transliterated" select="$entity/m:label[@primary-transliterated eq 'true']"/>
+                                                    <xsl:variable name="active-item" select="(position() eq 1)" as="xs:boolean"/>
+                                                    
+                                                    <a class="results-list-item">
+                                                        
+                                                        <xsl:if test="$active-item">
+                                                            <xsl:attribute name="class" select="'results-list-item active'"/>
+                                                        </xsl:if>
+                                                        <xsl:attribute name="href" select="concat('glossary.html?entity-id=', @xml:id, '#', @xml:id, '-detail')"/>
+                                                        <xsl:attribute name="data-ajax-target" select="'#entity-detail .entity-detail-container'"/>
+                                                        <xsl:attribute name="data-toggle-active" select="'_self'"/>
+                                                        
+                                                        <h3>
+                                                            <xsl:attribute name="class">
+                                                                <xsl:value-of select="string-join(('results-list-item-heading', common:lang-class($primary-label/@xml:lang)),' ')"/>
+                                                            </xsl:attribute>
+                                                            <xsl:value-of select="normalize-space($primary-label/text())"/>
+                                                        </h3>
+                                                        
+                                                        <xsl:if test="$primary-transliterated">
+                                                            <p>
+                                                                <xsl:attribute name="class">
+                                                                    <xsl:value-of select="string-join(('text-muted small', common:lang-class($primary-transliterated/@xml:lang)),' ')"/>
+                                                                </xsl:attribute>
+                                                                <xsl:value-of select="normalize-space($primary-transliterated/text())"/>
+                                                            </p>
+                                                        </xsl:if>
+                                                        
+                                                        <ul class="list-unstyled">
+                                                            <xsl:for-each-group select="$entity/m:instance/m:item/m:term[@xml:lang eq $selected-term-lang/@id]" group-by="common:standardized-sa(text())">
+                                                                <li class="small">
+                                                                    <xsl:choose>
+                                                                        <xsl:when test="matches(common:standardized-sa(data()), concat('(^|\s+)', string-join(tokenize($search-text, '\s+') ! common:standardized-sa(.) ! common:escape-for-regex(.), '.*\s+'), ''), 'i')">
+                                                                            <mark>
+                                                                                <xsl:value-of select="text()"/>
+                                                                            </mark>
+                                                                        </xsl:when>
+                                                                        <xsl:otherwise>
+                                                                            <xsl:value-of select="text()"/>
+                                                                        </xsl:otherwise>
+                                                                    </xsl:choose>
+                                                                </li>
+                                                            </xsl:for-each-group>
+                                                        </ul>
+                                                        
+                                                    </a>
+                                                </xsl:for-each>
+                                            </div>
+                                        </nav>    
+                                        
+                                    </xsl:if>
+                                </div>
                                 
                                 <!-- Selected entity -->
                                 <div id="entity-selected" class="col-md-8 col-lg-9">
@@ -395,87 +476,6 @@
                                             </div>
                                             
                                         </div>
-                                    </xsl:if>
-                                </div>
-                                
-                                <!-- Entity list -->
-                                <div id="entity-list" class="col-md-4 col-lg-3">
-                                    <xsl:if test="$entities">
-                                        
-                                        <div class="results-summary">
-                                            <span>
-                                                <span class="badge badge-notification">
-                                                    <xsl:value-of select="count($entities)"/>
-                                                </span>
-                                            </span>
-                                            <span class="btn-round-text">
-                                                <xsl:choose>
-                                                    <xsl:when test="count($entities) eq 1">
-                                                        <xsl:value-of select="' match'"/>
-                                                    </xsl:when>
-                                                    <xsl:otherwise>
-                                                        <xsl:value-of select="' matches'"/>
-                                                    </xsl:otherwise>
-                                                </xsl:choose>
-                                            </span>
-                                        </div>
-                                        
-                                        <nav role="navigation">
-                                            <div class="results-list">
-                                                <xsl:for-each select="$entities">
-                                                    
-                                                    <xsl:variable name="entity" select="."/>
-                                                    <xsl:variable name="primary-label" select="($entity/m:label[@primary eq 'true'], $entity/m:label[1])[1]"/>
-                                                    <xsl:variable name="primary-transliterated" select="$entity/m:label[@primary-transliterated eq 'true']"/>
-                                                    <xsl:variable name="active-item" select="(position() eq 1)" as="xs:boolean"/>
-                                                    
-                                                    <a class="results-list-item">
-                                                        
-                                                        <xsl:if test="$active-item">
-                                                            <xsl:attribute name="class" select="'results-list-item active'"/>
-                                                        </xsl:if>
-                                                        <xsl:attribute name="href" select="concat('glossary.html?entity-id=', @xml:id, '#', @xml:id, '-detail')"/>
-                                                        <xsl:attribute name="data-ajax-target" select="'#entity-detail .entity-detail-container'"/>
-                                                        <xsl:attribute name="data-toggle-active" select="'_self'"/>
-                                                        
-                                                        <h3>
-                                                            <xsl:attribute name="class">
-                                                                <xsl:value-of select="string-join(('results-list-item-heading', common:lang-class($primary-label/@xml:lang)),' ')"/>
-                                                            </xsl:attribute>
-                                                            <xsl:value-of select="normalize-space($primary-label/text())"/>
-                                                        </h3>
-                                                        
-                                                        <xsl:if test="$primary-transliterated">
-                                                            <p>
-                                                                <xsl:attribute name="class">
-                                                                    <xsl:value-of select="string-join(('text-muted small', common:lang-class($primary-transliterated/@xml:lang)),' ')"/>
-                                                                </xsl:attribute>
-                                                                <xsl:value-of select="normalize-space($primary-transliterated/text())"/>
-                                                            </p>
-                                                        </xsl:if>
-                                                        
-                                                        <ul class="list-unstyled">
-                                                            <xsl:for-each-group select="$entity/m:instance/m:item/m:term[@xml:lang eq $selected-term-lang/@id]" group-by="common:standardized-sa(text())">
-                                                                <li class="small">
-                                                                    <xsl:choose>
-                                                                        <xsl:when test="matches(common:standardized-sa(data()), concat('(^|\s+)', string-join(tokenize($search-text, '\s+') ! common:standardized-sa(.) ! common:escape-for-regex(.), '.*\s+'), ''), 'i')">
-                                                                            <mark>
-                                                                                <xsl:value-of select="text()"/>
-                                                                            </mark>
-                                                                        </xsl:when>
-                                                                        <xsl:otherwise>
-                                                                            <xsl:value-of select="text()"/>
-                                                                        </xsl:otherwise>
-                                                                    </xsl:choose>
-                                                                </li>
-                                                            </xsl:for-each-group>
-                                                        </ul>
-                                                        
-                                                    </a>
-                                                </xsl:for-each>
-                                            </div>
-                                        </nav>    
-                                    
                                     </xsl:if>
                                 </div>
                                 

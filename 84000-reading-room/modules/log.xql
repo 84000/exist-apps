@@ -6,6 +6,9 @@ declare namespace m="http://read.84000.co/ns/1.0";
 
 import module namespace common="http://read.84000.co/common" at "common.xql";
 
+declare variable $log:requests-log-path := concat($common:log-path, '/requests.xml');
+declare variable $log:requests-log := doc($log:requests-log-path)/m:log;
+
 declare function local:parameters() as element()* {
     for $parameter in request:get-parameter-names()
     return 
@@ -14,33 +17,29 @@ declare function local:parameters() as element()* {
         </parameter>
 };
 
-declare function log:log-request($request as xs:string, $app as xs:string, $type as xs:string, $resource-id as xs:string, $resource-suffix as xs:string) as empty-sequence() {
+declare function log:log-request($request as xs:string, $app as xs:string, $type as xs:string, $resource-id as xs:string, $resource-suffix as xs:string) as element()? {
     
     (: 
         Note: this only logs if the log file is present (available)
         To inhibit logging remove the log file.    
     :)
     
-    let $logfile-name := "requests.xml"
-    let $logfile-full := concat($common:log-path, '/', $logfile-name)
-    let $log := doc($logfile-full)/m:log
+    let $request := 
+        <request xmlns="http://read.84000.co/ns/1.0" timestamp="{current-dateTime()}">
+            <request>{$request}</request>
+            <app>{$app}</app>
+            <type>{$type}</type>
+            <resource-id>{$resource-id}</resource-id>
+            <resource-suffix>{$resource-suffix}</resource-suffix>
+            <parameters>{local:parameters()}</parameters>
+        </request>
     
-    where doc-available($logfile-full)
+    where doc-available($log:requests-log-path) and $log:requests-log
     return
         (: Insert log :)
-        update insert (
-            text { $common:chr-nl },
-            text { $common:chr-tab },
-            <request xmlns="http://read.84000.co/ns/1.0" timestamp="{current-dateTime()}">
-                <request>{$request}</request>
-                <app>{$app}</app>
-                <type>{$type}</type>
-                <resource-id>{$resource-id}</resource-id>
-                <resource-suffix>{$resource-suffix}</resource-suffix>
-                <parameters>{local:parameters()}</parameters>
-            </request>
-        )
-        into $log
+        update insert ( text{ $common:chr-tab }, $request, text{ $common:chr-nl } ) into $log:requests-log
+        (:common:update('log-request', (), $request, $log:requests-log, ()):)
+        
 };
 
 declare function local:dateTimes($timestamps) as item()* {
@@ -83,9 +82,9 @@ declare function log:requests($first-record as xs:double, $max-records as xs:dou
             order by $max-ts descending, count($request) descending
         return
             <grouped-request request-string="{ $request-string }">
-                { 
-                    $request
-                }
+            { 
+                $request
+            }
             </grouped-request>
     
     return
@@ -183,49 +182,50 @@ declare function log:achive-logs() as element() {
     return
         <achive-logs xmlns="http://read.84000.co/ns/1.0">
         {
-            if(file:is-directory(concat('/', $common:environment//m:logs-conf/m:sync-path))) then
-                (
+            if(file:is-directory(concat('/', $common:environment//m:logs-conf/m:sync-path))) then (
                     
-                    (: Rename each current log :)
-                    for $file-name in $log-files
-                        let $file-name-ts := concat($timestamp, '-', $file-name)
-                    return
-                        element rename {
-                            attribute source-collection { $common:log-path },
-                            attribute source-file { $file-name },
-                            attribute new-file { $file-name-ts },
-                            xmldb:rename($common:log-path, $file-name, $file-name-ts)
-                        }
-                    ,
+                (: Rename each current log :)
+                for $file-name in $log-files
+                    let $file-name-ts := concat($timestamp, '-', $file-name)
+                return
+                    element rename {
+                        attribute source-collection { $common:log-path },
+                        attribute source-file { $file-name },
+                        attribute new-file { $file-name-ts },
+                        xmldb:rename($common:log-path, $file-name, $file-name-ts)
+                    }
+                ,
+                
+                (: Save the logs to disk :)
+                file:sync($common:log-path, concat('/', $common:environment//m:logs-conf/m:sync-path), ()),
+                
+                (: Create new empty files and delete the timestamped ones :)
+                for $file-name in $log-files
+                    let $file-uri := xs:anyURI(concat($common:log-path, "/", $file-name))
+                    let $file-name-ts := concat($timestamp, '-', $file-name)
                     
-                    (: Save the logs to disk :)
-                    file:sync($common:log-path, concat('/', $common:environment//m:logs-conf/m:sync-path), ()),
+                return (
+                
+                    (: Create a new, empty file with correct permissions :)
+                    element store {
+                        attribute collection { $common:log-path },
+                        attribute file { $file-name },
+                        xmldb:store($common:log-path, $file-name, <log xmlns="http://read.84000.co/ns/1.0"/>),
+                        sm:chown($file-uri, 'admin'),
+                        sm:chgrp($file-uri, 'dba'),
+                        sm:chmod($file-uri, 'rw-rw-rw-')
+                    },
+                   
+                    (: Delete the date stamped file :)
+                    element remove {
+                        attribute collection { $common:log-path },
+                        attribute file { $file-name-ts },
+                        xmldb:remove($common:log-path, $file-name-ts)
+                    }
                     
-                    (: Create new empty files and delete the timestamped ones :)
-                    for $file-name in $log-files
-                        let $file-uri := xs:anyURI(concat($common:log-path, "/", $file-name))
-                        let $file-name-ts := concat($timestamp, '-', $file-name)
-                    return (
-                        (: Create a new, empty file with correct permissions :)
-                        element store {
-                            attribute collection { $common:log-path },
-                            attribute file { $file-name },
-                            xmldb:store($common:log-path, $file-name, <log xmlns="http://read.84000.co/ns/1.0"/>),
-                            sm:chown($file-uri, 'admin'),
-                            sm:chgrp($file-uri, 'dba'),
-                            sm:chmod($file-uri, 'rw-rw-rw-')
-                        },
-                       
-                        (: Delete the date stamped file :)
-                        element remove {
-                            attribute collection { $common:log-path },
-                            attribute file { $file-name-ts },
-                            xmldb:remove($common:log-path, $file-name-ts)
-                        }
-                    )
-                 )
-            else
-                ()
+                )
+             )
+            else ()
         }
         </achive-logs>
 };

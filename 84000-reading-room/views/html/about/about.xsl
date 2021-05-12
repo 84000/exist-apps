@@ -433,10 +433,11 @@
                                     </xsl:if>
                                     
                                     <xsl:if test="$show-sponsors">
+                                        <xsl:variable name="sponsors-text" select="current-group()[m:sponsors[m:sponsor]][1]"/>
                                         <xsl:call-template name="sponsors">
-                                            <xsl:with-param name="sponsor-expressions" select="m:publication/m:sponsors"/>
-                                            <xsl:with-param name="sponsors" select="m:sponsors"/>
-                                            <xsl:with-param name="sponsorship-status" select="m:sponsorship-status"/>
+                                            <xsl:with-param name="sponsor-expressions" select="$sponsors-text/m:publication/m:sponsors"/>
+                                            <xsl:with-param name="sponsors" select="$sponsors-text/m:sponsors"/>
+                                            <xsl:with-param name="sponsorship-status" select="$sponsors-text/m:sponsorship-status"/>
                                         </xsl:call-template>
                                     </xsl:if>
                                     

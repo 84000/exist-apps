@@ -46,19 +46,37 @@ let $term-langs :=
         <lang id="en" short-code="Eng">Our translation</lang>
     </term-langs>
 
-(: the id of the text :)
+(: The requested entity :)
 let $entity-id := request:get-parameter('entity-id', '')
 let $request-entity := $entities:entities/m:entity[@xml:id eq $entity-id]
+let $entity-show := 
+    if($request-entity) then
+        glossary:glossary-entities($request-entity, true())/m:entity[1]
+    else ()
 
-let $type := request:get-parameter('type', ($request-entity ! '', $glossary-types/m:type[1]/@id)[1])
-let $term-lang := request:get-parameter('term-lang', ($term-langs/m:lang[@id eq 'en']/@id)[1]) ! common:valid-lang(.)
-let $search := request:get-parameter('search', ($request-entity ! '', 'a')[1]) ! normalize-space(.)
+(: Search parameters :)
+(: Default to find similar matches to selected entity :)
+let $type := request:get-parameter(
+    'type', (
+        $glossary-types/m:type[@entity-type eq $entity-show/m:type[1]/@type]/@id, 
+        $glossary-types/m:type[1]/@id
+     )[1])
+let $term-lang := request:get-parameter(
+    'term-lang', (
+        $entity-show/m:label[@primary-transliterated eq 'true'][@xml:lang eq 'Bo-Ltn']/@xml:lang, 
+        $entity-show/m:label[@primary eq 'true'][@xml:lang eq 'Sa-Ltn']/@xml:lang, 
+        $term-langs/m:lang[1]/@id
+     )[1]) ! common:valid-lang(.)
+let $search := request:get-parameter(
+    'search', (
+        $entity-show/m:label[@primary-transliterated eq 'true'][@xml:lang eq 'Bo-Ltn']/data(), 
+        $entity-show/m:label[@primary eq 'true'][@xml:lang eq 'Sa-Ltn']/data(), 
+        'a'
+    )[1]) ! normalize-space(.)
+
 let $view-mode := request:get-parameter('view-mode', '')
 
-let $entity-list := 
-    if(not($request-entity) and $search gt '') then
-        glossary:glossary-entities($type, $term-lang, $search)
-    else ()
+let $entity-list := glossary:glossary-entities($type, $term-lang, $search)
 
 let $entity-list :=
     for $entity in $entity-list/m:entity
@@ -85,10 +103,9 @@ let $entity-list :=
         $entity
 
 let $entity-show := 
-    if($request-entity) then
-        glossary:glossary-entities($request-entity, true())/m:entity[1]
-    else 
+    if(not($entity-show)) then
         glossary:glossary-entities($entity-list[1], true())/m:entity[1]
+    else $entity-show
     
 return
     common:response(

@@ -129,7 +129,14 @@ declare function local:auth($redirect){
 (: Log the request :)
 (: Suspend this, we don't really use it and it's become an overhead (since deferred parsing was added?) :)
 (: Perhaps re-instate when we understand the slowness :)
-let $log-request := log:log-request(concat($exist:controller, $exist:path), lower-case(substring-after($exist:controller, "/")), $collection-path, $resource-id, $resource-suffix)
+let $log-request := 
+    log:log-request(
+        concat($exist:controller, $exist:path), 
+        lower-case(substring-after($exist:controller, "/")), 
+        $collection-path, 
+        $resource-id, 
+        $resource-suffix
+    )
 
 (: Process the request :)
 return

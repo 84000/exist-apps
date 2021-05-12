@@ -1295,7 +1295,6 @@ declare function translation:sponsors($tei as element(tei:TEI), $include-acknowl
     
     return
         element {QName('http://read.84000.co/ns/1.0', 'sponsors')} {
-            (
             $sponsors/m:sponsor,
             if ($include-acknowledgements) then
                 
@@ -1311,8 +1310,7 @@ declare function translation:sponsors($tei as element(tei:TEI), $include-acknowl
                         else
                             if ($sponsor-label-text gt '') then
                                 $sponsor-label-text
-                            else
-                                ()
+                            else ()
                 
                 let $count-sponsor-strings := count($sponsor-strings)
                 
@@ -1321,8 +1319,7 @@ declare function translation:sponsors($tei as element(tei:TEI), $include-acknowl
                         let $mark-sponsor-strings := $sponsor-strings ! normalize-space(lower-case(replace(., $sponsors:prefixes, '')))
                         return
                             common:mark-nodes($acknowledgment/tei:p, $mark-sponsor-strings, 'phrase')
-                    else
-                        ()
+                    else ()
                 
                 return
                     element tei:div {
@@ -1350,12 +1347,10 @@ declare function translation:sponsors($tei as element(tei:TEI), $include-acknowl
                                         )
                                 }
                                 )
-                            else
-                                ()
+                            else ()
                     }
-            else
-                ()
-            )
+            else ()
+        
         }
 };
 
