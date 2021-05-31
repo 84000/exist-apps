@@ -41,7 +41,7 @@ declare function local:after-update-document-functions($doc) {
 
 declare function local:refresh-cache($doc) {
     
-    let $cache := translation:cache($doc/tei:TEI, true())
+    let $cache := tei-content:cache($doc/tei:TEI, true())
     
     return (
     
@@ -50,7 +50,7 @@ declare function local:refresh-cache($doc) {
         let $cache-ids := $cache/m:notes-cache/m:end-note/@id/string()
         return
         if(count(($tei-ids[not(. = $cache-ids)], $cache-ids[not(. = $tei-ids)]))) then
-            common:update('trigger-notes-cache', $cache/m:notes-cache, translation:notes-cache($doc/tei:TEI, true(), true()), $cache, $cache/m:notes-cache/preceding-sibling::*[1])
+            common:update('trigger-notes-cache', $cache/m:notes-cache, tei-content:notes-cache($doc/tei:TEI, true(), true()), $cache, $cache/m:notes-cache/preceding-sibling::*[1])
         else (),
         
         (: Cache milestones :)
@@ -58,12 +58,13 @@ declare function local:refresh-cache($doc) {
         let $cache-ids := $cache/m:milestones-cache/m:milestone/@id/string()
         return
         if(count(($tei-ids[not(. = $cache-ids)], $cache-ids[not(. = $tei-ids)]))) then
-            common:update('trigger-milestones-cache', $cache/m:milestones-cache, translation:milestones-cache($doc/tei:TEI, true(), true()), $cache, $cache/m:milestones-cache/preceding-sibling::*[1])
+            common:update('trigger-milestones-cache', $cache/m:milestones-cache, tei-content:milestones-cache($doc/tei:TEI, true(), true()), $cache, $cache/m:milestones-cache/preceding-sibling::*[1])
         else (),
         
         (: Cache folios :)
         let $tei-ids := $doc/tei:TEI/tei:text/tei:body//tei:ref[@type eq 'folio']/@xml:id/string()
         let $cache-ids := $cache/m:folios-cache/m:folio-ref/@id/string()
+        where count($tei-ids) gt 0
         return
         if(count(($tei-ids[not(. = $cache-ids)], $cache-ids[not(. = $tei-ids)]))) then
             common:update('trigger-cache-folio-refs', $cache/m:folios-cache, translation:folios-cache($doc/tei:TEI, true(), true()), $cache, $cache/m:folios-cache/preceding-sibling::*[1])
@@ -72,6 +73,7 @@ declare function local:refresh-cache($doc) {
         (: Cache glossary :)
         let $tei-ids := $doc/tei:TEI//tei:back//tei:list[@type eq 'glossary']/tei:item/tei:gloss/@xml:id/string()
         let $cache-ids := $cache/m:glossary-cache/m:gloss/@id/string()
+        where count($tei-ids) gt 0
         return
         if(count(($tei-ids[not(. = $cache-ids)], $cache-ids[not(. = $tei-ids)]))) then
             common:update('trigger-cache-glossary', $cache/m:glossary-cache, translation:glossary-cache($doc/tei:TEI, 'none', true()), $cache, $cache/m:glossary-cache/preceding-sibling::*[1])

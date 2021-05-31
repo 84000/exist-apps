@@ -21,8 +21,7 @@ common:response(
             <value key="#feSiteUrl">{ $common:environment/m:url[@id eq 'front-end'][1]/text() }</value>
             <value key="#visitorsPerWeekFormatted">{ common:format-number(8000) }</value>
             <value key="#reachCountriesFormatted">{ common:format-number(155) }</value>
-            <value key="#annualDownloadsFormatted">{ common:format-number(6030) }</value>
-            <value key="#engagementMinutesFormatted">{ common:format-number(6030) }</value>
+            <value key="#annualDownloadsFormatted">{ common:format-number(35800) }</value>
         </replace-text>
         
     )

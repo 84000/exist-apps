@@ -1,7 +1,7 @@
 xquery version "3.0" encoding "UTF-8";
 
 import module namespace local="http://operations.84000.co/local" at "../modules/local.xql";
-import module namespace update-translation="http://operations.84000.co/update-translation" at "../modules/update-translation.xql";
+import module namespace update-tei="http://operations.84000.co/update-tei" at "../modules/update-tei.xql";
 
 import module namespace common="http://read.84000.co/common" at "../../84000-reading-room/modules/common.xql";
 import module namespace tei-content="http://read.84000.co/tei-content" at "../../84000-reading-room/modules/tei-content.xql";
@@ -13,6 +13,28 @@ declare namespace m = "http://read.84000.co/ns/1.0";
 declare namespace tei="http://www.tei-c.org/ns/1.0";
 
 declare option exist:serialize "method=xml indent=no";
+
+declare function local:update-project($text-id as xs:string) as element()* {
+    
+    let $parent := $sponsorship:data/m:sponsorship
+    
+    let $existing-value := $parent/m:project[@id eq request:get-parameter('sponsorship-project-id', '')]
+    
+    let $new-value := sponsorship:project-posted($text-id)
+        
+        where $parent and ($existing-value or $new-value)
+    return
+        (: Do the update :)
+        common:update('update-project', $existing-value, $new-value, $parent, ())
+        (:(
+            element update-debug {
+                element existing-value { $existing-value }, 
+                element new-value { $new-value }, 
+                element parent { $parent }
+            }
+        ):)
+
+};
 
 (: Request parameters :)
 let $request-id := request:get-parameter('id', '') (: in get :)
@@ -35,9 +57,22 @@ let $tei-locked-by-user := xmldb:document-has-lock(concat("xmldb:exist://", $doc
 (: Process input :)
 let $updated := 
     if($post-id and $tei and $text-id and $form-action eq 'update-sponsorship') then (
-        update-translation:title-statement($tei),
-        update-translation:project($text-id)
-    )
+        
+        (: Update TEI :)
+        update-tei:title-statement($tei), 
+        
+        (: Update sponsorship :)
+        (
+        
+            let $parent := $sponsorship:data/m:sponsorship
+            let $existing-value := $parent/m:project[@id eq request:get-parameter('sponsorship-project-id', '')]
+            let $new-value := sponsorship:project-posted($text-id)
+            where $parent and ($existing-value or $new-value)
+            return
+                common:update('update-project', $existing-value, $new-value, $parent, ())
+                
+        )
+     )
      else ()
 
 (: Return output :)

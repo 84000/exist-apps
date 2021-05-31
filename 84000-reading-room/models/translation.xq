@@ -20,6 +20,7 @@ declare option exist:serialize "method=xml indent=no";
 
 let $resource-id := request:get-parameter('resource-id', '')
 let $resource-suffix := request:get-parameter('resource-suffix', '')
+
 let $part := request:get-parameter('part', 'none')
 let $view-mode-id := request:get-parameter('view-mode', 'default')
 let $archive-path := request:get-parameter('archive-path', ())
@@ -32,7 +33,7 @@ return
         $tei
         
     else if($resource-suffix = ('cache')) then
-        translation:cache($tei, false())
+        tei-content:cache($tei, false())
     
     (: return parts of the data :)
     else 
@@ -113,15 +114,12 @@ return
                             else ()
                             ,
                             $parts
-                        ),
-                        
-                        (: Include caches :)
-                        translation:notes-cache($tei, false(), false()),
-                        translation:milestones-cache($tei, false(), false()),
-                        translation:folios-cache($tei, false(), false()),
-                        translation:glossary-cache($tei, (), false())
+                        )
                         
                     },
+                        
+                    (: Include caches :)
+                    tei-content:cache($tei, false())/m:*,
                     
                     (: Entities :)
                     entities:entities($parts[@id eq 'glossary']/tei:div[@type eq 'glossary']/tei:gloss/@xml:id/string()),

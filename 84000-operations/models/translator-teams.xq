@@ -15,8 +15,7 @@ let $delete-team-id := request:get-parameter('delete', '')
 let $delete-team := 
     if($delete-team-id gt '') then
         contributors:delete($contributors:contributors/m:contributors/m:team[@xml:id eq $delete-team-id])
-    else
-        ()
+    else ()
 
 return
     common:response(

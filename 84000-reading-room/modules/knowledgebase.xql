@@ -9,18 +9,26 @@ import module namespace common="http://read.84000.co/common" at "common.xql";
 import module namespace tei-content="http://read.84000.co/tei-content" at "tei-content.xql";
 
 declare variable $knowledgebase:pages := collection($common:knowledgebase-path);
+declare variable $knowledgebase:title-prefixes := '(The|A)';
+
+declare variable $knowledgebase:view-modes := 
+    <view-modes xmlns="http://read.84000.co/ns/1.0">
+        <view-mode id="default" client="browser" layout="full" parts="all"/>,
+        <view-mode id="editor" client="browser" layout="full" parts="all"/>
+    </view-modes>;
 
 declare function knowledgebase:kb-id($tei as element(tei:TEI)) as xs:string? {
     $tei/tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:idno[@m:kb-id][1]/@m:kb-id
 };
 
 declare function knowledgebase:sort-name($tei as element(tei:TEI)) as xs:string? {
-    tei-content:title($tei) ! normalize-space(.) ! lower-case(.) ! common:normalized-chars(.) ! common:alphanumeric(.)
+    replace(tei-content:title($tei), concat($knowledgebase:title-prefixes, '\s+'), '') ! normalize-space(.) ! lower-case(.) ! common:normalized-chars(.) ! common:alphanumeric(.)
 };
 
 declare function knowledgebase:page($tei as element(tei:TEI)) as element(m:page) {
     
     let $kb-id := knowledgebase:kb-id($tei)
+    let $sort-name := knowledgebase:sort-name($tei)
     
     return
         element { QName('http://read.84000.co/ns/1.0', 'page') }{
@@ -32,7 +40,8 @@ declare function knowledgebase:page($tei as element(tei:TEI)) as element(m:page)
             attribute status { tei-content:translation-status($tei) },
             attribute status-group { tei-content:translation-status-group($tei) },
             attribute page-url { concat($common:environment/m:url[@id eq 'reading-room'], '/knowledgebase/', $kb-id, '.html') },
-            element sort-name { knowledgebase:sort-name($tei) },
+            attribute start-letter { upper-case(substring($sort-name, 1, 1)) },
+            element sort-name { $sort-name },
             tei-content:titles($tei)
         }
 };
@@ -78,58 +87,73 @@ declare function knowledgebase:publication($tei as element(tei:TEI)) as element(
         }
 };
 
-declare function knowledgebase:summary($tei as element(tei:TEI), $lang as xs:string) as element(m:summary) {
-    
-    element { QName('http://read.84000.co/ns/1.0', 'summary') }{
-    
-        attribute prefix { 's' },
-        
-        common:normalize-space(
-                $tei/tei:text/tei:front//tei:div[@type eq 'summary']
-        )
-    }
-};
+declare function knowledgebase:article($tei as element(tei:TEI)) as element(m:part) {
 
-declare function knowledgebase:article($tei as element(tei:TEI)) as element(m:article) {
-    
-    element { QName('http://read.84000.co/ns/1.0', 'article') }{
-    
+    element { QName('http://read.84000.co/ns/1.0', 'part') } {
+
+        attribute type { 'article' },
+        attribute id { 'article' },
+        attribute nesting { 0 },
         attribute prefix { 'a' },
         
-        common:normalize-space(
-                $tei/tei:text/tei:body/*
+        for $section at $index in $tei/tei:text/tei:body/tei:div[@type eq 'article']/tei:div
+        return
+            element {QName('http://read.84000.co/ns/1.0', 'part')} {
+
+                attribute type { $section/@type },
+                attribute id { $section/@xml:id },
+                attribute nesting { 1 },
+                attribute prefix { $index },
+                
+                $section/*
+                
+            }
+    }
+};
+
+declare function knowledgebase:bibliography($tei as element(tei:TEI)) as element(m:part) {
+    
+    element { QName('http://read.84000.co/ns/1.0', 'part') } {
+
+        attribute type { 'bibliography' },
+        attribute id { 'bibliography' },
+        attribute nesting { 0 },
+        attribute prefix { 'b' },
+        
+        let $bibliography := $tei/tei:text/tei:back/tei:div[@type eq 'listBibl']
+        return (
+        
+            let $head := $bibliography/tei:head[@type eq 'listBibl']
+            where $head[text()]
+            return
+                element { QName('http://www.tei-c.org/ns/1.0', 'head') } {
+                    attribute type { 'bibliography' },
+                    $head/@tid,
+                    $head/text()
+                }
+            ,
+            
+            $bibliography/*[not(local-name(.) eq 'head' and @type eq 'listBibl')]
+            
         )
     }
 };
 
-declare function knowledgebase:bibliography($tei as element(tei:TEI)) as element() {
-    element { QName('http://read.84000.co/ns/1.0', 'bibliography') } {
-        attribute prefix { 'b' },
-        for $section in $tei/tei:text/tei:back/*[@type eq 'listBibl']/*[@type eq 'section']
-        return
-            knowledgebase:bibliography-section($section)
-    }
-};
-
-declare function knowledgebase:bibliography-section($section as element()) as element() {
-    element { QName('http://read.84000.co/ns/1.0', 'section') } {
-        let $head := $section/tei:head[@type='section'][text()]
-        where $head
-        return
-            element title { 
-                $head/text()
-            }
-        ,
-        for $item in $section/tei:bibl
-        return
-            element item {
-                attribute id { $item/@xml:id },
-                $item/node()
-            }
-        ,
-        for $sub-section in $section/tei:div[@type eq 'section']
-        return
-            knowledgebase:bibliography-section($sub-section)
+declare function knowledgebase:end-notes($tei as element(tei:TEI)) as element() {
+    element { QName('http://read.84000.co/ns/1.0', 'part') } {
+        
+        attribute type { 'end-notes' },
+        attribute id { 'end-notes' },
+        attribute nesting { 0 },
+        attribute prefix { 'n' },
+            
+        element {QName('http://www.tei-c.org/ns/1.0', 'head')} {
+            attribute type { 'end-notes' },
+            text { 'Notes' }
+        },
+        
+        $tei/tei:text//tei:note[@place eq 'end'][@xml:id]
+        
     }
 };
 
@@ -173,7 +197,7 @@ return document {
                 <title type="mainTitle" xml:lang="en">{ $title }</title>
             </titleStmt>
             <editionStmt>
-                <edition>v 0.0.1 <date>{ format-date(current-date(), '[Y]') }</date></edition>
+                <edition>v 0.0.0 <date>{ format-date(current-date(), '[Y]') }</date></edition>
             </editionStmt>
             <publicationStmt status="2.a">
                 <publisher>
@@ -183,14 +207,31 @@ return document {
                 <idno eft:kb-id="{ lower-case($id) }"/>
             </publicationStmt>
             <sourceDesc>
-                <tei:p>Created by 84000: Translating the Words of the Buddha</tei:p>
+                <p>Created by 84000: Translating the Words of the Buddha</p>
             </sourceDesc>
             <notesStmt/>
         </fileDesc>
     </teiHeader>
     <text>
         <front/>
+        <body>
+            <div type="article">
+                <div type="section">
+                    <head type="section">Heading</head>
+                    <milestone unit="chunk"/>
+                    <p>First paragraph...</p>
+                </div>
+            </div>  
+        </body>
+        <back>
+            <div type="listBibl">
+                <head type="listBibl">Bibliography</head>
+                <div type="section">
+                    <head type="section">Main Section</head>
+                    <bibl>First reference...</bibl>
+                </div>
+            </div>
+        </back>
     </text>
 </TEI>
 }};
-

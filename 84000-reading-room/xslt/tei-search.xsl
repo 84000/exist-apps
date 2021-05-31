@@ -470,11 +470,11 @@
         </xsl:choose>
     </xsl:template>
     
-    <xsl:template match="exist:match">
+    <!--<xsl:template match="exist:match">
         <span class="mark">
             <xsl:apply-templates select="text()"/>
         </span>
-    </xsl:template>
+    </xsl:template>-->
     
     <xsl:template match="tei:note">
         <xsl:variable name="end-note" select="."/>

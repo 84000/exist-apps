@@ -30,39 +30,38 @@
                                                 <xsl:value-of select="@status-id"/>
                                             </td>
                                             <td>
-                                                <input type="checkbox" name="status[]">
-                                                    <xsl:attribute name="value" select="@value"/>
-                                                    <xsl:attribute name="id" select="concat('status-', position())"/>
-                                                    <xsl:if test="@selected eq 'selected'">
-                                                        <xsl:attribute name="checked" select="'checked'"/>
-                                                    </xsl:if>
-                                                </input>
-                                            </td>
-                                            <td>
-                                                <label>
-                                                    <xsl:attribute name="for" select="concat('status-', position())"/>
-                                                    <xsl:value-of select="text()"/>
-                                                    <span class="small text-muted">
-                                                        <xsl:value-of select="' / '"/>
-                                                        <xsl:choose>
-                                                            <xsl:when test="@group eq 'not-started'">
-                                                                <xsl:value-of select="'Not started'"/>
-                                                            </xsl:when>
-                                                            <xsl:when test="@group eq 'published'">
-                                                                <xsl:value-of select="'Published'"/>
-                                                            </xsl:when>
-                                                            <xsl:when test="@group eq 'translated'">
-                                                                <xsl:value-of select="'Translated'"/>
-                                                            </xsl:when>
-                                                            <xsl:when test="@group eq 'in-translation'">
-                                                                <xsl:value-of select="'In translation'"/>
-                                                            </xsl:when>
-                                                            <xsl:when test="@group eq 'in-application'">
-                                                                <xsl:value-of select="'Application phase'"/>
-                                                            </xsl:when>
-                                                        </xsl:choose>
-                                                    </span>
-                                                </label>
+                                                <div class="checkbox">
+                                                    <label>
+                                                        <input type="checkbox" name="status[]">
+                                                            <xsl:attribute name="value" select="@value"/>
+                                                            <xsl:attribute name="id" select="concat('status-', position())"/>
+                                                            <xsl:if test="@selected eq 'selected'">
+                                                                <xsl:attribute name="checked" select="'checked'"/>
+                                                            </xsl:if>
+                                                        </input>
+                                                        <xsl:value-of select="text()"/>
+                                                        <span class="small text-muted">
+                                                            <xsl:value-of select="' / '"/>
+                                                            <xsl:choose>
+                                                                <xsl:when test="@group eq 'not-started'">
+                                                                    <xsl:value-of select="'Not started'"/>
+                                                                </xsl:when>
+                                                                <xsl:when test="@group eq 'published'">
+                                                                    <xsl:value-of select="'Published'"/>
+                                                                </xsl:when>
+                                                                <xsl:when test="@group eq 'translated'">
+                                                                    <xsl:value-of select="'Translated'"/>
+                                                                </xsl:when>
+                                                                <xsl:when test="@group eq 'in-translation'">
+                                                                    <xsl:value-of select="'In translation'"/>
+                                                                </xsl:when>
+                                                                <xsl:when test="@group eq 'in-application'">
+                                                                    <xsl:value-of select="'Application phase'"/>
+                                                                </xsl:when>
+                                                            </xsl:choose>
+                                                        </span>
+                                                    </label>
+                                                </div>
                                             </td>
                                         </tr>
                                     </xsl:for-each>

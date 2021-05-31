@@ -391,7 +391,6 @@ declare function local:glossary-item($gloss as element(tei:gloss), $include-cont
             let $tei := $gloss/ancestor::tei:TEI
             let $fileDesc := $tei/tei:teiHeader/tei:fileDesc
             let $translation-id := tei-content:id($tei)
-            (:let $cache := translation:cache($tei, false()):)
             
             return
                 element { QName('http://read.84000.co/ns/1.0', 'text') } {
@@ -605,14 +604,11 @@ declare function glossary:translation-data($tei as element(tei:TEI), $resource-i
                     $source,
                     translation:toh($tei, $source/@key),
                     translation:publication($tei),
-                    translation:parts($tei, 'all', $view-mode),
-                    
-                    (: Include caches - not glossary, this causes a recursion problem :)
-                    translation:notes-cache($tei, false(), false()),
-                    translation:milestones-cache($tei, false(), false()),
-                    translation:folios-cache($tei, false(), false()),
-                    translation:cache($tei, false())/m:glossary-cache
+                    translation:parts($tei, 'all', $view-mode)
                 },
+                
+                (: Include caches - do not call translation:glossary-cache(), this causes a recursion problem :)
+                tei-content:cache($tei, false())/m:*,
                 
                 (: Calculated strings :)
                 translation:replace-text($source/@key)
@@ -806,11 +802,11 @@ declare function glossary:item-html($tei as element(tei:TEI), $resource-id as xs
                     translation:titles($tei),
                     $source,
                     translation:toh($tei, $source/@key),
-                    translation:parts($tei, $glossary-id, $view-mode),
-                    
-                    (: Include caches - not glossary, this causes a recursion problem :)
-                    translation:cache($tei, false())/m:*
+                    translation:parts($tei, $glossary-id, $view-mode)
                 },
+                
+                (: Include caches - do not call translation:glossary-cache(), this causes a recursion problem :)
+                tei-content:cache($tei, false())/m:*,
                 
                 (: Calculated strings :)
                 translation:replace-text($source/@key)

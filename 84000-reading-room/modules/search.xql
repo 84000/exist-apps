@@ -155,7 +155,7 @@ declare function search:search($request as xs:string, $resource-id as xs:string,
                             
                             (: Notes cache :)
                             if($results//tei:note[@place eq 'end'][@xml:id]) then
-                                translation:notes-cache($tei, false(), false())
+                                tei-content:notes-cache($tei, false(), false())
                             else ()
                         }
                         </item>

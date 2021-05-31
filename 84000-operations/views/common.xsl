@@ -1,16 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:ops="http://operations.84000.co" xmlns:common="http://read.84000.co/common" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" xmlns:exslt="http://exslt.org/common" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:ops="http://operations.84000.co" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" version="3.0" exclude-result-prefixes="#all">
     
     <xsl:variable name="environment" select="/m:response/m:environment"/>
     <xsl:variable name="reading-room-path" select="$environment/m:url[@id eq 'reading-room']/text()" as="xs:string"/>
     <xsl:variable name="front-end-path" select="$environment/m:url[@id eq 'front-end']/text()" as="xs:string"/>
     <xsl:variable name="operations-path" select="$environment/m:url[@id eq 'operations']/text()"/>
-    
-    <xsl:template match="exist:match">
-        <span class="mark">
-            <xsl:apply-templates select="text()"/>
-        </span>
-    </xsl:template>
     
     <!-- Page header -->
     <xsl:template name="operations-page">
@@ -105,9 +99,10 @@
     
     <!-- Alert if translation is locked -->
     <xsl:template name="alert-translation-locked">
-        <xsl:if test="m:translation/@locked-by-user gt ''">
+        <xsl:variable name="element" select="(m:translation, m:knowledgebase)[1]"/>
+        <xsl:if test="$element[@locked-by-user gt '']">
             <div class="alert alert-danger" role="alert">
-                <xsl:value-of select="concat('File ', m:translation/@document-url, ' is currenly locked by user ', m:translation/@locked-by-user, '. ')"/>
+                <xsl:value-of select="concat('File ', $element/@document-url, ' is currenly locked by user ', $element/@locked-by-user, '. ')"/>
                 <xsl:value-of select="'You cannot modify this file until the lock is released.'"/>
             </div>
         </xsl:if>
@@ -130,7 +125,7 @@
                     <xsl:attribute name="class" select="'active'"/>
                 </xsl:if>
                 <a href="search.html">
-                    <xsl:value-of select="'Search'"/>
+                    <xsl:value-of select="'Texts'"/>
                 </a>
             </li>
             <li role="presentation">
@@ -139,6 +134,14 @@
                 </xsl:if>
                 <a href="sections.html">
                     <xsl:value-of select="'Sections'"/>
+                </a>
+            </li>
+            <li role="presentation">
+                <xsl:if test="$active-tab eq 'operations/knowledgebase'">
+                    <xsl:attribute name="class" select="'active'"/>
+                </xsl:if>
+                <a href="knowledgebase.html">
+                    <xsl:value-of select="'Knowledge Base'"/>
                 </a>
             </li>
             <li role="presentation">
@@ -178,7 +181,7 @@
                     <xsl:attribute name="class" select="'active'"/>
                 </xsl:if>
                 <a href="sys-config.html">
-                    <xsl:value-of select="'System Config'"/>
+                    <xsl:value-of select="'Config'"/>
                 </a>
             </li>
             <xsl:if test="$active-tab eq 'operations/glossary'">
@@ -205,6 +208,15 @@
                     <a>
                         <xsl:attribute name="href" select="concat('/edit-text-header.html?id=', /m:response/m:request/@id)"/>
                         <xsl:value-of select="'Edit Text Header'"/>
+                    </a>
+                </li>
+            </xsl:if>
+            <xsl:if test="$active-tab eq 'operations/edit-kb-header'">
+                <li role="presentation">
+                    <xsl:attribute name="class" select="'active'"/>
+                    <a>
+                        <xsl:attribute name="href" select="concat('/edit-kb-header.html?id=', /m:response/m:request/@id)"/>
+                        <xsl:value-of select="'Knowledge Base Page'"/>
                     </a>
                 </li>
             </xsl:if>
@@ -268,6 +280,15 @@
                     </a>
                 </li>
             </xsl:if>
+            <xsl:if test="$active-tab eq 'operations/tei-editor'">
+                <li role="presentation">
+                    <xsl:attribute name="class" select="'active'"/>
+                    <a>
+                        <xsl:attribute name="href" select="concat('/tei-editor.html?type=', /m:response/m:request/@type,'&amp;resource-id=', /m:response/m:request/@resource-id, '&amp;section-id=', /m:response/m:request/@section-id)"/>
+                        <xsl:value-of select="'TEI Editor'"/>
+                    </a>
+                </li>
+            </xsl:if>
         </ul>
         
     </xsl:template>
@@ -318,11 +339,14 @@
     
     <!-- Acknowledgements -->
     <xsl:template name="acknowledgements">
+        
         <xsl:param name="acknowledgements" required="yes"/>
         <xsl:param name="group" as="xs:string" required="yes"/>
         <xsl:param name="css-class" as="xs:string" required="yes"/>
         <xsl:param name="link-href" as="xs:string" required="yes"/>
+        
         <xsl:choose>
+            
             <xsl:when test="$acknowledgements">
                 <xsl:for-each select="$acknowledgements">
                     <xsl:sort select="xs:integer(m:toh/@number[1])"/>
@@ -332,6 +356,18 @@
                             <xsl:attribute name="data-match-height" select="concat('group-', $group)"/>
                         </xsl:if>
                         <div class="pull-quote">
+                            
+                            <xsl:choose>
+                                <xsl:when test="@translation-status-group eq 'published'">
+                                    <xsl:attribute name="class" select="'pull-quote green-quote'"/>
+                                </xsl:when>
+                                <xsl:when test="@translation-status-group = ('translated', 'in-translation')">
+                                    <xsl:attribute name="class" select="'pull-quote orange-quote'"/>
+                                </xsl:when>
+                                <xsl:when test="@translation-status-group eq 'in-application'">
+                                    <xsl:attribute name="class" select="'pull-quote orange-red'"/>
+                                </xsl:when>
+                            </xsl:choose>
                             
                             <!-- Text title -->
                             <div class="top-vertical full-width">
@@ -376,13 +412,85 @@
                     </div>
                 </xsl:for-each>
             </xsl:when>
+            
             <xsl:otherwise>
                 <div class="text-muted italic">
                     <xsl:value-of select="'No acknowledgments'"/>
                 </div>
             </xsl:otherwise>
+            
         </xsl:choose>
         
+    </xsl:template>
+    
+    <!-- Title controls -->
+    <xsl:template name="titles-controls">
+        <xsl:param name="text-titles" required="yes"/>
+        <xsl:param name="title-types" required="yes"/>
+        <xsl:param name="title-langs" required="yes"/>
+        <xsl:for-each select="$text-titles">
+            <xsl:variable name="title-type" select="@type"/>
+            <xsl:variable name="title-lang" select="@xml:lang"/>
+            <xsl:variable name="title-text" select="text()"/>
+            <div class="form-group add-nodes-group">
+                <div class="col-sm-2">
+                    <select class="form-control">
+                        <xsl:variable name="control-name" select="concat('title-type-', position())"/>
+                        <xsl:attribute name="name" select="$control-name"/>
+                        <xsl:attribute name="id" select="$control-name"/>
+                        <xsl:for-each select="$title-types">
+                            <xsl:variable name="option-value" select="@id"/>
+                            <xsl:variable name="label" select="text()"/>
+                            <option>
+                                <xsl:attribute name="value" select="$option-value"/>
+                                <xsl:if test="$option-value eq $title-type">
+                                    <xsl:attribute name="selected" select="'selected'"/>
+                                </xsl:if>
+                                <xsl:value-of select="$label"/>
+                            </option>
+                        </xsl:for-each>
+                    </select>
+                </div>
+                <div class="col-sm-2">
+                    <select class="form-control">
+                        <xsl:variable name="control-name" select="concat('title-lang-', position())"/>
+                        <xsl:attribute name="name" select="$control-name"/>
+                        <xsl:attribute name="id" select="$control-name"/>
+                        <xsl:for-each select="$title-langs">
+                            <xsl:variable name="option-value" select="@id"/>
+                            <xsl:variable name="label" select="text()"/>
+                            <option>
+                                <xsl:attribute name="value" select="$option-value"/>
+                                <xsl:if test="$option-value eq $title-lang">
+                                    <xsl:attribute name="selected" select="'selected'"/>
+                                </xsl:if>
+                                <xsl:choose>
+                                    <xsl:when test="$option-value eq 'Sa-Ltn'">
+                                        <xsl:value-of select="concat($label, ' *')"/>
+                                    </xsl:when>
+                                    <xsl:otherwise>
+                                        <xsl:value-of select="$label"/>
+                                    </xsl:otherwise>
+                                </xsl:choose>
+                            </option>
+                        </xsl:for-each>
+                    </select>
+                </div>
+                <div class="col-sm-8">
+                    <input class="form-control">
+                        <xsl:attribute name="name" select="concat('title-text-', position())"/>
+                        <xsl:choose>
+                            <xsl:when test="$title-lang eq 'Sa-Ltn'">
+                                <xsl:attribute name="value" select="replace($title-text, '­', '-')"/>
+                            </xsl:when>
+                            <xsl:otherwise>
+                                <xsl:attribute name="value" select="$title-text"/>
+                            </xsl:otherwise>
+                        </xsl:choose>
+                    </input>
+                </div>
+            </div>
+        </xsl:for-each>
     </xsl:template>
     
     <!-- <input type="text"/> -->

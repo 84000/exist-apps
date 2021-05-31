@@ -1,7 +1,7 @@
 xquery version "3.0" encoding "UTF-8";
 
 import module namespace local="http://operations.84000.co/local" at "../modules/local.xql";
-import module namespace update-translation="http://operations.84000.co/update-translation" at "../modules/update-translation.xql";
+import module namespace update-tei="http://operations.84000.co/update-tei" at "../modules/update-tei.xql";
 import module namespace file-upload="http://operations.84000.co/file-upload" at "../modules/file-upload.xql";
 import module namespace translation-status="http://read.84000.co/translation-status" at "../modules/translation-status.xql";
 
@@ -45,11 +45,11 @@ let $delete-submission :=
 (: Process input, if it's posted :)
 let $updated := 
     if($form-action = ('update-titles', 'update-contributors') and $tei) then
-        update-translation:title-statement($tei)
+        update-tei:title-statement($tei)
     else if($form-action eq 'update-locations' and $tei) then
-        update-translation:locations($tei)
+        update-tei:locations($tei)
     else if($form-action eq 'update-publication-status' and $tei) then (
-        update-translation:publication-status($tei),
+        update-tei:publication-status($tei),
         translation-status:update($text-id)
     )
     else if($form-action eq 'process-upload' and $text-id gt '') then (
@@ -88,25 +88,30 @@ return
                 $updated
             },
             element { QName('http://read.84000.co/ns/1.0', 'translation') } {
+            
                 attribute id { $text-id },
                 attribute document-url { tei-content:document-url($tei) },
                 attribute locked-by-user { tei-content:locked-by-user($tei) },
                 attribute status { tei-content:translation-status($tei) },
                 attribute status-group { $translation-status-group },
                 attribute tei-version { $tei-version-str },
+                
                 for $bibl in $tei//tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl
                 return (
                     translation:toh($tei, $bibl/@key),
                     translation:location($tei, $bibl/@key),
                     translation:downloads($tei, $bibl/@key, 'all')
                 ),
+                
                 element title { 
                     tei-content:title($tei) 
                 },
+                
                 tei-content:titles($tei),
                 translation:publication($tei),
                 translation:contributors($tei, true()),
-                translation:status-updates($tei)
+                tei-content:status-updates($tei)
+                
             },
             element { QName('http://read.84000.co/ns/1.0', 'translation-status') } {
                 translation-status:texts($text-id, true())

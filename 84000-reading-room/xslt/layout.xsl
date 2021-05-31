@@ -48,9 +48,9 @@
                 <xsl:if test="$log-click">
                     <xsl:value-of select="' log-click'"/>
                 </xsl:if>
-                <!--<xsl:if test="$get-url">
+                <xsl:if test="$get-url">
                     <xsl:value-of select="' scroll-to-anchor'"/>
-                </xsl:if>-->
+                </xsl:if>
             </xsl:attribute>
             
             <span class="btn-round">

@@ -50,7 +50,7 @@
                                     
                                     <div class="form-group">
                                         <label class="control-label col-sm-3" for="sponsor-type">
-                                            Sponsor type:
+                                            <xsl:value-of select="'Sponsor type:'"/>
                                         </label>
                                         <xsl:variable name="sponsor" select="m:sponsor"/>
                                         <xsl:for-each select="('founding', 'sutra', 'matching-funds')">

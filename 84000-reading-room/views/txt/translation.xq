@@ -9,17 +9,17 @@ import module namespace functx="http://www.functx.com";
 
 declare option exist:serialize "indent=no";
 
-declare function local:parse-translation($translation as element(m:translation)) {
+declare function local:parse-translation($response as element(m:response)) {
     
-    text { '{{version:' || $translation/m:publication/m:edition || '}}' },
+    text { '{{version:' || $response/m:translation/m:publication/m:edition || '}}' },
     text { '&#10;' },
 
-    for $element in $translation/m:part[@type eq 'translation']/*[not(self::tei:head[@type eq 'translation'])]
+    for $element in $response/m:translation/m:part[@type eq 'translation']/*[not(self::tei:head[@type eq 'translation'])]
     return
-        local:parse-node($translation, $element)
+        local:parse-node($response, $element)
 };
 
-declare function local:parse-node($translation as element(m:translation), $element as element()) {
+declare function local:parse-node($response as element(m:response), $element as element()) {
     
     (: 
         These are the content groups.
@@ -36,7 +36,7 @@ declare function local:parse-node($translation as element(m:translation), $eleme
                 
                 (: Output milestones with id :)
                 if($node[self::tei:milestone]) then
-                    let $cache-milestone := $translation/m:milestones-cache/m:milestone[@id eq $node/@xml:id]
+                    let $cache-milestone := $response/m:milestones-cache/m:milestone[@id eq $node/@xml:id]
                     let $part := $node/ancestor::m:part[@prefix][1]
                     where $cache-milestone
                     return (
@@ -45,14 +45,14 @@ declare function local:parse-node($translation as element(m:translation), $eleme
                 
                 (: Output refs with cRef :)
                 else if($node[self::tei:ref]) then
-                    let $cache-folio := $translation/m:folios-cache/m:folio-ref[@id eq $node/@xml:id]
+                    let $cache-folio := $response/m:folios-cache/m:folio-ref[@id eq $node/@xml:id]
                     where $cache-folio
                     return (
                         text { '{{page:{number:' || $cache-folio/@index-in-resource || ',id:' || $node/@xml:id || ',folio:' || $node/@cRef || $cache-folio[@cRef-volume gt ''] ! concat(',volume:', ./@cRef-volume) || '}}}' }
                     )
                 (: Output notes :)
                 else if($node[self::tei:note]) then
-                    let $cache-note := $translation/m:notes-cache/m:end-note[@id eq $node/@xml:id]
+                    let $cache-note := $response/m:notes-cache/m:end-note[@id eq $node/@xml:id]
                     where $cache-note
                     return (
                         text { '{{note:{index:' || $cache-note/@index || ',id:' || $node/@xml:id || '}}}' }
@@ -79,13 +79,13 @@ declare function local:parse-node($translation as element(m:translation), $eleme
     else if($element[*]) then
         for $child-element in $element/*
         return
-            local:parse-node($translation, $child-element)
+            local:parse-node($response, $child-element)
     else
         ()
 };
 
 let $data := request:get-data()
-let $parsed-content := local:parse-translation($data/m:response/m:translation)
+let $parsed-content := local:parse-translation($data/m:response)
 let $string := string-join($parsed-content, '')
 let $binary := util:base64-encode($string)
 

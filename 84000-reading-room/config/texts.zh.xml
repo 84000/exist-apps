@@ -104,31 +104,27 @@
         <p>84000計畫於2035年完成《甘珠爾》的翻譯與線上發布。這是自公元900年在藏地的大型譯經計畫後，世界的首項大型譯經計畫。</p>
     </item>
     <item key="about.impact.visitors-per-week-stat">
-        <div class="heading">每週瀏覽次數</div>
-        <div class="data">
-            <span>#visitorsPerWeekFormatted</span>
-        </div>
+        <div class="heading">網站訪客</div>
+        <div class="data">每週<span>#visitorsPerWeekFormatted</span>人</div>
     </item>
     <item key="about.impact.visitors-description">
-        <p>每週，我們的網站都有2500位來自世界各地的訪客。雲端藏經閣已出版的41部經文提供三種不同格式的下載，相信很多法友下載後也在線下繼續進行研讀。</p>
+        <p>每週都有#visitorsPerWeekFormatted位來自世界各地的訪客瀏覽雲端藏經閣並參閱英譯佛典。</p>
     </item>
     <item key="about.impact.reach-countries-stat">
-        <div class="heading">國家／地區</div>
+        <div class="heading">國際影響力</div>
         <div class="data">
-            <span>#reachCountriesFormatted</span>
-        </div>
+            <span>#reachCountriesFormatted</span>個國家/地區</div>
     </item>
     <item key="about.impact.reach-description">
-        <p>目前【八萬四千 • 佛典傳譯】有來自242個國家／地區的訪客。</p>
+        <p>84000的網站訪客來自#reachCountriesFormatted個國家與地區。</p>
     </item>
     <item key="about.impact.engagement-minutes-stat">
-        <div class="heading">閱覽超過10分鐘的 <br/> 人數</div>
+        <div class="heading">互動</div>
         <div class="data">
-            <span>#engagementMinutesFormatted</span>
-        </div>
+            <span>#annualDownloadsFormatted</span>次下載</div>
     </item>
     <item key="about.impact.engagement-description">
-        <p>我們的讀者在雲端藏經閣花的時間比以往更多，有6000多人閱覽至少10分鐘，也有1378人停留超過半小時。我們先進的雲端藏經閣提供讀者們前所未有的經典閱讀體驗。</p>
+        <p>僅在2020年中，讀者就於雲端藏經閣下載了#annualDownloadsFormatted次的經文。</p>
     </item>
     <!--<item key="about.impact.popular-views-stat">
         <div class="heading">熱門經典的 <br/> 閱覽次數</div>

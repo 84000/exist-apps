@@ -19,15 +19,17 @@
                         
                         <div>
                             <nav role="navigation" aria-label="Breadcrumbs">
-                                
-                                <li>
-                                    <xsl:value-of select="'The 84000 Knowledge Base'"/>
-                                </li>
-                                
-                                <!--<li class="title">
-                                    <xsl:value-of select="m:knowledgebase/m:page/m:titles/m:title[@xml:lang = 'en']"/>
-                                </li>-->
-                                
+                                <ul class="breadcrumb">
+                                    
+                                    <li>
+                                        <xsl:value-of select="'84000 Knowledge Base'"/>
+                                    </li>
+                                    
+                                    <li>
+                                        <xsl:value-of select="m:knowledgebase/m:page/m:titles/m:title[@xml:lang = 'en']"/>
+                                    </li>
+                                    
+                                </ul>
                             </nav>
                         </div>
                         
@@ -74,37 +76,120 @@
             <div class="content-band">
                 <div class="container">
                     <div class="row">
+                        
                         <main class="col-md-8 col-lg-9">
                             
-                            <section id="front-matter">
-                                <xsl:call-template name="front-matter"/>
+                            <!-- Link to tei-editor -->
+                            <!-- Knowledge base only, editor mode, operations app, no child divs and an id -->
+                            <xsl:if test="$view-mode[@id = ('editor')] and $environment/m:url[@id eq 'operations']">
+                                <a class="btn btn-danger btn-sm top-right" target="84000-operations">
+                                    <xsl:attribute name="href" select="concat($environment/m:url[@id eq 'operations']/text(), '/edit-kb-header.html', '?id=', m:knowledgebase/m:page/@xml:id)"/>
+                                    <xsl:value-of select="'Edit headers'"/>
+                                </a>
+                            </xsl:if>
+                            
+                            <h1>
+                                <xsl:apply-templates select="m:knowledgebase/m:page/m:titles/m:title[@type eq 'mainTitle'][@xml:lang eq 'en']"/>
+                            </h1>
+                            
+                            <xsl:for-each select="m:knowledgebase/m:page/m:titles/m:title[@type eq 'mainTitle'][not(@xml:lang eq 'en')]">
+                                <div class="h4">
+                                    <xsl:value-of select="common:lang-label(@xml:lang)"/>
+                                    <span>
+                                        <xsl:call-template name="class-attribute">
+                                            <xsl:with-param name="lang" select="@xml:lang"/>
+                                        </xsl:call-template>
+                                        <xsl:value-of select="text()"/>
+                                    </span>
+                                </div>
+                            </xsl:for-each>
+                            
+                            <xsl:for-each select="m:knowledgebase/m:page/m:titles/m:title[not(@type eq 'mainTitle')]">
+                                <div>
+                                    <xsl:call-template name="class-attribute">
+                                        <xsl:with-param name="lang" select="@xml:lang"/>
+                                        <xsl:with-param name="base-classes" select="'h4 text-muted'"/>
+                                    </xsl:call-template>
+                                    <xsl:value-of select="text()"/>
+                                </div>
+                            </xsl:for-each>
+                            
+                            <p class="text-muted small">
+                                <xsl:choose>
+                                    <xsl:when test="m:knowledgebase/m:page/m:publication/m:publication-date castable as xs:date">
+                                        <xsl:value-of select="concat('First published ', format-date(m:knowledgebase/m:page/m:publication/m:publication-date, '[Y]'))"/>
+                                    </xsl:when>
+                                    <xsl:otherwise>
+                                        <xsl:value-of select="'Not yet published'"/>
+                                    </xsl:otherwise>
+                                </xsl:choose>
+                            </p>
+                            
+                            <section class="tei-parser">
+                                <xsl:apply-templates select="m:knowledgebase/m:part[@type eq 'article']"/>
                             </section>
                             
-                            <section id="article">
-                                <xsl:call-template name="article"/>
-                            </section>
+                            <xsl:if test="m:knowledgebase/m:part[@type eq 'bibliography'][node()]">
+                                <section class="tei-parser">
+                                    <xsl:apply-templates select="m:knowledgebase/m:part[@type eq 'bibliography']"/>
+                                </section>
+                            </xsl:if>
                             
-                            <section id="bibliography">
-                                <xsl:call-template name="bibliography"/>
-                            </section>
+                            <xsl:if test="m:knowledgebase/m:part[@type eq 'end-notes'][tei:note]">
+                                <section class="tei-parser">
+                                    <xsl:call-template name="end-notes"/>
+                                </section>
+                            </xsl:if>
                             
                         </main>
                         
                         <aside class="col-md-4 col-lg-3">
                             
-                            <xsl:variable name="sharing-panel">
-                                <m:sharing-panel>
-                                    <xsl:copy-of select="$eft-header/m:sharing[@xml:lang eq $lang]/node()"/>
-                                </m:sharing-panel>
-                            </xsl:variable>
-                            
-                            <xsl:apply-templates select="$sharing-panel"/>
-                            
                             <xsl:call-template name="taxonomy"/>
                             
+                            <!-- Project Progress, get from ajax -->
+                            <div id="project-progress">
+                                <xsl:attribute name="data-onload-replace">
+                                    <xsl:choose>
+                                        <xsl:when test="$lang eq 'zh'">
+                                            <xsl:value-of select="concat('{&#34;#project-progress&#34;:&#34;', $reading-room-path,'/widget/progress-chart.html#eft-progress-chart-panel&#34;}')"/>
+                                        </xsl:when>
+                                        <xsl:otherwise>
+                                            <xsl:value-of select="concat('{&#34;#project-progress&#34;:&#34;', $reading-room-path,'/widget/progress-chart.html?lang=', $lang ,'#eft-progress-chart-panel&#34;}')"/>
+                                        </xsl:otherwise>
+                                    </xsl:choose>
+                                </xsl:attribute>                            
+                                <div class="panel panel-default">
+                                    <div class="panel-body loading"/>
+                                </div>
+                            </div>
+                        
                         </aside>
                         
                     </div>
+                </div>
+                
+            </div>
+            
+            <!-- General pop-up for notes -->
+            <div id="popup-footer" class="fixed-footer collapse hidden-print">
+                <div class="fix-height">
+                    <div class="container translation">
+                        <div class="row">
+                            <div class="col-md-8 col-lg-9">
+                                <div class="data-container">
+                                    <!-- Ajax data here -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="fixed-btn-container close-btn-container">
+                    <button type="button" class="btn-round close close-collapse" aria-label="Close">
+                        <span aria-hidden="true">
+                            <i class="fa fa-times"/>
+                        </span>
+                    </button>
                 </div>
             </div>
             
@@ -113,55 +198,15 @@
         <!-- Pass the content to the page -->
         <xsl:call-template name="website-page">
             <xsl:with-param name="page-url" select="(m:knowledgebase/m:page/@page-url, '')[1]"/>
-            <xsl:with-param name="page-class" select="'reading-room translation'"/>
+            <xsl:with-param name="page-class" select="'reading-room knowledgebase'"/>
             <xsl:with-param name="page-title" select="concat(m:knowledgebase/m:page/m:titles/m:title[@xml:lang eq 'en'][@type eq 'mainTitle']/text(), ' | 84000 Reading Room')"/>
             <xsl:with-param name="page-description" select="normalize-space(data(m:knowledgebase/m:page/m:summary/tei:p[1]))"/>
             <xsl:with-param name="content" select="$content"/>
+            <xsl:with-param name="additional-links">
+                <script src="https://code.highcharts.com/highcharts.js"/>
+            </xsl:with-param>
         </xsl:call-template>
         
-    </xsl:template>
-    
-    <xsl:template name="front-matter">
-        <div class="page page-first">
-            
-            <h1 class="no-top-margin">
-                <xsl:apply-templates select="m:knowledgebase/m:page/m:titles/m:title[@xml:lang eq 'en']"/>
-            </h1>
-            
-            <p class="text-muted small">
-                <xsl:choose>
-                    <xsl:when test="m:knowledgebase/m:page/m:publication/m:publication-date castable as xs:date">
-                        <xsl:value-of select="concat('First published ', format-date(m:knowledgebase/m:page/m:publication/m:publication-date, '[Y]'))"/>
-                    </xsl:when>
-                    <xsl:otherwise>
-                        <xsl:value-of select="'Not yet published'"/>
-                    </xsl:otherwise>
-                </xsl:choose>
-            </p>
-            
-        </div>
-    </xsl:template>
-    
-    <xsl:template name="article">
-        <div class="page">
-            
-            <xsl:apply-templates select="m:knowledgebase/m:article/*"/>
-            
-        </div>
-    </xsl:template>
-    
-    <xsl:template name="bibliography">
-        <xsl:if test="m:knowledgebase/m:bibliography[node()]">
-            <div class="page">
-                
-                <h3>
-                    <xsl:value-of select="'Bibliography'"/>
-                </h3>
-                
-                <xsl:apply-templates select="m:knowledgebase/m:bibliography/*"/>
-                
-            </div>
-        </xsl:if>
     </xsl:template>
     
     <xsl:template name="taxonomy">

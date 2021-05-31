@@ -38,8 +38,12 @@
                     <div class="center-vertical full-width sml-margin bottom">
                         
                         <!-- url -->
-                        <div class="text-muted small">
-                            <xsl:value-of select="concat('TEI file: ', m:translation/@document-url)"/>
+                        <div>
+                            <a class="text-muted small">
+                                <xsl:attribute name="href" select="concat($reading-room-path, '/translation/', $text-id, '.tei')"/>
+                                <xsl:attribute name="target" select="concat($text-id, '.tei')"/>
+                                <xsl:value-of select="concat('TEI file: ', m:translation/@document-url)"/>
+                            </a>
                         </div>
                         
                         <!-- Version -->
@@ -203,7 +207,7 @@
             <xsl:with-param name="page-url" select="''"/>
             <xsl:with-param name="page-class" select="'utilities'"/>
             <xsl:with-param name="page-title" select="concat(string-join(m:translation/m:toh/m:full, ' / '), ' - edit  | 84000 Project Management')"/>
-            <xsl:with-param name="page-description" select="'Translator Institutions configuration for 84000 operations team.'"/>
+            <xsl:with-param name="page-description" select="concat('Editing headers for text: ', string-join(m:translation/m:toh/m:full, ' / '))"/>
             <xsl:with-param name="content" select="$content"/>
         </xsl:call-template>
         
@@ -219,10 +223,12 @@
             <xsl:with-param name="form">
                 <form method="post" class="form-horizontal form-update" id="titles-form">
                     <xsl:attribute name="action" select="'edit-text-header.html#titles-form'"/>
+                    
                     <input type="hidden" name="form-action" value="update-titles"/>
                     <input type="hidden" name="post-id">
                         <xsl:attribute name="value" select="m:translation/@id"/>
                     </input>
+                    
                     <div class="add-nodes-container">
                         <xsl:choose>
                             <xsl:when test="m:translation/m:titles/m:title">
@@ -274,76 +280,6 @@
                 </form>
             </xsl:with-param>
         </xsl:call-template>
-    </xsl:template>
-    
-    <!-- Title row -->
-    <xsl:template name="titles-controls">
-        <xsl:param name="text-titles" required="yes"/>
-        <xsl:param name="title-types" required="yes"/>
-        <xsl:param name="title-langs" required="yes"/>
-        <xsl:for-each select="$text-titles">
-            <xsl:variable name="title-type" select="@type"/>
-            <xsl:variable name="title-lang" select="@xml:lang"/>
-            <xsl:variable name="title-text" select="text()"/>
-            <div class="form-group add-nodes-group">
-                <div class="col-sm-2">
-                    <select class="form-control">
-                        <xsl:variable name="control-name" select="concat('title-type-', position())"/>
-                        <xsl:attribute name="name" select="$control-name"/>
-                        <xsl:attribute name="id" select="$control-name"/>
-                        <xsl:for-each select="$title-types">
-                            <xsl:variable name="option-value" select="@id"/>
-                            <xsl:variable name="label" select="text()"/>
-                            <option>
-                                <xsl:attribute name="value" select="$option-value"/>
-                                <xsl:if test="$option-value eq $title-type">
-                                    <xsl:attribute name="selected" select="'selected'"/>
-                                </xsl:if>
-                                <xsl:value-of select="$label"/>
-                            </option>
-                        </xsl:for-each>
-                    </select>
-                </div>
-                <div class="col-sm-2">
-                    <select class="form-control">
-                        <xsl:variable name="control-name" select="concat('title-lang-', position())"/>
-                        <xsl:attribute name="name" select="$control-name"/>
-                        <xsl:attribute name="id" select="$control-name"/>
-                        <xsl:for-each select="$title-langs">
-                            <xsl:variable name="option-value" select="@id"/>
-                            <xsl:variable name="label" select="text()"/>
-                            <option>
-                                <xsl:attribute name="value" select="$option-value"/>
-                                <xsl:if test="$option-value eq $title-lang">
-                                    <xsl:attribute name="selected" select="'selected'"/>
-                                </xsl:if>
-                                <xsl:choose>
-                                    <xsl:when test="$option-value eq 'Sa-Ltn'">
-                                        <xsl:value-of select="concat($label, ' *')"/>
-                                    </xsl:when>
-                                    <xsl:otherwise>
-                                        <xsl:value-of select="$label"/>
-                                    </xsl:otherwise>
-                                </xsl:choose>
-                            </option>
-                        </xsl:for-each>
-                    </select>
-                </div>
-                <div class="col-sm-8">
-                    <input class="form-control">
-                        <xsl:attribute name="name" select="concat('title-text-', position())"/>
-                        <xsl:choose>
-                            <xsl:when test="$title-lang eq 'Sa-Ltn'">
-                                <xsl:attribute name="value" select="replace($title-text, '­', '-')"/>
-                            </xsl:when>
-                            <xsl:otherwise>
-                                <xsl:attribute name="value" select="$title-text"/>
-                            </xsl:otherwise>
-                        </xsl:choose>
-                    </input>
-                </div>
-            </div>
-        </xsl:for-each>
     </xsl:template>
     
     <!-- Contributors in a panel -->
@@ -646,6 +582,7 @@
                     
                     <div class="row">
                         
+                        <!-- Form -->
                         <div class="col-sm-8 match-this-height" data-match-height="status-form">
                             
                             <!--Contract details-->
@@ -893,57 +830,13 @@
                             
                         </div>
                         
+                        <!-- History -->
                         <div class="col-sm-4">
                             
-                            <!-- History -->
-                            <xsl:if test="m:translation/m:status-updates/m:status-update[@date-time]">
-                                
-                                <div class="match-height-overflow" data-match-height="status-form">
-                                    <h4 class="no-top-margin no-bottom-margin">
-                                        <xsl:value-of select="'History'"/>
-                                    </h4>
-                                    <hr class="sml-margin"/>
-                                    <ul class="small list-unstyled">
-                                        <xsl:for-each select="m:translation/m:status-updates/m:status-update[@date-time]">
-                                            <xsl:sort select="xs:dateTime(@date-time)" order="descending"/>
-                                            <li>
-                                                <div class="text-bold">
-                                                    <xsl:choose>
-                                                        <xsl:when test="local-name(.) eq 'status-update'">
-                                                            <xsl:choose>
-                                                                <xsl:when test="@update eq 'text-version'">
-                                                                    <xsl:value-of select="'Version update: ' || @value"/>
-                                                                </xsl:when>
-                                                                <xsl:when test="@update eq 'translation-status'">
-                                                                    <xsl:value-of select="'Status update: ' || @value"/>
-                                                                </xsl:when>
-                                                            </xsl:choose>
-                                                            <xsl:if test="text() and not(text() eq @value)">
-                                                                <xsl:value-of select="concat(' / ', text())"/>
-                                                            </xsl:if>
-                                                        </xsl:when>
-                                                        <xsl:otherwise>
-                                                            <xsl:value-of select="text()"/>
-                                                        </xsl:otherwise>
-                                                    </xsl:choose>
-                                                </div>
-                                                <div class="text-muted italic">
-                                                    <xsl:choose>
-                                                        <xsl:when test="local-name(.) eq 'status-update'">
-                                                            <xsl:value-of select="common:date-user-string('- Set ', @date-time, @user)"/>
-                                                        </xsl:when>
-                                                        <xsl:when test="local-name(.) eq 'task'">
-                                                            <xsl:value-of select="common:date-user-string('- Set ', @checked-off, @checked-off-by)"/>
-                                                        </xsl:when>
-                                                    </xsl:choose>
-                                                </div>
-                                            </li>
-                                        </xsl:for-each>
-                                    </ul>
-                                </div>
-                            </xsl:if>
+                            <xsl:apply-templates select="m:translation/m:status-updates"/>
                             
                         </div>
+                    
                     </div>
                     <hr/>
                     <div class="center-vertical full-width">

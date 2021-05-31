@@ -17,7 +17,7 @@ declare variable $resource-suffix := lower-case(replace($exist:resource, '.*\.',
 declare variable $collection-path := lower-case(tokenize($exist:path, '/')[2]);
 declare variable $redirects := doc('/db/system/config/db/system/redirects.xml')/m:redirects;
 declare variable $user-name := common:user-name();
-(:declare variable $var-debug := 
+declare variable $var-debug := 
     <debug>
         <var name="exist:path" value="{ $exist:path }"/>
         <var name="exist:resource" value="{ $exist:resource }"/>
@@ -29,7 +29,8 @@ declare variable $user-name := common:user-name();
         <var name="resource-suffix" value="{ $resource-suffix }"/>
         <var name="collection-path" value="{ $collection-path }"/>
         <var name="user-name" value="{ $user-name }"/>
-    </debug>;:)
+        <var name="common:data-path" value="{ $common:data-path }"/>
+    </debug>;
 
 declare function local:dispatch($model as xs:string?, $view as xs:string?, $parameters as node()?) as node(){
     <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
@@ -139,7 +140,8 @@ let $log-request :=
     )
 
 (: Process the request :)
-return
+return (:$var-debug:)
+
     (: Robots :)
     if (lower-case($exist:resource) = ('robots.txt')) then
         <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
@@ -437,15 +439,30 @@ return
                 <parameters xmlns="http://exist.sourceforge.net/NS/exist"/>
             )
         
-        (: Sitemap - returns a site map for a multi chapter text - used for PDF generation :)
+        (:(\: Sitemap - returns a site map for a multi chapter text - used for PDF generation - DEPRECATED! :\)
         else if ($collection-path eq "sitemap") then
-            (: return the xml :)
+            (\: return the xml :\)
             local:dispatch("/models/sitemap.xq", "", 
                 <parameters xmlns="http://exist.sourceforge.net/NS/exist">
                     <add-parameter name="resource-id" value="{$resource-id}"/>
                 </parameters>
-            )
-            
+            ):)
+        
+        (: Schema :)
+        else if ($collection-path eq "schema") then
+            (: return the schema :)
+            (:<debug doc-available="{ doc-available(concat($common:data-path, $exist:path)) }">:)
+            <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+                <forward url="{ concat($common:data-collection, $exist:path) }"/>
+            </dispatch>
+            (:</debug>:)
+        
+        (: Audio :)
+        else if ($collection-path eq "audio") then
+            <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+                <forward url="{ concat($common:data-collection, $exist:path) }"/>
+            </dispatch>
+        
         else
             (: It's data :)
             if($resource-suffix eq 'html') then

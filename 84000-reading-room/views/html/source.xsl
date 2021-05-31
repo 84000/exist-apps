@@ -42,11 +42,11 @@
             </div>
             
             <div class="content-band">
-                <div class="container">
+                <main class="container">
                     <div id="ajax-source" class="ajax-target">
                         
                         <xsl:for-each select="m:source/m:page">
-                            <main>
+                            <div>
                                 
                                 <xsl:variable name="folio-string" as="xs:string">
                                     <xsl:choose>
@@ -88,7 +88,7 @@
                                     
                                 </div>
                                 
-                            </main>
+                            </div>
                         </xsl:for-each>
                         
                     </div>
@@ -110,7 +110,7 @@
                         </div>
                     </xsl:if>
                     
-                </div>
+                </main>
             </div>
         </xsl:variable>
         

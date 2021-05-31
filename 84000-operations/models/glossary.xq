@@ -5,7 +5,7 @@ declare namespace tei = "http://www.tei-c.org/ns/1.0";
 declare namespace xhtml = "http://www.w3.org/1999/xhtml";
 
 import module namespace local="http://operations.84000.co/local" at "../modules/local.xql";
-import module namespace update-translation="http://operations.84000.co/update-translation" at "../modules/update-translation.xql";
+import module namespace update-tei="http://operations.84000.co/update-tei" at "../modules/update-tei.xql";
 import module namespace update-entity="http://operations.84000.co/update-entity" at "../modules/update-entity.xql";
 
 import module namespace common="http://read.84000.co/common" at "../../84000-reading-room/modules/common.xql";
@@ -51,13 +51,13 @@ let $glossary-id :=
 (: Process the input :)
 let $update-glossary := 
     if($form-action eq 'update-glossary') then
-        update-translation:update-glossary($tei, $glossary-id)
+        update-tei:update-glossary($tei, $glossary-id)
     else if($form-action eq 'cache-locations') then
-        update-translation:cache-glossary($tei, $glossary-id)
+        update-tei:cache-glossary($tei, $glossary-id)
     else if($form-action eq 'cache-locations-uncached') then
-        update-translation:cache-glossary($tei, 'uncached')
+        update-tei:cache-glossary($tei, 'uncached')
     else if($form-action eq 'cache-locations-all') then
-        update-translation:cache-glossary($tei, ())
+        update-tei:cache-glossary($tei, ())
     else if($form-action eq 'update-entity') then
         update-entity:glossary-item($entity-id)
     else if($form-action eq 'match-glossary') then
@@ -94,8 +94,6 @@ let $first-record :=
             xs:integer($first-record)
     else 1
 
-let $glossary-cache := translation:glossary-cache($tei, (), false())
-
 return
     common:response(
         'operations/glossary',
@@ -124,12 +122,11 @@ return
                 attribute locked-by-user { tei-content:locked-by-user($tei) },
                 translation:titles($tei),
                 tei-content:source($tei, $resource-id),
-                translation:parts($tei, (), $translation:view-modes/m:view-mode[@id eq 'glossary-editor']),
-                translation:notes-cache($tei, false(), false()),
-                translation:milestones-cache($tei, false(), false()),
-                translation:folios-cache($tei, false(), false()),
-                $glossary-cache
+                translation:parts($tei, (), $translation:view-modes/m:view-mode[@id eq 'glossary-editor'])
             },
+            
+            (: Caches :)
+            tei-content:cache($tei, false())/m:*,
             
             (: Additional glossary data for selected items :)
             element { QName('http://read.84000.co/ns/1.0', 'glossary') } {
@@ -169,32 +166,10 @@ return
                             }
                         else (),
                         
-                        (: Add markdown of the definition :)
-                        element markdown {
-                            for $definition in $glossary-item/m:definition
-                            return 
-                                element { node-name($definition) }{
-                                    $definition/@*,
-                                    common:markdown($definition/node(), 'http://www.tei-c.org/ns/1.0')
-                                }
-                        },
-                        
                         (: Add the shared entity :)
                         if($entity) then (
                         
-                            element { node-name($entity) } {
-                                $entity/@*,
-                                $entity/*,
-                                (: Add markdown of the definition :)
-                                element markdown {
-                                    for $definition in $entity/m:content[@type eq 'glossary-definition']
-                                    return 
-                                        element { node-name($definition) }{
-                                            $definition/@*,
-                                            common:markdown($definition/node(), 'http://www.tei-c.org/ns/1.0')
-                                        }
-                                }
-                            },
+                            $entity,
                             
                             (: Include glossaries matched to the shared entity :)
                             element { QName('http://read.84000.co/ns/1.0', 'entity-glossaries') }{

@@ -15,6 +15,7 @@ declare option exist:serialize "method=xml indent=no";
 
 let $resource-id := request:get-parameter('resource-id', '')
 let $resource-suffix := request:get-parameter('resource-suffix', '')
+let $view-mode := request:get-parameter('view-mode', 'default')
 
 let $tei := tei-content:tei($resource-id, 'knowledgebase')
 
@@ -34,25 +35,39 @@ return
                 $common:app-id,
                 (
                     (: Include request parameters :)
-                    <request 
-                        xmlns="http://read.84000.co/ns/1.0" 
-                        resource-id="{ $resource-id }"
-                        doc-type="{ request:get-parameter('resource-suffix', 'html') }"/>,
-                    
-                    (: Calculated strings :)
-                    <replace-text xmlns="http://read.84000.co/ns/1.0">
-                        <value key="#CurrentDateTime">{ format-dateTime(current-dateTime(), '[h].[m01][Pn] on [FNn], [D1o] [MNn] [Y0001]') }</value>
-                        <value key="#LinkToSelf">{ $canonical-html }</value>
-                    </replace-text>,
-                    
+                    element { QName('http://read.84000.co/ns/1.0', 'request') } {
+                        attribute resource-id { $resource-id },
+                        attribute doc-type { request:get-parameter('resource-suffix', 'html') },
+                        $knowledgebase:view-modes/m:view-mode[@id eq $view-mode]
+                    },
+                        
                     (: Knowledgebase content :)
                     element { QName('http://read.84000.co/ns/1.0', 'knowledgebase') } {
+                    
                         knowledgebase:page($tei),
                         knowledgebase:publication($tei),
                         knowledgebase:taxonomy($tei),
                         knowledgebase:article($tei),
-                        knowledgebase:bibliography($tei)
+                        knowledgebase:bibliography($tei),
+                        knowledgebase:end-notes($tei)
+                        
+                    },
+                        
+                    (: Include caches :)
+                    tei-content:cache($tei, false())/m:*,
+                    
+                    (: Calculated strings :)
+                    element { QName('http://read.84000.co/ns/1.0', 'replace-text') } {
+                        element value {
+                            attribute key { '#CurrentDateTime' },
+                            format-dateTime(current-dateTime(), '[h].[m01][Pn] on [FNn], [D1o] [MNn] [Y0001]')
+                        },
+                        element value {
+                            attribute key { '#LinkToSelf' },
+                            $canonical-html
+                        }
                     }
+                    
                 )
             )
         

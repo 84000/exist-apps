@@ -57,13 +57,11 @@ declare function sponsors:sponsor($id as xs:string, $include-acknowledgements as
             $sponsor/m:type,
             if($include-internal-names) then
                 $sponsor/m:internal-name
-            else
-                ()
+            else ()
             ,
             if($include-acknowledgements) then
                 sponsors:acknowledgements(sponsors:sponsor-uri($sponsor/@xml:id))
-            else
-                ()
+            else ()
         }
 };
 

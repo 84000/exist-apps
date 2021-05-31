@@ -58,7 +58,7 @@
                 <label key="label-search">Search the Reading Room</label>
             </item>
             <item url="https://read.84000.co/glossary.html">
-                <label key="label-search">Glossary</label>
+                <label key="label-glossary">Glossary of Terms</label>
             </item>
         </item>
         <item class="resources" url="#resources">

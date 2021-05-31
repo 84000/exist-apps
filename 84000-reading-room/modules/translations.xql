@@ -424,7 +424,7 @@ declare function translations:filtered-text($tei as element(tei:TEI), $toh-key a
             translation:location($tei, $toh-key),
             translation:publication($tei),
             translation:summary($tei, 'show', (), $lang),
-            translation:status-updates($tei),
+            tei-content:status-updates($tei),
             sponsorship:text-status($text-id, false()),
             if($include-sponsors) then
                 translation:sponsors($tei, true())
@@ -519,7 +519,7 @@ declare function translations:downloads($resource-ids as xs:string*) as element(
                         $tei/tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl[@key = $resource-ids]/@key
                 return
                     translation:downloads($tei, $resource-id, 'all'),
-                    translation:status-updates($tei)
+                    tei-content:status-updates($tei)
             }
     }
     </translations>

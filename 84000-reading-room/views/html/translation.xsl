@@ -180,7 +180,7 @@
                         <div class="container">
                             <div class="row">
                                 <div class="col-md-offset-1 col-md-10 col-lg-offset-2 col-lg-8">
-                                    <div class="data-container">
+                                    <div class="data-container tei-parser">
                                         <!-- Ajax data here -->
                                     </div>
                                 </div>
@@ -473,6 +473,7 @@
                         
                         <xsl:value-of select="concat('part-type-', $part/@type)"/>
                         <xsl:value-of select="$css-classes"/>
+                        <xsl:value-of select="'tei-parser'"/>
                         
                     </xsl:with-param>
                     

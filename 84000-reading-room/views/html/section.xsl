@@ -382,7 +382,7 @@
                                 <xsl:attribute name="class" select="string-join($css-class, ' ')"/>
                                 
                                 <div class="row">
-                                    <div class="col-md-offset-2 col-md-8 text-left">
+                                    <div class="col-md-offset-2 col-md-8 text-left tei-parser">
                                         <xsl:apply-templates select="m:section/m:about/*"/>
                                     </div>
                                 </div>

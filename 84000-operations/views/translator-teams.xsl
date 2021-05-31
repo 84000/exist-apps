@@ -18,26 +18,10 @@
                         </span>
                         
                         <div>
-                            <form method="post" action="/translator-teams.html" class="form-inline filter-form pull-right">
-                                
-                                <div class="checkbox hidden"><!-- Hide this for now -->
-                                    <label class="small">
-                                        <input type="checkbox" name="include-acknowledgements" value="1">
-                                            <xsl:if test="m:request/@include-acknowledgements eq 'true'">
-                                                <xsl:attribute name="checked" select="'checked'"/>
-                                            </xsl:if>
-                                        </input>
-                                        <xsl:value-of select="'List all attributions'"/>
-                                        
-                                    </label>
-                                </div>
-                                
-                                <a class="btn btn-primary btn-sml">
-                                    <xsl:attribute name="href" select="'/edit-translator-team.html'"/>
-                                    <xsl:value-of select="'Add a translator team'"/>
-                                </a>
-                                
-                            </form>
+                            <a class="btn btn-primary btn-sml pull-right">
+                                <xsl:attribute name="href" select="'/edit-translator-team.html'"/>
+                                <xsl:value-of select="'Add a translator team'"/>
+                            </a>
                         </div>
                         
                     </div>
@@ -66,23 +50,55 @@
                                         <div class="item">
                                             
                                             <div class="row">
-                                                <div class="col-sm-3">
+                                                <div class="col-sm-6">
+                                                    
                                                     <a>
                                                         <xsl:attribute name="href" select="concat('/edit-translator-team.html?id=', $team-id)"/>
-                                                        <xsl:value-of select="m:sort-name"/>
+                                                        <xsl:value-of select="m:label"/>
                                                     </a>
+                                                    
                                                     <xsl:if test="@rend eq 'hidden'">
                                                         <span class="label label-default">
                                                             <xsl:value-of select="'Hidden'"/>
                                                         </span>
                                                     </xsl:if>
+                                                    
                                                     <br/>
+                                                    
                                                     <span class="small text-muted">
                                                         <xsl:value-of select="$team-id"/>
                                                     </span>
+                                                    
+                                                    <br/>
+                                                    
+                                                    <a data-toggle="collapse">
+                                                        
+                                                        <xsl:attribute name="href" select="concat('#team-acknowledgements-', $team-id)"/>
+                                                        
+                                                        <xsl:if test="not(m:acknowledgement)">
+                                                            <xsl:attribute name="class" select="'disabled'"/>
+                                                        </xsl:if>
+                                                        
+                                                        <span class="badge badge-notification">
+                                                            <xsl:value-of select="count(m:acknowledgement)"/>
+                                                        </span>
+                                                        
+                                                        <span class="btn-round-text">
+                                                            <xsl:choose>
+                                                                <xsl:when test="count(m:acknowledgement) eq 1">
+                                                                    <xsl:value-of select="' acknowledgement'"/>
+                                                                </xsl:when>
+                                                                <xsl:otherwise>
+                                                                    <xsl:value-of select="' acknowledgements'"/>
+                                                                </xsl:otherwise>
+                                                            </xsl:choose>
+                                                        </span>
+                                                        
+                                                    </a>
+                                                    
                                                 </div>
                                                 
-                                                <div class="col-sm-4">
+                                                <div class="col-sm-6">
                                                     <section>
                                                         
                                                         <xsl:variable name="section-id" select="concat('team-contributors-', $team-id)"/>
@@ -110,34 +126,23 @@
                                                         
                                                     </section>
                                                 </div>
+                                            
+                                            </div>
+                                            
+                                            <div class="collapse">
                                                 
-                                                <xsl:if test="/m:response/m:request/@include-acknowledgements eq 'true'">
-                                                    <div class="col-sm-5">
-                                                        <section>
-                                                            
-                                                            <xsl:variable name="section-id" select="concat('team-acknowledgements-', $team-id)"/>
-                                                            <xsl:attribute name="id" select="$section-id"/>
-                                                            
-                                                            <xsl:if test="count(m:acknowledgement) gt 2">
-                                                                <xsl:attribute name="class" select="'preview-list preview'"/>
-                                                                
-                                                                <xsl:call-template name="preview-controls">
-                                                                    
-                                                                    <xsl:with-param name="section-id" select="$section-id"/>
-                                                                    
-                                                                </xsl:call-template>
-                                                            </xsl:if>
-                                                            
-                                                            <xsl:call-template name="acknowledgements">
-                                                                <xsl:with-param name="acknowledgements" select="m:acknowledgement"/>
-                                                                <xsl:with-param name="group" select="''"/>
-                                                                <xsl:with-param name="css-class" select="'col-sm-12'"/>
-                                                                <xsl:with-param name="link-href" select="'/edit-text-header.html?id=@translation-id'"/>
-                                                            </xsl:call-template>
-                                                            
-                                                        </section>
-                                                    </div>
-                                                </xsl:if>
+                                                <xsl:variable name="section-id" select="concat('team-acknowledgements-', $team-id)"/>
+                                                <xsl:attribute name="id" select="$section-id"/>
+                                                
+                                                <div class="top-margin">
+                                                    <xsl:call-template name="acknowledgements">
+                                                        <xsl:with-param name="acknowledgements" select="m:acknowledgement"/>
+                                                        <xsl:with-param name="group" select="''"/>
+                                                        <xsl:with-param name="css-class" select="''"/>
+                                                        <xsl:with-param name="link-href" select="'/edit-text-header.html?id=@translation-id'"/>
+                                                    </xsl:call-template>
+                                                </div>
+                                                
                                             </div>
                                             
                                         </div>

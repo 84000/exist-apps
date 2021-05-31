@@ -758,118 +758,9 @@ declare function translation:glossary($tei as element(tei:TEI), $passage-id as x
 
 };
 
-declare function translation:cache($tei as element(tei:TEI), $create-if-unavailable as xs:boolean?) as element(m:cache) {
-    
-    let $text-id := tei-content:id($tei)
-    let $cache-collection := concat($common:data-path, '/', 'cache')
-    let $cache-file := concat($text-id, '.cache')
-    let $cache-uri := concat($cache-collection, '/', $cache-file)
-    let $cache := doc($cache-uri)/m:cache
-    let $cache-empty := <cache xmlns="http://read.84000.co/ns/1.0"/>
-    
-    let $cache := 
-        if(not(doc-available($cache-uri))) then 
-            if($create-if-unavailable and $tei/tei:text//tei:div) then 
-                let $cache-create := xmldb:store($cache-collection, $cache-file, $cache-empty, 'application/xml')
-                let $set-permissions := (
-                    sm:chown(xs:anyURI($cache-uri), 'admin'),
-                    sm:chgrp(xs:anyURI($cache-uri), 'tei'),
-                    sm:chmod(xs:anyURI($cache-uri), 'rw-rw-r--')
-                )
-                return
-                    doc($cache-uri)/m:cache
-            else 
-                $cache-empty
-        else 
-            $cache
-    
-    return
-        $cache
-};
-
-declare function translation:notes-cache($tei as element(tei:TEI), $refresh as xs:boolean?, $create-if-unavailable as xs:boolean?) as element(m:notes-cache) {
-    
-    let $cache := translation:cache($tei, $create-if-unavailable)
-    
-    return
-        if($cache[m:notes-cache] and not($refresh)) then
-            $cache/m:notes-cache
-        else
-            
-            let $start-time := util:system-dateTime()
-            
-            let $end-notes :=
-            
-                for $note at $index in $tei/tei:text//tei:note[@place eq 'end'][@xml:id]
-                    (: Lowest level @typed part, except root :)
-                    let $part := $note/ancestor::tei:div[@type][not(@type = ('translation', 'appendix'))][last()]
-                return (
-                    common:ws(2),
-                    element { QName('http://read.84000.co/ns/1.0', 'end-note') } {
-                        attribute id { $note/@xml:id },
-                        attribute part-id { ($part/@xml:id, $part/@type)[1] },
-                        attribute index { $index }
-                    }
-                )
-            
-            let $end-time := util:system-dateTime()
-            
-            return
-                element { QName('http://read.84000.co/ns/1.0', 'notes-cache') } {
-                
-                    attribute timestamp { current-dateTime() },
-                    attribute seconds-to-build { functx:total-seconds-from-duration($end-time - $start-time) },
-                    
-                    $end-notes,
-                    
-                    common:ws(1)
-                }
-};
-
-declare function translation:milestones-cache($tei as element(tei:TEI), $refresh as xs:boolean?, $create-if-unavailable as xs:boolean?) as element(m:milestones-cache) {
-    
-    let $cache := translation:cache($tei, $create-if-unavailable)
-    
-    return
-        if($cache[m:milestones-cache] and not($refresh)) then
-            $cache/m:milestones-cache
-        else
-            
-            let $start-time := util:system-dateTime()
-            
-            let $milestones := 
-                for $part in 
-                    $tei/tei:text/tei:front/tei:div[@type]
-                    | $tei/tei:text/tei:body/tei:div[@type eq 'translation']/tei:div[@type]
-                    | $tei/tei:text/tei:back/tei:div[@type eq 'appendix']/tei:div[@type]
-                    | $tei/tei:text/tei:back/tei:div[not(@type eq 'appendix')]
-                    for $milestone at $index in $part//tei:milestone[@xml:id]
-                    return (
-                        common:ws(2),
-                        element { QName('http://read.84000.co/ns/1.0', 'milestone') } {
-                            attribute id { $milestone/@xml:id },
-                            attribute part-id { ($part/@xml:id, $part/@type)[1] },
-                            attribute index { $index }
-                        }
-                    )
-                    
-            let $end-time := util:system-dateTime()
-            
-            return
-                element { QName('http://read.84000.co/ns/1.0', 'milestones-cache') } {
-                
-                    attribute timestamp { current-dateTime() },
-                    attribute seconds-to-build { functx:total-seconds-from-duration($end-time - $start-time) },
-                    
-                    $milestones,
-                    
-                    common:ws(1)
-                }
-};
-
 declare function translation:folios-cache($tei as element(tei:TEI), $refresh as xs:boolean?, $create-if-unavailable as xs:boolean?) as element(m:folios-cache) {
 
-    let $cache := translation:cache($tei, $create-if-unavailable)
+    let $cache := tei-content:cache($tei, $create-if-unavailable)
     
     return
         if($cache[m:folios-cache] and not($refresh)) then
@@ -914,7 +805,7 @@ declare function translation:folios-cache($tei as element(tei:TEI), $refresh as 
 
 declare function translation:glossary-cache($tei as element(tei:TEI), $refresh-ids as xs:string*, $create-if-unavailable as xs:boolean?) as element(m:glossary-cache) {
     
-    let $cache := translation:cache($tei, $create-if-unavailable)
+    let $cache := tei-content:cache($tei, $create-if-unavailable)
     
     return
         (: If there is one and there's nothing to refresh, just return the cache :)
@@ -1403,38 +1294,6 @@ declare function translation:contributors($tei as element(tei:TEI), $include-ack
                 ()
                 
         )}
-};
-
-declare function translation:status-updates($tei as element()) as element(m:status-updates) {
-    
-    element {QName('http://read.84000.co/ns/1.0', 'status-updates')} {
-        
-        let $translation-status := tei-content:translation-status($tei)
-        let $tei-version-number-str := tei-content:version-number-str($tei)
-        
-        (: Returns notes of status updates :)
-        for $status-update in $tei/tei:teiHeader//tei:notesStmt/tei:note[@update = ('text-version', 'translation-status')]
-        let $status-update-version-number-str := replace($status-update/@value, '[^0-9\.]', '')
-        return
-            element {QName('http://read.84000.co/ns/1.0', 'status-update')} {
-                $status-update/@update,
-                $status-update/@value,
-                $status-update/@date-time,
-                $status-update/@user,
-                attribute days-from-now { days-from-duration(xs:dateTime($status-update/@date-time) - current-dateTime()) },
-                if ($status-update[@update eq 'translation-status'] and $status-update[@value eq $translation-status]) then
-                    attribute current-status { true() }
-                else
-                    ()
-                ,
-                if ($status-update[@update eq 'text-version'] and $status-update-version-number-str eq $tei-version-number-str) then
-                    attribute current-version { true() }
-                else
-                    ()
-                ,
-                $status-update/text()
-            }
-    }
 };
 
 declare function translation:replace-text($resource-id as xs:string) as element(m:replace-text) {

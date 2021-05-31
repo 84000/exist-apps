@@ -3,7 +3,7 @@
     
     <!-- include navigation stylesheet -->
     <xsl:import href="../../xslt/84000-html.xsl"/>
-    <xsl:import href="../../xslt/functions.xsl"/>
+    <xsl:import href="../../xslt/common.xsl"/>
     <xsl:import href="../../xslt/lang.xsl"/>
     <xsl:import href="../../xslt/layout.xsl"/>
     
@@ -70,6 +70,9 @@
             <xsl:when test="/m:response/@model-type eq 'about/sponsor-a-sutra'">
                 <xsl:value-of select="common:internal-link('https://read.84000.co/about/sponsor-a-sutra.html', (), '', $lang)"/>
             </xsl:when>
+            <xsl:when test="/m:response/@model-type eq 'knowledgebase'">
+                <xsl:value-of select="common:internal-link('https://read.84000.co/knowledgebase.html', (), '', $lang)"/>
+            </xsl:when>
             <xsl:otherwise>
                 <xsl:value-of select="common:internal-link('#reading-room', (), '', '')"/>
             </xsl:otherwise>
@@ -114,7 +117,7 @@
                         <xsl:attribute name="href" select="concat($front-end-path, '/css/84000-utilities.css', $app-version-url-attribute)"/>
                     </xsl:when>
                     <xsl:otherwise>
-                        <xsl:attribute name="href" select="concat($front-end-path, '/css/84000-reading-room.css', $app-version-url-attribute)"/>
+                        <xsl:attribute name="href" select="concat($front-end-path, '/css/84000-translation.css', $app-version-url-attribute)"/>
                     </xsl:otherwise>
                 </xsl:choose>
             </link>
@@ -367,7 +370,7 @@
                 
                 <!-- Styles -->
                 <link rel="stylesheet" type="text/css">
-                    <xsl:attribute name="href" select="concat($front-end-path, '/css/84000-reading-room.css', $app-version-url-attribute)"/>
+                    <xsl:attribute name="href" select="concat($front-end-path, '/css/84000-translation.css', $app-version-url-attribute)"/>
                 </link>
                 <link rel="stylesheet" type="text/css">
                     <xsl:attribute name="href" select="concat($front-end-path, '/css/ie10-viewport-bug-workaround.css')"/>
