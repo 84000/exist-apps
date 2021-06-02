@@ -26,7 +26,7 @@
                             <!-- Form -->
                             <div class="col-sm-8">
                                 
-                                <h2>
+                                <h2 class="no-top-margin">
                                     <a>
                                         <xsl:attribute name="href" select="concat($reading-room-path, '/knowledgebase/', m:knowledgebase/m:page/@xml:id, '.html?view-mode=editor')"/>
                                         <xsl:attribute name="target" select="concat(m:knowledgebase/m:page/@xml:id, '.html')"/>

@@ -588,6 +588,11 @@
         
     -->
     <xsl:variable name="element-regex" select="'(^\s*|\[(.*?[^\]])\])\(([^\(\)]*?)\)'"/>
+    <xsl:variable name="heading-regex" select="'^\s*#+\s+'"/>
+    <xsl:variable name="bullet-item-regex" select="'^\s*\*\s+'"/>
+    <xsl:variable name="numbers-item-regex" select="'^\s*\d\.\s+'"/>
+    <xsl:variable name="letters-item-regex" select="'^\s*[a-zA-Z]\.\s+'"/>
+    <xsl:variable name="endnote-regex" select="'^\s*\d\)\s+'"/>
     
     <!-- 
         Known languages can be used in short codes 
@@ -602,6 +607,8 @@
     <xsl:template match="tei:div[@type eq 'markup']">
         
         <xsl:variable name="markup" select="."/>
+        <!-- The element to convert for a new-line -->
+        <xsl:variable name="newline-element" select="($markup/@newline-element, 'p')[1]" as="xs:string"/>
         
         <markdown>
             
@@ -626,11 +633,11 @@
                         <xsl:choose>
                             
                             <!-- List -->
-                            <xsl:when test="self::*:list[@type eq 'bullet']">
+                            <xsl:when test="local-name(.) eq 'list' and @type eq 'bullet'">
                                 
                                 <xsl:variable name="list-style" select="@rend"/>
                                 
-                                <xsl:for-each select="*:item/*:p">
+                                <xsl:for-each select="*:item">
                                     
                                     <!-- New line before list item -->
                                     <xsl:value-of select="$char-nl"/>
@@ -643,6 +650,7 @@
                                             <xsl:value-of select="concat(position(), '. ')"/>
                                         </xsl:when>
                                         
+                                        <!-- Letters list -->
                                         <xsl:when test="$list-style eq 'letters'">
                                             <xsl:value-of select="concat(common:position-to-letter(position()), '. ')"/>
                                         </xsl:when>
@@ -655,12 +663,26 @@
                                     </xsl:choose>
                                     
                                     <!-- Parse each content node -->
-                                    <xsl:for-each select="node()">
-                                        <xsl:call-template name="markdown:string">
-                                            <xsl:with-param name="node" select="."/>
-                                            <xsl:with-param name="markup" select="$markup"/>
-                                        </xsl:call-template>
-                                    </xsl:for-each>
+                                    <xsl:choose>
+                                        <!-- Shortcut for single p element -->
+                                        <xsl:when test="count(child::*) eq 1 and child::tei:p">
+                                            <xsl:for-each select="child::tei:p/node()">
+                                                <xsl:call-template name="markdown:string">
+                                                    <xsl:with-param name="node" select="."/>
+                                                    <xsl:with-param name="markup" select="$markup"/>
+                                                </xsl:call-template>
+                                            </xsl:for-each>
+                                        </xsl:when>
+                                        <!-- Otherwise markdown all content -->
+                                        <xsl:otherwise>
+                                            <xsl:for-each select="node()">
+                                                <xsl:call-template name="markdown:string">
+                                                    <xsl:with-param name="node" select="."/>
+                                                    <xsl:with-param name="markup" select="$markup"/>
+                                                </xsl:call-template>
+                                            </xsl:for-each>
+                                        </xsl:otherwise>
+                                    </xsl:choose>
                                     
                                     <!-- New line after list item -->
                                     <xsl:value-of select="$char-nl"/>
@@ -669,8 +691,22 @@
                                 
                             </xsl:when>
                             
-                            <!-- Paragraph -->
-                            <xsl:when test="self::*:p">
+                            <!-- Heading -->
+                            <xsl:when test="local-name(.) eq 'head' and @type = ('section', 'nonStructuralBreak') and not(@*[not(local-name(.) = ('type', 'tid'))]) and not(*)">
+                                
+                                <!-- Hash specifies a header -->
+                                <xsl:value-of select="'# '"/>
+                                
+                                <!-- Output value -->
+                                <xsl:value-of select="normalize-space(data())"/>
+                                
+                                <!-- New line after heading -->
+                                <xsl:value-of select="$char-nl"/>
+                                
+                            </xsl:when>
+                            
+                            <!-- Element creating a new line -->
+                            <xsl:when test="local-name(.) eq $newline-element and not(@*[not(local-name(.) eq 'tid')])">
                                 
                                 <!-- New line before paragraph -->
                                 <xsl:value-of select="$char-nl"/>
@@ -684,20 +720,6 @@
                                 </xsl:for-each>
                                 
                                 <!-- New line after paragraph -->
-                                <xsl:value-of select="$char-nl"/>
-                                
-                            </xsl:when>
-                            
-                            <!-- Heading -->
-                            <xsl:when test="self::*:head and @type = ('section', 'nonStructuralBreak') and not(@*[not(local-name(.) = ('type', 'tid'))]) and not(*)">
-                                
-                                <!-- Hash specifies a header -->
-                                <xsl:value-of select="'# '"/>
-                                
-                                <!-- Output value -->
-                                <xsl:value-of select="normalize-space(data())"/>
-                                
-                                <!-- New line after heading -->
                                 <xsl:value-of select="$char-nl"/>
                                 
                             </xsl:when>
@@ -748,6 +770,9 @@
     
         <!-- The source node -->
         <xsl:variable name="source" select="."/>
+        
+        <!-- The element to apply for a new-line -->
+        <xsl:variable name="newline-element" select="($source/@newline-element, 'p')[1]" as="xs:string"/>
         <!-- The target namespace for markup -->
         <xsl:variable name="namespace" select="($source/@target-namespace, 'http://www.tei-c.org/ns/1.0')[1]" as="xs:string"/>
         <!-- The content tokenized into lines -->
@@ -760,7 +785,7 @@
             <elements>
                 
                 <!-- Exclude empty lines and notes -->
-                <xsl:for-each select="$lines[matches(., '\w+')][not(matches(., '^\s*\d\)\s+'))]">
+                <xsl:for-each select="$lines[matches(., '\w+')][not(matches(., $endnote-regex))]">
                     
                     <xsl:variable name="line" select="."/>
                     <xsl:variable name="line-number" select="position()"/>
@@ -776,100 +801,128 @@
                             </xsl:call-template>
                         </xsl:when>
                         
-                        <!-- This line is a heading -->
-                        <xsl:when test="matches($line, '^\s*#+\s+')">
-                            
-                            <!-- Add head element -->
-                            <xsl:element name="head" namespace="{ $namespace }">
-                                
-                                <xsl:attribute name="type">
-                                    
-                                    <!-- 
-                                    Remove option for multiple #
-                                    Heading type determined by position in section
-                                    
-                                    <!-/- Evaluate the indent level -/->
-                                    <xsl:variable name="leading-hashes" select="replace($line, '^\s*(#+)\s+(.*)', '$1')"/>
-                                    
-                                    <xsl:choose>
-                                        <xsl:when test="string-length($leading-hashes) eq 1">
-                                            <xsl:value-of select="'section'"/>
-                                        </xsl:when>
-                                        <xsl:otherwise>
-                                            <xsl:value-of select="'nonStructuralBreak'"/>
-                                        </xsl:otherwise>
-                                    </xsl:choose>
-                                    -->
-                                    
-                                    <xsl:choose>
-                                        <xsl:when test="$line-number eq 1">
-                                            <xsl:value-of select="'section'"/>
-                                        </xsl:when>
-                                        <xsl:otherwise>
-                                            <xsl:value-of select="'nonStructuralBreak'"/>
-                                        </xsl:otherwise>
-                                    </xsl:choose>
-                                    
-                                </xsl:attribute>
-                                
-                                <!-- Remove hashes from content -->
-                                <xsl:value-of select="replace(replace(., '^\s*#+\s+', ''), '\s+', ' ')"/>
-                                
-                            </xsl:element>
-                            
-                        </xsl:when>
-                        
-                        <!-- Convert other lines to <p/> -->
+                        <!-- Otherwise derive the element -->
                         <xsl:otherwise>
                             
-                            <!-- Add a paragraph element -->
-                            <xsl:element name="p" namespace="{ $namespace }">
+                            <xsl:variable name="element-name">
+                                <xsl:choose>
+                                    
+                                    <!-- Check known patterns -->
+                                    
+                                    <xsl:when test="matches($line, $heading-regex)">
+                                        <xsl:value-of select="'head'"/>
+                                    </xsl:when>
+                                    
+                                    <xsl:when test="matches($line, $bullet-item-regex)">
+                                        <xsl:value-of select="'item'"/>
+                                    </xsl:when>
+                                    
+                                    <xsl:when test="matches($line, $numbers-item-regex)">
+                                        <xsl:value-of select="'item'"/>
+                                    </xsl:when>
+                                    
+                                    <xsl:when test="matches($line, $letters-item-regex)">
+                                        <xsl:value-of select="'item'"/>
+                                    </xsl:when>
+                                    
+                                    <xsl:when test="matches($line, $endnote-regex)">
+                                        <xsl:value-of select="'note'"/>
+                                    </xsl:when>
+                                    
+                                    <!-- Default element -->
+                                    
+                                    <xsl:otherwise>
+                                        <xsl:value-of select="$newline-element"/>
+                                    </xsl:otherwise>
+                                    
+                                </xsl:choose>
+                            </xsl:variable>
+                            
+                            <!-- Add a container element -->
+                            <xsl:element name="{ $element-name }" namespace="{ $namespace }">
                                 
-                                <!-- Set type -->
-                                <xsl:attribute name="line-group-type">
-                                    <xsl:choose>
+                                <!-- Set item type -->
+                                <xsl:if test="$element-name eq 'item'">
+                                    <xsl:attribute name="line-group-type">
+                                        <xsl:choose>
+                                            
+                                            <xsl:when test="matches($line, $bullet-item-regex)">
+                                                <xsl:value-of select="'list-item-bullet'"/>
+                                            </xsl:when>
+                                            
+                                            <xsl:when test="matches($line, $numbers-item-regex)">
+                                                <xsl:value-of select="'list-item-number'"/>
+                                            </xsl:when>
+                                            
+                                            <xsl:when test="matches($line, $letters-item-regex)">
+                                                <xsl:value-of select="'list-item-letter'"/>
+                                            </xsl:when>
+                                            
+                                        </xsl:choose>
+                                    </xsl:attribute>
+                                </xsl:if>
+                                
+                                <!-- Set head type -->
+                                <xsl:if test="$element-name eq 'head'">
+                                    <xsl:attribute name="type">
                                         
-                                        <xsl:when test="matches($line, '^\s*\*\s+')">
-                                            <xsl:value-of select="'list-item-bullet'"/>
-                                        </xsl:when>
+                                        <!-- 
+                                            Remove option for multiple #
+                                            Heading type determined by position in section
+                                            
+                                            <!-/- Evaluate the indent level -/->
+                                            <xsl:variable name="leading-hashes" select="replace($line, '^\s*(#+)\s+(.*)', '$1')"/>
+                                            
+                                            <xsl:choose>
+                                                <xsl:when test="string-length($leading-hashes) eq 1">
+                                                    <xsl:value-of select="'section'"/>
+                                                </xsl:when>
+                                                <xsl:otherwise>
+                                                    <xsl:value-of select="'nonStructuralBreak'"/>
+                                                </xsl:otherwise>
+                                            </xsl:choose>
+                                        -->
+                                            
+                                        <xsl:choose>
+                                            <xsl:when test="$line-number eq 1">
+                                                <xsl:value-of select="'section'"/>
+                                            </xsl:when>
+                                            <xsl:otherwise>
+                                                <xsl:value-of select="'nonStructuralBreak'"/>
+                                            </xsl:otherwise>
+                                        </xsl:choose>
                                         
-                                        <xsl:when test="matches($line, '^\s*\d\.\s+')">
-                                            <xsl:value-of select="'list-item-number'"/>
-                                        </xsl:when>
-                                        
-                                        <xsl:when test="matches($line, '^\s*[a-zA-Z]\.\s+')">
-                                            <xsl:value-of select="'list-item-letter'"/>
-                                        </xsl:when>
-                                        
-                                        <xsl:otherwise>
-                                            <xsl:value-of select="'p'"/>
-                                        </xsl:otherwise>
-                                        
-                                    </xsl:choose>
-                                </xsl:attribute>
+                                    </xsl:attribute>
+                                    
+                                </xsl:if>
                                 
                                 <!-- Get content -->
                                 <xsl:variable name="content">
                                     <xsl:choose>
                                         
+                                        <!-- Head -->
+                                        <xsl:when test="matches($line, $heading-regex)">
+                                            <xsl:value-of select="replace(., $heading-regex, '')"/>
+                                        </xsl:when>
+                                        
                                         <!-- Bullet list -->
-                                        <xsl:when test="matches($line, '^\s*\*\s+')">
-                                            <xsl:value-of select="replace(., '^\s*\*\s+', '')"/>
+                                        <xsl:when test="matches($line, $bullet-item-regex)">
+                                            <xsl:value-of select="replace(., $bullet-item-regex, '')"/>
                                         </xsl:when>
                                         
                                         <!-- Number list -->
-                                        <xsl:when test="matches($line, '^\s*\d\.\s+')">
-                                            <xsl:value-of select="replace(., '^\s*\d\.\s+', '')"/>
+                                        <xsl:when test="matches($line, $numbers-item-regex)">
+                                            <xsl:value-of select="replace(., $numbers-item-regex, '')"/>
                                         </xsl:when>
                                         
                                         <!-- Letter list -->
-                                        <xsl:when test="matches($line, '^\s*[a-zA-Z]\.\s+')">
-                                            <xsl:value-of select="replace(., '^\s*[a-zA-Z]\.\s+', '')"/>
+                                        <xsl:when test="matches($line, $letters-item-regex)">
+                                            <xsl:value-of select="replace(., $letters-item-regex, '')"/>
                                         </xsl:when>
                                         
                                         <!-- Note -->
-                                        <xsl:when test="matches($line, '^\s*\d\)\s+')">
-                                            <xsl:value-of select="replace(., '^\s*\d\)\s+', '')"/>
+                                        <xsl:when test="matches($line, $endnote-regex)">
+                                            <xsl:value-of select="replace(., $endnote-regex, '')"/>
                                         </xsl:when>
                                         
                                         <xsl:otherwise>
@@ -926,7 +979,7 @@
                         <xsl:choose>
                             
                             <!-- List types where it's not the first in the list -->
-                            <xsl:when test="$element/@line-group-type = ('list-item-bullet', 'list-item-number', 'list-item-letter') and preceding-sibling::*[1][@line-group-type eq $element/@line-group-type]">
+                            <xsl:when test="local-name($element) eq 'item' and preceding-sibling::*[1][@line-group-type eq $element/@line-group-type]">
                                 <!-- 
                                     Find the first in this list
                                     - Closest sibling of this type that has a first sibling of not this type
@@ -960,7 +1013,7 @@
                 <xsl:choose>
                     
                     <!-- Add a list for list items -->
-                    <xsl:when test="@line-group-type = ('list-item-bullet', 'list-item-number', 'list-item-letter')">
+                    <xsl:when test="local-name(.) eq 'item'">
                         <xsl:element name="list" namespace="{ $namespace }">
                             
                             <xsl:attribute name="type" select="'bullet'"/>
@@ -979,12 +1032,24 @@
                             
                             <!-- Add each item in the list -->
                             <xsl:for-each select="current-group()">
-                                <xsl:element name="item" namespace="{ $namespace }">
-                                    <xsl:element name="{ node-name(.) }" namespace="{ namespace-uri(.) }">
-                                        <xsl:sequence select="@*[not(name(.) = ('line-group-id', 'line-group-type'))]"/>
-                                        <xsl:sequence select="node()"/>
-                                    </xsl:element>
-                                </xsl:element>
+                                <xsl:choose>
+                                    <!-- If item has direct child data then nest in a <p/> -->
+                                    <xsl:when test="node()[. instance of text() and normalize-space(.)]">
+                                        <xsl:element name="item" namespace="{ namespace-uri(.) }">
+                                            <xsl:sequence select="@*[not(name(.) = ('line-group-id', 'line-group-type'))]"/>
+                                            <xsl:element name="p" namespace="{ $namespace }">
+                                                <xsl:sequence select="node()"/>
+                                            </xsl:element>
+                                        </xsl:element>
+                                    </xsl:when>
+                                    <!-- Otherwise output item -->
+                                    <xsl:otherwise>
+                                        <xsl:element name="item" namespace="{ namespace-uri(.) }">
+                                            <xsl:sequence select="@*[not(name(.) = ('line-group-id', 'line-group-type'))]"/>
+                                            <xsl:sequence select="node()"/>
+                                        </xsl:element>
+                                    </xsl:otherwise>
+                                </xsl:choose>
                             </xsl:for-each>
                             
                         </xsl:element>
@@ -993,7 +1058,7 @@
                     <!-- Add the element -->
                     <xsl:otherwise>
                         <xsl:for-each select="current-group()">
-                            <xsl:element name="{ node-name(.) }" namespace="{ namespace-uri(.) }">
+                            <xsl:element name="{ node-name(.) }" namespace="{ $namespace }">
                                 <xsl:sequence select="@*[not(name(.) = ('line-group-id', 'line-group-type'))]"/>
                                 <xsl:sequence select="node()"/>
                             </xsl:element>

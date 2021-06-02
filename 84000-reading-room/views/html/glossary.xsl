@@ -362,6 +362,7 @@
                                                             
                                                             <!-- Text -->
                                                             <div class="rw">
+                                                                
                                                                 <div class="gtr">
                                                                     <a>
                                                                         <xsl:attribute name="href" select="concat($reading-room-path, '/translation/', $item-text/@id, '.html')"/>
@@ -369,7 +370,8 @@
                                                                         <xsl:apply-templates select="$item-text/m:toh/text()"/>
                                                                     </a>
                                                                 </div>
-                                                                <div class="text-muted">
+                                                                
+                                                                <div>
                                                                     
                                                                     <xsl:apply-templates select="$item-text/m:title/text()"/>
                                                                     
@@ -382,6 +384,7 @@
                                                                     </xsl:if>
                                                                     
                                                                 </div>
+                                                                
                                                             </div>
                                                             
                                                             <!-- Translators -->

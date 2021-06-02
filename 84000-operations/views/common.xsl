@@ -284,7 +284,7 @@
                 <li role="presentation">
                     <xsl:attribute name="class" select="'active'"/>
                     <a>
-                        <xsl:attribute name="href" select="concat('/tei-editor.html?type=', /m:response/m:request/@type,'&amp;resource-id=', /m:response/m:request/@resource-id, '&amp;section-id=', /m:response/m:request/@section-id)"/>
+                        <xsl:attribute name="href" select="concat('/tei-editor.html?type=', /m:response/m:request/@type,'&amp;resource-id=', /m:response/m:request/@resource-id, '&amp;section-id=', /m:response/m:request/@section-id, '&amp;sibling-id=', /m:response/m:request/@sibling-id)"/>
                         <xsl:value-of select="'TEI Editor'"/>
                     </a>
                 </li>

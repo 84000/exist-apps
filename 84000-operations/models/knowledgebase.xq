@@ -18,21 +18,22 @@ let $add-page :=
     if($form-action eq 'new-kb-page' and $title gt '') then
         let $filename := concat(replace(knowledgebase:id($title), '\-', '_'), '.xml')
         let $tei := knowledgebase:new-tei($title)
-        let $text-id := $tei//tei:publicationStmt/tei:idno/@xml:id
-        where $filename and $tei
-        return (
+        let $text-id := tei-content:id($tei/tei:TEI)
+        where $filename and $tei and $text-id
+        return 
             
             (: Create the file :)
-            xmldb:store($common:knowledgebase-path, $filename, $tei, 'application/xml'),
-            sm:chgrp(xs:anyURI(concat($common:knowledgebase-path, '/', $filename)), 'tei'),
-            sm:chmod(xs:anyURI(concat($common:knowledgebase-path, '/', $filename)), 'rw-rw-r--'),
+            let $store := xmldb:store($common:knowledgebase-path, $filename, $tei, 'application/xml')
+            let $set-grp := sm:chgrp(xs:anyURI(concat($common:knowledgebase-path, '/', $filename)), 'tei')
+            let $set-mod := sm:chmod(xs:anyURI(concat($common:knowledgebase-path, '/', $filename)), 'rw-rw-r--')
             
             (: Touch it with a new update :)
             let $tei := tei-content:tei($text-id, 'knowledgebase')
-            return
+            return (
+                (:$text-id,:)
                 update-tei:minor-version-increment($tei, 'file-created')
-                
-        )
+            )
+        
     else ()
     
 return
@@ -44,7 +45,9 @@ return
             element { QName('http://read.84000.co/ns/1.0', 'request') } {},
             
             (: Knowledge Base pages :)
-            knowledgebase:pages()
+            knowledgebase:pages(),
+            
+            $add-page
             
         )
     )

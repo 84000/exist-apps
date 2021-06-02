@@ -205,6 +205,7 @@ return document {
                 </publisher>
                 <idno xml:id="EFT-KB-{ upper-case($id) }"/>
                 <idno eft:kb-id="{ lower-case($id) }"/>
+                <date>{ format-date(current-date(), '[Y0001]-[M01]-[D01]') }</date>
             </publicationStmt>
             <sourceDesc>
                 <p>Created by 84000: Translating the Words of the Buddha</p>
@@ -216,22 +217,39 @@ return document {
         <front/>
         <body>
             <div type="article">
-                <div type="section">
-                    <head type="section">Heading</head>
-                    <milestone unit="chunk"/>
-                    <p>First paragraph...</p>
-                </div>
-            </div>  
+                { knowledgebase:new-section('article') }
+            </div>
         </body>
         <back>
             <div type="listBibl">
                 <head type="listBibl">Bibliography</head>
-                <div type="section">
-                    <head type="section">Main Section</head>
-                    <bibl>First reference...</bibl>
-                </div>
+                { knowledgebase:new-section('listBibl') }
             </div>
         </back>
     </text>
 </TEI>
 }};
+
+declare function knowledgebase:new-section($type as xs:string) as element(tei:div){
+
+    if($type eq 'listBibl') then
+    
+        <div type="section" xmlns="http://www.tei-c.org/ns/1.0">
+            <head type="section">New Section Heading</head>
+            <bibl>Here's a sample bibliographic reference with a link to <ref target="https://read.84000.co/translation/toh46.html">Toh 46</ref></bibl>
+        </div>
+        
+    else
+    
+        <div type="section" xmlns="http://www.tei-c.org/ns/1.0">
+            <head type="section">New Section Heading</head>
+            <p>Here's some markdown to get you started. Replace this as you wish.</p>
+            <p>A new line starts a new paragraph.</p>
+            <list type="bullet" rend="numbers">
+                <item>A numbered list element.</item>
+                <item>A second numbered list element.</item>
+            </list>
+        </div>
+    
+};
+

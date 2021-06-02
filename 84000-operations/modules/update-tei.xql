@@ -431,8 +431,7 @@ declare function update-tei:locations($tei as element(tei:TEI)) as element()* {
             (: add bibl whitespace :)
             if ($bibl-index gt 1) then
                 $bibl-ws
-            else
-                (),
+            else (),
             
             (: bibl :)
             element {node-name($bibl)} {
@@ -449,8 +448,7 @@ declare function update-tei:locations($tei as element(tei:TEI)) as element()* {
                     for $volume-key at $volume-index in $volume-keys
                     let $volume-number := request:get-parameter(concat('volume-', $toh-key, '-', $volume-key), '0')
                         where $volume-number gt '0'
-                    return
-                        (
+                    return (
                         (: add volume whitespace :)
                         $volume-ws,
                         
@@ -460,7 +458,7 @@ declare function update-tei:locations($tei as element(tei:TEI)) as element()* {
                             attribute start-page {request:get-parameter(concat('start-page-', $toh-key, '-', $volume-key), '0')},
                             attribute end-page {request:get-parameter(concat('end-page-', $toh-key, '-', $volume-key), '0')}
                         }
-                        )
+                    )
                     ,
                     $location-ws
                 },
@@ -468,7 +466,7 @@ declare function update-tei:locations($tei as element(tei:TEI)) as element()* {
                 (: In case we add other nodes or comments :)
                 $bibl/tei:location[last()]/following-sibling::node()
             }
-            ),
+        ),
         (: In case we add other nodes or comments :)
         $existing-value/tei:bibl[last()]/following-sibling::node()
     }
@@ -480,8 +478,7 @@ declare function update-tei:locations($tei as element(tei:TEI)) as element()* {
             (: Increment the version number - do first so it can evaluate the change :)
             if (not(deep-equal($existing-value, $new-value))) then
                 update-tei:minor-version-increment($tei, 'update-locations')
-            else
-                ()
+            else()
             ,
             
             (: Do the update :)
@@ -810,12 +807,23 @@ declare function update-tei:knowledgebase-header($tei as element(tei:TEI)) as el
     } (: close exist:batch-transaction :)
 };
 
-declare function update-tei:markup($tei as element(tei:TEI), $section-id as xs:string, $markdown as xs:string*) {
+declare function update-tei:markup($tei as element(tei:TEI), $markdown as xs:string*, $section-id as xs:string, $sibling-id as xs:string) as element()? {
 
     let $current-tei := $tei//*[@xml:id eq $section-id]
     
+    let $sibling-tei :=
+        if(not($current-tei)) then
+            $tei//*[@xml:id eq $sibling-id]
+        else ()
+    
     let $markdown-element := 
         element { QName('http://read.84000.co/ns/1.0', 'markdown') } {
+            attribute newline-element { 
+                if($current-tei/parent::tei:div[@type = 'listBibl'] | $sibling-tei/parent::tei:div[@type = 'listBibl']) then 
+                    'bibl'
+                else 
+                    'p' 
+            },
             attribute target-namespace { 'http://www.tei-c.org/ns/1.0' },
             $markdown
         }
@@ -827,15 +835,24 @@ declare function update-tei:markup($tei as element(tei:TEI), $section-id as xs:s
             <output:indent value="yes"/>
             <output:omit-xml-declaration value="yes"/>
         </output:serialization-parameters>
-
-    let $new-tei := 
-        element { node-name($current-tei) } {
-            $current-tei/@*,
-            transform:transform($markdown-element, doc('/db/apps/84000-reading-room/xslt/common.xsl'), (), (), $serialization-options)/node()
-        }
     
-    where $current-tei and $new-tei[node()]
+    let $markup := transform:transform($markdown-element, doc('/db/apps/84000-reading-room/xslt/common.xsl'), (), (), $serialization-options)/node()
+    
+    let $new-tei := 
+        if($current-tei) then
+            element { node-name($current-tei) } {
+                $current-tei/@*,
+                $markup
+            }
+        else 
+            element { node-name($sibling-tei) } {
+                $sibling-tei/@*[not(local-name(.) = ('id', 'tid'))],
+                $markup
+            }
+    
+    where ($current-tei | $sibling-tei) and $new-tei[node()]
     return 
-        common:update('update-tei', $current-tei, $new-tei, (), ())
+        common:update('tei-markup', $current-tei, $new-tei, (), $sibling-tei)
 
 };
+

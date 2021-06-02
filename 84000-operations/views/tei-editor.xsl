@@ -7,6 +7,8 @@
     <xsl:template match="/m:response">
         
         <xsl:variable name="section" select="m:knowledgebase//*[(@xml:id, @id) = /m:response/m:request/@section-id][not(m:part)][not(tei:div)]"/>
+        <xsl:variable name="sibling" select="m:knowledgebase//*[(@xml:id, @id) = /m:response/m:request/@sibling-id][not(m:part)][not(tei:div)]"/>
+        <xsl:variable name="section-part" select="($section/ancestor-or-self::m:part[@type], $sibling/ancestor-or-self::m:part[@type])[1]"/>
         
         <xsl:variable name="content">
             
@@ -52,15 +54,29 @@
                                 <xsl:value-of select="'Knowledge Base: '"/>
                                 <xsl:value-of select="m:knowledgebase/m:page/m:titles/m:title[@type eq 'mainTitle'][@xml:lang eq 'en']"/>
                                 
-                                <xsl:if test="$section">
-                                    <xsl:value-of select="' / '"/>
-                                    <a class="small">
-                                        <xsl:attribute name="href" select="concat($reading-room-path, '/knowledgebase/', m:request/@resource-id, '.html#', m:request/@section-id)"/>
-                                        <xsl:attribute name="target" select="m:request/@resource-id"/>
-                                        <xsl:value-of select="m:request/@section-id"/>
-                                    </a>
-                                </xsl:if>
-                                                                
+                                <xsl:choose>
+                                    <xsl:when test="$section">
+                                        <xsl:value-of select="' / '"/>
+                                        <a class="small">
+                                            <xsl:attribute name="href" select="concat($reading-room-path, '/knowledgebase/', m:request/@resource-id, '.html#', m:request/@section-id)"/>
+                                            <xsl:attribute name="target" select="m:request/@resource-id"/>
+                                            <xsl:value-of select="m:request/@section-id"/>
+                                        </a>
+                                    </xsl:when>
+                                    <xsl:when test="$sibling">
+                                        <xsl:value-of select="' / '"/>
+                                        <a class="small">
+                                            <xsl:attribute name="href" select="concat($reading-room-path, '/knowledgebase/', m:request/@resource-id, '.html#', m:request/@sibling-id)"/>
+                                            <xsl:attribute name="target" select="m:request/@resource-id"/>
+                                            <xsl:value-of select="m:request/@sibling-id"/>
+                                        </a>
+                                        <xsl:value-of select="' / '"/>
+                                        <small>
+                                            <xsl:value-of select="'Add section after'"/>
+                                        </small>
+                                    </xsl:when>
+                                </xsl:choose>
+                                
                             </xsl:when>
                         </xsl:choose>
                     </h3>
@@ -69,16 +85,17 @@
                     
                     <xsl:choose>
                         
-                        <xsl:when test="$section">
+                        <xsl:when test="$section | $sibling">
                             <form method="post" action="/tei-editor.html" id="ajax-source">
                                 
                                 <input type="hidden" name="type" value="{ m:request/@type }"/>
                                 <input type="hidden" name="resource-id" value="{ m:request/@resource-id }"/>
                                 <input type="hidden" name="section-id" value="{ m:request/@section-id }"/>
+                                <input type="hidden" name="sibling-id" value="{ m:request/@sibling-id }"/>
                                 <input type="hidden" name="form-action" value="update-tei"/>
                                 
                                 <xsl:variable name="default-rows" select="20"/>
-                                <xsl:variable name="chars-per-row" select="75"/>
+                                <xsl:variable name="chars-per-row" select="105"/>
                                 
                                 <div class="row">
                                     
@@ -91,7 +108,24 @@
                                                 
                                                 <xsl:variable name="section">
                                                     <div xmlns="http://www.tei-c.org/ns/1.0" type="markup">
-                                                        <xsl:sequence select="$section/node()"/>
+                                                        <xsl:attribute name="newline-element">
+                                                            <xsl:choose>
+                                                                <xsl:when test="$section-part[@type eq 'bibliography']">
+                                                                    <xsl:value-of select="'bibl'"/>
+                                                                </xsl:when>
+                                                                <xsl:otherwise>
+                                                                    <xsl:value-of select="'p'"/>
+                                                                </xsl:otherwise>
+                                                            </xsl:choose>
+                                                        </xsl:attribute>
+                                                        <xsl:choose>
+                                                            <xsl:when test="$section">
+                                                                <xsl:sequence select="$section/node()"/>
+                                                            </xsl:when>
+                                                            <xsl:when test="$sibling">
+                                                                <xsl:sequence select="m:default-markup/node()"/>
+                                                            </xsl:when>
+                                                        </xsl:choose>
                                                     </div>
                                                 </xsl:variable>
                                                 
@@ -99,8 +133,10 @@
                                                     <xsl:apply-templates select="$section"/>
                                                 </xsl:variable>
                                                 
-                                                <xsl:if test="string-length($section-markdown) gt ($chars-per-row * $default-rows)">
-                                                    <xsl:attribute name="rows" select="string-length($section-markdown) div $chars-per-row ! round(., 1)"/>
+                                                <xsl:variable name="lines" select="sum(tokenize($section-markdown, '\n') ! ceiling((string-length(.) + 1) div $chars-per-row))"/>
+                                                
+                                                <xsl:if test="$lines gt $default-rows">
+                                                    <xsl:attribute name="rows" select="$lines"/>
                                                 </xsl:if>
                                                 
                                                 <xsl:sequence select="$section-markdown/m:markdown/data()"/>
@@ -110,9 +146,11 @@
                                         
                                         <!-- Submit button -->
                                         <div class="form-group">
+                                            
                                             <button type="submit" class="btn btn-primary pull-right" data-loading="Applying changes...">
                                                 <xsl:value-of select="'Apply changes'"/>
                                             </button>
+                                            
                                         </div>
                                         
                                     </div>

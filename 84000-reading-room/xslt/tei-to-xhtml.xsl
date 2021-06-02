@@ -1427,7 +1427,7 @@
                                         <xsl:with-param name="prefix" select="$part/@prefix"/>
                                     </xsl:call-template>
                                 </xsl:with-param>
-                                <xsl:with-param name="bookmark-title" select="text()"/>
+                                <xsl:with-param name="bookmark-title" select="data()"/>
                             </xsl:call-template>
                         </xsl:when>
                         
@@ -1565,19 +1565,40 @@
             
             <!-- Set the id -->
             <xsl:variable name="id" select="(@id, @xml:id)[1]"/>
+            <!-- Link to tei-editor -->
+            <!-- Knowledge base only, editor mode, operations app, no child divs and an id -->
+            <xsl:variable name="tei-editor" select="$knowledgebase[m:page/@kb-id] and $view-mode[@id = ('editor')] and $environment/m:url[@id eq 'operations'] and not(m:part) and not(tei:div) and $id"/>
+            
             <xsl:attribute name="id" select="$id"/>
             
             <!-- Set the class -->
-            <xsl:attribute name="class" select="'nested-section'"/>
-            
-            <!-- Link to tei-editor -->
-            <!-- Knowledge base only, editor mode, operations app, no child divs and an id -->
-            <xsl:if test="$knowledgebase[m:page/@kb-id] and $view-mode[@id = ('editor')] and $environment/m:url[@id eq 'operations'] and not(m:part) and not(tei:div) and $id">
-                <xsl:attribute name="data-tei-editor" select="concat($environment/m:url[@id eq 'operations']/text(), '/tei-editor.html', '?type=knowledgebase','&amp;resource-id=', $knowledgebase/m:page/@xml:id,'&amp;section-id=', $id)"/>
-            </xsl:if>
+            <xsl:attribute name="class" select="'nested-section relative'"/>
             
             <!-- If the child is another div it will recurse -->
             <xsl:apply-templates select="node()"/>
+            
+            
+            <!-- Add tei editor links -->
+            <xsl:if test="$tei-editor">
+                
+                <a target="tei-editor" class="text-muted underline top-right" title="Edit passage">
+                    <xsl:attribute name="href" select="concat($environment/m:url[@id eq 'operations']/text(), '/tei-editor.html', '?type=knowledgebase','&amp;resource-id=', $knowledgebase/m:page/@xml:id,'&amp;section-id=', $id)"/>
+                    <xsl:value-of select="'[Edit]'"/>
+                </a>
+                
+                <xsl:call-template name="milestone">
+                    <xsl:with-param name="row-type" select="'section-head'"/>
+                    <xsl:with-param name="content">
+                        <p>
+                            <a target="tei-editor" class="text-muted underline" title="Insert a new section here">
+                                <xsl:attribute name="href" select="concat($environment/m:url[@id eq 'operations']/text(), '/tei-editor.html', '?type=knowledgebase','&amp;resource-id=', $knowledgebase/m:page/@xml:id,'&amp;sibling-id=', $id)"/>
+                                <xsl:value-of select="'[Insert a new section]'"/>
+                            </a>
+                        </p>
+                    </xsl:with-param>
+                </xsl:call-template>
+                
+            </xsl:if>
             
         </div>
     </xsl:template>
@@ -1710,7 +1731,9 @@
                 <!-- A translation -->
                 <xsl:when test="$translation">
                     
-                    <xsl:attribute name="id" select="$id"/>
+                    <xsl:if test="$id">
+                        <xsl:attribute name="id" select="$id"/>
+                    </xsl:if>
                     
                     <xsl:if test="$view-mode[@glossary = ('defer', 'editor-defer')] and m:glossarize-context($node) and not(self::tei:head) and $node[@tid]">
                         <xsl:variable name="request-view-mode" select="if($view-mode[@glossary = ('defer')]) then 'passage' else 'editor-passage'"/>

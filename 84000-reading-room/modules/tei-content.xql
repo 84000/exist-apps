@@ -49,7 +49,7 @@ declare variable $tei-content:title-types :=
 
 declare function tei-content:id($tei as element(tei:TEI)) as xs:string {
     (: Returns the idno in a given tei doc :)
-    $tei//tei:publicationStmt/tei:idno/@xml:id
+    $tei//tei:publicationStmt/tei:idno[@xml:id][1]/@xml:id
 };
 
 declare function tei-content:tei($resource-id as xs:string, $resource-type as xs:string) {

@@ -82,9 +82,9 @@
                             <!-- Link to tei-editor -->
                             <!-- Knowledge base only, editor mode, operations app, no child divs and an id -->
                             <xsl:if test="$view-mode[@id = ('editor')] and $environment/m:url[@id eq 'operations']">
-                                <a class="btn btn-danger btn-sm top-right" target="84000-operations">
+                                <a class="text-muted underline top-right" target="84000-operations">
                                     <xsl:attribute name="href" select="concat($environment/m:url[@id eq 'operations']/text(), '/edit-kb-header.html', '?id=', m:knowledgebase/m:page/@xml:id)"/>
-                                    <xsl:value-of select="'Edit headers'"/>
+                                    <xsl:value-of select="'[Edit headers]'"/>
                                 </a>
                             </xsl:if>
                             
@@ -129,7 +129,7 @@
                                 <xsl:apply-templates select="m:knowledgebase/m:part[@type eq 'article']"/>
                             </section>
                             
-                            <xsl:if test="m:knowledgebase/m:part[@type eq 'bibliography'][node()]">
+                            <xsl:if test="m:knowledgebase/m:part[@type eq 'bibliography'][tei:div[tei:bibl] or $view-mode[@id = ('editor')]]">
                                 <section class="tei-parser">
                                     <xsl:apply-templates select="m:knowledgebase/m:part[@type eq 'bibliography']"/>
                                 </section>
