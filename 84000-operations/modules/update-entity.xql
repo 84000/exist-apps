@@ -7,6 +7,7 @@ import module namespace functx="http://www.functx.com";
 declare namespace m = "http://read.84000.co/ns/1.0";
 declare namespace tei = "http://www.tei-c.org/ns/1.0";
 
+(: Update an entity posted from glossary form :)
 declare function update-entity:glossary-item($entity-id as xs:string?) as element()? {
     
     let $parent := $entities:entities
@@ -92,11 +93,11 @@ declare function update-entity:glossary-item($entity-id as xs:string?) as elemen
                 else ()
                 ,
                 
-                (: Copy exclusions :)
-                for $exclude in $existing-entity/m:exclude
+                (: Copy relations :)
+                for $relation in $existing-entity/m:relation
                 return (
                     common:ws(2),
-                    $exclude
+                    $relation
                 ),
                 
                 (: Other content :)
@@ -153,6 +154,44 @@ declare function update-entity:glossary-item($entity-id as xs:string?) as elemen
     
 };
 
+(: Resolve the relationship between entities :)
+declare function update-entity:resolve($entity-id as xs:string, $target-entity-id as xs:string, $predicate as xs:string) as element()* {
+    
+    (: Merge into same entity :)
+    if($predicate eq 'sameAs')then
+        update-entity:merge($entity-id, $target-entity-id)
+    
+    (: Set the predicate for the relationship :)
+    else if($entities:predicates//m:predicate[@xml:id = $predicate]) then
+    
+        let $parent := $entities:entities
+        let $entity := $parent/id($entity-id)[self::m:entity]
+        let $target-entity := $parent/id($target-entity-id)[self::m:entity]
+        
+        let $entity-updated := 
+            element { node-name($entity) } {
+                $entity/@*,
+                for $entity-node in $entity/*
+                return (
+                    common:ws(2),
+                    $entity-node
+                ),
+                element { QName('http://read.84000.co/ns/1.0', 'relation') } {
+                    attribute predicate { $predicate },
+                    attribute id { $target-entity-id },
+                    $target-entity/m:label[1]
+                }
+            }
+        
+        where $entity and $target-entity
+        return
+            (: Update target :)
+            common:update('entity-merge', $entity, $entity-updated, (), ())
+    
+    else ()
+    
+};
+
 (: Merge entities together :)
 declare function update-entity:merge($entity-id as xs:string, $target-entity-id as xs:string) as element()* {
     
@@ -189,7 +228,7 @@ declare function update-entity:merge($entity-id as xs:string, $target-entity-id 
     )
 };
 
-declare function update-entity:exclude($entity-ids as xs:string*) as element()* {
+(:declare function update-entity:exclude($entity-ids as xs:string*) as element()* {
 
     let $exclusions :=
         for $entity-id in $entity-ids
@@ -212,7 +251,7 @@ declare function update-entity:exclude($entity-ids as xs:string*) as element()* 
                     common:ws(2),
                     $entity-node
                 ),
-                (: Add exclusions that are not this id and not already there :)
+                (\: Add exclusions that are not this id and not already there :\)
                 for $exclude in $exclusions[not(@id/string() = ($existing-entity/@xml:id/string(), $existing-entity/m:exclude/@id/string()))]
                 return (
                     common:ws(2),
@@ -221,7 +260,7 @@ declare function update-entity:exclude($entity-ids as xs:string*) as element()* 
             }
         return
             common:update('entity-exclude', $existing-entity, $new-entity, (), ())
-};
+};:)
 
 declare function update-entity:match-instance($entity-id as xs:string, $instance-id as xs:string, $instance-type as xs:string) as element()* {
     

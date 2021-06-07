@@ -466,7 +466,7 @@ declare function glossary:similar-items($glossary-item as element(m:item)?, $sea
         ) ! distinct-values(.)
         
         let $exclude-ids := (
-            $entities:entities/m:entity[@xml:id = $entity/m:exclude/@id]/m:instance/@id, 
+            $entities:entities/m:entity[@xml:id = $entity/m:relation/@id]/m:instance/@id, 
             $glossary-item/@id, 
             $instance-ids
         ) ! distinct-values(.)

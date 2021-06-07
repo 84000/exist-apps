@@ -30,7 +30,7 @@ let $form-action := request:get-parameter('form-action', '')
 let $search := request:get-parameter('search', '')
 let $entity-id := request:get-parameter('entity-id', '')
 let $target-entity-id := request:get-parameter('target-entity-id', '')
-let $exclude-entity-id := request:get-parameter('exclude-entity-id', '')
+let $predicate := request:get-parameter('predicate', '')
 let $similar-search := request:get-parameter('similar-search', '')
 
 let $resource-id := 
@@ -52,20 +52,25 @@ let $glossary-id :=
 let $update-glossary := 
     if($form-action eq 'update-glossary') then
         update-tei:update-glossary($tei, $glossary-id)
+        
     else if($form-action eq 'cache-locations') then
         update-tei:cache-glossary($tei, $glossary-id)
+        
     else if($form-action eq 'cache-locations-uncached') then
         update-tei:cache-glossary($tei, 'uncached')
+        
     else if($form-action eq 'cache-locations-all') then
         update-tei:cache-glossary($tei, ())
+        
     else if($form-action eq 'update-entity') then
         update-entity:glossary-item($entity-id)
+        
     else if($form-action eq 'match-glossary') then
         update-entity:match-instance($entity-id, $glossary-id, 'glossary-item')
-    else if($form-action eq 'merge-entity') then
-        update-entity:merge($entity-id, $target-entity-id)
-    else if($form-action eq 'exclude-entity') then
-        update-entity:exclude(($entity-id, $exclude-entity-id))
+        
+    else if($form-action eq 'resolve-entity') then
+        update-entity:resolve($entity-id, $target-entity-id, $predicate)
+        
     else ()
 
 (: Get the glossaries - applying any filters :)
@@ -112,6 +117,11 @@ return
                 element search { request:get-parameter('search', '') },
                 element similar-search { request:get-parameter('similar-search', '') },
                 $translation:view-modes/m:view-mode[@id eq 'glossary-editor']
+            },
+            
+            (: Details of updates :)
+            element { QName('http://read.84000.co/ns/1.0', 'updates') } {
+                $update-glossary
             },
             
             (: Translation data :)
@@ -218,6 +228,8 @@ return
                     }
                
             },
-            $update-glossary
+            
+            $entities:predicates
+            
         )
     )

@@ -1,10 +1,12 @@
 xquery version "3.0";
 
 declare namespace m = "http://read.84000.co/ns/1.0";
+declare namespace tei="http://www.tei-c.org/ns/1.0";
 
 import module namespace common="http://read.84000.co/common" at "modules/common.xql";
 import module namespace download="http://read.84000.co/download" at "modules/download.xql";
 import module namespace log = "http://read.84000.co/log" at "modules/log.xql";
+import module namespace tei-content = "http://read.84000.co/tei-content" at "modules/tei-content.xql";
 
 declare variable $exist:path external;
 declare variable $exist:resource external;
@@ -182,8 +184,19 @@ return (:$var-debug:)
             local:dispatch($exist:path, "", <parameters/>):)
         
         (: These are URIs redirected from purl.84000.co :)
-        else if ($path eq "/resource/core/") then
-            local:redirect($common:environment/m:url[@id eq 'reading-room'] || '/translation/' || substring-after(lower-case($exist:resource), 'wae') || '.html')
+        else if ($path eq "/resource/core/") then 
+            let $toh-key := replace(lower-case($exist:resource), '.+(toh[a-z0-9\-]+).*', '$1')
+            where $toh-key and $common:environment/m:url[@id eq 'reading-room']
+            return 
+                if(matches(lower-case($exist:resource), '^wae')) then
+                    local:redirect($common:environment/m:url[@id eq 'reading-room'] || '/translation/' || $toh-key || '.html')
+                else
+                    let $tei := tei-content:tei($toh-key, 'translation')
+                    let $bibl := tei-content:source-bibl($tei, $toh-key)
+                    let $parent-id := $bibl/tei:idno[@parent-id][1]/@parent-id/string()
+                    where $parent-id gt ''
+                    return
+                        local:redirect($common:environment/m:url[@id eq 'reading-room'] || '/section/' || $parent-id || '.html#' || $toh-key)
         
         (: Translation :)
         else if ($collection-path eq "translation") then

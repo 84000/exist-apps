@@ -14,6 +14,7 @@ import module namespace translation="http://read.84000.co/translation" at "trans
 import module namespace functx="http://www.functx.com";
 
 declare variable $entities:entities := doc(concat($common:data-path, '/operations/entities.xml'))/m:entities;
+declare variable $entities:predicates := doc(concat($common:data-path, '/config/entity-predicates.xml'));
 declare variable $entities:types := (
     'eft-glossary-term', 
     'eft-glossary-person', 
