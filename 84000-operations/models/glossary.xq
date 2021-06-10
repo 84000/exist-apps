@@ -68,7 +68,7 @@ let $update-glossary :=
     else if($form-action eq 'match-entity') then
         update-entity:match-instance($entity-id, $glossary-id, 'glossary-item')
         
-    else if($form-action eq 'resolve-entity') then
+    else if($form-action eq 'merge-entities') then
         update-entity:resolve($entity-id, $target-entity-id, $predicate)
         
     else ()

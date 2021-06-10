@@ -1111,7 +1111,7 @@
                 
                 <!-- Form: resolving entites -->
                 <xsl:call-template name="form">
-                    <xsl:with-param name="form-action" select="if(not($loop-glossary[m:entity])) then 'match-entity' else 'resolve-entity'"/>
+                    <xsl:with-param name="form-action" select="if(not($loop-glossary[m:entity])) then 'match-entity' else 'merge-entities'"/>
                     <xsl:with-param name="form-class" select="'form-inline'"/>
                     <xsl:with-param name="show-tab" select="'similar'"/>
                     <xsl:with-param name="glossary-id" select="$loop-glossary/@id"/>
