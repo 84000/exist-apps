@@ -47,13 +47,17 @@ declare function knowledgebase:page($tei as element(tei:TEI)) as element(m:page)
 };
 
 declare function knowledgebase:pages() as element(m:knowledgebase) {
-    
     element { QName('http://read.84000.co/ns/1.0', 'knowledgebase') }{
-    
-        for $tei in $knowledgebase:pages//tei:TEI
-        return 
-            knowledgebase:page($tei)
+        knowledgebase:pages(())
     }
+};
+
+declare function knowledgebase:pages($ids as xs:string*) as element(m:page)* {
+    
+    for $tei in $knowledgebase:pages//tei:TEI[if(count($ids) gt 0) then id($ids) else true()]
+    return 
+        knowledgebase:page($tei)
+        
 };
 
 declare function knowledgebase:publication($tei as element(tei:TEI)) as element(m:publication) {
@@ -179,9 +183,8 @@ declare function knowledgebase:id($title as xs:string) as xs:string {
                         lower-case($title)      (: convert to lower case :)
                     )                           (: remove diacritics :)
                 ,'[^a-zA-Z0-9\s]', ' ')         (: remove non-alphanumeric, except spaces :)
-            , '\s+')[not(. = $stopwords)]       (: remove stopwords :)
-        , '-')                                  (: remove concat words with hyphens :)
-    
+            , '\s+')[not(. = $stopwords)]       (: remove stopwords and multiple spaces :)
+        , '-')                                  (: concat words with hyphens :)
     
 };
 
@@ -230,7 +233,7 @@ return document {
 </TEI>
 }};
 
-declare function knowledgebase:new-section($type as xs:string) as element(tei:div){
+declare function knowledgebase:new-section($type as xs:string?) as element(tei:div){
 
     if($type eq 'listBibl') then
     

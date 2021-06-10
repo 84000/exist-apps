@@ -37,8 +37,7 @@ let $text-statuses-selected := tei-content:text-statuses-selected($status)
 let $translation-statuses := 
     if($target-date-search) then
         translation-status:target-date-texts($target-date-start, $target-date-end)
-    else
-        ()
+    else ()
 
 (: Get tei data based on date query result or input parameters :)
 let $texts := 
@@ -46,8 +45,7 @@ let $texts :=
         (: Make sure zero results in first search is returned :)
         if($translation-statuses) then
             translations:texts($status, $translation-statuses/@text-id, $sort, $deduplicate, '', false())
-        else
-            ()
+        else ()
     else
         translations:filtered-texts($work, $status, $sort, $pages-min, $pages-max, $sponsorship-group, $toh-min, $toh-max, $deduplicate, $target-date-start, $target-date-end)
 

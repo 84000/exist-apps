@@ -1251,7 +1251,7 @@ declare function translation:contributors($tei as element(tei:TEI), $include-ack
     
     let $contributor-ids := $translation-contributors/@ref ! contributors:contributor-id(.)
     
-    let $contributors := $contributors:contributors/m:contributors/m:person[@xml:id = $contributor-ids]
+    let $contributors := $contributors:contributors/m:contributors/id($contributor-ids)[self::m:person | self::m:team]
     
     let $acknowledgment := $tei/tei:text/tei:front/tei:div[@type eq "acknowledgment"]
     
@@ -1264,11 +1264,11 @@ declare function translation:contributors($tei as element(tei:TEI), $include-ack
                 
                 (: Use the label from the entities file unless it's specified in the tei :)
                 let $contributor-strings :=
-                for $translation-contributor in $translation-contributors
-                let $contributor-id := 
-                    if($translation-contributor[@ref]) then
-                        contributors:contributor-id($translation-contributor/@ref)
-                    else ''
+                    for $translation-contributor in $translation-contributors
+                    let $contributor-id := 
+                        if($translation-contributor[@ref]) then
+                            contributors:contributor-id($translation-contributor/@ref)
+                        else ''
                     
                 return
                     if ($translation-contributor/text()) then
@@ -1277,12 +1277,11 @@ declare function translation:contributors($tei as element(tei:TEI), $include-ack
                         $contributors[@xml:id eq $contributor-id]/m:label
                 
                 let $marked-paragraphs :=
-                if ($acknowledgment/tei:p and $contributor-strings) then
-                    let $mark-contributor-strings := $contributor-strings ! normalize-space(lower-case(replace(., $contributors:person-prefixes, '')))
-                    return
-                        common:mark-nodes($acknowledgment/tei:p, $mark-contributor-strings, 'phrase')
-                else
-                    ()
+                    if ($acknowledgment/tei:p and $contributor-strings) then
+                        let $mark-contributor-strings := $contributor-strings ! normalize-space(lower-case(replace(., $contributors:person-prefixes, '')))
+                        return
+                            common:mark-nodes($acknowledgment/tei:p, $mark-contributor-strings, 'phrase')
+                    else ()
                 
                 return
                     element tei:div {

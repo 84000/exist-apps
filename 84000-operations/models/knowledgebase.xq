@@ -12,25 +12,27 @@ declare namespace tei="http://www.tei-c.org/ns/1.0";
 declare option exist:serialize "method=xml indent=no";
 
 let $form-action := request:get-parameter('form-action', '')
-let $title := request:get-parameter('new-kb-title', '')
+let $new-kb-title := request:get-parameter('new-kb-title', '')
 
-let $add-page :=
-    if($form-action eq 'new-kb-page' and $title gt '') then
-        let $filename := concat(replace(knowledgebase:id($title), '\-', '_'), '.xml')
-        let $tei := knowledgebase:new-tei($title)
-        let $text-id := tei-content:id($tei/tei:TEI)
-        where $filename and $tei and $text-id
+let $add-article :=
+    if($form-action eq 'new-kb-article' and $new-kb-title gt '') then
+    
+        let $filename := concat(replace(knowledgebase:id($new-kb-title), '\-', '_'), '.xml')
+        let $new-tei := knowledgebase:new-tei($new-kb-title)
+        let $text-id := tei-content:id($new-tei/tei:TEI)
+        
+        where $filename and $new-tei and $text-id
         return 
-            
+            (:if(true())then $text-id else:)
             (: Create the file :)
-            let $store := xmldb:store($common:knowledgebase-path, $filename, $tei, 'application/xml')
+            let $store := xmldb:store($common:knowledgebase-path, $filename, $new-tei, 'application/xml')
             let $set-grp := sm:chgrp(xs:anyURI(concat($common:knowledgebase-path, '/', $filename)), 'tei')
             let $set-mod := sm:chmod(xs:anyURI(concat($common:knowledgebase-path, '/', $filename)), 'rw-rw-r--')
             
             (: Touch it with a new update :)
             let $tei := tei-content:tei($text-id, 'knowledgebase')
             return (
-                (:$text-id,:)
+                (:$tei//tei:publicationStmt,:)
                 update-tei:minor-version-increment($tei, 'file-created')
             )
         
@@ -44,10 +46,13 @@ return
             (: Include request parameters :)
             element { QName('http://read.84000.co/ns/1.0', 'request') } {},
             
-            (: Knowledge Base pages :)
-            knowledgebase:pages(),
+            (: Details of updates :)
+            element { QName('http://read.84000.co/ns/1.0', 'updates') } {
+                $add-article
+            },
             
-            $add-page
+            (: Knowledge Base pages :)
+            knowledgebase:pages()
             
         )
     )

@@ -373,7 +373,8 @@ declare function translations:filtered-texts(
             }
 };
 
-declare function translations:sorted-texts($texts as element(m:text)*, $sort as xs:string) as element()* {
+declare function translations:sorted-texts($texts as element(m:text)*, $sort as xs:string) as element(m:text)* {
+    
     if($sort = ('toh', '')) then
         for $text in $texts
             order by 
@@ -382,6 +383,7 @@ declare function translations:sorted-texts($texts as element(m:text)*, $sort as 
                 if(functx:is-a-number($text/m:toh/@chapter-number)) then xs:integer($text/m:toh/@chapter-number) else 9999, 
                 $text/m:toh/@chapter-letter
         return $text
+    
     else if($sort eq 'status') then
         for $text in $texts
             order by 
@@ -391,14 +393,22 @@ declare function translations:sorted-texts($texts as element(m:text)*, $sort as 
                 if(functx:is-a-number($text/m:toh/@chapter-number)) then xs:integer($text/m:toh/@chapter-number) else 9999, 
                 $text/m:toh/@chapter-letter
         return $text
+    
     else if($sort eq 'longest') then
         for $text in $texts
             order by if(functx:is-a-number($text/tei:bibl/tei:location/@count-pages)) then xs:integer($text/tei:bibl/tei:location/@count-pages) else 1 descending
         return $text
+    
     else if($sort eq 'shortest') then
         for $text in $texts
             order by if(functx:is-a-number($text/tei:bibl/tei:location/@count-pages)) then xs:integer($text/tei:bibl/tei:location/@count-pages) else 1
         return $text
+    
+    else if($sort eq 'publication-date') then
+        for $text in $texts
+            order by ($text//m:publication/m:publication-date, current-date())[1] ascending
+        return $text
+    
     else
         $texts
 };
@@ -423,6 +433,7 @@ declare function translations:filtered-text($tei as element(tei:TEI), $toh-key a
             tei-content:source-bibl($tei, $toh-key),
             translation:location($tei, $toh-key),
             translation:publication($tei),
+            translation:contributors($tei, false()),
             translation:summary($tei, 'show', (), $lang),
             tei-content:status-updates($tei),
             sponsorship:text-status($text-id, false()),

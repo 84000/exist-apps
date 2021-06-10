@@ -72,25 +72,12 @@ declare function local:lang-field($valid-lang as xs:string) as xs:string {
         'full-term'
 };
 
-declare function glossary:glossary-entities($type as xs:string*, $lang as xs:string, $search as xs:string) as element() {
+declare function glossary:glossary-entities($type as xs:string*, $lang as xs:string, $search as xs:string) as element()* {
     
     (: Search for terms :)
     let $valid-lang := common:valid-lang($lang)
     let $valid-type := local:valid-type($type)
     let $normalized-search := common:alphanumeric(common:normalized-chars(lower-case($search)))
-    
-    let $regex := 
-        (: More than one letter :)
-        if(string-length($normalized-search) gt 1) then
-            concat('(^|\s+)', string-join(tokenize($normalized-search, '\s+'), '.*\s+'))
-        (: Single letter - only match begininning of string :)
-        else
-            if($valid-lang eq 'en') then
-                concat('^(The\s+|A\s+|An\s+)?(', string-join(common:letter-variations($normalized-search), '|'), ')')
-            else if($valid-lang eq 'Sa-Ltn') then
-                concat('^\s*(', string-join(common:letter-variations($normalized-search), '|'), ')')
-            else
-                concat('^\s*', $normalized-search, '')
     
     let $glossary-ids :=
         $glossary:translations//tei:back//tei:gloss[@xml:id]
@@ -98,11 +85,34 @@ declare function glossary:glossary-entities($type as xs:string*, $lang as xs:str
             [tei:term
                 [not(@type = ('definition', 'alternative'))]
                 [if($valid-lang eq 'en') then not(@xml:lang) else (@xml:lang eq $valid-lang)]
-                [matches(., $regex, 'i')]
+                [
+                    if(string-length($normalized-search) gt 1) then
+                        ft:query(
+                            ., 
+                            <query>
+                                <bool>
+                                {
+                                    for $term in tokenize($normalized-search, '\s+')
+                                    return
+                                        <wildcard occur="must">{ $term }*</wildcard>
+                                }
+                                </bool>
+                            </query>
+                        )
+                    else
+                        if($valid-lang eq 'en') then
+                            matches(., concat('^(The\s+|A\s+|An\s+)?(', string-join(common:letter-variations($normalized-search), '|'), ')'), 'i')
+                        else if($valid-lang eq 'Sa-Ltn') then
+                            matches(., concat('^\s*(', string-join(common:letter-variations($normalized-search), '|'), ')'), 'i')
+                        else
+                            matches(., concat('^\s*', $normalized-search, ''), 'i')
+                ]
             ]/@xml:id
     
-    return (:<debug>{ $regex }</debug>:)
+    return (
+        (:<debug>{ $regex, $query, $valid-type, $valid-lang, count($glossary-ids) }</debug>,:)
         glossary:glossary-entities(entities:entities(subsequence($glossary-ids, 1, 1024))/m:entity, false())
+    )
 };
 
 declare function glossary:glossary-entities($entities as element(m:entity)*, $include-context as xs:boolean) as element() {
@@ -449,64 +459,6 @@ declare function glossary:matching-items($term as xs:string, $lang as xs:string)
     </glossary>
 };
 
-declare function glossary:similar-items($glossary-item as element(m:item)?, $search-string as xs:string?) as element(m:item)* {
-    
-    (: Potential matches for the passed glossary item :)
-    if($glossary-item) then
-    
-        (: Get similar entities :)
-        let $entity := entities:entities($glossary-item/@id)/m:entity
-        let $instance-ids := ($entity/m:instance/@id, $glossary-item/@id) ! distinct-values(.)
-        let $instance-items := glossary:items($instance-ids, false())
-        let $combined-terms := (
-            $glossary-item/m:term[@xml:lang = ('Bo-Ltn', 'Sa-Ltn')]
-            | $glossary-item/m:alternatives[@xml:lang = ('Bo-Ltn', 'Sa-Ltn')]
-            | $instance-items/m:term[@xml:lang = ('Bo-Ltn', 'Sa-Ltn')]
-            | $instance-items/m:alternatives[@xml:lang = ('Bo-Ltn', 'Sa-Ltn')]
-        ) ! distinct-values(.)
-        
-        let $exclude-ids := (
-            $entities:entities/m:entity[@xml:id = $entity/m:relation/@id]/m:instance/@id, 
-            $glossary-item/@id, 
-            $instance-ids
-        ) ! distinct-values(.)
-        
-        let $search-string := normalize-space($search-string)
-        
-        let $search-query :=
-            <query>
-            {
-                for $term in $combined-terms
-                let $normalized-term := common:alphanumeric(common:normalized-chars($term))
-                where $normalized-term gt ''
-                return
-                    <phrase occur="must" slop="0">{ $normalized-term }</phrase>
-                ,
-                if($search-string gt '') then
-                    <phrase occur="should" slop="20">{ $search-string }</phrase>
-                else ()
-            }
-            </query>
-        
-        return (
-            (:$glossary-item,:)
-            for $similar-item in 
-                $glossary:translations//tei:back//tei:gloss
-                    [not(@xml:id = $exclude-ids)]
-                    [
-                        tei:term
-                            [not(@type eq 'definition')]
-                            [@xml:lang = ('Bo-Ltn', 'Sa-Ltn')]
-                            [ft:query(., $search-query, local:lookup-options())]
-                    ]
-            
-            order by ft:score($similar-item) descending
-            return
-                 local:glossary-item($similar-item, true())
-        )
-    else ()
-};
-
 declare function glossary:cumulative-glossary($chunk as xs:integer) as element() {
 
     let $cumulative-terms := glossary:glossary-terms('all', '', '', false())//m:term
@@ -637,7 +589,7 @@ declare function glossary:filter($tei as element(tei:TEI), $resource-id as xs:st
     (: Search :)
     let $tei-gloss := 
         if(normalize-space($search) gt '') then
-            $tei-gloss[tei:term/ft:query(., local:search-query($search), local:search-options())]
+            $tei-gloss[tei:term[ft:query(., local:search-query($search), local:search-options())]]
         else
             $tei-gloss
     

@@ -1073,9 +1073,9 @@
     </xsl:template>
     
     <!-- XML(TEI) -> escaped string -->
-    <xsl:template match="tei:div[@type eq 'unescaped']">
+    <xsl:template match="m:unescaped">
         
-        <escaped>
+        <xsl:element name="escaped" namespace="http://read.84000.co/ns/1.0">
             
             <xsl:variable name="serialization-parameters" as="element(output:serialization-parameters)">
                 <output:serialization-parameters>
@@ -1087,11 +1087,11 @@
             </xsl:variable>
             
             <!-- Loop through nodes to avoid whitespace from passing node() sequence -->
-            <xsl:for-each select="node()">
-                <xsl:value-of select="replace(normalize-space(serialize(., $serialization-parameters)), '\s*xmlns=&#34;\S*&#34;', '')"/>
+            <xsl:for-each select="node()[normalize-space(.) gt '']">
+                <xsl:value-of select="replace(replace(serialize(., $serialization-parameters), '\s+', ' '), '\s*xmlns=&#34;\S*&#34;', '')"/>
             </xsl:for-each>
             
-        </escaped>
+        </xsl:element>
         
     </xsl:template>
     

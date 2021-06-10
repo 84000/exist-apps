@@ -15,23 +15,23 @@
                         <div class="center-vertical full-width">
                             
                             <span class="small">
-                                <xsl:value-of select="concat('Listing ', fn:format-number(xs:integer(count(m:knowledgebase/m:page)),'#,##0'), ' Knowledge Base pages')"/>
+                                <xsl:value-of select="concat('Listing ', fn:format-number(xs:integer(count(m:knowledgebase/m:page)),'#,##0'), ' Knowledge Base articles')"/>
                             </span>
                             
                             <span>
-                                <a href="#new-page-form-container" data-toggle="collapse" class="btn btn-primary btn-sml pull-right">
-                                    <xsl:value-of select="'Add a page'"/>
+                                <a href="#new-article-form-container" data-toggle="collapse" class="btn btn-primary btn-sml pull-right">
+                                    <xsl:value-of select="'Add an article'"/>
                                 </a>
                             </span>
                             
                         </div>
                         
-                        <div class="collapse" id="new-page-form-container">
+                        <div class="collapse" id="new-article-form-container">
                             
                             <hr class="sml-margin"/>
                             
                             <form action="/knowledgebase.html" method="post" class="form-inline text-center bottom-margin">
-                                <input type="hidden" name="form-action" value="new-kb-page"/>
+                                <input type="hidden" name="form-action" value="new-kb-article"/>
                                 <div class="form-group">
                                     <div class="input-group">
                                         <label for="new-kb-title" class="input-group-addon">
@@ -40,7 +40,7 @@
                                         <input type="text" name="new-kb-title" id="new-kb-title" class="form-control" size="70"/>
                                         <div class="input-group-btn">
                                             <button type="submit" class="btn btn-primary">
-                                                <xsl:value-of select="'Create this page in the Knowledge Base'"/>
+                                                <xsl:value-of select="'Create this article'"/>
                                             </button>
                                         </div>
                                     </div>

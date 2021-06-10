@@ -63,9 +63,9 @@ let $update-glossary :=
         update-tei:cache-glossary($tei, ())
         
     else if($form-action eq 'update-entity') then
-        update-entity:glossary-item($entity-id)
+        update-entity:headers($entity-id)
         
-    else if($form-action eq 'match-glossary') then
+    else if($form-action eq 'match-entity') then
         update-entity:match-instance($entity-id, $glossary-id, 'glossary-item')
         
     else if($form-action eq 'resolve-entity') then
@@ -113,7 +113,7 @@ return
                 attribute glossary-id { request:get-parameter('glossary-id', '') },
                 attribute form-action { request:get-parameter('form-action', '') },
                 attribute entity-id { request:get-parameter('entity-id', '') },
-                attribute item-tab { request:get-parameter('tab-id', '') },
+                attribute show-tab { request:get-parameter('show-tab', '') },
                 element search { request:get-parameter('search', '') },
                 element similar-search { request:get-parameter('similar-search', '') },
                 $translation:view-modes/m:view-mode[@id eq 'glossary-editor']
@@ -176,60 +176,35 @@ return
                             }
                         else (),
                         
-                        (: Add the shared entity :)
+                        (: Include the shared entity :)
                         if($entity) then (
-                        
                             $entity,
-                            
-                            (: Include glossaries matched to the shared entity :)
-                            element { QName('http://read.84000.co/ns/1.0', 'entity-glossaries') }{
-                                if($entity) then
-                                    for $matched-item in glossary:items($entity/m:instance/@id/string(), true())
-                                    return
-                                        element { node-name($matched-item) } {
-                                            $matched-item/@*,
-                                            $matched-item/node(),
-                                            entities:entities($matched-item/@id)/m:entity[1]
-                                        }
-                                else ()
+                            (: Include elements matched to the shared entity :)
+                            element { QName('http://read.84000.co/ns/1.0', 'entity-instances') }{
+                                entities:instances($entity)
                             }
-                            
                         )
-                        
-                        (: Or look for possible matches :)
                         else ()
                         ,
                         
-                        element { QName('http://read.84000.co/ns/1.0', 'similar-entities') }{
+                        (: Report possible matches for reconciliation :)
+                        let $search-terms := (
+                            $glossary-item/m:term[@xml:lang = ('bo', 'Bo-Ltn', 'Sa-Ltn')]/data(),
+                            $glossary-item/m:alternatives[@xml:lang = ('Bo-Ltn', 'Sa-Ltn')]/data(),
+                            normalize-space($similar-search)[. gt '']
+                        )
+                        return
+                            element { QName('http://read.84000.co/ns/1.0', 'similar-entities') }{
+                                entities:similar($entity, $search-terms, $glossary-item/@id)
+                            }
                         
-                            let $similar-items := glossary:similar-items($glossary-item, $similar-search)
-                            let $entities := entities:entities($similar-items/@id)/m:entity
-                            return (
-                                (:$similar-items/@id/string(),:)
-                                for $entity-id in distinct-values($entities/@xml:id)
-                                    let $entity := $entities[@xml:id eq $entity-id]
-                                    let $instances := $entity/m:instance
-                                    let $score := functx:index-of-node($similar-items, $similar-items[@id = $instances/@id][1])
-                                    let $instances-items := glossary:items($instances/@id, true())
-                                order by $score
-                                return
-                                    element { node-name($entity) } {
-                                        $entity/@*,
-                                        $entity/node()[not(self::m:instance)],
-                                        for $instance in $instances
-                                        return
-                                            element { node-name($instance) } {
-                                                $instance/@*,
-                                                $instances-items[@id = $instance/@id]
-                                            }
-                                    }
-                            )
-                        }
                     }
                
             },
             
-            $entities:predicates
+            (: Entities config :)
+            $entities:predicates,
+            $entities:types
             
         )
     )

@@ -78,6 +78,8 @@ let $view-mode := request:get-parameter('view-mode', '')
 
 let $entity-list := glossary:glossary-entities($type, $term-lang, $search)
 
+(:return if(true()) then $entity-list else:)
+
 let $entity-list :=
     for $entity in $entity-list/m:entity
     let $matching-terms :=

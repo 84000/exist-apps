@@ -7,8 +7,8 @@ import module namespace functx="http://www.functx.com";
 declare namespace m = "http://read.84000.co/ns/1.0";
 declare namespace tei = "http://www.tei-c.org/ns/1.0";
 
-(: Update an entity posted from glossary form :)
-declare function update-entity:glossary-item($entity-id as xs:string?) as element()? {
+(: Update labels, types and content :)
+declare function update-entity:headers($entity-id as xs:string?) as element()? {
     
     let $parent := $entities:entities
     
@@ -22,7 +22,15 @@ declare function update-entity:glossary-item($entity-id as xs:string?) as elemen
     
     let $entity-labels := common:sort-trailing-number-in-string(request:get-parameter-names()[starts-with(., 'entity-label-text-')], '-')
     let $glossary-id := request:get-parameter('glossary-id', '')
+    let $knowledgebase-id := request:get-parameter('knowledgebase-id', '')
+    let $instance-new := ($glossary-id, $knowledgebase-id)[not(. eq '')]
     let $instance-remove := request:get-parameter('instance-remove', '')
+    let $entity-types :=
+        if($glossary-id gt '') then 
+            $entities:types/m:entity-type[@group eq 'glossary-item'] 
+        else if($knowledgebase-id gt '') then
+            $entities:types/m:entity-type[@group eq 'knowledgebase-article']
+        else ()
     
     where $entity-id gt '' and count($entity-labels[not(. eq '')]) gt 0
     return
@@ -58,16 +66,17 @@ declare function update-entity:glossary-item($entity-id as xs:string?) as elemen
                     }
                 ),
                 
-                (: The type(s) of entity :)
-                for $entity-type in request:get-parameter('entity-type[]', '')[. = $entities:types]
+                (: Add valid posted entity type(s) :)
+                for $entity-type in request:get-parameter('entity-type[]', '')[. = $entity-types/@id/string()]
                 return (
                     common:ws(2),
                     element type {
                         attribute type { $entity-type }
                     }
                 ),
-                (: Other types :)
-                for $entity-type in $existing-entity/m:type[not(@type = ('eft-glossary-term', 'eft-glossary-person', 'eft-glossary-place', 'eft-glossary-text'))]
+                
+                (: Copy existing entity type(s) :)
+                for $entity-type in $existing-entity/m:type[not(@type = $entity-types/@id/string())]
                 return (
                     common:ws(2),
                     $entity-type
@@ -75,7 +84,7 @@ declare function update-entity:glossary-item($entity-id as xs:string?) as elemen
                 
                 (: Instance(s) of this entity :)
                 (: Copy instances except the ones to be removed or added :)
-                for $instance in $existing-entity/m:instance[not(@id/string() = ($instance-remove, $glossary-id)[not(. eq '')])]
+                for $instance in $existing-entity/m:instance[not(@id/string() = ($instance-remove, $instance-new)[not(. eq '')])]
                 return (
                     common:ws(2),
                     $instance
@@ -87,6 +96,15 @@ declare function update-entity:glossary-item($entity-id as xs:string?) as elemen
                     element instance {
                         attribute id { $glossary-id },
                         attribute type { 'glossary-item' }
+                    }
+                    
+                )
+                else if($knowledgebase-id gt '' and not($instance-remove eq $knowledgebase-id)) then (
+                    
+                    common:ws(2),
+                    element instance {
+                        attribute id { $knowledgebase-id },
+                        attribute type { 'knowledgebase-article' }
                     }
                     
                 )

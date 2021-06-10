@@ -283,6 +283,12 @@
                                                 </xsl:if>
                                                 <xsl:value-of select="'Sort by due date'"/>
                                             </option>
+                                            <option value="publication-date">
+                                                <xsl:if test="m:texts/@sort eq 'publication-date'">
+                                                    <xsl:attribute name="selected" select="'selected'"/>
+                                                </xsl:if>
+                                                <xsl:value-of select="'Sort by publication date'"/>
+                                            </option>
                                             <option value="longest">
                                                 <xsl:if test="m:texts/@sort eq 'longest'">
                                                     <xsl:attribute name="selected" select="'selected'"/>
@@ -451,10 +457,10 @@
                                     
                                     <!-- Main row - About the text -->
                                     <tr>
-                                        <td rowspan="2">
+                                        <td rowspan="3">
                                             
                                             <xsl:if test="m:sponsors/tei:div[@type eq 'acknowledgment']/tei:p">
-                                                <xsl:attribute name="rowspan" select="'3'"/>
+                                                <xsl:attribute name="rowspan" select="'4'"/>
                                             </xsl:if>
                                             
                                             <xsl:choose>
@@ -591,11 +597,14 @@
                                     <!-- Acknowlegment -->
                                     <xsl:if test="m:sponsors/tei:div[@type eq 'acknowledgment']/tei:p">
                                         <tr class="sub">
+                                            
                                             <xsl:if test="not(/m:response/m:texts[@sort eq 'status'])">
                                                 <td/>
                                             </xsl:if>
+                                            
                                             <td colspan="5">
                                                 <div class="pull-quote green-quote no-bottom-margin small">
+                                                    
                                                     <xsl:if test="m:sponsors/tei:div[@type eq 'acknowledgment']/@generated">
                                                         <xsl:attribute name="class" select="'pull-quote orange-quote no-bottom-margin small'"/>
                                                     </xsl:if>
@@ -611,8 +620,35 @@
                                                     
                                                 </div>
                                             </td>
+                                            
                                         </tr>
                                     </xsl:if>
+                                    
+                                    <!-- Translation team -->
+                                    <tr class="sub">
+                                        
+                                        <xsl:if test="not(/m:response/m:texts[@sort eq 'status'])">
+                                            <td/>
+                                        </xsl:if>
+                                        
+                                        <td colspan="5">
+                                            <hr/>
+                                            <div class="collapse-one-line one-line small italic text-success">
+                                                <xsl:variable name="translator-team-ref" select="m:publication/m:contributors/m:summary/@ref ! substring-after(string(), 'contributors.xml#')"/>
+                                                <xsl:variable name="translator-team" select="m:contributors/id($translator-team-ref)"/>
+                                                <xsl:choose>
+                                                    <xsl:when test="$translator-team">
+                                                        <xsl:value-of select="$translator-team/m:label"/>
+                                                    </xsl:when>
+                                                    <xsl:otherwise>
+                                                        <xsl:attribute name="class" select="'collapse-one-line one-line small italic text-warning'"/>
+                                                        <xsl:value-of select="'No translator team set'"/>
+                                                    </xsl:otherwise>
+                                                </xsl:choose>
+                                            </div>
+                                        </td>
+                                        
+                                    </tr>
                                     
                                     <!-- Notes and statuses -->
                                     <tr class="sub">
@@ -620,6 +656,7 @@
                                         <xsl:if test="not(/m:response/m:texts[@sort eq 'status'])">
                                             <td/>
                                         </xsl:if>
+                                        
                                         <td colspan="5">
                                             
                                             <xsl:if test="$translation-status/m:action-note[normalize-space(text())]">
@@ -645,10 +682,11 @@
                                             
                                             <hr/>
                                             <ul class="list-inline inline-dots no-bottom-margin">
-                                                <li>
-                                                    <xsl:variable name="next-target-date" select="$translation-status/m:target-date[@next eq 'true'][1]"/>
-                                                    <xsl:choose>
-                                                        <xsl:when test="$next-target-date">
+                                                
+                                                <xsl:variable name="next-target-date" select="$translation-status/m:target-date[@next eq 'true'][1]"/>
+                                                <xsl:choose>
+                                                    <xsl:when test="$next-target-date">
+                                                        <li>
                                                             
                                                             <xsl:choose>
                                                                 <xsl:when test="xs:integer($next-target-date/@due-days) ge 0">
@@ -670,23 +708,25 @@
                                                                 </span>
                                                             </span>
                                                             
-                                                        </xsl:when>
-                                                        <xsl:otherwise>
-                                                            
+                                                        </li>
+                                                    </xsl:when>
+                                                    
+                                                    <xsl:when test="not(@status-group eq 'published')">
+                                                        <li>
                                                             <span class="small italic">
                                                                 <xsl:value-of select="'No target set'"/>
                                                             </span>
-                                                            
-                                                        </xsl:otherwise>
-                                                    </xsl:choose>
-                                                </li>
+                                                        </li>
+                                                    </xsl:when>
+                                                    
+                                                </xsl:choose>
                                                 
                                                 <xsl:variable name="status-date-start" select="/m:response/m:request/@target-date-start"/>
                                                 <xsl:variable name="status-date-end" select="/m:response/m:request/@target-date-end"/>
                                                 <xsl:variable name="status-updates-in-range">
                                                     <xsl:choose>
                                                         <xsl:when test="/m:response/m:request/@target-date-type eq 'status-date' and ($status-date-start gt '' or $status-date-end gt '')">
-                                                            <xsl:copy-of select="m:status-updates/m:status-update                                                                 [@update eq 'translation-status']                                                                 [if($status-date-start gt '') then @date-time ! xs:dateTime(.) ge xs:dateTime(xs:date($status-date-start)) else true()]                                                                 [if($status-date-end gt '') then @date-time ! xs:dateTime(.) le xs:dateTime(xs:date($status-date-end)) else true()]                                                                 "/>
+                                                            <xsl:copy-of select="m:status-updates/m:status-update[@update eq 'translation-status'][if($status-date-start gt '') then @date-time ! xs:dateTime(.) ge xs:dateTime(xs:date($status-date-start)) else true()][if($status-date-end gt '') then @date-time ! xs:dateTime(.) le xs:dateTime(xs:date($status-date-end)) else true()]"/>
                                                         </xsl:when>
                                                         <xsl:otherwise>
                                                             <xsl:copy-of select="m:status-updates/m:status-update[@current-status eq 'true']"/>
@@ -697,10 +737,18 @@
                                                 <xsl:for-each select="$status-updates-in-range/m:status-update">
                                                     <li>
                                                         <span class="small italic">
-                                                            <xsl:value-of select="concat('Status ', ./@value, ' set by ', @user, ' on ', format-dateTime(./@date-time, '[D01] [MNn,*-3] [Y]'))"/>
+                                                            <xsl:value-of select="concat('Status ', @value, ' set by ', @user, ' on ', format-dateTime(@date-time, '[D01] [MNn,*-3] [Y]'))"/>
                                                         </span>
                                                     </li>
                                                 </xsl:for-each>
+                                                
+                                                <xsl:if test="@status-group eq 'published'">
+                                                    <li>
+                                                        <span class="small italic">
+                                                            <xsl:value-of select="concat('Publication date: ', format-date(m:publication/m:publication-date, '[D01] [MNn,*-3] [Y]'))"/>
+                                                        </span>
+                                                    </li>
+                                                </xsl:if>
                                                 
                                             </ul>
                                             
