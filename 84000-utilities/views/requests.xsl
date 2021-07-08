@@ -49,7 +49,7 @@
             </table>
             
             <!-- Pagination -->
-            <xsl:copy-of select="common:pagination(m:requests/@first-record, m:requests/@max-records, m:requests/@count-records, 'requests.html', '')"/>
+            <xsl:copy-of select="common:pagination(m:requests/@first-record, m:requests/@max-records, m:requests/@count-records, 'requests.html')"/>
             
             
         </xsl:variable>

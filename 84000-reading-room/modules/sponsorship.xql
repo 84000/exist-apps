@@ -61,7 +61,7 @@ declare variable $sponsorship:sponsorship-groups :=
 
 declare function sponsorship:text-status($text-id as xs:string, $estimate-cost as xs:boolean) as element() {
     
-    let $project := $sponsorship:data//m:project[m:text[@text-id eq $text-id]]
+    let $project := $sponsorship:data//m:project[m:text[@text-id eq $text-id]][1]
     
     let $estimate-teis :=
         if($estimate-cost) then
@@ -82,8 +82,7 @@ declare function sponsorship:text-status($text-id as xs:string, $estimate-cost a
                 element estimate {
                     sponsorship:cost-estimate($estimate-teis)
                 }
-            else
-                ()
+            else ()
             ,
             $project/m:text,
             if(not($project)) then

@@ -10,12 +10,28 @@ import module namespace source="http://read.84000.co/source" at "../../84000-rea
 
 declare option exist:serialize "method=xml indent=no";
 
-common:response(
-    'operations/index', 
-    'operations', 
-    (
-        translations:summary($source:ekangyur-work),
-        translations:summary($source:etengyur-work),
-        $tei-content:text-statuses
+let $resource-suffix := request:get-parameter('resource-suffix', '')
+
+let $xml-response :=
+    common:response(
+        'operations/index', 
+        'operations', 
+        (
+            translations:summary($source:ekangyur-work),
+            translations:summary($source:etengyur-work),
+            $tei-content:text-statuses
+        )
     )
-)
+
+return
+
+    (: return html data :)
+    if($resource-suffix eq 'html') then (
+        common:html($xml-response, concat(local:app-path(), '/views/index.xsl'))
+    )
+    
+    (: return xml data :)
+    else (
+        util:declare-option("exist:serialize", "method=xml indent=no"),
+        $xml-response
+    )

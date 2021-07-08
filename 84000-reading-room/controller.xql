@@ -70,9 +70,10 @@ declare function local:dispatch($model as xs:string?, $view as xs:string?, $para
     </dispatch>
 };
 
-declare function local:dispatch-html($model as xs:string, $view as xs:string, $parameters as node()) as node(){
-    <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+declare function local:dispatch-html($model as xs:string, $view as xs:string, $parameters as node()) as element() {
     
+    <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+        
         <!-- Model -->
         <forward url="{concat($exist:controller, $model)}">
         {
@@ -356,21 +357,17 @@ return (:$var-debug:)
         
         (: Search :)
         else if ($resource-id eq "search") then
-            if ($resource-suffix eq 'html') then
-                local:dispatch-html("/models/search.xq", "/views/html/search.xsl", 
-                    <parameters xmlns="http://exist.sourceforge.net/NS/exist"/>
-                )
-            else if ($resource-suffix eq 'json') then
+             if ($resource-suffix eq 'json') then
                 local:dispatch("/models/search.xq", "/views/json/search.xq", 
                     <parameters xmlns="http://exist.sourceforge.net/NS/exist">
-                        <add-parameter name="resource-id" value="{$resource-id}"/>
                         <add-parameter name="resource-suffix" value="json"/>
                     </parameters>
                 )
             else
-                (: return the xml :)
-                local:dispatch("/models/search.xq", "", 
-                    <parameters xmlns="http://exist.sourceforge.net/NS/exist"/>
+                local:dispatch("/models/search.xq", "",
+                    <parameters xmlns="http://exist.sourceforge.net/NS/exist">
+                        <add-parameter name="resource-suffix" value="{$resource-suffix}"/>
+                    </parameters>
                 )
         
         (: About :)
@@ -403,28 +400,12 @@ return (:$var-debug:)
         
         (: Knowledgebase :)
         else if ($collection-path eq "knowledgebase") then
-            if ($resource-suffix eq 'tei') then
-                local:dispatch("/models/knowledgebase.xq", "",
-                    <parameters xmlns="http://exist.sourceforge.net/NS/exist">
-                        <add-parameter name="resource-id" value="{$resource-id}"/>
-                        <add-parameter name="resource-suffix" value="tei"/>
-                    </parameters>
-                )
-            else if ($resource-suffix eq 'html') then
-                local:dispatch-html("/models/knowledgebase.xq", "/views/html/knowledgebase.xsl", 
-                    <parameters xmlns="http://exist.sourceforge.net/NS/exist">
-                        <add-parameter name="resource-id" value="{$resource-id}"/>
-                        <add-parameter name="resource-suffix" value="html"/>
-                    </parameters>
-                )
-            else
-                (: return the xml :)
-                local:dispatch("/models/knowledgebase.xq", "",
-                    <parameters xmlns="http://exist.sourceforge.net/NS/exist">
-                        <add-parameter name="resource-id" value="{$resource-id}"/>
-                        <add-parameter name="resource-suffix" value="xml"/>
-                    </parameters>
-                )
+            local:dispatch("/models/knowledgebase.xq", "",
+                <parameters xmlns="http://exist.sourceforge.net/NS/exist">
+                    <add-parameter name="resource-id" value="{$resource-id}"/>
+                    <add-parameter name="resource-suffix" value="{$resource-suffix}"/>
+                </parameters>
+            )
         
         (: Glossary :)
         else if ($resource-id eq "glossary") then
@@ -452,23 +433,11 @@ return (:$var-debug:)
                 <parameters xmlns="http://exist.sourceforge.net/NS/exist"/>
             )
         
-        (:(\: Sitemap - returns a site map for a multi chapter text - used for PDF generation - DEPRECATED! :\)
-        else if ($collection-path eq "sitemap") then
-            (\: return the xml :\)
-            local:dispatch("/models/sitemap.xq", "", 
-                <parameters xmlns="http://exist.sourceforge.net/NS/exist">
-                    <add-parameter name="resource-id" value="{$resource-id}"/>
-                </parameters>
-            ):)
-        
         (: Schema :)
         else if ($collection-path eq "schema") then
-            (: return the schema :)
-            (:<debug doc-available="{ doc-available(concat($common:data-path, $exist:path)) }">:)
             <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
                 <forward url="{ concat($common:data-collection, $exist:path) }"/>
             </dispatch>
-            (:</debug>:)
         
         (: Audio :)
         else if ($collection-path eq "audio") then
@@ -476,6 +445,15 @@ return (:$var-debug:)
                 <forward url="{ concat($common:data-collection, $exist:path) }"/>
             </dispatch>
         
+        (: TEI Editor :)
+        (: Module located in operations app :)
+        else if ($resource-id = ("tei-editor") and $common:environment/m:url[@id eq 'operations'] and common:user-in-group('operations')) then
+            <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+                <forward url="/84000-operations/models/{$resource-id}.xq">
+                    <add-parameter name="resource-suffix" value="{$resource-suffix}"/>
+                </forward>
+            </dispatch>
+            
         else
             (: It's data :)
             if($resource-suffix eq 'html') then

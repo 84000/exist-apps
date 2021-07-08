@@ -25,12 +25,7 @@ declare function update-entity:headers($entity-id as xs:string?) as element()? {
     let $knowledgebase-id := request:get-parameter('knowledgebase-id', '')
     let $instance-new := ($glossary-id, $knowledgebase-id)[not(. eq '')]
     let $instance-remove := request:get-parameter('instance-remove', '')
-    let $entity-types :=
-        if($glossary-id gt '') then 
-            $entities:types/m:entity-type[@group eq 'glossary-item'] 
-        else if($knowledgebase-id gt '') then
-            $entities:types/m:entity-type[@group eq 'knowledgebase-article']
-        else ()
+    let $entity-types := $entities:types/m:type
     
     where $entity-id gt '' and count($entity-labels[not(. eq '')]) gt 0
     return

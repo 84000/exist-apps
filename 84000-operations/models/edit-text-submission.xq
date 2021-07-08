@@ -13,7 +13,7 @@ declare namespace tei="http://www.tei-c.org/ns/1.0";
 declare option exist:serialize "method=xml indent=no";
 
 (: Request parameters :)
-
+let $resource-suffix := request:get-parameter('resource-suffix', '')
 let $text-id := request:get-parameter('text-id', '')
 let $submission-id := request:get-parameter('submission-id', '')
 let $tei := tei-content:tei($text-id, 'translation')
@@ -26,7 +26,7 @@ let $updated :=
     else
         ()
     
-return
+let $xml-response := 
     common:response(
         'operations/edit-text-submission', 
         'operations',
@@ -53,4 +53,17 @@ return
             translation-status:submission($text-id, $submission-id),
             doc('../config/submission-checklist.xml')
         )
+    )
+    
+return
+
+    (: return html data :)
+    if($resource-suffix eq 'html') then (
+        common:html($xml-response, concat(local:app-path(), '/views/edit-text-submission.xsl'))
+    )
+    
+    (: return xml data :)
+    else (
+        util:declare-option("exist:serialize", "method=xml indent=no"),
+        $xml-response
     )

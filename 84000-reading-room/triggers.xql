@@ -9,11 +9,19 @@ declare namespace m="http://read.84000.co/ns/1.0";
 import module namespace common="http://read.84000.co/common" at "modules/common.xql";
 import module namespace tei-content="http://read.84000.co/tei-content" at "modules/tei-content.xql";
 import module namespace translation="http://read.84000.co/translation" at "modules/translation.xql";
+import module namespace glossary="http://read.84000.co/glossary" at "modules/glossary.xql";
 import module namespace functx = "http://www.functx.com";
 
 declare function trigger:after-update-document($uri as xs:anyURI) {
     
     local:log-event("after", "update", "document", $uri),
+    local:after-update-document-functions(doc($uri))
+    
+};
+
+declare function trigger:after-create-document($uri as xs:anyURI) {
+    
+    local:log-event("after", "create", "document", $uri),
     local:after-update-document-functions(doc($uri))
     
 };
@@ -37,6 +45,7 @@ declare function local:after-update-document-functions($doc) {
         
     )
     else ()
+    
 };
 
 declare function local:refresh-cache($doc) {
@@ -76,7 +85,7 @@ declare function local:refresh-cache($doc) {
         where count($tei-ids) gt 0
         return
         if(count(($tei-ids[not(. = $cache-ids)], $cache-ids[not(. = $tei-ids)]))) then
-            common:update('trigger-cache-glossary', $cache/m:glossary-cache, translation:glossary-cache($doc/tei:TEI, 'none', true()), $cache, $cache/m:glossary-cache/preceding-sibling::*[1])
+            common:update('trigger-cache-glossary', $cache/m:glossary-cache, glossary:cache($doc/tei:TEI, 'none', true()), $cache, $cache/m:glossary-cache/preceding-sibling::*[1])
         else ()
         
     )
@@ -144,13 +153,15 @@ declare function local:temporary-ids($doc) {
     (: These only need to persist for a request/response cycle:)
     
     let $elements := 
-        $doc//tei:text//tei:p
-        | $doc//tei:text//tei:head
+        $doc//tei:text//tei:head
+        | $doc//tei:text//tei:p
+        | $doc//tei:text//tei:label[not(parent::tei:p)]
         | $doc//tei:text//tei:lg
         | $doc//tei:text//tei:ab
         | $doc//tei:text//tei:trailer
+        (: These are covered in tei:text//tei:head
         | $doc//tei:front//tei:list/tei:head
-        | $doc//tei:body//tei:list/tei:head
+        | $doc//tei:body//tei:list/tei:head:)
     
     let $elements-to-update := (
         for $element in $elements[@tid]

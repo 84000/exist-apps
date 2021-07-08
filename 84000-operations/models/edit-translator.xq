@@ -6,6 +6,7 @@ import module namespace contributors="http://read.84000.co/contributors" at "../
 
 declare namespace m="http://read.84000.co/ns/1.0";
 
+let $resource-suffix := request:get-parameter('resource-suffix', '')
 let $request-id := request:get-parameter('id', '')      (: in get :)
 let $post-id := request:get-parameter('post-id', '')    (: in post :)
 
@@ -26,7 +27,7 @@ let $contributor :=
     else
         ()
 
-return
+let $xml-response := 
     common:response(
         'operations/edit-translator', 
         'operations',
@@ -43,4 +44,17 @@ return
             contributors:institutions(false()),
             $contributors:contributor-types
         )
+    )
+    
+return
+
+    (: return html data :)
+    if($resource-suffix eq 'html') then (
+        common:html($xml-response, concat(local:app-path(), '/views/edit-translator.xsl'))
+    )
+    
+    (: return xml data :)
+    else (
+        util:declare-option("exist:serialize", "method=xml indent=no"),
+        $xml-response
     )

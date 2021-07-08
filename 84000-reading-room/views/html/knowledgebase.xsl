@@ -8,11 +8,14 @@
     <xsl:variable name="front-end-path" select="$environment/m:url[@id eq 'front-end']/text()"/>
     <xsl:variable name="render-status" select="$environment/m:render-translation/m:status/@status-id"/>
     
+    <xsl:variable name="main-title" select="/m:response/m:knowledgebase/m:page/m:titles/m:title[@type = 'mainTitle'][1]"/>
+    
     <xsl:template match="/m:response">
         
         <!-- PAGE CONTENT -->
         <xsl:variable name="content">
             
+            <!-- Title band -->
             <div class="title-band hidden-print">
                 <div class="container">
                     <div class="center-vertical-sm full-width">
@@ -26,7 +29,7 @@
                                     </li>
                                     
                                     <li>
-                                        <xsl:value-of select="m:knowledgebase/m:page/m:titles/m:title[@xml:lang = 'en']"/>
+                                        <xsl:value-of select="$main-title"/>
                                     </li>
                                     
                                 </ul>
@@ -65,6 +68,7 @@
             </xsl:variable>
             <xsl:apply-templates select="$bookmarks-sidebar"/>
             
+            <!-- Publication warning -->
             <xsl:if test="not(m:knowledgebase/m:page/@status-group eq 'published')">
                 <div class="title-band warning">
                     <div class="container">
@@ -79,20 +83,11 @@
                         
                         <main class="col-md-8 col-lg-9">
                             
-                            <!-- Link to tei-editor -->
-                            <!-- Knowledge base only, editor mode, operations app, no child divs and an id -->
-                            <xsl:if test="$view-mode[@id = ('editor')] and $environment/m:url[@id eq 'operations']">
-                                <a class="text-muted underline top-right" target="84000-operations">
-                                    <xsl:attribute name="href" select="concat($environment/m:url[@id eq 'operations']/text(), '/edit-kb-header.html', '?id=', m:knowledgebase/m:page/@xml:id)"/>
-                                    <xsl:value-of select="'[Edit headers]'"/>
-                                </a>
-                            </xsl:if>
-                            
                             <h1>
-                                <xsl:apply-templates select="m:knowledgebase/m:page/m:titles/m:title[@type eq 'mainTitle'][@xml:lang eq 'en']"/>
+                                <xsl:apply-templates select="$main-title"/>
                             </h1>
                             
-                            <xsl:for-each select="m:knowledgebase/m:page/m:titles/m:title[@type eq 'mainTitle'][not(@xml:lang eq 'en')]">
+                            <xsl:for-each select="m:knowledgebase/m:page/m:titles/m:title[count((. | $main-title)) ne 1]">
                                 <div class="h4">
                                     <xsl:value-of select="common:lang-label(@xml:lang)"/>
                                     <span>
@@ -101,16 +96,6 @@
                                         </xsl:call-template>
                                         <xsl:value-of select="text()"/>
                                     </span>
-                                </div>
-                            </xsl:for-each>
-                            
-                            <xsl:for-each select="m:knowledgebase/m:page/m:titles/m:title[not(@type eq 'mainTitle')]">
-                                <div>
-                                    <xsl:call-template name="class-attribute">
-                                        <xsl:with-param name="lang" select="@xml:lang"/>
-                                        <xsl:with-param name="base-classes" select="'h4 text-muted'"/>
-                                    </xsl:call-template>
-                                    <xsl:value-of select="text()"/>
                                 </div>
                             </xsl:for-each>
                             
@@ -125,19 +110,47 @@
                                 </xsl:choose>
                             </p>
                             
-                            <section class="tei-parser">
+                            <!-- Link to header form -->
+                            <!-- Knowledge base only, editor mode, operations app, no child divs and an id -->
+                            <xsl:if test="$tei-editor and m:knowledgebase/m:page[@xml:id gt '']">
+                                <ul class="list-inline inline-dots">
+                                    <li>
+                                        <a class="editor" target="84000-operations">
+                                            <xsl:attribute name="href" select="concat($environment/m:url[@id eq 'operations']/text(), '/edit-kb-header.html', '?id=', m:knowledgebase/m:page/@xml:id)"/>
+                                            <xsl:value-of select="'Edit headers'"/>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="editor" target="84000-operations">
+                                            <xsl:attribute name="href" select="concat($environment/m:url[@id eq 'operations']/text(), '/edit-glossary.html', '?resource-id=', m:knowledgebase/m:page/@xml:id, '&amp;resource-type=knowledgebase')"/>
+                                            <xsl:value-of select="'Edit glossary'"/>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </xsl:if>
+                            
+                            <section class="tei-parser no-top-margin">
                                 <xsl:apply-templates select="m:knowledgebase/m:part[@type eq 'article']"/>
                             </section>
                             
                             <xsl:if test="m:knowledgebase/m:part[@type eq 'bibliography'][tei:div[tei:bibl] or $view-mode[@id = ('editor')]]">
                                 <section class="tei-parser">
+                                    <hr class="hidden-print"/>
                                     <xsl:apply-templates select="m:knowledgebase/m:part[@type eq 'bibliography']"/>
                                 </section>
                             </xsl:if>
                             
                             <xsl:if test="m:knowledgebase/m:part[@type eq 'end-notes'][tei:note]">
                                 <section class="tei-parser">
+                                    <hr class="hidden-print"/>
                                     <xsl:call-template name="end-notes"/>
+                                </section>
+                            </xsl:if>
+                            
+                            <xsl:if test="m:knowledgebase/m:part[@type eq 'glossary'][tei:item]">
+                                <section class="tei-parser">
+                                    <hr class="hidden-print"/>
+                                    <xsl:call-template name="glossary"/>
                                 </section>
                             </xsl:if>
                             
@@ -145,7 +158,25 @@
                         
                         <aside class="col-md-4 col-lg-3">
                             
-                            <xsl:call-template name="taxonomy"/>
+                            <!-- If it could be TEI editor but isn't, show a button -->
+                            <xsl:if test="$tei-editor-off or $tei-editor">
+                                <div class="bottom-margin">
+                                    <a>
+                                        <xsl:choose>
+                                            <xsl:when test="$tei-editor-off">
+                                                <xsl:attribute name="href" select="concat('?view-mode=editor&amp;timestamp=', current-dateTime())"/>
+                                                <xsl:attribute name="class" select="'btn btn-success uppercase'"/>
+                                                <xsl:value-of select="'Show Editor'"/>
+                                            </xsl:when>
+                                            <xsl:when test="$tei-editor">
+                                                <xsl:attribute name="href" select="concat('?timestamp=', current-dateTime())"/>
+                                                <xsl:attribute name="class" select="'btn btn-danger uppercase'"/>
+                                                <xsl:value-of select="'Hide Editor'"/>
+                                            </xsl:when>
+                                        </xsl:choose>
+                                    </a>
+                                </div>
+                            </xsl:if>
                             
                             <!-- Project Progress, get from ajax -->
                             <div id="project-progress">
@@ -174,10 +205,10 @@
             <!-- General pop-up for notes -->
             <div id="popup-footer" class="fixed-footer collapse hidden-print">
                 <div class="fix-height">
-                    <div class="container translation">
+                    <div class="container">
                         <div class="row">
                             <div class="col-md-8 col-lg-9">
-                                <div class="data-container">
+                                <div class="data-container tei-parser">
                                     <!-- Ajax data here -->
                                 </div>
                             </div>
@@ -193,13 +224,33 @@
                 </div>
             </div>
             
+            <!-- Pop-up for tei-editor -->
+            <xsl:if test="$tei-editor">
+                <div id="popup-footer-editor" class="fixed-footer collapse hidden-print">
+                    <div class="fix-height">
+                        <div class="container">
+                            <div class="data-container">
+                                <!-- Ajax data here -->
+                            </div>
+                        </div>
+                    </div>
+                    <div class="fixed-btn-container close-btn-container">
+                        <button type="button" class="btn-round close close-collapse" aria-label="Close">
+                            <span aria-hidden="true">
+                                <i class="fa fa-times"/>
+                            </span>
+                        </button>
+                    </div>
+                </div>
+            </xsl:if>
+            
         </xsl:variable>
         
         <!-- Pass the content to the page -->
         <xsl:call-template name="website-page">
             <xsl:with-param name="page-url" select="(m:knowledgebase/m:page/@page-url, '')[1]"/>
             <xsl:with-param name="page-class" select="'reading-room knowledgebase'"/>
-            <xsl:with-param name="page-title" select="concat(m:knowledgebase/m:page/m:titles/m:title[@xml:lang eq 'en'][@type eq 'mainTitle']/text(), ' | 84000 Reading Room')"/>
+            <xsl:with-param name="page-title" select="concat($main-title, ' | 84000 Reading Room')"/>
             <xsl:with-param name="page-description" select="normalize-space(data(m:knowledgebase/m:page/m:summary/tei:p[1]))"/>
             <xsl:with-param name="content" select="$content"/>
             <xsl:with-param name="additional-links">

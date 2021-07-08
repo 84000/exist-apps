@@ -9,36 +9,36 @@ import module namespace common="http://read.84000.co/common" at "../../84000-rea
 import module namespace tei-content="http://read.84000.co/tei-content" at "../../84000-reading-room/modules/tei-content.xql";
 import module namespace knowledgebase="http://read.84000.co/knowledgebase" at "../../84000-reading-room/modules/knowledgebase.xql";
 
-declare option exist:serialize "method=xml indent=no";
-
-let $type := request:get-parameter('type', '')
 let $resource-id := request:get-parameter('resource-id', '')
-let $section-id := request:get-parameter('section-id', '')
-let $sibling-id := request:get-parameter('sibling-id', '')
-let $markdown := request:get-parameter('markdown', '')
+let $resource-suffix := request:get-parameter('resource-suffix', '')
+let $type := request:get-parameter('type', '')
+let $passage-id := request:get-parameter('passage-id', '')
 let $form-action := request:get-parameter('form-action', '')
+let $markdown := request:get-parameter('markdown', '')
+let $new-element-name := request:get-parameter('new-element-name', '')
+let $comment := request:get-parameter('comment', '')
+let $callback-url := request:get-parameter('callback-url', '')
 
-let $tei := 
-    if($type = ('knowledgebase')) then
-        tei-content:tei($resource-id, $type)
-    else ()
+let $tei := tei-content:tei($resource-id, $type)
 
 let $update-tei :=
     if($type = ('knowledgebase') and $tei and $form-action eq 'update-tei') then 
-        update-tei:markup($tei, $markdown, $section-id, $sibling-id)
+        update-tei:markup($tei, $markdown, $passage-id, '')
+    else if($type = ('knowledgebase') and $tei and $form-action eq 'add-element') then 
+        update-tei:add-element($tei, $passage-id, $new-element-name)
+    else if($type = ('knowledgebase') and $tei and $form-action eq 'comment-tei') then 
+        update-tei:comment($tei, $passage-id, $comment)
     else ()
 
-(: Switch to new section-id if updated :)
-let $section-id := 
-    if($section-id eq '' and $sibling-id gt '') then 
-        $tei//*[@xml:id eq $sibling-id]/following-sibling::*[@xml:id][1]/@xml:id
-    else 
-        $section-id
+let $schema := 
+    if($type eq 'knowledgebase') then
+        doc(concat($common:tei-path, '/schema/current/knowledgebase.rng'))
+    else
+        doc(concat($common:tei-path, '/schema/current/translation.rng'))
 
-let $schema := doc(concat($common:tei-path, '/schema/current/knowledgebase.rng'))
 let $validation-report := validation:jing-report($tei, $schema)
 
-return
+let $xml-response :=
     common:response(
         'operations/tei-editor',
         'operations', 
@@ -47,8 +47,7 @@ return
             element { QName('http://read.84000.co/ns/1.0', 'request') } {
                 attribute type { $type },
                 attribute resource-id { $resource-id },
-                attribute section-id { $section-id },
-                attribute sibling-id { $sibling-id }
+                attribute passage-id { $passage-id }
             },
             
             element { QName('http://read.84000.co/ns/1.0', 'updates') } {
@@ -60,7 +59,7 @@ return
             },
             
             (: Restrict to knowledgebase only for now :)
-            if($tei and $type eq 'knowledgebase') then (
+            if($tei and $type eq 'knowledgebase') then 
                 
                 element { QName('http://read.84000.co/ns/1.0', 'knowledgebase') } {
                     
@@ -71,12 +70,22 @@ return
                     knowledgebase:article($tei),
                     knowledgebase:bibliography($tei)
                     
-                },
-                
-                element { QName('http://read.84000.co/ns/1.0', 'default-markup') } {
-                    knowledgebase:new-section($tei//*[@xml:id eq $sibling-id]/ancestor-or-self::*[@type][last()]/@type)/*
                 }
-            )
+            
             else ()
         )
     )
+
+return
+
+    (: return html data :)
+    if($resource-suffix eq 'html') then (
+        common:html($xml-response, concat(local:app-path(), '/views/tei-editor.xsl'))
+    )
+    
+    (: return xml data :)
+    else (
+        util:declare-option("exist:serialize", "method=xml indent=no"),
+        $xml-response
+    )
+    

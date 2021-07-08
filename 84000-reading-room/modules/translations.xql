@@ -56,7 +56,7 @@ declare function translations:summary($work as xs:string) as element() {
     let $in-translation-fileDesc := $fileDescs[tei:publicationStmt/@status = $in-translation-statuses]
     let $commissioned-fileDesc := $fileDescs[tei:publicationStmt/@status = $all-statuses]
     let $sponsorship-text-ids := sponsorship:text-ids('sponsored')
-    let $sponsored-fileDesc := $fileDescs[tei:publicationStmt/tei:idno[@xml:id = $sponsorship-text-ids]]
+    let $sponsored-fileDesc := $fileDescs[tei:publicationStmt[tei:idno/@xml:id = $sponsorship-text-ids]]
     
     let $all-text-count := count($fileDescs)
     let $commissioned-text-count := count($commissioned-fileDesc)

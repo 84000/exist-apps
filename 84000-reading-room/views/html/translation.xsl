@@ -521,9 +521,7 @@
                     </xsl:when>
                     
                     <xsl:otherwise>
-
                         <xsl:apply-templates select="$part/m:* | $part/tei:*"/>
-                        
                     </xsl:otherwise>
                     
                 </xsl:choose>
@@ -554,76 +552,76 @@
     
     <xsl:template name="front-matter">
         
-        <!-- Include an additional page warning about incompleteness of rendering -->
-        <xsl:if test="count($page-title) gt 1 or not($part-status eq 'complete')">
-            <div class="page">
-                
-                <!-- h1 should reflect that it's a part -->
-                <xsl:if test="count($page-title) gt 1">
-                    <h1 class="h2 text-center top-margin">
-                        <xsl:for-each select="$page-title">
-                            <xsl:choose>
-                                <xsl:when test="self::m:title">
-                                    <small>
-                                        <xsl:value-of select="."/>
-                                    </small>
-                                </xsl:when>
-                                <xsl:otherwise>
-                                    <br/>
-                                    <span class="dot-parenth">
-                                        <xsl:value-of select="' '"/>
-                                        <xsl:value-of select="."/>
-                                        <xsl:value-of select="' '"/>
-                                    </span>
-                                </xsl:otherwise>
-                            </xsl:choose>
-                        </xsl:for-each>
-                    </h1>
-                </xsl:if>
-                
-                <!-- Warn the user not to print a partial view -->
-                <xsl:if test="not($part-status eq 'complete')">
-                    <div class="visible-print-block">
-                        
-                        <div class="well text-center top-margin hidden-pdf">
+        <section id="titles">
+            
+            <!-- Include an additional page warning about incompleteness of rendering -->
+            <xsl:if test="count($page-title) gt 1 or not($part-status eq 'complete')">
+                <div class="page">
+                    
+                    <!-- h1 should reflect that it's a part -->
+                    <xsl:if test="count($page-title) gt 1">
+                        <h1 class="h2 text-center top-margin">
+                            <xsl:for-each select="$page-title">
+                                <xsl:choose>
+                                    <xsl:when test="self::m:title">
+                                        <small>
+                                            <xsl:value-of select="."/>
+                                        </small>
+                                    </xsl:when>
+                                    <xsl:otherwise>
+                                        <br/>
+                                        <span class="dot-parenth">
+                                            <xsl:value-of select="' '"/>
+                                            <xsl:value-of select="."/>
+                                            <xsl:value-of select="' '"/>
+                                        </span>
+                                    </xsl:otherwise>
+                                </xsl:choose>
+                            </xsl:for-each>
+                        </h1>
+                    </xsl:if>
+                    
+                    <!-- Warn the user not to print a partial view -->
+                    <xsl:if test="not($part-status eq 'complete')">
+                        <div class="visible-print-block">
                             
-                            <p class="uppercase">
-                                <xsl:call-template name="text">
-                                    <xsl:with-param name="global-key" select="'translation.partial-text-warning'"/>
-                                </xsl:call-template>
-                            </p>
-                            
-                            <xsl:variable name="pdf-download" select="m:translation/m:downloads/m:download[@type eq 'pdf']"/>
-                            <xsl:if test="$pdf-download">
-                                <p>
+                            <div class="well text-center top-margin hidden-pdf">
+                                
+                                <p class="uppercase">
                                     <xsl:call-template name="text">
-                                        <xsl:with-param name="global-key" select="'translation.partial-text-link'"/>
+                                        <xsl:with-param name="global-key" select="'translation.partial-text-warning'"/>
                                     </xsl:call-template>
-                                    <br/>
-                                    <a target="_blank">
-                                        <xsl:attribute name="title">
-                                            <xsl:call-template name="download-label">
-                                                <xsl:with-param name="type" select="$pdf-download/@type"/>
-                                            </xsl:call-template>
-                                        </xsl:attribute>
-                                        <xsl:attribute name="href" select="$pdf-download/@download-url"/>
-                                        <xsl:attribute name="download" select="$pdf-download/@filename"/>
-                                        <xsl:attribute name="class" select="'log-click'"/>
-                                        <xsl:attribute name="data-page-alert" select="common:internal-link('/widget/download-dana.html', concat('resource-id=', $toh-key), '#dana-description', /m:response/@lang)"/>
-                                        <xsl:value-of select="concat($reading-room-path, $pdf-download/@download-url)"/>
-                                    </a>
                                 </p>
-                            </xsl:if>
+                                
+                                <xsl:variable name="pdf-download" select="m:translation/m:downloads/m:download[@type eq 'pdf']"/>
+                                <xsl:if test="$pdf-download">
+                                    <p>
+                                        <xsl:call-template name="text">
+                                            <xsl:with-param name="global-key" select="'translation.partial-text-link'"/>
+                                        </xsl:call-template>
+                                        <br/>
+                                        <a target="_blank">
+                                            <xsl:attribute name="title">
+                                                <xsl:call-template name="download-label">
+                                                    <xsl:with-param name="type" select="$pdf-download/@type"/>
+                                                </xsl:call-template>
+                                            </xsl:attribute>
+                                            <xsl:attribute name="href" select="$pdf-download/@download-url"/>
+                                            <xsl:attribute name="download" select="$pdf-download/@filename"/>
+                                            <xsl:attribute name="class" select="'log-click'"/>
+                                            <xsl:attribute name="data-page-alert" select="common:internal-link('/widget/download-dana.html', concat('resource-id=', $toh-key), '#dana-description', /m:response/@lang)"/>
+                                            <xsl:value-of select="concat($reading-room-path, $pdf-download/@download-url)"/>
+                                        </a>
+                                    </p>
+                                </xsl:if>
+                                
+                            </div>
                             
                         </div>
-                        
-                    </div>
-                </xsl:if>
-                
-            </div>
-        </xsl:if>
-        
-        <section id="titles">
+                    </xsl:if>
+                    
+                </div>
+            </xsl:if>
             
             <xsl:variable name="main-titles" select="m:translation/m:titles/m:title[text()]"/>
             <xsl:variable name="long-titles" select="m:translation/m:long-titles/m:title[text()]"/>

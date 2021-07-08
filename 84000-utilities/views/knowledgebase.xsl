@@ -12,47 +12,12 @@
         
         <xsl:variable name="content">
             
-            <div class="collapse" id="new-page-form-container">
-                <form action="knowledgebase.html" method="post" class="form-inline text-center bottom-margin">
-                    <input type="hidden" name="form-action" value="new-page"/>
-                    <div class="form-group">
-                        <div class="input-group">
-                            <label class="input-group-addon">
-                                <xsl:value-of select="'Title: '"/>
-                            </label>
-                            <input type="text" name="title" class="form-control" id="title" size="70"/>
-                            <div class="input-group-btn">
-                                <button type="submit" class="btn btn-primary">
-                                    <xsl:value-of select="'Create new page'"/>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </form>
+            <div class="div-list no-border-top">
+                <xsl:for-each select="m:knowledgebase/m:page">
+                    <xsl:sort select="m:sort-name"/>
+                    <xsl:apply-templates select="."/>
+                </xsl:for-each>
             </div>
-            
-            <table class="table table-responsive">
-                <thead>
-                    <tr>
-                        <th>
-                            <span>
-                                <xsl:value-of select="'Title'"/>
-                            </span>
-                        </th>
-                        <td class="text-right">
-                            <a href="#new-page-form-container" data-toggle="collapse">
-                                <xsl:value-of select="'Add a new page'"/>
-                            </a>
-                        </td>
-                    </tr>
-                </thead>
-                <tbody>
-                    <xsl:for-each select="m:knowledgebase/m:page">
-                        <xsl:sort select="m:sort-name"/>
-                        <xsl:apply-templates select="."/>
-                    </xsl:for-each>
-                </tbody>
-            </table>
             
         </xsl:variable>
         
@@ -72,50 +37,53 @@
     
     <xsl:template match="m:page[parent::m:knowledgebase]">
         <xsl:variable name="page-id" select="concat('page-', fn:encode-for-uri(@xml:id))"/>
-        <tr>
-            <td colspan="2">
-                <div>
-                    <span class="text-bold">
-                        <xsl:value-of select="m:titles/m:title[@xml:lang eq 'en']"/>
-                    </span>
-                    <small>
-                        <xsl:value-of select="concat(' / ', @kb-id)"/>
-                    </small>
-                </div>
-                <ul class="list-inline inline-dots sml-margin bottom">
-                    <li>
-                        <a>
-                            <xsl:attribute name="href" select="concat($reading-room-path, '/knowledgebase/', @kb-id, '.tei')"/>
-                            <xsl:attribute name="target" select="concat(@kb-id, '.tei')"/>
-                            <span class="small">
-                                <xsl:value-of select="'tei'"/>
-                            </span>
-                        </a>
-                    </li>
-                    <li>
-                        <a>
-                            <xsl:attribute name="href" select="concat($reading-room-path, '/knowledgebase/', @kb-id, '.xml')"/>
-                            <xsl:attribute name="target" select="concat(@kb-id, '.xml')"/>
-                            <span class="small">
-                                <xsl:value-of select="'xml'"/>
-                            </span>
-                        </a>
-                    </li>
-                    <li>
-                        <a>
-                            <xsl:attribute name="href" select="concat($reading-room-path, '/knowledgebase/', @kb-id, '.html')"/>
-                            <xsl:attribute name="target" select="concat(@kb-id, '.html')"/>
-                            <span class="small">
-                                <xsl:value-of select="'html'"/>
-                            </span>
-                        </a>
-                    </li>
-                </ul>
-                <div class="small text-muted">
-                    <xsl:value-of select="concat('File: ', @uri)"/>
-                </div>
-            </td>
-        </tr>
+        
+        <div class="item">
+            
+            <div>
+                <span class="text-bold">
+                    <xsl:value-of select="m:titles/m:title[@xml:lang eq 'en']"/>
+                </span>
+                <small>
+                    <xsl:value-of select="concat(' / ', @kb-id)"/>
+                </small>
+            </div>
+            
+            <ul class="list-inline inline-dots sml-margin bottom">
+                <li>
+                    <a>
+                        <xsl:attribute name="href" select="concat($reading-room-path, '/knowledgebase/', @kb-id, '.tei')"/>
+                        <xsl:attribute name="target" select="concat(@kb-id, '.tei')"/>
+                        <span class="small">
+                            <xsl:value-of select="'tei'"/>
+                        </span>
+                    </a>
+                </li>
+                <li>
+                    <a>
+                        <xsl:attribute name="href" select="concat($reading-room-path, '/knowledgebase/', @kb-id, '.xml')"/>
+                        <xsl:attribute name="target" select="concat(@kb-id, '.xml')"/>
+                        <span class="small">
+                            <xsl:value-of select="'xml'"/>
+                        </span>
+                    </a>
+                </li>
+                <li>
+                    <a>
+                        <xsl:attribute name="href" select="concat($reading-room-path, '/knowledgebase/', @kb-id, '.html')"/>
+                        <xsl:attribute name="target" select="concat(@kb-id, '.html')"/>
+                        <span class="small">
+                            <xsl:value-of select="'html'"/>
+                        </span>
+                    </a>
+                </li>
+            </ul>
+            
+            <div class="small text-muted">
+                <xsl:value-of select="concat('File: ', @uri)"/>
+            </div>    
+            
+        </div>
         
     </xsl:template>
     

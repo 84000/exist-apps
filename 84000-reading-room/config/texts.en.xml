@@ -32,8 +32,8 @@
             of further download options, please see <br/>
             <a href="#canonicalHTML" class="printable">#canonicalHTML</a>.</p>
     </item>
-    <item key="translation.partial-text-warning">This webpage does not include the entire published text</item>
-    <item key="translation.partial-text-link">The full translation is available to download as pdf at:</item>
+    <item key="translation.partial-text-warning">This rendering does not include the entire published text</item>
+    <item key="translation.partial-text-link">The full text is available to download as pdf at:</item>
     
     <item key="section.ebook-help-title">Help for downloading eBooks</item>
     <item key="section.ebook-help-body">

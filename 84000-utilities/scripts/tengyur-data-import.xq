@@ -176,7 +176,7 @@ declare function local:merge-element ($element as element(), $import-text as ele
                         },
                         common:ws(2),
                         element type {
-                            attribute type { 'eft-attribution-person' }
+                            attribute type { 'eft-person' }
                         },
                         common:ws(1)
                     }

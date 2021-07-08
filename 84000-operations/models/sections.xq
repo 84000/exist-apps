@@ -9,10 +9,26 @@ import module namespace section="http://read.84000.co/section" at "../../84000-r
 
 declare option exist:serialize "method=xml indent=no";
 
-common:response(
-    'operations/sections',
-    'operations',
-    (
-        section:child-sections(tei-content:tei('lobby', 'section'), true(), 'none')
+let $resource-suffix := request:get-parameter('resource-suffix', '')
+
+let $xml-response := 
+    common:response(
+        'operations/sections',
+        'operations',
+        (
+            section:child-sections(tei-content:tei('lobby', 'section'), true(), 'none')
+        )
     )
-)
+
+return
+
+    (: return html data :)
+    if($resource-suffix eq 'html') then (
+        common:html($xml-response, concat(local:app-path(), '/views/sections.xsl'))
+    )
+    
+    (: return xml data :)
+    else (
+        util:declare-option("exist:serialize", "method=xml indent=no"),
+        $xml-response
+    )

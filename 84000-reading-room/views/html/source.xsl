@@ -30,6 +30,7 @@
                                 <li>
                                     <a>
                                         <xsl:attribute name="href" select="common:internal-link(concat('/translation/', m:translation/m:toh/@key, '.html'), (), '', /m:response/@lang)"/>
+                                        <xsl:attribute name="target" select="concat(m:translation/@id, '.html')"/>
                                         <xsl:value-of select="m:translation/m:titles/m:title[@xml:lang eq 'en']"/>
                                     </a>
                                 </li>
@@ -102,8 +103,9 @@
                                     <xsl:with-param name="local-key" select="'backlink-label'"/>
                                 </xsl:call-template>
                                 <br/>
-                                <a href="#">
+                                <a>
                                     <xsl:attribute name="href" select="m:back-link/@url"/>
+                                    <xsl:attribute name="target" select="concat(m:translation/@id, '.html')"/>
                                     <xsl:value-of select="m:back-link/@url"/>
                                 </a>
                             </p>

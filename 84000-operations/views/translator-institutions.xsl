@@ -13,7 +13,7 @@
                 <xsl:with-param name="page-content">
                     <div class="well well-sm center-vertical full-width bottom-margin">
                         
-                        <span class="small">
+                        <span>
                             <xsl:value-of select="concat('Listing ', fn:format-number(xs:integer(count(m:contributor-institutions/m:institution)),'#,##0'), ' institutions')"/>
                         </span>
                         
@@ -72,7 +72,7 @@
                                                 <div class="col-sm-6">
                                                     <a>
                                                         <xsl:attribute name="href" select="concat('/edit-translator-institution.html?id=', $institution-id)"/>
-                                                        <xsl:value-of select="m:sort-name"/>
+                                                        <xsl:value-of select="m:label"/>
                                                     </a>
                                                 </div>
                                                 

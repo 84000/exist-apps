@@ -166,7 +166,7 @@
                                 <xsl:if test="m:translation/m:downloads[not(@tei-version = m:download[@type eq 'cache']/@version)]">
                                     <li>
                                         <a class="small">
-                                            <xsl:attribute name="href" select="concat('glossary.html?resource-id=', $text-id)"/>
+                                            <xsl:attribute name="href" select="concat('edit-glossary.html?resource-id=', $text-id)"/>
                                             <xsl:value-of select="'Generate new cache (glossary tool)'"/>
                                         </a>
                                     </li>

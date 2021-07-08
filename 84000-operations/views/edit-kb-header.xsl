@@ -76,24 +76,40 @@
                                                 </legend>
                                                 
                                                 <div class="add-nodes-container">
+                                                    
+                                                    <xsl:variable name="main-title" select="m:knowledgebase/m:page/m:titles/m:title[@type eq 'mainTitle'][1]"/>
+                                                    <xsl:variable name="main-title-lang" select="$main-title/@xml:lang"/>
+                                                    <xsl:variable name="other-titles" select="m:knowledgebase/m:page/m:titles/m:title[count((. | $main-title)) ne 1]"/>
+                                                    <xsl:variable name="title-types" select="m:title-types/m:title-type"/>
+                                                    <xsl:variable name="title-langs" select="m:title-types/m:title-lang"/>
+                                                    
+                                                    <xsl:call-template name="title-controls">
+                                                        <xsl:with-param name="title" select="$main-title"/>
+                                                        <xsl:with-param name="title-index" select="1"/>
+                                                        <xsl:with-param name="title-types" select="$title-types[@id eq 'mainTitle']"/>
+                                                        <xsl:with-param name="title-langs" select="$title-langs"/>
+                                                    </xsl:call-template>
+                                                    
                                                     <xsl:choose>
-                                                        <xsl:when test="m:knowledgebase/m:page/m:titles/m:title">
-                                                            <xsl:call-template name="titles-controls">
-                                                                <xsl:with-param name="text-titles" select="m:knowledgebase/m:page/m:titles/m:title"/>
-                                                                <xsl:with-param name="title-types" select="m:title-types/m:title-type"/>
-                                                                <xsl:with-param name="title-langs" select="m:title-types/m:title-lang"/>
-                                                            </xsl:call-template>
+                                                        <xsl:when test="$other-titles">
+                                                            <xsl:for-each select="$other-titles">
+                                                                <xsl:call-template name="title-controls">
+                                                                    <xsl:with-param name="title" select="."/>
+                                                                    <xsl:with-param name="title-index" select="position() + 1"/>
+                                                                    <xsl:with-param name="title-types" select="$title-types[@id eq 'otherTitle']"/>
+                                                                    <xsl:with-param name="title-langs" select="$title-langs"/>
+                                                                </xsl:call-template>
+                                                            </xsl:for-each>
                                                         </xsl:when>
                                                         <xsl:otherwise>
-                                                            <xsl:call-template name="titles-controls">
-                                                                <xsl:with-param name="text-titles">
-                                                                    <m:title/>
-                                                                </xsl:with-param>
-                                                                <xsl:with-param name="title-types" select="m:title-types/m:title-type"/>
-                                                                <xsl:with-param name="title-langs" select="m:title-types/m:title-lang"/>
+                                                            <xsl:call-template name="title-controls">
+                                                                <xsl:with-param name="title-index" select="2"/>
+                                                                <xsl:with-param name="title-types" select="$title-types[@id eq 'otherTitle']"/>
+                                                                <xsl:with-param name="title-langs" select="$title-langs"/>
                                                             </xsl:call-template>
                                                         </xsl:otherwise>
                                                     </xsl:choose>
+                                                    
                                                     <div class="form-group">
                                                         <div class="col-sm-12">
                                                             <a href="#add-nodes" class="add-nodes">
@@ -104,6 +120,7 @@
                                                             </a>
                                                         </div>
                                                     </div>
+                                                
                                                 </div>
                                                 
                                             </fieldset>
@@ -262,8 +279,15 @@
                                             <li>
                                                 <xsl:call-template name="entity-type-labels">
                                                     <xsl:with-param name="entity" select="$entity"/>
-                                                    <xsl:with-param name="entity-types" select="/m:response/m:entity-types/m:entity-type"/>
+                                                    <xsl:with-param name="entity-types" select="/m:response/m:entity-types/m:type"/>
                                                 </xsl:call-template>
+                                            </li>
+                                            
+                                            <li>
+                                                <a target="84000-glossary">
+                                                    <xsl:attribute name="href" select="concat($reading-room-path, '/glossary.html?entity-id=', $entity/@xml:id)"/>
+                                                    <xsl:value-of select="'84000 Glossary'"/>
+                                                </a>
                                             </li>
                                             
                                         </xsl:when>
@@ -299,7 +323,7 @@
                                         <xsl:with-param name="default-label-text" select="$title/text()"/>
                                         <xsl:with-param name="default-label-lang" select="$title/@xml:lang"/>
                                         <xsl:with-param name="default-entity-type" select="''"/>
-                                        <xsl:with-param name="entity-types" select="/m:response/m:entity-types/m:entity-type[@group eq 'knowledgebase-article']"/>
+                                        <xsl:with-param name="entity-types" select="/m:response/m:entity-types/m:type"/>
                                     </xsl:call-template>
                                                                         
                                 </form>
@@ -317,10 +341,15 @@
                                 <xsl:with-param name="active" select="$request-show-tab eq 'entity-list'"/>
                                 
                                 <xsl:with-param name="title">
-                                    <span class="badge badge-notification badge-muted">
+                                    <span>
+                                        <xsl:value-of select="' ↳ '"/>
+                                    </span>
+                                    <span class="badge badge-notification badge-info">
                                         <xsl:value-of select="count($entity/m:instance)"/>
                                     </span>
-                                    <xsl:value-of select="' elements grouped'"/>
+                                    <span class="badge-text">
+                                        <xsl:value-of select="'elements grouped'"/>
+                                    </span>
                                 </xsl:with-param>
                                 
                                 <xsl:with-param name="content">
@@ -328,7 +357,7 @@
                                     <hr class="sml-margin"/>
                                     
                                     <!-- List related glossary items -->
-                                    <xsl:for-each-group select="m:entity-instances/m:item" group-by="m:text/@id">
+                                    <xsl:for-each-group select="$entity/m:instance/m:item" group-by="m:text/@id">
                                         
                                         <xsl:sort select="m:text[1]/@id"/>
                                         
@@ -341,7 +370,7 @@
                                     
                                     <!-- List related knowledgebase pages -->
                                     <xsl:call-template name="knowledgebase-page-instance">
-                                        <xsl:with-param name="knowledgebase-page" select="m:entity-instances/m:page"/>
+                                        <xsl:with-param name="knowledgebase-page" select="$entity/m:instance/m:page"/>
                                         <xsl:with-param name="active-kb-id" select="$tei-id"/>
                                     </xsl:call-template>
                                     
@@ -360,20 +389,25 @@
                             <xsl:with-param name="title">
                                 
                                 <xsl:variable name="count-similar-entities" select="count(m:similar-entities/m:entity)"/>
+                                <span>
+                                    <xsl:value-of select="' ↳ '"/>
+                                </span>
                                 <span class="badge badge-notification">
                                     <xsl:if test="$count-similar-entities eq 0">
                                         <xsl:attribute name="class" select="'badge badge-notification badge-muted'"/>
                                     </xsl:if>
                                     <xsl:value-of select="$count-similar-entities"/>
                                 </span>
-                                <xsl:choose>
-                                    <xsl:when test="$entity">
-                                        <xsl:value-of select="' similar entities un-resolved'"/>
-                                    </xsl:when>
-                                    <xsl:otherwise>
-                                        <xsl:value-of select="' possible matches'"/>
-                                    </xsl:otherwise>
-                                </xsl:choose>
+                                <span class="badge-text">
+                                    <xsl:choose>
+                                        <xsl:when test="$entity">
+                                            <xsl:value-of select="'similar entities un-resolved'"/>
+                                        </xsl:when>
+                                        <xsl:otherwise>
+                                            <xsl:value-of select="'possible matches'"/>
+                                        </xsl:otherwise>
+                                    </xsl:choose>
+                                </span>
                                 
                             </xsl:with-param>
                             
@@ -403,6 +437,17 @@
                                 <xsl:choose>
                                     
                                     <xsl:when test="m:similar-entities[m:entity]">
+                                        
+                                        <ul class="list-inline inline-dots">
+                                            <xsl:for-each select="/m:response/m:knowledgebase/m:page/m:titles/m:title[not(@xml:lang eq 'en')]">
+                                                <li>
+                                                    <span>
+                                                        <xsl:attribute name="class" select="ops:lang-class(@xml:lang)"/>
+                                                        <xsl:value-of select="text()"/>
+                                                    </span>
+                                                </li>
+                                            </xsl:for-each>
+                                        </ul>
                                         
                                         <div class="list-group accordion" role="tablist" aria-multiselectable="false">
                                             
@@ -442,7 +487,7 @@
                                                                         <li>
                                                                             <xsl:call-template name="entity-type-labels">
                                                                                 <xsl:with-param name="entity" select="."/>
-                                                                                <xsl:with-param name="entity-types" select="/m:response/m:entity-types/m:entity-type"/>
+                                                                                <xsl:with-param name="entity-types" select="/m:response/m:entity-types/m:type"/>
                                                                             </xsl:call-template>
                                                                         </li>
                                                                         <li class="small">

@@ -13,7 +13,7 @@
                     
                     <div class="well well-sm center-vertical full-width bottom-margin">
                         
-                        <span class="small">
+                        <span>
                             <xsl:value-of select="concat('Listing ', fn:format-number(xs:integer(count(m:sponsors/m:sponsor)),'#,##0'), ' sponsors')"/>
                         </span>
                         

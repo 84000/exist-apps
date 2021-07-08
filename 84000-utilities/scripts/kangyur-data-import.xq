@@ -226,7 +226,7 @@ else
                                 (: type :)
                                 common:ws(2),
                                 element type {
-                                    attribute type { 'eft-attribution-person' }
+                                    attribute type { 'eft-person' }
                                 },
                                 common:ws(1)
                             }

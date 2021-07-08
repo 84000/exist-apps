@@ -195,7 +195,7 @@ declare function translation:filename($tei as element(tei:TEI), $resource-id as 
 
 declare function translation:relative-html($resource-id as xs:string, $condition as xs:string*) as xs:string {
 
-    concat('/translation/', $resource-id, '.html', if(count($condition) gt 0) then concat('?', string-join($condition, '&amp;')) else '')
+    concat('/translation/', $resource-id, '.html', if(count($condition[. gt '']) gt 0) then concat('?', string-join($condition, '&amp;')) else '')
     
 };
 
@@ -801,111 +801,6 @@ declare function translation:folios-cache($tei as element(tei:TEI), $refresh as 
                 common:ws(1)
                 
             }
-};
-
-declare function translation:glossary-cache($tei as element(tei:TEI), $refresh-ids as xs:string*, $create-if-unavailable as xs:boolean?) as element(m:glossary-cache) {
-    
-    let $cache := tei-content:cache($tei, $create-if-unavailable)
-    
-    return
-        (: If there is one and there's nothing to refresh, just return the cache :)
-        if($cache[m:glossary-cache] and count($refresh-ids) eq 0) then
-            $cache/m:glossary-cache
-            
-        (: Build the cache :)
-        else
-            
-            let $start-time := util:system-dateTime()
-            
-            (: Existing cache :)
-            let $glossary-cache := $cache/m:glossary-cache
-            
-            (: TEI glossary items :)
-            let $tei-glossary := $tei//tei:back//tei:list[@type eq 'glossary']/tei:item/tei:gloss[@xml:id]
-            
-            let $resource-id := translation:toh-key($tei, '')
-            
-            (: Glossary expressions :)
-            let $glossary-expressions :=
-                (: We can optimise by passing 'all' instead of all the ids :)
-                if($refresh-ids = 'all') then 
-                    glossary:expressions($tei, $resource-id, 'all')
-                else if (count($tei-glossary[@xml:id = $refresh-ids]) gt 0) then
-                    glossary:expressions($tei, $resource-id, $refresh-ids)
-                else
-                    ()
-            
-            (: Sort glossaries :)
-            let $glossary-sorted :=
-                for $gloss in $tei-glossary
-                let $sort-term := glossary:sort-term($gloss)
-                order by $sort-term/text()
-                return $gloss
-            
-            (: Process all glossaries :)
-            let $glosses :=
-                for $gloss at $index in $glossary-sorted
-                    let $gloss-id := $gloss/@xml:id
-                group by $gloss-id
-                    let $sort-term := glossary:sort-term($gloss[1])
-                return 
-                    (: If we processed it then add it with the new $glossary-expressions :)
-                    if ($refresh-ids = 'all' or $gloss-id = $refresh-ids) then (
-                        common:ws(2),
-                        element { QName('http://read.84000.co/ns/1.0', 'gloss') } {
-                            attribute id { $gloss-id },
-                            attribute index { $index },
-                            attribute timestamp { current-dateTime() },
-                            $sort-term/@word-count ,
-                            $sort-term/@letter-count ,
-                            
-                            for $location in $glossary-expressions/m:location[descendant::xhtml:*[@data-glossary-id eq $gloss-id]]
-                            let $location-id := $location/@id
-                            group by $location-id
-                            order by $location[1]/@sort-index ! xs:integer(.)
-                            return (
-                                common:ws(3),
-                                element location {
-                                    attribute id { $location/@id }
-                                }
-                            ),
-                            common:ws(2)
-                        }
-                    )
-                    (: Otherwise copy the existing cache :)
-                    else (
-                        common:ws(2),
-                        
-                        let $existing-cache := $glossary-cache/m:gloss[@id eq $gloss-id]
-                        return
-                            element { QName('http://read.84000.co/ns/1.0', 'gloss') } {
-                                attribute id { $gloss-id },
-                                attribute index { $index },
-                                $sort-term/@word-count ,
-                                $sort-term/@letter-count ,
-                                $existing-cache/@*[not(name(.) = ('id', 'index', 'word-count', 'letter-count', 'priority'))],
-                                $existing-cache/node()
-                            }
-                            
-                    )
-            
-            let $end-time := util:system-dateTime()
-            
-            return
-                element { QName('http://read.84000.co/ns/1.0', 'glossary-cache') } {
-                
-                    attribute timestamp { current-dateTime() },
-                    
-                    if($refresh-ids = 'all') then
-                        attribute seconds-to-build { functx:total-seconds-from-duration($end-time - $start-time) }
-                    else
-                        $glossary-cache/@seconds-to-build
-                    ,
-                    
-                    $glosses,
-                    
-                    common:ws(1)
-                }
 };
 
 declare function translation:word-count($tei as element(tei:TEI)) as xs:integer {

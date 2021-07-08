@@ -15,7 +15,7 @@
                 <label>Sections</label>
             </tab>
             <tab page="knowledgebase.html" model="utilities/knowledgebase">
-                <label>Knowledgebase Pages</label>
+                <label>Knowledge Base Articles</label>
             </tab>
             <tab page="folios.html" model="utilities/folios">
                 <label>Folios</label>

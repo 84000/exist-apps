@@ -8,6 +8,7 @@ import module namespace sponsors = "http://read.84000.co/sponsors" at "../../840
 import module namespace contributors = "http://read.84000.co/contributors" at "../../84000-reading-room/modules/contributors.xql";
 import module namespace translation = "http://read.84000.co/translation" at "../../84000-reading-room/modules/translation.xql";
 import module namespace glossary = "http://read.84000.co/glossary" at "../../84000-reading-room/modules/glossary.xql";
+import module namespace knowledgebase = "http://read.84000.co/knowledgebase" at "../../84000-reading-room/modules/knowledgebase.xql";
 
 import module namespace translation-status = "http://read.84000.co/translation-status" at "translation-status.xql";
 import module namespace store = "http://read.84000.co/store" at "../../84000-reading-room/modules/store.xql";
@@ -505,7 +506,7 @@ declare function update-tei:update-glossary($tei as element(tei:TEI), $glossary-
     let $parent := $tei//tei:back//tei:list[@type eq 'glossary']
     
     (: Look for an existing item :)
-    let $existing-item := $parent/tei:item[tei:gloss/@xml:id eq $glossary-id]
+    let $existing-item := $parent/tei:item[tei:gloss[@xml:id eq $glossary-id]]
     
     (: If it's an update and the main term is '' then don't construct the new value e.g. remove existing :)
     let $remove := (request:get-parameter('form-action', '') eq 'update-glossary' and request:get-parameter('main-term', '') eq '')
@@ -526,23 +527,27 @@ declare function update-tei:update-glossary($tei as element(tei:TEI), $glossary-
                     
                     (: @type :)
                     if (request:get-parameter('glossary-type', '') = $glossary:types) then
-                        attribute type {request:get-parameter('glossary-type', '')}
-                    else
+                        attribute type { request:get-parameter('glossary-type', 'term') }
+                    else if($existing-item/tei:gloss[@type]) then
                         $existing-item/tei:gloss/@type
+                    else
+                        attribute type { 'term' }
                     ,
                     
                     (: @mode :)
                     if (request:get-parameter('glossary-mode', 'match') = $glossary:modes) then
-                        attribute mode {request:get-parameter('glossary-mode', 'match')}
-                    else
+                        attribute mode { request:get-parameter('glossary-mode', 'match') }
+                    else if($existing-item/tei:gloss[@mode]) then
                         $existing-item/tei:gloss/@mode
+                    else 
+                        attribute mode { 'match' }
                     ,
                     
-                    (: Main (English) term :)
+                    (: Main term :)
                     common:ws(7),
                     element {QName('http://www.tei-c.org/ns/1.0', 'term')} {
                         text {
-                            request:get-parameter('main-term', '')
+                            request:get-parameter('main-term', $glossary-id)
                         }
                     },
                     
@@ -552,7 +557,7 @@ declare function update-tei:update-glossary($tei as element(tei:TEI), $glossary-
                     let $term-text := request:get-parameter($term-param, '')
                     let $term-lang := common:valid-lang(request:get-parameter(concat('term-lang-', $term-index), ''))
                     where $term-text gt ''
-                    return(
+                    return (
                         common:ws(7),
                         element {QName('http://www.tei-c.org/ns/1.0', 'term')} {
                         
@@ -589,7 +594,7 @@ declare function update-tei:update-glossary($tei as element(tei:TEI), $glossary-
                                 $term-text
                         }
                     ),
-                        
+                    
                     (: Copy other nodes :)
                     if ($existing-item) then
                         for $node in $existing-item/tei:gloss/*[not(self::tei:term)]
@@ -600,21 +605,25 @@ declare function update-tei:update-glossary($tei as element(tei:TEI), $glossary-
                     else ()
                     ,
                     
+                    $existing-item/tei:gloss/comment(),
+                    
                     (: end of gloss :)
                     common:ws(6)
                 
                 },
                 
+                $existing-item/comment(),
+                
                 (: end of item :)
                 common:ws(5)
             }
-        else
-            ()
+        else ()
     
     let $insert-following := $existing-item/preceding-sibling::tei:item[1]
-        
+    
     where $parent and ($existing-item or $new-value)
     return (
+    
         (: Do the update :)
         common:update('glossary-item', $existing-item, $new-value, $parent, $insert-following),
         
@@ -623,18 +632,17 @@ declare function update-tei:update-glossary($tei as element(tei:TEI), $glossary-
             update-tei:cache-glossary($tei, 'none'),
             update-entity:remove-instance($glossary-id)
         )
-        else
-            ()
-            
-            (:element debug {
-                attribute form-action { request:get-parameter('form-action', '') },
-                attribute term-main-text-1 { request:get-parameter('term-main-text-1', '') },
-                attribute glossary-id { $glossary-id },
-                element existing-value { $existing-item }, 
-                element new-value { $new-value }(\:, 
-                element parent { $parent }, 
-                element insert-following { $insert-following }:\)
-            }:)
+        else ()
+        
+        (:element debug {
+            attribute form-action { request:get-parameter('form-action', '') },
+            attribute term-main-text-1 { request:get-parameter('main-term', '') },
+            attribute glossary-id { $glossary-id },
+            element existing-value { $existing-item }, 
+            element new-value { $new-value }, 
+            element parent { $parent }, 
+            element insert-following { $insert-following }(\::\)
+        }:)
     )
 };
 
@@ -662,7 +670,7 @@ declare function update-tei:cache-glossary($tei as element(tei:TEI), $glossary-i
         else
             'all'
     
-    let $glossary-cache-new := translation:glossary-cache($tei, $refresh-ids, true())
+    let $glossary-cache-new := glossary:cache($tei, $refresh-ids, true())
     
     let $do-caching := common:update('cache-glossary', $glossary-cache, $glossary-cache-new, $cache, $glossary-cache/preceding-sibling::*[1])
     
@@ -671,9 +679,22 @@ declare function update-tei:cache-glossary($tei as element(tei:TEI), $glossary-i
     return
         (:element debug { $glossary-cache-new }:)
         $do-caching
-        
 
+};
 
+declare function update-tei:add-knowledgebase($title) {
+
+    let $id := knowledgebase:id($title)
+    let $filename := concat(replace($id, '\-', '_'), '.xml')
+    let $new-tei := knowledgebase:new-tei($id, $title)
+    
+    where $id and $filename and $new-tei 
+    return (
+        (: Create the file :)
+        xmldb:store($common:knowledgebase-path, $filename, $new-tei, 'application/xml'),
+        sm:chgrp(xs:anyURI(concat($common:knowledgebase-path, '/', $filename)), 'tei'),
+        sm:chmod(xs:anyURI(concat($common:knowledgebase-path, '/', $filename)), 'rw-rw-r--')
+    )
 };
 
 declare function update-tei:knowledgebase-header($tei as element(tei:TEI)) as element()* {
@@ -807,23 +828,14 @@ declare function update-tei:knowledgebase-header($tei as element(tei:TEI)) as el
     } (: close exist:batch-transaction :)
 };
 
-declare function update-tei:markup($tei as element(tei:TEI), $markdown as xs:string*, $section-id as xs:string, $sibling-id as xs:string) as element()? {
-
-    let $current-tei := $tei//*[@xml:id eq $section-id]
+declare function update-tei:markup($tei as element(tei:TEI), $markdown as xs:string*, $passage-id as xs:string, $newline-element as xs:string) as element()? {
     
-    let $sibling-tei :=
-        if(not($current-tei)) then
-            $tei//*[@xml:id eq $sibling-id]
-        else ()
+    let $passage-id-parsed := replace($passage-id, '^node\-', '')
+    let $current-tei := $tei//*[(@xml:id, @tid) = $passage-id-parsed]
     
     let $markdown-element := 
         element { QName('http://read.84000.co/ns/1.0', 'markdown') } {
-            attribute newline-element { 
-                if($current-tei/parent::tei:div[@type = 'listBibl'] | $sibling-tei/parent::tei:div[@type = 'listBibl']) then 
-                    'bibl'
-                else 
-                    'p' 
-            },
+            attribute newline-element { if($newline-element gt '') then $newline-element else 'div' },
             attribute target-namespace { 'http://www.tei-c.org/ns/1.0' },
             $markdown
         }
@@ -832,27 +844,219 @@ declare function update-tei:markup($tei as element(tei:TEI), $markdown as xs:str
         <output:serialization-parameters>
             <output:method value="xml"/>
             <output:version value="1.1"/>
-            <output:indent value="yes"/>
+            <output:indent value="no"/>
             <output:omit-xml-declaration value="yes"/>
         </output:serialization-parameters>
     
-    let $markup := transform:transform($markdown-element, doc('/db/apps/84000-reading-room/xslt/common.xsl'), (), (), $serialization-options)/node()
+    let $markup := transform:transform($markdown-element, doc('/db/apps/84000-operations/views/common.xsl'), (), (), $serialization-options)
     
     let $new-tei := 
-        if($current-tei) then
+        (: Update with new content :)
+        if($markdown gt '') then
             element { node-name($current-tei) } {
+            
+                (: Copy attributes :)
                 $current-tei/@*,
-                $markup
+                
+                (: Copy elements derived from new lines :)
+                if($newline-element gt '' and $markup[node()]) then
+                    $markup/node()
+                
+                (: No new lines so merge divs :)
+                else if($markup[tei:div/node()]) then
+                    $markup/tei:div/node()
+                
+                (: Nothing derived from markdown so copy to be safe :)
+                else
+                    $markdown
+                ,
+                
+                (: Copy comments :)
+                $current-tei/comment()
+                
             }
-        else 
-            element { node-name($sibling-tei) } {
-                $sibling-tei/@*[not(local-name(.) = ('id', 'tid'))],
-                $markup
-            }
+        (: Remove the element :)
+        else ()
     
-    where ($current-tei | $sibling-tei) and $new-tei[node()]
+    (: If it's a delete, in some cases we want to remove more than the node itself :)
+    let $current-tei :=
+    
+        (: There is no content and it has no siblings :)
+        if(not($new-tei) and not($current-tei/following-sibling::* | $current-tei/preceding-sibling::*)) then
+        
+            (: It's in a list :)
+            if($current-tei[parent::tei:item[parent::tei:list]])then
+            
+                (: remove the whole list if this is the only item :)
+                if(count($current-tei/parent::tei:item/parent::tei:list/tei:item) eq 1) then
+                    $current-tei/parent::tei:item/parent::tei:list
+                (: remove the whole item :)
+                else
+                    $current-tei/parent::tei:item
+            
+            (: It's the last element in a div, remove the div :)
+            else if($current-tei[parent::tei:div]) then
+                $current-tei/parent::tei:div
+            
+            else $current-tei
+            
+        else
+            $current-tei
+    
+    where $current-tei
     return 
-        common:update('tei-markup', $current-tei, $new-tei, (), $sibling-tei)
+        common:update('tei-markup', $current-tei, $new-tei, (), ())
 
 };
 
+declare function update-tei:add-element($tei as element(tei:TEI), $passage-id as xs:string, $new-element-name as xs:string) as element()? {
+    
+    let $passage-id-parsed := replace($passage-id, '^node\-', '')
+    let $passage := $tei//tei:*[(@xml:id, @tid) = $passage-id-parsed]
+    let $new-element-tokenized := tokenize($new-element-name, '-')
+    let $new-element-source := $new-element-tokenized[1]
+    let $new-element-type := $new-element-tokenized[2]
+    let $new-element-relation := $new-element-tokenized[3]
+    
+    (: Validate the request :)
+    where 
+        count($new-element-tokenized) eq 3
+        and (
+            ($new-element-source eq 'itemPara' and $passage[self::tei:p[parent::tei:item[parent::tei:list]]])
+            or ($new-element-source eq 'head' and $passage[self::tei:head])
+            or ($new-element-source eq 'para' and $passage[self::tei:p])
+            or ($new-element-source eq 'bibl' and $passage[self::tei:bibl])
+            or ($new-element-source = ('section', 'part') and $passage[self::tei:div])
+        )
+        and $new-element-type[. = ('item', 'para', 'listLabel', 'listDots', 'listNumbers', 'listLetters', 'bibl', 'section', 'itemPara', 'itemListDots', 'itemListNumbers', 'itemListLetters')]
+        and $new-element-relation[. = ('before', 'after')]
+    return
+    
+    (: The element to add :)
+    let $new-element :=
+        if($new-element-type eq 'item') then
+            element { QName('http://www.tei-c.org/ns/1.0', 'item') } {
+                element p {
+                    text { 'New list item...' }
+                }
+             }
+        
+        else if($new-element-type eq 'listLabel') then
+            element { QName('http://www.tei-c.org/ns/1.0', 'label') } {
+                text { 'New label...' }
+             }
+             
+        else if($new-element-type = ('listDots', 'listNumbers', 'listLetters', 'itemListDots', 'itemListNumbers', 'itemListLetters')) then (
+            (: Add milestone if it's a root list :)
+            if($new-element-type = ('listDots', 'listNumbers', 'listLetters') and count($passage/ancestor::tei:list) le 1) then
+                element { QName('http://www.tei-c.org/ns/1.0', 'milestone') } {
+                    attribute unit { 'chunk' }
+                }
+            else ()
+            ,
+            element { QName('http://www.tei-c.org/ns/1.0', 'label') } {
+                text { 'New list...' }
+            },
+            element { QName('http://www.tei-c.org/ns/1.0', 'list') } {
+                attribute type { 'bullet' },
+                if($new-element-type = ('listDots', 'itemListDots')) then
+                    attribute rend { 'dots' }
+                else if($new-element-type = ('listNumbers', 'itemListNumbers')) then
+                    attribute rend { 'numbers' }
+                else if($new-element-type = ('listLetters', 'itemListLetters')) then
+                    attribute rend { 'letters' }
+                else ()
+                ,
+                element item {
+                    element p {
+                        text { 'New list item 1...' }
+                    }
+                },
+                element item {
+                    element p {
+                        text { 'New list item 2...' }
+                    }
+                }
+            }
+        )
+        
+        else if($new-element-type = ('para', 'itemPara')) then
+            element { QName('http://www.tei-c.org/ns/1.0', 'p') } {
+                text { 'New paragraph...' }
+            }
+        
+        else if($new-element-type = ('bibl')) then
+            element { QName('http://www.tei-c.org/ns/1.0', 'bibl') } {
+                text { 'New biblographic reference...' }
+            }
+        
+        else if($new-element-type = ('section')) then
+            tei-content:new-section($passage/ancestor::tei:div[last()]/@type)
+        else ()
+    
+    (: What level in the tree to add it? :)
+    let $sibling :=
+        (: It's in a list :)
+        if($passage[self::tei:p[parent::tei:item[parent::tei:list]]]) then
+            
+            (: Add a sibling of the passage in the item :)
+            if($new-element-type = ('itemPara', 'itemListDots', 'itemListNumbers', 'itemListLetters')) then
+                $passage
+                
+            (: Add sibling of the item :)
+            else if($new-element-type eq 'item') then
+                $passage/parent::tei:item
+                
+            (: Default: Add sibling of the list :)
+            else 
+                $passage/parent::tei:item/parent::tei:list
+        
+        (: Default: Add sibling :)
+        else 
+            $passage
+    
+    where 
+        $new-element[node()]
+        and $sibling
+    return
+        element { QName('http://read.84000.co/ns/1.0', 'updated') } {
+        
+            attribute node { 'add-tei-element' },   
+            
+            (: Add before or after :)
+            if($new-element-relation eq 'before') then
+                update insert $new-element preceding $sibling
+            else 
+                update insert $new-element following $sibling
+                
+        }
+        
+};
+
+declare function update-tei:comment($tei as element(tei:TEI), $passage-id as xs:string, $comment as xs:string) as element()? {
+
+    let $passage-id-parsed := replace($passage-id, '^node\-', '')
+    let $current-tei := $tei//*[(@xml:id, @tid) = $passage-id-parsed]
+    let $comment-sanitised := replace(normalize-space($comment), '\-+', '-')
+    let $new-tei := 
+        element { node-name($current-tei) } {
+            $current-tei/@*,
+            $current-tei/text() | $current-tei/*,
+            if($comment-sanitised gt '') then
+                comment {
+                    concat(' ', $comment-sanitised, ' ')
+                }
+            else ()
+        }
+    
+    where $current-tei
+    return
+        element { QName('http://read.84000.co/ns/1.0', 'updated') } {
+        
+            attribute node { 'tei-comment' },
+            
+            (: Update directly to ensure change is detected :)
+            update replace $current-tei with $new-tei
+            
+        }
+};

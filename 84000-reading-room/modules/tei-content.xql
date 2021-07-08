@@ -52,11 +52,22 @@ declare function tei-content:id($tei as element(tei:TEI)) as xs:string {
     $tei//tei:publicationStmt/tei:idno[@xml:id][1]/@xml:id
 };
 
-declare function tei-content:tei($resource-id as xs:string, $resource-type as xs:string) {
+declare function tei-content:type($tei as element(tei:TEI)) as xs:string {
+    
+    if($tei/tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:idno[@m:kb-id]) then
+        'knowledgebase'
+    else if($tei/tei:teiHeader/tei:fileDesc[@type = ('section', 'grouping')]) then 
+        'section'
+    else
+        'translation'
+    
+};
+
+declare function tei-content:tei($resource-id as xs:string, $resource-type as xs:string) as element(tei:TEI)? {
     tei-content:tei($resource-id, $resource-type, '')
 };
 
-declare function tei-content:tei($resource-id as xs:string, $resource-type as xs:string, $archive-path as xs:string?) as element()? {
+declare function tei-content:tei($resource-id as xs:string, $resource-type as xs:string, $archive-path as xs:string?) as element(tei:TEI)? {
 
     (:
         This is controls the method of looking up the resource-id 
@@ -128,7 +139,7 @@ declare function tei-content:title($tei as node(), $type as xs:string?, $lang as
     
 };
 
-declare function tei-content:titles($tei as element(tei:TEI)) as element() {
+declare function tei-content:titles($tei as element(tei:TEI)) as element(m:titles) {
 
     element { QName('http://read.84000.co/ns/1.0', 'titles') } {
         for $title in $tei//tei:fileDesc/tei:titleStmt/tei:title
@@ -191,16 +202,13 @@ declare function tei-content:title-set($tei as element(tei:TEI), $type as xs:str
 };
 
 declare function tei-content:translation-status($tei as element(tei:TEI)?) as xs:string {
-    (: Returns the status of the text :)
-    let $status := $tei//tei:teiHeader//tei:publicationStmt/@status/string()
-    let $status := 
-        if($status le '')then
-            '0'
-        else
-            $status
-    
+
+    let $status := $tei//tei:teiHeader//tei:publicationStmt/@status
+
     return
-        if($status) then
+        if($status[string() le ''])then
+            '0'
+        else if($status[string()]) then
             $status
         else
             ''
@@ -264,7 +272,7 @@ declare function tei-content:text-statuses-selected($selected-ids as xs:string*)
     
 };
 
-declare function tei-content:source-bibl($tei as element(tei:TEI), $resource-id as xs:string) as node()? {
+declare function tei-content:source-bibl($tei as element(tei:TEI), $resource-id as xs:string) as element(tei:bibl)? {
     (: Returns a bibl node based on a resource-id :)
     let $bibl := $tei//tei:sourceDesc/tei:bibl[@key eq lower-case($resource-id)][1]
     return
@@ -274,7 +282,7 @@ declare function tei-content:source-bibl($tei as element(tei:TEI), $resource-id 
             $bibl
 };
 
-declare function tei-content:source($tei as element(tei:TEI), $resource-id as xs:string) as element() {
+declare function tei-content:source($tei as element(tei:TEI), $resource-id as xs:string) as element(m:source) {
     
     (: Returns a source node filtered by resource-id :)
     
@@ -299,11 +307,11 @@ declare function tei-content:source($tei as element(tei:TEI), $resource-id as xs
         </source>
 };
 
-declare function tei-content:location($bibl as element(tei:bibl)) as element() {
+declare function tei-content:location($bibl as element(tei:bibl)?) as element(m:location) {
     <location xmlns="http://read.84000.co/ns/1.0" 
         key="{ $bibl/@key }" 
         work="{ $bibl/tei:location/@work }" 
-        count-pages="{common:integer($bibl/tei:location/@count-pages)}">
+        count-pages="{ common:integer($bibl/tei:location/@count-pages) }">
     { 
         for $volume in $bibl/tei:location/tei:volume
         return
@@ -312,7 +320,7 @@ declare function tei-content:location($bibl as element(tei:bibl)) as element() {
     </location>
 };
 
-declare function tei-content:ancestors($tei as element(tei:TEI), $resource-id as xs:string, $nest as xs:integer) as element()? {
+declare function tei-content:ancestors($tei as element(tei:TEI), $resource-id as xs:string, $nest as xs:integer) as element(m:parent)? {
     
     (: Returns an ancestor tree for the tei file :)
     
@@ -332,10 +340,8 @@ declare function tei-content:ancestors($tei as element(tei:TEI), $resource-id as
                     tei-content:ancestors($parent-tei, '', $nest + 1) 
                 }
             </parent>
-         else
-            ()
+         else ()
 };
-
 
 declare function tei-content:locked-by-user($tei as element(tei:TEI)) as xs:string? {
     
@@ -404,18 +410,15 @@ declare function tei-content:version-number($version-number-str as xs:string?) a
     return (
         if(count($version-number-split) gt 0 and functx:is-a-number($version-number-split[1])) then
             xs:integer($version-number-split[1])
-        else
-            0
+        else 0
         ,
         if(count($version-number-split) gt 1 and functx:is-a-number($version-number-split[2])) then
             xs:integer($version-number-split[2])
-        else
-            0
+        else 0
         ,
         if(count($version-number-split) gt 2 and functx:is-a-number($version-number-split[3])) then
             xs:integer($version-number-split[3])
-        else
-            0
+        else 0
     )
 };
 
@@ -475,7 +478,6 @@ declare function tei-content:version-str($tei as element(tei:TEI)) as xs:string 
         , '[^a-zA-Z0-9\s\.]', '')                               (: Remove all but the alpanumeric, points and spaces :)
     , '\s', '-')                                                (: Replace the spaces with hyphens :)
 };
-
 
 declare function tei-content:cache($tei as element(tei:TEI), $create-if-unavailable as xs:boolean?) as element(m:cache) {
     
@@ -616,5 +618,24 @@ declare function tei-content:status-updates($tei as element()) as element(m:stat
                 $status-update/text()
             }
     }
+    
+};
+
+declare function tei-content:new-section($type as xs:string?) as element(tei:div) {
+
+    if($type eq 'listBibl') then
+    
+        <div type="section" xmlns="http://www.tei-c.org/ns/1.0">
+            <head type="section">Bibliography Section Heading</head>
+            <bibl>This is a sample bibliographic reference with a <ref target="https://read.84000.co/translation/toh46.html">link example</ref>.</bibl>
+        </div>
+        
+    else
+    
+        <div type="section" xmlns="http://www.tei-c.org/ns/1.0">
+            <head type="section">Article Section Heading</head>
+            <milestone unit="chunk"/>
+            <p>Here's a paragraph to get you started. Replace this as you wish<note place="end">This is a ready-made footnote.</note>.</p>
+        </div>
     
 };

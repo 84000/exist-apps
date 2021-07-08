@@ -69,7 +69,7 @@ h1 small, .h1 small {
     display: block;
     margin-top: 8pt;
 }
-h5.section-label, .h5.section-label {
+.section-label {
     margin-top: 24pt;
     line-height: 1.5;
 }
@@ -183,6 +183,9 @@ blockquote .line-group .line {
     text-align: justify;
     text-indent: 22pt;
 }
+.text .section-label {
+    margin-bottom: 0;
+}
 .text p.mantra,
 .text div.mantra {
     text-indent: 0;
@@ -267,18 +270,34 @@ ul.list-inline.inline-dots>li:first-child:before {
 /* Add a space */
 br+*,
 .rw-section-head+.rw,
-.section-label+.rw,
 .rw-list-section+.rw,
+.rw-label,
+.rw-list-bullet+.rw,
 .rw-line-group,
 .rw-line-group+.rw,
 .rw-blockquote,
 .rw-blockquote+.rw,
-.rw-mantra,
-.rw-mantra+.rw,
 .rw-table,
 .rw-table+.rw,
+.rw-mantra,
+.rw-mantra+.rw,
 .rw-trailer {
     margin-top: 12pt;
+}
+
+.rw-label+.rw-list-bullet,
+.rw-list-bullet .rw-list-bullet,
+.rw-list-bullet .rw-label,
+.rw-section-head+.rw-list-section > .list.list-section > .rw-list-item:first-child {
+    margin-top: 0;
+}
+
+.rw-line-group.rw-first ,
+.rw-blockquote.rw-first , 
+.rw-table.rw-first ,
+.rw-mantra.rw-first ,
+.rw-trailer.rw-first {
+    margin-top: 0px;
 }
 
 /* Add a double space */
@@ -289,19 +308,23 @@ br+*,
 /* Remove line indent */
 .footnote-number,
 br+.rw > p,
-.rw:first-child > p,
-.rw.rw-first > p,
-.rw.rw-label+.rw > p,
-.rw.rw-list-head +.rw > p,
 .rw-section-head+.rw > p,
+.section-label+.rw > p,
 .rw-list-section+.rw > p,
+.rw-list-bullet+.rw > p,
 .rw-line-group > p,
 .rw-line-group+.rw > p,
 .rw-blockquote > p,
 .rw-blockquote+.rw > p,
+.rw-table > p,
+.rw-table+.rw > p,
 .rw-mantra > p,
 .rw-mantra+.rw > p,
-.rw-trailer > p {
+.rw-trailer > p,
+.rw.rw-label+.rw > p,
+.rw.rw-list-head+.rw > p,
+.rw:first-child > p,
+.rw.rw-first > p {
     text-indent: 0;
 }
 
@@ -380,6 +403,22 @@ br+.rw > p,
 .list.list-bullet.nesting-5 > .rw > .list-item > .rw > .section-label {
     padding-left: 72pt;
 }
+.list.list-bullet.nesting-6 > .rw > .list-item > .rw > p,
+.list.list-bullet.nesting-6 > .rw > .list-item > .rw > .section-label {
+    padding-left: 84pt;
+}
+.list.list-bullet.nesting-7 > .rw > .list-item > .rw > p,
+.list.list-bullet.nesting-7 > .rw > .list-item > .rw > .section-label {
+    padding-left: 96pt;
+}
+.list.list-bullet.nesting-8 > .rw > .list-item > .rw > p,
+.list.list-bullet.nesting-8 > .rw > .list-item > .rw > .section-label {
+    padding-left: 108pt;
+}
+.list.list-bullet.nesting-9 > .rw > .list-item > .rw > p,
+.list.list-bullet.nesting-9 > .rw > .list-item > .rw > .section-label {
+    padding-left: 120pt;
+}
 .list.list-bullet.dots > .rw-list-item > .list-item > .rw > p {
     text-indent: -12pt;
 }
@@ -391,8 +430,8 @@ br+.rw > p,
 }
 
 /* Section lists are spaced vertically */
-.list.list-section > .rw {
-    margin-top: 14pt;
+.list.list-section > .rw-list-item {
+    margin-top: 12pt;
 }
 
 /* Footnotes */
@@ -558,12 +597,12 @@ img.logo-84000 {
 .glossary-item ul {
     margin-bottom: .25em;
 }
-.glossary-item .locations h4 {
+.glossary-item .footer .heading {
     font-size: .75em;
     text-align: left;
     font-weight: bold;
 }
-.glossary-item .locations li {
+.glossary-item .footer li {
     font-size: .75em;
     padding-right: .75em;
     padding-top: .5em;

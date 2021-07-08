@@ -13,8 +13,10 @@ declare variable $knowledgebase:title-prefixes := '(The|A)';
 
 declare variable $knowledgebase:view-modes := 
     <view-modes xmlns="http://read.84000.co/ns/1.0">
-        <view-mode id="default" client="browser" layout="full" parts="all"/>,
-        <view-mode id="editor" client="browser" layout="full" parts="all"/>
+        <view-mode id="default"         client="browser"    layout="full"            glossary="use-cache"       parts="all"/>,
+        <view-mode id="editor"          client="browser"    layout="full"            glossary="no-cache"        parts="all"/>,
+        <view-mode id="glossary-editor" client="browser"    layout="full"            glossary="use-cache"       parts="all"/>,
+        <view-mode id="glossary-check"  client="none"       layout="expanded-fixed"  glossary="no-cache"        parts="all"/>
     </view-modes>;
 
 declare function knowledgebase:kb-id($tei as element(tei:TEI)) as xs:string? {
@@ -22,7 +24,37 @@ declare function knowledgebase:kb-id($tei as element(tei:TEI)) as xs:string? {
 };
 
 declare function knowledgebase:sort-name($tei as element(tei:TEI)) as xs:string? {
-    replace(tei-content:title($tei), concat($knowledgebase:title-prefixes, '\s+'), '') ! normalize-space(.) ! lower-case(.) ! common:normalized-chars(.) ! common:alphanumeric(.)
+    replace(
+        tei-content:titles($tei)/m:title[@type eq 'mainTitle'][1]/data(), 
+        concat($knowledgebase:title-prefixes, '\s+'), ''
+    )
+    ! normalize-space(.)
+    ! lower-case(.)
+    ! common:normalized-chars(.)
+    ! common:alphanumeric(.)
+};
+
+
+declare function knowledgebase:titles($tei as element(tei:TEI)) as element(m:page) {
+    
+    let $tei-titles := tei-content:titles($tei)
+    return
+        element { node-name($tei-titles) }{
+            for $title at $index in $tei-titles/m:title
+            order by if($title/@type eq 'mainTitle') then 0 else 1
+            return
+                element { node-name($title) }{
+                    attribute type {
+                        if($index eq 1) then
+                            'mainTitle'
+                        else
+                            'otherTitle'
+                    },
+                    $title/@xml:lang,
+                    $title/data()
+                }
+        }
+    
 };
 
 declare function knowledgebase:page($tei as element(tei:TEI)) as element(m:page) {
@@ -42,7 +74,7 @@ declare function knowledgebase:page($tei as element(tei:TEI)) as element(m:page)
             attribute page-url { concat($common:environment/m:url[@id eq 'reading-room'], '/knowledgebase/', $kb-id, '.html') },
             attribute start-letter { upper-case(substring($sort-name, 1, 1)) },
             element sort-name { $sort-name },
-            tei-content:titles($tei)
+            knowledgebase:titles($tei)
         }
 };
 
@@ -108,6 +140,7 @@ declare function knowledgebase:article($tei as element(tei:TEI)) as element(m:pa
                 attribute id { $section/@xml:id },
                 attribute nesting { 1 },
                 attribute prefix { $index },
+                attribute glossarize { 'true' },
                 
                 $section/*
                 
@@ -150,6 +183,7 @@ declare function knowledgebase:end-notes($tei as element(tei:TEI)) as element() 
         attribute id { 'end-notes' },
         attribute nesting { 0 },
         attribute prefix { 'n' },
+        attribute glossarize { 'true' },
             
         element {QName('http://www.tei-c.org/ns/1.0', 'head')} {
             attribute type { 'end-notes' },
@@ -159,6 +193,28 @@ declare function knowledgebase:end-notes($tei as element(tei:TEI)) as element() 
         $tei/tei:text//tei:note[@place eq 'end'][@xml:id]
         
     }
+};
+
+
+declare function knowledgebase:glossary($tei as element(tei:TEI)) as element()? {
+
+    element { QName('http://read.84000.co/ns/1.0', 'part') } {
+        
+        attribute type { 'glossary' },
+        attribute id { 'glossary' },
+        attribute nesting { 0 },
+        attribute prefix { 'g' },
+        attribute glossarize { 'true' },
+            
+        element {QName('http://www.tei-c.org/ns/1.0', 'head')} {
+            attribute type { 'glossary' },
+            text { 'Glossary' }
+        },
+        
+        $tei/tei:text/tei:back//tei:list[@type eq 'glossary']/tei:item
+        
+    }
+    
 };
 
 declare function knowledgebase:taxonomy($tei as element(tei:TEI)) as element(m:taxononmy) {
@@ -188,10 +244,8 @@ declare function knowledgebase:id($title as xs:string) as xs:string {
     
 };
 
-declare function knowledgebase:new-tei($title as xs:string) as document-node()? {
-let $id := knowledgebase:id($title)
-where $id gt ''
-return document {
+declare function knowledgebase:new-tei($id as xs:string, $title as xs:string) as document-node()? {
+document {
 <?xml-model href="../schema/current/knowledgebase.rng" schematypens="http://relaxng.org/ns/structure/1.0"?>,
 <TEI xmlns="http://www.tei-c.org/ns/1.0" xmlns:eft="http://read.84000.co/ns/1.0" xmlns:tei="http://www.tei-c.org/ns/1.0">
     <teiHeader>
@@ -200,7 +254,7 @@ return document {
                 <title type="mainTitle" xml:lang="en">{ $title }</title>
             </titleStmt>
             <editionStmt>
-                <edition>v 0.0.0 <date>{ format-date(current-date(), '[Y]') }</date></edition>
+                <edition>v 0.0.1 <date>{ format-date(current-date(), '[Y]') }</date></edition>
             </editionStmt>
             <publicationStmt status="2.a">
                 <publisher>
@@ -220,39 +274,20 @@ return document {
         <front/>
         <body>
             <div type="article">
-                { knowledgebase:new-section('article') }
+                { tei-content:new-section('article') }
             </div>
         </body>
         <back>
             <div type="listBibl">
                 <head type="listBibl">Bibliography</head>
-                { knowledgebase:new-section('listBibl') }
+                { tei-content:new-section('listBibl') }
+            </div>
+            <div type="glossary">
+                <list type="glossary"/>
             </div>
         </back>
     </text>
 </TEI>
 }};
 
-declare function knowledgebase:new-section($type as xs:string?) as element(tei:div){
-
-    if($type eq 'listBibl') then
-    
-        <div type="section" xmlns="http://www.tei-c.org/ns/1.0">
-            <head type="section">New Section Heading</head>
-            <bibl>Here's a sample bibliographic reference with a link to <ref target="https://read.84000.co/translation/toh46.html">Toh 46</ref></bibl>
-        </div>
-        
-    else
-    
-        <div type="section" xmlns="http://www.tei-c.org/ns/1.0">
-            <head type="section">New Section Heading</head>
-            <p>Here's some markdown to get you started. Replace this as you wish.</p>
-            <p>A new line starts a new paragraph.</p>
-            <list type="bullet" rend="numbers">
-                <item>A numbered list element.</item>
-                <item>A second numbered list element.</item>
-            </list>
-        </div>
-    
-};
 

@@ -539,7 +539,7 @@
                                                 <xsl:if test="$status/@marked-up eq 'true'">
                                                     <li>
                                                         <a>
-                                                            <xsl:attribute name="href" select="concat('/glossary.html?resource-id=', $text-id)"/>
+                                                            <xsl:attribute name="href" select="concat('/edit-glossary.html?resource-id=', $text-id)"/>
                                                             <xsl:value-of select="'Edit glossary'"/>
                                                         </a>
                                                     </li>

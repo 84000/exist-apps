@@ -36,10 +36,14 @@
         <xsl:value-of select="if($archive-path gt '') then concat('&amp;archive-path=', $archive-path)  else ''"/>
     </xsl:function>
     
+    <!-- Tei Editor -->
+    <xsl:variable name="tei-editor" select="/m:response[@tei-editor eq 'true'] and $view-mode[@id = ('editor')]"/>
+    <xsl:variable name="tei-editor-off" select="/m:response[@tei-editor eq 'true'] and not($view-mode[@id = ('editor')])"/>
+    
     <!-- doc-type [html|epub|ncx] -->
     <xsl:variable name="doc-type" select="/m:response/m:request/@doc-type"/>
     
-    <!-- override navigation params -->
+    <!-- Override navigation params -->
     <xsl:variable name="active-url" as="xs:string">
         <!-- <xsl:value-of select="common:internal-link('https://read.84000.co/', (), '', $lang)"/> -->
         <xsl:choose>
@@ -153,9 +157,9 @@
                     <xsl:attribute name="href" select="concat($front-end-path, '/favicon/favicon.ico')"/>
                 </link>
                 
-                <xsl:copy-of select="$additional-links"/>
+                <xsl:sequence select="$additional-links"/>
                 
-                <xsl:copy-of select="$environment/m:html-head/xhtml:*"/>
+                <xsl:sequence select="$environment/m:html-head/xhtml:*"/>
                 
                 <meta name="msapplication-config">
                     <xsl:attribute name="content" select="concat($front-end-path, '/favicon/browserconfig.xml')"/>

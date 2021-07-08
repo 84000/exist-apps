@@ -12,6 +12,7 @@ import module namespace entities="http://read.84000.co/entities" at "../../84000
 declare namespace m="http://read.84000.co/ns/1.0";
 declare namespace tei="http://www.tei-c.org/ns/1.0";
 
+let $resource-suffix := request:get-parameter('resource-suffix', '')
 let $request-id := request:get-parameter('id', '')
 let $form-action := request:get-parameter('form-action', '')
 let $entity-id := request:get-parameter('entity-id', '')
@@ -37,9 +38,9 @@ let $updated :=
     else ()
 
 let $id := tei-content:id($tei)
-let $entity := entities:entities($id)/m:entity[1]
+let $entity := entities:entities($id, true())/m:entity[1]
 
-return
+let $xml-response := 
     common:response(
         'operations/edit-kb-header', 
         'operations', 
@@ -73,19 +74,11 @@ return
             },
             
             (: Include the shared entity :)
-            if($entity) then (
-                $entity,
-                (: Include elements matched to the shared entity :)
-                element { QName('http://read.84000.co/ns/1.0', 'entity-instances') }{
-                    entities:instances($entity)
-                }
-            )
-            else ()
-            ,
+            $entity,
             
             (: Report possible matches for reconciliation :)
             let $search-terms := (
-                tei-content:titles($tei)//m:title/text(),
+                tei-content:titles($tei)//m:title/data(),
                 normalize-space($similar-search)
             )[. gt '']
             return
@@ -104,4 +97,17 @@ return
             $entities:predicates,
             $entities:types
         )
+    )
+
+return
+
+    (: return html data :)
+    if($resource-suffix eq 'html') then (
+        common:html($xml-response, concat(local:app-path(), '/views/edit-kb-header.xsl'))
+    )
+    
+    (: return xml data :)
+    else (
+        util:declare-option("exist:serialize", "method=xml indent=no"),
+        $xml-response
     )

@@ -89,8 +89,9 @@ function common:response($model-type as xs:string, $app-id as xs:string, $data a
             data-path="{ $common:data-path }" 
             user-name="{ common:user-name() }" 
             lang="{ $lang }"
-            exist-version="{ system:get-version() }">
-            {   
+            exist-version="{ system:get-version() }"
+            tei-editor="{ if($common:environment/m:url[@id eq 'operations'] and common:user-in-group('operations')) then true() else false() }">
+            {
                 $data,
                 element { name($common:environment) } {
                     $common:environment/@*,
@@ -113,6 +114,27 @@ function common:response($model-type as xs:string, $app-id as xs:string, $data a
                 }
             }
         </response>
+};
+
+declare function common:html($xml as element(m:response), $view as xs:string){
+
+    util:declare-option("exist:serialize", "method=html5 media-type=text/html"),
+    response:set-header('Expires', xs:string(xs:dateTime(current-dateTime()))),
+    response:set-header('X-UA-Compatible', 'IE=edge,chrome=1'),
+    
+    try {
+        transform:transform($xml, doc($view), <parameters/>)
+    }
+    catch * {
+        let $error :=
+            <exception xmlns="">
+                <path>{$err:value}</path>
+                <message>{$err:description}</message>
+            </exception>
+        return
+            transform:transform($error, doc(concat($common:app-path, "/views/html/error.xsl")), <parameters/>)
+    }
+    
 };
 
 declare
@@ -483,18 +505,19 @@ function common:limit-str($str as xs:string, $limit as xs:integer) as xs:string 
         $str
 };
 
-declare function common:add-selected($element as element(), $selected-value as xs:string?) as element() {
-    if($selected-value gt '' and $element[@value eq $selected-value] or $element[@id eq $selected-value]) then
-        element { node-name($element) } {
-            $element/@*,
-            attribute selected { 'selected' },
-            $element/node()
-        }
-    else
-        $element
+declare function common:add-selected($element as element(), $selected-value as xs:string*) as element() {
+    
+    element { node-name($element) } {
+        $element/@*,
+        if($element[@value = $selected-value[. gt '']] or $element[@id = $selected-value[. gt '']]) then
+            attribute selected { 'selected' }
+        else (),
+        $element/node()
+    }
+    
 };
 
-declare function common:add-selected-children($element as element(), $selected-value as xs:string?) as element() {
+declare function common:add-selected-children($element as element(), $selected-value as xs:string*) as element() {
     element { node-name($element) } {
         $element/@*,
         for $element-child in $element/*

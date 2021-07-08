@@ -8,11 +8,12 @@ import module namespace functx="http://www.functx.com";
 
 declare option exist:serialize "method=xml indent=no";
 
+let $resource-suffix := request:get-parameter('resource-suffix', '')
 let $config-set := request:get-parameter('config-set', 'page-text-strings')
 
 let $config-collection := collection($common:app-config)
 
-return
+let $xml-response := 
     common:response(
         'operations/sys-config', 
         'operations', 
@@ -116,4 +117,17 @@ return
                     ()
             }
         )
+    )
+
+return
+
+    (: return html data :)
+    if($resource-suffix eq 'html') then (
+        common:html($xml-response, concat(local:app-path(), '/views/sys-config.xsl'))
+    )
+    
+    (: return xml data :)
+    else (
+        util:declare-option("exist:serialize", "method=xml indent=no"),
+        $xml-response
     )

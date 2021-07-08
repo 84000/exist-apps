@@ -9,36 +9,16 @@ import module namespace knowledgebase="http://read.84000.co/knowledgebase" at ".
 declare namespace m="http://read.84000.co/ns/1.0";
 declare namespace tei="http://www.tei-c.org/ns/1.0";
 
-declare option exist:serialize "method=xml indent=no";
-
+let $resource-suffix := request:get-parameter('resource-suffix', '')
 let $form-action := request:get-parameter('form-action', '')
-let $new-kb-title := request:get-parameter('new-kb-title', '')
+let $new-title := request:get-parameter('new-title', '')
 
 let $add-article :=
-    if($form-action eq 'new-kb-article' and $new-kb-title gt '') then
-    
-        let $filename := concat(replace(knowledgebase:id($new-kb-title), '\-', '_'), '.xml')
-        let $new-tei := knowledgebase:new-tei($new-kb-title)
-        let $text-id := tei-content:id($new-tei/tei:TEI)
-        
-        where $filename and $new-tei and $text-id
-        return 
-            (:if(true())then $text-id else:)
-            (: Create the file :)
-            let $store := xmldb:store($common:knowledgebase-path, $filename, $new-tei, 'application/xml')
-            let $set-grp := sm:chgrp(xs:anyURI(concat($common:knowledgebase-path, '/', $filename)), 'tei')
-            let $set-mod := sm:chmod(xs:anyURI(concat($common:knowledgebase-path, '/', $filename)), 'rw-rw-r--')
-            
-            (: Touch it with a new update :)
-            let $tei := tei-content:tei($text-id, 'knowledgebase')
-            return (
-                (:$tei//tei:publicationStmt,:)
-                update-tei:minor-version-increment($tei, 'file-created')
-            )
-        
+    if($form-action eq 'new-article' and $new-title gt '') then
+        update-tei:add-knowledgebase($new-title)
     else ()
-    
-return
+
+let $xml-response :=
     common:response(
         'operations/knowledgebase', 
         'operations', 
@@ -55,4 +35,17 @@ return
             knowledgebase:pages()
             
         )
+    )
+
+return
+
+    (: return html data :)
+    if($resource-suffix eq 'html') then (
+        common:html($xml-response, concat(local:app-path(), '/views/knowledgebase.xsl'))
+    )
+    
+    (: return xml data :)
+    else (
+        util:declare-option("exist:serialize", "method=xml indent=no"),
+        $xml-response
     )

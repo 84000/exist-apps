@@ -4,7 +4,6 @@ declare namespace m = "http://read.84000.co/ns/1.0";
 
 import module namespace local="http://operations.84000.co/local" at "../modules/local.xql";
 import module namespace translation-status="http://read.84000.co/translation-status" at "../modules/translation-status.xql";
-
 import module namespace common="http://read.84000.co/common" at "../../84000-reading-room/modules/common.xql";
 import module namespace tei-content="http://read.84000.co/tei-content" at "../../84000-reading-room/modules/tei-content.xql";
 import module namespace translations="http://read.84000.co/translations" at "../../84000-reading-room/modules/translations.xql";
@@ -14,6 +13,7 @@ import module namespace functx="http://www.functx.com";
 declare option exist:serialize "method=xml indent=no";
 
 (: Request parameters :)
+let $resource-suffix := request:get-parameter('resource-suffix', '')
 let $work := request:get-parameter('work', 'UT4CZ5369')
 let $status := local:get-status-parameter()
 let $sort := request:get-parameter('sort', '')
@@ -71,7 +71,7 @@ let $texts :=
     else
         $texts
 
-return
+let $xml-response :=
     common:response(
         'operations/search', 
         'operations', 
@@ -104,4 +104,17 @@ return
             else
                 ()
         )
+    )
+
+return
+
+    (: return html data :)
+    if($resource-suffix eq 'html') then (
+        common:html($xml-response, concat(local:app-path(), '/views/search.xsl'))
+    )
+    
+    (: return xml data :)
+    else (
+        util:declare-option("exist:serialize", "method=xml indent=no"),
+        $xml-response
     )

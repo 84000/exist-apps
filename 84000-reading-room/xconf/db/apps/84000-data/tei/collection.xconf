@@ -4,7 +4,7 @@
     <!-- /db/apps/84000-data/tei/ -->
     
     <triggers>
-        <trigger event="update" class="org.exist.collections.triggers.XQueryTrigger">
+        <trigger event="create,update" class="org.exist.collections.triggers.XQueryTrigger">
             <parameter name="url" value="xmldb:exist:///db/apps/84000-reading-room/triggers.xql"/>
         </trigger>
     </triggers>

@@ -8,8 +8,8 @@ declare namespace m="http://read.84000.co/ns/1.0";
 
 declare option exist:serialize "method=xml indent=no";
 
+let $resource-suffix := request:get-parameter('resource-suffix', '')
 let $include-acknowledgements := (request:get-parameter('include-acknowledgements', '') gt '0')
-
 let $delete-translator-id := request:get-parameter('delete', '')
 
 let $delete-translator := 
@@ -18,7 +18,7 @@ let $delete-translator :=
     else
         ()
 
-return
+let $xml-response := 
     common:response(
         'operations/translators', 
         'operations', 
@@ -28,4 +28,17 @@ return
             contributors:institutions(false()),
             contributors:teams(true(), false(), false())
         )
+    )
+
+return
+
+    (: return html data :)
+    if($resource-suffix eq 'html') then (
+        common:html($xml-response, concat(local:app-path(), '/views/translators.xsl'))
+    )
+    
+    (: return xml data :)
+    else (
+        util:declare-option("exist:serialize", "method=xml indent=no"),
+        $xml-response
     )

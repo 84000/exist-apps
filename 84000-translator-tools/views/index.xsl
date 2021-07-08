@@ -570,10 +570,12 @@
             
             <xsl:variable name="results" select="/m:response/m:tm-search/m:results"/>
             <xsl:choose>
-                <xsl:when test="$results/m:item">
+                <xsl:when test="$results[m:item]">
+                    
+                    <hr/>
                     
                     <!-- Results list -->
-                    <div class="search-results top-margin">
+                    <div class="search-results">
                         
                         <xsl:for-each select="$results/m:item">
                             <div class="search-result row">
@@ -654,8 +656,8 @@
                     
                     <!-- Pagination -->
                     <!-- To do: change this to a re-post of the form maybe? -->
-                    <xsl:copy-of select="common:pagination($results/@first-record, $results/@max-records, $results/@count-records, 'index.html?tab=tm-search', concat('&amp;type=', $request/@type, '&amp;search=', $request/m:search/text()/normalize-space(), '&amp;lang=', $request/@lang, '&amp;volume=', $request/@volume, '&amp;page=', $request/@page))"/>
-                    
+                    <xsl:variable name="base-url" select="concat('index.html?tab=tm-search&amp;type=', $request/@type, '&amp;search=', $request/m:search/text()/normalize-space(), '&amp;lang=', $request/@lang, '&amp;volume=', $request/@volume, '&amp;page=', $request/@page)"/>
+                    <xsl:sequence select="common:pagination($results/@first-record, $results/@max-records, $results/@count-records, $base-url)"/>
                     
                 </xsl:when>
                 <xsl:otherwise>

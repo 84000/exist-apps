@@ -13,7 +13,7 @@
                 <xsl:with-param name="page-content">
                     <div class="well well-sm center-vertical full-width bottom-margin">
                         
-                        <span class="small">
+                        <span>
                             <xsl:value-of select="concat('Listing ', fn:format-number(xs:integer(count(m:contributor-teams/m:team)),'#,##0'), ' translator teams ')"/>
                         </span>
                         

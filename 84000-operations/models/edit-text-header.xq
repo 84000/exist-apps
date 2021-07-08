@@ -19,6 +19,7 @@ declare namespace tei="http://www.tei-c.org/ns/1.0";
 declare option exist:serialize "method=xml indent=no";
 
 (: Request parameters :)
+let $resource-suffix := request:get-parameter('resource-suffix', '')
 let $request-id := request:get-parameter('id', '') (: in get :)
 let $post-id := request:get-parameter('post-id', '') (: in post :)
 let $form-action := request:get-parameter('form-action', '')
@@ -75,7 +76,7 @@ let $generate-files :=
         store:create(concat($text-id, '.all'))
     else ()
 
-return
+let $xml-response := 
     common:response(
         'operations/edit-text-header', 
         'operations', 
@@ -125,4 +126,15 @@ return
         )
     )
     
+return
+
+    (: return html data :)
+    if($resource-suffix eq 'html') then (
+        common:html($xml-response, concat(local:app-path(), '/views/edit-text-header.xsl'))
+    )
     
+    (: return xml data :)
+    else (
+        util:declare-option("exist:serialize", "method=xml indent=no"),
+        $xml-response
+    )
