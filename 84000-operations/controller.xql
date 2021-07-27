@@ -15,6 +15,8 @@ declare variable $collection-path := lower-case(substring-before(substring-after
 declare variable $controller-root := lower-case(substring-after($exist:controller, "/"));
 declare variable $models-collection := concat('/db/apps', $exist:controller, '/models/');
 declare variable $model-file := concat($resource-id, '.xq');
+declare variable $model-file-exists := xmldb:get-child-resources($models-collection)[. eq $model-file] gt '';
+declare variable $user-name := common:user-name();
 declare variable $var-debug := 
     <debug>
         <var name="exist:path" value="{ $exist:path }"/>
@@ -36,6 +38,8 @@ declare variable $var-debug :=
             }
         </var>
         <var name="model-file" value="{ $model-file }"/>
+        <var name="model-file-exists" value="{ $model-file-exists }"/>
+        <var name="user-name" value="{ $user-name }"/>
     </debug>;
 
 (: Log the request :)
@@ -58,13 +62,21 @@ else if ($exist:path = ('', '/') or $exist:resource = ('index.htm')) then
     </dispatch>
 
 (: Forward to model file if valid :)
-else if($model-file eq 'index.xq' or xmldb:get-child-resources($models-collection)[. eq $model-file]) then
+else if($model-file-exists) then
     <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
         <forward url="{ concat($exist:controller, '/models/', $model-file) }">
             <add-parameter name="resource-suffix" value="{$resource-suffix}"/>
         </forward>
     </dispatch>
 
+(: Or to index :)
+else if($user-name = ('guest', '') or $model-file eq 'index.xq') then
+    <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+        <forward url="{ concat($exist:controller, '/models/index.xq') }">
+            <add-parameter name="resource-suffix" value="{$resource-suffix}"/>
+        </forward>
+    </dispatch>
+    
 (: File import :)
 else if ($collection-path eq "imported-file") then
     <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
@@ -84,5 +96,5 @@ else if ($collection-path eq "imported-file") then
 (: Everything else is passed through :)
 else
     <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-        <cache-control cache="yes"/>
+        <cache-control cache="no"/>
     </dispatch>
