@@ -164,7 +164,7 @@ let $xml-response :=
                     else ()
                 
                 for $glossary-item in $glossary-filtered-subsequence
-                    let $entity := entities:entities($glossary-item/@id, true())/m:entity[1]
+                    let $entity := entities:entities($glossary-item/@id, false(), true())/m:entity[1]
                 return 
                     (: Copy each glossary item :)
                     element { node-name($glossary-item) }{

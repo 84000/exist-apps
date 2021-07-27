@@ -123,7 +123,7 @@ declare function glossary:glossary-entities($type as xs:string*, $lang as xs:str
     
     return (
         (:<m:entities>{ $query }</m:entities>:)
-        entities:entities(subsequence($glosses/@xml:id, 1, 1024), true())
+        entities:entities(subsequence($glosses/@xml:id, 1, 1024), true(), true())
     )
         
 };

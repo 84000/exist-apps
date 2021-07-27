@@ -122,7 +122,7 @@ return
                     tei-content:cache($tei, false())/m:*,
                     
                     (: Entities :)
-                    entities:entities($parts[@id eq 'glossary']/tei:div[@type eq 'glossary']/tei:gloss/@xml:id/string(), false()),
+                    entities:entities($parts[@id eq 'glossary']/tei:div[@type eq 'glossary']/tei:gloss/@xml:id/string(), true(), false()),
                     
                     (: Calculated strings :)
                     translation:replace-text($source/@key)

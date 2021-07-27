@@ -28,7 +28,7 @@ let $term-langs :=
 
 (: The requested entity :)
 let $entity-id := request:get-parameter('entity-id', '')
-let $request-entity := entities:entity-validated($entities:entities/m:entity[@xml:id eq $entity-id])
+let $request-entity := entities:entity($entities:entities/m:entity[@xml:id eq $entity-id], true(), true())
 let $entity-show := 
     if($request-entity) then
         $request-entity

@@ -153,7 +153,7 @@ declare function update-entity:headers($entity-id as xs:string?) as element()? {
             }
         
         where $parent and ($existing-entity or $new-value)
-        return
+        return 
             (: Do the update :)
             common:update('entity', $existing-entity, $new-value, $parent, ())
             

@@ -50,7 +50,7 @@ let $xml-response :=
                 tei-content:cache($tei, false())/m:*,
                 
                 (: Entities :)
-                entities:entities($glossary//tei:gloss/@xml:id/string(), true()),
+                entities:entities($glossary//tei:gloss/@xml:id/string(), true(), true()),
                 
                 (: Calculated strings :)
                 element { QName('http://read.84000.co/ns/1.0', 'replace-text') } {

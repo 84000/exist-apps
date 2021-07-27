@@ -8,7 +8,8 @@ declare namespace tei="http://www.tei-c.org/ns/1.0";
 import module namespace common="http://read.84000.co/common" at "common.xql";
 import module namespace tei-content="http://read.84000.co/tei-content" at "tei-content.xql";
 
-declare variable $knowledgebase:pages := collection($common:knowledgebase-path);
+declare variable $knowledgebase:tei := collection($common:knowledgebase-path)//tei:TEI;
+declare variable $knowledgebase:tei-published := $knowledgebase:tei[tei:teiHeader/tei:fileDesc/tei:publicationStmt[@status = $tei-content:published-status-ids]];
 declare variable $knowledgebase:title-prefixes := '(The|A)';
 
 declare variable $knowledgebase:view-modes := 
@@ -80,13 +81,17 @@ declare function knowledgebase:page($tei as element(tei:TEI)) as element(m:page)
 
 declare function knowledgebase:pages() as element(m:knowledgebase) {
     element { QName('http://read.84000.co/ns/1.0', 'knowledgebase') }{
-        knowledgebase:pages(())
+        knowledgebase:pages((), false())
     }
 };
 
-declare function knowledgebase:pages($ids as xs:string*) as element(m:page)* {
+declare function knowledgebase:pages($ids as xs:string*, $published-only as xs:boolean) as element(m:page)* {
     
-    for $tei in $knowledgebase:pages//tei:TEI[if(count($ids) gt 0) then id($ids) else true()]
+    for $tei in 
+        if($published-only) then
+            $knowledgebase:tei-published[if(count($ids) gt 0) then id($ids) else true()]
+        else
+            $knowledgebase:tei[if(count($ids) gt 0) then id($ids) else true()]
     return 
         knowledgebase:page($tei)
         
@@ -254,7 +259,7 @@ document {
                 <title type="mainTitle" xml:lang="en">{ $title }</title>
             </titleStmt>
             <editionStmt>
-                <edition>v 0.0.1 <date>{ format-date(current-date(), '[Y]') }</date></edition>
+                <edition>v 0.1.0 <date>{ format-date(current-date(), '[Y]') }</date></edition>
             </editionStmt>
             <publicationStmt status="2.a">
                 <publisher>

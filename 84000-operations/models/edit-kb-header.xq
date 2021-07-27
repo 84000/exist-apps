@@ -37,8 +37,8 @@ let $updated :=
     
     else ()
 
-let $id := tei-content:id($tei)
-let $entity := entities:entities($id, true())/m:entity[1]
+let $knowledgebase-id := tei-content:id($tei)
+let $entity := entities:entities($knowledgebase-id, false(), true())/m:entity[1]
 
 let $xml-response := 
     common:response(
@@ -47,7 +47,7 @@ let $xml-response :=
         (
             (: Include request parameters :)
             element { QName('http://read.84000.co/ns/1.0', 'request') } {
-                attribute id { $request-id },
+                attribute id { $knowledgebase-id },
                 attribute show-tab { request:get-parameter('show-tab', 'kb-form') },
                 element similar-search { request:get-parameter('similar-search', '') }
             },
@@ -83,7 +83,7 @@ let $xml-response :=
             )[. gt '']
             return
                 element { QName('http://read.84000.co/ns/1.0', 'similar-entities') }{
-                    entities:similar($entity, $search-terms, $id)
+                    entities:similar($entity, $search-terms, $knowledgebase-id)
                 }
             ,
             

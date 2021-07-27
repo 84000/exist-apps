@@ -39,15 +39,20 @@ declare variable $entities:types :=
 
 declare variable $entities:instance-types := ('glossary-item');
 
-declare function entities:entities($instance-ids as xs:string*, $validated as xs:boolean) as element(m:entities) {
+declare function entities:entities($instance-ids as xs:string*, $validate as xs:boolean, $expand as xs:boolean) as element(m:entities) {
     
     element { QName('http://read.84000.co/ns/1.0', 'entities') }{
-        for $entity in $entities:entities/m:entity[m:instance[@id/string() = $instance-ids]]
-        return
-            if($validated) then 
-                entities:entity-validated($entity) 
+        
+        (: Check that the instance target exists :)
+        let $instance-ids := 
+            if($validate) then 
+                entities:instance-ids-validated($instance-ids)
             else
-                $entity
+                $instance-ids
+        
+        return
+            $entities:entities/m:entity[m:instance/@id/string() = $instance-ids] ! entities:entity(., $validate, $expand)
+        
     }
     
 };
@@ -60,8 +65,15 @@ declare function entities:next-id() as xs:string {
     
 };
 
+declare function entities:instance-ids-validated($instance-ids as xs:string*) as xs:string* {
+    (
+        $glossary:tei//tei:back//id($instance-ids)[self::tei:gloss]/@xml:id/string(),
+        $knowledgebase:tei-published//tei:publicationStmt//id($instance-ids)[self::tei:idno]/@xml:id/string()
+    )
+};
+
 (: Validates and expands an entity :)
-declare function entities:entity-validated($entity as element(m:entity)?)  as element(m:entity)? {
+declare function entities:entity($entity as element(m:entity)?, $validate as xs:boolean, $expand as xs:boolean)  as element(m:entity)? {
     
     if($entity) then
         element { node-name($entity) } {
@@ -70,7 +82,7 @@ declare function entities:entity-validated($entity as element(m:entity)?)  as el
             $entity/*[not(self::m:label or self::m:instance)],
             
             (: If there's no primary label assign one :)
-            if(not($entity/m:label[@primary eq 'true'])) then
+            if($expand and not($entity/m:label[@primary eq 'true'])) then
                 for $label at $index in $entity/m:label
                 return (
                     element { node-name($label) } {
@@ -105,19 +117,38 @@ declare function entities:entity-validated($entity as element(m:entity)?)  as el
             else 
                 $entity/m:label
             ,
-            for $instance in $entity/m:instance
-            let $instance-element := glossary:items($instance/@id, true())
-            let $instance-element :=
-                if(not($instance-element)) then
-                    knowledgebase:pages($instance/@id)
+            
+            (: Check that the instance target exists :)
+            let $instance-ids := $entity/m:instance/@id/string()
+            
+            let $instance-ids :=
+                if($validate) then
+                    entities:instance-ids-validated($entity/m:instance/@id/string())
                 else
-                    $instance-element
-            where $instance-element
+                    $instance-ids
+                    
+            let $valid-instances := $entity/m:instance[@id/string() = $instance-ids]
+            
             return
-                element { node-name($instance) } {
-                    $instance/@*,
-                    $instance-element
-                }
+                if($expand) then
+                
+                    for $instance in $valid-instances
+                    let $instance-element := glossary:items($instance/@id, true())
+                    let $instance-element :=
+                        if(not($instance-element)) then
+                            knowledgebase:pages($instance/@id, true())
+                        else
+                            $instance-element
+                    where $instance-element
+                    return
+                        element { node-name($instance) } {
+                            $instance/@*,
+                            $instance-element
+                        }
+                        
+                else
+                    $valid-instances
+                
         }
     else ()
     
@@ -161,7 +192,7 @@ declare function entities:similar($entity as element(m:entity)?, $search-terms a
                 [@xml:lang = ('Bo-Ltn', 'Sa-Ltn')]
             ][@xml:id][not(@xml:id = $exclude-ids)]
         ,
-        $knowledgebase:pages//tei:teiHeader/tei:fileDesc
+        $knowledgebase:tei//tei:teiHeader/tei:fileDesc
             [tei:titleStmt/tei:title
                 [ft:query(., $search-query)]
             ]/tei:publicationStmt/tei:idno[@xml:id][not(@xml:id = $exclude-ids)]
@@ -171,5 +202,5 @@ declare function entities:similar($entity as element(m:entity)?, $search-terms a
     order by if($similar-entity[m:label/text() = $search-terms]) then 1 else 0 descending
     return 
         (: Copy entity expanded to include instance detail :)
-        entities:entity-validated($similar-entity)
+        entities:entity($similar-entity, false(), true())
 };
