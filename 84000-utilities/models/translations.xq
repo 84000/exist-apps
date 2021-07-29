@@ -8,7 +8,6 @@ import module namespace store="http://read.84000.co/store" at "../../84000-readi
 import module namespace common="http://read.84000.co/common" at "../../84000-reading-room/modules/common.xql";
 import module namespace tei-content="http://read.84000.co/tei-content" at "../../84000-reading-room/modules/tei-content.xql";
 import module namespace translations="http://read.84000.co/translations" at "../../84000-reading-room/modules/translations.xql";
-import module namespace httpclient = "http://exist-db.org/xquery/httpclient";
 
 declare option exist:serialize "method=xml indent=no";
 

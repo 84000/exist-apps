@@ -14,8 +14,6 @@ import module namespace translations = "http://read.84000.co/translations" at "t
 import module namespace download = "http://read.84000.co/download" at "download.xql";
 import module namespace deploy="http://read.84000.co/deploy" at "deploy.xql";
 
-import module namespace httpclient = "http://exist-db.org/xquery/httpclient";
-
 declare variable $store:conf := $common:environment//m:store-conf[@type eq 'master'];
 declare variable $store:file-group := 'utilities';
 declare variable $store:file-permissions := 'rw-rw-r--';
@@ -622,52 +620,6 @@ declare function store:http-download($file-url as xs:string, $collection as xs:s
             <error xmlns="http://read.84000.co/ns/1.0">
                 <message>Oops, something went wrong:</message>
                 {$head}
-            </error>
-};
-
-declare function store:http-get-and-store($file-url as xs:string, $collection as xs:string, $file-name as xs:string)  as item()* {
-
-    let $response := httpclient:get(xs:anyURI($file-url), false(),())
-    
-    let $headers := $response//httpclient:headers/httpclient:header
-    let $body := $response//httpclient:body
-    
-    return
-        (: check to ensure the remote server indicates success :)
-        if ($response/@statusCode = '200' and $body) then
-        
-            let $mime-type := 
-                if (contains(lower-case($file-url), '.xml') and $body/@mimetype = 'text/plain') then
-                    'application/xml'
-                else 
-                    $body/@mimetype
-            
-            (: if the file is XML and the payload is binary, we need convert the binary to string :)
-            let $content-transfer-encoding := $headers[lower-case(@name) = 'content-transfer-encoding']/@value
-            
-            let $file := 
-                if (contains(lower-case($file-url), '.xml') and lower-case($content-transfer-encoding) = 'binary') then 
-                    util:binary-to-string($body)
-                else 
-                    xs:base64Binary($body/text())
-            
-            let $store-file := xmldb:store($collection, $file-name, $file, $mime-type)
-            
-            return
-                <stored xmlns="http://read.84000.co/ns/1.0">
-                    { $store-file }
-                </stored>
-        
-        else if ($response/@statusCode = '504') then
-            <error xmlns="http://read.84000.co/ns/1.0">
-                <message>The request took too long and has timed out.</message>
-                { $headers }
-            </error>
-        
-        else
-            <error xmlns="http://read.84000.co/ns/1.0">
-                <message>Oops, something went wrong:</message>
-                { $headers }
             </error>
 };
 

@@ -16,7 +16,7 @@ declare namespace m="http://read.84000.co/ns/1.0";
 declare variable $tests:utilities-data-collection := concat($common:data-path, '/config/tests');
 declare variable $tests:lucene-tests := doc(concat($tests:utilities-data-collection, '/', 'lucene-tests.xml'))/m:lucene-tests;
 
-declare function tests:translations($translation-id as xs:string) as item(){
+declare function tests:translations($translation-id as xs:string) as element(m:results) {
     
     (:let $translation-id := 'UT22084-062-012':)
     
@@ -39,23 +39,28 @@ declare function tests:translations($translation-id as xs:string) as item(){
         {
          for $tei in $selected-translations
             for $toh-key in $tei/tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl/@key
+            
                 let $start-time := util:system-dateTime()
+                
                 let $html-url := concat($test-config/m:path/text(), '/translation/', $toh-key, '.html?view-mode=tests')
-                let $toh-html := 
-                    if($test-config) then 
-                        httpclient:get(
-                            xs:anyURI($html-url), 
-                            false(), 
-                            if($test-config/m:credentials/text()) then 
-                                <headers>
-                                    <header name="Authorization" value="{ concat('Basic ', util:base64-encode($test-config/m:credentials/text())) }"/>
-                                </headers>
-                            else
-                                ()
-                       )
-                    else
-                        ()
+                
+                let $credentials := $test-config/m:credentials/data() ! tokenize(., ':')
+                
+                let $request := 
+                    if(count($credentials) eq 2) then 
+                        <hc:request method="GET" href="{ $html-url }" auth-method="basic" username="{ $credentials[1] }" password="{ $credentials[2] }"/>
+                    else if($test-config) then 
+                        <hc:request method="GET" href="{ $html-url }"/>
+                    else ()
+                 
+                let $response := if($request) then hc:send-request($request) else ()
+                
+                let $toh-html := $response[2]
+                
+            (:return if(true()) then $toh-html else :)
+            
                 let $end-time := util:system-dateTime()
+                
             return
                <translation 
                    id="{ tei-content:id($tei) }" 
@@ -127,7 +132,7 @@ declare function tests:translations($translation-id as xs:string) as item(){
         </results>
 };
 
-declare function tests:sections($section-id as xs:string) as item(){
+declare function tests:sections($section-id as xs:string) as element(m:results) {
 
     let $schema := doc(concat($common:tei-path, '/schema/current/section.rng'))
     let $selected-tei := 
@@ -142,20 +147,30 @@ declare function tests:sections($section-id as xs:string) as item(){
         <results xmlns="http://read.84000.co/ns/1.0">
         {
             for $tei at $pos in $selected-tei
+            
                 let $start-time := util:system-dateTime()
+                
                 let $resource-id := tei-content:id($tei)
-                let $html := 
-                    if($test-config) then 
-                        httpclient:get(
-                            xs:anyURI(concat($test-config/m:path/text(), '/section/', $resource-id, '.html')), 
-                            false(), 
-                            <headers>
-                                <header name="Authorization" value="{ concat('Basic ', util:base64-encode($test-config/m:credentials/text())) }"/>
-                            </headers>
-                       )
-                    else
-                        ()
-                 let $end-time := util:system-dateTime()
+                
+                let $html-url := concat($test-config/m:path/text(), '/section/', $resource-id, '.html')
+                
+                let $credentials := $test-config/m:credentials/data() ! tokenize(., ':')
+                
+                let $request := 
+                    if(count($credentials) eq 2) then 
+                        <hc:request method="GET" href="{ $html-url }" auth-method="basic" username="{ $credentials[1] }" password="{ $credentials[2] }"/>
+                    else if($test-config) then 
+                        <hc:request method="GET" href="{ $html-url }"/>
+                    else ()
+                
+                let $response := if($request) then hc:send-request($request) else ()
+                
+                let $html := $response[2]
+                
+            (:return if(true()) then $html else :)
+                
+                let $end-time := util:system-dateTime()
+                
             return
                 <section 
                     id="{ $resource-id }"
@@ -178,7 +193,7 @@ declare function tests:sections($section-id as xs:string) as item(){
         </results>
 };
 
-declare function tests:validate-schema($tei as element(tei:TEI), $schema as document-node()) as item() {
+declare function tests:validate-schema($tei as element(tei:TEI), $schema as document-node()) as element(m:test) {
 
    let $validation-report := validation:jing-report($tei, $schema)
    
@@ -197,7 +212,7 @@ declare function tests:validate-schema($tei as element(tei:TEI), $schema as docu
        </test>
 };
 
-declare function tests:duplicate-ids($tei as element(tei:TEI)) as item() {
+declare function tests:duplicate-ids($tei as element(tei:TEI)) as element(m:test) {
 
     let $ids := $tei//@xml:id/string()
     let $count-ids := count($ids)
@@ -222,7 +237,7 @@ declare function tests:duplicate-ids($tei as element(tei:TEI)) as item() {
         </test>
 };
 
-declare function tests:scoped-ids($tei as element(tei:TEI)) as item() {
+declare function tests:scoped-ids($tei as element(tei:TEI)) as element(m:test) {
 
     let $ids := $tei//@xml:id/string()
     let $text-id := tei-content:id($tei)
@@ -243,7 +258,7 @@ declare function tests:scoped-ids($tei as element(tei:TEI)) as item() {
         </test>
 };
 
-declare function tests:valid-pointers($tei as element(tei:TEI)) as item() {
+declare function tests:valid-pointers($tei as element(tei:TEI)) as element(m:test) {
 
     let $invalid-ptrs := $tei//tei:ptr[empty(text())]/@target[not(substring-after(., '#') = ($tei//*/@xml:id))]
     
@@ -262,7 +277,7 @@ declare function tests:valid-pointers($tei as element(tei:TEI)) as item() {
         </test>
 };
 
-declare function tests:titles($toh-html as element(), $tei as element(tei:TEI)) as item() {
+declare function tests:titles($toh-html as document-node(), $tei as element(tei:TEI)) as element(m:test) {
     
     (: Bo-Ltn can be derived from bo or vice versa :)
     (: Max 3: 'en', 'Sa-Ltn' and either 'Bo-Ltn' or  'bo' :)
@@ -300,7 +315,7 @@ declare function tests:titles($toh-html as element(), $tei as element(tei:TEI)) 
         </test>
 };
 
-declare function tests:outline-context($tei as element(tei:TEI), $resource-id as xs:string) as item() {
+declare function tests:outline-context($tei as element(tei:TEI), $resource-id as xs:string) as element(m:test) {
 
     let $ancestors := tei-content:ancestors($tei, $resource-id, 1)
     
@@ -320,7 +335,7 @@ declare function tests:outline-context($tei as element(tei:TEI), $resource-id as
         </test>
 };
 
-declare function tests:complete-source($toh-html as element()) as item() {
+declare function tests:complete-source($toh-html as document-node()) as element(m:test) {
 
     let $toh := $toh-html//*[@id eq 'toh']//xhtml:h4/text()
     let $location := $toh-html//*[@id eq 'location']/text()
@@ -345,7 +360,7 @@ declare function tests:complete-source($toh-html as element()) as item() {
         </test>
 };
 
-declare function tests:section($section-tei as element()*, $section-html as element()*, $section-name as xs:string, $required-paragraphs as xs:integer) {
+declare function tests:section($section-tei as element()*, $section-html as element()*, $section-name as xs:string, $required-paragraphs as xs:integer) as element(m:test) {
     
     let $section-tei-type := $section-tei/ancestor::tei:TEI/tei:teiHeader/tei:fileDesc/@type
     
@@ -460,7 +475,7 @@ declare function tests:section($section-tei as element()*, $section-html as elem
         </test>
 };
 
-declare function tests:notes($tei as element(tei:TEI)*, $html as element()*) as item() {
+declare function tests:notes($tei as element(tei:TEI)*, $html as document-node()*) as element(m:test) {
     
     let $notes-count-tei := count($tei//tei:text//tei:note[@place eq 'end'][@xml:id])
     let $notes-count-html := count($html//xhtml:section[@id eq 'end-notes']/*[common:contains-class(@class, 'footnote')])
@@ -477,7 +492,7 @@ declare function tests:notes($tei as element(tei:TEI)*, $html as element()*) as 
         </test>
 };
 
-declare function tests:abbreviations($tei as element(tei:TEI)*, $html as element()*) as item() {
+declare function tests:abbreviations($tei as element(tei:TEI)*, $html as document-node()*) as element(m:test) {
 
     let $abbreviations-count-html := count($html//*[@id eq 'abbreviations']//xhtml:tr)
     let $abbreviations-count-tei := count($tei//tei:back//tei:list[@type='abbreviations']/tei:item/tei:abbr)
@@ -493,7 +508,7 @@ declare function tests:abbreviations($tei as element(tei:TEI)*, $html as element
         </test>
 };
 
-declare function tests:bibliography($tei as element(tei:TEI)*, $html as element()*) as item() {
+declare function tests:bibliography($tei as element(tei:TEI)*, $html as document-node()*) as element(m:test) {
 
     let $biblography-count-html := count($html//*[@id eq 'bibliography']//xhtml:p[common:contains-class(@class, 'bibl')])
     let $biblography-count-tei := count($tei//tei:back/tei:div[@type='listBibl']//tei:bibl)
@@ -509,7 +524,7 @@ declare function tests:bibliography($tei as element(tei:TEI)*, $html as element(
         </test>
 };
 
-declare function tests:section-tantra-warning($tei as element(tei:TEI)*, $html as element()*) as item() {
+declare function tests:section-tantra-warning($tei as element(tei:TEI)*, $html as document-node()*) as element(m:test) {
 
     let $tantra-warning-count-html := count($html//*[@id eq 'tantra-warning-title']//xhtml:p)
     let $tantra-warning-count-tei := count($tei//tei:front/tei:div[@type='warning']//tei:p)
@@ -525,7 +540,7 @@ declare function tests:section-tantra-warning($tei as element(tei:TEI)*, $html a
         </test>
 };
 
-declare function tests:translation-tantra-warning($tei as element(tei:TEI)*, $html as element()*) as item() {
+declare function tests:translation-tantra-warning($tei as element(tei:TEI)*, $html as document-node()*) as element(m:test) {
 
     let $tantra-warning-count-html := count($html//*[@id eq 'tantric-warning']//xhtml:p)
     let $tantra-warning-count-tei := count($tei//tei:teiHeader//tei:availability/tei:p[@type eq 'tantricRestriction'])
@@ -541,7 +556,7 @@ declare function tests:translation-tantra-warning($tei as element(tei:TEI)*, $ht
         </test>
 };
 
-declare function tests:glossary($tei as element(tei:TEI)*, $html as element()*) as item() {
+declare function tests:glossary($tei as element(tei:TEI)*, $html as document-node()*) as element(m:test) {
     
     let $glossary-count-tei := count($tei//tei:back/tei:div[@type='glossary']//tei:gloss)
     let $glossary-count-html := count($html//*[@id eq 'glossary']/*[common:contains-class(@class, 'glossary-item')])
@@ -592,7 +607,7 @@ declare function tests:glossary($tei as element(tei:TEI)*, $html as element()*) 
         </test>
 };
 
-declare function tests:refs($tei as element(tei:TEI)*, $html as element()*, $toh-key as xs:string){
+declare function tests:refs($tei as element(tei:TEI)*, $html as document-node()*, $toh-key as xs:string) as element(m:test) {
     
     let $tei-folios := translation:folios($tei, $toh-key)//m:folio[not(@rend eq 'blank')]
     let $html-refs := $html//xhtml:a[common:contains-class(@class, 'ref')]
@@ -637,7 +652,7 @@ declare function tests:normalize-whitespace($string as xs:string) as xs:string {
     fn:replace(fn:replace(normalize-space($string),'\s+(,|\.|\))', '$1'),'(\()\s+', '$1')
 };
 
-declare function tests:structure() as element() {
+declare function tests:structure() as element(m:results) {
 
     let $sections-structure := doc(concat($common:data-path, '/config/tests/sections-structure.xml'))
     
@@ -751,7 +766,7 @@ declare function tests:match-text-count($sections-structure) as element()* {
     )
 };
 
-declare function tests:lucene-test-languages() as element()* {
+declare function tests:lucene-test-languages() as element(m:langs) {
     <langs xmlns="http://read.84000.co/ns/1.0">
     {
         for $lang in $tests:lucene-tests/m:lang
@@ -766,7 +781,7 @@ declare function tests:lucene-test-languages() as element()* {
     </langs>
 };
 
-declare function tests:lucene-lang-data($lang as xs:string) as element()* {
+declare function tests:lucene-lang-data($lang as xs:string) as element(m:datas) {
     <datas xmlns="http://read.84000.co/ns/1.0">
     {
         $tests:lucene-tests/m:lang[lower-case(@xml:lang) eq $lang]/m:data
@@ -774,7 +789,7 @@ declare function tests:lucene-lang-data($lang as xs:string) as element()* {
     </datas>
 };
 
-declare function tests:lucene-tests($lang as xs:string) as element() {
+declare function tests:lucene-tests($lang as xs:string) as element(m:tests) {
     
     <tests xmlns="http://read.84000.co/ns/1.0">
     {
