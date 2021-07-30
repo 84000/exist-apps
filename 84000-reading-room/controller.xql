@@ -468,21 +468,21 @@ return (:$var-debug:)
                 <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
                     <forward url="{ download:file-path($exist:resource) }">
                         <set-header name="Content-Type" value="application/pdf"/>
-                        <set-header name="Content-Disposition" value="attachment"/>
+                        <set-header name='Content-Disposition' value='attachment; filename="{ $exist:resource }"'/>
                     </forward>
                 </dispatch>
             else if ($resource-suffix eq 'epub') then
                  <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
                     <forward url="{ download:file-path($exist:resource) }">
                         <set-header name="Content-Type" value="application/epub+zip"/>
-                        <set-header name="Content-Disposition" value="attachment"/>
+                        <set-header name='Content-Disposition' value='attachment; filename="{ $exist:resource }"'/>
                     </forward>
                 </dispatch>
             else if ($resource-suffix eq 'azw3') then
                  <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
                     <forward url="{ download:file-path($exist:resource) }">
-                        <set-header name="Content-Type" value="application/x-mobi8-ebook"/>
-                        <set-header name="Content-Disposition" value="attachment"/>
+                        <set-header name='Content-Type' value='application/x-mobi8-ebook'/>
+                        <set-header name='Content-Disposition' value='attachment; filename="{ $exist:resource }"'/>
                     </forward>
                 </dispatch>
             else if ($resource-suffix eq 'rdf') then
