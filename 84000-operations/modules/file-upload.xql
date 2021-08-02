@@ -210,7 +210,7 @@ declare function file-upload:conversion-local($submission as element()) as node(
     
     (: Return file contents :)
     return
-        util:parse(file:read(concat($sync-path, '/', encode-for-uri($submission/m:tei-file/@file-name))))
+        parse-xml(file:read(concat($sync-path, '/', encode-for-uri($submission/m:tei-file/@file-name))))
 };
 
 declare function file-upload:conversion-webservice($submission as element()) as item()? {
