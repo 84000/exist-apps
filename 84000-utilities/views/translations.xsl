@@ -558,11 +558,10 @@
                     </xsl:when>
                     
                     <xsl:otherwise>
-                        <div class="clearfix">
-                            <p class="text-muted italic">
-                                <xsl:value-of select="'No matching texts'"/>
-                            </p>
-                        </div>
+                        <hr/>
+                        <p class="text-muted italic">
+                            <xsl:value-of select="'No matching texts'"/>
+                        </p>
                     </xsl:otherwise>
                     
                 </xsl:choose>

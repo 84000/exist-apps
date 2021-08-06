@@ -5,11 +5,13 @@
     
     <xsl:template match="/m:response">
         
+        <xsl:variable name="work" select="m:source/@work"/>
+        
         <xsl:variable name="content">
             
             <xsl:variable name="work-string" as="xs:string">
                 <xsl:choose>
-                    <xsl:when test="m:source[@work eq 'UT23703']">
+                    <xsl:when test="$work eq 'UT23703'">
                         <xsl:value-of select="'Tengyur'"/>
                     </xsl:when>
                     <xsl:otherwise>
@@ -72,19 +74,24 @@
                                 
                                 <div class="container footer" id="source-footer">
                                     
-                                    <div id="ekangyur-description-{ position() }" class="well well-sml collapse text-center">
-                                        <xsl:call-template name="local-text">
-                                            <xsl:with-param name="local-key" select="'ekangyur-description-content'"/>
-                                        </xsl:call-template>
+                                    <div class="container">
+                                        <p class="text-center text-muted ">
+                                            <xsl:value-of select="concat(if($work eq 'UT23703') then 'eTengyur' else 'eKangyur', ', ', @etext-id, ', page ', @page-in-volume, ' (', @folio-in-etext, ').')"/>
+                                            <br/>
+                                            <a href="#etext-description-{ position() }" role="button" data-toggle="collapse" class="small text-muted">
+                                                <i class="fa fa-info-circle"/>
+                                                <xsl:value-of select="' '"/>
+                                                <xsl:call-template name="local-text">
+                                                    <xsl:with-param name="local-key" select="if($work eq 'UT23703') then 'etengyur-description-title' else 'ekangyur-description-title'"/>
+                                                </xsl:call-template>
+                                            </a>
+                                        </p>
                                     </div>
                                     
-                                    <div class="container bottom-margin">
-                                        <p class="text-center text-muted ">
-                                            <a href="#ekangyur-description-{ position() }" role="button" data-toggle="collapse">
-                                                <xsl:value-of select="concat('e', $work-string)"/>
-                                            </a>
-                                            <xsl:value-of select="concat(' ', @etext-id, ', page ', @page-in-volume, ' (', @folio-in-etext, ').')"/>
-                                        </p>
+                                    <div id="etext-description-{ position() }" class="well well-sml collapse text-center">
+                                        <xsl:call-template name="local-text">
+                                            <xsl:with-param name="local-key" select="if($work eq 'UT23703') then 'etengyur-description-content' else 'ekangyur-description-content'"/>
+                                        </xsl:call-template>
                                     </div>
                                     
                                 </div>

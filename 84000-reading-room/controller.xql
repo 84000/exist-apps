@@ -2,6 +2,7 @@ xquery version "3.0";
 
 declare namespace m = "http://read.84000.co/ns/1.0";
 declare namespace tei="http://www.tei-c.org/ns/1.0";
+declare namespace sm = "http://exist-db.org/xquery/securitymanager";
 
 import module namespace common="http://read.84000.co/common" at "modules/common.xql";
 import module namespace download="http://read.84000.co/download" at "modules/download.xql";
@@ -323,14 +324,7 @@ return (:$var-debug:)
         
         (: Source texts :)
         else if ($collection-path eq "source") then
-            if ($resource-suffix eq 'html') then
-                local:dispatch-html("/models/source.xq", "/views/html/source.xsl", 
-                    <parameters xmlns="http://exist.sourceforge.net/NS/exist">
-                        <add-parameter name="resource-id" value="{$resource-id}"/>
-                        <add-parameter name="resource-suffix" value="html"/>
-                    </parameters>
-                )
-            else if ($resource-suffix eq 'json') then
+            if ($resource-suffix eq 'json') then
                 local:dispatch("/models/source.xq", "/views/json/source.xq", 
                     <parameters xmlns="http://exist.sourceforge.net/NS/exist">
                         <add-parameter name="resource-id" value="{$resource-id}"/>
@@ -347,13 +341,12 @@ return (:$var-debug:)
                     </parameters>
                 )
             else
-                (: return the xml :)
                 local:dispatch("/models/source.xq", "", 
                     <parameters xmlns="http://exist.sourceforge.net/NS/exist">
                         <add-parameter name="resource-id" value="{$resource-id}"/>
-                        <add-parameter name="resource-suffix" value="xml"/>
+                        <add-parameter name="resource-suffix" value="{$resource-suffix}"/>
                     </parameters>
-                )
+                )(::)
         
         (: Search :)
         else if ($resource-id eq "search") then
@@ -447,9 +440,9 @@ return (:$var-debug:)
         
         (: TEI Editor :)
         (: Module located in operations app :)
-        else if ($resource-id = ("tei-editor") and $common:environment/m:url[@id eq 'operations'] and common:user-in-group('operations')) then
+        else if ($resource-id = ("tei-editor") and $common:environment/m:url[@id eq 'operations'](: and common:user-in-group('operations'):)) then
             <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-                <forward url="/84000-operations/models/{$resource-id}.xq">
+                <forward url="/84000-operations/models/tei-editor.xq">
                     <add-parameter name="resource-suffix" value="{$resource-suffix}"/>
                 </forward>
             </dispatch>

@@ -432,11 +432,11 @@ declare function local:part-content($content as element(tei:div)?, $render as xs
             (: Partial rendering - return some nodes (except the above) :)
             else if ($render eq 'preview' and ($nesting eq 0 or $section-index eq 1)) then 
                 if ($node-index le 8) then
-                    if(string-length(string-join($node/preceding-sibling::tei:* ! data(.), '')) lt 500) then
+                    if((string-length(string-join($node/preceding-sibling::tei:*//text(), '')) - string-length(string-join($node/preceding-sibling::tei:*/descendant::tei:note//text(), ''))) lt 500) then
                         $node
                     else ()
                 else ()
-                
+            
             (: 'none' or unspecified $render :)
             else ()
 

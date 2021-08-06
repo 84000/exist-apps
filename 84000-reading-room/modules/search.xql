@@ -141,6 +141,9 @@ declare function search:search($request as xs:string, $resource-id as xs:string,
                                 (:$result/@*,:)
                                 attribute link { local:match-link($result/node(), $tei-header) },
                                 common:mark-nodes($result/node(), $request-no-quotes, 'words')
+                                (:util:expand($result/node()):)
+                                (:kwic:expand($result):)
+                                (:$result/node():)
                             }
                         ,
                         

@@ -22,8 +22,7 @@ declare function translations:work-tei($work as xs:string) as element()* {
         $tei-content:translations-collection//tei:TEI
     else if($work = ($source:ekangyur-work, $source:etengyur-work)) then
         $tei-content:translations-collection//tei:TEI[tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl/tei:location[@work = $work]]
-    else
-        ()
+    else ()
 };
 
 declare function translations:files($text-statuses as xs:string*) as element() {

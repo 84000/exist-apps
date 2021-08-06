@@ -1293,7 +1293,7 @@
                     
                     <!-- Link to glossary -->
                     <xsl:variable name="entity" select="key('entity-instance', $glossary-item/@xml:id, $root)/parent::m:entity"/>
-                    <xsl:if test="$entity[m:content[@type eq 'glossary-definition'] or m:instance[not(@id eq $glossary-item/@xml:id)]]">
+                    <xsl:if test="$entity[m:content[@type eq 'glossary-definition']] or ($view-mode[@client eq 'browser'] and $entity[m:instance[not(@id eq $glossary-item/@xml:id)]])">
                         <div class="footer entity-content">
                             
                             <h4 class="heading">

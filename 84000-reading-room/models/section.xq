@@ -28,7 +28,7 @@ let $doc-type :=
         'atom'
     else
         $resource-suffix
-    
+
 (: Atom feeds default to published only, others not :)
 let $published-only := request:get-parameter('published-only', if($doc-type eq 'atom') then true() else false())
 (: Only include direct children texts (or groupings), don't go down the tree :)

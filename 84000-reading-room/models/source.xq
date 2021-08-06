@@ -54,7 +54,7 @@ let $source-text := source:etext-page($tei-location, $ref-sort-index, true(), $h
 let $translation-text := translation:folio-content($tei, $resource-id, $ref-resource-index)
 let $ref-1 := $translation-text//tei:ref[@xml:id][1]
 
-return 
+let $xml-response := 
     common:response(
         "source/folio", 
         $common:app-id,
@@ -100,7 +100,29 @@ return
             else if (lower-case($resource-suffix) = ('xml', 'txt')) then
                 source:etext-full($tei-location)
                 
-            else
-                ()
+            else ()
         )
+    )
+
+return
+    
+    (: return html data :)
+    if($resource-suffix = ('html')) then (
+        common:html($xml-response, concat($common:app-path, "/views/html/source.xsl"))
+    )
+    
+    (: return json data :)
+    else if($resource-suffix = ('json')) then (
+        ()
+    )
+    
+    (: return txt data :)
+    else if($resource-suffix = ('txt')) then (
+        ()
+    )
+    
+    (: return xml data :)
+    else (
+        util:declare-option("exist:serialize", "method=xml indent=no"),
+        $xml-response
     )
