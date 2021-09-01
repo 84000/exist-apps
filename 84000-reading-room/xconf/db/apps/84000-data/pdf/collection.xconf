@@ -9,12 +9,11 @@
         <range>
             
             <!-- file-versions.xml -->
-            <create qname="m:file-version">
-                <field name="file-version-file-name" match="@file-name" type="xs:string"/>
-                <field name="file-version-version" match="@version" type="xs:string"/>
-            </create>
+            <create qname="@file-name" type="xs:string"/>
+            <create qname="@version" type="xs:string"/>
             
         </range>
         
     </index>
+    
 </collection>

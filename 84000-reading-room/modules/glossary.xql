@@ -20,11 +20,17 @@ declare variable $glossary:tei :=
     collection($common:tei-path)//tei:TEI
         [tei:text/tei:back/tei:div[@type eq 'glossary']]
         [tei:teiHeader/tei:fileDesc/tei:publicationStmt
-            [@status = $tei-content:published-status-ids]
+            [@status = $common:environment/m:render/m:status[@type eq 'translation']/@status-id]
         ];
 
 declare variable $glossary:types := ('term', 'person', 'place', 'text');
 declare variable $glossary:modes := ('match', 'marked');
+
+declare variable $glossary:view-modes := 
+    <view-modes xmlns="http://read.84000.co/ns/1.0">
+        <view-mode id="default" client="browser" layout="full" glossary="no-cache" parts="all"/>,
+        <view-mode id="editor"  client="browser" layout="full" glossary="no-cache" parts="all"/>
+    </view-modes>;
 
 declare function local:lookup-options() as element() {
     <options>
@@ -71,7 +77,7 @@ declare function local:lang-field($valid-lang as xs:string) as xs:string {
         'full-term'
 };
 
-declare function glossary:glossary-entities($type as xs:string*, $lang as xs:string, $search as xs:string) as element(m:entities)? {
+declare function glossary:glossary-search($type as xs:string*, $lang as xs:string, $search as xs:string) as element(m:gloss)* {
     
     (: Search for terms :)
     let $valid-lang := common:valid-lang($lang)
@@ -99,32 +105,36 @@ declare function glossary:glossary-entities($type as xs:string*, $lang as xs:str
                 </bool>
         }
         </query>
-        
-    let $glosses :=
-        $glossary:tei//tei:back//tei:gloss
-            [@xml:id]
-            [if(count($valid-type) gt 0) then @type[. = $valid-type] else true()]
-            [tei:term
-                [not(@type = ('definition', 'alternative'))]
-                [if($valid-lang eq 'en') then not(@xml:lang) else (@xml:lang eq $valid-lang)]
-                [
-                    if(string-length($normalized-search) gt 1) then
-                        ft:query(., $query )
-                    else
-                        (: Slow! needs optimising :)
-                        if($valid-lang eq 'en') then
-                            matches(., concat('^(The\s+|A\s+|An\s+)?(', string-join(common:letter-variations($normalized-search), '|'), ')'), 'i')
-                        else if($valid-lang eq 'Sa-Ltn') then
-                            matches(., concat('^\s*(', string-join(common:letter-variations($normalized-search), '|'), ')'), 'i')
-                        else
-                            matches(., concat('^\s*', $normalized-search, ''), 'i')
-                ]
-            ]
     
-    return (
-        (:<m:entities>{ $query }</m:entities>:)
-        entities:entities(subsequence($glosses/@xml:id, 1, 1024), true(), true())
-    )
+    
+    let $terms :=
+        (: Longer strings - do a search :)
+        if(string-length($normalized-search) gt 1) then
+            if($valid-lang = ('en', '')) then
+                $glossary:tei//tei:back//tei:gloss/tei:term[ft:query(., $query)][not(@type = ('definition', 'alternative'))][not(@xml:lang)]
+            else
+                $glossary:tei//tei:back//tei:gloss/tei:term[ft:query(., $query)][not(@type = ('definition', 'alternative'))][@xml:lang = $valid-lang]
+        (: Single char strings - do a regex :)
+        else
+            let $match-regex :=
+                if($valid-lang eq 'en') then
+                    concat('^(The\s+|A\s+|An\s+)?(', string-join(common:letter-variations($normalized-search), '|'), ')')
+                else if($valid-lang eq 'Sa-Ltn') then
+                    concat('^\s*(', string-join(common:letter-variations($normalized-search), '|'), ')')
+                else
+                    concat('^\s*', $normalized-search, '')
+            return
+                if($valid-lang = ('en', '')) then
+                    $glossary:tei//tei:back//tei:gloss/tei:term[matches(., $match-regex, 'i')][not(@type = ('definition', 'alternative'))][not(@xml:lang)]
+                else
+                    $glossary:tei//tei:back//tei:gloss/tei:term[matches(., $match-regex, 'i')][not(@type = ('definition', 'alternative'))][@xml:lang = $valid-lang]
+    
+    return 
+        if(count($valid-type) gt 0) then
+            $terms/parent::tei:gloss[@xml:id][@type = $valid-type]
+        else
+            $terms/parent::tei:gloss[@xml:id]
+    
         
 };
 
@@ -272,32 +282,16 @@ declare function glossary:matching-gloss($term as xs:string, $lang as xs:string)
 
 declare function glossary:items($glossary-ids as xs:string*, $include-context as xs:boolean) as element(m:item)* {
     
-    for $gloss in 
-        if(count($glossary-ids) gt 0) then
-            $glossary:tei//tei:back//id($glossary-ids)[self::tei:gloss]
-        else ()
+    for $gloss in $glossary:tei//tei:back//id($glossary-ids)
+    where $gloss/self::tei:gloss
     return
         local:glossary-item($gloss, $include-context)
-
-};
-
-declare function glossary:sort-term($gloss as element(tei:gloss)) as element(m:sort-term) {
-
-    let $sort-term := $gloss/tei:term[not(@xml:lang) or @xml:lang eq 'en'][not(@type = ('definition','alternative'))][1]/data() ! normalize-space(.) ! lower-case(.) ! common:normalized-chars(.) ! common:alphanumeric(.)
-    let $terms-en := $gloss/tei:term[not(@xml:lang) or @xml:lang eq 'en'][not(@type = ('definition'))]/data() ! normalize-space(.)
-    let $term-word-count := max($terms-en ! count(tokenize(., '\s+')))
-    let $term-letter-count := max($terms-en ! string-length(.))
-    return
-        element { QName('http://read.84000.co/ns/1.0', 'sort-term') } {
-            attribute word-count { if($term-word-count) then $term-word-count else 0 },
-            attribute letter-count { if($term-letter-count) then $term-letter-count else 0 },
-            text { $sort-term }
-        }
-        
+    
 };
 
 declare function local:glossary-item($gloss as element(tei:gloss), $include-context as xs:boolean) as element(m:item) {
     
+    (: This needs updating - use m:entry and optimise :)
     element { QName('http://read.84000.co/ns/1.0', 'item') } {
         
         attribute id { $gloss/@xml:id },
@@ -318,7 +312,7 @@ declare function local:glossary-item($gloss as element(tei:gloss), $include-cont
                     $term/@type,
                     functx:capitalize-first(normalize-space($term/text()))
                 }
-            else if($term[not(@type = ('definition','alternative'))][@xml:lang][not(@xml:lang eq 'en')]) then
+            else if($term[@xml:lang][not(@xml:lang eq 'en')][not(@type = ('definition','alternative'))]) then
                 element { QName('http://read.84000.co/ns/1.0', 'term') } {
                     $term/@xml:lang,
                     $term/@type,
@@ -348,6 +342,7 @@ declare function local:glossary-item($gloss as element(tei:gloss), $include-cont
             let $fileDesc := $tei/tei:teiHeader/tei:fileDesc
             let $translation-id := tei-content:id($tei)
             let $type := tei-content:type($tei)
+            let $title := tei-content:title($tei)
             
             return
                 element { QName('http://read.84000.co/ns/1.0', 'text') } {
@@ -356,7 +351,7 @@ declare function local:glossary-item($gloss as element(tei:gloss), $include-cont
                     attribute type { $type },
                     attribute uri { concat($common:environment/m:url[@id eq 'reading-room'], '/', $type,'/', $translation-id, '.html#', $gloss/@xml:id/string()) },
                     
-                    element title { tei-content:title($tei) },
+                    element title { $title },
                     
                     element edition {
                         $fileDesc/tei:editionStmt/tei:edition[1]/text() ! concat(normalize-space(.), ' ') ! normalize-space(.) 
@@ -400,6 +395,21 @@ declare function local:glossary-item($gloss as element(tei:gloss), $include-cont
         else
             ()
      }
+};
+
+declare function glossary:sort-term($gloss as element(tei:gloss)) as element(m:sort-term) {
+
+    let $sort-term := $gloss/tei:term[not(@xml:lang) or @xml:lang eq 'en'][not(@type = ('definition','alternative'))][1]/data() ! normalize-space(.) ! lower-case(.) ! common:normalized-chars(.) ! common:alphanumeric(.)
+    let $terms-en := $gloss/tei:term[not(@xml:lang) or @xml:lang eq 'en'][not(@type = ('definition'))]/data() ! normalize-space(.)
+    let $term-word-count := max($terms-en ! count(tokenize(., '\s+')))
+    let $term-letter-count := max($terms-en ! string-length(.))
+    return
+        element { QName('http://read.84000.co/ns/1.0', 'sort-term') } {
+            attribute word-count { if($term-word-count) then $term-word-count else 0 },
+            attribute letter-count { if($term-letter-count) then $term-letter-count else 0 },
+            text { $sort-term }
+        }
+        
 };
 
 declare function glossary:matching-items($term as xs:string, $lang as xs:string) as element(m:glossary) {
@@ -562,18 +572,22 @@ declare function glossary:xml-response($tei as element(tei:TEI), $resource-id as
 
 declare function glossary:filter($tei as element(tei:TEI), $resource-id as xs:string, $resource-type as xs:string, $filter as xs:string, $search as xs:string) as element(m:part) {
     
-    let $entity-instance-ids := $entities:entities/m:entity/m:instance/@id/string()
-    
     let $glossary-cache := glossary:cache($tei, (), false())
     
     (: Pre-defined filters :)
     let $tei-gloss :=
         if($filter eq 'missing-entities') then
-            $tei//tei:back//tei:div[@type eq 'glossary']//tei:gloss[not(@xml:id = $entity-instance-ids)]
+            let $entity-instance-ids := $entities:entities//m:entity/m:instance/@id/string()
+            return
+                $tei//tei:back//tei:div[@type eq 'glossary']//tei:gloss[not(@xml:id = $entity-instance-ids)]
         else if($filter eq 'no-cache') then
             $tei//tei:back//tei:div[@type eq 'glossary']//tei:gloss[not(@xml:id = $glossary-cache/m:gloss[m:location]/@id)]
         else if($filter eq 'blank-form') then
             ()
+        else if($entities:flags//m:flag[@id eq $filter]) then
+            let $entity-instance-ids := $entities:entities//m:entity[m:flag[@type eq $filter]]/m:instance/@id/string()
+            return
+                $tei//tei:back//tei:div[@type eq 'glossary']//tei:gloss[@xml:id = $entity-instance-ids]
         else
             $tei//tei:back//tei:div[@type eq 'glossary']//tei:gloss[@xml:id]
     
@@ -602,7 +616,7 @@ declare function glossary:filter($tei as element(tei:TEI), $resource-id as xs:st
     
     (: Return the glossary - filtered :)
     return
-        element { node-name($glossary) }{
+        element { QName('http://read.84000.co/ns/1.0', 'part') }{
         
             $glossary/@*,
             attribute filter { $filter },

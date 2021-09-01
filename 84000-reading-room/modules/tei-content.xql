@@ -14,25 +14,29 @@ declare variable $tei-content:knowledgebase-collection := collection($common:kno
 
 declare variable $tei-content:text-statuses := 
     <text-statuses xmlns="http://read.84000.co/ns/1.0">
-        <status status-id="0" group="not-started">Not started</status>
-        <status status-id="1" group="published" marked-up="true" target-date="true">Published</status>
-        <status status-id="1.a" group="published" marked-up="true" target-date="true">Ready to publish</status>
-        <status status-id="2" group="translated" marked-up="true" target-date="true">Marked up, awaiting final proofing</status>
-        <status status-id="2.a" group="translated" marked-up="true">Markup in process</status>
-        <status status-id="2.b" group="translated" target-date="true">Awaiting markup</status>
-        <status status-id="2.c" group="translated">Awaiting editor's OK for markup</status>
-        <status status-id="2.d" group="translated" target-date="true">Copyediting complete. Preparation for markup</status>
-        <status status-id="2.e" group="translated">Being copyedited</status>
-        <status status-id="2.f" group="translated" target-date="true">Review complete. Awaiting copyediting</status>
-        <status status-id="2.g" group="translated">In editorial review</status>
-        <status status-id="2.h" group="translated" target-date="true">Awaiting review</status>
-        <status status-id="3" group="in-translation">Current translation projects</status>
-        <status status-id="4" group="in-application">Application pending</status>
+        <!-- Translation statuses -->
+        <status type="translation"  status-id="0"    group="not-started"                                        >Not started</status>
+        <status type="translation"  status-id="1"    group="published"      marked-up="true" target-date="true" >Published</status>
+        <status type="translation"  status-id="1.a"  group="published"      marked-up="true" target-date="true" >Ready to publish</status>
+        <status type="translation"  status-id="2"    group="translated"     marked-up="true" target-date="true" >Marked up, awaiting final proofing</status>
+        <status type="translation"  status-id="2.a"  group="translated"     marked-up="true"                    >Markup in process</status>
+        <status type="translation"  status-id="2.b"  group="translated"                      target-date="true" >Awaiting markup</status>
+        <status type="translation"  status-id="2.c"  group="translated"                                         >Awaiting editor's OK for markup</status>
+        <status type="translation"  status-id="2.d"  group="translated"                      target-date="true" >Copyediting complete. Preparation for markup</status>
+        <status type="translation"  status-id="2.e"  group="translated"                                         >Being copyedited</status>
+        <status type="translation"  status-id="2.f"  group="translated"                      target-date="true" >Review complete. Awaiting copyediting</status>
+        <status type="translation"  status-id="2.g"  group="translated"                                         >In editorial review</status>
+        <status type="translation"  status-id="2.h"  group="translated"                      target-date="true" >Awaiting review</status>
+        <status type="translation"  status-id="3"    group="in-translation"                                     >Current translation projects</status>
+        <status type="translation"  status-id="4"    group="in-application"                                     >Application pending</status>
+        <!-- Article statuses -->
+        <status type="article"      status-id="1"    group="published"      marked-up="true"                    >Published</status>
+        <status type="article"      status-id="1.a"  group="published"      marked-up="true"                    >Published under revision</status>
+        <status type="article"      status-id="2"    group="in-progress"    marked-up="true"                    >Proofreading</status>
+        <status type="article"      status-id="2.a"  group="in-progress"    marked-up="true"                    >Final Review</status>
+        <status type="article"      status-id="2.b"  group="in-progress"    marked-up="true"                    >Copyediting</status>
+        <status type="article"      status-id="3"    group="not-started"    marked-up="true"                    >Stub</status>
     </text-statuses>;
-
-declare variable $tei-content:published-status-ids := $tei-content:text-statuses/m:status[@group = ('published')]/@status-id;
-declare variable $tei-content:in-progress-status-ids := $tei-content:text-statuses/m:status[@group = ('translated', 'in-translation')]/@status-id;
-declare variable $tei-content:marked-up-status-ids := $tei-content:text-statuses/m:status[@marked-up = 'true']/@status-id;
 
 declare variable $tei-content:title-types :=
     <title-types xmlns="http://read.84000.co/ns/1.0">
@@ -56,7 +60,7 @@ declare function tei-content:type($tei as element(tei:TEI)) as xs:string {
     
     if($tei/tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:idno[@m:kb-id]) then
         'knowledgebase'
-    else if($tei/tei:teiHeader/tei:fileDesc[@type = ('section', 'grouping')]) then 
+    else if($tei/tei:teiHeader/tei:fileDesc/@type = ('section', 'grouping')) then 
         'section'
     else
         'translation'
@@ -99,23 +103,21 @@ declare function tei-content:tei($resource-id as xs:string, $resource-type as xs
             $tei-content:translations-collection
     
     (: Lookup key :)
+    let $resource-id-lowercase := lower-case($resource-id)
     let $tei := 
-        let $resource-id := lower-case($resource-id)
-        return
-            if($resource-type eq 'translation') then
-                $collection//tei:sourceDesc/tei:bibl[@key = $resource-id][1]/ancestor::tei:TEI
-            else if($resource-type eq 'knowledgebase') then
-                $collection//tei:publicationStmt/tei:idno[@m:kb-id eq $resource-id][1]/ancestor::tei:TEI
-            else ()
+        if($resource-type eq 'translation') then
+            $collection//tei:sourceDesc/tei:bibl[@key = $resource-id-lowercase][1]/ancestor::tei:TEI
+        else if($resource-type eq 'knowledgebase') then
+            $collection//tei:publicationStmt/tei:idno[@m:kb-id eq $resource-id-lowercase][1]/ancestor::tei:TEI
+        else ()
     
     (: Fallback to UT number :)
+    let $resource-id-uppercase := upper-case($resource-id)
     let $tei := 
-        let $resource-id := upper-case($resource-id)
-        return
-            if(not($tei)) then
-                $collection//tei:publicationStmt/tei:idno[@xml:id eq $resource-id]/ancestor::tei:TEI
-            else $tei
-    
+        if(not($tei)) then
+            $collection//tei:publicationStmt/tei:idno/id($resource-id-uppercase)/ancestor::tei:TEI
+        else $tei
+        
     return $tei
     
 };
@@ -124,7 +126,7 @@ declare function tei-content:title($tei as element(tei:TEI)) as xs:string? {
     (: Returns a standardised title in a given tei doc :)
     
     let $title := $tei//tei:titleStmt/tei:title[@xml:lang eq 'en'][normalize-space(text())][1] ! normalize-space(text())
-            
+    
     return
         if(not($title))then
             concat($tei//tei:titleStmt/tei:title[@xml:lang eq 'Sa-Ltn'][normalize-space(text())][1] ! normalize-space(text()), ' (awaiting English title)')
@@ -204,42 +206,39 @@ declare function tei-content:title-set($tei as element(tei:TEI), $type as xs:str
 declare function tei-content:translation-status($tei as element(tei:TEI)?) as xs:string {
 
     let $status := $tei//tei:teiHeader//tei:publicationStmt/@status
-
     return
-        if($status[string() le ''])then
-            '0'
-        else if($status[string()]) then
-            $status
-        else
-            ''
+        if($status[string() gt '']) then $status
+        (: No value - return '0' :)
+        else if($status)then '0'
+        (: No attribute - return '' :)
+        else ''
 };
 
 declare function tei-content:translation-status-group($tei as element(tei:TEI)) as xs:string? {
+
     (: Returns the status group of the text :)
     let $translation-status := tei-content:translation-status($tei)
+    let $status-type := if(tei-content:type($tei) eq 'translation') then 'translation' else 'article'
+    
     return
-        $tei-content:text-statuses/m:status[@status-id eq $translation-status]/@group ! string()
+        $tei-content:text-statuses/m:status[@type eq $status-type][@status-id eq $translation-status]/@group ! string()
 };
 
-declare function tei-content:text-statuses-sorted() as element(m:text-statuses) {
+declare function tei-content:text-statuses-sorted($type as xs:string) as element(m:text-statuses) {
 
-    element { QName('http://read.84000.co/ns/1.0', 'text-statuses') } { 
+    element { node-name($tei-content:text-statuses) } { 
         let $sorted-statuses :=
-            for $status in $tei-content:text-statuses/m:status
+            for $status in $tei-content:text-statuses/m:status[@type eq $type]
                 let $status-tokenized := tokenize($status/@status-id, '\.')
                 order by 
-                    if($status/@status-id eq '0') then
-                        1
-                    else
-                        0, 
+                    if($status/@status-id eq '0') then 1
+                    else 0, 
                     if(count($status-tokenized) gt 0 and functx:is-a-number($status-tokenized[1])) then 
                         xs:integer($status-tokenized[1])
-                    else
-                        99,
+                    else 99,
                     if(count($status-tokenized) gt 1) then 
                         $status-tokenized[2]
-                    else
-                        ''
+                    else ''
             return 
                 $status
         
@@ -254,10 +253,10 @@ declare function tei-content:text-statuses-sorted() as element(m:text-statuses) 
     
 };
 
-declare function tei-content:text-statuses-selected($selected-ids as xs:string*) as element(m:text-statuses) {
+declare function tei-content:text-statuses-selected($selected-ids as xs:string*, $type as xs:string) as element(m:text-statuses) {
 
-    element { QName('http://read.84000.co/ns/1.0', 'text-statuses') } { 
-        for $status in tei-content:text-statuses-sorted()/m:status
+    element { node-name($tei-content:text-statuses) } { 
+        for $status in tei-content:text-statuses-sorted($type)/m:status
         return 
             element { node-name($status) } { 
                 $status/@*,
@@ -274,7 +273,8 @@ declare function tei-content:text-statuses-selected($selected-ids as xs:string*)
 
 declare function tei-content:source-bibl($tei as element(tei:TEI), $resource-id as xs:string) as element(tei:bibl)? {
     (: Returns a bibl node based on a resource-id :)
-    let $bibl := $tei//tei:sourceDesc/tei:bibl[@key eq lower-case($resource-id)][1]
+    let $resource-id := lower-case($resource-id)
+    let $bibl := $tei//tei:sourceDesc/tei:bibl[@key eq $resource-id][1]
     return
         if(not($bibl)) then
             $tei//tei:sourceDesc/tei:bibl[1]
@@ -330,16 +330,15 @@ declare function tei-content:ancestors($tei as element(tei:TEI), $resource-id as
     
     return
         if($parent-tei) then
-            <parent xmlns="http://read.84000.co/ns/1.0" id="{ $parent-id }" nesting="{ $nest }" type="{ $parent-tei//tei:teiHeader/tei:fileDesc/@type }">
-                <titles>
-                {
+            element { QName('http://read.84000.co/ns/1.0', 'parent') } {
+                attribute id { $parent-id },
+                attribute nesting { $nest },
+                attribute type {  $parent-tei//tei:teiHeader/tei:fileDesc/@type  },
+                element titles {
                     tei-content:title-set($parent-tei, 'mainTitle')
-                }
-                </titles>
-                { 
-                    tei-content:ancestors($parent-tei, '', $nest + 1) 
-                }
-            </parent>
+                },
+                tei-content:ancestors($parent-tei, '', $nest + 1)
+            }
          else ()
 };
 
@@ -356,17 +355,27 @@ declare function tei-content:locked-by-user($tei as element(tei:TEI)) as xs:stri
 
 declare function tei-content:document-url($tei as element(tei:TEI)) as xs:string {
     
-    let $document-uri := base-uri($tei)
+    (:let $document-uri := base-uri($tei)
     let $document-uri-tokenised := tokenize($document-uri, '/')
     let $document-filename := $document-uri-tokenised[last()]
     let $document-path := substring-before($document-uri, $document-filename)
     return
-        concat($document-path, $document-filename)
+        concat($document-path, $document-filename):)
+    base-uri($tei)
 
 };
 
 declare function tei-content:last-updated($fileDesc as element()?) as xs:dateTime {
     xs:dateTime(($fileDesc/tei:notesStmt/tei:note[@type eq "lastUpdated"][@date-time gt ''][1]/@date-time, '2010-01-01T00:00:00')[1])
+};
+
+declare function tei-content:last-modified($tei as element(tei:TEI)) as xs:dateTime {
+    let $document-uri := base-uri($tei)
+    let $document-uri-tokenised := tokenize($document-uri, '/')
+    let $document-filename := $document-uri-tokenised[last()]
+    let $document-path := substring-before($document-uri, $document-filename)
+    return
+        xmldb:last-modified(concat("xmldb:exist://", $document-path), $document-filename)
 };
 
 declare function tei-content:valid-xml-id($tei as element(tei:TEI), $xml-id as xs:string) as xs:boolean {

@@ -16,9 +16,25 @@ import module namespace entities="http://read.84000.co/entities" at "../modules/
 let $resource-id := request:get-parameter('resource-id', '')[1]
 let $resource-suffix := request:get-parameter('resource-suffix', '')
 let $view-mode := request:get-parameter('view-mode', 'default')
+let $view-mode := $knowledgebase:view-modes/m:view-mode[@id eq $view-mode]
 
 let $tei := tei-content:tei($resource-id, 'knowledgebase')
 let $glossary := knowledgebase:glossary($tei)
+
+let $knowledgebase-content :=
+    element { QName('http://read.84000.co/ns/1.0', 'knowledgebase') } {
+        knowledgebase:page($tei),
+        knowledgebase:publication($tei),
+        knowledgebase:taxonomy($tei),
+        knowledgebase:article($tei),
+        knowledgebase:bibliography($tei),
+        knowledgebase:end-notes($tei),
+        $glossary
+    }
+
+let $caches := tei-content:cache($tei, false())/m:*
+let $glossary-ids := $glossary//tei:gloss/@xml:id
+let $entities := entities:entities(($glossary-ids, tei-content:id($tei)), true(), true(), true())
 
 let $xml-response := 
     if(not($resource-suffix = ('tei'))) then
@@ -30,27 +46,15 @@ let $xml-response :=
                 element { QName('http://read.84000.co/ns/1.0', 'request') } {
                     attribute resource-id { $resource-id },
                     attribute doc-type { request:get-parameter('resource-suffix', 'html') },
-                    $knowledgebase:view-modes/m:view-mode[@id eq $view-mode]
+                    $view-mode
                 },
                 
-                (: Knowledgebase content :)
-                element { QName('http://read.84000.co/ns/1.0', 'knowledgebase') } {
+                $knowledgebase-content,
                 
-                    knowledgebase:page($tei),
-                    knowledgebase:publication($tei),
-                    knowledgebase:taxonomy($tei),
-                    knowledgebase:article($tei),
-                    knowledgebase:bibliography($tei),
-                    knowledgebase:end-notes($tei),
-                    $glossary
-                    
-                },
-                
-                (: Include caches :)
-                tei-content:cache($tei, false())/m:*,
+                $caches,
                 
                 (: Entities :)
-                entities:entities($glossary//tei:gloss/@xml:id/string(), true(), true()),
+                $entities,
                 
                 (: Calculated strings :)
                 element { QName('http://read.84000.co/ns/1.0', 'replace-text') } {
@@ -70,12 +74,12 @@ let $xml-response :=
 
 return
     
-    (: return html data :)
+    (: return html :)
     if($resource-suffix = ('html')) then (
         common:html($xml-response, concat($common:app-path, "/views/html/knowledgebase.xsl"))
     )
     
-    (: return tei data :)
+    (: return tei :)
     else if($resource-suffix = ('tei')) then (
         util:declare-option("exist:serialize", "method=xml indent=no"),
         $tei

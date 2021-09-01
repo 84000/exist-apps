@@ -112,7 +112,7 @@
                 <xsl:value-of select="$page-title"/>
             </title>
             
-            <link rel="stylesheet" type="text/css" charset="utf-8">
+            <link rel="stylesheet" type="text/css">
                 <xsl:choose>
                     <xsl:when test="$page-type = ('communications')">
                         <xsl:attribute name="href" select="concat($front-end-path, '/css/84000-comms.css', $app-version-url-attribute)"/>

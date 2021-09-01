@@ -180,7 +180,7 @@
                         <div class="small text-muted">
                             <xsl:value-of select="'File: '"/>
                             <span class="break">
-                                <xsl:value-of select="@uri"/>
+                                <xsl:value-of select="@document-url"/>
                             </span>
                         </div>
                     </xsl:with-param>

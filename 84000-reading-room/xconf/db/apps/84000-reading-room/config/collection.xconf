@@ -8,11 +8,10 @@
         <range>
             
             <!-- texts.en.xml | texts.zh.xml -->
-            <create qname="m:item">
-                <field name="item-key" match="@key" type="xs:string"/>
-            </create>
+            <create qname="@key" type="xs:string"/>
             
         </range>
         
     </index>
+    
 </collection>

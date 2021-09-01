@@ -16,43 +16,62 @@ import module namespace functx="http://www.functx.com";
 
 declare option exist:serialize "method=xml indent=no";
 
-(: the id of the text :)
-let $resource-id := request:get-parameter('resource-id', '')
-let $resource-suffix := request:get-parameter('resource-suffix', '')
-let $ref-index := request:get-parameter('ref-index', '')
-let $folio := request:get-parameter('folio', '')
-let $page := request:get-parameter('page', '')
-let $highlight := tokenize(request:get-parameter('highlight', ''), ',')
+(: Request parameters :)
+let $request := 
+    element { QName('http://read.84000.co/ns/1.0', 'request')} {
+        attribute model { "source" }, 
+        attribute resource-id { request:get-parameter('resource-id', '') },
+        attribute resource-suffix { request:get-parameter('resource-suffix', '') },
+        attribute ref-index { request:get-parameter('ref-index', '') },
+        attribute folio { request:get-parameter('folio', '') },
+        attribute page { request:get-parameter('page', '') },
+        attribute highlight { request:get-parameter('highlight', '') }
+    }
 
-let $tei := tei-content:tei($resource-id, 'translation')
-let $tei-location := translation:location($tei, $resource-id)
+let $tei := tei-content:tei($request/@resource-id, 'translation')
+(: Suppress cache if there's a highlight :)
+let $cache-timestamp := if($request[@highlight eq '']) then tei-content:last-modified($tei) else ()
+let $cached := common:cache-get($request, $cache-timestamp)
+return if($cached) then $cached else
+
+let $tei-location := translation:location($tei, $request/@resource-id)
 
 (: Prefer ref-index parameter :)
 let $ref-resource-index := 
-    if(functx:is-a-number($ref-index)) then
-        xs:integer($ref-index)
+    if(functx:is-a-number($request/@ref-index)) then
+        xs:integer($request/@ref-index)
     
     (: legacy links using page parameter :)
-    else if(functx:is-a-number($page)) then
-        xs:integer($page)
+    else if(functx:is-a-number($request/@page)) then
+        xs:integer($request/@page)
     
     (: Accept a folio ref e.g. F.1.a, and convert that into a page number :)
-    else if ($folio gt '') then
-        source:folio-to-page($tei, $resource-id, $folio)
+    else if ($request/@folio gt '') then
+        source:folio-to-page($tei, $request/@resource-id, $request/@folio)
     
-    else
-        0
+    else 0
 
 (: Convert the ref-index, which is effectively the index of the ref in the TEI, into the source page :)
 let $ref-sort-index := 
     if($ref-resource-index gt 0) then
-        translation:folio-sort-index($tei, $resource-id, $ref-resource-index)
+        translation:folio-sort-index($tei, $request/@resource-id, $ref-resource-index)
     else
         0
 
-let $source-text := source:etext-page($tei-location, $ref-sort-index, true(), $highlight)
-let $translation-text := translation:folio-content($tei, $resource-id, $ref-resource-index)
+let $source-text := source:etext-page($tei-location, $ref-sort-index, true(), tokenize($request/@highlight, ','))
+let $translation-text := translation:folio-content($tei, $request/@resource-id, $ref-resource-index)
 let $ref-1 := $translation-text//tei:ref[@xml:id][1]
+
+let $translation-response := 
+    element { QName('http://read.84000.co/ns/1.0', 'translation')} {
+        attribute id { tei-content:id($tei) },
+        attribute status { tei-content:translation-status($tei) },
+        attribute status-group { tei-content:translation-status-group($tei) },
+        translation:titles($tei),
+        tei-content:ancestors($tei, $request/@resource-id, 1), 
+        translation:toh($tei, $request/@resource-id),
+        $translation-text  
+    }
 
 let $xml-response := 
     common:response(
@@ -60,14 +79,7 @@ let $xml-response :=
         $common:app-id,
         (
             (: Include request parameters :)
-            <request 
-                xmlns="http://read.84000.co/ns/1.0" 
-                resource-id="{ $resource-id }" 
-                ref-index="{ $ref-index }"
-                ref-sort-index="{ $ref-sort-index }"
-                ref-resource-index="{ $ref-resource-index }"
-                folio="{ $folio }"
-                page="{ $page }"/>,
+            $request,
             
             (: Get a page :)
             if($ref-sort-index gt 0) then (
@@ -76,28 +88,17 @@ let $xml-response :=
                 $source-text,
                 
                 (: The translation :)
-                <translation 
-                    xmlns="http://read.84000.co/ns/1.0" 
-                    id="{ tei-content:id($tei) }"
-                    status="{ tei-content:translation-status($tei) }"
-                    status-group="{ tei-content:translation-status-group($tei) }">
-                    {
-                        translation:titles($tei),
-                        tei-content:ancestors($tei, $resource-id, 1), 
-                        translation:toh($tei, $resource-id),
-                        $translation-text  
-                    }
-                </translation>,
+                $translation-response,
                 
                 (: Include back link to the passage in the text :)
                 <back-link 
                     xmlns="http://read.84000.co/ns/1.0"
-                    url="{ concat($common:environment/m:url[@id eq 'reading-room'], '/translation/', $resource-id, '.html', '?part=', $ref-1/@xml:id, '#', $ref-1/@xml:id) }"/>
+                    url="{ concat($common:environment/m:url[@id eq 'reading-room'], '/translation/', $request/@resource-id, '.html', '?part=', $ref-1/@xml:id, '#', $ref-1/@xml:id) }"/>
                 
             )
             
             (: Get the whole text :)
-            else if (lower-case($resource-suffix) = ('xml', 'txt')) then
+            else if (lower-case($request/@resource-suffix) = ('xml', 'txt')) then
                 source:etext-full($tei-location)
                 
             else ()
@@ -107,18 +108,8 @@ let $xml-response :=
 return
     
     (: return html data :)
-    if($resource-suffix = ('html')) then (
-        common:html($xml-response, concat($common:app-path, "/views/html/source.xsl"))
-    )
-    
-    (: return json data :)
-    else if($resource-suffix = ('json')) then (
-        ()
-    )
-    
-    (: return txt data :)
-    else if($resource-suffix = ('txt')) then (
-        ()
+    if($request/@resource-suffix = ('html')) then (
+        common:html($xml-response, concat($common:app-path, "/views/html/source.xsl"), $cache-timestamp)
     )
     
     (: return xml data :)

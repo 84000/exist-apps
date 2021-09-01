@@ -9,7 +9,11 @@ import module namespace common="http://read.84000.co/common" at "common.xql";
 import module namespace tei-content="http://read.84000.co/tei-content" at "tei-content.xql";
 
 declare variable $knowledgebase:tei := collection($common:knowledgebase-path)//tei:TEI;
-declare variable $knowledgebase:tei-published := $knowledgebase:tei[tei:teiHeader/tei:fileDesc/tei:publicationStmt[@status = $tei-content:published-status-ids]];
+declare variable $knowledgebase:tei-render := 
+    $knowledgebase:tei
+        [tei:teiHeader/tei:fileDesc/tei:publicationStmt
+            [@status = $common:environment/m:render/m:status[@type eq 'article']/@status-id]
+        ];
 declare variable $knowledgebase:title-prefixes := '(The|A)';
 
 declare variable $knowledgebase:view-modes := 
@@ -36,7 +40,7 @@ declare function knowledgebase:sort-name($tei as element(tei:TEI)) as xs:string?
 };
 
 
-declare function knowledgebase:titles($tei as element(tei:TEI)) as element(m:page) {
+declare function knowledgebase:titles($tei as element(tei:TEI)) as element(m:titles) {
     
     let $tei-titles := tei-content:titles($tei)
     return
@@ -67,7 +71,8 @@ declare function knowledgebase:page($tei as element(tei:TEI)) as element(m:page)
         element { QName('http://read.84000.co/ns/1.0', 'page') }{
             attribute xml:id { tei-content:id($tei) },
             attribute kb-id { $kb-id },
-            attribute uri { base-uri($tei) },
+            attribute document-url { tei-content:document-url($tei) },
+            attribute locked-by-user { tei-content:locked-by-user($tei) },
             attribute last-updated { max(tei-content:last-updated($tei/tei:teiHeader/tei:fileDesc)) },
             attribute version-number { tei-content:version-number(tei-content:version-number-str($tei)) },
             attribute status { tei-content:translation-status($tei) },
@@ -89,7 +94,7 @@ declare function knowledgebase:pages($ids as xs:string*, $published-only as xs:b
     
     for $tei in 
         if($published-only) then
-            $knowledgebase:tei-published[if(count($ids) gt 0) then id($ids) else true()]
+            $knowledgebase:tei-render[if(count($ids) gt 0) then id($ids) else true()]
         else
             $knowledgebase:tei[if(count($ids) gt 0) then id($ids) else true()]
     return 

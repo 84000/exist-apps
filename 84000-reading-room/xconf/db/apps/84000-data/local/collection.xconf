@@ -9,14 +9,9 @@
         <range>
             
             <!-- translation-status.xml -->
-            <create qname="m:text">
-                <field name="text-id" match="@text-id" type="xs:string"/>
-            </create>
-            
-            <create qname="m:target-date">
-                <field name="text-target-date-time" match="@date-time" type="xs:dateTime"/>
-                <field name="text-target-status-id" match="@status-id" type="xs:string"/>
-            </create>
+            <create qname="@text-id" type="xs:string"/>
+            <create qname="@status-id" type="xs:string"/>
+            <create qname="@date-time" type="xs:dateTime"/>
             
         </range>
         

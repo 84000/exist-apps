@@ -142,9 +142,9 @@ declare function source:etext-page($work as xs:string, $volume-number as xs:inte
     let $etext-volume-number := source:etext-volume-number($work, $volume-number)
     let $etext-id := source:etext-id($work, $etext-volume-number)
     let $etext-volume := source:etext-volume($etext-id)
-    let $page := $etext-volume//tei:p[xs:integer(@n) eq $page-number]
-    let $preceding-page := $etext-volume//tei:p[xs:integer(@n) eq $page-number - 1]
-    let $trailing-page := $etext-volume//tei:p[xs:integer(@n) eq $page-number + 1]
+    let $page := $etext-volume//tei:p[@n eq $page-number]
+    let $preceding-page := $etext-volume//tei:p[@n eq $page-number - 1]
+    let $trailing-page := $etext-volume//tei:p[@n eq $page-number + 1]
     let $preceding-lines := 1
     let $preceding-milestone-n := count($preceding-page/tei:milestone[@unit eq 'line']) - ($preceding-lines - 1)
     let $trailing-lines := 3

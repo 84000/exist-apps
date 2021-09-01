@@ -25,7 +25,7 @@ let $request-toh-max := request:get-parameter('toh-max', '')
 (: Validate the status :)
 let $texts-status := 
     if(not($request-page-filter = ('new-version-translations', 'new-version-placeholders', 'search'))) then 
-        $tei-content:text-statuses/m:status[@status-id/string() eq $request-page-filter][not(@status-id eq '0')]/@status-id
+        $tei-content:text-statuses/m:status[@type eq 'translation'][@status-id/string() eq $request-page-filter][not(@status-id eq '0')]/@status-id
     else ()
     
 (: Store a file if requested :)
@@ -93,7 +93,7 @@ return
             utilities:request(),
             $translations-local,
             $translations-master,
-            $tei-content:text-statuses,
+            tei-content:text-statuses-sorted('translation'),
             $store-file
         )
     )

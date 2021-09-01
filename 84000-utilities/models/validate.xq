@@ -3,6 +3,7 @@ xquery version "3.0" encoding "UTF-8";
 import module namespace utilities="http://utilities.84000.co/utilities" at "../modules/utilities.xql";
 import module namespace common="http://read.84000.co/common" at "../../84000-reading-room/modules/common.xql";
 import module namespace tei-content="http://read.84000.co/tei-content" at "../../84000-reading-room/modules/tei-content.xql";
+import module namespace translation="http://read.84000.co/translation" at "../../84000-reading-room/modules/translation.xql";
 import module namespace translations="http://read.84000.co/translations" at "../../84000-reading-room/modules/translations.xql";
 
 import module namespace validation="http://exist-db.org/xquery/validation" at "java:org.exist.xquery.functions.validation.ValidationModule";
@@ -30,9 +31,9 @@ let $schema :=
 let $work-tei := translations:work-tei($work)
 let $files := 
     if($type eq 'placeholders') then
-        $work-tei[not(tei:teiHeader/tei:fileDesc/tei:publicationStmt/@status = $tei-content:published-status-ids)]
+        $work-tei[not(tei:teiHeader/tei:fileDesc/tei:publicationStmt/@status = $translation:published-status-ids)]
     else if($type eq 'translations') then
-        $work-tei[tei:teiHeader/tei:fileDesc/tei:publicationStmt/@status = $tei-content:published-status-ids]
+        $work-tei[tei:teiHeader/tei:fileDesc/tei:publicationStmt/@status = $translation:published-status-ids]
     else
         collection($common:sections-path)//tei:TEI
 

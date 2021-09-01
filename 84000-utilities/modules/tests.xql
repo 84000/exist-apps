@@ -24,11 +24,11 @@ declare function tests:translations($translation-id as xs:string) as element(m:r
     
     let $selected-translations := 
         if ($translation-id eq 'all') then 
-            $section:texts//tei:TEI[tei:teiHeader/tei:fileDesc/tei:publicationStmt/@status = $tei-content:marked-up-status-ids]
+            $section:texts//tei:TEI[tei:teiHeader/tei:fileDesc/tei:publicationStmt/@status = $translation:marked-up-status-ids]
         else if ($translation-id eq 'published') then 
-            $section:texts//tei:TEI[tei:teiHeader/tei:fileDesc/tei:publicationStmt/@status = $tei-content:published-status-ids]
+            $section:texts//tei:TEI[tei:teiHeader/tei:fileDesc/tei:publicationStmt/@status = $translation:published-status-ids]
         else if ($translation-id eq 'in-markup') then 
-            $section:texts//tei:TEI[tei:teiHeader/tei:fileDesc/tei:publicationStmt/@status = $tei-content:marked-up-status-ids[not(. = $tei-content:published-status-ids)]]
+            $section:texts//tei:TEI[tei:teiHeader/tei:fileDesc/tei:publicationStmt/@status = $translation:marked-up-status-ids[not(. = $translation:published-status-ids)]]
         else
             tei-content:tei(lower-case($translation-id), 'translation')
     
@@ -259,8 +259,9 @@ declare function tests:scoped-ids($tei as element(tei:TEI)) as element(m:test) {
 };
 
 declare function tests:valid-pointers($tei as element(tei:TEI)) as element(m:test) {
-
-    let $invalid-ptrs := $tei//tei:ptr[empty(text())]/@target[not(substring-after(., '#') = ($tei//*/@xml:id))]
+    
+    let $tei-id := tei-content:id($tei)
+    let $invalid-ptrs := $tei//tei:ptr[empty(text())]/@target[not(matches(., concat('^', functx:escape-for-regex(concat('#', $tei-id)), '')))]
     
     return
         <test xmlns="http://read.84000.co/ns/1.0"

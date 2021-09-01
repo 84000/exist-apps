@@ -28,7 +28,8 @@ let $term-langs :=
 
 (: The requested entity :)
 let $entity-id := request:get-parameter('entity-id', '')
-let $request-entity := entities:entity($entities:entities/m:entity[@xml:id eq $entity-id], true(), true())
+let $request-entity := $entities:entities//m:entity[@xml:id eq $entity-id]
+let $request-entity := entities:entity($request-entity, true(), true(), true())
 let $entity-show := 
     if($request-entity) then
         $request-entity
@@ -36,35 +37,40 @@ let $entity-show :=
 
 (: Search parameters :)
 (: Default to find similar matches to selected entity :)
-let $search := 
-    request:get-parameter('search', 
-        (
-            $entity-show/m:label[@primary-transliterated eq 'true'][@xml:lang eq 'Bo-Ltn']/data(), 
-            $entity-show/m:label[@primary eq 'true'][@xml:lang eq 'Sa-Ltn']/data(), 
-            'a'
-        )[1]
-    ) ! normalize-space(.)
-        
-let $type := 
-    request:get-parameter('type[]', 
-        (
-            $entities:types/m:type[@id eq $entity-show/m:type[1]/@type]/@id, 
-            $entities:types/m:type[1]/@id
-        )[1]
-    )
+let $search-default := (
+        $entity-show/m:label[@primary-transliterated eq 'true'][@xml:lang eq 'Bo-Ltn']/data(), 
+        $entity-show/m:label[@primary eq 'true'][@xml:lang eq 'Sa-Ltn']/data(), 
+        'a'
+    )[1]
+let $search := request:get-parameter('search', $search-default) ! normalize-space(.)
 
-let $term-lang := 
-    request:get-parameter('term-lang',
-        (
-            $entity-show/m:label[@primary-transliterated eq 'true'][@xml:lang eq 'Bo-Ltn']/@xml:lang, 
-            $entity-show/m:label[@primary eq 'true'][@xml:lang eq 'Sa-Ltn']/@xml:lang, 
-            'Bo-Ltn'
-         )[1]
-    ) ! common:valid-lang(.)
+let $type-default := (
+        $entities:types/m:type[@id eq $entity-show/m:type[1]/@type]/@id, 
+        $entities:types/m:type[1]/@id
+    )[1]
+let $type := request:get-parameter('type[]', $type-default)
+
+let $term-lang-default := (
+        $entity-show/m:label[@primary-transliterated eq 'true'][@xml:lang eq 'Bo-Ltn']/@xml:lang, 
+        $entity-show/m:label[@primary eq 'true'][@xml:lang eq 'Sa-Ltn']/@xml:lang, 
+        'Bo-Ltn'
+    )[1]
+let $term-lang := request:get-parameter('term-lang', $term-lang-default) ! common:valid-lang(.)
 
 let $view-mode := request:get-parameter('view-mode', '')
+let $flagged := request:get-parameter('flagged', '')
 
-let $entity-list := glossary:glossary-entities($entities:types/m:type[@id = $type]/@glossary-type, $term-lang, $search)
+let $type-glossary-type := $entities:types/m:type[@id = $type]/@glossary-type
+let $glossary-search := 
+    if(not($entities:flags//m:flag[@id eq  $flagged])) then
+        glossary:glossary-search($type-glossary-type, $term-lang, $search)
+    else()
+
+let $entity-list := 
+    if($entities:flags//m:flag[@id eq  $flagged]) then
+        entities:flagged($flagged, true(), true(), false())
+    else
+        entities:entities($glossary-search/@xml:id, true(), true(), false())
 
 (:return if(true()) then $entity-list else:)
 
@@ -89,7 +95,7 @@ let $entity-list :=
     order by 
         if(string-length($search) gt 1) then min($matching-terms ! count(tokenize(data(), '\s+'))) else 1 ascending,
         (:min($matching-terms ! string-length(.)) ascending,:)
-        $matching-terms[1]
+        lower-case($matching-terms[1])
     
     return
         $entity
@@ -99,7 +105,9 @@ let $entity-show :=
     if(not($entity-show)) then
         $entity-list[1]
     else $entity-show
-    
+
+let $entity-types := common:add-selected-children($entities:types, $type)
+let $term-langs := common:add-selected-children($term-langs, $term-lang)
 return
     common:response(
         "glossary", 
@@ -108,22 +116,17 @@ return
             <request xmlns="http://read.84000.co/ns/1.0" 
                 entity-id="{ $entity-id }" 
                 term-lang="{ $term-lang }" 
-                view-mode="{ $view-mode }">
+                view-mode="{ $view-mode }"
+                flagged="{ $flagged }">
                 <search>{ $search }</search>
                 {
-                    common:add-selected-children($entities:types, $type),
-                    common:add-selected-children($term-langs, $term-lang)
+                    $entity-types,
+                    $term-langs,
+                    $glossary:view-modes/m:view-mode[@id eq $view-mode]
                 }
             </request>,
-            <browse-entities xmlns="http://read.84000.co/ns/1.0">
-            {
-                $entity-list
-            }
-            </browse-entities>,
-            <show-entity xmlns="http://read.84000.co/ns/1.0">
-            {
-                $entity-show
-            }
-            </show-entity>
+            <browse-entities xmlns="http://read.84000.co/ns/1.0">{ $entity-list }</browse-entities>,
+            <show-entity xmlns="http://read.84000.co/ns/1.0">{ $entity-show }</show-entity>,
+            $entities:flags
         )
     )

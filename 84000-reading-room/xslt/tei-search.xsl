@@ -293,7 +293,7 @@
                             
                             <!-- Pagination -->
                             <xsl:if test="m:search/m:results/@count-records gt m:search/m:results/@max-records">
-                                <xsl:copy-of select="common:pagination(m:search/m:results/@first-record, m:search/m:results/@max-records, m:search/m:results/@count-records, concat($action, '?search=', m:search/m:request/text()))"/>
+                                <xsl:copy-of select="common:pagination(m:search/m:results/@first-record, m:search/m:results/@max-records, m:search/m:results/@count-records, concat($action, if(contains($action, '?')) then '&amp;' else '?', 'search=', m:search/m:request/text()))"/>
                             </xsl:if>
                             
                         </xsl:when>

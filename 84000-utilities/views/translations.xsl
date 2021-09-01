@@ -426,15 +426,24 @@
                                             </ul>
                                             
                                             <!-- Location of tei file -->
-                                            <div class="small text-muted sml-margin bottom">
-                                                <xsl:value-of select="'TEI file: '"/>
-                                                <a class="break">
+                                            <div class="small sml-margin bottom">
+                                                <a class="break text-muted">
                                                     <xsl:attribute name="href" select="concat($reading-room-path, '/translation/', $text-id, '.tei')"/>
                                                     <xsl:attribute name="target" select="concat($text-id, '.tei')"/>
-                                                    <xsl:attribute name="title" select="@uri"/>
-                                                    <xsl:value-of select="@uri"/>
+                                                    <xsl:attribute name="title" select="@document-url"/>
+                                                    <xsl:value-of select="'TEI file: '"/>
+                                                    <xsl:value-of select="@document-url"/>
                                                 </a>
                                             </div>
+                                            
+                                            <!-- Alert if file locked -->
+                                            <xsl:if test="@locked-by-user gt ''">
+                                                <div class="sml-margin bottom">
+                                                    <span class="label label-danger">
+                                                        <xsl:value-of select="concat('Local TEI file is currenly locked by user ', @locked-by-user)"/>
+                                                    </span>
+                                                </div>
+                                            </xsl:if>
                                             
                                             <!-- Version update message -->
                                             <div class="small italic text-danger">
@@ -447,6 +456,15 @@
                                                     </xsl:when>
                                                 </xsl:choose>
                                             </div>
+                                            
+                                            <!-- Alert if file locked -->
+                                            <xsl:if test="$environment/m:store-conf[@type eq 'client'] and $group-master-first-text[@locked-by-user gt '']">
+                                                <div class="sml-margin bottom">
+                                                    <span class="label label-danger">
+                                                        <xsl:value-of select="concat('Master TEI file is currenly locked by user ', $group-master-first-text/@locked-by-user)"/>
+                                                    </span>
+                                                </div>
+                                            </xsl:if>
                                             
                                         </td>
                                         

@@ -57,7 +57,7 @@
                             <a class="small text-muted">
                                 <xsl:attribute name="href" select="concat($reading-room-path, '/translation/', @id, '.tei')"/>
                                 <xsl:attribute name="target" select="@id"/>
-                                <xsl:value-of select="@uri"/>
+                                <xsl:value-of select="@document-url"/>
                             </a>
                         </div>
                         
@@ -124,7 +124,7 @@
                                                     <a class="small text-muted">
                                                         <xsl:attribute name="href" select="concat($reading-room-path, '/translation/', m:text/@id, '.tei')"/>
                                                         <xsl:attribute name="target" select="m:text/@id"/>
-                                                        <xsl:value-of select="m:text/@uri"/>
+                                                        <xsl:value-of select="m:text/@document-url"/>
                                                     </a>
                                                 </div>
                                             </td>

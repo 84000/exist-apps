@@ -24,7 +24,7 @@ let $request-id := request:get-parameter('id', '') (: in get :)
 let $post-id := request:get-parameter('post-id', '') (: in post :)
 let $form-action := request:get-parameter('form-action', '')
 let $tei := 
-    if($post-id) then
+    if($post-id) then 
         tei-content:tei($post-id, 'translation')
     else
         tei-content:tei($request-id, 'translation')
@@ -117,7 +117,7 @@ let $xml-response :=
             element { QName('http://read.84000.co/ns/1.0', 'translation-status') } {
                 translation-status:texts($text-id, true())
             },
-            tei-content:text-statuses-selected(tei-content:translation-status($tei)),
+            tei-content:text-statuses-selected(tei-content:translation-status($tei), 'translation'),
             contributors:persons(false(), false()),
             contributors:teams(true(), false(), false()),
             $tei-content:title-types,

@@ -23,8 +23,7 @@ let $updated :=
         file-upload:generate-tei($text-id, $submission-id),
         translation-status:update-submission($text-id, $submission-id)
     )
-    else
-        ()
+    else ()
     
 let $xml-response := 
     common:response(
@@ -42,7 +41,8 @@ let $xml-response :=
             <translation 
                 xmlns="http://read.84000.co/ns/1.0" 
                 id="{ $text-id }"
-                status="{ tei-content:translation-status($tei) }">
+                status="{ tei-content:translation-status($tei) }"
+                status-group="{ tei-content:translation-status-group($tei) }">
                 { 
                     element title { 
                         tei-content:title($tei) 

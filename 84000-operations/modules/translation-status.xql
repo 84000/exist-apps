@@ -23,7 +23,7 @@ declare namespace m="http://read.84000.co/ns/1.0";
 declare namespace tei="http://www.tei-c.org/ns/1.0";
 
 declare variable $translation-status:data := doc(concat($common:data-path, '/local/translation-status.xml'));
-declare variable $translation-status:text-statuses-sorted := tei-content:text-statuses-sorted();
+declare variable $translation-status:text-statuses-sorted := tei-content:text-statuses-sorted('translation');
 
 declare function translation-status:texts($text-ids as xs:string*) as element(m:text)* {
     translation-status:texts($text-ids, false())
@@ -68,16 +68,15 @@ declare function translation-status:target-date-texts($date-start-str as xs:stri
 declare function translation-status:text($text as element(m:text), $include-submissions as xs:boolean) as element(m:text)? {
     
     (: Get the translation status :)
-    let $text-id := $text/@text-id
-    let $tei := tei-content:tei($text-id, 'translation')
+    let $tei := tei-content:tei($text/@text-id, 'translation')
     let $translation-status := tei-content:translation-status($tei)
-    let $translation-status-index := $translation-status:text-statuses-sorted/m:status[@status-id eq $translation-status]/@index ! xs:integer(.)
+    let $translation-status-index := $translation-status:text-statuses-sorted/m:status[@type eq 'translation'][@status-id eq $translation-status]/@index ! xs:integer(.)
     
     (: Get the next due date after now :)
-    let $status-surpassable := exists($translation-status:text-statuses-sorted/m:status[@target-date][xs:integer(@index) lt $translation-status-index])
-    let $statuses-surpassed := $translation-status:text-statuses-sorted/m:status[xs:integer(@index) ge $translation-status-index]/@status-id
-    let $next-not-surpassed-index := max($translation-status:text-statuses-sorted/m:status[@status-id = $text/m:target-date[@date-time]/@status-id][not(@status-id = $statuses-surpassed)]/@index ! xs:integer(.))
-    let $next-not-surpassed-id := $translation-status:text-statuses-sorted/m:status[xs:integer(@index) eq $next-not-surpassed-index]/@status-id
+    let $status-surpassable := exists($translation-status:text-statuses-sorted/m:status[@type eq 'translation'][@target-date][xs:integer(@index) lt $translation-status-index])
+    let $statuses-surpassed := $translation-status:text-statuses-sorted/m:status[@type eq 'translation'][xs:integer(@index) ge $translation-status-index]/@status-id
+    let $next-not-surpassed-index := max($translation-status:text-statuses-sorted/m:status[@type eq 'translation'][@status-id = $text/m:target-date[@date-time]/@status-id][not(@status-id = $statuses-surpassed)]/@index ! xs:integer(.))
+    let $next-not-surpassed-id := $translation-status:text-statuses-sorted/m:status[@type eq 'translation'][xs:integer(@index) eq $next-not-surpassed-index]/@status-id
     
     where $tei
     return
@@ -91,7 +90,7 @@ declare function translation-status:text($text as element(m:text), $include-subm
             for $child-node in $text/node()
             return
                 
-                if( $child-node[self::m:target-date] ) then
+                if($child-node/self::m:target-date) then
                     
                     (: Process target dates :)
                     let $status-surpassed := ($child-node/@status-id = $statuses-surpassed)
@@ -107,20 +106,19 @@ declare function translation-status:text($text as element(m:text), $include-subm
                             attribute due-days { $due-days },
                             $child-node/node()
                         }
-                        
-                else if( $child-node[self::m:submission]) then
-                    (: Process submissions separately :)
-                    () 
-                else
-                    (: Otherwise just copy the node :)
-                    $child-node
+                
+                (: Process submissions separately :)
+                else if($child-node/self::m:submission) then () 
+                
+                (: Otherwise just copy the node :)
+                else $child-node
+                
              ,
              
              (: Add submissions :)
              if($include-submissions) then
                 translation-status:submissions($text)
-             else
-                ()
+             else ()
         }
 };
 
@@ -306,16 +304,14 @@ declare function translation-status:update($text-id as xs:string) as element()? 
            xs:integer($cached-word-count)
         else if(tei-content:translation-status-group($tei) eq 'published') then
             translation:word-count($tei)
-        else
-           0
+        else 0
    
     let $glossary-count := 
         if(tei-content:is-current-version($tei-version-str, $cached-version-str) and functx:is-a-number($cached-glossary-count)) then
            xs:integer($cached-glossary-count)
         else if(tei-content:translation-status-group($tei) eq 'published') then
             translation:glossary-count($tei)
-        else
-           0
+        else 0
     
     let $new-value := 
         element { QName('http://read.84000.co/ns/1.0', 'text') }{
@@ -338,8 +334,7 @@ declare function translation-status:update($text-id as xs:string) as element()? 
                 text { $common:line-ws },
                 $existing-value/m:action-note
             )
-            else
-                ()
+            else ()
             ,
             
             (: Progress note :)
@@ -355,8 +350,7 @@ declare function translation-status:update($text-id as xs:string) as element()? 
                 text { $common:line-ws },
                 $existing-value/m:progress-note
             )
-            else
-                ()
+            else ()
             ,
             
             (: Text note :)
@@ -372,8 +366,7 @@ declare function translation-status:update($text-id as xs:string) as element()? 
                 text { $common:line-ws },
                 $existing-value/m:text-note
             )
-            else
-                ()
+            else ()
             ,
             
             (: Contract :)
@@ -394,15 +387,14 @@ declare function translation-status:update($text-id as xs:string) as element()? 
                 text { $common:line-ws },
                 $existing-value/m:contract
             )
-            else
-                ()
+            else ()
             ,
             
             (: ~ Target dates
                 Date input is named based on @index in the text-statuses-selected
             :)
             (:$existing-value/m:target-date:)
-            for $text-status in tei-content:text-statuses-selected(tei-content:translation-status($tei))/m:status[@target-date]
+            for $text-status in tei-content:text-statuses-selected(tei-content:translation-status($tei), 'translation')/m:status[@target-date]
                 let $request-target-date := request:get-parameter(concat('target-date-', $text-status/@index), '')
                 let $existing-target-date := $existing-value/m:target-date[@status-id eq $text-status/@status-id]
             return 
@@ -417,8 +409,7 @@ declare function translation-status:update($text-id as xs:string) as element()? 
                     text { $common:line-ws },
                     $existing-target-date
                 )
-                else
-                    ()
+                else ()
              ,
            
             (: Include existing submissions, unless it's removal is in request :)
@@ -438,8 +429,8 @@ declare function translation-status:update($text-id as xs:string) as element()? 
                    attribute user { common:user-name() }
                }
             )
-            else
-               (),
+            else ()
+            ,
             text { $common:node-ws }
        }
    

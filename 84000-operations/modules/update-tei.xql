@@ -41,6 +41,7 @@ declare function update-tei:minor-version-increment($tei as element(tei:TEI), $f
     
     let $existing-editionStmt := $fileDesc/tei:editionStmt
     
+    where not(tei-content:locked-by-user($tei) gt '')
     return (
         (: Do the update :)
         common:update('text-version', $existing-editionStmt, $new-editionStmt, $fileDesc, $fileDesc/tei:titleStmt),
@@ -66,7 +67,8 @@ declare function local:add-note($tei as element(tei:TEI), $update as xs:string, 
                     $value
             }
         }
-    
+        
+    where not(tei-content:locked-by-user($tei) gt '')
     return
         common:update('add-note', (), $note, $tei//tei:fileDesc/tei:notesStmt, ())
 
@@ -76,8 +78,9 @@ declare function update-tei:publication-status($tei as element(tei:TEI)) as elem
     
     let $request-parameter-names := request:get-parameter-names()
     
-    (: exist:batch-transaction should defer triggers until all updates are made :)
+    where not(tei-content:locked-by-user($tei) gt '')
     return
+        (: exist:batch-transaction should defer triggers until all updates are made :)
         (# exist:batch-transaction #) {
             
             let $parent := $tei//tei:fileDesc
@@ -375,7 +378,9 @@ declare function update-tei:title-statement($tei as element(tei:TEI)) as element
         $container-ws
     }
     
-    where $parent and ($existing-value or $new-value)
+    where 
+        not(tei-content:locked-by-user($tei) gt '')
+        and $parent and ($existing-value or $new-value)
     return
         (# exist:batch-transaction #) {
             
@@ -426,8 +431,7 @@ declare function update-tei:locations($tei as element(tei:TEI)) as element()* {
         return
             substring-after($parameter, $paramater-base)
         
-        return
-            (
+        return (
             
             (: add bibl whitespace :)
             if ($bibl-index gt 1) then
@@ -472,7 +476,9 @@ declare function update-tei:locations($tei as element(tei:TEI)) as element()* {
         $existing-value/tei:bibl[last()]/following-sibling::node()
     }
         
-        where $parent and ($existing-value or $new-value)
+    where 
+        not(tei-content:locked-by-user($tei) gt '')
+        and $parent and ($existing-value or $new-value)
     return
         (# exist:batch-transaction #) {
             
@@ -502,7 +508,6 @@ declare function update-tei:locations($tei as element(tei:TEI)) as element()* {
 declare function update-tei:update-glossary($tei as element(tei:TEI), $glossary-id as xs:string) as element()* {
     
     (: To create a new item pass a $glossary-id that is unused :)
-    
     let $parent := $tei//tei:back//tei:list[@type eq 'glossary']
     
     (: Look for an existing item :)
@@ -621,18 +626,22 @@ declare function update-tei:update-glossary($tei as element(tei:TEI), $glossary-
     
     let $insert-following := $existing-item/preceding-sibling::tei:item[1]
     
-    where $parent and ($existing-item or $new-value)
+    where 
+        not(tei-content:locked-by-user($tei) gt '')
+        and $parent and ($existing-item or $new-value)
     return (
     
-        (: Do the update :)
+        (: Update the glossary entry :)
         common:update('glossary-item', $existing-item, $new-value, $parent, $insert-following),
         
-        (: If we are removing then also remove the entity instance and refresh the cache :)
+        (: If we are removing the instance then also remove the entity instance and refresh the cache :)
         if ($remove) then (
             update-tei:cache-glossary($tei, 'none'),
             update-entity:remove-instance($glossary-id)
         )
-        else ()
+        (: Update the entity instance :)
+        else 
+            update-entity:update-instance($glossary-id)
         
         (:element debug {
             attribute form-action { request:get-parameter('form-action', '') },
@@ -802,28 +811,32 @@ declare function update-tei:knowledgebase-header($tei as element(tei:TEI)) as el
                     else $node   
                 }
         
-        (: Do update :)
-        let $update-header := common:update('knowledgebase-header', $fileDesc, $new-fileDesc, (), ())
-            
-        return (
-            
-            (: Return update :)
-            $update-header,
-            
-            if ($update-header[self::m:updated]) then (
-                (: Note the status update :)
-                if ($request-status ne $existing-status) then
-                    local:add-note($tei, 'publication-status', $request-status, $request-status)
-                else ()
-                ,
-                (: Increment the version number if not already done :)
-                if($request-is-current-version) then
-                    update-tei:minor-version-increment($tei, 'knowledgebase-header')
-                else ()
-            )
-            else ()
+        
+        where not(tei-content:locked-by-user($tei) gt '')
+        return
+        
+            (: Do update :)
+            let $update-header := common:update('knowledgebase-header', $fileDesc, $new-fileDesc, (), ())
                 
-        )
+            return (
+                
+                (: Return update :)
+                $update-header,
+                
+                if ($update-header[self::m:updated]) then (
+                    (: Note the status update :)
+                    if ($request-status ne $existing-status) then
+                        local:add-note($tei, 'publication-status', $request-status, $request-status)
+                    else ()
+                    ,
+                    (: Increment the version number if not already done :)
+                    if($request-is-current-version) then
+                        update-tei:minor-version-increment($tei, 'knowledgebase-header')
+                    else ()
+                )
+                else ()
+                    
+            )
         
     } (: close exist:batch-transaction :)
 };
@@ -903,7 +916,7 @@ declare function update-tei:markup($tei as element(tei:TEI), $markdown as xs:str
         else
             $current-tei
     
-    where $current-tei
+    where not(tei-content:locked-by-user($tei) gt '') and $current-tei
     return 
         common:update('tei-markup', $current-tei, $new-tei, (), ())
 
@@ -920,7 +933,8 @@ declare function update-tei:add-element($tei as element(tei:TEI), $passage-id as
     
     (: Validate the request :)
     where 
-        count($new-element-tokenized) eq 3
+        not(tei-content:locked-by-user($tei) gt '')
+        and count($new-element-tokenized) eq 3
         and (
             ($new-element-source eq 'itemPara' and $passage[self::tei:p[parent::tei:item[parent::tei:list]]])
             or ($new-element-source eq 'head' and $passage[self::tei:head])
@@ -1049,7 +1063,9 @@ declare function update-tei:comment($tei as element(tei:TEI), $passage-id as xs:
             else ()
         }
     
-    where $current-tei
+    where 
+        not(tei-content:locked-by-user($tei) gt '')
+        and $current-tei
     return
         element { QName('http://read.84000.co/ns/1.0', 'updated') } {
         

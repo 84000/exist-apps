@@ -10,7 +10,7 @@ import module namespace store="http://read.84000.co/store" at "../modules/store.
 
 declare variable $local:tei := 
     collection($common:translations-path)//tei:TEI
-        [tei:teiHeader/tei:fileDesc/tei:publicationStmt[@status = $tei-content:marked-up-status-ids]];
+        [tei:teiHeader/tei:fileDesc/tei:publicationStmt[@status = $translation:marked-up-status-ids]];
 
 (: Cache glossary :)
 declare function local:cache() {

@@ -12,7 +12,7 @@ return
     (: exist:batch-transaction should defer triggers until all updates are made :)
     (# exist:batch-transaction #) {
         
-        for $tei in $tei-content:translations-collection//tei:TEI[tei:teiHeader/tei:fileDesc[normalize-space(tei:editionStmt/tei:edition/text()[1]) gt ''](:/tei:publicationStmt[@status = $tei-content:published-status-ids]:)(:[tei:idno/@xml:id eq "UT22084-001-001"]:)]
+        for $tei in $tei-content:translations-collection//tei:TEI[tei:teiHeader/tei:fileDesc[normalize-space(tei:editionStmt/tei:edition/text()[1]) gt ''](:/tei:publicationStmt[@status = $translation:published-status-ids]:)(:[tei:idno/@xml:id eq "UT22084-001-001"]:)]
             let $id := tei-content:id($tei)
             order by $id
             

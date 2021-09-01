@@ -2,10 +2,61 @@ module namespace update-entity = "http://operations.84000.co/update-entity";
 
 import module namespace common = "http://read.84000.co/common" at "../../84000-reading-room/modules/common.xql";
 import module namespace entities = "http://read.84000.co/entities" at "../../84000-reading-room/modules/entities.xql";
+import module namespace glossary = "http://read.84000.co/glossary" at "../../84000-reading-room/modules/glossary.xql";
 import module namespace functx="http://www.functx.com";
 
 declare namespace m = "http://read.84000.co/ns/1.0";
 declare namespace tei = "http://www.tei-c.org/ns/1.0";
+
+declare function update-entity:create($label-lang as xs:string, $label-text as xs:string, $instance-id as xs:string, $entity-type as xs:string, $instance-type as xs:string, $flag as xs:string) as element()? {
+    
+    let $entity := 
+        element { QName('http://read.84000.co/ns/1.0', 'entity') } {
+            
+            attribute xml:id { entities:next-id() },
+            if($label-lang eq 'Bo-Ltn') then
+                element label {
+                    attribute xml:lang { 'bo' },
+                    text { common:bo-from-wylie($label-text) }
+                }
+            else 
+                element label {
+                    attribute xml:lang { $label-lang },
+                    text { $label-text }
+                }
+            ,
+            element type {
+                attribute type { $entity-type }
+            },
+            element instance {
+                attribute id { $instance-id },
+                attribute type { $instance-type }
+            },
+            if($entities:flags//m:flag[@id eq $flag]) then
+                element flag {
+                        attribute type { $flag },
+                        attribute user { common:user-name() },
+                        attribute timestamp { current-dateTime() }
+                    }
+            else ()
+        }
+    return 
+        common:update('new-entity', (), $entity, (), $entities:entities//m:entity[last()])
+};
+
+declare function update-entity:create($gloss as element(tei:gloss), $flag as xs:string) as element()? {
+    
+    let $label-term := (
+            $gloss/tei:term[@xml:lang eq 'bo'], 
+            $gloss/tei:term[@xml:lang eq 'Bo-Ltn'],
+            $gloss/tei:term[@xml:lang eq 'Sa-Ltn']
+        )[normalize-space(text())][1]
+    
+    let $entity-type := $entities:types//m:type[@glossary-type eq $gloss/@type]/@id
+    where $label-term and $entity-type
+    return 
+        update-entity:create($label-term/@xml:lang, $label-term/data(), $gloss/@xml:id, $entity-type, 'glossary-item', $flag)
+};
 
 (: Update labels, types and content :)
 declare function update-entity:headers($entity-id as xs:string?) as element()? {
@@ -25,7 +76,10 @@ declare function update-entity:headers($entity-id as xs:string?) as element()? {
     let $knowledgebase-id := request:get-parameter('knowledgebase-id', '')
     let $instance-new := ($glossary-id, $knowledgebase-id)[not(. eq '')]
     let $instance-remove := request:get-parameter('instance-remove', '')
+    let $instance-existing := $existing-entity/m:instance[@id eq $instance-new]
+    let $instance-use-definition := request:get-parameter('use-definition', '')
     let $entity-types := $entities:types/m:type
+    let $entity-flags := $entities:flags/m:flag
     
     where $entity-id gt '' and count($entity-labels[not(. eq '')]) gt 0
     return
@@ -53,7 +107,7 @@ declare function update-entity:headers($entity-id as xs:string?) as element()? {
                         (: Text - if Sanskrit parse hyphens :)
                         text {
                             if ($label-lang eq 'Sa-Ltn') then
-                                replace($label-text, '\-', '­')
+                                replace($label-text, '\-', '­'(: This is a soft-hyphen :))
                             else
                                 $label-text
                         }
@@ -61,8 +115,15 @@ declare function update-entity:headers($entity-id as xs:string?) as element()? {
                     }
                 ),
                 
-                (: Add valid posted entity type(s) :)
-                for $entity-type in request:get-parameter('entity-type[]', '')[. = $entity-types/@id/string()]
+                (: Copy existing entity entity type(s) that are in the post :)
+                for $entity-type in $existing-entity/m:type[@type = request:get-parameter('entity-type[]', '')]
+                return (
+                    common:ws(2),
+                    $entity-type
+                ),
+                
+                (: Add other posted entity type(s) :)
+                for $entity-type in request:get-parameter('entity-type[]', '')[not(. = ($existing-entity/m:type/@type/string(), ''))]
                 return (
                     common:ws(2),
                     element type {
@@ -70,11 +131,22 @@ declare function update-entity:headers($entity-id as xs:string?) as element()? {
                     }
                 ),
                 
-                (: Copy existing entity type(s) :)
-                for $entity-type in $existing-entity/m:type[not(@type = $entity-types/@id/string())]
+                (: Copy existing entity flag(s) that are in the post - this retains the user / timestamp :)
+                for $entity-flag in $existing-entity/m:flag[@type = request:get-parameter('entity-flag[]', '')]
                 return (
                     common:ws(2),
-                    $entity-type
+                    $entity-flag
+                ),
+                
+                (: Add other posted entity flag(s) :)
+                for $flag-type in request:get-parameter('entity-flag[]', '')[not(. = ($existing-entity/m:flag/@type/string(), ''))]
+                return (
+                    common:ws(2),
+                    element flag {
+                        attribute type { $flag-type },
+                        attribute user { common:user-name() },
+                        attribute timestamp { current-dateTime() }
+                    }
                 ),
                 
                 (: Instance(s) of this entity :)
@@ -84,24 +156,27 @@ declare function update-entity:headers($entity-id as xs:string?) as element()? {
                     common:ws(2),
                     $instance
                 ),
+                
                 (: Add an instance for glossary-id :)
                 if($glossary-id gt '' and not($instance-remove eq $glossary-id)) then (
-                    
                     common:ws(2),
-                    element instance {
-                        attribute id { $glossary-id },
-                        attribute type { 'glossary-item' }
-                    }
-                    
+                    if(not($instance-existing)) then
+                        element instance {
+                            attribute id { $glossary-id },
+                            attribute type { 'glossary-item' }
+                        }
+                    else
+                        $instance-existing
                 )
                 else if($knowledgebase-id gt '' and not($instance-remove eq $knowledgebase-id)) then (
-                    
                     common:ws(2),
-                    element instance {
-                        attribute id { $knowledgebase-id },
-                        attribute type { 'knowledgebase-article' }
-                    }
-                    
+                    if(not($instance-existing)) then
+                        element instance {
+                            attribute id { $knowledgebase-id },
+                            attribute type { 'knowledgebase-article' }
+                        }
+                    else
+                        $instance-existing
                 )
                 else ()
                 ,
@@ -145,6 +220,8 @@ declare function update-entity:headers($entity-id as xs:string?) as element()? {
                     common:ws(2),
                     element content {
                         attribute type { 'glossary-notes' },
+                        attribute user { common:user-name() },
+                        attribute timestamp { current-dateTime() },
                         text { $entity-notes }
                     }
                 ),
@@ -155,7 +232,7 @@ declare function update-entity:headers($entity-id as xs:string?) as element()? {
         where $parent and ($existing-entity or $new-value)
         return 
             (: Do the update :)
-            common:update('entity', $existing-entity, $new-value, $parent, ())
+            common:update('entity', $existing-entity, $new-value, (), $entities:entities//m:entity[last()])
             
             (:element update-debug {
                 attribute entity-id { $entity-id },
@@ -172,7 +249,16 @@ declare function update-entity:resolve($entity-id as xs:string, $target-entity-i
     
     (: Merge into same entity :)
     if($predicate eq 'sameAs')then
+    
         update-entity:merge($entity-id, $target-entity-id)
+    
+    (: Remove a relation :)
+    else if($predicate eq 'removeRelation')then
+        
+        let $entity := $entities:entities/id($entity-id)[self::m:entity]
+        let $relation := $entity/m:relation[@id eq $target-entity-id]
+        return
+            common:update('entity-resolve', $relation, (), (), ())
     
     (: Set the predicate for the relationship :)
     else if($entities:predicates//m:predicate[@xml:id = $predicate]) then
@@ -199,7 +285,7 @@ declare function update-entity:resolve($entity-id as xs:string, $target-entity-i
         where $entity and $target-entity
         return
             (: Update target :)
-            common:update('entity-merge', $entity, $entity-updated, (), ())
+            common:update('entity-resolve', $entity, $entity-updated, (), ())
     
     else ()
     
@@ -226,10 +312,10 @@ declare function update-entity:merge($entity-id as xs:string, $target-entity-id 
     return (
         
         (: Update target :)
-        common:update('entity-merge', $target-entity, $target-entity-new, $parent, ()),
+        common:update('entity-merge', $target-entity, $target-entity-new, (), ()),
         
         (: Delete source :)
-        common:update('entity-remove', $entity, (), $parent, ())
+        common:update('entity-remove', $entity, (), (), ())
         
         (:element update-debug {
             attribute entity-id { $entity-id },
@@ -291,11 +377,133 @@ declare function update-entity:match-instance($entity-id as xs:string, $instance
     
 };
 
+(: Add the glossary of a text to the entities :)
+declare function update-entity:merge-glossary($text-id as xs:string) as element()* {
+    
+    let $tei := $glossary:tei/id($text-id)/ancestor::tei:TEI
+    let $glosses-with-entities := $tei//tei:back//tei:gloss/id($entities:entities//m:entity/m:instance/@id)
+    
+    for $gloss in $tei//tei:back//tei:gloss except $glosses-with-entities
+    
+        (: Is there a matching Sanskrit term? :)
+        let $search-terms-sa := $gloss/tei:term[@xml:lang eq 'Sa-Ltn'][text()]
+        let $regex-sa := concat('^\s*(', string-join($search-terms-sa, '|'), ')\s*$')
+        let $matches-sa := 
+            if(count($search-terms-sa) gt 0) then
+                $glossary:tei//tei:back//tei:gloss
+                    [tei:term[@xml:lang eq 'Sa-Ltn'][matches(., $regex-sa, 'i')]]
+                    [not(@xml:id eq $gloss/@xml:id)]
+            else ()
+        
+        (: Is there a matching Tibetan term? :)
+        let $search-terms-bo := distinct-values(($gloss/tei:term[@xml:lang eq 'Bo-Ltn'][text()], $gloss/tei:term[@xml:lang eq 'bo'][text()] ! common:wylie-from-bo(.)))
+        let $regex-bo := concat('^\s*(', string-join($search-terms-bo, '|'), ')\s*$')
+        let $matches-bo := 
+            if(count($search-terms-bo) gt 0) then
+                $glossary:tei//tei:back//tei:gloss
+                    [tei:term[@xml:lang eq 'Bo-Ltn'][matches(., $regex-bo, 'i')]]
+                    [not(@xml:id eq $gloss/@xml:id)]
+            else ()
+        
+        (: Does it match both Tibetan, Sanskrit and type? :)
+        let $matches-full := $matches-sa[@xml:id = $matches-bo/@xml:id][@type eq $gloss/@type]
+        
+        (: Does it have an entity? :)
+        let $matches-full-ids := $matches-full/@xml:id/string()
+        let $matches-entity := $entities:entities//m:entity[m:instance/@id = $matches-full-ids]
+        
+        (: If it's an unambigous, full match, with an entity (and a term) then merge :)
+        let $action :=
+            if($gloss[@type eq 'term'] and count($matches-entity) eq 1) then
+                'merge'
+            else
+                'create'
+        
+        (: If there is some match then it requires some attention :)
+        let $flag := if(count($matches-sa[@type eq $gloss/@type] | $matches-bo[@type eq $gloss/@type]) gt 0) then 'requires-attention' else ''
+        
+        (: Do the update :)
+        let $do-update := 
+            if($action eq 'merge') then
+                update-entity:match-instance($matches-entity/@xml:id, $gloss/@xml:id, 'glossary-item')
+            else
+                update-entity:create($gloss, $flag)
+                
+        return 
+            element update {
+                attribute action { $action },
+                attribute flag { $flag },
+                $gloss,
+                element match {
+                    (:$matching-gloss,:)
+                    $matches-entity
+                },
+                $do-update,
+                element debug {
+                    attribute glossary-editor-url { 'https://projects.84000-translate.org/edit-glossary.html?resource-id=' || $text-id || '&amp;resource-type=translation&amp;max-records=1&amp;glossary-id=' || $gloss/@xml:id },
+                    element regex-sa {$regex-sa},
+                    element regex-bo {$regex-bo}
+                }
+            }
+
+};
+
 declare function update-entity:remove-instance($instance-id as xs:string) as element()* {
 
     let $existing-value := $entities:entities/m:entity/m:instance[@id eq  $instance-id][1]
     where $existing-value
     return
-        common:update('entity-exclude', $existing-value, (), $existing-value/parent::m:entity, ())
+        common:update('entity-remove-instance', $existing-value, (), $existing-value/parent::m:entity, ())
         
 };
+
+declare function update-entity:update-instance($instance-id as xs:string) as element()* {
+    
+    let $use-definition := request:get-parameter('use-definition', 'no-value-submitted')
+    
+    where not($use-definition eq 'no-value-submitted')
+    let $existing-value := $entities:entities/m:entity/m:instance[@id eq  $instance-id][1]
+    
+    let $new-value :=
+        element { node-name( $existing-value ) } {
+            $existing-value/@*[not(local-name(.) eq 'use-definition')],
+            if($use-definition gt '') then
+                attribute use-definition { $use-definition }
+            else ()
+        }
+    
+    where $existing-value and $new-value
+    return
+        common:update('entity-update-instance', $existing-value, $new-value, (), ())
+        
+};
+
+(:declare function update-entity:set-flag($entity-id as xs:string, $type as xs:string) as element()* {
+    local:set-flag($entity-id, $type, false())
+};
+
+declare function update-entity:clear-flag($entity-id as xs:string, $type as xs:string) as element()* {
+    local:set-flag($entity-id, $type, true())
+};
+
+declare function local:set-flag($entity-id as xs:string, $type as xs:string, $remove as xs:boolean) as element()* {
+
+    let $existing-entity := $entities:entities/m:entity[@xml:id eq $entity-id]
+    
+    let $new-entity :=
+        element { node-name($existing-entity) } {
+            $existing-entity/@*,
+            $existing-entity/*[not(local-name(.) eq 'flag' and @type eq $type)],
+            if(not($remove)) then
+                element flag {
+                    attribute type { $type },
+                    attribute user { common:user-name() },
+                    attribute timestamp { current-dateTime() }
+                }
+            else ()
+        }
+    
+    where $existing-entity and $new-entity
+    return
+        common:update('set-entity-flag', $existing-entity, $new-entity, (), ())
+};:)

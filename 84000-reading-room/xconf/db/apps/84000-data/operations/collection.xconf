@@ -8,39 +8,17 @@
         <!-- Range indexes -->
         <range>
             
-            <!-- sponsors.xml
-            <create qname="m:type">
-                <field name="type-id" match="@id" type="xs:string"/>
-            </create>
-            
-            <create qname="m:sponsor">
-                <field name="sponsor-id" match="@xml:id" type="xs:string"/>
-            </create> -->
-            
             <!-- sponsorship.xml -->
-            <create qname="m:text">
-                <field name="text-id" match="@text-id" type="xs:string"/>
-            </create>
-            
-            <create qname="m:part">
-                <field name="part-status" match="@status" type="xs:string"/>
-            </create>
+            <create qname="@text-id" type="xs:string"/>
+            <create qname="@status" type="xs:string"/>
             
             <!-- entities.xml -->
-            <create qname="m:instance">
-                <field name="instance-id" match="@id" type="xs:string"/>
-                <field name="instance-type" match="@type" type="xs:string"/>
-            </create>
-            <create qname="m:relation">
-                <field name="relation-id" match="@id" type="xs:string"/>
-                <field name="relation-predicate" match="@predicate" type="xs:string"/>
-            </create>
-            
-            <create qname="m:type">
-                <field name="type-type" match="@type" type="xs:string"/>
-            </create>
+            <create qname="@id" type="xs:string"/>
+            <create qname="@type" type="xs:string"/>
+            <create qname="@predicate" type="xs:string"/>
             
         </range>
         
     </index>
+    
 </collection>

@@ -621,7 +621,9 @@
                                         </label>
                                         <div class="col-sm-3">
                                             <input type="number" name="filter-max-pages" class="form-control" id="filter-max-pages">
-                                                <xsl:attribute name="value" select="m:request/m:filter[@max-pages][1]/@max-pages"/>
+                                                <xsl:if test="common:is-a-number(m:request/m:filter[@max-pages][1]/@max-pages)">
+                                                    <xsl:attribute name="value" select="m:request/m:filter[@max-pages][1]/@max-pages"/>
+                                                </xsl:if>
                                             </input>
                                         </div>
                                         <div class="col-sm-6">

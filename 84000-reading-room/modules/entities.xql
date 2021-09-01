@@ -35,14 +35,25 @@ declare variable $entities:types :=
             <label type="singular">Text</label>
             <label type="plural">Texts</label>
         </type>
+        <type id="eft-collection">
+            <label type="singular">Collection</label>
+            <label type="plural">Collections</label>
+        </type>
     </entity-types>;
+
+declare variable $entities:flags := 
+    <entity-flags xmlns="http://read.84000.co/ns/1.0">
+        <flag id="requires-attention">
+            <label>Requires Attention</label>
+        </flag>
+    </entity-flags>;
 
 declare variable $entities:instance-types := ('glossary-item');
 
-declare function entities:entities($instance-ids as xs:string*, $validate as xs:boolean, $expand as xs:boolean) as element(m:entities) {
-    
+declare function entities:entities($instance-ids as xs:string*, $validate as xs:boolean, $expand-instances as xs:boolean, $expand-relations as xs:boolean) as element(m:entities) {
+
     element { QName('http://read.84000.co/ns/1.0', 'entities') }{
-        
+    
         (: Check that the instance target exists :)
         let $instance-ids := 
             if($validate) then 
@@ -50,8 +61,51 @@ declare function entities:entities($instance-ids as xs:string*, $validate as xs:
             else
                 $instance-ids
         
+        let $instance-ids := distinct-values($instance-ids)
+        
+        (: Chunk the ids as there can be very many :)
         return
-            $entities:entities/m:entity[m:instance/@id/string() = $instance-ids] ! entities:entity(., $validate, $expand)
+            local:entities-chunk($instance-ids, $validate, $expand-instances, $expand-relations, 1)
+        
+    }
+    
+};
+
+declare function local:entities-chunk($instance-ids as xs:string*, $validate as xs:boolean, $expand-instances as xs:boolean, $expand-relations as xs:boolean, $chunk as xs:integer) as element(m:entity)* {
+    
+    let $instance-ids-count := count($instance-ids)
+    let $chunk-size := xs:integer(1024)
+    let $chunks-count := xs:integer(ceiling($instance-ids-count div $chunk-size))
+    let $chunk-start := ($chunk-size * ($chunk - 1)) + 1
+    let $chunk-end := ($chunk-start + $chunk-size) - 1
+    return (
+    
+        if($chunk-start le $instance-ids-count) then
+            let $subsequence := subsequence($instance-ids, $chunk-start, $chunk-size)
+            for $entity in $entities:entities//m:entity[m:instance/@id = $subsequence]
+            return 
+                 entities:entity($entity, $validate, $expand-instances, $expand-relations)
+        else (),
+        
+        if($chunk-end lt $instance-ids-count) then
+            local:entities-chunk($instance-ids, $validate, $expand-instances, $expand-relations, $chunk + 1)
+        else ()
+        
+    )
+    
+                 
+};
+
+declare function entities:flagged($type as xs:string, $validate as xs:boolean, $expand-instances as xs:boolean, $expand-relations as xs:boolean) as element(m:entities) {
+    
+    let $flag := $entities:flags//m:flag[@id eq $type]
+    
+    where $flag
+    return
+    element { QName('http://read.84000.co/ns/1.0', 'entities') }{
+        for $entity in $entities:entities//m:entity[m:flag/@type = $flag/@id]
+        return 
+             entities:entity($entity, $validate, $expand-instances, $expand-relations)
         
     }
     
@@ -66,23 +120,27 @@ declare function entities:next-id() as xs:string {
 };
 
 declare function entities:instance-ids-validated($instance-ids as xs:string*) as xs:string* {
-    (
-        $glossary:tei//tei:back//id($instance-ids)[self::tei:gloss]/@xml:id/string(),
-        $knowledgebase:tei-published//tei:publicationStmt//id($instance-ids)[self::tei:idno]/@xml:id/string()
+    let $glossary-ids := $glossary:tei//tei:back//id($instance-ids)[self::tei:gloss]/@xml:id/string()
+    let $knowledgebase-ids := $knowledgebase:tei-render//tei:publicationStmt//id($instance-ids)[self::tei:idno]/@xml:id/string()
+    return (
+        $glossary-ids,
+        $knowledgebase-ids
     )
 };
 
 (: Validates and expands an entity :)
-declare function entities:entity($entity as element(m:entity)?, $validate as xs:boolean, $expand as xs:boolean)  as element(m:entity)? {
+declare function entities:entity($entity as element(m:entity)?, $validate as xs:boolean, $expand-instances as xs:boolean, $expand-relations as xs:boolean)  as element(m:entity)? {
     
     if($entity) then
         element { node-name($entity) } {
         
             $entity/@*,
-            $entity/*[not(self::m:label or self::m:instance)],
+            $entity/*[not(local-name(.) = ('label','instance','relation'))],
             
-            (: If there's no primary label assign one :)
-            if($expand and not($entity/m:label[@primary eq 'true'])) then
+            (: Labels :)
+            if($expand-instances and not($entity/m:label[@primary eq 'true'])) then
+                
+                (: If there's no primary label assign one :)
                 for $label at $index in $entity/m:label
                 return (
                     element { node-name($label) } {
@@ -118,40 +176,106 @@ declare function entities:entity($entity as element(m:entity)?, $validate as xs:
                 $entity/m:label
             ,
             
-            (: Check that the instance target exists :)
-            let $instance-ids := $entity/m:instance/@id/string()
+            (: Instances :)
+            let $instance-ids := $entity/m:instance/@id
             
+            (: Filter out instance ids that don't exist or are not ready :)
             let $instance-ids :=
                 if($validate) then
-                    entities:instance-ids-validated($entity/m:instance/@id/string())
+                    entities:instance-ids-validated($instance-ids)
                 else
                     $instance-ids
-                    
-            let $valid-instances := $entity/m:instance[@id/string() = $instance-ids]
             
+            let $valid-instances := $entity/m:instance[@id = $instance-ids]
             return
-                if($expand) then
-                
-                    for $instance in $valid-instances
-                    let $instance-element := glossary:items($instance/@id, true())
-                    let $instance-element :=
-                        if(not($instance-element)) then
-                            knowledgebase:pages($instance/@id, true())
-                        else
-                            $instance-element
-                    where $instance-element
-                    return
-                        element { node-name($instance) } {
-                            $instance/@*,
-                            $instance-element
-                        }
-                        
+                (: Expand to include details of the instance: glossary or article :)
+                if($expand-instances) then
+                    entities:expand-instances($valid-instances)
                 else
                     $valid-instances
-                
+            ,
+            
+            (: Related entities :)
+            (: Include relations in this entity (Don't allow anything pointing to itself) :)
+            let $relations := $entity/m:relation[not(@id eq $entity/@xml:id)]
+            return
+                if($expand-relations) then
+                    entities:expand-relations($relations, $validate, $expand-instances, $expand-relations)
+                else 
+                    $relations
+            ,
+            
+            (: Include relations that point to this entity :)
+            (: These need "reversing" to express the relation to this :)
+            (: Don't include relations we already have :)
+            if($expand-relations) then
+                for $relation in $entities:entities//m:entity[not(id($entity/m:relation/@id))]/m:relation[@id eq $entity/@xml:id]
+                let $reverse := $entities:predicates//m:predicate[@xml:id eq $relation/@predicate]/@reverse
+                (: 
+                    This is bound to cause infinite recurrence as one of the relations is itself
+                    We need to filter out this relation from the source entity before expanding further
+                :)
+                let $source-entity := $relation/parent::m:entity
+                let $source-entity := 
+                    element { node-name($source-entity) } {
+                        $source-entity/@*,
+                        $source-entity/*[not(self::m:relation(:[@id eq $entity/@xml:id]:))]
+                    }
+                let $source-entity := entities:entity($source-entity, $validate, $expand-instances, $expand-relations)
+                where $reverse
+                return
+                    element { node-name($relation) } {
+                        attribute predicate { $reverse },
+                        attribute id { $source-entity/@xml:id },
+                        $source-entity/m:label,
+                        $source-entity
+                    }
+            else ()
+            
         }
     else ()
     
+};
+
+declare function entities:expand-instances($instances as element(m:instance)*) as element(m:instance)* {
+
+    let $instance-items := glossary:items($instances/@id, true())
+    let $instance-pages := knowledgebase:pages($instances/@id, true())
+    for $instance in $instances
+        let $instance-element := $instance-items[@id eq $instance/@id]
+        let $instance-element :=
+            if(not($instance-element)) then
+                $instance-pages[@xml:id eq $instance/@id]
+            else
+                $instance-element
+    
+    where $instance-element
+    return
+        element { node-name($instance) } {
+            $instance/@*,
+            $instance-element
+        }
+        
+};
+
+declare function entities:expand-relations($relations as element(m:relation)*, $validate as xs:boolean, $expand-instances as xs:boolean, $expand-relations as xs:boolean) as element(m:relation)* {
+    
+    for $relation in $relations
+        let $relation-entity := $entities:entities//m:entity[@xml:id eq $relation/@id]
+        let $relation-entity := 
+            element { node-name($relation-entity) } {
+                $relation-entity/@*,
+                $relation-entity/*[not(self::m:relation(:[@id eq $entity/@xml:id]:))]
+            }
+        let $relation-entity := entities:entity($relation-entity, $validate, $expand-instances, $expand-relations)
+    where $relation-entity
+    return
+        element { node-name($relation) } {
+            $relation/@*,
+            $relation/m:label,
+            $relation-entity
+        }
+        
 };
 
 declare function entities:similar($entity as element(m:entity)?, $search-terms as xs:string*, $exclude-ids as xs:string*)  {
@@ -169,8 +293,8 @@ declare function entities:similar($entity as element(m:entity)?, $search-terms a
         (: Exclude matched instances :)
         $entity/m:instance/@id/string(), 
         (: Exclude related instances :)
-        $entities:entities/m:entity/@xml:id[. = $entity/m:relation/@id]/m:instance/@id/string(),
-        $entities:entities/m:entity[m:relation/@id[. = $entity/@xml:id]]/m:instance/@id/string()
+        $entities:entities//m:entity/id($entity/m:relation/@id)/m:instance/@id/string(),
+        $entities:entities//m:entity[m:relation[$entity/id(@id)]]/m:instance/@id/string()
     ))
     
     let $search-query :=
@@ -190,17 +314,21 @@ declare function entities:similar($entity as element(m:entity)?, $search-terms a
                 [ft:query(., $search-query)]
                 [not(@type eq 'definition')]
                 [@xml:lang = ('Bo-Ltn', 'Sa-Ltn')]
-            ][@xml:id][not(@xml:id = $exclude-ids)]
+            ]
+            [@xml:id]
+            [not(@xml:id = $exclude-ids)]
         ,
-        $knowledgebase:tei//tei:teiHeader/tei:fileDesc
+        $knowledgebase:tei-render//tei:teiHeader/tei:fileDesc
             [tei:titleStmt/tei:title
                 [ft:query(., $search-query)]
-            ]/tei:publicationStmt/tei:idno[@xml:id][not(@xml:id = $exclude-ids)]
+            ]/tei:publicationStmt/tei:idno
+                [@xml:id]
+                [not(@xml:id = $exclude-ids)]
     )/@xml:id/string()
     
-    for $similar-entity in $entities:entities/m:entity[m:instance/@id[. = $matches]]
+    for $similar-entity in $entities:entities//m:entity[m:instance/@id[. = $matches]][m:type[@type = $entity/m:type/@type]]
     order by if($similar-entity[m:label/text() = $search-terms]) then 1 else 0 descending
     return 
         (: Copy entity expanded to include instance detail :)
-        entities:entity($similar-entity, false(), true())
+        entities:entity($similar-entity, false(), true(), false())
 };

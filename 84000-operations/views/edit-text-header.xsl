@@ -159,28 +159,35 @@
                                 </div>
                             </xsl:for-each>
                         </div>
-                    
-                        <div class="sml-margin bottom text-right">
-                            
-                            <ul class="list-inline inline-dots">
-                                <xsl:if test="m:translation/m:downloads[not(@tei-version = m:download[@type eq 'cache']/@version)]">
-                                    <li>
-                                        <a class="small">
-                                            <xsl:attribute name="href" select="concat('edit-glossary.html?resource-id=', $text-id)"/>
-                                            <xsl:value-of select="'Generate new cache (glossary tool)'"/>
-                                        </a>
-                                    </li>
-                                </xsl:if>
-                                <li>
-                                    <a class="small">
-                                        <xsl:attribute name="href" select="concat('edit-text-header.html?id=', $text-id, '&amp;form-action=generate-files')"/>
-                                        <xsl:value-of select="'Generate new associated files'"/>
-                                    </a>
-                                </li>
-                            </ul>
-                            
-                        </div>
-                    
+                        
+                        
+                        <xsl:variable name="files-outdated" select="m:translation/m:downloads/m:download[not(@version = ../@tei-version)]"/>
+                        <xsl:variable name="cache-outdated" select="$files-outdated[@type eq 'cache']"/>
+                        <xsl:variable name="master-store" select="$environment/m:store-conf[@type eq 'master']"/>
+                        <xsl:if test="$cache-outdated or ($master-store and $files-outdated)">
+                            <div class="sml-margin bottom text-right">
+                                <ul class="list-inline inline-dots">
+                                    <xsl:if test="$cache-outdated">
+                                        <li>
+                                            <a class="small">
+                                                <xsl:attribute name="href" select="concat('edit-glossary.html?resource-id=', $text-id)"/>
+                                                <xsl:value-of select="'Generate new cache (glossary tool)'"/>
+                                            </a>
+                                        </li>
+                                    </xsl:if>
+                                    <xsl:if test="$master-store">
+                                        <li>
+                                            <a class="small">
+                                                <xsl:attribute name="href" select="concat('edit-text-header.html?id=', $text-id, '&amp;form-action=generate-files')"/>
+                                                <xsl:attribute name="data-loading" select="'Generating files...'"/>
+                                                <xsl:value-of select="'Generate new associated files'"/>
+                                            </a>
+                                        </li>
+                                    </xsl:if>
+                                </ul>
+                            </div>
+                        </xsl:if>
+                        
                     </xsl:if>
                     
                     <div class="panel-group" role="tablist" aria-multiselectable="true" id="forms-accordion">

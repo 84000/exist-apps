@@ -16,33 +16,50 @@ import module namespace functx="http://www.functx.com";
 
 declare option exist:serialize "method=xml indent=no";
 
-let $resource-id := upper-case(request:get-parameter('resource-id', 'lobby'))
 let $resource-suffix := request:get-parameter('resource-suffix', '')
-let $translations-order := request:get-parameter('translations-order', 'toh')
-let $filter-id := request:get-parameter('filter-id', '')
-let $filter-section-ids := request:get-parameter('filter-section-id[]', '')
-let $filter-max-pages := request:get-parameter('filter-max-pages', '')
-
 let $doc-type := 
     if($resource-suffix = ('navigation.atom', 'acquisition.atom')) then 
         'atom'
     else
         $resource-suffix
+let $filter-section-ids := request:get-parameter('filter-section-id[]', '')
+let $filter-max-pages := request:get-parameter('filter-max-pages', '')
 
-(: Atom feeds default to published only, others not :)
-let $published-only := request:get-parameter('published-only', if($doc-type eq 'atom') then true() else false())
-(: Only include direct children texts (or groupings), don't go down the tree :)
-let $child-texts-only := request:get-parameter('child-texts-only', true())
+let $request := 
+    element { QName('http://read.84000.co/ns/1.0', 'request')} {
+        attribute model { "section" }, 
+        attribute resource-id { upper-case(request:get-parameter('resource-id', 'lobby')) }, 
+        attribute resource-suffix { $resource-suffix }, 
+        attribute doc-type { $doc-type }, 
+        attribute published-only { request:get-parameter('published-only', if($doc-type eq 'atom') then true() else false()) ! xs:boolean(.) }, 
+        attribute child-texts-only { request:get-parameter('child-texts-only', true()) ! xs:boolean(.) }, 
+        attribute translations-order { request:get-parameter('translations-order', 'toh') }, 
+        attribute filter-id { request:get-parameter('filter-id', '') }, 
+        attribute filter-section-ids { $filter-section-ids }, 
+        attribute filter-max-pages { $filter-max-pages }
+    }
+
+(: Suppress cache if there's user input :)
+let $cache-timestamp := 
+    if($request[@filter-section-ids eq ''][@filter-max-pages eq '']) then
+        max(collection($common:tei-path)//tei:TEI//tei:notesStmt/tei:note[@type eq "lastUpdated"]/@date-time ! xs:dateTime(.))
+    else ()
+let $cached := common:cache-get($request, $cache-timestamp)
+return if($cached) then $cached else
 
 let $include-texts := 
-    if(xs:boolean($published-only)) then
-        if(xs:boolean($child-texts-only)) then  'children-published'
-        else                                    'descendants-published'
+    if(xs:boolean($request/@published-only)) then
+        if(xs:boolean($request/@child-texts-only)) then
+            'children-published'
+        else
+            'descendants-published'
     else
-        if(xs:boolean($child-texts-only)) then  'children'
-        else                                    'descendants'
+        if(xs:boolean($request/@child-texts-only)) then
+            'children'
+        else
+            'descendants'
 
-let $tei := tei-content:tei($resource-id, 'section')
+let $tei := tei-content:tei($request/@resource-id, 'section')
 let $filters := section:filters($tei)
 
 let $filter-section-ids := 
@@ -65,38 +82,43 @@ let $apply-filters :=
         $filter-max-pages
     )
     else
-        $filters/tei:div[@xml:id eq $filter-id]/m:filter
+        $filters/tei:div[@xml:id eq $request/@filter-id]/m:filter
 
-return 
-    
-    (: return tei data :)
-    if($resource-suffix = ('tei')) then
-        $tei
-        
-    (: return xml data :)
-    else 
-    
+let $sections-data :=
+    if(lower-case($request/@resource-id) eq 'all-translated') then 
+        section:all-translated($apply-filters)
+    else
+        section:section-tree($tei, true(), $include-texts)
+
+let $xml-response := 
+    if(not($resource-suffix = ('tei'))) then
         common:response(
             "section", 
             $common:app-id,
             (
-               (: Include request parameters :)
-                <request 
-                    xmlns="http://read.84000.co/ns/1.0" 
-                    resource-id="{ $resource-id }"
-                    resource-suffix="{ $resource-suffix }"
-                    doc-type="{ $doc-type }"
-                    published-only="{ xs:boolean($published-only) }"
-                    child-texts-only="{ xs:boolean($child-texts-only) }"
-                    translations-order="{ $translations-order }"
-                    filter-id="{ $filter-id }"/>,
-                
-                (: Include section data :)
-                if(lower-case($resource-id) eq 'all-translated') then (
-                    section:all-translated($apply-filters)
-                )
-                else
-                    section:section-tree($tei, true(), $include-texts)
-                
+               $request,
+               $sections-data
             )
         )
+    else
+        $tei
+
+return
+    
+    (: return html data :)
+    if($resource-suffix = ('html')) then (
+        common:html($xml-response, concat($common:app-path, "/views/html/section.xsl"), $cache-timestamp)
+    )
+    
+    (: return tei data :)
+    else if($resource-suffix = ('tei')) then (
+        util:declare-option("exist:serialize", "method=xml indent=no"),
+        $tei
+    )
+    
+    (: return xml data :)
+    else (
+        util:declare-option("exist:serialize", "method=xml indent=no"),
+        $xml-response
+    )
+        

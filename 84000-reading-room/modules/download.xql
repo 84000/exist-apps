@@ -44,7 +44,7 @@ declare function download:stored-version-str($resource-id as xs:string, $file-ty
             doc(concat($common:data-path, '/', $file-type, '/', $download:file-versions-file-name))
     
     let $file-name := concat($resource-id, '.', $file-type)
-    let $file-version-node := $file-versions-doc/m:file-versions/m:file-version[@file-name eq $file-name (:range:field(("file-version-file-name"), "eq", $file-name):)]
+    let $file-version := $file-versions-doc//m:file-version[@file-name eq $file-name]
     
     (: Check the file is there :)
     let $file-uri := concat($common:data-path, '/', $file-type, '/', $file-name)
@@ -55,8 +55,8 @@ declare function download:stored-version-str($resource-id as xs:string, $file-ty
             util:binary-doc-available($file-uri)
     
     return
-        if($file-exists and $file-version-node) then
-            $file-version-node/@version
+        if($file-exists and $file-version) then
+            $file-version/@version
         else if($file-exists) then
             'unknown'
         else

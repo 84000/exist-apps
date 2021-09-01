@@ -560,6 +560,14 @@
                                                         </span>
                                                     </li>
                                                 </xsl:if>
+                                                <xsl:if test="@locked-by-user gt ''">
+                                                    <li>
+                                                        <span class="text-danger">
+                                                            <i class="fa fa-exclamation-circle"/>
+                                                            <xsl:value-of select="concat(' File locked by user ', @locked-by-user)"/>
+                                                        </span>
+                                                    </li>
+                                                </xsl:if>
                                             </ul>
                                             <xsl:if test="$translation-status/@word-count ! xs:integer(.) gt 0 or $translation-status/@glossary-count ! xs:integer(.) gt 0">
                                                 <ul class="list-inline inline-dots sml-margin top no-bottom-margin small text-muted hidden-print">

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <eft-header xmlns="http://read.84000.co/ns/1.0">
-    <!-- Updated 05.01.2021 -->
+    <!-- Updated 18.08.2021 -->
     <translation id="tag-line">
         <text xml:lang="en">Translating the words of the Buddha</text>
         <text xml:lang="zh">八萬四千 • 佛典傳譯</text>
@@ -188,9 +188,9 @@
             <item url="https://84000.co/category/ch-in-depth">
                 <label key="label-news-in-depth">話題</label>
             </item>
-            <item url="https://84000.co/category/ch-newsletter">
+            <!--<item url="https://84000.co/category/ch-newsletter">
                 <label key="label-newsletters">電子通訊</label>
-            </item>
+            </item>-->
         </item>
         <item class="reading-room" url="#reading-room">
             <label key="label-reading-room">雲端藏經閣</label>
@@ -323,6 +323,9 @@
         </item>
         <item url="https://twitter.com/Translate84000" icon-class="fa fa-twitter-square">
             <label key="label-social-twitter">Follow us on Twitter</label>
+        </item>
+        <item url="https://www.instagram.com/translate84000/" icon-class="fa fa-instagram">
+            <label key="label-social-instagram">Follow us on Instagram</label>
         </item>
         <item url="http://www.youtube.com/Translate84000" icon-class="fa fa-youtube-square">
             <label key="label-social-youtube">Subscribe to our Youtube channel</label>

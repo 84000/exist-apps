@@ -15,14 +15,14 @@
     <item key="source.folio.ekangyur-description-title">About the eKangyur</item>
     <item key="source.folio.ekangyur-description-content">
         <p>The Tibetan page displayed here is from the eKangyur, a digital input version made by the University of Virginia and the British
-            Library, with help from Esukhia, from scans of the Degé Kangyur held in the U.S. Library of Congress. This post <foreign xml:lang="Bo-Ltn">par phud</foreign> print (<a href="https://www.tbrc.org/#!rid=W4CZ5369" target="_blank">BDRC catalogue no.
+            Library, with help from Esukhia, from scans of the Degé Kangyur held in the U.S. Library of Congress. This post <span class="text-wy">par phud</span> print (<a href="https://www.tbrc.org/#!rid=W4CZ5369" target="_blank">BDRC catalogue no.
                     W4CZ5369</a>) was purchased in Beijing and brought to the U.S. by William Rockhill in 1908-9.</p>
         <p>Note that 84000 translations are made from a variety of sources, and readings may not always follow this particular version
             exactly. For details of the readings used in this translation, see Introduction and Notes; for the eKangyur, see the <a href="http://www.thlib.org/encyclopedias/literary/canons/about/wiki/tibetan%20canons%20introduction.html#!essay=/stanley/tibcanons/s/b3/" target="_blank">Tibetan and Himalayan Library</a>.</p>
     </item>
     <item key="source.folio.etengyur-description-title">About the eTengyur</item>
     <item key="source.folio.etengyur-description-content">
-        <p>The Tibetan page displayed here is from the eTengyur, a digital input version prepared by Esukhia and Barom Theksum Choling. It is based on scans of the Degé Tengyur from Sakya College, completed with the Degé Tengyur from Songtsen Library (<a href="https://library.bdrc.io/show/bdr:MW2KG209989" target="_blank">BDRC catalogue no. W2KG209989</a>)</p>
+        <p>The Tibetan page displayed here is from the eTengyur, a digital input version prepared by Esukhia and Barom Theksum Choling. It is based on scans of the Degé Tengyur from Sakya College, completed with the Degé Tengyur from Songtsen Library (<a href="https://library.bdrc.io/show/bdr:MW2KG209989" target="_blank">BDRC catalogue no. W2KG209989</a>).</p>
         <p>Note that 84000 translations are made from a variety of sources, and readings may not always follow this particular version exactly. For details of the readings used in this translation, see Introduction and Notes; for the eTengyur, see the <a href="http://www.thlib.org/encyclopedias/literary/canons/about/wiki/tibetan%20canons%20introduction.html#!essay=/stanley/tibcanons/s/b3/" target="_blank">Tibetan and Himalayan Library</a>.</p>
     </item>
     <item key="source.folio.backlink-label">

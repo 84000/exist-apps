@@ -1,17 +1,28 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <collection xmlns="http://exist-db.org/collection-config/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema">
     
-    <!-- /db/apps/tibetan-source -->
+    <!-- /db/apps/tibetan-source/data -->
     
     <index xmlns:tei="http://www.tei-c.org/ns/1.0">
         
         <lucene diacritics="no">
-
-            <analyzer id="tws" class="org.tbrc.lucene.analysis.TibWhitespaceAnalyzer"/>
             
+            <!--
+            <analyzer id="tws" class="org.tbrc.lucene.analysis.TibWhitespaceAnalyzer"/>
             <text match="//tei:p" analyzer="tws"/>
+            -->
             
         </lucene>
         
+        <!-- Range indexes -->
+        <range>
+            
+            <create qname="@type" type="xs:string"/>
+            <create qname="@n" type="xs:integer"/>
+            <create qname="@unit" type="xs:string"/>
+            
+        </range>
+        
     </index>
+    
 </collection>

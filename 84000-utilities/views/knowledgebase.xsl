@@ -42,7 +42,7 @@
             
             <div>
                 <span class="text-bold">
-                    <xsl:value-of select="m:titles/m:title[@xml:lang eq 'en']"/>
+                    <xsl:value-of select="m:titles/m:title[@type eq 'mainTitle'][1]"/>
                 </span>
                 <small>
                     <xsl:value-of select="concat(' / ', @kb-id)"/>
@@ -79,8 +79,17 @@
                 </li>
             </ul>
             
+            <!-- Alert if file locked -->
+            <xsl:if test="@locked-by-user gt ''">
+                <div class="sml-margin bottom">
+                    <span class="label label-danger">
+                        <xsl:value-of select="concat('WARNING: This file is currenly locked by user ', @locked-by-user)"/>
+                    </span>
+                </div>
+            </xsl:if>
+            
             <div class="small text-muted">
-                <xsl:value-of select="concat('File: ', @uri)"/>
+                <xsl:value-of select="concat('File: ', @document-url)"/>
             </div>    
             
         </div>

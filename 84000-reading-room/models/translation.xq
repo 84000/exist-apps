@@ -18,114 +18,133 @@ import module namespace entities="http://read.84000.co/entities" at "../modules/
 
 declare option exist:serialize "method=xml indent=no";
 
-let $resource-id := request:get-parameter('resource-id', '')
 let $resource-suffix := request:get-parameter('resource-suffix', '')
+let $view-mode := request:get-parameter('view-mode', 'default')
 
-let $part := request:get-parameter('part', 'none')
-let $view-mode-id := request:get-parameter('view-mode', 'default')
-let $archive-path := request:get-parameter('archive-path', ())
-
-let $tei := tei-content:tei($resource-id, 'translation', $archive-path)
-
-return
-    (: return all tei data :)
-    if($resource-suffix = ('tei')) then
-        $tei
-        
-    else if($resource-suffix = ('cache')) then
-        tei-content:cache($tei, false())
-    
-    (: return parts of the data :)
-    else 
-        
-        (: Get the source so we can extract the Toh :)
-        let $source := tei-content:source($tei, $resource-id)
+let $request := 
+    element { QName('http://read.84000.co/ns/1.0', 'request')} {
+        attribute model { 'translation' },
+        attribute resource-id { request:get-parameter('resource-id', '') },
+        attribute resource-suffix { $resource-suffix },
+        attribute doc-type { request:get-parameter('resource-suffix', 'html') },
+        attribute part { request:get-parameter('part', 'none') },
+        attribute view-mode { $view-mode },
+        attribute archive-path { request:get-parameter('archive-path', ()) },
         
         (: Set the view-mode which controls variations in the display :)
-        let $view-mode :=
-            if(request:get-parameter('resource-suffix', '') eq 'epub') then
-                $translation:view-modes/m:view-mode[@id eq 'ebook']
-                
-            else if(request:get-parameter('resource-suffix', '') eq 'txt') then
-                $translation:view-modes/m:view-mode[@id eq 'txt']
-                
-            else if($translation:view-modes/m:view-mode[@id eq $view-mode-id]) then
-                $translation:view-modes/m:view-mode[@id eq $view-mode-id]
-                
-            else
-                $translation:view-modes/m:view-mode[@id eq 'default']
+        if($resource-suffix eq 'epub') then
+            $translation:view-modes/m:view-mode[@id eq 'ebook']
+            
+        else if($resource-suffix eq 'txt') then
+            $translation:view-modes/m:view-mode[@id eq 'txt']
+            
+        else if($translation:view-modes/m:view-mode[@id eq $view-mode]) then
+            $translation:view-modes/m:view-mode[@id eq $view-mode]
+            
+        else
+            $translation:view-modes/m:view-mode[@id eq 'default']
+            
+    }
+
+let $tei := tei-content:tei($request/@resource-id, 'translation', $request/@archive-path)
+let $cache-timestamp := tei-content:last-modified($tei)
+let $cached := common:cache-get($request, $cache-timestamp)
+return 
+    (: Cached html :)
+    if($cached) then  $cached 
         
-        let $parts := translation:parts($tei, $part, $view-mode)
+    (: tei :)
+    else if($resource-suffix = ('tei')) then $tei
+    
+    (: cache :)
+    else if($resource-suffix = ('cache')) then tei-content:cache($tei, false())
+    
+    (: Compile response :)
+    else
+
+        (: Get the source so we can extract the Toh :)
+        let $source := tei-content:source($tei, $request/@resource-id)
+        
+        (: Compile all the translation parts :)
+        let $parts := translation:parts($tei, $request/@part, $request/m:view-mode)
         
         let $canonical-id := (
-            $archive-path ! concat('id=', .), 
-            $parts//descendant-or-self::m:part[@prefix][@render eq 'show'][1] ! concat('part=', @id)
+            $request/@archive-path ! concat('id=', .), 
+            ($parts//descendant-or-self::m:part[@prefix][@render eq 'show'])[1] ! concat('part=', @id)
         )
         
-        where $source
-        return
-            
+        (: Get entities :)
+        let $instance-ids := $parts[@id eq 'glossary']//tei:gloss/@xml:id/string()
+        let $glossary-entities := entities:entities($instance-ids, true(), false(), false())
+        
+        (: Compile all the translation data :)
+        let $translation-response :=
+            element { QName('http://read.84000.co/ns/1.0', 'translation')} {
+                attribute id { tei-content:id($tei) },
+                attribute status { tei-content:translation-status($tei) },
+                attribute status-group { tei-content:translation-status-group($tei) },
+                attribute relative-html { translation:relative-html($source/@key, $canonical-id) },
+                attribute canonical-html { translation:canonical-html($source/@key, $canonical-id) },
+                
+                (: Data for rdf and json :)
+                if($resource-suffix = ('rdf', 'json')) then (
+                    translation:titles($tei),
+                    $source,
+                    translation:long-titles($tei),
+                    translation:publication($tei),
+                    tei-content:ancestors($tei, $source/@key, 1),
+                    translation:downloads($tei, $source/@key, 'any-version'),
+                    translation:summary($tei)
+                )
+                
+                (: Data for html (pdf) and epub :)
+                else (
+                    
+                    translation:titles($tei),
+                    $source,
+                    translation:toh($tei, $source/@key),
+                    (: Don't need these for a passage :)
+                    if (not($request/m:view-mode[@parts eq 'passage'])) then (
+                        translation:long-titles($tei),
+                        translation:publication($tei),
+                        tei-content:ancestors($tei, $source/@key, 1),
+                        translation:downloads($tei, $source/@key, 'any-version')
+                    )
+                    else ()
+                    ,
+                    $parts
+                )
+                
+            }
+        
+        (: Get caches :)
+        let $cache := tei-content:cache($tei, false())/m:*
+        
+        (: Calculated strings :)
+        let $strings := translation:replace-text($source/@key)
+        
+        let $xml-response :=
             common:response(
                 'translation',
                 $common:app-id,
                 (
-                    (: Include request parameters :)
-                    element { QName('http://read.84000.co/ns/1.0', 'request')} {
-                        attribute resource-id { $resource-id },
-                        attribute resource-suffix { $resource-suffix },
-                        attribute doc-type { request:get-parameter('resource-suffix', 'html') },
-                        attribute part { $part },
-                        attribute archive-path { $archive-path },
-                        $view-mode
-                    },
-                    
-                    (: Compile all the translation data :)
-                    element { QName('http://read.84000.co/ns/1.0', 'translation')} {
-                        attribute id { tei-content:id($tei) },
-                        attribute status { tei-content:translation-status($tei) },
-                        attribute status-group { tei-content:translation-status-group($tei) },
-                        attribute relative-html { translation:relative-html($source/@key, $canonical-id) },
-                        attribute canonical-html { translation:canonical-html($source/@key, $canonical-id) },
-                        
-                        (: Data for rdf and json :)
-                        if($resource-suffix = ('rdf', 'json')) then (
-                            translation:titles($tei),
-                            $source,
-                            translation:long-titles($tei),
-                            translation:publication($tei),
-                            tei-content:ancestors($tei, $source/@key, 1),
-                            translation:downloads($tei, $source/@key, 'any-version'),
-                            translation:summary($tei)
-                        )
-                        
-                        (: Data for html (pdf) and epub :)
-                        else (
-                            
-                            translation:titles($tei),
-                            $source,
-                            translation:toh($tei, $source/@key),
-                            (: Don't need these for a passage :)
-                            if (not($view-mode[@parts eq 'passage'])) then (
-                                translation:long-titles($tei),
-                                translation:publication($tei),
-                                tei-content:ancestors($tei, $source/@key, 1),
-                                translation:downloads($tei, $source/@key, 'any-version')
-                            )
-                            else ()
-                            ,
-                            $parts
-                        )
-                        
-                    },
-                        
-                    (: Include caches :)
-                    tei-content:cache($tei, false())/m:*,
-                    
-                    (: Entities :)
-                    entities:entities($parts[@id eq 'glossary']/tei:div[@type eq 'glossary']/tei:gloss/@xml:id/string(), true(), false()),
-                    
-                    (: Calculated strings :)
-                    translation:replace-text($source/@key)
+                    $request,
+                    $translation-response,
+                    $glossary-entities,
+                    $cache,
+                    $strings
                 )
             )
+        
+        return
             
+            (: html :)
+            if($request/@resource-suffix = ('html')) then (
+                common:html($xml-response, concat($common:app-path, "/views/html/translation.xsl"), $cache-timestamp)
+            )
+            
+            (: xml :)
+            else (
+                util:declare-option("exist:serialize", "method=xml indent=no"),
+                $xml-response
+            )

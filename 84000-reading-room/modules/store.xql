@@ -65,7 +65,7 @@ declare function store:download-master($file-name as xs:string, $translations-ma
     
     (: Download the tei from master if the versions differ :)
     let $download-tei :=
-        let $local-text-path := $local-text/@uri
+        let $local-text-path := $local-text/@document-url
         let $local-text-path-tokenized := tokenize($local-text-path, '/')
         let $tei-file-name := $local-text-path-tokenized[last()]
         let $tei-folder := string-join(subsequence($local-text-path-tokenized, 1, last()-1), '/')
@@ -335,7 +335,7 @@ declare function store:store-new-html($file-path as xs:string, $version as xs:st
     let $status-id := tei-content:translation-status($tei)
     
     return
-        if($common:environment/m:render-translation/m:status[@status-id = $status-id]) then
+        if($common:environment/m:render/m:status[@type eq 'translation'][@status-id = $status-id]) then
             
             let $response-data := glossary:translation-data($tei, $resource-id, ())
             

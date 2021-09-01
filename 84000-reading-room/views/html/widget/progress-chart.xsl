@@ -35,7 +35,7 @@
                                                         </xsl:if>
                                                         <a role="tab" data-toggle="tab">
                                                             <xsl:attribute name="href" select="concat('#eft-progress-chart-', $tab, '-tab')"/>
-                                                            <xsl:attribute name="aria-controls" select="concat('#eft-progress-chart-', $tab, '-tab')"/>
+                                                            <xsl:attribute name="aria-controls" select="concat('eft-progress-chart-', $tab, '-tab')"/>
                                                             <xsl:call-template name="text">
                                                                 <xsl:with-param name="global-key" select="concat('widget.progress-chart.tab-title-', $tab)"/>
                                                             </xsl:call-template>

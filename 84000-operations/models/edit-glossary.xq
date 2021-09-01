@@ -38,7 +38,7 @@ let $similar-search := request:get-parameter('similar-search', '')
 
 let $resource-id := 
     if(not($resource-id gt '')) then
-        translations:files($tei-content:marked-up-status-ids)/m:file[1]/@id
+        translations:files($translation:marked-up-status-ids)/m:file[1]/@id
     else
         $resource-id
 
@@ -55,25 +55,20 @@ let $glossary-id :=
 let $update-glossary := 
     if($form-action eq 'update-glossary') then
         update-tei:update-glossary($tei, $glossary-id)
-        
     else if($form-action eq 'cache-locations') then
         update-tei:cache-glossary($tei, $glossary-id)
-        
     else if($form-action eq 'cache-locations-uncached') then
         update-tei:cache-glossary($tei, 'uncached')
-        
     else if($form-action eq 'cache-locations-all') then
         update-tei:cache-glossary($tei, ())
-        
     else if($form-action eq 'update-entity') then
         update-entity:headers($entity-id)
-        
     else if($form-action eq 'match-entity') then
         update-entity:match-instance($entity-id, $glossary-id, 'glossary-item')
-        
     else if($form-action eq 'merge-entities') then
         update-entity:resolve($entity-id, $target-entity-id, $predicate)
-        
+    else if($form-action eq 'merge-all-entities') then
+        update-entity:merge-glossary($resource-id)
     else ()
 
 (: Force a filter value :)
@@ -164,7 +159,7 @@ let $xml-response :=
                     else ()
                 
                 for $glossary-item in $glossary-filtered-subsequence
-                    let $entity := entities:entities($glossary-item/@id, false(), true())/m:entity[1]
+                    let $entity := entities:entities($glossary-item/@id, false(), true(), true())/m:entity[1]
                 return 
                     (: Copy each glossary item :)
                     element { node-name($glossary-item) }{
@@ -187,7 +182,7 @@ let $xml-response :=
                         $entity,
                         
                         (: Report possible matches for reconciliation :)
-                        if($filter = ('check-entities', 'check-all', 'missing-entities')) then
+                        if($filter = ('check-entities', 'check-all', 'missing-entities', 'requires-attention')) then
                             let $search-terms := (
                                 $glossary-item/m:term[@xml:lang = ('bo', 'Bo-Ltn', 'Sa-Ltn')]/data(),
                                 $glossary-item/m:alternatives[@xml:lang = ('Bo-Ltn', 'Sa-Ltn')]/data(),
@@ -207,7 +202,8 @@ let $xml-response :=
             
             (: Entities config :)
             $entities:predicates,
-            $entities:types
+            $entities:types,
+            $entities:flags
             
         )
     )

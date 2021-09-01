@@ -12,14 +12,18 @@ declare option exist:serialize "method=xml indent=no";
 
 let $resource-suffix := request:get-parameter('resource-suffix', '')
 
+let $summary-kangyur := translations:summary($source:ekangyur-work)
+let $summary-tengyur := translations:summary($source:etengyur-work)
+let $text-statuses := tei-content:text-statuses-sorted('translation')
+
 let $xml-response :=
     common:response(
         'operations/index', 
         'operations', 
         (
-            translations:summary($source:ekangyur-work),
-            translations:summary($source:etengyur-work),
-            $tei-content:text-statuses
+            $summary-kangyur,
+            $summary-tengyur,
+            $text-statuses
         )
     )
 

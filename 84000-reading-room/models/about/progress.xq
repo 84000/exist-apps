@@ -9,6 +9,13 @@ import module namespace translations="http://read.84000.co/translations" at "../
 
 declare option exist:serialize "method=xml indent=no";
 
+let $summary-kangyur := translations:summary($source:ekangyur-work)
+let $summary-tengyur := translations:summary($source:etengyur-work)
+let $translations-published := translations:translation-status-texts($tei-content:text-statuses/m:status[@type eq 'translation'][@group = ('published')]/@status-id)
+let $translations-translated := translations:translation-status-texts($tei-content:text-statuses/m:status[@type eq 'translation'][@group = ('translated')]/@status-id)
+let $translations-in-translation := translations:translation-status-texts($tei-content:text-statuses/m:status[@type eq 'translation'][@group = ('in-translation')]/@status-id)
+
+return
 common:response(
     "about/progress", 
     $common:app-id,
@@ -19,16 +26,16 @@ common:response(
             <value key="#readingRoomSiteUrl">{ $common:environment/m:url[@id eq 'reading-room'][1]/text() }</value>
             <value key="#feSiteUrl">{ $common:environment/m:url[@id eq 'front-end'][1]/text() }</value>
         </replace-text>,
-        translations:summary($source:ekangyur-work),
-        translations:summary($source:etengyur-work),
+        $summary-kangyur,
+        $summary-tengyur,
         element { QName('http://read.84000.co/ns/1.0', 'translations-published') } {
-            translations:translation-status-texts($tei-content:text-statuses/m:status[@group = ('published')]/@status-id)
+            $translations-published
         },
         element { QName('http://read.84000.co/ns/1.0', 'translations-translated') } {
-            translations:translation-status-texts($tei-content:text-statuses/m:status[@group = ('translated')]/@status-id)
+            $translations-translated
         },
         element { QName('http://read.84000.co/ns/1.0', 'translations-in-translation') } {
-            translations:translation-status-texts($tei-content:text-statuses/m:status[@group = ('in-translation')]/@status-id)
+            $translations-in-translation
         }
     )
 )

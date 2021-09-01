@@ -34,6 +34,11 @@ declare variable $translation:view-modes :=
       <view-mode id="passage"           client="ajax"     layout="part-only"       glossary="use-cache"       parts="passage"/>,
       <view-mode id="editor-passage"    client="ajax"     layout="part-only"       glossary="no-cache"        parts="passage"/>
     </view-modes>;
+    
+declare variable $translation:published-status-ids := $tei-content:text-statuses/m:status[@type eq 'translation'][@group = ('published')]/@status-id;
+declare variable $translation:in-progress-status-ids := $tei-content:text-statuses/m:status[@type eq 'translation'][@group = ('translated', 'in-translation')]/@status-id;
+declare variable $translation:marked-up-status-ids := $tei-content:text-statuses/m:status[@type eq 'translation'][@marked-up = 'true']/@status-id;
+
 
 declare function translation:titles($tei as element(tei:TEI)) as element() {
     element {QName('http://read.84000.co/ns/1.0', 'titles')} {
@@ -215,6 +220,7 @@ declare function translation:canonical-html($resource-id as xs:string, $conditio
 declare function translation:downloads($tei as element(tei:TEI), $resource-id as xs:string, $include as xs:string) as element() {
     
     let $tei-version := tei-content:version-str($tei)
+    let $file-name := translation:filename($tei, $resource-id)
     
     return
         element {QName('http://read.84000.co/ns/1.0', 'downloads')} {
@@ -223,31 +229,19 @@ declare function translation:downloads($tei as element(tei:TEI), $resource-id as
             attribute resource-id { $resource-id },
             
             (: Only return download elements if $include defined :)
-            for $type in 
+            let $types :=
                 if($include gt '')then
                     ('html', 'pdf', 'epub', 'azw3', 'rdf', 'cache')
                 else ()
-            
-            let $text-id := tei-content:id($tei)
-            
-            let $resource-id :=
-                if ($type eq 'cache') then
-                    $text-id
-                else
-                    $resource-id
-            
-            let $stored-version :=
-                if ($type eq 'html') then
-                    $tei-version
-                else
-                    download:stored-version-str($resource-id, $type)
-            
-            let $path :=
-                if ($type = ('html', 'cache')) then
-                    '/translation'
-                else
-                    '/data'
-            
+                
+            for $type in $types
+                
+                let $resource-id := if ($type eq 'cache') then tei-content:id($tei) else $resource-id
+                
+                let $stored-version := if (not($type eq 'html')) then download:stored-version-str($resource-id, $type) else $tei-version
+                
+                let $path := if ($type = ('html', 'cache')) then '/translation' else '/data'
+                
             where (
                 ($include eq 'all')                                                                 (: return all types :)
                 or ($include eq 'any-version' and not($stored-version eq 'none'))                   (: return if there is any version :)
@@ -259,11 +253,8 @@ declare function translation:downloads($tei as element(tei:TEI), $resource-id as
                     attribute version { $stored-version },
                     attribute url { concat($path, '/', $resource-id, '.', $type) },
                     if(not($type = ('html', 'cache'))) then (
-                        let $file-name := translation:filename($tei, $resource-id)
-                        return (
-                            attribute download-url { concat($path, '/', $file-name, '.', $type) },
-                            attribute filename { $file-name }
-                        )
+                        attribute download-url { concat($path, '/', $file-name, '.', $type) },
+                        attribute filename { $file-name }
                     )
                     else ()
                 }
@@ -291,7 +282,7 @@ declare function translation:parts($tei as element(tei:TEI), $passage-id as xs:s
         translation:summary($tei, $passage-id, $view-mode, ''),
         
         (: Only include these parts if the text has a render status :)
-        if($common:environment/m:render-translation/m:status[@status-id = $status-id]) then (
+        if($common:environment/m:render/m:status[@type eq 'translation'][@status-id = $status-id]) then (
             
             translation:acknowledgment($tei, $passage-id, $view-mode),
             
@@ -405,14 +396,14 @@ declare function local:part-content($content as element(tei:div)?, $render as xs
         return
             
             (: It's a section - create a new section :)
-            if ($node[self::tei:div[@type = ('chapter', 'section')]]) then
+            if ($node[local-name(.) eq 'div'][@type = ('chapter', 'section')]) then
                 
                 let $section-index := functx:index-of-node($content/tei:div[@type = ('chapter', 'section')], $node)
                 return
                     local:part($node, $render, $node/@type, $prefix, (), $passage-id, $nesting + 1, $section-index)
             
-            (: Node already included this in section-titles - so skip it :)
-            else if ($node[self::tei:head[@type = ($type, 'chapterTitle', 'listBibl', 'notes')]]) then
+            (: Head already included this in section-titles - so skip it :)
+            else if ($node[local-name(.) eq 'head'][@type = ($type, 'chapterTitle', 'listBibl', 'notes')]) then
                 ()
             
             (: Full, collapsed or hidden rendering - return all nodes (except the above)  :)
@@ -421,7 +412,8 @@ declare function local:part-content($content as element(tei:div)?, $render as xs
             
             (: Passage only - return only specified node  :)
             else if ($render eq 'passage') then 
-                let $passage := $node/descendant-or-self::tei:*[@tid eq substring-after($passage-id, 'node-')]
+                let $passage-id-int := substring-after($passage-id, 'node-')
+                let $passage := $node/descendant-or-self::tei:*[@tid eq $passage-id-int]
                 return
                     if($passage) then (
                         $node/ancestor-or-self::*[preceding-sibling::tei:milestone[@xml:id]][1]/preceding-sibling::tei:milestone[@xml:id][1],
@@ -432,9 +424,13 @@ declare function local:part-content($content as element(tei:div)?, $render as xs
             (: Partial rendering - return some nodes (except the above) :)
             else if ($render eq 'preview' and ($nesting eq 0 or $section-index eq 1)) then 
                 if ($node-index le 8) then
-                    if((string-length(string-join($node/preceding-sibling::tei:*//text(), '')) - string-length(string-join($node/preceding-sibling::tei:*/descendant::tei:note//text(), ''))) lt 500) then
-                        $node
-                    else ()
+                    let $preceding := $node/preceding-sibling::tei:*
+                    let $preceding-text := string-join($preceding//text(), '')
+                    let $preceding-text-notes := string-join($preceding/descendant::tei:note//text(), '')
+                    return
+                        if((string-length($preceding-text) - string-length($preceding-text-notes)) lt 500) then
+                            $node
+                        else ()
                 else ()
             
             (: 'none' or unspecified $render :)
@@ -1044,8 +1040,7 @@ declare function translation:folio-content($tei as element(tei:TEI), $resource-i
     let $folio-paragraphs :=
         if ($start-ref-paragraph) then
             $translation-paragraphs[position() ge $start-ref-paragraph-index and position() le $end-ref-paragraph-index]
-        else
-            ()
+        else ()
         
     return
         element {QName('http://read.84000.co/ns/1.0', 'folio-content')} {
@@ -1053,8 +1048,11 @@ declare function translation:folio-content($tei as element(tei:TEI), $resource-i
             attribute end-ref {$end-ref/@cRef},
             
             (: Convert the content to text and <ref/>s only :)
-            for $node in $folio-paragraphs//text()[not(ancestor::tei:note)] | $folio-paragraphs//tei:ref[@cRef = ($start-ref/@cRef, $end-ref/@cRef)]
-            return
+            for $node in 
+                $folio-paragraphs//text()[not(ancestor::tei:note)]
+                | $folio-paragraphs//tei:ref[count(. | $start-ref) eq 1]
+                | $folio-paragraphs//tei:ref[count(. | $end-ref) eq 1]
+            return 
                 (: Catch instances where the string ends in a punctuation mark. Assume a space has been dropped. Add a space to concat to the next string. :)
                 if($node[self::tei:ref]) then
                     $node
@@ -1062,9 +1060,7 @@ declare function translation:folio-content($tei as element(tei:TEI), $resource-i
                     let $text := normalize-space($node)
                     return (
                         text { $text },
-                        if (substring($text, string-length($text), 1) = ('.', ',', '!', '?', '”', ':', ';')) then 
-                            text { ' ' }
-                        else ()
+                        if ( matches($text, '\W$', '')) then text { ' ' } else ()
                     )
         }
 };

@@ -38,7 +38,7 @@ let $updated :=
     else ()
 
 let $knowledgebase-id := tei-content:id($tei)
-let $entity := entities:entities($knowledgebase-id, false(), true())/m:entity[1]
+let $entity := entities:entities($knowledgebase-id, false(), true(), true())/m:entity[1]
 
 let $xml-response := 
     common:response(
@@ -59,9 +59,6 @@ let $xml-response :=
             
             (: Knowledgebase content :)
             element { QName('http://read.84000.co/ns/1.0', 'knowledgebase') } {
-                
-                attribute document-url { tei-content:document-url($tei) },
-                attribute locked-by-user { tei-content:locked-by-user($tei) },
                 
                 knowledgebase:page($tei),
                 knowledgebase:publication($tei),
@@ -88,14 +85,15 @@ let $xml-response :=
             ,
             
             (: Translation statuses :)
-            tei-content:text-statuses-selected(tei-content:translation-status($tei)),
+            tei-content:text-statuses-selected(tei-content:translation-status($tei), 'article'),
             
             (: Title types :)
             $tei-content:title-types,
             
             (: Entities config :)
             $entities:predicates,
-            $entities:types
+            $entities:types,
+            $entities:flags
         )
     )
 

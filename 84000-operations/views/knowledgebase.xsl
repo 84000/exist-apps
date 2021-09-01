@@ -105,9 +105,18 @@
                                                 <a class="text-muted small">
                                                     <xsl:attribute name="href" select="concat($reading-room-path, '/knowledgebase/', @kb-id, '.tei')"/>
                                                     <xsl:attribute name="target" select="concat(@xml:id, '.tei')"/>
-                                                    <xsl:value-of select="@uri"/>
+                                                    <xsl:value-of select="@document-url"/>
                                                 </a>
                                             </div>
+                                            
+                                            <!-- Alert if file locked -->
+                                            <xsl:if test="@locked-by-user gt ''">
+                                                <div class="sml-margin bottom">
+                                                    <span class="label label-danger">
+                                                        <xsl:value-of select="concat('WARNING: This file is currenly locked by user ', @locked-by-user)"/>
+                                                    </span>
+                                                </div>
+                                            </xsl:if>
                                             
                                             <ul class="list-inline inline-dots no-bottom-margin small hidden-print">
                                                 <li>

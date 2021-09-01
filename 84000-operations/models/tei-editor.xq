@@ -28,6 +28,10 @@ let $update-tei :=
         update-tei:add-element($tei, $passage-id, $new-element-name)
     else if($type = ('knowledgebase') and $tei and $form-action eq 'comment-tei') then 
         update-tei:comment($tei, $passage-id, $comment)
+    (:else if($type = ('knowledgebase') and $tei and $form-action eq 'lock-tei') then 
+        xmldb:lock-document()
+    else if($type = ('knowledgebase') and $tei and $form-action eq 'unlock-tei') then 
+        xmldb:clear-lock():)
     else ()
 
 let $schema := 
@@ -37,6 +41,19 @@ let $schema :=
         doc(concat($common:tei-path, '/schema/current/translation.rng'))
 
 let $validation-report := validation:jing-report($tei, $schema)
+
+let $response-data :=
+    (: Restrict to knowledgebase only for now :)
+    if($tei and $type eq 'knowledgebase') then 
+        
+        element { QName('http://read.84000.co/ns/1.0', 'knowledgebase') } {
+            
+            knowledgebase:page($tei),
+            knowledgebase:article($tei),
+            knowledgebase:bibliography($tei)
+            
+        }
+    else ()
 
 let $xml-response :=
     common:response(
@@ -50,29 +67,19 @@ let $xml-response :=
                 attribute passage-id { $passage-id }
             },
             
+            (: Feedback updates :)
             element { QName('http://read.84000.co/ns/1.0', 'updates') } {
                 $update-tei
             },
             
+            (: Schema validation :)
             element { QName('http://read.84000.co/ns/1.0', 'validation') } {
                 $validation-report
             },
             
-            (: Restrict to knowledgebase only for now :)
-            if($tei and $type eq 'knowledgebase') then 
-                
-                element { QName('http://read.84000.co/ns/1.0', 'knowledgebase') } {
-                    
-                    attribute document-url { tei-content:document-url($tei) },
-                    attribute locked-by-user { tei-content:locked-by-user($tei) },
-                
-                    knowledgebase:page($tei),
-                    knowledgebase:article($tei),
-                    knowledgebase:bibliography($tei)
-                    
-                }
+            (: Data :)
+            $response-data
             
-            else ()
         )
     )
 

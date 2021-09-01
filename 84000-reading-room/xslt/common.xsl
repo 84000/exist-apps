@@ -96,7 +96,7 @@
         <xsl:value-of select="translate(lower-case(normalize-unicode(normalize-space($sa-string))), $in, $out)"/>
     </xsl:function>
     
-    <xsl:function name="common:normalize-bo">
+    <xsl:function name="common:normalize-bo" as="xs:string">
         <xsl:param name="bo-string" as="xs:string"/>
         <!-- 
             - Normalize whitespace
@@ -106,12 +106,12 @@
         <xsl:value-of select="replace(replace(replace($bo-string, '\s+', ' '), '(།)(\S)', '$1​$2'), '་\s+$', '་')"/>                  
     </xsl:function>
     
-    <xsl:function name="common:alphanumeric" as="xs:string*">
+    <xsl:function name="common:alphanumeric" as="xs:string">
         <xsl:param name="string" as="xs:string"/>
         <xsl:value-of select="replace($string, '[^a-zA-Z0-9]', '')"/>
     </xsl:function>
     
-    <xsl:function name="common:limit-str" as="xs:string">
+    <xsl:function name="common:limit-str" as="xs:string?">
         <xsl:param name="string" as="xs:string?"/>
         <xsl:param name="max-length" as="xs:integer"/>
         <xsl:choose>
@@ -124,7 +124,7 @@
         </xsl:choose>
     </xsl:function>
     
-    <xsl:function name="common:date-user-string">
+    <xsl:function name="common:date-user-string" as="xs:string">
         <xsl:param name="action-text" as="xs:string" required="yes"/>
         <xsl:param name="date-time" as="xs:dateTime?"/>
         <xsl:param name="user-name" as="xs:string?"/>
@@ -166,7 +166,7 @@
         <xsl:variable name="count-blocks" select="xs:integer(ceiling($count-records div $max-records))" as="xs:integer"/>
         <xsl:variable name="this-block" select="xs:integer(floor((($first-record -1) + $max-records) div $max-records))" as="xs:integer"/>
         
-        <nav aria-label="Page navigation" class="pagination-nav pull-right">
+        <nav xmlns="http://www.w3.org/1999/xhtml" aria-label="Page navigation" class="pagination-nav pull-right">
             <ul class="pagination">
                 <li class="disabled">
                     <span>
@@ -205,7 +205,7 @@
         <xsl:param name="base-url" as="xs:string"/>
         <xsl:param name="link-text" as="xs:string"/>
         <xsl:param name="link-title" as="xs:string"/>
-        <a>
+        <a xmlns="http://www.w3.org/1999/xhtml">
             
             <xsl:variable name="base-url-page" select="tokenize($base-url, '\?')[1]"/>
             <xsl:variable name="base-url-hash" select="if(contains($base-url, '#')) then tokenize($base-url, '#')[last()] else ''"/>
@@ -252,7 +252,7 @@
         <xsl:param name="previous-start-letter" as="xs:string"/>
         
         <xsl:if test="not($previous-start-letter eq $start-letter)">
-            <a class="marker">
+            <a xmlns="http://www.w3.org/1999/xhtml" class="marker">
                 <xsl:attribute name="name" select="$start-letter"/>
                 <xsl:attribute name="id" select="concat('marker-', $start-letter)"/>
                 <xsl:value-of select="$start-letter"/>
@@ -264,7 +264,7 @@
         
         <xsl:param name="items-with-start-letters" as="item()*"/>
         
-        <div data-spy="affix" data-offset-top="20">
+        <div xmlns="http://www.w3.org/1999/xhtml" data-spy="affix" data-offset-top="20">
             <div class="btn-group-vertical btn-group-xs" role="group" aria-label="navigation">
                 <xsl:for-each select="$items-with-start-letters">
                     
@@ -322,7 +322,7 @@
         <xsl:param name="lang" required="yes"/>
         <xsl:for-each select="$parents">
             <xsl:sort select="@nesting" order="descending"/>
-            <li>
+            <li xmlns="http://www.w3.org/1999/xhtml">
                 <a class="printable">
                     <xsl:choose>
                         <xsl:when test="@type eq 'grouping'">
@@ -343,27 +343,27 @@
         <xsl:param name="status-group"/>
         <xsl:choose>
             <xsl:when test="$status-group eq 'published'">
-                <span class="label label-success published">
+                <span xmlns="http://www.w3.org/1999/xhtml" class="label label-success published">
                     <xsl:value-of select="'Published'"/>
                 </span>
             </xsl:when>
             <xsl:when test="$status-group eq 'translated'">
-                <span class="label label-warning in-progress">
+                <span xmlns="http://www.w3.org/1999/xhtml" class="label label-warning in-progress">
                     <xsl:value-of select="'In progress'"/>
                 </span>
             </xsl:when>
             <xsl:when test="$status-group eq 'in-translation'">
-                <span class="label label-warning in-progress">
+                <span xmlns="http://www.w3.org/1999/xhtml" class="label label-warning in-progress">
                     <xsl:value-of select="'In progress'"/>
                 </span>
             </xsl:when>
             <xsl:when test="$status-group eq 'in-application'">
-                <span class="label label-danger in-progress">
+                <span xmlns="http://www.w3.org/1999/xhtml" class="label label-danger in-progress">
                     <xsl:value-of select="'Application pending'"/>
                 </span>
             </xsl:when>
             <xsl:otherwise>
-                <span class="label label-default">
+                <span xmlns="http://www.w3.org/1999/xhtml" class="label label-default">
                     <xsl:value-of select="'Not Started'"/>
                 </span>
             </xsl:otherwise>
@@ -375,7 +375,7 @@
         <xsl:param name="sponsorship-statuses"/>
         <xsl:for-each select="$sponsorship-statuses">
             <xsl:if test="not(@id eq 'no-sponsorship')">
-                <span>
+                <span xmlns="http://www.w3.org/1999/xhtml">
                     <xsl:choose>
                         <xsl:when test="@id = 'available'">
                             <xsl:attribute name="class" select="'nowrap label label-success'"/>
@@ -405,7 +405,7 @@
      -->
     
     <!-- Localization helpers -->
-    <xsl:function name="common:internal-link">
+    <xsl:function name="common:internal-link" as="xs:string">
         <xsl:param name="url" required="yes"/>
         <xsl:param name="attributes" required="yes" as="xs:string*"/>
         <xsl:param name="fragment-id" required="yes" as="xs:string"/>
@@ -416,7 +416,7 @@
         <xsl:value-of select="concat($url, if(count($attributes-with-lang) gt 0) then concat($url-append, string-join($attributes-with-lang, '&amp;')) else '', $fragment-id)"/>
     </xsl:function>
     
-    <xsl:function name="common:homepage-link">
+    <xsl:function name="common:homepage-link" as="xs:string">
         <xsl:param name="dir" as="xs:string?"/>
         <xsl:param name="lang" required="yes"/>
         <xsl:variable name="url-params">
@@ -458,7 +458,7 @@
     <xsl:function name="common:localise-form">
         <xsl:param name="lang" required="yes"/>
         <xsl:if test="$lang eq 'zh'">
-            <input type="hidden" name="lang">
+            <input xmlns="http://www.w3.org/1999/xhtml" type="hidden" name="lang">
                 <xsl:attribute name="value" select="$lang"/>
             </input>
         </xsl:if>
@@ -602,7 +602,7 @@
     
     <!-- Mark matches -->
     <xsl:template match="exist:match">
-        <span class="mark">
+        <span xmlns="http://www.w3.org/1999/xhtml" class="mark">
             <xsl:apply-templates select="text()"/>
         </span>
     </xsl:template>
@@ -612,7 +612,7 @@
         
         <xsl:if test="m:status-update[@date-time]">
             
-            <div class="match-height-overflow" data-match-height="status-form">
+            <div xmlns="http://www.w3.org/1999/xhtml" class="match-height-overflow" data-match-height="status-form">
                 
                 <h4 class="no-top-margin no-bottom-margin">
                     <xsl:value-of select="'History'"/>

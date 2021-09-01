@@ -90,7 +90,7 @@ function common:response($model-type as xs:string, $app-id as xs:string, $data a
             user-name="{ common:user-name() }" 
             lang="{ $lang }"
             exist-version="{ system:get-version() }"
-            tei-editor="{ if($common:environment/m:url[@id eq 'operations'] and common:user-in-group('operations')) then true() else false() }">
+            tei-editor="{ common:tei-editor() }">
             {
                 $data,
                 element { name($common:environment) } {
@@ -99,12 +99,13 @@ function common:response($model-type as xs:string, $app-id as xs:string, $data a
                     $common:environment/m:url,
                     $common:environment/m:google-analytics,
                     $common:environment/m:html-head,
-                    $common:environment/m:render-translation,
+                    $common:environment/m:render,
                     if($app-id eq 'utilities') then (
                         $common:environment/m:store-conf,
                         $common:environment/m:git-config
                     )
                     else if($app-id eq 'operations') then (
+                        $common:environment/m:store-conf,
                         $common:environment/m:conversion-conf
                     )
                     else ()
@@ -116,25 +117,51 @@ function common:response($model-type as xs:string, $app-id as xs:string, $data a
         </response>
 };
 
-declare function common:html($xml as element(m:response), $view as xs:string){
-
+(: Return serialized as html :)
+declare function common:html($html){
+    
+    (: Headers :)
     util:declare-option("exist:serialize", "method=html5 media-type=text/html"),
     response:set-header('Expires', xs:string(xs:dateTime(current-dateTime()))),
     response:set-header('X-UA-Compatible', 'IE=edge,chrome=1'),
     
+    (: Content :)
+    $html
+
+};
+
+(: Transform xml to html, checking cache :)
+declare function common:html($xml as element(m:response), $view as xs:string, $timestamp as xs:dateTime?) {
+
     try {
-        transform:transform($xml, doc($view), <parameters/>)
+    
+        let $html := transform:transform($xml, doc($view), <parameters/>)
+        let $cache := 
+            if($xml//m:request and exists($timestamp)) then
+                common:cache-put($xml//m:request[1], $html, $timestamp)
+            else ()
+        
+        return 
+            common:html($html)
+        
     }
+    
     catch * {
         let $error :=
             <exception xmlns="">
                 <path>{$err:value}</path>
                 <message>{$err:description}</message>
             </exception>
-        return
-            transform:transform($error, doc(concat($common:app-path, "/views/html/error.xsl")), <parameters/>)
+        return 
+            common:html(
+                transform:transform($error, doc(concat($common:app-path, "/views/html/error.xsl")), <parameters/>)
+            )
     }
-    
+};
+
+(: Transform xml to html, ignore cache :)
+declare function common:html($xml as element(m:response), $view as xs:string) {
+    common:html($xml, $view, ())
 };
 
 declare
@@ -472,7 +499,7 @@ declare function common:replace-multi($string as xs:string, $replacements as ele
 };
 
 declare function common:normalize-unicode($string as xs:string?) as xs:string? {
-    normalize-unicode(replace($string, '­', ''))
+    normalize-unicode(replace($string, '­'(: This is a soft-hyphen :), ''))
 };
 
 declare 
@@ -536,6 +563,10 @@ function common:user-name() as xs:string* {
     let $user := sm:id()
     return
         $user//sm:real/sm:username
+};
+
+declare function common:tei-editor() as xs:boolean {
+    if($common:environment/m:url[@id eq 'operations'] and common:user-in-group('operations')) then true() else false()
 };
 
 declare function common:user-in-group($group as xs:string*) as xs:boolean {
@@ -731,3 +762,83 @@ declare function common:get-parameter($parameter-name as xs:string) {
     else 
         request:get-attribute($parameter-name)
 };
+
+declare function common:cache-key($request as element(m:request)) as xs:string {
+    string-join($request/@*/string(), '_') ! replace(., '[^A-Za-z0-9\-_]', '-') ! lower-case(.)
+};
+
+declare function common:cache-filename($timestamp as xs:dateTime) as xs:string {
+    string-join((format-dateTime($timestamp, "[Y0001]-[M01]-[D01]-[H01]-[m01]-[s01]"), replace($common:app-version, '\.', '-')), '_') ! lower-case(.)
+};
+
+declare function common:cache-collection($request as element(m:request)) as xs:string? {
+
+    let $cache-conf := $common:environment/m:cache-conf/m:cache[@model eq $request/@model][@view eq $request/@resource-suffix]
+    let $cache-key := common:cache-key($request)
+    where $cache-conf
+    return
+        string-join(($cache-conf/@collection, $cache-key), '/')
+        
+};
+
+declare function common:cache-get($request as element(m:request), $timestamp as xs:dateTime?) {
+
+    let $cache-collection := common:cache-collection($request)
+    
+    where $cache-collection and exists($timestamp)
+    return
+        let $cache-filename := common:cache-filename($timestamp)
+        let $cached := doc(xs:anyURI(concat($cache-collection, '/', $cache-filename)))
+        where $cached
+        return (
+        
+            response:set-header('X-EFT-Cache', 'from-cache'),
+            
+            if($request/@resource-suffix eq 'html') then
+                common:html($cached)
+            else (
+                util:declare-option("exist:serialize", "method=xml indent=no"),
+                $cached
+            )
+            
+       )
+};
+
+declare function common:cache-put($request as element(m:request), $data, $timestamp as xs:dateTime?) {
+
+    let $cache-key := common:cache-key($request)
+    
+    where $cache-key gt '' and exists($timestamp)
+    return
+        let $cache-filename := common:cache-filename($timestamp)
+        let $cache-collection := common:cache-collection($request)
+        
+        where $cache-collection
+        return
+            let $clear-cache := 
+                if(xmldb:collection-available($cache-collection)) then 
+                    xmldb:remove($cache-collection)
+                else ()
+        
+            return (
+            
+                (: Create the collection :)
+                xmldb:create-collection(string-join(($common:data-path, 'html'), '/'), $cache-key),
+                
+                (: Store the file :)
+                if($request/@resource-suffix eq 'html') then
+                    xmldb:store($cache-collection, $cache-filename, $data, 'text/html')
+                else
+                    xmldb:store($cache-collection, $cache-filename, $data, 'application/xml')
+                ,
+                
+                (: Set permissions :)
+                if(not(common:user-name() eq 'guest')) then (
+                    sm:chgrp(xs:anyURI(string-join(($cache-collection, $cache-filename), '/')), 'guest'),
+                    sm:chmod(xs:anyURI(string-join(($cache-collection, $cache-filename), '/')), 'rw-rw-rw-')
+                )
+                else ()
+        )
+    
+};
+

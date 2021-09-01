@@ -15,7 +15,7 @@ let $status-id := tei-content:translation-status($tei)
 let $pdf-config := $common:environment//m:store-conf[@type eq 'master']/m:pdfs
 
 return
-    if($pdf-config and $tei and $common:environment/m:render-translation/m:status[@status-id = $status-id]) then 
+    if($pdf-config and $tei and $common:environment/m:render/m:status[@type eq 'translation'][@status-id = $status-id]) then 
         
         let $parts := translation:parts($tei, (), $translation:view-modes/m:view-mode[@id eq 'pdf'])
         let $body-parts := $parts[@type eq 'translation']/m:part/@id/string()
@@ -37,7 +37,7 @@ return
             <message>No TEI found for this resource id</message>
         </error>
     
-    else if(not($common:environment/m:render-translation/m:status[@status-id = $status-id])) then 
+    else if(not($common:environment/m:render/m:status[@type eq 'translation'][@status-id = $status-id])) then 
         <error xmlns="http://read.84000.co/ns/1.0">
             <message>This text is not ready for publication</message>
         </error>

@@ -23,6 +23,10 @@
                                             <xsl:attribute name="href" select="m:text/@uri"/>
                                             <xsl:attribute name="target" select="m:text/@id"/>
                                             <xsl:apply-templates select="m:text/m:title/text()"/>
+                                            <small>
+                                                <xsl:value-of select="' / '"/>
+                                                <xsl:apply-templates select="m:text/m:toh/text()"/>
+                                            </small>
                                         </a>
                                         <label class="label label-default pull-right">
                                             <xsl:choose>

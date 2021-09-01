@@ -168,6 +168,7 @@
                 <xsl:when test="$text/@status eq '1'">
                     <a>
                         <xsl:attribute name="href" select="$text/@page-url"/>
+                        <xsl:attribute name="target" select="concat($text/@id, '.html')"/>
                         <xsl:value-of select="$title"/>
                     </a>
                 </xsl:when>

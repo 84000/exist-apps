@@ -31,7 +31,7 @@ let $target-date-end := request:get-parameter('target-date-end', '')
 let $target-date-search := (($target-date-start gt '' or $target-date-end gt '') and $target-date-type = ('target-date'))
 
 (: List of statuses :)
-let $text-statuses-selected := tei-content:text-statuses-selected($status)
+let $text-statuses-selected := tei-content:text-statuses-selected($status, 'translation')
 
 (: If it's a date search then query translation-statuses based on the dates first :)
 let $translation-statuses := 
@@ -51,14 +51,13 @@ let $texts :=
 
 (: If not a date query then get the translation-statuses retrospectively :)
 let $translation-statuses := 
-    if($target-date-search) then 
-        $translation-statuses
-    else
+    if(not($target-date-search)) then 
         translation-status:texts($texts/m:text/@id)
+    else
+        $translation-statuses
 
 let $texts := 
     if($sort eq 'due-date') then
-        
         element { node-name($texts) } {
             $texts/@*,
             for $text in $texts/m:text
@@ -67,7 +66,6 @@ let $texts :=
             return 
                 $text
         }
-        
     else
         $texts
 
@@ -101,8 +99,7 @@ let $xml-response :=
                 element { QName('http://read.84000.co/ns/1.0', 'permission') } {
                     attribute group { 'utilities' }
                 }
-            else
-                ()
+            else ()
         )
     )
 
