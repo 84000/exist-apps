@@ -132,7 +132,7 @@
                     
                     <!-- Tabs -->
                     <div class="tabs-container-center">
-                        <ul class="nav nav-tabs top-margin" role="tablist">
+                        <ul class="nav nav-tabs" role="tablist">
                             
                             <xsl:variable name="alphabet" select="'ABCDEFGHIJKLMNOPQRSTUVWXYZ'"/>
                             <xsl:variable name="internal-link-attrs" select="(concat('term-lang=', /m:response/m:request/@term-lang), concat('type[]=', ($selected-type[1]/@id, /m:response/m:request/m:entity-types/m:type[1]/@id)[1]))"/>
@@ -398,7 +398,7 @@
                                                                    <xsl:if test="not($config-flag[@id = $show-entity/m:flag/@type])">
                                                                        <div>
                                                                            <form action="/edit-entity.html" method="post" data-ajax-target="#ajax-source" class="form-inline">
-                                                                               <xsl:attribute name="data-ajax-target-callbackurl" select="$page-url || m:view-mode-parameter('editor')"/>
+                                                                               <xsl:attribute name="data-ajax-target-callbackurl" select="$page-url || m:view-mode-parameter('editor') || '&amp;timestamp=', current-dateTime()"/>
                                                                                <input type="hidden" name="form-action" value="entity-set-flag"/>
                                                                                <input type="hidden" name="entity-id" value="{ $show-entity/@xml:id }"/>
                                                                                <input type="hidden" name="entity-flag" value="{ $config-flag/@id }"/>
@@ -553,21 +553,6 @@
                                         <xsl:if test="$entities">
                                             
                                             <div class="form-group top-margin">
-                                                
-                                                <!--<span class="badge badge-notification">
-                                                    <xsl:value-of select="count($entities)"/>
-                                                </span>
-                                                
-                                                <span class="badge-text">
-                                                    <xsl:choose>
-                                                        <xsl:when test="count($entities) eq 1">
-                                                            <xsl:value-of select="' match'"/>
-                                                        </xsl:when>
-                                                        <xsl:otherwise>
-                                                            <xsl:value-of select="'matches'"/>
-                                                        </xsl:otherwise>
-                                                    </xsl:choose>
-                                                </span>-->
                                                 
                                                 <span>
                                                     <xsl:value-of select="format-number(count($entities), '#,###')"/>

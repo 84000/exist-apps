@@ -911,6 +911,7 @@
         <xsl:param name="default-entity-type" as="xs:string"/>
         <xsl:param name="entity-types" as="element(m:type)*"/>
         <xsl:param name="entity-flags" as="element(m:flag)*"/>
+        <xsl:param name="instance" as="element(m:instance)?"/>
         
         <input type="hidden" name="entity-id" value="{ $entity/@xml:id }"/>
         
@@ -1043,7 +1044,7 @@
         <div class="form-group">
             <div class="col-sm-12">
                 <xsl:call-template name="definition-tag-reference">
-                    <xsl:with-param name="element-id" select="concat($context-id, '-entity')"/>
+                    <xsl:with-param name="element-id" select="concat($context-id, '-', ($entity/@xml:id, 'new-entity')[1])"/>
                 </xsl:call-template>
             </div>
         </div>
@@ -1119,19 +1120,28 @@
         <div class="form-group">
             
             <div class="col-sm-offset-2 col-sm-6">
-                <xsl:if test="$entity">
+                
+                <xsl:if test="$instance">
                     <div class="checkbox">
                         <label>
                             <input type="checkbox" name="instance-remove">
-                                <xsl:attribute name="value" select="$context-id"/>
+                                <xsl:attribute name="value" select="$instance/@id"/>
                             </input>
                             <span class="text-danger">
                                 <i class="fa fa-exclamation-circle"/>
-                                <xsl:value-of select="' Un-link this glossary from this shared entity'"/>
+                                <xsl:choose>
+                                    <xsl:when test="$instance[@type eq 'knowledgebase-article']">
+                                        <xsl:value-of select="' Un-link this articled from this shared entity'"/>
+                                    </xsl:when>
+                                    <xsl:otherwise>
+                                        <xsl:value-of select="' Un-link this glossary from this shared entity'"/>
+                                    </xsl:otherwise>
+                                </xsl:choose>
                             </span>
                         </label>
                     </div>
                 </xsl:if>
+                
             </div>
             
             <div class="col-sm-2">

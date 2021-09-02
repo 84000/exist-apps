@@ -337,6 +337,7 @@
                                         <xsl:with-param name="default-entity-type" select="''"/>
                                         <xsl:with-param name="entity-types" select="/m:response/m:entity-types/m:type"/>
                                         <xsl:with-param name="entity-flags" select="/m:response/m:entity-flags/m:flag"/>
+                                        <xsl:with-param name="instance" select="$entity/m:instance[@id eq $tei-id]"/>
                                     </xsl:call-template>
                                                                         
                                 </form>

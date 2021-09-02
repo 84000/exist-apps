@@ -1554,6 +1554,7 @@
                     <xsl:with-param name="default-entity-type" select="concat('eft-', $loop-glossary/@type)"/>
                     <xsl:with-param name="entity-types" select="/m:response/m:entity-types/m:type"/>
                     <xsl:with-param name="entity-flags" select="/m:response/m:entity-flags/m:flag"/>
+                    <xsl:with-param name="instance" select="$loop-glossary/m:entity/m:instance[@id eq $loop-glossary/@id]"/>
                 </xsl:call-template>
                 
             </xsl:with-param>
