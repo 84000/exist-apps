@@ -160,7 +160,6 @@
                             </xsl:for-each>
                         </div>
                         
-                        
                         <xsl:variable name="files-outdated" select="m:translation/m:downloads/m:download[not(@version = ../@tei-version)]"/>
                         <xsl:variable name="cache-outdated" select="$files-outdated[@type eq 'cache']"/>
                         <xsl:variable name="master-store" select="$environment/m:store-conf[@type eq 'master']"/>

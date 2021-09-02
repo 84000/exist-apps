@@ -28,6 +28,10 @@ let $term-langs :=
 
 (: The requested entity :)
 let $entity-id := request:get-parameter('entity-id', '')
+let $view-mode := request:get-parameter('view-mode', '')
+let $flagged := request:get-parameter('flagged', '')
+let $flag := $entities:flags//m:flag[@id eq  $flagged]
+
 let $request-entity := $entities:entities//m:entity[@xml:id eq $entity-id]
 let $request-entity := entities:entity($request-entity, true(), true(), true())
 let $entity-show := 
@@ -39,7 +43,8 @@ let $entity-show :=
 (: Default to find similar matches to selected entity :)
 let $search-default := (
         $entity-show/m:label[@primary-transliterated eq 'true'][@xml:lang eq 'Bo-Ltn']/data(), 
-        $entity-show/m:label[@primary eq 'true'][@xml:lang eq 'Sa-Ltn']/data(), 
+        $entity-show/m:label[@primary eq 'true'][@xml:lang eq 'Sa-Ltn']/data(),
+        if($flag) then '' else (),
         'a'
     )[1]
 let $search := request:get-parameter('search', $search-default) ! normalize-space(.)
@@ -53,21 +58,20 @@ let $type := request:get-parameter('type[]', $type-default)
 let $term-lang-default := (
         $entity-show/m:label[@primary-transliterated eq 'true'][@xml:lang eq 'Bo-Ltn']/@xml:lang, 
         $entity-show/m:label[@primary eq 'true'][@xml:lang eq 'Sa-Ltn']/@xml:lang, 
+        if($flag) then 'en' else (),
         'Bo-Ltn'
     )[1]
+    
 let $term-lang := request:get-parameter('term-lang', $term-lang-default) ! common:valid-lang(.)
-
-let $view-mode := request:get-parameter('view-mode', '')
-let $flagged := request:get-parameter('flagged', '')
 
 let $type-glossary-type := $entities:types/m:type[@id = $type]/@glossary-type
 let $glossary-search := 
-    if(not($entities:flags//m:flag[@id eq  $flagged])) then
+    if(not($flag)) then
         glossary:glossary-search($type-glossary-type, $term-lang, $search)
     else()
 
 let $entity-list := 
-    if($entities:flags//m:flag[@id eq  $flagged]) then
+    if($flag) then
         entities:flagged($flagged, true(), true(), false())
     else
         entities:entities($glossary-search/@xml:id, true(), true(), false())
@@ -95,7 +99,8 @@ let $entity-list :=
     order by 
         if(string-length($search) gt 1) then min($matching-terms ! count(tokenize(data(), '\s+'))) else 1 ascending,
         (:min($matching-terms ! string-length(.)) ascending,:)
-        lower-case($matching-terms[1])
+        lower-case($matching-terms[1]),
+        $entity/m:instance[1]/m:item/m:sort-term
     
     return
         $entity

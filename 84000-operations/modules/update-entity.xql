@@ -478,7 +478,7 @@ declare function update-entity:update-instance($instance-id as xs:string) as ele
         
 };
 
-(:declare function update-entity:set-flag($entity-id as xs:string, $type as xs:string) as element()* {
+declare function update-entity:set-flag($entity-id as xs:string, $type as xs:string) as element()* {
     local:set-flag($entity-id, $type, false())
 };
 
@@ -490,11 +490,13 @@ declare function local:set-flag($entity-id as xs:string, $type as xs:string, $re
 
     let $existing-entity := $entities:entities/m:entity[@xml:id eq $entity-id]
     
+    let $flag := $entities:flags//m:flag[@id eq $type]
+    
     let $new-entity :=
         element { node-name($existing-entity) } {
             $existing-entity/@*,
             $existing-entity/*[not(local-name(.) eq 'flag' and @type eq $type)],
-            if(not($remove)) then
+            if(not($remove) and $flag) then
                 element flag {
                     attribute type { $type },
                     attribute user { common:user-name() },
@@ -506,4 +508,4 @@ declare function local:set-flag($entity-id as xs:string, $type as xs:string, $re
     where $existing-entity and $new-entity
     return
         common:update('set-entity-flag', $existing-entity, $new-entity, (), ())
-};:)
+};

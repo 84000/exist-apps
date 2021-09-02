@@ -44,7 +44,7 @@ declare variable $entities:types :=
 declare variable $entities:flags := 
     <entity-flags xmlns="http://read.84000.co/ns/1.0">
         <flag id="requires-attention">
-            <label>Requires Attention</label>
+            <label>Requires attention</label>
         </flag>
     </entity-flags>;
 
@@ -326,7 +326,15 @@ declare function entities:similar($entity as element(m:entity)?, $search-terms a
                 [not(@xml:id = $exclude-ids)]
     )/@xml:id/string()
     
-    for $similar-entity in $entities:entities//m:entity[m:instance/@id[. = $matches]][m:type[@type = $entity/m:type/@type]]
+    for $similar-entity in 
+        if($entity[m:type]) then
+            $entities:entities//m:entity
+                [m:instance/@id = $matches]
+                [m:type/@type = $entity/m:type/@type]
+        else
+            $entities:entities//m:entity
+                [m:instance/@id = $matches]
+    
     order by if($similar-entity[m:label/text() = $search-terms]) then 1 else 0 descending
     return 
         (: Copy entity expanded to include instance detail :)

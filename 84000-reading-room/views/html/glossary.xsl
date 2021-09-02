@@ -305,7 +305,6 @@
                         </xsl:otherwise>
                         
                     </xsl:choose>
-            
                     
                     <!-- Results -->
                     <div id="glossary-results">
@@ -336,22 +335,40 @@
                                                    
                                                    <xsl:if test="$tei-editor">
                                                        
-                                                       <div class="well well-sm top-margin">
+                                                       <div class="well well-sm top-margin clearfix">
                                                            
+                                                           <!-- Flags -->
                                                            <xsl:if test="$show-entity[m:flag]">
-                                                                <xsl:for-each select="$show-entity/m:flag">
-                                                                    <xsl:variable name="entity-flag" select="."/>
-                                                                    <xsl:variable name="config-flag" select="/m:response/m:entity-flags/m:flag[@id = $entity-flag/@type]"/>
-                                                                    <div class="center-vertical full-width">
-                                                                        <span>
-                                                                            <span class="label label-danger">
-                                                                                <xsl:value-of select="$config-flag/m:label[1]"/>
-                                                                            </span>
-                                                                        </span>
-                                                                        <span class="italic small text-right">
-                                                                            <xsl:value-of select="common:date-user-string(' Flagged', $entity-flag/@timestamp, $entity-flag/@user)"/>
-                                                                        </span>
-                                                                    </div>
+                                                               <xsl:for-each select="/m:response/m:entity-flags/m:flag">
+                                                                   <xsl:variable name="config-flag" select="."/>
+                                                                   <xsl:variable name="entity-flag" select="$show-entity/m:flag[@type eq $config-flag/@id][last()]"/>
+                                                                   <xsl:if test="$entity-flag">
+                                                                       <div class="center-vertical full-width">
+                                                                           <div class="center-vertical align-left">
+                                                                               <span>
+                                                                                   <span class="label label-danger">
+                                                                                       <xsl:value-of select="$config-flag/m:label[1]"/>
+                                                                                   </span>
+                                                                               </span>
+                                                                               <span>
+                                                                                   <span class="italic small">
+                                                                                       <xsl:value-of select="common:date-user-string(' Flagged', $entity-flag/@timestamp, $entity-flag/@user)"/>
+                                                                                   </span>
+                                                                               </span>
+                                                                           </div>
+                                                                           <div class="text-right">
+                                                                               <form action="/edit-entity.html" method="post" data-ajax-target="#ajax-source" class="form-inline">
+                                                                                   <xsl:attribute name="data-ajax-target-callbackurl" select="$page-url || m:view-mode-parameter('editor')"/>
+                                                                                   <input type="hidden" name="form-action" value="entity-clear-flag"/>
+                                                                                   <input type="hidden" name="entity-id" value="{ $show-entity/@xml:id }"/>
+                                                                                   <input type="hidden" name="entity-flag" value="{ $config-flag/@id }"/>
+                                                                                   <button type="submit" data-loading="Clearing flag..." class="btn-link editor">
+                                                                                       <xsl:value-of select="'clear flag'"/>
+                                                                                   </button>
+                                                                               </form>
+                                                                           </div>
+                                                                       </div>
+                                                                   </xsl:if>
                                                                 </xsl:for-each>
                                                                <hr class="sml-margin"/>
                                                            </xsl:if>
@@ -365,17 +382,35 @@
                                                                <hr class="sml-margin"/>
                                                            </xsl:if>
                                                            
-                                                           <ul class="list-inline inline-dots no-bottom-margin">
+                                                           <div class="center-vertical align-left">
                                                                
-                                                               <li>
+                                                               <div>
                                                                    <a target="84000-operations" class="editor">
                                                                        <xsl:attribute name="href" select="concat('/edit-entity.html?entity-id=', $show-entity/@xml:id, '#ajax-source')"/>
                                                                        <xsl:attribute name="data-ajax-target" select="'#popup-footer-editor .data-container'"/>
                                                                        <xsl:value-of select="'Edit entity'"/>
                                                                    </a>
-                                                               </li>
+                                                               </div>
                                                                
-                                                           </ul>
+                                                               <!-- Set flags -->
+                                                               <xsl:for-each select="/m:response/m:entity-flags/m:flag">
+                                                                   <xsl:variable name="config-flag" select="."/>
+                                                                   <xsl:if test="not($config-flag[@id = $show-entity/m:flag/@type])">
+                                                                       <div>
+                                                                           <form action="/edit-entity.html" method="post" data-ajax-target="#ajax-source" class="form-inline">
+                                                                               <xsl:attribute name="data-ajax-target-callbackurl" select="$page-url || m:view-mode-parameter('editor')"/>
+                                                                               <input type="hidden" name="form-action" value="entity-set-flag"/>
+                                                                               <input type="hidden" name="entity-id" value="{ $show-entity/@xml:id }"/>
+                                                                               <input type="hidden" name="entity-flag" value="{ $config-flag/@id }"/>
+                                                                               <button type="submit" data-loading="Setting flag..." class="btn-link editor">
+                                                                                   <xsl:value-of select="'Flag as requiring attention'"/>
+                                                                               </button>
+                                                                           </form>
+                                                                       </div>
+                                                                   </xsl:if>
+                                                               </xsl:for-each>
+                                                               
+                                                           </div>
                                                            
                                                        </div>
                                                        

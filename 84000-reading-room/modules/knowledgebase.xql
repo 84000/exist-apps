@@ -266,7 +266,7 @@ document {
             <editionStmt>
                 <edition>v 0.1.0 <date>{ format-date(current-date(), '[Y]') }</date></edition>
             </editionStmt>
-            <publicationStmt status="2.a">
+            <publicationStmt status="3">
                 <publisher>
                     <name>84000: Translating the Words of the Buddha</name>
                 </publisher>

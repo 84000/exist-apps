@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<package xmlns="http://expath.org/ns/pkg" name="http://read.84000.co/operations" abbrev="84000-operations" version="1.18.0" spec="1.0">
+<package xmlns="http://expath.org/ns/pkg" name="http://read.84000.co/operations" abbrev="84000-operations" version="1.18.1" spec="1.0">
     <title>84000 Operations</title>
     <home>http://operations.84000-translate.org</home>
     <dependency package="http://read.84000.co/reading-room"/>

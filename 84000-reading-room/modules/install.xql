@@ -7,10 +7,7 @@ import module namespace xmldb="http://exist-db.org/xquery/xmldb";
 declare function install:base-permissions($collection as xs:string) {
 
     (: set collection permissions :)
-    xmldb:chmod-collection(
-        $collection,
-        xmldb:string-to-permissions("rwxr-xr-x")
-    ),
+    sm:chmod($collection, "rwxr-xr-x"),
     
     (: set collection group :)
     sm:chgrp($collection, 'reading-room'),
@@ -50,7 +47,7 @@ declare function install:special-permissions($collection as xs:string) {
 };
 
 declare function install:copy-xconf($collection as xs:string){
-    xmldb:copy(concat($collection, '/xconf/db/apps'),"/db/system/config/db")
+    xmldb:copy-collection(concat($collection, "/xconf/db/apps"),"/db/system/config/db", true())
 };
 
 declare function install:reindex() {
@@ -59,6 +56,6 @@ declare function install:reindex() {
     xmldb:reindex('/db/apps/84000-data/operations'),
     xmldb:reindex('/db/apps/84000-data/tei'),
     xmldb:reindex('/db/apps/84000-data/translation-memory'),
-    xmldb:reindex('/db/apps/tibetan-source')
+    xmldb:reindex('/db/apps/tibetan-source/data')
 
 };
