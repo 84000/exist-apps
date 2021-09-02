@@ -29,7 +29,7 @@
     <xsl:function name="m:view-mode-parameter" as="xs:string">
         <xsl:param name="override" as="xs:string?"/>
         <xsl:variable name="view-mode-id" select="if($override gt '') then $override else if($view-mode[not(@id eq 'default')]) then  $view-mode/@id  else ''"/>
-        <xsl:value-of select="if($view-mode-id gt '') then concat('&amp;view-mode=', $view-mode-id)  else ''"/>
+        <xsl:value-of select="if($view-mode-id gt '') then concat('&amp;view-mode=', $view-mode-id, '&amp;timestamp=', current-dateTime())  else ''"/>
     </xsl:function>
     <xsl:variable name="archive-path" select="/m:response/m:request/@archive-path" as="xs:string?"/>
     <xsl:function name="m:archive-path-parameter" as="xs:string">

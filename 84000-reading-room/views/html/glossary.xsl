@@ -168,7 +168,7 @@
                                         <xsl:attribute name="class" select="'active'"/>
                                     </xsl:if>
                                     <a class="editor">
-                                        <xsl:attribute name="href" select="concat('glossary.html?flagged=requires-attention', m:view-mode-parameter(()), '&amp;timestamp=', current-dateTime())"/>
+                                        <xsl:attribute name="href" select="concat('glossary.html?flagged=requires-attention', m:view-mode-parameter(()))"/>
                                         <xsl:value-of select="'Requiring Attention'"/>
                                     </a>
                                 </li>
@@ -398,7 +398,7 @@
                                                                    <xsl:if test="not($config-flag[@id = $show-entity/m:flag/@type])">
                                                                        <div>
                                                                            <form action="/edit-entity.html" method="post" data-ajax-target="#ajax-source" class="form-inline">
-                                                                               <xsl:attribute name="data-ajax-target-callbackurl" select="$page-url || m:view-mode-parameter('editor') || '&amp;timestamp=', current-dateTime()"/>
+                                                                               <xsl:attribute name="data-ajax-target-callbackurl" select="$page-url || m:view-mode-parameter('editor')"/>
                                                                                <input type="hidden" name="form-action" value="entity-set-flag"/>
                                                                                <input type="hidden" name="entity-id" value="{ $show-entity/@xml:id }"/>
                                                                                <input type="hidden" name="entity-flag" value="{ $config-flag/@id }"/>
@@ -731,7 +731,7 @@
                     <small>
                         <xsl:value-of select="' / '"/>
                         <a target="84000-glossary-tool" class="editor">
-                            <xsl:attribute name="href" select="concat($environment/m:url[@id eq 'operations']/data(), '/edit-glossary.html?resource-id=', m:text/@id, '&amp;glossary-id=', @id, '&amp;max-records=1', '#expand-item-entity-', @id,'-detail')"/>
+                            <xsl:attribute name="href" select="concat($environment/m:url[@id eq 'operations']/data(), '/edit-glossary.html?resource-id=', m:text/@id, '&amp;glossary-id=', @id, '&amp;max-records=1', '#expand-item-glossary-form-', @id,'-detail')"/>
                             <xsl:value-of select="'Glossary editor'"/>
                         </a>
                     </small>
