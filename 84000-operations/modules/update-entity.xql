@@ -77,7 +77,6 @@ declare function update-entity:headers($entity-id as xs:string?) as element()? {
     let $instance-new := ($glossary-id, $knowledgebase-id)[not(. eq '')]
     let $instance-remove := request:get-parameter('instance-remove', '')
     let $instance-existing := $existing-entity/m:instance[@id eq $instance-new]
-    let $instance-use-definition := request:get-parameter('use-definition', '')
     let $entity-types := $entities:types/m:type
     let $entity-flags := $entities:flags/m:flag
     
@@ -378,7 +377,7 @@ declare function update-entity:match-instance($entity-id as xs:string, $instance
 };
 
 (: Add the glossary of a text to the entities :)
-declare function update-entity:merge-glossary($text-id as xs:string) as element()* {
+declare function update-entity:merge-glossary($text-id as xs:string, $create as xs:boolean) as element()* {
     
     let $tei := $glossary:tei/id($text-id)/ancestor::tei:TEI
     let $glosses-with-entities := $tei//tei:back//tei:gloss/id($entities:entities//m:entity/m:instance/@id)
@@ -426,9 +425,10 @@ declare function update-entity:merge-glossary($text-id as xs:string) as element(
         let $do-update := 
             if($action eq 'merge') then
                 update-entity:match-instance($matches-entity/@xml:id, $gloss/@xml:id, 'glossary-item')
-            else
+            else if($create) then
                 update-entity:create($gloss, $flag)
-                
+            else ()
+        
         return 
             element update {
                 attribute action { $action },

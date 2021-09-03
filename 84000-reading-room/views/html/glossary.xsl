@@ -498,6 +498,9 @@
                                                                    
                                                                    <xsl:for-each select="current-group()">
                                                                        
+                                                                       <!-- Needs imporing to order by Toh numerically -->
+                                                                       <xsl:sort select="if(m:text[@type eq 'knowledgebase']) then m:text/m:title else replace(m:text/m:toh, '^toh\s*', '', 'i') ! xs:integer(.)"/>
+                                                                       
                                                                        <xsl:apply-templates select="."/>
                                                                        
                                                                    </xsl:for-each>

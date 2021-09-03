@@ -68,7 +68,7 @@ let $update-glossary :=
     else if($form-action eq 'merge-entities') then
         update-entity:resolve($entity-id, $target-entity-id, $predicate)
     else if($form-action eq 'merge-all-entities') then
-        update-entity:merge-glossary($resource-id)
+        update-entity:merge-glossary($resource-id, true())
     else ()
 
 (: Force a filter value :)

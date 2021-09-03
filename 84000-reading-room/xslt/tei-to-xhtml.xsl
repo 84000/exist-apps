@@ -1249,15 +1249,21 @@
                         </ul>
                     </xsl:if>
                     
+                    <!-- Entity -->
+                    <xsl:variable name="entity" select="key('entity-instance', $glossary-item/@xml:id, $root)[1]/parent::m:entity"/>
+                    <xsl:variable name="entity-instance" select="$entity/m:instance[@id eq $glossary-item/@xml:id]"/>
+                    
                     <!-- Definition -->
-                    <xsl:for-each select="$glossary-item/tei:term[@type eq 'definition'][node()]">
-                        <p>
-                            <xsl:call-template name="class-attribute">
-                                <xsl:with-param name="base-classes" select="'definition'"/>
-                            </xsl:call-template>
-                            <xsl:apply-templates select="node()"/>
-                        </p>
-                    </xsl:for-each>
+                    <xsl:if test="not($entity-instance[@use-definition gt 'replace'])">
+                        <xsl:for-each select="$glossary-item/tei:term[@type eq 'definition'][node()]">
+                            <p>
+                                <xsl:call-template name="class-attribute">
+                                    <xsl:with-param name="base-classes" select="'definition'"/>
+                                </xsl:call-template>
+                                <xsl:apply-templates select="node()"/>
+                            </p>
+                        </xsl:for-each>
+                    </xsl:if>
                     
                     <!-- Expressions -->
                     <xsl:if test="$view-mode[not(@id eq 'pdf')]">
@@ -1286,12 +1292,9 @@
                         </div>
                     </xsl:if>
                     
-                    <!-- Entity -->
-                    <xsl:variable name="entity" select="key('entity-instance', $glossary-item/@xml:id, $root)[1]/parent::m:entity"/>
-                    
                     <!-- Entity definition -->
                     <xsl:variable name="entity-definition" select="$entity/m:content[@type eq 'glossary-definition']"/>
-                    <xsl:variable name="entity-use-definition" select="$entity/m:instance[@id eq $glossary-item/@xml:id][@use-definition gt '']"/>
+                    <xsl:variable name="entity-use-definition" select="$entity-instance[@use-definition  = ('after', 'replace')]"/>
                     <xsl:if test="$view-mode[@client = ('browser', 'ajax')] and ($entity-use-definition and $entity-definition)">
                         <div class="footer entity-content">
                             

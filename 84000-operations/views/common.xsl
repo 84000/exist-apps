@@ -1619,17 +1619,26 @@
                         <!-- Definition -->
                         <div class="item-row">
                             
-                            <xsl:call-template name="glossary-definition">
-                                <xsl:with-param name="item" select="$item"/>
-                            </xsl:call-template>
-                            
-                            
+                            <xsl:choose>
+                                <xsl:when test="not($item/parent::m:instance[@use-definition gt 'replace'])">
+                                    <xsl:call-template name="glossary-definition">
+                                        <xsl:with-param name="item" select="$item"/>
+                                    </xsl:call-template>
+                                </xsl:when>
+                                <xsl:otherwise>
+                                    <div class="sml-margin bottom">
+                                        <span class="label label-default">
+                                            <xsl:value-of select="'Glossary definition hidden'"/>
+                                        </span>
+                                    </div>
+                                </xsl:otherwise>
+                            </xsl:choose>
                             
                             <!-- Use entity definition -->
-                            <xsl:if test="$item/parent::m:instance[@use-definition gt '']/parent::m:entity/m:content[@type eq 'glossary-definition']">
+                            <xsl:if test="$item/parent::m:instance[@use-definition = ('after', 'replace')]/parent::m:entity/m:content[@type eq 'glossary-definition']">
                                 <div class="sml-margin bottom">
                                     <span class="label label-default">
-                                        <xsl:value-of select="'Includes entity definition'"/>
+                                        <xsl:value-of select="'Entity definition included'"/>
                                     </span>
                                 </div>
                             </xsl:if>

@@ -358,6 +358,7 @@
                             <xsl:variable name="loop-glossary-cache" select="$glossary-cache/m:gloss[@id eq $loop-glossary-id][m:location]"/>
                             <xsl:variable name="locations-cached" select="$loop-glossary/m:expressions/m:location[@id = $loop-glossary-cache/m:location/@id]"/>
                             <xsl:variable name="locations-not-cached" select="$loop-glossary/m:expressions/m:location[not(@id = $locations-cached/@id)]"/>
+                            <xsl:variable name="loop-glossary-instance" select="$loop-glossary/m:entity/m:instance[@id eq $loop-glossary-id]"/>
                             
                             <div>
                                 
@@ -411,18 +412,29 @@
                                 <!-- Definition -->
                                 <xsl:if test="$loop-glossary/m:definition[node()]">
                                     <div class="sml-margin bottom collapse-one-line">
-                                        <xsl:call-template name="glossary-definition">
-                                            <xsl:with-param name="item" select="$loop-glossary"/>
-                                        </xsl:call-template>
+                                        <xsl:choose>
+                                            <xsl:when test="not($loop-glossary-instance[@use-definition eq 'replace'])">
+                                                <xsl:call-template name="glossary-definition">
+                                                    <xsl:with-param name="item" select="$loop-glossary"/>
+                                                </xsl:call-template>
+                                            </xsl:when>
+                                            <xsl:otherwise>
+                                                <div class="sml-margin bottom">
+                                                    <span class="label label-default">
+                                                        <xsl:value-of select="'Glossary definition hidden'"/>
+                                                    </span>
+                                                </div>
+                                            </xsl:otherwise>
+                                        </xsl:choose>
                                     </div>
                                 </xsl:if>
                                 
                                 <!-- Entity definition used -->
-                                <xsl:if test="$loop-glossary/m:entity/m:content[@type eq 'glossary-definition'] and $loop-glossary/m:entity/m:instance[@id eq $loop-glossary-id][@use-definition gt '']">
+                                <xsl:if test="$loop-glossary/m:entity/m:content[@type eq 'glossary-definition'] and $loop-glossary-instance[@use-definition  = ('after', 'replace')]">
                                     <div class="sml-margin bottom">
                                         <p>
                                             <span class="label label-default">
-                                                <xsl:value-of select="'Includes entity definition'"/>
+                                                <xsl:value-of select="'Entity definition included'"/>
                                             </span>
                                         </p>
                                     </div>
@@ -1132,6 +1144,8 @@
         
         <xsl:param name="glossary" as="element(m:item)?"/>
         
+        <xsl:variable name="glossary-instance" select="$glossary/m:entity/m:instance[@type eq 'glossary-item'][@id eq $glossary/@id]"/>
+        
         <input type="hidden" name="glossary-id" value="{ $glossary/@id }"/>
         
         <!-- Main term -->
@@ -1352,37 +1366,41 @@
         </div>
         
         <!-- Include entity definition -->
-        <xsl:if test="$glossary/m:entity/m:content[@type eq 'glossary-definition']">
-            <div class="form-group">
-                
-                <label class="col-sm-2 control-label" for="use-definition">
-                    <xsl:value-of select="'Entity definition:'"/>
-                </label>
-                
-                <div class="col-sm-3">
-                    <select name="use-definition" id="use-definition" class="form-control">
-                        <option value="">
-                            <xsl:value-of select="'Do not include'"/>
-                        </option>
-                        <option value="after">
-                            <xsl:if test="$glossary/m:entity/m:instance[@type eq 'glossary-item'][@id eq $glossary/@id][@use-definition gt '']">
-                                <xsl:attribute name="selected" select="'selected'"/>
-                            </xsl:if>
-                            <xsl:value-of select="'Include'"/>
-                        </option>
-                    </select>
-                </div>
-                
-            </div>
-        </xsl:if>
-        
         <!-- Submit button -->
         <div class="form-group">
-            <div class="col-sm-offset-2 col-sm-8">
+            
+            <label class="col-sm-2 control-label" for="use-definition">
+                <xsl:value-of select="'Definition display:'"/>
+            </label>
+            
+            <div class="col-sm-6">
+                <select name="use-definition" id="use-definition" class="form-control">
+                    <option value="">
+                        <xsl:value-of select="'Display glossary entry definition'"/>
+                    </option>
+                    <xsl:if test="$glossary/m:entity/m:content[@type eq 'glossary-definition']">
+                        <option value="replace">
+                            <xsl:if test="$glossary-instance[@use-definition eq 'replace']">
+                                <xsl:attribute name="selected" select="'selected'"/>
+                            </xsl:if>
+                            <xsl:value-of select="'Display shared entity definition'"/>
+                        </option>
+                        <option value="after">
+                            <xsl:if test="$glossary-instance[@use-definition eq 'after']">
+                                <xsl:attribute name="selected" select="'selected'"/>
+                            </xsl:if>
+                            <xsl:value-of select="'Display both'"/>
+                        </option>
+                    </xsl:if>
+                </select>
+            </div>
+            
+            <div class="col-sm-2">
                 <button type="submit" class="btn btn-primary pull-right" data-loading="Applying changes...">
                     <xsl:value-of select="'Apply changes'"/>
                 </button>
             </div>
+            
         </div>
         
     </xsl:template>
