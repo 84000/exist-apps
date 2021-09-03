@@ -517,31 +517,39 @@
                                                    </xsl:for-each-group>
                                                    
                                                    <!-- Related entities -->
-                                                   <xsl:if test="$show-entity/m:instance[m:page] | $show-entity/m:relation[not(@predicate eq 'isUnrelated')][m:entity/m:instance[m:page | m:item]]">
+                                                   <xsl:variable name="instance-pages" select="$show-entity/m:instance/m:page | $show-entity/m:relation[not(@predicate eq 'isUnrelated')]/m:entity/m:instance/m:page"/>
+                                                   <xsl:variable name="instance-items" select="$show-entity/m:relation[not(@predicate eq 'isUnrelated')]/m:entity[m:instance/m:item]"/>
+                                                   <xsl:if test="$instance-pages | $instance-items">
                                                        
-                                                       <h4 class="text-muted top-margin">
-                                                           <xsl:value-of select="'Other related content'"/>
-                                                       </h4>
+                                                       <xsl:if test="$instance-pages">
+                                                           <h4 class="text-muted top-margin">
+                                                               <xsl:value-of select="'Related content from the 84000 Knowledge Base'"/>
+                                                           </h4>
+                                                           <ul>
+                                                               <xsl:for-each select="$instance-pages">
+                                                                   <li>
+                                                                       <xsl:call-template name="knowledgebase-link">
+                                                                           <xsl:with-param name="page" select="."/>
+                                                                       </xsl:call-template>
+                                                                   </li>
+                                                               </xsl:for-each>
+                                                           </ul>
+                                                       </xsl:if>
                                                        
-                                                       <ul>
-                                                           
-                                                           <xsl:for-each select="$show-entity/m:instance/m:page | $show-entity/m:relation[not(@predicate eq 'isUnrelated')]/m:entity/m:instance/m:page">
-                                                               <li>
-                                                                   <xsl:call-template name="knowledgebase-link">
-                                                                       <xsl:with-param name="page" select="."/>
-                                                                   </xsl:call-template>
-                                                               </li>
-                                                           </xsl:for-each>
-                                                           
-                                                           <xsl:for-each select="$show-entity/m:relation[not(@predicate eq 'isUnrelated')]/m:entity[m:instance/m:item]">
-                                                               <li>
-                                                                   <xsl:call-template name="glossary-link">
-                                                                       <xsl:with-param name="entity" select="."/>
-                                                                   </xsl:call-template>
-                                                               </li>
-                                                           </xsl:for-each>
-                                                           
-                                                       </ul>
+                                                       <xsl:if test="$instance-items">
+                                                           <h4 class="text-muted top-margin">
+                                                               <xsl:value-of select="'Related content from the 84000 Glossary of Terms'"/>
+                                                           </h4>
+                                                           <ul>
+                                                               <xsl:for-each select="$instance-items">
+                                                                   <li>
+                                                                       <xsl:call-template name="glossary-link">
+                                                                           <xsl:with-param name="entity" select="."/>
+                                                                       </xsl:call-template>
+                                                                   </li>
+                                                               </xsl:for-each>
+                                                           </ul>
+                                                       </xsl:if>
                                                        
                                                    </xsl:if>
                                                    
@@ -757,7 +765,7 @@
             
             <!-- Output terms grouped and ordered by language -->
             <xsl:variable name="item" select="."/>
-            <xsl:for-each select="('Bo-Ltn','bo','Sa-Ltn', 'zh')">
+            <xsl:for-each select="('bo','Bo-Ltn','Sa-Ltn','zh')">
                 
                 <xsl:variable name="term-lang" select="."/>
                 <xsl:variable name="term-lang-terms" select="$item/m:term[@xml:lang eq $term-lang]"/>
@@ -840,7 +848,7 @@
         <xsl:variable name="primary-label" select="($entity/m:label[@primary eq 'true'], $entity/m:label[1])[1]"/>
         <xsl:variable name="primary-transliterated" select="$entity/m:label[@primary-transliterated eq 'true']"/>
         
-        <a>
+        <a class="no-underline">
             <xsl:attribute name="href" select="concat('glossary.html?entity-id=', $entity/@xml:id, m:view-mode-parameter(()))"/>
             <span>
                 <xsl:attribute name="class">
@@ -848,16 +856,12 @@
                 </xsl:attribute>
                 <xsl:value-of select="normalize-space($primary-label/text())"/>
             </span>
-            <span class="small">
-                <xsl:value-of select="' / '"/>
-                <span>
-                    <xsl:attribute name="class">
-                        <xsl:value-of select="common:lang-class($primary-transliterated/@xml:lang)"/>
-                    </xsl:attribute>
-                    <xsl:value-of select="normalize-space($primary-transliterated/text())"/>
-                </span>
-                <xsl:value-of select="' / '"/>
-                <xsl:value-of select="'from the 84000 Glossary of Terms'"/>
+            <br/>
+            <span>
+                <xsl:attribute name="class">
+                    <xsl:value-of select="string-join(('text-muted',common:lang-class($primary-transliterated/@xml:lang)),' ')"/>
+                </xsl:attribute>
+                <xsl:value-of select="normalize-space($primary-transliterated/text())"/>
             </span>
         </a>
         
@@ -869,17 +873,13 @@
         
         <xsl:variable name="main-title" select="$page/m:titles/m:title[@type eq 'mainTitle'][1]"/>
         
-        <a>
+        <a class="no-underline">
             <xsl:attribute name="href" select="concat('/knowledgebase/', @kb-id, '.html')"/>
             <span>
                 <xsl:attribute name="class">
                     <xsl:value-of select="string-join(('results-list-item-heading', common:lang-class($main-title/@xml:lang)),' ')"/>
                 </xsl:attribute>
                 <xsl:value-of select="normalize-space($main-title/text())"/>
-            </span>
-            <span class="small">
-                <xsl:value-of select="' / '"/>
-                <xsl:value-of select="'from the 84000 Knowledge Base'"/>
             </span>
         </a>
         

@@ -15,10 +15,13 @@ let $texts-without-entities :=
     where $glossary and not($glosses-with-entities) and not($text-id eq 'UT22084-000-000')
     return
         $text-id
+        
+return if(true()) then $texts-without-entities else
 
+(: Just do one at a time :)
 let $next-text-id := $texts-without-entities[1]
 return (
     count($texts-without-entities),
-    $next-text-id,
-    update-entity:merge-glossary($next-text-id, false())
+    $next-text-id(:,
+    update-entity:merge-glossary($next-text-id, false()):)
 )
