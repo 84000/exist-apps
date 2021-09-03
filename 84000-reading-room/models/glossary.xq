@@ -108,8 +108,9 @@ let $entity-list :=
 (: Show the first result :)
 let $entity-show := 
     if(not($entity-show)) then
-        $entity-list[1]
-    else $entity-show
+        entities:entity($entity-list[1], true(), true(), true())
+    else 
+        $entity-show
 
 let $entity-types := common:add-selected-children($entities:types, $type)
 let $term-langs := common:add-selected-children($term-langs, $term-lang)

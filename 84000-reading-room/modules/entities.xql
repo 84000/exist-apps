@@ -44,7 +44,7 @@ declare variable $entities:types :=
 declare variable $entities:flags := 
     <entity-flags xmlns="http://read.84000.co/ns/1.0">
         <flag id="requires-attention">
-            <label>Requires attention</label>
+            <label>requiring attention</label>
         </flag>
     </entity-flags>;
 
@@ -200,37 +200,26 @@ declare function entities:entity($entity as element(m:entity)?, $validate as xs:
             let $relations := $entity/m:relation[not(@id eq $entity/@xml:id)]
             return
                 if($expand-relations) then
-                    entities:expand-relations($relations, $validate, $expand-instances, $expand-relations)
+                
+                    let $reverse-relations := 
+                        for $relation in $entities:entities//m:entity/m:relation[@id eq $entity/@xml:id]
+                        let $reverse-predicate := $entities:predicates//m:predicate[@xml:id eq $relation/@predicate]/@reverse
+                        let $reverse-entity := $relation/parent::m:entity[not(@xml:id = ($entity/@xml:id, $entity/m:relation/@id))]
+                        where $reverse-predicate and $reverse-entity
+                        return
+                        element { node-name($relation) } {
+                            attribute predicate { $reverse-predicate },
+                            attribute id { $reverse-entity/@xml:id },
+                            attribute debug { 'reverse-relation' }
+                        }
+                    let $relations := ($relations | $reverse-relations)
+                    where $relations
+                    return
+                        entities:expand-relations($relations, $validate, true(), false())
+                        
                 else 
                     $relations
-            ,
-            
-            (: Include relations that point to this entity :)
-            (: These need "reversing" to express the relation to this :)
-            (: Don't include relations we already have :)
-            if($expand-relations) then
-                for $relation in $entities:entities//m:entity[not(id($entity/m:relation/@id))]/m:relation[@id eq $entity/@xml:id]
-                let $reverse := $entities:predicates//m:predicate[@xml:id eq $relation/@predicate]/@reverse
-                (: 
-                    This is bound to cause infinite recurrence as one of the relations is itself
-                    We need to filter out this relation from the source entity before expanding further
-                :)
-                let $source-entity := $relation/parent::m:entity
-                let $source-entity := 
-                    element { node-name($source-entity) } {
-                        $source-entity/@*,
-                        $source-entity/*[not(self::m:relation(:[@id eq $entity/@xml:id]:))]
-                    }
-                let $source-entity := entities:entity($source-entity, $validate, $expand-instances, $expand-relations)
-                where $reverse
-                return
-                    element { node-name($relation) } {
-                        attribute predicate { $reverse },
-                        attribute id { $source-entity/@xml:id },
-                        $source-entity/m:label,
-                        $source-entity
-                    }
-            else ()
+                    
             
         }
     else ()
@@ -261,11 +250,12 @@ declare function entities:expand-instances($instances as element(m:instance)*) a
 declare function entities:expand-relations($relations as element(m:relation)*, $validate as xs:boolean, $expand-instances as xs:boolean, $expand-relations as xs:boolean) as element(m:relation)* {
     
     for $relation in $relations
-        let $relation-entity := $entities:entities//m:entity[@xml:id eq $relation/@id]
+        let $relation-entity := $entities:entities//m:entity/id($relation/@id)
+    where $relation-entity
         let $relation-entity := 
             element { node-name($relation-entity) } {
                 $relation-entity/@*,
-                $relation-entity/*[not(self::m:relation(:[@id eq $entity/@xml:id]:))]
+                $relation-entity/* except $relation-entity/m:relation[@id eq $relation-entity/@xml:id]
             }
         let $relation-entity := entities:entity($relation-entity, $validate, $expand-instances, $expand-relations)
     where $relation-entity

@@ -798,6 +798,8 @@
                                                             
                                                             <xsl:for-each select="$entity/m:relation">
                                                                 
+                                                                <xsl:sort select="if(@predicate = 'isUnrelated') then 1 else 0"/>
+                                                                
                                                                 <xsl:variable name="relation" select="."/>
                                                                 
                                                                 <xsl:call-template name="expand-item">
@@ -829,19 +831,16 @@
                                                                                             <xsl:value-of select="':'"/>
                                                                                         </span>
                                                                                     </li>
-                                                                                    <li>
-                                                                                        <span class="small">
-                                                                                            <xsl:value-of select="' Entity: '"/>
-                                                                                        </span>
-                                                                                        <xsl:for-each select="$relation/m:label">
+                                                                                    <xsl:for-each select="$relation/m:label">
+                                                                                        <li>
                                                                                             <span>
                                                                                                 <xsl:attribute name="class">
                                                                                                     <xsl:value-of select="common:lang-class(@xml:lang)"/>
                                                                                                 </xsl:attribute>
                                                                                                 <xsl:value-of select="common:limit-str(text(), 80)"/>
                                                                                             </span>
-                                                                                        </xsl:for-each>
-                                                                                    </li>
+                                                                                        </li>
+                                                                                    </xsl:for-each>
                                                                                     <li>
                                                                                         <xsl:call-template name="entity-type-labels">
                                                                                             <xsl:with-param name="entity" select="$relation/m:entity[1]"/>

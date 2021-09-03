@@ -163,15 +163,18 @@
                             
                             <xsl:if test="$tei-editor">
                                 
-                                <li role="presentation">
-                                    <xsl:if test="$flagged eq 'requires-attention'">
-                                        <xsl:attribute name="class" select="'active'"/>
-                                    </xsl:if>
-                                    <a class="editor">
-                                        <xsl:attribute name="href" select="concat('glossary.html?flagged=requires-attention', m:view-mode-parameter(()))"/>
-                                        <xsl:value-of select="'Requiring Attention'"/>
-                                    </a>
-                                </li>
+                                <xsl:for-each select="m:entity-flags/m:flag">
+                                    <li role="presentation">
+                                        <xsl:if test="$flagged eq @id">
+                                            <xsl:attribute name="class" select="'active'"/>
+                                        </xsl:if>
+                                        <a class="editor">
+                                            <xsl:attribute name="href" select="concat('glossary.html?flagged=', @id, m:view-mode-parameter(()))"/>
+                                            <xsl:value-of select="m:label"/>
+                                        </a>
+                                    </li>
+                                </xsl:for-each>
+                                
                                 
                             </xsl:if>
                             
@@ -180,7 +183,7 @@
                             
                     <xsl:choose>
                         
-                        <xsl:when test="$flagged eq 'requires-attention'">
+                        <xsl:when test="$flagged gt ''">
                             <p class="text-center text-muted small">
                                 <xsl:value-of select="'This view is only available to editors'"/>
                             </p>
@@ -403,7 +406,7 @@
                                                                                <input type="hidden" name="entity-id" value="{ $show-entity/@xml:id }"/>
                                                                                <input type="hidden" name="entity-flag" value="{ $config-flag/@id }"/>
                                                                                <button type="submit" data-loading="Setting flag..." class="btn-link editor">
-                                                                                   <xsl:value-of select="'Flag as requiring attention'"/>
+                                                                                   <xsl:value-of select="'Flag as ' || $config-flag/m:label"/>
                                                                                </button>
                                                                            </form>
                                                                        </div>
@@ -498,8 +501,8 @@
                                                                    
                                                                    <xsl:for-each select="current-group()">
                                                                        
-                                                                       <!-- Needs imporing to order by Toh numerically -->
-                                                                       <xsl:sort select="if(m:text[@type eq 'knowledgebase']) then m:text/m:title else replace(m:text/m:toh, '^toh\s*', '', 'i') ! xs:integer(.)"/>
+                                                                       <!-- Order by Toh numerically needs improving -->
+                                                                       <xsl:sort select="if(m:text[@type eq 'knowledgebase']) then m:text/m:title else replace(replace(m:text/m:toh, '(\d)(\-)', '$1.'), '[^\d|\.]', '', 'i') ! (.,'0')[not(. eq '')][1] ! xs:double(.)"/>
                                                                        
                                                                        <xsl:apply-templates select="."/>
                                                                        
@@ -514,7 +517,7 @@
                                                    </xsl:for-each-group>
                                                    
                                                    <!-- Related entities -->
-                                                   <xsl:if test="$show-entity/m:instance[m:page] | $show-entity/m:relation[m:entity/m:instance[m:page | m:item]]">
+                                                   <xsl:if test="$show-entity/m:instance[m:page] | $show-entity/m:relation[not(@predicate eq 'isUnrelated')][m:entity/m:instance[m:page | m:item]]">
                                                        
                                                        <h4 class="text-muted top-margin">
                                                            <xsl:value-of select="'Other related content'"/>
@@ -522,7 +525,7 @@
                                                        
                                                        <ul>
                                                            
-                                                           <xsl:for-each select="$show-entity/m:instance/m:page | $show-entity/m:relation/m:entity/m:instance/m:page">
+                                                           <xsl:for-each select="$show-entity/m:instance/m:page | $show-entity/m:relation[not(@predicate eq 'isUnrelated')]/m:entity/m:instance/m:page">
                                                                <li>
                                                                    <xsl:call-template name="knowledgebase-link">
                                                                        <xsl:with-param name="page" select="."/>
@@ -530,7 +533,7 @@
                                                                </li>
                                                            </xsl:for-each>
                                                            
-                                                           <xsl:for-each select="$show-entity/m:relation/m:entity[m:instance/m:item]">
+                                                           <xsl:for-each select="$show-entity/m:relation[not(@predicate eq 'isUnrelated')]/m:entity[m:instance/m:item]">
                                                                <li>
                                                                    <xsl:call-template name="glossary-link">
                                                                        <xsl:with-param name="entity" select="."/>

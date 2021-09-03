@@ -18,6 +18,7 @@ let $texts-without-entities :=
 
 let $next-text-id := $texts-without-entities[1]
 return (
+    count($texts-without-entities),
     $next-text-id,
     update-entity:merge-glossary($next-text-id, false())
 )
