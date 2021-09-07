@@ -51,6 +51,8 @@
                             <div class="top-margin">
                                 <xsl:call-template name="text-list">
                                     <xsl:with-param name="texts" select="m:translations-published/m:translation-status-texts/m:text"/>
+                                    <xsl:with-param name="list-id" select="'translations-published'"/>
+                                    <xsl:with-param name="grouping" select="'text'"/>
                                 </xsl:call-template>
                             </div>
                         </xsl:with-param>
@@ -67,6 +69,8 @@
                             <div class="top-margin">
                                 <xsl:call-template name="text-list">
                                     <xsl:with-param name="texts" select="m:translations-translated/m:translation-status-texts/m:text"/>
+                                    <xsl:with-param name="list-id" select="'translations-translated'"/>
+                                    <xsl:with-param name="grouping" select="'text'"/>
                                 </xsl:call-template>
                             </div>
                         </xsl:with-param>
@@ -83,6 +87,8 @@
                             <div class="top-margin">
                                 <xsl:call-template name="text-list">
                                     <xsl:with-param name="texts" select="m:translations-in-translation/m:translation-status-texts/m:text"/>
+                                    <xsl:with-param name="list-id" select="'translations-in-translation'"/>
+                                    <xsl:with-param name="grouping" select="'text'"/>
                                 </xsl:call-template>
                             </div>
                         </xsl:with-param>

@@ -45,6 +45,7 @@
                                 <div class="top-margin">
                                     <xsl:call-template name="text-list">
                                         <xsl:with-param name="texts" select="$priority-texts"/>
+                                        <xsl:with-param name="list-id" select="'priority'"/>
                                         <xsl:with-param name="grouping" select="'sponsorship'"/>
                                         <xsl:with-param name="show-sponsorship" select="true()"/>
                                         <xsl:with-param name="show-sponsorship-cost" select="true()"/>
@@ -76,6 +77,7 @@
                                 <div class="top-margin">
                                     <xsl:call-template name="text-list">
                                         <xsl:with-param name="texts" select="$single-part-cost-group-texts"/>
+                                        <xsl:with-param name="list-id" select="concat('cost-group-', position())"/>
                                         <xsl:with-param name="grouping" select="'sponsorship'"/>
                                         <xsl:with-param name="show-sponsorship" select="true()"/>
                                     </xsl:call-template>
@@ -131,6 +133,7 @@
                                 <xsl:call-template name="text-list">
                                     <xsl:with-param name="texts" select="$remainder-texts"/>
                                     <xsl:with-param name="grouping" select="'sponsorship'"/>
+                                    <xsl:with-param name="list-id" select="concat('group-', count($single-part-cost-groups) + 1)"/>
                                     <xsl:with-param name="show-sponsorship" select="true()"/>
                                     <xsl:with-param name="show-sponsorship-cost" select="true()"/>
                                 </xsl:call-template>

@@ -5,7 +5,7 @@
     <xsl:variable name="root" select="/"/>
     
     <xsl:variable name="response-lang" select="/m:response/@lang"/>
-    <xsl:variable name="response-model-type" select="/m:response/@model-type"/>
+    <xsl:variable name="response-model" select="/m:response/@model"/>
     <xsl:variable name="replace-text" select="/m:response/m:replace-text/m:value"/>
     <xsl:key name="text-items" match="/m:response/m:lang-items/m:item" use="@key"/>
     <!--<xsl:variable name="text-items" select="/m:response/m:lang-items/m:item"/>-->
@@ -43,7 +43,7 @@
     <xsl:template name="local-text">
         <xsl:param name="local-key" as="xs:string" required="yes"/>
         <xsl:call-template name="text">
-            <xsl:with-param name="global-key" select="string-join((tokenize($response-model-type, '/'), $local-key), '.')"/>
+            <xsl:with-param name="global-key" select="string-join((tokenize($response-model, '/'), $local-key), '.')"/>
         </xsl:call-template>
     </xsl:template>
     

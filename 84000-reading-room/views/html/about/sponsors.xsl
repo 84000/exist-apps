@@ -72,7 +72,8 @@
                             <div class="top-margin">
                                 <xsl:call-template name="text-list">
                                     <xsl:with-param name="texts" select="m:sponsored-texts/m:text"/>
-                                    <xsl:with-param name="grouping" select="'sponsorship'"/>
+                                    <xsl:with-param name="list-id" select="'single-part-cost-group'"/>
+                                    <xsl:with-param name="grouping" select="'sutra-sponsors'"/>
                                     <xsl:with-param name="show-sponsors" select="true()"/>
                                 </xsl:call-template>
                             </div>

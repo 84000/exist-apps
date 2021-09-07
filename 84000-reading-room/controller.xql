@@ -321,17 +321,11 @@ return (:if (true()) then $var-debug else :)
         
         (: About :)
         else if ($collection-path eq "about") then
-            if ($resource-suffix eq 'html') then
-                local:dispatch-html(concat("/models/about/",  $resource-id, ".xq"), concat("/views/html/about/",  $resource-id, ".xsl"), 
-                    <parameters xmlns="http://exist.sourceforge.net/NS/exist">
-                        <add-parameter name="resource-suffix" value="html"/>
-                    </parameters>
-                )
-            else
-                (: return the xml :)
-                local:dispatch(concat("/models/about/",  $resource-id, ".xq"), "", 
-                    <parameters xmlns="http://exist.sourceforge.net/NS/exist"/>
-                )
+            local:dispatch(concat("/models/about/",  $resource-id, ".xq"), "", 
+                <parameters xmlns="http://exist.sourceforge.net/NS/exist">
+                    <add-parameter name="resource-suffix" value="{ $resource-suffix }"/>
+                </parameters>
+            )
         
         (: Widget :)
         else if ($collection-path eq "widget") then

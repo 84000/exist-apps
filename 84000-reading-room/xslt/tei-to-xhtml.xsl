@@ -1249,20 +1249,39 @@
                         </ul>
                     </xsl:if>
                     
+                    <!-- Definition -->
+                    <xsl:variable name="entry-definition" select="$glossary-item/tei:term[@type eq 'definition'][node()]"/>
+                    
                     <!-- Entity -->
                     <xsl:variable name="entity" select="key('entity-instance', $glossary-item/@xml:id, $root)[1]/parent::m:entity"/>
                     <xsl:variable name="entity-instance" select="$entity/m:instance[@id eq $glossary-item/@xml:id]"/>
+                    <xsl:variable name="entity-definition" select="$entity/m:content[@type eq 'glossary-definition']"/>
                     
                     <!-- Definition -->
-                    <xsl:if test="not($entity-instance[@use-definition gt 'replace'])">
-                        <xsl:for-each select="$glossary-item/tei:term[@type eq 'definition'][node()]">
-                            <p>
-                                <xsl:call-template name="class-attribute">
-                                    <xsl:with-param name="base-classes" select="'definition'"/>
-                                </xsl:call-template>
-                                <xsl:apply-templates select="node()"/>
-                            </p>
-                        </xsl:for-each>
+                    <xsl:for-each select="$entry-definition">
+                        <p>
+                            <xsl:call-template name="class-attribute">
+                                <xsl:with-param name="base-classes" select="'definition'"/>
+                            </xsl:call-template>
+                            <xsl:apply-templates select="node()"/>
+                        </p>
+                    </xsl:for-each>
+                    
+                    <!-- Entity definition -->
+                    <xsl:if test="$entity-definition and (not($entry-definition) or $entity-instance[@use-definition  eq 'both'])">
+                        <div class="footer">
+                            <h4 class="heading">
+                                <xsl:value-of select="'Definition from the 84000 Glossary of Terms:'"/>
+                            </h4>
+                            <xsl:for-each select="$entity-definition">
+                                <p>
+                                    <xsl:call-template name="class-attribute">
+                                        <xsl:with-param name="base-classes" select="'definition'"/>
+                                    </xsl:call-template>
+                                    <xsl:apply-templates select="node()"/>
+                                </p>
+                            </xsl:for-each>
+                        </div>
                     </xsl:if>
                     
                     <!-- Expressions -->
@@ -1292,36 +1311,20 @@
                         </div>
                     </xsl:if>
                     
-                    <!-- Entity definition -->
-                    <xsl:variable name="entity-definition" select="$entity/m:content[@type eq 'glossary-definition']"/>
-                    <xsl:variable name="entity-use-definition" select="$entity-instance[@use-definition  = ('after', 'replace')]"/>
-                    <xsl:if test="$view-mode[@client = ('browser', 'ajax')] and ($entity-use-definition and $entity-definition)">
-                        <div class="footer entity-content">
-                            
-                            <h4 class="heading">
-                                <xsl:value-of select="'From the 84000 Glossary of Terms:'"/>
-                            </h4>
-                            
-                            <xsl:for-each select="$entity-definition">
-                                <p>
-                                    <xsl:apply-templates select="node()"/>
-                                </p>
-                            </xsl:for-each>
-                            
-                        </div>
-                    </xsl:if>
-                    
                     <!-- Link to the Glossary / Knowledge Base -->
                     <xsl:variable name="glossary-instances" select="$entity/m:instance[@type eq 'glossary-item'][not(@id eq $glossary-item/@xml:id)]"/>
                     <xsl:variable name="knowledgebase-instances" select="$entity/m:instance[@type eq 'knowledgebase-article'][not(@id eq $kb-id)]"/>
                     <xsl:if test="$view-mode[@client = ('browser', 'ajax')] and ($glossary-instances or $knowledgebase-instances)">
-                        <div class="footer entity-content">
+                        <div class="footer entity-content" role="navigation">
+                            <h4 class="heading">
+                                <xsl:value-of select="'Links to further resources:'"/>
+                            </h4>
                             <ul class="list-inline inline-dots small">
                                 <xsl:if test="$glossary-instances">
                                     <li>
                                         <a target="84000-glossary">
                                             <xsl:attribute name=" href" select="concat('/glossary.html?entity-id=', $entity/@xml:id)"/>
-                                            <xsl:value-of select="concat('View ', format-number(count($glossary-instances), '#,###'), ' related glossary ', if(count($glossary-instances) eq 1) then 'entry' else 'entries')"/>
+                                            <xsl:value-of select="concat(format-number(count($glossary-instances), '#,###'), ' related glossary ', if(count($glossary-instances) eq 1) then 'entry' else 'entries')"/>
                                         </a>
                                     </li>
                                 </xsl:if>

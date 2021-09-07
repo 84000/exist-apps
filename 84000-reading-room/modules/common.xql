@@ -64,7 +64,7 @@ declare function common:request-lang() as xs:string {
 declare
     %test:args('dummy', 'dummy', '<data xmlns="http://read.84000.co/ns/1.0" />') 
     %test:assertXPath("$result//m:data")
-function common:response($model-type as xs:string, $app-id as xs:string, $data as item()*) as element() {
+function common:response($model as xs:string, $app-id as xs:string, $data as item()*) as element() {
     (:
         A response node
         -------------------------------------
@@ -80,7 +80,7 @@ function common:response($model-type as xs:string, $app-id as xs:string, $data a
     return
         <response 
             xmlns="http://read.84000.co/ns/1.0" 
-            model-type="{ $model-type }"
+            model="{ $model }"
             timestamp="{ current-dateTime() }"
             app-id="{ $app-id }" 
             app-version="{ $common:app-version }"

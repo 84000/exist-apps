@@ -32,7 +32,7 @@
                             </xsl:for-each>
                         </ol>
                         
-                        <xsl:if test="/m:response[@model-type eq 'utilities/sections'][@user-name eq 'admin'] and /m:response/m:environment/m:store-conf[@type eq 'client']">
+                        <xsl:if test="/m:response[@model eq 'utilities/sections'][@user-name eq 'admin'] and /m:response/m:environment/m:store-conf[@type eq 'client']">
                             <xsl:choose>
                                 <xsl:when test="@id eq 'unmatched-ids'">
                                     <a href="/sections.html?resolve=unmatched-ids" class="btn btn-default btn-sm" target="_self">

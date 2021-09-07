@@ -47,7 +47,11 @@ let $request :=
     }
 
 let $tei := tei-content:tei($request/@resource-id, 'translation', $request/@archive-path)
-let $cache-timestamp := tei-content:last-modified($tei)
+(: Suppress cache for some view modes :)
+let $cache-timestamp := 
+    if(not($request[@view-mode = ('editor', 'passage', 'editor-passage', 'glossary-check')])) then
+        tei-content:last-modified($tei)
+    else ()
 let $cached := common:cache-get($request, $cache-timestamp)
 return 
     (: Cached html :)
@@ -125,7 +129,7 @@ return
         
         let $xml-response :=
             common:response(
-                'translation',
+                $request/@model, 
                 $common:app-id,
                 (
                     $request,

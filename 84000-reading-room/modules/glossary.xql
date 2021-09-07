@@ -202,7 +202,7 @@ declare function glossary:glossary-terms($type as xs:string?, $lang as xs:string
     return
         <glossary
             xmlns="http://read.84000.co/ns/1.0"
-            model-type="glossary-terms"
+            model="glossary-terms"
             type="{ $valid-type }"
             lang="{ $valid-lang }"
             search="{ $normalized-search }">
@@ -392,8 +392,7 @@ declare function local:glossary-item($gloss as element(tei:gloss), $include-cont
                     else ()
                     
                 }
-        else
-            ()
+        else ()
      }
 };
 
@@ -415,7 +414,7 @@ declare function glossary:sort-term($gloss as element(tei:gloss)) as element(m:s
 declare function glossary:matching-items($term as xs:string, $lang as xs:string) as element(m:glossary) {
     <glossary
         xmlns="http://read.84000.co/ns/1.0"
-        model-type="glossary-items">
+        model="glossary-items">
         <key>{ $term }</key>
         {
             for $gloss in glossary:matching-gloss($term, $lang)

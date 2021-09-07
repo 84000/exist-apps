@@ -91,7 +91,7 @@ let $sections-data :=
         section:section-tree($tei, true(), $include-texts)
 
 let $xml-response := 
-    if(not($resource-suffix = ('tei'))) then
+    if(not($request/@resource-suffix = ('tei'))) then
         common:response(
             "section", 
             $common:app-id,
@@ -106,12 +106,12 @@ let $xml-response :=
 return
     
     (: return html data :)
-    if($resource-suffix = ('html')) then (
+    if($request/@resource-suffix = ('html')) then (
         common:html($xml-response, concat($common:app-path, "/views/html/section.xsl"), $cache-timestamp)
     )
     
     (: return tei data :)
-    else if($resource-suffix = ('tei')) then (
+    else if($request/@resource-suffix = ('tei')) then (
         util:declare-option("exist:serialize", "method=xml indent=no"),
         $tei
     )

@@ -53,28 +53,28 @@
             <xsl:when test="upper-case(/m:response/m:section/@id) eq 'LOBBY'">
                 <xsl:value-of select="common:internal-link('https://read.84000.co/section/lobby.html', (), '', $lang)"/>
             </xsl:when>
-            <xsl:when test="/m:response/@model-type eq 'search'">
+            <xsl:when test="/m:response/@model eq 'search'">
                 <xsl:value-of select="common:internal-link('https://read.84000.co/search.html', (), '', $lang)"/>
             </xsl:when>
-            <xsl:when test="/m:response/@model-type eq 'glossary'">
+            <xsl:when test="/m:response/@model eq 'glossary'">
                 <xsl:value-of select="common:internal-link('https://read.84000.co/glossary.html', (), '', $lang)"/>
             </xsl:when>
-            <xsl:when test="/m:response/@model-type eq 'about/sponsors'">
+            <xsl:when test="/m:response/@model eq 'about/sponsors'">
                 <xsl:value-of select="common:internal-link('https://read.84000.co/about/sponsors.html', (), '', $lang)"/>
             </xsl:when>
-            <xsl:when test="/m:response/@model-type eq 'about/impact'">
+            <xsl:when test="/m:response/@model eq 'about/impact'">
                 <xsl:value-of select="common:internal-link('https://read.84000.co/about/impact.html', (), '', $lang)"/>
             </xsl:when>
-            <xsl:when test="/m:response/@model-type eq 'about/progress'">
+            <xsl:when test="/m:response/@model eq 'about/progress'">
                 <xsl:value-of select="common:internal-link('https://read.84000.co/about/progress.html', (), '', $lang)"/>
             </xsl:when>
-            <xsl:when test="/m:response/@model-type eq 'about/translators'">
+            <xsl:when test="/m:response/@model eq 'about/translators'">
                 <xsl:value-of select="common:internal-link('https://read.84000.co/about/translators.html', (), '', $lang)"/>
             </xsl:when>
-            <xsl:when test="/m:response/@model-type eq 'about/sponsor-a-sutra'">
+            <xsl:when test="/m:response/@model eq 'about/sponsor-a-sutra'">
                 <xsl:value-of select="common:internal-link('https://read.84000.co/about/sponsor-a-sutra.html', (), '', $lang)"/>
             </xsl:when>
-            <xsl:when test="/m:response/@model-type eq 'knowledgebase'">
+            <xsl:when test="/m:response/@model eq 'knowledgebase'">
                 <xsl:value-of select="common:internal-link('https://read.84000.co/knowledgebase.html', (), '', $lang)"/>
             </xsl:when>
             <xsl:otherwise>

@@ -141,7 +141,7 @@
         </xsl:variable>
         
         <xsl:call-template name="website-page">
-            <xsl:with-param name="page-url" select="concat('http://read.84000.co/', /m:response/@model-type, '.html')"/>
+            <xsl:with-param name="page-url" select="concat('http://read.84000.co/', /m:response/@model, '.html')"/>
             <xsl:with-param name="page-class" select="if($page-class gt '') then $page-class else 'about'"/>
             <xsl:with-param name="page-title" select="concat($page-title, ' | 84000 Translating the Words of the Buddha')"/>
             <xsl:with-param name="page-description" select="$page-description"/>
@@ -275,7 +275,7 @@
                     <xsl:attribute name="href" select="concat('#', $id, '-detail')"/>
                     <xsl:attribute name="aria-controls" select="concat($id, '-detail')"/>
                     
-                    <span>
+                    <div>
                         <h3 class="list-group-item-heading">
                             <xsl:value-of select="concat($title, ' ')"/>
                             <xsl:if test="$show-count">
@@ -284,12 +284,12 @@
                                 </span>
                             </xsl:if>
                         </h3>
-                    </span>
+                    </div>
                     
-                    <span class="text-right">
+                    <div class="text-right">
                         <i class="fa fa-plus collapsed-show"/>
                         <i class="fa fa-minus collapsed-hide"/>
-                    </span>
+                    </div>
                     
                 </a>
             </div>
@@ -311,6 +311,7 @@
     <xsl:template name="text-list">
         
         <xsl:param name="texts" required="yes" as="element()*"/>
+        <xsl:param name="list-id" required="yes" as="xs:string"/>
         <xsl:param name="grouping" required="no" as="xs:string?"/>
         <xsl:param name="show-sponsorship" required="no" as="xs:boolean" select="false()"/>
         <xsl:param name="show-sponsorship-cost" required="no" as="xs:boolean" select="false()"/>
@@ -365,7 +366,7 @@
                             
                             <div class="row list-item">
                                 
-                                <xsl:attribute name="id" select="@id"/>
+                                <xsl:attribute name="id" select="concat($list-id, '-', @id)"/>
                                 
                                 <div class="col-sm-2 nowrap">
                                     
@@ -381,6 +382,7 @@
                                             <xsl:value-of select="'+'"/>
                                         </xsl:if>
                                         <xsl:value-of select="m:toh/m:full"/>
+                                        
                                     </xsl:for-each>
                                     
                                     <xsl:if test="$show-translation-status">
@@ -400,7 +402,7 @@
                                 <!-- <div class="col-sm-8"> -->
                                 <div class="col-sm-10">
                                         
-                                    <xsl:for-each select="current-group()">
+                                    <xsl:for-each-group select="current-group()" group-by="if($grouping eq 'text') then @id else m:toh/@key">
                                         
                                         <xsl:sort select="number(m:toh/@number)"/>
                                         <xsl:sort select="m:toh/@letter"/>
@@ -424,7 +426,7 @@
                                             <xsl:with-param name="expand-id" select="concat('summary-detail-', $group-index, '-', m:toh/@key)"/>
                                         </xsl:call-template>
                                         
-                                    </xsl:for-each>
+                                    </xsl:for-each-group>
                                     
                                     <xsl:if test="$show-sponsorship">
                                         <xsl:call-template name="sponsorship-status">

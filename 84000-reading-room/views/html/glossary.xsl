@@ -832,13 +832,27 @@
             </xsl:if>
             
             <!-- Definition -->
-            <xsl:for-each select="m:definition">
-                <p class="definition">
-                    <xsl:apply-templates select="."/>
-                </p>
-            </xsl:for-each>
+            <!-- Show if there's no entity definition -->
+            <xsl:variable name="item-instance" select="$item/parent::m:instance"/>
+            <xsl:variable name="use-definition" select="not($item-instance/parent::m:entity[m:content[@type eq 'glossary-definition']]) or $item-instance/@use-definition eq 'both'" as="xs:boolean"/>
+            <xsl:if test="$use-definition or $view-mode[@id eq 'editor']">
+                <xsl:for-each select="m:definition">
+                    <p>
+                        <xsl:choose>
+                            <xsl:when test="$view-mode[@id eq 'editor'] and not($use-definition)">
+                                <xsl:attribute name="class" select="'definition alternative'"/>
+                            </xsl:when>
+                            <xsl:otherwise>
+                                <xsl:attribute name="class" select="'definition'"/>
+                            </xsl:otherwise>
+                        </xsl:choose>
+                        <xsl:apply-templates select="."/>
+                    </p>
+                </xsl:for-each>
+            </xsl:if>
             
         </div>
+    
     </xsl:template>
     
     <xsl:template name="glossary-link">

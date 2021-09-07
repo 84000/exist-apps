@@ -9,7 +9,7 @@
         <xsl:variable name="content">
             
             <xsl:call-template name="operations-page">
-                <xsl:with-param name="active-tab" select="@model-type"/>
+                <xsl:with-param name="active-tab" select="@model"/>
                 <xsl:with-param name="page-content">
                     
                     <xsl:call-template name="alert-updated"/>
@@ -283,7 +283,7 @@
                         <div class="center-vertical">
                             <span>
                                 <a>
-                                    <xsl:if test="not(/m:response/@model-type eq 'operations/edit-text-sponsors')">
+                                    <xsl:if test="not(/m:response/@model eq 'operations/edit-text-sponsors')">
                                         <xsl:attribute name="target" select="'operations'"/>
                                     </xsl:if>
                                     <xsl:choose>
@@ -313,7 +313,7 @@
                             <span>|</span>
                             <span>
                                 <a>
-                                    <xsl:if test="not(/m:response/@model-type eq 'operations/edit-text-sponsors')">
+                                    <xsl:if test="not(/m:response/@model eq 'operations/edit-text-sponsors')">
                                         <xsl:attribute name="target" select="'operations'"/>
                                     </xsl:if>
                                     <xsl:attribute name="href" select="concat($operations-path, '/edit-sponsor.html')"/>

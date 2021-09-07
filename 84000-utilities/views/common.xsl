@@ -4,7 +4,7 @@
     <xsl:variable name="environment" select="/m:response/m:environment"/>
     <xsl:variable name="reading-room-path" select="$environment/m:url[@id eq 'reading-room']/text()" as="xs:string"/>
     <xsl:variable name="front-end-path" select="$environment/m:url[@id eq 'front-end']/text()" as="xs:string"/>
-    <xsl:variable name="model-type" select="/m:response/@model-type" as="xs:string"/>
+    <xsl:variable name="response-model" select="/m:response/@model" as="xs:string"/>
     
     <xsl:variable name="tabs">
         <tabs xmlns="http://read.84000.co/ns/1.0">
@@ -88,7 +88,7 @@
                     </span>
                     <span>
                         <h1 class="title">
-                            <xsl:value-of select="concat('Utilities / ', $tabs//m:tab[@model eq $model-type]/m:label)"/>
+                            <xsl:value-of select="concat('Utilities / ', $tabs//m:tab[@model eq $response-model]/m:label)"/>
                         </h1>
                     </span>
                     <span>
@@ -128,7 +128,7 @@
                         <tbody>
                             <xsl:for-each select="$tabs//m:tab[@page]">
                                 <tr>
-                                    <xsl:if test="@model eq $model-type">
+                                    <xsl:if test="@model eq $response-model">
                                         <xsl:attribute name="class" select="'active'"/>
                                     </xsl:if>
                                     <td>

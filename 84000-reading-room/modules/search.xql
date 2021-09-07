@@ -64,6 +64,7 @@ declare function search:search($request as xs:string, $resource-id as xs:string,
         | $published/tei:text//tei:trailer[ft:query(., $query, $options)][@tid]
         | $published/tei:text/tei:back//tei:bibl[ft:query(., $query, $options)][@xml:id]
         | $published/tei:text/tei:back//tei:gloss[ft:query(., $query, $options)][@xml:id]
+        (:$published/tei:text//tei:p[ft:query(., concat("content: ", $request), map { "fields": "content" })]:)
     
     let $result-groups := 
         for $result-group in $results
@@ -83,6 +84,7 @@ declare function search:search($request as xs:string, $resource-id as xs:string,
                     element result {
                         attribute score { ft:score($result) },
                         $result
+                        (:ft:highlight-field-matches($result, 'content'):)
                     }
                 
             }
@@ -143,6 +145,7 @@ declare function search:search($request as xs:string, $resource-id as xs:string,
                                 common:mark-nodes($result/node(), $request-no-quotes, 'words')
                                 (:util:expand($result/node()):)
                                 (:kwic:expand($result):)
+                                (:kwic:summarize($result/node(), <config xmlns="" width="40"/>):)
                                 (:$result/node():)
                             }
                         ,

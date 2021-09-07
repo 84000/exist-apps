@@ -9,6 +9,7 @@ declare namespace expath="http://expath.org/ns/pkg";
 import module namespace common="http://read.84000.co/common" at "common.xql";
 import module namespace repair="http://exist-db.org/xquery/repo/repair" at "resource:org/exist/xquery/modules/expathrepo/repair.xql";
 import module namespace dbutil="http://exist-db.org/xquery/dbutil";
+import module namespace functx="http://www.functx.com";
 
 declare variable $deploy:snapshot-conf := $common:environment//m:snapshot-conf;
 declare variable $deploy:deployment-conf := $common:environment//m:deployment-conf;
@@ -46,15 +47,23 @@ declare function deploy:admin-password-correct($admin-password as xs:string?) as
         false()
 };
 
+(: Allow the sharing of the admin password with non-admin users? :)
+declare function deploy:validate-token($token as xs:string) as xs:boolean {
+    
+    deploy:admin-password-correct(replace(util:base64-decode($token), $deploy:git-config/@auth-codes, ''))
+    
+};
+
 declare function deploy:push($repo-id as xs:string, $admin-password as xs:string?, $commit-msg as xs:string?, $resource as xs:string?) as element(m:result)? {
     
     (: get the repo from the config :)
     let $repo := $deploy:git-config/m:push/m:repo[@id eq $repo-id]
     
-    where $repo
+    (: validate the admin password :)
+    let $admin-password-correct := deploy:admin-password-correct($admin-password)
+    
+    where $repo and $admin-password-correct
     return
-        (: validate the admin password :)
-        let $admin-password-correct := deploy:admin-password-correct($admin-password)
         
         let $exist-options := deploy:exist-options()
         

@@ -9,7 +9,7 @@
         <xsl:variable name="content">
             
             <xsl:call-template name="operations-page">
-                <xsl:with-param name="active-tab" select="@model-type"/>
+                <xsl:with-param name="active-tab" select="@model"/>
                 <xsl:with-param name="page-content">
                     <div class="well well-sm center-vertical full-width bottom-margin">
                         

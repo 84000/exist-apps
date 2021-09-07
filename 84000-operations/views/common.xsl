@@ -80,7 +80,7 @@
             <div class="alert alert-success alert-temporary" role="alert">
                 <xsl:value-of select="'Updated'"/>
             </div>
-            <!--<xsl:if test="/m:response/@model-type eq 'operations/edit-text-header'">-->
+            <!--<xsl:if test="/m:response/@model eq 'operations/edit-text-header'">-->
                 <xsl:choose>
                     <xsl:when test="m:updates/m:updated[@update][@node eq 'text-version']">
                         <div class="alert alert-warning" role="alert">
@@ -1619,23 +1619,12 @@
                         <!-- Definition -->
                         <div class="item-row">
                             
-                            <xsl:choose>
-                                <xsl:when test="not($item/parent::m:instance[@use-definition gt 'replace'])">
-                                    <xsl:call-template name="glossary-definition">
-                                        <xsl:with-param name="item" select="$item"/>
-                                    </xsl:call-template>
-                                </xsl:when>
-                                <xsl:otherwise>
-                                    <div class="sml-margin bottom">
-                                        <span class="label label-default">
-                                            <xsl:value-of select="'Glossary definition hidden'"/>
-                                        </span>
-                                    </div>
-                                </xsl:otherwise>
-                            </xsl:choose>
+                            <xsl:call-template name="glossary-definition">
+                                <xsl:with-param name="item" select="$item"/>
+                            </xsl:call-template>
                             
                             <!-- Use entity definition -->
-                            <xsl:if test="$item/parent::m:instance[@use-definition = ('after', 'replace')]/parent::m:entity/m:content[@type eq 'glossary-definition']">
+                            <xsl:if test="$item/parent::m:instance[@use-definition eq 'both']/parent::m:entity/m:content[@type eq 'glossary-definition']">
                                 <div class="sml-margin bottom">
                                     <span class="label label-default">
                                         <xsl:value-of select="'Entity definition included'"/>
