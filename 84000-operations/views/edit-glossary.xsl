@@ -599,6 +599,7 @@
                                     <xsl:if test="$request-filter = ('check-entities', 'check-all', 'missing-entities', 'requires-attention')">
                                         
                                         <xsl:variable name="entity" select="$loop-glossary/m:entity"/>
+                                        <xsl:variable name="entity-label" select="$entity/m:label[not(@derived) and not(@derived-transliterated)][1]"/>
                                         
                                         <!-- Panel: Entity form -->
                                         <xsl:call-template name="expand-item">
@@ -620,9 +621,9 @@
                                                                 </span>
                                                                 <span>
                                                                     <xsl:attribute name="class">
-                                                                        <xsl:value-of select="common:lang-class($entity/m:label[1]/@xml:lang)"/>
+                                                                        <xsl:value-of select="common:lang-class($entity-label/@xml:lang)"/>
                                                                     </xsl:attribute>
-                                                                    <xsl:value-of select="common:limit-str($entity/m:label[1] ! fn:normalize-space(.), 150)"/>
+                                                                    <xsl:value-of select="common:limit-str($entity-label ! fn:normalize-space(.), 150)"/>
                                                                 </span>
                                                             </li>
                                                             
@@ -874,6 +875,7 @@
                                                                 </xsl:call-template>
                                                                 
                                                             </xsl:for-each>
+                                                            
                                                         </div>
                                                         
                                                     </xsl:when>
@@ -1480,19 +1482,22 @@
                         <input type="hidden" name="similar-search" value="{ $request-similar-search }"/>
                         
                         <xsl:call-template name="entity-resolve-form-input">
+                            
                             <xsl:with-param name="entity" select="$loop-glossary/m:entity[1]"/>
                             <xsl:with-param name="target-entity" select="$entity"/>
                             <xsl:with-param name="predicates" select="/m:response/m:entity-predicates//m:predicate"/>
                             <xsl:with-param name="target-entity-label">
+                                
+                                <xsl:variable name="entity-label" select="$entity/m:label[not(@derived) and not(@derived-transliterated)][1]"/>
                                 
                                 <ul class="list-inline inline-dots no-bottom-margin">
                                     
                                     <li class="small">
                                         <span>
                                             <xsl:attribute name="class">
-                                                <xsl:value-of select="common:lang-class($entity/m:label[1]/@xml:lang)"/>
+                                                <xsl:value-of select="common:lang-class($entity-label/@xml:lang)"/>
                                             </xsl:attribute>
-                                            <xsl:value-of select="common:limit-str($entity/m:label[1] ! normalize-space(.), 80)"/>
+                                            <xsl:value-of select="common:limit-str($entity-label ! normalize-space(.), 80)"/>
                                         </span>
                                     </li>
                                     

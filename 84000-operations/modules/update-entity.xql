@@ -277,7 +277,7 @@ declare function update-entity:resolve($entity-id as xs:string, $target-entity-i
                 element { QName('http://read.84000.co/ns/1.0', 'relation') } {
                     attribute predicate { $predicate },
                     attribute id { $target-entity-id },
-                    $target-entity/m:label[1]
+                    $target-entity/m:label[not(@derived) and not(@derived-transliterated)][1]
                 }
             }
         
@@ -334,7 +334,7 @@ declare function update-entity:merge($entity-id as xs:string, $target-entity-id 
         return
             element { QName('http://read.84000.co/ns/1.0', 'exclude') } {
                 attribute id { $entity-id },
-                $entity/m:label[1]
+                $entity/m:label[not(@derived) and not(@derived-transliterated)][1]
             }
     
     for $entity-id in $entity-ids
@@ -386,7 +386,7 @@ declare function update-entity:merge-glossary($text-id as xs:string, $create as 
     
         (: Is there a matching Sanskrit term? :)
         let $search-terms-sa := $gloss/tei:term[@xml:lang eq 'Sa-Ltn'][text()]
-        let $regex-sa := concat('^\s*(', string-join($search-terms-sa, '|'), ')\s*$')
+        let $regex-sa := concat('^\s*(', string-join($search-terms-sa ! functx:escape-for-regex(.), '|'), ')\s*$')
         let $matches-sa := 
             if(count($search-terms-sa) gt 0) then
                 $glossary:tei//tei:back//tei:gloss
@@ -396,7 +396,7 @@ declare function update-entity:merge-glossary($text-id as xs:string, $create as 
         
         (: Is there a matching Tibetan term? :)
         let $search-terms-bo := distinct-values(($gloss/tei:term[@xml:lang eq 'Bo-Ltn'][text()], $gloss/tei:term[@xml:lang eq 'bo'][text()] ! common:wylie-from-bo(.)))
-        let $regex-bo := concat('^\s*(', string-join($search-terms-bo, '|'), ')\s*$')
+        let $regex-bo := concat('^\s*(', string-join($search-terms-bo ! functx:escape-for-regex(.), '|'), ')\s*$')
         let $matches-bo := 
             if(count($search-terms-bo) gt 0) then
                 $glossary:tei//tei:back//tei:gloss

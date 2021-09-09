@@ -920,7 +920,7 @@
             
             <xsl:choose>
                 <xsl:when test="$entity">
-                    <xsl:for-each select="$entity/m:label[not(@primary-transliterated)]">
+                    <xsl:for-each select="$entity/m:label[not(@derived) and not(@derived-transliterated)]">
                         <xsl:call-template name="text-input-with-lang">
                             <xsl:with-param name="text" select="text()"/>
                             <xsl:with-param name="lang" select="@xml:lang"/>

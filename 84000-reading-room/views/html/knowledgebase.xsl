@@ -199,8 +199,8 @@
                                                 
                                                 <xsl:attribute name="href" select="concat('/glossary.html?entity-id=', @xml:id)"/>
                                                 
-                                                <xsl:variable name="primary-label" select="(m:label[@primary eq 'true'], m:label[1])[1]"/>
-                                                <xsl:variable name="primary-transliterated" select="m:label[@primary-transliterated eq 'true']"/>
+                                                <xsl:variable name="primary-label" select="(m:label[@derived eq 'true'], m:label[1])[1]"/>
+                                                <xsl:variable name="primary-transliterated" select="m:label[@derived-transliterated eq 'true']"/>
                                                 
                                                 <h4>
                                                     <xsl:attribute name="class">

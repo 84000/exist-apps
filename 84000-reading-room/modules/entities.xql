@@ -135,46 +135,7 @@ declare function entities:entity($entity as element(m:entity)?, $validate as xs:
         element { node-name($entity) } {
         
             $entity/@*,
-            $entity/*[not(local-name(.) = ('label','instance','relation'))],
-            
-            (: Labels :)
-            if($expand-instances and not($entity/m:label[@primary eq 'true'])) then
-                
-                (: If there's no primary label assign one :)
-                for $label at $index in $entity/m:label
-                return (
-                    element { node-name($label) } {
-                        $label/@*,
-                        if($index eq 1) then
-                            attribute primary { true() }
-                        else (),
-                        $label/node()
-                    },
-                    if($index eq 1) then
-                        if($label[@xml:lang eq 'bo']) then
-                            element label {
-                                attribute xml:lang { 'Bo-Ltn' },
-                                attribute primary-transliterated { true() },
-                                text {
-                                    common:wylie-from-bo(normalize-space($label/text())) ! replace(., '/$', '')
-                                }
-                            }
-                        else if($label[@xml:lang eq 'Bo-Ltn']) then
-                            element label {
-                                attribute xml:lang { 'bo' },
-                                attribute primary-transliterated { true() },
-                                text {
-                                    common:bo-from-wylie(normalize-space($label/text()))
-                                }
-                            }
-                        else ()
-                    else ()
-                )
-            
-            (: Otherwise copy labels :)
-            else 
-                $entity/m:label
-            ,
+            $entity/*[not(local-name(.) = ('instance','relation'))],
             
             (: Instances :)
             let $instance-ids := $entity/m:instance/@id
@@ -187,13 +148,71 @@ declare function entities:entity($entity as element(m:entity)?, $validate as xs:
                     $instance-ids
             
             let $valid-instances := $entity/m:instance[@id = $instance-ids]
-            return
+            let $valid-instances :=
                 (: Expand to include details of the instance: glossary or article :)
-                if($expand-instances) then
-                    entities:expand-instances($valid-instances)
-                else
-                    $valid-instances
-            ,
+                    if($expand-instances) then
+                        entities:expand-instances($valid-instances)
+                    else
+                        $valid-instances
+                    
+            return (
+            
+                $valid-instances,
+                
+                (: Derive label based on content :)
+                if(not($entity/m:label[@derived])) then
+                
+                    let $terms-sorted := 
+                        for $term in 
+                            if($valid-instances/m:item/m:term[@xml:lang eq 'bo']) then
+                                $valid-instances/m:item/m:term[@xml:lang eq 'bo']
+                            else if($valid-instances/m:item/m:term[@xml:lang eq 'Bo-Ltn']) then
+                                $valid-instances/m:item/m:term[@xml:lang eq 'bo']
+                            else
+                                $valid-instances/m:item/m:term[@xml:lang eq 'Sa-Ltn']
+                                
+                        order by string-length($term) descending
+                        return
+                            $term
+                    
+                    let $terms-longest := $terms-sorted[1]
+                    where $terms-longest
+                    return (
+                    
+                        element label {
+                            attribute derived { true() },
+                            attribute xml:lang {
+                                if($terms-longest[@xml:lang = ('bo', 'Bo-Ltn')]) then
+                                    'bo'
+                                else
+                                    $terms-longest/@xml:lang
+                            },
+                            text { 
+                                if($terms-longest[@xml:lang eq 'Bo-Ltn']) then
+                                    common:bo-from-wylie(normalize-space($terms-longest/data()))
+                                else
+                                    $terms-longest/data()
+                            }
+                        },
+                        
+                        if($terms-longest[@xml:lang = ('bo', 'Bo-Ltn')]) then 
+                        
+                            element label {
+                                attribute derived-transliterated { true() },
+                                attribute xml:lang { 'Bo-Ltn' },
+                                text { 
+                                    if($terms-longest[@xml:lang eq 'bo']) then
+                                        common:wylie-from-bo(normalize-space($terms-longest/data()))
+                                    else
+                                        $terms-longest/data()
+                                }
+                            }
+                        
+                        else ()
+                        
+                    )
+                else ()
+            ),
             
             (: Related entities :)
             (: Include relations in this entity (Don't allow anything pointing to itself) :)

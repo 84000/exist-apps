@@ -13,7 +13,7 @@
     <xsl:variable name="page-title">
         <xsl:choose>
             <xsl:when test="count($entities) le 1 and $show-entity">
-                <xsl:value-of select="concat('Glossary entry for: ', $show-entity/m:label[@primary eq 'true']/data())"/>
+                <xsl:value-of select="concat('Glossary entry for: ', $show-entity/m:label[@derived eq 'true']/data())"/>
             </xsl:when>
             <xsl:otherwise>
                 <xsl:value-of select="concat('Glossary filtered for: ', string-join(($selected-type/m:label[@type eq 'plural']/text(), $selected-term-lang/text(), $search-text/text() ! concat('&#34;', ., '&#34;')), '; '))"/>
@@ -329,8 +329,8 @@
                                                <xsl:attribute name="class" select="'search-result collapse in persist'"/>
                                                
                                                <!-- Show first record by default -->
-                                               <xsl:variable name="primary-label" select="($show-entity/m:label[@primary eq 'true'], $show-entity/m:label[1])[1]"/>
-                                               <xsl:variable name="primary-transliterated" select="$show-entity/m:label[@primary-transliterated eq 'true']"/>
+                                               <xsl:variable name="primary-label" select="($show-entity/m:label[@derived eq 'true'], $show-entity/m:label[1])[1]"/>
+                                               <xsl:variable name="primary-transliterated" select="$show-entity/m:label[@derived-transliterated eq 'true']"/>
                                                
                                                <div class="entity-detail-container replace" id="term-translations">
                                                    
@@ -609,8 +609,8 @@
                                                     <xsl:for-each select="$entities">
                                                         
                                                         <xsl:variable name="entity" select="."/>
-                                                        <xsl:variable name="primary-label" select="($entity/m:label[@primary eq 'true'], $entity/m:label[1])[1]"/>
-                                                        <xsl:variable name="primary-transliterated" select="$entity/m:label[@primary-transliterated eq 'true']"/>
+                                                        <xsl:variable name="primary-label" select="($entity/m:label[@derived eq 'true'], $entity/m:label[1])[1]"/>
+                                                        <xsl:variable name="primary-transliterated" select="$entity/m:label[@derived-transliterated eq 'true']"/>
                                                         <xsl:variable name="active-item" select="$entity/@xml:id eq $show-entity/@xml:id" as="xs:boolean"/>
                                                         
                                                         <a class="results-list-item">
@@ -859,8 +859,8 @@
         
         <xsl:param name="entity" as="element(m:entity)"/>
         
-        <xsl:variable name="primary-label" select="($entity/m:label[@primary eq 'true'], $entity/m:label[1])[1]"/>
-        <xsl:variable name="primary-transliterated" select="$entity/m:label[@primary-transliterated eq 'true']"/>
+        <xsl:variable name="primary-label" select="($entity/m:label[@derived eq 'true'], $entity/m:label[1])[1]"/>
+        <xsl:variable name="primary-transliterated" select="$entity/m:label[@derived-transliterated eq 'true']"/>
         
         <a class="no-underline">
             <xsl:attribute name="href" select="concat('glossary.html?entity-id=', $entity/@xml:id, m:view-mode-parameter(()))"/>

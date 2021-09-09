@@ -7,21 +7,25 @@ import module namespace entities="http://read.84000.co/entities" at "../../84000
 import module namespace glossary="http://read.84000.co/glossary" at "../../84000-reading-room/modules/glossary.xql";
 import module namespace update-entity = "http://operations.84000.co/update-entity" at "../../84000-operations/modules/update-entity.xql";
 
+let $skip-texts := ('UT22084-000-000', 'UT22084-091-071', 'UT22084-045-001')
+
 let $texts-without-entities :=
     for $tei in $glossary:tei
     let $glossary := $tei//tei:back//tei:gloss
     let $glosses-with-entities := $glossary/id($entities:entities//m:entity/m:instance/@id)
     let $text-id := tei-content:id($tei)
-    where $glossary and not($glosses-with-entities) and not($text-id eq 'UT22084-000-000')
+    where $glossary and not($glosses-with-entities) and not($text-id = $skip-texts)
     return
         $text-id
-        
-return if(true()) then $texts-without-entities else
+
+where count($texts-without-entities) gt 0
+(:return if(true()) then $texts-without-entities else:)
 
 (: Just do one at a time :)
 let $next-text-id := $texts-without-entities[1]
 return (
     count($texts-without-entities),
-    $next-text-id(:,
-    update-entity:merge-glossary($next-text-id, false()):)
+    $next-text-id,
+    $texts-without-entities[2],
+    update-entity:merge-glossary($next-text-id, false())
 )

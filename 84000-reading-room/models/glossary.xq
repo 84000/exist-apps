@@ -42,8 +42,8 @@ let $entity-show :=
 (: Search parameters :)
 (: Default to find similar matches to selected entity :)
 let $search-default := (
-        $entity-show/m:label[@primary-transliterated eq 'true'][@xml:lang eq 'Bo-Ltn']/data(), 
-        $entity-show/m:label[@primary eq 'true'][@xml:lang eq 'Sa-Ltn']/data(),
+        $entity-show/m:label[@derived-transliterated eq 'true'][@xml:lang eq 'Bo-Ltn']/data(), 
+        $entity-show/m:label[@derived eq 'true'][@xml:lang eq 'Sa-Ltn']/data(),
         if($flag) then '' else (),
         'a'
     )[1]
@@ -56,8 +56,8 @@ let $type-default := (
 let $type := request:get-parameter('type[]', $type-default)
 
 let $term-lang-default := (
-        $entity-show/m:label[@primary-transliterated eq 'true'][@xml:lang eq 'Bo-Ltn']/@xml:lang, 
-        $entity-show/m:label[@primary eq 'true'][@xml:lang eq 'Sa-Ltn']/@xml:lang, 
+        $entity-show/m:label[@derived-transliterated eq 'true'][@xml:lang eq 'Bo-Ltn']/@xml:lang, 
+        $entity-show/m:label[@derived eq 'true'][@xml:lang eq 'Sa-Ltn']/@xml:lang, 
         if($flag) then 'en' else (),
         'Bo-Ltn'
     )[1]
