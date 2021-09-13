@@ -745,7 +745,7 @@
                     <small>
                         <xsl:value-of select="' / '"/>
                         <a target="84000-glossary-tool" class="editor">
-                            <xsl:attribute name="href" select="concat($environment/m:url[@id eq 'operations']/data(), '/edit-glossary.html?resource-id=', m:text/@id, '&amp;glossary-id=', @id, '&amp;max-records=1', '#expand-item-glossary-form-', @id,'-detail')"/>
+                            <xsl:attribute name="href" select="concat($environment/m:url[@id eq 'operations']/data(), '/edit-glossary.html?resource-id=', m:text/@id, '&amp;glossary-id=', @id, '&amp;max-records=1')"/>
                             <xsl:value-of select="'Glossary editor'"/>
                         </a>
                     </small>

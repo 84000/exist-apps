@@ -20,7 +20,7 @@ import module namespace functx="http://www.functx.com";
 declare option exist:serialize "method=xml indent=no";
 
 let $default-max-records := 3
-let $default-filter := 'check-entities'
+let $default-filter := 'check-all'
 
 let $resource-suffix := request:get-parameter('resource-suffix', '')
 let $resource-id := request:get-parameter('resource-id', '')
@@ -69,6 +69,14 @@ let $update-glossary :=
         update-entity:resolve($entity-id, $target-entity-id, $predicate)
     else if($form-action eq 'merge-all-entities') then
         update-entity:merge-glossary($resource-id, true())
+    else if(request:get-parameter('remove-instance', '') gt '') then 
+        let $remove-instance-id := request:get-parameter('remove-instance', '')
+        let $remove-instance-gloss := $glossary:tei//tei:back//id($remove-instance-id)[self::tei:gloss]
+        where $remove-instance-gloss
+        return (
+            update-entity:remove-instance($remove-instance-id),
+            update-entity:create($remove-instance-gloss, '')
+        )
     else ()
 
 (: Force a filter value :)
@@ -86,7 +94,7 @@ let $max-records :=
         $default-max-records
 
 (: Get the glossaries - applying any filters :)
-let $glossary-filtered := glossary:filter($tei, $resource-id, $resource-type, $filter, $search)
+let $glossary-filtered := glossary:filter($tei, $resource-type, $filter, $search)
 
 (: Override first-record to show the updated record :)
 let $selected-glossary-index := 
@@ -165,8 +173,11 @@ let $xml-response :=
                     element { node-name($glossary-item) }{
                     
                         $glossary-item/@*,
-                        attribute active-item { $glossary-item[@id eq $glossary-id]/@id },
-                        (:attribute next-gloss-id { $glossary-filtered/m:item[@id eq $glossary-item/@id]/following-sibling::m:item[1]/@id },:)
+                        
+                        if($glossary-item/@id eq $glossary-id) then
+                            attribute active-item { true() }
+                        else (),
+                        
                         $glossary-item/node(),
                         
                         (: Add glossary expressions :)

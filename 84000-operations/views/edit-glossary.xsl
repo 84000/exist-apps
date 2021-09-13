@@ -272,19 +272,39 @@
                                                 </select>
                                                 
                                             </div>
-                                        
-                                            <div class="input-group">
+                                            
+                                            <xsl:variable name="active-item" select="$glossary/m:item[@active-item eq 'true'][1]"/>
+                                            <xsl:choose>
                                                 
-                                                <div class="input-group-addon">
-                                                    <xsl:value-of select="'Search:'"/>
-                                                </div>
+                                                <!-- Filter by glossary-id -->
+                                                <xsl:when test="$active-item">
+                                                    <div class="checkbox">
+                                                        <label>
+                                                            <input type="checkbox" name="glossary-id" checked="checked">
+                                                                <xsl:attribute name="value" select="$active-item/@id"/>
+                                                            </input>
+                                                            <xsl:value-of select="' '"/>
+                                                            <xsl:value-of select="common:limit-str($active-item/m:term[@xml:lang eq 'en'][1]/data(), 24)"/>
+                                                        </label>
+                                                    </div>
+                                                </xsl:when>
                                                 
-                                                <input type="text" name="search" id="search" class="form-control" size="10" maxlength="100">
-                                                    <xsl:attribute name="value" select="$request-search"/>
-                                                </input>
-                                                
-                                            </div>
-                                        
+                                                <!-- Search -->
+                                                <xsl:otherwise>
+                                                    <div class="input-group">
+                                                        
+                                                        <div class="input-group-addon">
+                                                            <xsl:value-of select="'Search:'"/>
+                                                        </div>
+                                                        
+                                                        <input type="text" name="search" id="search" class="form-control" size="10" maxlength="100">
+                                                            <xsl:attribute name="value" select="$request-search"/>
+                                                        </input>
+                                                        
+                                                    </div>
+                                                </xsl:otherwise>
+                                            </xsl:choose>
+                                            
                                             <div class="input-group">
                                                     
                                                 <div class="input-group-addon">
@@ -726,6 +746,12 @@
                                                         <xsl:call-template name="glossary-items-text-group">
                                                             <xsl:with-param name="glossary-items" select="current-group()"/>
                                                             <xsl:with-param name="active-glossary-id" select="$loop-glossary/@id"/>
+                                                            <xsl:with-param name="remove-instance-href">
+                                                                <xsl:call-template name="link-href">
+                                                                    <xsl:with-param name="glossary-id" select="$loop-glossary/@id"/>
+                                                                    <xsl:with-param name="add-parameters" select="'remove-instance={instance-id}'"/>
+                                                                </xsl:call-template>
+                                                            </xsl:with-param>
                                                         </xsl:call-template>
                                                         
                                                     </xsl:for-each-group>
@@ -1071,12 +1097,15 @@
                 </xsl:otherwise>
             </xsl:choose>
             
+            <!-- Additional other parameters -->
+            <xsl:sequence select="$add-parameters"/>
+            
             <!-- Make sure it reloads despite the anchor -->
             <xsl:value-of select="concat('timestamp=', current-dateTime())"/>
             
         </xsl:variable>
         
-        <xsl:value-of select="concat('/edit-glossary.html?', string-join(($parameters, $add-parameters), '&amp;'),'#selected-entity')"/>
+        <xsl:value-of select="concat('/edit-glossary.html?', string-join($parameters, '&amp;'),'#selected-entity')"/>
         
     </xsl:template>
     

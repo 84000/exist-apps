@@ -485,6 +485,7 @@
                 
             </div>
             
+            <!-- Could we use text-input-with-lang or select-language templates here? -->
             <div class="col-sm-2">
                 <select class="form-control">
                     <xsl:variable name="control-name" select="concat('title-lang-', $title-index)"/>
@@ -928,6 +929,7 @@
                             <xsl:with-param name="index" select="position()"/>
                             <xsl:with-param name="input-name" select="'entity-label'"/>
                             <xsl:with-param name="label" select="'Label:'"/>
+                            <xsl:with-param name="en-label" select="'English / mixed'"/>
                         </xsl:call-template>
                     </xsl:for-each>
                 </xsl:when>
@@ -939,6 +941,7 @@
                         <xsl:with-param name="index" select="position()"/>
                         <xsl:with-param name="input-name" select="'entity-label'"/>
                         <xsl:with-param name="label" select="'Label:'"/>
+                        <xsl:with-param name="en-label" select="'English / mixed'"/>
                     </xsl:call-template>
                 </xsl:otherwise>
             </xsl:choose>
@@ -1374,6 +1377,7 @@
         <xsl:param name="index" as="xs:integer" required="true"/>
         <xsl:param name="input-name" as="xs:string" required="true"/>
         <xsl:param name="label" as="xs:string" required="true"/>
+        <xsl:param name="en-label" as="xs:string" select="'Translation'"/>
         
         <div class="form-group add-nodes-group">
             
@@ -1391,6 +1395,7 @@
                     <xsl:with-param name="selected-language" select="$lang"/>
                     <xsl:with-param name="input-name" select="concat($input-name, '-lang-', $index)"/>
                     <xsl:with-param name="input-id" select="concat($input-name, '-lang-', $id, '-', $index)"/>
+                    <xsl:with-param name="en-label" select="$en-label"/>
                 </xsl:call-template>
             </div>
             
@@ -1419,6 +1424,7 @@
         <xsl:param name="input-name" as="xs:string" required="yes"/>
         <xsl:param name="input-id" as="xs:string" required="yes"/>
         <xsl:param name="allow-empty" as="xs:boolean" select="false()"/>
+        <xsl:param name="en-label" as="xs:string" select="'Translation'"/>
         
         <select class="form-control">
             <xsl:attribute name="name" select="$input-name"/>
@@ -1430,7 +1436,7 @@
                 <xsl:if test="$selected-language = ('','en')">
                     <xsl:attribute name="selected" select="'selected'"/>
                 </xsl:if>
-                <xsl:value-of select="'Translation'"/>
+                <xsl:value-of select="$en-label"/>
             </option>
             <option value="bo">
                 <xsl:if test="$selected-language eq 'bo'">
@@ -1557,6 +1563,7 @@
         
         <xsl:param name="glossary-items" as="element(m:item)*"/>
         <xsl:param name="active-glossary-id" as="xs:string"/>
+        <xsl:param name="remove-instance-href" as="xs:string?"/>
         
         <fieldset>
             
@@ -1588,23 +1595,42 @@
                             </span>
                             
                             <!-- A link to switch to this item -->
-                            <xsl:value-of select="' / '"/>
-                            <span>
-                                <xsl:choose>
-                                    <xsl:when test="not(@id eq $active-glossary-id)">
+                            <xsl:choose>
+                                <xsl:when test="not(@id eq $active-glossary-id)">
+                                    
+                                    <xsl:value-of select="' / '"/>
+                                    <span>
                                         <a class="small">
-                                            <xsl:attribute name="href" select="concat('/edit-glossary.html?resource-id=', $item/m:text/@id, '&amp;resource-type=', $item/m:text/@type, '&amp;glossary-id=', $item/@id, '&amp;max-records=1&amp;filter=check-entities', '#expand-item-glossary-form-', $item/@id, '-detail')"/>
+                                            <xsl:attribute name="href" select="concat('/edit-glossary.html?resource-id=', $item/m:text/@id, '&amp;resource-type=', $item/m:text/@type, '&amp;glossary-id=', $item/@id, '&amp;max-records=1')"/>
                                             <xsl:attribute name="target" select="concat('glossary-', $item/m:text/@id)"/>
-                                            <xsl:value-of select="'edit'"/>
+                                            <xsl:value-of select="'edit entry'"/>
                                         </a>
-                                    </xsl:when>
-                                    <xsl:otherwise>
+                                    </span>
+                                    
+                                    <!-- A link to remove as instance -->
+                                    <xsl:if test="$remove-instance-href">
+                                        <xsl:value-of select="' / '"/>
+                                        <span>
+                                            <a class="small">
+                                                <xsl:attribute name="href" select="replace($remove-instance-href, '\{instance\-id\}', $item/@id)"/>
+                                                <xsl:attribute name="target" select="'_self'"/>
+                                                <xsl:value-of select="'remove from entity'"/>
+                                            </a>
+                                        </span>
+                                    </xsl:if>
+                                    
+                                </xsl:when>
+                                <xsl:otherwise>
+                                    
+                                    <xsl:value-of select="' / '"/>
+                                    <span>
                                         <small class="text-muted">
                                             <xsl:value-of select="'editing'"/>
                                         </small>
-                                    </xsl:otherwise>
-                                </xsl:choose>
-                            </span>
+                                    </span>
+                                    
+                                </xsl:otherwise>
+                            </xsl:choose>
                             
                         </div>
                         

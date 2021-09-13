@@ -229,7 +229,8 @@ declare function entities:entity($entity as element(m:entity)?, $validate as xs:
                         element { node-name($relation) } {
                             attribute predicate { $reverse-predicate },
                             attribute id { $reverse-entity/@xml:id },
-                            attribute debug { 'reverse-relation' }
+                            attribute debug { 'reverse-relation' },
+                            $relation/m:label
                         }
                     let $relations := ($relations | $reverse-relations)
                     where $relations

@@ -569,7 +569,7 @@ declare function glossary:xml-response($tei as element(tei:TEI), $resource-id as
     )
 };
 
-declare function glossary:filter($tei as element(tei:TEI), $resource-id as xs:string, $resource-type as xs:string, $filter as xs:string, $search as xs:string) as element(m:part) {
+declare function glossary:filter($tei as element(tei:TEI), $resource-type as xs:string, $filter as xs:string, $search as xs:string) as element(m:part) {
     
     let $glossary-cache := glossary:cache($tei, (), false())
     
@@ -597,6 +597,7 @@ declare function glossary:filter($tei as element(tei:TEI), $resource-id as xs:st
         else
             $tei-gloss
     
+    let $resource-id := tei-content:id($tei)
     let $xml-response := glossary:xml-response($tei, $resource-id, $resource-type, 'all')
     
     (: Expression filters :)
@@ -619,7 +620,7 @@ declare function glossary:filter($tei as element(tei:TEI), $resource-id as xs:st
         
             $glossary/@*,
             attribute filter { $filter },
-            attribute text-id { tei-content:id($tei) },
+            attribute text-id { $resource-id },
             element search { $search },
             
             for $gloss in $tei-gloss

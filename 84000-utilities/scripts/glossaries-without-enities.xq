@@ -13,4 +13,4 @@ let $glosses-without-entities := $glossary except $glosses-with-entities
 let $text-id := tei-content:id($tei)
 where $glossary and $glosses-without-entities
 return
-    concat('(', count($glosses-without-entities), ') ', 'https://projects.84000-translate.org/edit-glossary.html?resource-id=', $text-id, '&amp;filter=missing-entities')
+    concat('https://projects.84000-translate.org/edit-glossary.html?resource-id=', $text-id, '&amp;filter=missing-entities', ' (', count($glosses-without-entities), '/', count($glossary), ') ')

@@ -311,8 +311,8 @@ declare function search:tm-search($request as xs:string, $lang as xs:string, $fi
                                 
                                 (: Get the position of this one :)
                                 let $folio := 
-                                    if($result-folio[@cRef-volume]) then
-                                        $folio-refs-sorted[lower-case(@cRef) eq lower-case($result-folio/text())][lower-case(@cRef-volume) eq lower-case($result-folio/@cRef-volume)][1]
+                                    if($result-folio[@m:cRef-volume]) then
+                                        $folio-refs-sorted[lower-case(@cRef) eq lower-case($result-folio/text())][lower-case(@cRef-volume) eq lower-case($result-folio/@m:cRef-volume)][1]
                                     else
                                         $folio-refs-sorted[lower-case(@cRef) eq lower-case($result-folio/text())][1]
                                 

@@ -47,15 +47,16 @@ declare function update-entity:create($label-lang as xs:string, $label-text as x
 declare function update-entity:create($gloss as element(tei:gloss), $flag as xs:string) as element()? {
     
     let $label-term := (
-            $gloss/tei:term[@xml:lang eq 'bo'], 
-            $gloss/tei:term[@xml:lang eq 'Bo-Ltn'],
-            $gloss/tei:term[@xml:lang eq 'Sa-Ltn']
-        )[normalize-space(text())][1]
+        $gloss/tei:term[@xml:lang eq 'bo'][normalize-space(text())], 
+        $gloss/tei:term[@xml:lang eq 'Bo-Ltn'][normalize-space(text())],
+        $gloss/tei:term[@xml:lang eq 'Sa-Ltn'][normalize-space(text())]
+    )[1]
     
-    let $entity-type := $entities:types//m:type[@glossary-type eq $gloss/@type]/@id
+    let $entity-type := $entities:types//m:type[@glossary-type eq $gloss/@type]
     where $label-term and $entity-type
     return 
-        update-entity:create($label-term/@xml:lang, $label-term/data(), $gloss/@xml:id, $entity-type, 'glossary-item', $flag)
+        update-entity:create($label-term/@xml:lang, $label-term/data(), $gloss/@xml:id, $entity-type/@id, 'glossary-item', $flag)
+        
 };
 
 (: Update labels, types and content :)
@@ -254,37 +255,33 @@ declare function update-entity:resolve($entity-id as xs:string, $target-entity-i
     (: Remove a relation :)
     else if($predicate eq 'removeRelation')then
         
-        let $entity := $entities:entities/id($entity-id)[self::m:entity]
-        let $relation := $entity/m:relation[@id eq $target-entity-id]
+        let $relation := $entities:entities/id($entity-id)[self::m:entity]/m:relation[@id eq $target-entity-id][1]
+        (: Account for reverse relations :)
+        let $relation := 
+            if(not($relation)) then
+                $entities:entities/id($target-entity-id)[self::m:entity]/m:relation[@id eq $entity-id][1]
+            else
+                $relation
         return
             common:update('entity-resolve', $relation, (), (), ())
     
     (: Set the predicate for the relationship :)
     else if($entities:predicates//m:predicate[@xml:id = $predicate]) then
     
-        let $parent := $entities:entities
-        let $entity := $parent/id($entity-id)[self::m:entity]
-        let $target-entity := $parent/id($target-entity-id)[self::m:entity]
-        
-        let $entity-updated := 
-            element { node-name($entity) } {
-                $entity/@*,
-                for $entity-node in $entity/*
-                return (
-                    common:ws(2),
-                    $entity-node
-                ),
-                element { QName('http://read.84000.co/ns/1.0', 'relation') } {
-                    attribute predicate { $predicate },
-                    attribute id { $target-entity-id },
-                    $target-entity/m:label[not(@derived) and not(@derived-transliterated)][1]
-                }
+        let $entity := $entities:entities/id($entity-id)[self::m:entity]
+        let $target-entity := $entities:entities/id($target-entity-id)[self::m:entity]
+        let $existing-relation := $entity/m:relation[@id eq $target-entity-id]
+        let $new-relation :=
+            element { QName('http://read.84000.co/ns/1.0', 'relation') } {
+                attribute predicate { $predicate },
+                attribute id { $target-entity-id },
+                $target-entity/m:label[not(@derived) and not(@derived-transliterated)][1]
             }
         
         where $entity and $target-entity
         return
             (: Update target :)
-            common:update('entity-resolve', $entity, $entity-updated, (), ())
+            common:update('entity-resolve', $existing-relation, $new-relation, $entity, ())
     
     else ()
     
@@ -450,10 +447,11 @@ declare function update-entity:merge-glossary($text-id as xs:string, $create as 
 
 declare function update-entity:remove-instance($instance-id as xs:string) as element()* {
 
-    let $existing-value := $entities:entities/m:entity/m:instance[@id eq  $instance-id][1]
-    where $existing-value
+    let $instance := $entities:entities/m:entity/m:instance[@id eq $instance-id][1]
+    (: Check instance exists and it's not the only one in the entity :)
+    where $instance and $instance/parent::m:entity/m:instance[not(@id eq $instance-id)]
     return
-        common:update('entity-remove-instance', $existing-value, (), $existing-value/parent::m:entity, ())
+        common:update('entity-remove-instance', $instance, (), (), ())
         
 };
 
