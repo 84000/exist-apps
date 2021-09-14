@@ -212,7 +212,7 @@
         <xsl:call-template name="reading-room-page">
             <xsl:with-param name="page-url" select="''"/>
             <xsl:with-param name="page-class" select="'utilities'"/>
-            <xsl:with-param name="page-title" select="concat(string-join(m:translation/m:toh/m:full, ' / '), ' - edit  | 84000 Project Management')"/>
+            <xsl:with-param name="page-title" select="concat(string-join(m:translation/m:toh/m:full, ' / '), ' | Text header | 84000 Project Management')"/>
             <xsl:with-param name="page-description" select="concat('Editing headers for text: ', string-join(m:translation/m:toh/m:full, ' / '))"/>
             <xsl:with-param name="content" select="$content"/>
         </xsl:call-template>

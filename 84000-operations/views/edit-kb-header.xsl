@@ -627,9 +627,11 @@
                                     
                                     <xsl:when test="m:similar-entities[m:entity]">
                                         
-                                        <xsl:call-template name="entity-summary">
-                                            <xsl:with-param name="entity" select="$entity"/>
-                                        </xsl:call-template>
+                                        <xsl:if test="$entity">
+                                            <xsl:call-template name="entity-summary">
+                                                <xsl:with-param name="entity" select="$entity"/>
+                                            </xsl:call-template>
+                                        </xsl:if>
                                         
                                         <div class="list-group accordion" role="tablist" aria-multiselectable="false">
                                             
@@ -727,7 +729,7 @@
         <xsl:call-template name="reading-room-page">
             <xsl:with-param name="page-url" select="''"/>
             <xsl:with-param name="page-class" select="'utilities'"/>
-            <xsl:with-param name="page-title" select="concat($title, ' - edit  | 84000 Project Management')"/>
+            <xsl:with-param name="page-title" select="concat($title, ' | Knowledge Base Header  | 84000 Project Management')"/>
             <xsl:with-param name="page-description" select="concat('Editing headers for Knowledge Base page: ', $title)"/>
             <xsl:with-param name="content" select="$content"/>
         </xsl:call-template>
@@ -759,5 +761,4 @@
         </ul>
     </xsl:template>
 
-    
 </xsl:stylesheet>

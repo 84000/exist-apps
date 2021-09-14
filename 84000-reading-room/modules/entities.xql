@@ -135,7 +135,7 @@ declare function entities:entity($entity as element(m:entity)?, $validate as xs:
         element { node-name($entity) } {
         
             $entity/@*,
-            $entity/*[not(local-name(.) = ('instance','relation'))],
+            $entity/*[not(local-name(.) = ('instance','relation','label'))],
             
             (: Instances :)
             let $instance-ids := $entity/m:instance/@id
@@ -158,6 +158,11 @@ declare function entities:entity($entity as element(m:entity)?, $validate as xs:
             return (
             
                 $valid-instances,
+                
+                (: Sort the labels :)
+                $entity/m:label[@xml:lang eq 'en'],
+                $entity/m:label[@xml:lang eq 'Bo-Ltn'],
+                $entity/m:label[not(@xml:lang = ('en', 'Bo-Ltn'))],
                 
                 (: Derive label based on content :)
                 if(not($entity/m:label[@derived])) then
@@ -230,9 +235,15 @@ declare function entities:entity($entity as element(m:entity)?, $validate as xs:
                             attribute predicate { $reverse-predicate },
                             attribute id { $reverse-entity/@xml:id },
                             attribute debug { 'reverse-relation' },
-                            $relation/m:label
+                            (
+                                $reverse-entity/m:label[@xml:lang eq 'en'],
+                                $reverse-entity/m:label[@xml:lang eq 'Bo-Ltn'],
+                                $reverse-entity/m:label[not(@xml:lang = ('en','Bo-Ltn'))]
+                            )[1]
                         }
+                    
                     let $relations := ($relations | $reverse-relations)
+                    
                     where $relations
                     return
                         entities:expand-relations($relations, $validate, true(), false())

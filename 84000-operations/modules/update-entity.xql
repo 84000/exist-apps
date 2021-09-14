@@ -34,10 +34,10 @@ declare function update-entity:create($label-lang as xs:string, $label-text as x
             },
             if($entities:flags//m:flag[@id eq $flag]) then
                 element flag {
-                        attribute type { $flag },
-                        attribute user { common:user-name() },
-                        attribute timestamp { current-dateTime() }
-                    }
+                    attribute type { $flag },
+                    attribute user { common:user-name() },
+                    attribute timestamp { current-dateTime() }
+                }
             else ()
         }
     return 
@@ -47,8 +47,8 @@ declare function update-entity:create($label-lang as xs:string, $label-text as x
 declare function update-entity:create($gloss as element(tei:gloss), $flag as xs:string) as element()? {
     
     let $label-term := (
-        $gloss/tei:term[@xml:lang eq 'bo'][normalize-space(text())], 
         $gloss/tei:term[@xml:lang eq 'Bo-Ltn'][normalize-space(text())],
+        $gloss/tei:term[@xml:lang eq 'bo'][normalize-space(text())],
         $gloss/tei:term[@xml:lang eq 'Sa-Ltn'][normalize-space(text())]
     )[1]
     
@@ -275,7 +275,11 @@ declare function update-entity:resolve($entity-id as xs:string, $target-entity-i
             element { QName('http://read.84000.co/ns/1.0', 'relation') } {
                 attribute predicate { $predicate },
                 attribute id { $target-entity-id },
-                $target-entity/m:label[not(@derived) and not(@derived-transliterated)][1]
+                (
+                    $target-entity/m:label[@xml:lang eq 'en'],
+                    $target-entity/m:label[@xml:lang eq 'Bo-Ltn'],
+                    $target-entity/m:label[not(@xml:lang = ('en','Bo-Ltn'))]
+                )[1]
             }
         
         where $entity and $target-entity

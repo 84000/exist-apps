@@ -145,7 +145,8 @@ let $xml-response :=
                 attribute tei-version { tei-content:version-str($tei) },
                 attribute document-url { tei-content:document-url($tei) },
                 attribute locked-by-user { tei-content:locked-by-user($tei) },
-                tei-content:titles($tei)
+                tei-content:titles($tei),
+                translation:toh($tei, '')
             },
             
             (: Additional glossary data for selected items :)

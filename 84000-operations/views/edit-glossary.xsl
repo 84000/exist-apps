@@ -47,6 +47,8 @@
                         <div class="h3">
                             <a target="reading-room">
                                 <xsl:attribute name="href" select="concat($reading-room-path, '/', $request-resource-type, '/', $request-resource-id, '.html?view-mode=editor')"/>
+                                <xsl:value-of select="$text/m:toh/m:full/data()"/>
+                                <xsl:value-of select="' / '"/>
                                 <xsl:variable name="title-limited">
                                     <xsl:choose>
                                         <xsl:when test="$request-resource-type eq 'knowledgebase'">
@@ -168,6 +170,15 @@
                         </li>
                         
                         <li>
+                            <a target="_self" class="underline" data-loading="Auto-assigning entities...">
+                                <xsl:attribute name="href" select="concat('edit-glossary.html?resource-id=', $request-resource-id, '&amp;resource-type=', $request-resource-type, '&amp;form-action=merge-all-entities&amp;filter=requires-attention')"/>
+                                <span class="small">
+                                    <xsl:value-of select="'Auto-assign entities'"/>
+                                </span>
+                            </a>
+                        </li>
+                        
+                        <li>
                             <a target="_self" class="underline">
                                 <xsl:choose>
                                     <xsl:when test="$request-resource-type eq 'knowledgebase'">
@@ -179,15 +190,6 @@
                                 </xsl:choose>
                                 <span class="small">
                                     <xsl:value-of select="'Edit headers'"/>
-                                </span>
-                            </a>
-                        </li>
-                        
-                        <li>
-                            <a target="_self" class="underline" data-loading="Auto-assigning entities...">
-                                <xsl:attribute name="href" select="concat('edit-glossary.html?resource-id=', $request-resource-id, '&amp;resource-type=', $request-resource-type, '&amp;form-action=merge-all-entities&amp;filter=requires-attention')"/>
-                                <span class="small">
-                                    <xsl:value-of select="'Auto-assign entities'"/>
                                 </span>
                             </a>
                         </li>
@@ -215,6 +217,12 @@
                                                 </div>
                                                 
                                                 <select name="filter" class="form-control">
+                                                    <option value="check-all">
+                                                        <xsl:if test="$request-filter eq 'check-all'">
+                                                            <xsl:attribute name="selected" select="'selected'"/>
+                                                        </xsl:if>
+                                                        <xsl:value-of select="'Check all'"/>
+                                                    </option>
                                                     <option value="check-entities">
                                                         <xsl:if test="$request-filter eq 'check-entities'">
                                                             <xsl:attribute name="selected" select="'selected'"/>
@@ -226,12 +234,6 @@
                                                             <xsl:attribute name="selected" select="'selected'"/>
                                                         </xsl:if>
                                                         <xsl:value-of select="'Check locations'"/>
-                                                    </option>
-                                                    <option value="check-all">
-                                                        <xsl:if test="$request-filter eq 'check-all'">
-                                                            <xsl:attribute name="selected" select="'selected'"/>
-                                                        </xsl:if>
-                                                        <xsl:value-of select="'Check all'"/>
                                                     </option>
                                                     <option value="missing-entities">
                                                         <xsl:if test="$request-filter eq 'missing-entities'">
@@ -1007,7 +1009,7 @@
         <xsl:call-template name="reading-room-page">
             <xsl:with-param name="page-url" select="''"/>
             <xsl:with-param name="page-class" select="'utilities'"/>
-            <xsl:with-param name="page-title" select="'Glossary | 84000 Project Management'"/>
+            <xsl:with-param name="page-title" select="$text/m:toh/m:full/data() || ' | Glossary | 84000 Project Management'"/>
             <xsl:with-param name="page-description" select="'84000 Glossary'"/>
             <xsl:with-param name="content" select="$content"/>
         </xsl:call-template>
@@ -1579,7 +1581,7 @@
             
             <xsl:with-param name="form-content">
                 
-                <xsl:variable name="default-label" select="($loop-glossary/m:term[@xml:lang eq'Sa-Ltn'], $loop-glossary/m:term[@xml:lang eq 'bo'], $loop-glossary/m:term[@xml:lang])[1]"/>
+                <xsl:variable name="default-label" select="($loop-glossary/m:term[@xml:lang eq 'Bo-Ltn'], $loop-glossary/m:term[@xml:lang eq 'bo'], $loop-glossary/m:term[@xml:lang eq'Sa-Ltn'], $loop-glossary/m:term[@xml:lang])[1]"/>
                 
                 <xsl:call-template name="entity-form-input">
                     <xsl:with-param name="entity" select="$loop-glossary/m:entity"/>
