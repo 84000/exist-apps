@@ -782,24 +782,35 @@
                                 <xsl:for-each select="$term-lang-terms">
                                     <li>
                                         
-                                        <xsl:call-template name="class-attribute">
-                                            <xsl:with-param name="base-classes" as="xs:string*">
-                                                <xsl:value-of select="'term'"/>
-                                                <xsl:if test="@type = ('reconstruction', 'semanticReconstruction','transliterationReconstruction')">
-                                                    <xsl:value-of select="'reconstructed'"/>
-                                                </xsl:if>
-                                            </xsl:with-param>
-                                            <xsl:with-param name="lang" select="$term-lang"/>
-                                        </xsl:call-template>
+                                        <span>
+                                            
+                                            <xsl:call-template name="class-attribute">
+                                                <xsl:with-param name="base-classes" as="xs:string*">
+                                                    <xsl:value-of select="'term'"/>
+                                                    <xsl:if test="tokenize(@type, ' ')[. = ('reconstruction', 'semanticReconstruction','transliterationReconstruction')]">
+                                                        <xsl:value-of select="'reconstructed'"/>
+                                                    </xsl:if>
+                                                </xsl:with-param>
+                                                <xsl:with-param name="lang" select="$term-lang"/>
+                                            </xsl:call-template>
+                                            
+                                            <xsl:choose>
+                                                <xsl:when test="normalize-space(text())">
+                                                    <xsl:value-of select="normalize-space(text())"/>
+                                                </xsl:when>
+                                                <xsl:otherwise>
+                                                    <xsl:value-of select="$term-empty-text"/>
+                                                </xsl:otherwise>
+                                            </xsl:choose>
+                                            
+                                        </span>
                                         
-                                        <xsl:choose>
-                                            <xsl:when test="normalize-space(text())">
-                                                <xsl:value-of select="normalize-space(text())"/>
-                                            </xsl:when>
-                                            <xsl:otherwise>
-                                                <xsl:value-of select="$term-empty-text"/>
-                                            </xsl:otherwise>
-                                        </xsl:choose>
+                                        <xsl:if test="$view-mode[@id eq 'editor'] and tokenize(@type, ' ')[. = ('verified')]">
+                                            <xsl:value-of select="' '"/>
+                                            <span class="text-warning small">
+                                                <xsl:value-of select="'[Verified]'"/>
+                                            </span>
+                                        </xsl:if>
                                         
                                     </li>
                                 </xsl:for-each>
@@ -812,7 +823,7 @@
             
             <!-- Alternatives -->
             <xsl:variable name="alternative-terms" select="m:alternative"/>
-            <xsl:if test="$tei-editor and $alternative-terms">
+            <xsl:if test="$view-mode[@id eq 'editor'] and $alternative-terms">
                 <ul class="list-inline inline-dots">
                     <xsl:for-each select="$alternative-terms">
                         <li>

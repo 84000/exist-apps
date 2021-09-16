@@ -256,13 +256,12 @@ declare function local:log-event($type as xs:string, $event as xs:string, $objec
     return
         (: Insert log :)
         update insert (
-            text { $common:chr-nl },
-            text { $common:chr-tab },
+            common:ws(1),
             <trigger xmlns="http://read.84000.co/ns/1.0" 
                 event="{string-join(($type, $event, $object-type), "-")}" 
                 uri="{$uri}" 
                 timestamp="{current-dateTime()}" 
                 user="{ common:user-name() }"/>
         )
-        following $log/m:trigger[last()]
+        into $log
 };

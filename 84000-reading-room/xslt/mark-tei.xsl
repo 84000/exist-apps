@@ -2,7 +2,7 @@
 <xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:functx="http://www.functx.com" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" version="3.0" exclude-result-prefixes="#all">
     
     <!-- Output as website page -->
-    <xsl:import href="functions.xsl"/>
+    <xsl:import href="common.xsl"/>
     
     <!-- Pre-sort the glossaries by priority -->
     <xsl:variable name="glossary" select="/tei:TEI/tei:text/tei:back/tei:div[@type eq 'glossary']/tei:list[@type eq 'glossary']/tei:item/tei:gloss[@xml:id]"/>
@@ -212,7 +212,7 @@
     <!-- Get relevant terms from gloss -->
     <xsl:function name="m:glossary-terms-to-match" as="xs:string*">
         <xsl:param name="glossary-items" as="element(tei:gloss)*"/>
-        <xsl:sequence select="$glossary-items/tei:term[not(@type) or @type eq 'alternative'][not(@xml:lang) or @xml:lang eq 'en'][normalize-space(data())]/data()"/>
+        <xsl:sequence select="$glossary-items/tei:term[not(@type eq 'definition')][not(@xml:lang) or @xml:lang eq 'en'][normalize-space(data())]/data()"/>
     </xsl:function>
     
 </xsl:stylesheet>

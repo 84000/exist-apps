@@ -560,26 +560,46 @@ declare function update-tei:update-glossary($tei as element(tei:TEI), $glossary-
                     for $term-param in common:sort-trailing-number-in-string(request:get-parameter-names()[starts-with(., 'term-text-')], '-')
                     let $term-index := substring-after($term-param, 'term-text-')
                     let $term-text := request:get-parameter($term-param, '')
-                    let $term-lang := common:valid-lang(request:get-parameter(concat('term-lang-', $term-index), ''))
+                    let $term-lang-type := request:get-parameter(concat('term-lang-', $term-index), '')
+                    let $term-type := 
+                        if(matches($term-lang-type, '\-sr$')) then 
+                            'semanticReconstruction' 
+                        else if(matches($term-lang-type, '\-tr$')) then 
+                            'transliterationReconstruction' 
+                        else ()
+                    let $term-verified := request:get-parameter(concat('term-verified-', $term-index), '')
+                    let $term-type := string-join(($term-type, $term-verified[. gt '']), ' ')
+                    let $term-lang := common:valid-lang(replace($term-lang-type, '\-(sr|tr)$', ''))
                     where $term-text gt ''
                     return (
                         common:ws(7),
                         element {QName('http://www.tei-c.org/ns/1.0', 'term')} {
                         
                             (: Lang - if more than one en term is passed then make it an alternative :)
-                            if($term-lang = 'en') then
+                            if($term-lang eq 'en') then
                                 attribute type {'alternative'}
-                            else 
-                                attribute xml:lang {$term-lang}
+                            else ( 
+                                if($term-type gt '') then
+                                    attribute type { $term-type }
+                                else ()
+                                ,
+                                attribute xml:lang { $term-lang }
+                            )
                             ,
                             
-                            (: Text - if Sanskrit parse hyphens :)
-                            text {
-                                if ($term-lang eq 'Sa-Ltn') then
-                                    replace($term-text, '\-', '­')
-                                else
-                                    $term-text
-                            }
+                            (: Text - skip if text matches placeholder - if Sanskrit parse hyphens :)
+                            if ($term-lang eq 'Sa-Ltn') then
+                                if(not($term-text eq common:local-text('glossary.term-empty-sa-ltn', 'en'))) then
+                                    text { replace($term-text, '\-', '­'(: This is a soft-hyphen :)) }
+                                else ()
+                                
+                            else if ($term-lang eq 'Bo-Ltn') then
+                                if(not($term-text eq common:local-text('glossary.term-empty-bo-ltn', 'en'))) then
+                                    text { $term-text }
+                                else ()
+                                
+                            else 
+                                text { $term-text }
                             
                         }
                     ),

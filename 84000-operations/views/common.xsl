@@ -1378,6 +1378,7 @@
         <xsl:param name="input-name" as="xs:string" required="true"/>
         <xsl:param name="label" as="xs:string" required="true"/>
         <xsl:param name="en-label" as="xs:string" select="'Translation'"/>
+        <xsl:param name="type" as="xs:string?"/>
         
         <div class="form-group add-nodes-group">
             
@@ -1393,6 +1394,7 @@
                 </xsl:if>
                 <xsl:call-template name="select-language">
                     <xsl:with-param name="selected-language" select="$lang"/>
+                    <xsl:with-param name="selected-type" select="$type"/>
                     <xsl:with-param name="input-name" select="concat($input-name, '-lang-', $index)"/>
                     <xsl:with-param name="input-id" select="concat($input-name, '-lang-', $id, '-', $index)"/>
                     <xsl:with-param name="en-label" select="$en-label"/>
@@ -1400,27 +1402,46 @@
             </div>
             
             <div class="col-sm-6">
-                <input type="text" name="{ concat($input-name, '-text-', $index) }" id="{ concat($input-name, '-', $id, '-', $index) }" class="form-control">
-                    <xsl:attribute name="value">
-                        <xsl:choose>
-                            <xsl:when test="$lang eq 'Sa-Ltn'">
-                                <xsl:attribute name="value" select="replace($text, '­', '-')"/>
-                            </xsl:when>
-                            <xsl:otherwise>
-                                <xsl:attribute name="value" select="$text"/>
-                            </xsl:otherwise>
-                        </xsl:choose>
-                    </xsl:attribute>
-                </input>
+                <div>
+                    <xsl:if test="not(empty($type))">
+                        <xsl:attribute name="class" select="'input-group'"/>
+                    </xsl:if>
+                    <input type="text" name="{ concat($input-name, '-text-', $index) }" id="{ concat($input-name, '-', $id, '-', $index) }" class="form-control">
+                        <xsl:attribute name="value">
+                            <xsl:choose>
+                                <xsl:when test="$lang eq 'Sa-Ltn'">
+                                    <xsl:attribute name="value" select="replace($text, '­', '-')"/>
+                                </xsl:when>
+                                <xsl:otherwise>
+                                    <xsl:attribute name="value" select="$text"/>
+                                </xsl:otherwise>
+                            </xsl:choose>
+                        </xsl:attribute>
+                    </input>
+                    <xsl:if test="not(empty($type))">
+                        <span class="input-group-addon">
+                            <label>
+                                <input type="checkbox" name="{ concat($input-name, '-verified-', $index) }" value="verified" aria-label="Term verified">
+                                    <xsl:if test="tokenize($type, ' ')[. = ('verified')]">
+                                        <xsl:attribute name="checked" select="'checked'"/>
+                                    </xsl:if>
+                                </input>
+                                <xsl:value-of select="' Verified'"/>
+                            </label>
+                        </span>
+                    </xsl:if>
+                </div>
             </div>
             
         </div>
+    
     </xsl:template>
     
     <!-- language <select/> -->
     <xsl:template name="select-language">
         
         <xsl:param name="selected-language" as="xs:string?"/>
+        <xsl:param name="selected-type" as="xs:string?"/>
         <xsl:param name="input-name" as="xs:string" required="yes"/>
         <xsl:param name="input-id" as="xs:string" required="yes"/>
         <xsl:param name="allow-empty" as="xs:boolean" select="false()"/>
@@ -1451,11 +1472,25 @@
                 <xsl:value-of select="'Wylie'"/>
             </option>
             <option value="sa-ltn">
-                <xsl:if test="$selected-language eq 'Sa-Ltn'">
+                <xsl:if test="$selected-language eq 'Sa-Ltn' and not(tokenize($selected-type, ' ')[. = ('semanticReconstruction','transliterationReconstruction')])">
                     <xsl:attribute name="selected" select="'selected'"/>
                 </xsl:if>
                 <xsl:value-of select="'Sanskrit'"/>
             </option>
+            <xsl:if test="not(empty($selected-type))">
+                <option value="sa-ltn-sr">
+                    <xsl:if test="$selected-language eq 'Sa-Ltn' and tokenize($selected-type, ' ')[. = ('semanticReconstruction')]">
+                        <xsl:attribute name="selected" select="'selected'"/>
+                    </xsl:if>
+                    <xsl:value-of select="'Sanskrit / Semantic Reconstruction'"/>
+                </option>
+                <option value="sa-ltn-tr">
+                    <xsl:if test="$selected-language eq 'Sa-Ltn' and tokenize($selected-type, ' ')[. = ('transliterationReconstruction')]">
+                        <xsl:attribute name="selected" select="'selected'"/>
+                    </xsl:if>
+                    <xsl:value-of select="'Sanskrit / Transliteration Reconstruction'"/>
+                </option>
+            </xsl:if>
             <option value="zh">
                 <xsl:if test="$selected-language eq 'zh'">
                     <xsl:attribute name="selected" select="'selected'"/>
@@ -1495,6 +1530,12 @@
                         </xsl:attribute>
                         <xsl:value-of select="text()"/>
                     </span>
+                    <xsl:if test="tokenize(@type, ' ')[. = ('verified')]">
+                        <xsl:value-of select="' '"/>
+                        <span class="text-warning small">
+                            <xsl:value-of select="'[Verified]'"/>
+                        </span>
+                    </xsl:if>
                 </li>
             </xsl:for-each>
             

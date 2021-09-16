@@ -467,7 +467,7 @@ declare function update-entity:update-instance($instance-id as xs:string) as ele
     let $existing-value := $entities:entities/m:entity/m:instance[@id eq  $instance-id][1]
     
     let $new-value :=
-        element { node-name( $existing-value ) } {
+        element { QName('http://read.84000.co/ns/1.0', 'instance') } {
             $existing-value/@*[not(local-name(.) eq 'use-definition')],
             if($use-definition gt '') then
                 attribute use-definition { $use-definition }

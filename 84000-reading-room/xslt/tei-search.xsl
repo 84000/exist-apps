@@ -317,17 +317,6 @@
     
     <xsl:template match="text()">
         
-        <!--<xsl:variable name="text">
-            <xsl:choose>
-                <xsl:when test="ancestor::tei:term[not(@type)][not(@xml:lang) or @xml:lang eq 'en']">
-                    <xsl:value-of select="functx:capitalize-first(.)"/>
-                </xsl:when>
-                <xsl:otherwise>
-                    <xsl:value-of select="."/>
-                </xsl:otherwise>
-            </xsl:choose>
-        </xsl:variable>-->
-        
         <xsl:value-of select="translate(normalize-space(concat('', translate(., '&#xA;', ''), '')), '', '')"/>
         
     </xsl:template>
@@ -434,7 +423,7 @@
         <xsl:variable name="gloss" select="."/>
         
         <h4 class="term">
-            <xsl:apply-templates select="$gloss/tei:term[not(@type)][not(@xml:lang) or @xml:lang eq 'en'][1]"/>
+            <xsl:apply-templates select="$gloss/tei:term[not(@type = ('definition','alternative'))][not(@xml:lang) or @xml:lang eq 'en'][1]"/>
         </h4>
         
         <xsl:for-each select="('Bo-Ltn','bo','Sa-Ltn')">
@@ -445,14 +434,12 @@
             <xsl:choose>
                 <xsl:when test="$term-lang-terms">
                     <ul class="list-inline inline-dots">
-                
                         <xsl:for-each select="$term-lang-terms">
                             <li>
-                                <xsl:attribute name="class" select="common:lang-class($term-lang)"/>
+                                <xsl:attribute name="class" select="string-join((common:lang-class($term-lang), if(tokenize(@type, ' ')[. = ('reconstruction', 'semanticReconstruction','transliterationReconstruction')]) then 'reconstructed' else ()), ' ')"/>
                                 <xsl:apply-templates select="node()"/>
                             </li>
                         </xsl:for-each>
-                        
                     </ul>
                 </xsl:when>
             </xsl:choose>

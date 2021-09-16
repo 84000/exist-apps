@@ -44,7 +44,7 @@ declare variable $entities:types :=
 declare variable $entities:flags := 
     <entity-flags xmlns="http://read.84000.co/ns/1.0">
         <flag id="requires-attention">
-            <label>requiring attention</label>
+            <label>requires attention</label>
         </flag>
     </entity-flags>;
 

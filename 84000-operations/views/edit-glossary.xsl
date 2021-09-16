@@ -1170,7 +1170,7 @@
         <input type="hidden" name="glossary-id" value="{ $glossary/@id }"/>
         
         <!-- Main term -->
-        <xsl:variable name="main-term" select="$glossary/m:term[not(@type)][not(@xml:lang) or @xml:lang eq 'en'][1]"/>
+        <xsl:variable name="main-term" select="$glossary/m:term[not(@type = ('definition','alternative'))][not(@xml:lang) or @xml:lang eq 'en'][1]"/>
         <xsl:variable name="element-id" select="string-join(('main-term', $glossary/@id), '-')"/>
         <div class="form-group">
             <label for="{ $element-id }" class="col-sm-2 control-label">
@@ -1185,7 +1185,7 @@
         </div>
         
         <!-- Equivalent terms -->
-        <xsl:variable name="source-terms" select="$glossary/m:term[not(@type)][not(@xml:lang eq 'en')]"/>
+        <xsl:variable name="source-terms" select="$glossary/m:term[not(@type = ('definition','alternative'))][not(@xml:lang eq 'en')]"/>
         <xsl:variable name="source-terms-count" select="count($source-terms)"/>
         <div class="add-nodes-container">
             
@@ -1215,6 +1215,7 @@
                     <xsl:with-param name="index" select="$index"/>
                     <xsl:with-param name="input-name" select="'term'"/>
                     <xsl:with-param name="label" select="'Equivalent:'"/>
+                    <xsl:with-param name="type" select="($source-terms[$index]/@type, '')[1]"/>
                 </xsl:call-template>
                 
             </xsl:for-each>

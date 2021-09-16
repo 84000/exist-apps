@@ -26,7 +26,7 @@
     
     <!-- Pre-sort the glossaries by priority -->
     <xsl:variable name="glossary-prioritised" as="element(tei:gloss)*">
-        <xsl:perform-sort select="($translation | $knowledgebase)/m:part[@type eq 'glossary']//tei:gloss[@xml:id][tei:term[not(@xml:lang)][not(@type)][normalize-space(text())]]">
+        <xsl:perform-sort select="($translation | $knowledgebase)/m:part[@type eq 'glossary']//tei:gloss[@xml:id][tei:term[not(@xml:lang)][not(@type = ('definition','alternative'))][normalize-space(text())]]">
             <xsl:sort select="key('glossary-cache-gloss', @xml:id, $root)[1]/@word-count ! common:enforce-integer(.)" order="descending"/>
             <xsl:sort select="key('glossary-cache-gloss', @xml:id, $root)[1]/@letter-count[not(. eq '')] ! common:enforce-integer(.)" order="descending"/>
         </xsl:perform-sort>
@@ -184,7 +184,7 @@
                     <xsl:with-param name="lang" select="@xml:lang"/>
                     <xsl:with-param name="base-classes" as="xs:string*">
                         <xsl:value-of select="'title'"/>
-                        <xsl:if test="@rend = ('reconstruction', 'semanticReconstruction','transliterationReconstruction')">
+                        <xsl:if test="tokenize(@rend, ' ')[. = ('reconstruction', 'semanticReconstruction','transliterationReconstruction')]">
                             <xsl:value-of select="'reconstructed'"/>
                         </xsl:if>
                     </xsl:with-param>
@@ -650,8 +650,9 @@
                                     
                                     <xsl:for-each select="$datas/xhtml:span">
                                         <xsl:sequence select="."/>
-                                        <!-- concatenate items with ; -->
-                                        <xsl:value-of select="if(position() ne count($datas/xhtml:span)) then '; ' else '.'"/>
+                                        <xsl:if test="position() lt count($datas/xhtml:span)">
+                                            <br/>
+                                        </xsl:if>
                                     </xsl:for-each>
                                     
                                 </p>
@@ -712,8 +713,7 @@
                     <xsl:value-of select="concat($label, ': ')"/>
                 </span>
             </xsl:if>
-            <!-- Strip trailing punctuation for concatenation -->
-            <xsl:value-of select="replace($data, '\W+$', '')"/>
+            <xsl:value-of select="$data"/>
         </span>
     </xsl:template>
     <xsl:template match="tei:cell">
@@ -1179,7 +1179,7 @@
                     
                     <!-- Main term -->
                     <h3 class="term">
-                        <xsl:value-of select="($glossary-item/tei:term[not(@type)][not(@xml:lang) or @xml:lang eq 'en'])[1]/normalize-space(.) ! functx:capitalize-first(.)"/>
+                        <xsl:value-of select="($glossary-item/tei:term[not(@type = ('definition','alternative'))][not(@xml:lang) or @xml:lang eq 'en'])[1]/normalize-space(.) ! functx:capitalize-first(.)"/>
                     </h3>
                     
                     <!-- Output terms grouped and ordered by language -->
@@ -1200,24 +1200,35 @@
                                         <xsl:for-each select="$term-lang-terms">
                                             <li>
                                                 
-                                                <xsl:call-template name="class-attribute">
-                                                    <xsl:with-param name="base-classes" as="xs:string*">
-                                                        <xsl:value-of select="'term'"/>
-                                                        <xsl:if test="@type = ('reconstruction', 'semanticReconstruction','transliterationReconstruction')">
-                                                            <xsl:value-of select="'reconstructed'"/>
-                                                        </xsl:if>
-                                                    </xsl:with-param>
-                                                    <xsl:with-param name="lang" select="$term-lang"/>
-                                                </xsl:call-template>
+                                                <span>
+                                                    
+                                                    <xsl:call-template name="class-attribute">
+                                                        <xsl:with-param name="base-classes" as="xs:string*">
+                                                            <xsl:value-of select="'term'"/>
+                                                            <xsl:if test="tokenize(@type, ' ')[. = ('reconstruction', 'semanticReconstruction','transliterationReconstruction')]">
+                                                                <xsl:value-of select="'reconstructed'"/>
+                                                            </xsl:if>
+                                                        </xsl:with-param>
+                                                        <xsl:with-param name="lang" select="$term-lang"/>
+                                                    </xsl:call-template>
+                                                    
+                                                    <xsl:choose>
+                                                        <xsl:when test="normalize-space(text())">
+                                                            <xsl:value-of select="normalize-space(text())"/>
+                                                        </xsl:when>
+                                                        <xsl:otherwise>
+                                                            <xsl:value-of select="$term-empty-text"/>
+                                                        </xsl:otherwise>
+                                                    </xsl:choose>
+                                                    
+                                                </span>
                                                 
-                                                <xsl:choose>
-                                                    <xsl:when test="normalize-space(text())">
-                                                        <xsl:value-of select="normalize-space(text())"/>
-                                                    </xsl:when>
-                                                    <xsl:otherwise>
-                                                        <xsl:value-of select="$term-empty-text"/>
-                                                    </xsl:otherwise>
-                                                </xsl:choose>
+                                                <xsl:if test="$view-mode[@id = ('editor', 'annotation', 'editor-passage')] and tokenize(@type, ' ')[. = ('verified')]">
+                                                    <xsl:value-of select="' '"/>
+                                                    <span class="text-warning small">
+                                                        <xsl:value-of select="'[Verified]'"/>
+                                                    </span>
+                                                </xsl:if>
                                                 
                                             </li>
                                         </xsl:for-each>
@@ -2934,7 +2945,7 @@
     <!-- Get relevant terms from gloss -->
     <xsl:function name="m:glossary-terms-to-match" as="xs:string*">
         <xsl:param name="glossary-items" as="element(tei:gloss)*"/>
-        <xsl:sequence select="$glossary-items/tei:term[not(@type) or @type eq 'alternative'][not(@xml:lang) or @xml:lang eq 'en'][normalize-space(data())]/data()"/>
+        <xsl:sequence select="$glossary-items/tei:term[not(@type eq 'definition')][not(@xml:lang) or @xml:lang eq 'en'][normalize-space(data())]/data()"/>
     </xsl:function>
     
 </xsl:stylesheet>
