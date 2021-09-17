@@ -465,10 +465,20 @@
                                         
                                         <xsl:with-param name="title">
                                             
-                                            <xsl:call-template name="glossary-terms">
-                                                <xsl:with-param name="item" select="."/>
-                                                <xsl:with-param name="list-class" select="'no-bottom-margin'"/>
-                                            </xsl:call-template>
+                                            <div class="center-vertical align-left">
+                                                
+                                                <div class="h4">
+                                                    <xsl:value-of select="'Glossary entry: '"/>
+                                                </div>
+                                                
+                                                <div>
+                                                    <xsl:call-template name="glossary-terms">
+                                                        <xsl:with-param name="item" select="."/>
+                                                        <xsl:with-param name="list-class" select="'no-bottom-margin'"/>
+                                                    </xsl:call-template>
+                                                </div>
+                                                
+                                            </div>
                                             
                                         </xsl:with-param>
                                         
@@ -633,59 +643,64 @@
                                             <!-- Entity panel title -->
                                             <xsl:with-param name="title">
                                                 
-                                                <ul class="list-inline inline-dots no-bottom-margin">
-                                                    <xsl:choose>
-                                                        <xsl:when test="$entity">
-                                                            
-                                                            <li>
-                                                                <span class="small">
-                                                                    <xsl:value-of select="'Entity: '"/>
-                                                                </span>
-                                                                <span>
-                                                                    <xsl:attribute name="class">
-                                                                        <xsl:value-of select="common:lang-class($entity-label/@xml:lang)"/>
-                                                                    </xsl:attribute>
-                                                                    <xsl:value-of select="common:limit-str($entity-label ! fn:normalize-space(.), 150)"/>
-                                                                </span>
-                                                            </li>
-                                                            
-                                                            <li class="small">
-                                                                <xsl:value-of select="$entity/@xml:id"/>
-                                                            </li>
-                                                            
-                                                            <li>
-                                                                <xsl:call-template name="entity-type-labels">
-                                                                    <xsl:with-param name="entity" select="$entity"/>
-                                                                    <xsl:with-param name="entity-types" select="/m:response/m:entity-types/m:type"/>
-                                                                </xsl:call-template>
-                                                            </li>
-                                                            
-                                                            <xsl:for-each select="/m:response/m:entity-flags/m:flag[@id = $entity/m:flag/@type]">
+                                                <div class="center-vertical align-left">
+                                                    
+                                                    <div class="h4">
+                                                        <xsl:value-of select="'Shared entity: '"/>
+                                                    </div>
+                                                
+                                                    <ul class="list-inline inline-dots no-bottom-margin">
+                                                        <xsl:choose>
+                                                            <xsl:when test="$entity">
+                                                                
                                                                 <li>
-                                                                    <span class="label label-danger">
-                                                                        <xsl:value-of select="m:label"/>
+                                                                    <span>
+                                                                        <xsl:attribute name="class">
+                                                                            <xsl:value-of select="common:lang-class($entity-label/@xml:lang)"/>
+                                                                        </xsl:attribute>
+                                                                        <xsl:value-of select="common:limit-str($entity-label ! fn:normalize-space(.), 150)"/>
                                                                     </span>
                                                                 </li>
-                                                            </xsl:for-each>
-                                                            
-                                                            <li>
-                                                                <a target="84000-glossary" class="small">
-                                                                    <xsl:attribute name="href" select="concat($reading-room-path, '/glossary.html?entity-id=', $entity/@xml:id, '&amp;view-mode=editor')"/>
-                                                                    <xsl:value-of select="'84000 Glossary'"/>
-                                                                </a>
-                                                            </li>
-                                                            
-                                                            
-                                                        </xsl:when>
-                                                        <xsl:otherwise>
-                                                            <li>
-                                                                <span class="label label-danger">
-                                                                    <xsl:value-of select="'No shared entity'"/>
-                                                                </span>
-                                                            </li>
-                                                        </xsl:otherwise>
-                                                    </xsl:choose>
-                                                </ul>
+                                                                
+                                                                <li class="small">
+                                                                    <xsl:value-of select="$entity/@xml:id"/>
+                                                                </li>
+                                                                
+                                                                <li>
+                                                                    <xsl:call-template name="entity-type-labels">
+                                                                        <xsl:with-param name="entity" select="$entity"/>
+                                                                        <xsl:with-param name="entity-types" select="/m:response/m:entity-types/m:type"/>
+                                                                    </xsl:call-template>
+                                                                </li>
+                                                                
+                                                                <xsl:for-each select="/m:response/m:entity-flags/m:flag[@id = $entity/m:flag/@type]">
+                                                                    <li>
+                                                                        <span class="label label-danger">
+                                                                            <xsl:value-of select="m:label"/>
+                                                                        </span>
+                                                                    </li>
+                                                                </xsl:for-each>
+                                                                
+                                                                <li>
+                                                                    <a target="84000-glossary" class="small">
+                                                                        <xsl:attribute name="href" select="concat($reading-room-path, '/glossary.html?entity-id=', $entity/@xml:id, '&amp;view-mode=editor')"/>
+                                                                        <xsl:value-of select="'84000 Glossary'"/>
+                                                                    </a>
+                                                                </li>
+                                                                
+                                                                
+                                                            </xsl:when>
+                                                            <xsl:otherwise>
+                                                                <li>
+                                                                    <span class="label label-danger">
+                                                                        <xsl:value-of select="'No shared entity'"/>
+                                                                    </span>
+                                                                </li>
+                                                            </xsl:otherwise>
+                                                        </xsl:choose>
+                                                    </ul>
+                                                    
+                                                </div>
                                                 
                                             </xsl:with-param>
                                             
@@ -1174,7 +1189,7 @@
         <xsl:variable name="element-id" select="string-join(('main-term', $glossary/@id), '-')"/>
         <div class="form-group">
             <label for="{ $element-id }" class="col-sm-2 control-label">
-                <xsl:value-of select="'Main Term:'"/>
+                <xsl:value-of select="'Glossary main term:'"/>
             </label>
             <div class="col-sm-2">
                 <input type="text" class="form-control" value="Translation" disabled="disabled"/>
@@ -1214,7 +1229,7 @@
                     <xsl:with-param name="id" select="($glossary/@id, 'new-glossary')[1]"/>
                     <xsl:with-param name="index" select="$index"/>
                     <xsl:with-param name="input-name" select="'term'"/>
-                    <xsl:with-param name="label" select="'Equivalent:'"/>
+                    <xsl:with-param name="label" select="'Equivalent(s):'"/>
                     <xsl:with-param name="type" select="($source-terms[$index]/@type, '')[1]"/>
                 </xsl:call-template>
                 

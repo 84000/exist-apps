@@ -877,9 +877,13 @@
                     <!-- When there is an entity  -->
                     <xsl:when test="$entity">
                         
-                        <div class="alert alert-info">
+                        <div class="alert alert-danger">
                             <p class="small text-center">
-                                <xsl:value-of select="'NOTE: Updates to this shared entity must apply for all elements matched to this entity!'"/>
+                                <xsl:value-of select="'NOTE: Updates to this '"/>
+                                <strong>
+                                    <xsl:value-of select="'shared entity'"/>
+                                </strong>
+                                <xsl:value-of select="' must apply for all matching elements listed below!'"/>
                             </p>
                         </div>
                         
@@ -928,7 +932,7 @@
                             <xsl:with-param name="id" select="parent::m:entity/@xml:id"/>
                             <xsl:with-param name="index" select="position()"/>
                             <xsl:with-param name="input-name" select="'entity-label'"/>
-                            <xsl:with-param name="label" select="'Label:'"/>
+                            <xsl:with-param name="label" select="'Entity label(s):'"/>
                             <xsl:with-param name="en-label" select="'English / mixed'"/>
                         </xsl:call-template>
                     </xsl:for-each>
@@ -1057,7 +1061,7 @@
             <div class="form-group">
                 
                 <label class="col-sm-2 control-label">
-                    <xsl:value-of select="'Flags:'"/>
+                    <xsl:value-of select="'Flag(s):'"/>
                 </label>
                 <div class="col-sm-10">
                     <xsl:for-each select="$entity-flags">
