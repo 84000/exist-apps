@@ -15,7 +15,7 @@
                     </div>
                     <div class="panel-body">
                         <div id="glossary-items" class="ajax-target">
-                            <xsl:for-each select="m:glossary/m:item">
+                            <xsl:for-each select="m:glossary/m:entry">
                                 <div class="glossary-item">
                                     <div class="title">
                                         <xsl:value-of select="'in '"/>

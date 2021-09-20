@@ -184,7 +184,7 @@
                     <xsl:with-param name="lang" select="@xml:lang"/>
                     <xsl:with-param name="base-classes" as="xs:string*">
                         <xsl:value-of select="'title'"/>
-                        <xsl:if test="tokenize(@rend, ' ')[. = ('reconstruction', 'semanticReconstruction','transliterationReconstruction')]">
+                        <xsl:if test="@rend = ('reconstruction', 'semanticReconstruction','transliterationReconstruction')">
                             <xsl:value-of select="'reconstructed'"/>
                         </xsl:if>
                     </xsl:with-param>
@@ -1205,7 +1205,7 @@
                                                     <xsl:call-template name="class-attribute">
                                                         <xsl:with-param name="base-classes" as="xs:string*">
                                                             <xsl:value-of select="'term'"/>
-                                                            <xsl:if test="tokenize(@type, ' ')[. = ('reconstruction', 'semanticReconstruction','transliterationReconstruction')]">
+                                                            <xsl:if test="@type = ('reconstruction', 'semanticReconstruction','transliterationReconstruction')">
                                                                 <xsl:value-of select="'reconstructed'"/>
                                                             </xsl:if>
                                                         </xsl:with-param>
@@ -1223,7 +1223,7 @@
                                                     
                                                 </span>
                                                 
-                                                <xsl:if test="$view-mode[@id = ('editor', 'annotation', 'editor-passage')] and tokenize(@type, ' ')[. = ('verified')]">
+                                                <xsl:if test="$view-mode[@id = ('editor', 'annotation', 'editor-passage')] and @status eq 'verified'">
                                                     <xsl:value-of select="' '"/>
                                                     <span class="text-warning small">
                                                         <xsl:value-of select="'[Verified]'"/>
@@ -2677,7 +2677,7 @@
         <xsl:variable name="match-complete-data" select="if($text-node[parent::tei:title | parent::tei:name]) then true() else false()" as="xs:boolean"/>
         
         <!-- Exclude itself if this is a glossary definition -->
-        <xsl:variable name="exclude-gloss-ids" select="if($text-node[ancestor::tei:gloss]) then $text-node/ancestor::tei:gloss[1]/@xml:id else if($text-node[ancestor::m:item[parent::m:glossary]]) then $text-node/ancestor::m:item[1]/@id else ()"/>
+        <xsl:variable name="exclude-gloss-ids" select="if($text-node[ancestor::tei:gloss]) then $text-node/ancestor::tei:gloss[1]/@xml:id else if($text-node[ancestor::m:entry[parent::m:glossary]]) then $text-node/ancestor::m:entry[1]/@id else ()"/>
         
         <!-- Narrow down the glossary items - we don't want to scan them all -->
         <xsl:variable name="match-glossary-items" as="element(tei:gloss)*">
@@ -2894,8 +2894,8 @@
             </xsl:when>
             
             <!-- Get the xml:id from the container -->
-            <xsl:when test="$node[ancestor::m:item[parent::m:glossary][@id]]">
-                <xsl:value-of select="$node/ancestor::m:item[@id][1]/@id"/>
+            <xsl:when test="$node[ancestor::m:entry[parent::m:glossary][@id]]">
+                <xsl:value-of select="$node/ancestor::m:entry[@id][1]/@id"/>
             </xsl:when>
             
             <!-- Look for a nearest milestone -->

@@ -83,7 +83,7 @@ let $entity-list :=
     for $entity in $entity-list/m:entity
     (: Get relevant terms :)
     let $matching-terms :=
-        for $term in $entity/m:instance/m:item/m:term
+        for $term in $entity/m:instance/m:entry/m:term
             [@xml:lang eq $term-lang]
             [
                 matches(
@@ -100,7 +100,7 @@ let $entity-list :=
         if(string-length($search) gt 1) then min($matching-terms ! count(tokenize(data(), '\s+'))) else 1 ascending,
         (:min($matching-terms ! string-length(.)) ascending,:)
         lower-case($matching-terms[1]),
-        $entity/m:instance[1]/m:item/m:sort-term
+        $entity/m:instance[1]/m:entry/m:sort-term
     
     return
         $entity

@@ -79,6 +79,21 @@ let $update-glossary :=
         )
     else ()
 
+(:let $schedule := 
+    if(scheduler:get-scheduled-jobs()//scheduler:job[@name eq 'cache-glossary-locations'][scheduler:trigger/state/text() eq 'COMPLETE']) then
+        scheduler:delete-scheduled-job('cache-glossary-locations')
+    else
+        scheduler:schedule-xquery-periodic-job(
+            '/db/apps/84000-operations/scripts/cache-glossary-locations.xq',
+            10000,
+            'cache-glossary-locations',
+            <parameters>
+                <param name="param-name1" value="param-value1"/>
+            </parameters>,
+            10000,
+            0
+        ):)
+
 (: Force a filter value :)
 let $filter := 
     if(not($filter gt '')) then
@@ -98,8 +113,8 @@ let $glossary-filtered := glossary:filter($tei, $resource-type, $filter, $search
 
 (: Override first-record to show the updated record :)
 let $selected-glossary-index := 
-    if($glossary-filtered/m:item[@id eq $glossary-id]) then
-        functx:index-of-node($glossary-filtered/m:item, $glossary-filtered/m:item[@id eq $glossary-id])
+    if($glossary-filtered/m:entry[@id eq $glossary-id]) then
+        functx:index-of-node($glossary-filtered/m:entry, $glossary-filtered/m:entry[@id eq $glossary-id])
     else 0
 
 let $first-record := 
@@ -154,16 +169,16 @@ let $xml-response :=
             
                 $glossary-filtered/@*,
                 
-                attribute count-records { count($glossary-filtered/m:item) },
+                attribute count-records { count($glossary-filtered/m:entry) },
                 attribute first-record { $first-record },
                 attribute max-records { $max-records },
                 attribute tei-version-cached { store:stored-version-str($resource-id, 'cache') },
                 
-                let $glossary-filtered-subsequence := subsequence($glossary-filtered/m:item, $first-record, $max-records)
+                let $glossary-filtered-subsequence := subsequence($glossary-filtered/m:entry, $first-record, $max-records)
                 
                 (: Check if we have expressions - we may have them from an expressions filter :)
                 let $glossary-item-expressions := 
-                    if($glossary-filtered/m:item[not(m:expressions)] and $filter = ('check-expressions', 'check-all', 'no-cache', 'new-expressions', 'no-expressions')) then
+                    if($glossary-filtered/m:entry[not(m:expressions)] and $filter = ('check-expressions', 'check-all', 'no-cache', 'new-expressions', 'no-expressions')) then
                         glossary:expressions($tei, $resource-id, $resource-type, $glossary-filtered-subsequence/@id)
                     else ()
                 
@@ -211,6 +226,7 @@ let $xml-response :=
             
             (: Caches :)
             tei-content:cache($tei, false())/m:*,
+            scheduler:get-scheduled-jobs()//scheduler:job[@name eq 'cache-glossary-locations'],
             
             (: Entities config :)
             $entities:predicates,

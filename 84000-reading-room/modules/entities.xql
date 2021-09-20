@@ -169,12 +169,12 @@ declare function entities:entity($entity as element(m:entity)?, $validate as xs:
                 
                     let $terms-sorted := 
                         for $term in 
-                            if($valid-instances/m:item/m:term[@xml:lang eq 'bo']) then
-                                $valid-instances/m:item/m:term[@xml:lang eq 'bo']
-                            else if($valid-instances/m:item/m:term[@xml:lang eq 'Bo-Ltn']) then
-                                $valid-instances/m:item/m:term[@xml:lang eq 'bo']
+                            if($valid-instances/m:entry/m:term[@xml:lang eq 'bo']) then
+                                $valid-instances/m:entry/m:term[@xml:lang eq 'bo']
+                            else if($valid-instances/m:entry/m:term[@xml:lang eq 'Bo-Ltn']) then
+                                $valid-instances/m:entry/m:term[@xml:lang eq 'bo']
                             else
-                                $valid-instances/m:item/m:term[@xml:lang eq 'Sa-Ltn']
+                                $valid-instances/m:entry/m:term[@xml:lang eq 'Sa-Ltn']
                                 
                         order by string-length($term) descending
                         return
@@ -348,7 +348,7 @@ declare function entities:similar($entity as element(m:entity)?, $search-terms a
     )/@xml:id/string()
     
     for $similar-entity in 
-        if($entity[m:type]) then
+        if($entity[m:type/@type = $entities:types//m:type[@glossary-type]/@id]) then
             $entities:entities//m:entity
                 [m:instance/@id = $matches]
                 [m:type/@type = $entity/m:type/@type]

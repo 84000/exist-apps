@@ -215,6 +215,7 @@ declare function local:last-updated($doc) {
 };
 
 declare function local:glossary-bo($doc, $do-all as xs:boolean) {
+
     (: Convert bo-ltn to bo term for glossary items :)
     
     let $glosses := 
@@ -230,6 +231,7 @@ declare function local:glossary-bo($doc, $do-all as xs:boolean) {
         
         (: Insert new :)
         for $bo-ltn-term in $gloss/tei:term[@xml:lang = 'Bo-Ltn'][normalize-space(text())]
+        
             let $bo-term := 
                 element { QName('http://www.tei-c.org/ns/1.0', 'term') } {
                     attribute xml:lang { 'bo' },
@@ -237,7 +239,7 @@ declare function local:glossary-bo($doc, $do-all as xs:boolean) {
                 }
             
         return
-            update insert $bo-term following $bo-ltn-term
+            update insert (text{ common:ws(7) }, $bo-term) following $bo-ltn-term
    )
 };
 

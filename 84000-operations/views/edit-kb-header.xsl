@@ -380,7 +380,7 @@
                                     <hr class="sml-margin"/>
                                     
                                     <!-- List related glossary items -->
-                                    <xsl:for-each-group select="$entity/m:instance/m:item" group-by="m:text/@id">
+                                    <xsl:for-each-group select="$entity/m:instance/m:entry" group-by="m:text/@id">
                                         
                                         <xsl:sort select="m:text[1]/@id"/>
                                         
@@ -524,7 +524,7 @@
                                                         <hr class="sml-margin"/>
                                                         
                                                         <xsl:call-template name="entity-option-content">
-                                                            <xsl:with-param name="entity" select="$entity"/>
+                                                            <xsl:with-param name="entity" select="m:entity"/>
                                                             <xsl:with-param name="active-kb-id" select="''"/>
                                                             <xsl:with-param name="active-glossary-id" select="$tei-id"/>
                                                         </xsl:call-template>

@@ -116,7 +116,7 @@
                     <div class="section-title row">
                         <div class="col-sm-offset-2 col-sm-8">
                             <div class="h1 title main-title">
-                                <xsl:value-of select="'84000 Glossary'"/>
+                                <xsl:value-of select="'84000 Glossary of Terms'"/>
                             </div>
                             <hr/>
                             <p>
@@ -460,8 +460,8 @@
                                                    </div>
                                                    
                                                    <!-- Glossary entries / Group by translation -->
-                                                   <xsl:variable name="count-grouped-items" select="count(distinct-values($show-entity/m:instance/m:item/m:term[@xml:lang eq 'en'][1]/normalize-space(.)))"/>
-                                                   <xsl:for-each-group select="$show-entity/m:instance/m:item" group-by="m:term[@xml:lang eq 'en'][1]/normalize-space(.)">
+                                                   <xsl:variable name="count-grouped-items" select="count(distinct-values($show-entity/m:instance/m:entry/m:term[@xml:lang eq 'en'][1]/normalize-space(.)))"/>
+                                                   <xsl:for-each-group select="$show-entity/m:instance/m:entry" group-by="m:term[@xml:lang eq 'en'][1]/normalize-space(.)">
                                                        
                                                        <xsl:sort select="m:sort-term"/>
                                                        <xsl:variable name="item-group-index" select="position()"/>
@@ -518,7 +518,7 @@
                                                    
                                                    <!-- Related entities -->
                                                    <xsl:variable name="instance-pages" select="$show-entity/m:instance/m:page | $show-entity/m:relation[not(@predicate eq 'isUnrelated')]/m:entity/m:instance/m:page"/>
-                                                   <xsl:variable name="instance-items" select="$show-entity/m:relation[not(@predicate eq 'isUnrelated')]/m:entity[m:instance/m:item]"/>
+                                                   <xsl:variable name="instance-items" select="$show-entity/m:relation[not(@predicate eq 'isUnrelated')]/m:entity[m:instance/m:entry]"/>
                                                    <xsl:if test="$instance-pages | $instance-items">
                                                        
                                                        <xsl:if test="$instance-pages">
@@ -639,7 +639,7 @@
                                                             </xsl:if>
                                                             
                                                             <ul class="list-unstyled">
-                                                                <xsl:for-each-group select="$entity/m:instance/m:item/m:term[@xml:lang eq $selected-term-lang/@id]" group-by="common:standardized-sa(text())">
+                                                                <xsl:for-each-group select="$entity/m:instance/m:entry/m:term[@xml:lang eq $selected-term-lang/@id]" group-by="common:standardized-sa(text())">
                                                                     <xsl:variable name="match-text" select="string-join(tokenize(data(), '\s+') ! common:standardized-sa(.) ! common:alphanumeric(.), ' ')"/>
                                                                     <xsl:variable name="match-regex" select="concat(if(string-length($search-text) ne 1) then '(?:^|\s+)' else '^', string-join(tokenize($search-text, '\s+') ! common:standardized-sa(.) ! common:alphanumeric(.), '.*\s+'))"/>
                                                                     <li class="small">
@@ -720,7 +720,7 @@
         
     </xsl:template>
     
-    <xsl:template match="m:item">
+    <xsl:template match="m:entry">
         
         <div class="result">
             
@@ -787,7 +787,7 @@
                                             <xsl:call-template name="class-attribute">
                                                 <xsl:with-param name="base-classes" as="xs:string*">
                                                     <xsl:value-of select="'term'"/>
-                                                    <xsl:if test="tokenize(@type, ' ')[. = ('reconstruction', 'semanticReconstruction','transliterationReconstruction')]">
+                                                    <xsl:if test="@type = ('reconstruction', 'semanticReconstruction','transliterationReconstruction')">
                                                         <xsl:value-of select="'reconstructed'"/>
                                                     </xsl:if>
                                                 </xsl:with-param>
@@ -805,7 +805,7 @@
                                             
                                         </span>
                                         
-                                        <xsl:if test="$view-mode[@id eq 'editor'] and tokenize(@type, ' ')[. = ('verified')]">
+                                        <xsl:if test="$view-mode[@id eq 'editor'] and @status eq 'verified'">
                                             <xsl:value-of select="' '"/>
                                             <span class="text-warning small">
                                                 <xsl:value-of select="'[Verified]'"/>

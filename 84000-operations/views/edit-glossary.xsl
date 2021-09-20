@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:output="http://www.w3.org/2010/xslt-xquery-serialization" xmlns:ops="http://operations.84000.co" xmlns:common="http://read.84000.co/common" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:output="http://www.w3.org/2010/xslt-xquery-serialization" xmlns:scheduler="http://exist-db.org/xquery/scheduler" xmlns:ops="http://operations.84000.co" xmlns:common="http://read.84000.co/common" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" version="3.0" exclude-result-prefixes="#all">
     
     <xsl:import href="../../84000-reading-room/xslt/tei-to-xhtml.xsl"/>
     <xsl:import href="common.xsl"/>
@@ -20,8 +20,6 @@
     <xsl:variable name="glossary-cache" select="/m:response/m:glossary-cache[1]"/>
     <xsl:variable name="cache-slow" select="if($glossary-cache/@seconds-to-build ! xs:decimal(.) gt 120) then true() else false()" as="xs:boolean"/>
     <xsl:variable name="cache-old" select="if(compare($text/@tei-version, $glossary/@tei-version-cached) ne 0) then true() else false()" as="xs:boolean"/>
-    
-    <xsl:variable name="term-langs" select="('', 'en', 'Bo-Ltn', 'bo', 'Sa-Ltn', 'zh')" as="xs:string*"/>
     
     <xsl:template match="/m:response">
         
@@ -68,7 +66,7 @@
                         </div>
                         
                         <!-- Cache locations button - uncached -->
-                        <xsl:if test="$request-filter = ('no-cache') and not($request-search gt '') and $glossary[m:item]">
+                        <xsl:if test="$request-filter = ('no-cache') and not($request-search gt '') and $glossary[m:entry]">
                             <div>
                                 <xsl:call-template name="form">
                                     <xsl:with-param name="form-action" select="'cache-locations-uncached'"/>
@@ -99,7 +97,7 @@
                     
                     <hr class="sml-margin"/>
                     
-                    <!-- Version row -->
+                    <!-- Version / actions -->
                     <ul class="list-inline inline-dots no-bottom-margin">
                         
                         <xsl:if test="$text[@tei-version]">
@@ -161,24 +159,6 @@
                         </xsl:choose>
                         
                         <li>
-                            <a target="_self" class="underline" data-loading="Re-caching locations...">
-                                <xsl:attribute name="href" select="concat('edit-glossary.html?resource-id=', $request-resource-id, '&amp;resource-type=', $request-resource-type, '&amp;form-action=cache-locations-all&amp;filter=check-expressions')"/>
-                                <span class="small">
-                                    <xsl:value-of select="'Re-cache locations of all items'"/>
-                                </span>
-                            </a>
-                        </li>
-                        
-                        <li>
-                            <a target="_self" class="underline" data-loading="Auto-assigning entities...">
-                                <xsl:attribute name="href" select="concat('edit-glossary.html?resource-id=', $request-resource-id, '&amp;resource-type=', $request-resource-type, '&amp;form-action=merge-all-entities&amp;filter=requires-attention')"/>
-                                <span class="small">
-                                    <xsl:value-of select="'Auto-assign entities'"/>
-                                </span>
-                            </a>
-                        </li>
-                        
-                        <li>
                             <a target="_self" class="underline">
                                 <xsl:choose>
                                     <xsl:when test="$request-resource-type eq 'knowledgebase'">
@@ -193,6 +173,35 @@
                                 </span>
                             </a>
                         </li>
+                        
+                        <xsl:choose>
+                            <xsl:when test="/m:response[not(scheduler:job)]">
+                                <li>
+                                    <a target="_self" class="underline" data-loading="Re-caching locations...">
+                                        <xsl:attribute name="href" select="concat('edit-glossary.html?resource-id=', $request-resource-id, '&amp;resource-type=', $request-resource-type, '&amp;form-action=cache-locations-all&amp;filter=check-expressions')"/>
+                                        <span class="small">
+                                            <xsl:value-of select="'Re-cache locations of all items'"/>
+                                        </span>
+                                    </a>
+                                </li>
+                                
+                                <li>
+                                    <a target="_self" class="underline" data-loading="Auto-assigning entities...">
+                                        <xsl:attribute name="href" select="concat('edit-glossary.html?resource-id=', $request-resource-id, '&amp;resource-type=', $request-resource-type, '&amp;form-action=merge-all-entities&amp;filter=requires-attention')"/>
+                                        <span class="small">
+                                            <xsl:value-of select="'Auto-assign entities'"/>
+                                        </span>
+                                    </a>
+                                </li>
+                            </xsl:when>
+                            <xsl:otherwise>
+                                <li>
+                                    <span class="small">
+                                        <xsl:value-of select="'Job running, links temporarily disabled...'"/>
+                                    </span>
+                                </li>
+                            </xsl:otherwise>
+                        </xsl:choose>
                         
                     </ul>
                     
@@ -275,7 +284,7 @@
                                                 
                                             </div>
                                             
-                                            <xsl:variable name="active-item" select="$glossary/m:item[@active-item eq 'true'][1]"/>
+                                            <xsl:variable name="active-item" select="$glossary/m:entry[@active-item eq 'true'][1]"/>
                                             <xsl:choose>
                                                 
                                                 <!-- Filter by glossary-id -->
@@ -369,11 +378,11 @@
                     </xsl:if>
                     
                     <!-- Loop through glossary items -->
-                    <xsl:if test="$glossary[m:item]">
+                    <xsl:if test="$glossary[m:entry]">
                         
                         <hr class="sml-margin"/>
                         
-                        <xsl:for-each select="$glossary/m:item">
+                        <xsl:for-each select="$glossary/m:entry">
                             
                             <xsl:variable name="loop-glossary" select="."/>
                             <xsl:variable name="loop-glossary-id" select="($loop-glossary/@id, 'new-glossary')[1]"/>
@@ -468,12 +477,12 @@
                                             <div class="center-vertical align-left">
                                                 
                                                 <div class="h4">
-                                                    <xsl:value-of select="'Glossary entry: '"/>
+                                                    <xsl:value-of select="'Glossary entry:'"/>
                                                 </div>
                                                 
                                                 <div>
                                                     <xsl:call-template name="glossary-terms">
-                                                        <xsl:with-param name="item" select="."/>
+                                                        <xsl:with-param name="entry" select="."/>
                                                         <xsl:with-param name="list-class" select="'no-bottom-margin'"/>
                                                     </xsl:call-template>
                                                 </div>
@@ -501,6 +510,7 @@
                                             </xsl:call-template>
                                             
                                         </xsl:with-param>
+                                    
                                     </xsl:call-template>
                                     
                                     <!-- Panel: Show locations of this glossary in the text-->
@@ -646,7 +656,7 @@
                                                 <div class="center-vertical align-left">
                                                     
                                                     <div class="h4">
-                                                        <xsl:value-of select="'Shared entity: '"/>
+                                                        <xsl:value-of select="'Shared entity:'"/>
                                                     </div>
                                                 
                                                     <ul class="list-inline inline-dots no-bottom-margin">
@@ -755,7 +765,7 @@
                                                     <hr class="sml-margin"/>
                                                     
                                                     <!-- List related glossary items -->
-                                                    <xsl:for-each-group select="$entity/m:instance/m:item" group-by="m:text/@id">
+                                                    <xsl:for-each-group select="$entity/m:instance/m:entry" group-by="m:text/@id">
                                                         
                                                         <xsl:sort select="if(current-group()[@id eq $loop-glossary/@id]) then 1 else 2"/>
                                                         <xsl:sort select="m:text[1]/@id"/>
@@ -822,7 +832,7 @@
                                                     <xsl:when test="$entity/m:relation">
                                                         
                                                         <xsl:call-template name="glossary-terms">
-                                                            <xsl:with-param name="item" select="$loop-glossary"/>
+                                                            <xsl:with-param name="entry" select="$loop-glossary"/>
                                                         </xsl:call-template>
                                                         
                                                         <div class="list-group accordion" role="tablist" aria-multiselectable="false">
@@ -1178,7 +1188,7 @@
     
     <xsl:template name="glossary-form">
         
-        <xsl:param name="glossary" as="element(m:item)?"/>
+        <xsl:param name="glossary" as="element(m:entry)?"/>
         
         <xsl:variable name="glossary-instance" select="$glossary/m:entity/m:instance[@type eq 'glossary-item'][@id eq $glossary/@id]"/>
         
@@ -1200,7 +1210,7 @@
         </div>
         
         <!-- Equivalent terms -->
-        <xsl:variable name="source-terms" select="$glossary/m:term[not(@type = ('definition','alternative'))][not(@xml:lang eq 'en')]"/>
+        <xsl:variable name="source-terms" select="$glossary/m:term[not(@type = ('definition','alternative'))][not(@xml:lang = ('en', 'bo'))]"/>
         <xsl:variable name="source-terms-count" select="count($source-terms)"/>
         <div class="add-nodes-container">
             
@@ -1223,14 +1233,15 @@
                     </xsl:choose>
                 </xsl:variable>
                 
-                <xsl:call-template name="text-input-with-lang">
-                    <xsl:with-param name="text" select="$source-terms[$index]/text()"/>
-                    <xsl:with-param name="lang" select="$element-lang"/>
+                <xsl:call-template name="term-input">
                     <xsl:with-param name="id" select="($glossary/@id, 'new-glossary')[1]"/>
                     <xsl:with-param name="index" select="$index"/>
                     <xsl:with-param name="input-name" select="'term'"/>
                     <xsl:with-param name="label" select="'Equivalent(s):'"/>
-                    <xsl:with-param name="type" select="($source-terms[$index]/@type, '')[1]"/>
+                    <xsl:with-param name="term" select="$source-terms[$index]/text()"/>
+                    <xsl:with-param name="lang" select="if(tokenize($source-terms[$index]/@type, '\s+')[. = ('semanticReconstruction')]) then concat($element-lang, '-sr') else if(tokenize($source-terms[$index]/@type, '\s+')[. = ('transliterationReconstruction')]) then concat($element-lang, '-tr') else $element-lang"/>
+                    <xsl:with-param name="status" select="($source-terms[$index]/@status, '')[1]"/>
+                    <xsl:with-param name="language-options" select="('en', 'Bo-Ltn', 'Sa-Ltn', 'Sa-Ltn-sr', 'Sa-Ltn-tr', 'zh')"/>
                 </xsl:call-template>
                 
             </xsl:for-each>
@@ -1238,17 +1249,19 @@
             <!-- Add alternatives as Additional English terms -->
             <xsl:for-each select="$glossary/m:alternative">
                 
-                <xsl:call-template name="text-input-with-lang">
-                    <xsl:with-param name="text" select="text()"/>
-                    <xsl:with-param name="lang" select="'en'"/>
-                    <xsl:with-param name="id" select="parent::m:item/@id"/>
+                <xsl:call-template name="term-input">
+                    <xsl:with-param name="id" select="parent::m:entry/@id"/>
                     <xsl:with-param name="index" select="$source-terms-count + position()"/>
                     <xsl:with-param name="input-name" select="'term'"/>
-                    <xsl:with-param name="label" select="'Equivalent:'"/>
+                    <xsl:with-param name="label" select="''"/>
+                    <xsl:with-param name="term" select="text()"/>
+                    <xsl:with-param name="lang" select="'en'"/>
+                    <xsl:with-param name="language-options" select="('en', 'Bo-Ltn', 'Sa-Ltn', 'Sa-Ltn-sr', 'Sa-Ltn-tr', 'zh')"/>
                 </xsl:call-template>
                 
             </xsl:for-each>
             
+            <!-- Add more terms -->
             <div class="form-group">
                 <div class="col-sm-offset-2 col-sm-2">
                     <a href="#add-nodes" class="add-nodes">
@@ -1264,6 +1277,7 @@
                     </p>
                 </div>
             </div>
+        
         </div>
         
         <!-- Type term|person|place|text -->
@@ -1439,7 +1453,7 @@
     
     <xsl:template name="entity-search">
         
-        <xsl:param name="loop-glossary" as="element(m:item)"/>
+        <xsl:param name="loop-glossary" as="element(m:entry)"/>
         <xsl:param name="match-mode" as="xs:string" required="yes"/>
         
         <!-- Form: search for similar entities -->
@@ -1470,7 +1484,7 @@
             <xsl:when test="$loop-glossary/m:similar-entities[m:entity]">
                 
                 <xsl:call-template name="glossary-terms">
-                    <xsl:with-param name="item" select="$loop-glossary"/>
+                    <xsl:with-param name="entry" select="$loop-glossary"/>
                 </xsl:call-template>
                 
                 <div class="list-group accordion" role="tablist" aria-multiselectable="false">
@@ -1506,7 +1520,7 @@
     <xsl:template name="entity-option">
         
         <xsl:param name="entity" as="element(m:entity)" required="yes"/>
-        <xsl:param name="loop-glossary" as="element(m:item)" required="yes"/>
+        <xsl:param name="loop-glossary" as="element(m:entry)" required="yes"/>
         <xsl:param name="match-mode" as="xs:string" required="yes"/>
         <xsl:param name="entity-search-form-id" as="xs:string" required="yes"/>
         
@@ -1617,7 +1631,7 @@
     <xsl:template match="m:location">
         
         <xsl:variable name="location-id" select="@id" as="xs:string"/>
-        <xsl:variable name="glossary-item" select="parent::m:expressions/parent::m:item"/>
+        <xsl:variable name="glossary-item" select="parent::m:expressions/parent::m:entry"/>
         <xsl:variable name="cache-location" select="$glossary-cache/m:gloss[@id eq $glossary-item/@id]/m:location[@id = $location-id]"/>
         
         <div class="item tei-parser editor-mode rw-full-width small pad">
@@ -1689,7 +1703,7 @@
     <xsl:template match="xhtml:a">
         
         <xsl:variable name="link" select="."/>
-        <xsl:variable name="glossary-item" select="ancestor::m:item[@id][1]"/>
+        <xsl:variable name="glossary-item" select="ancestor::m:entry[@id][1]"/>
         
         <xsl:element name="a">
             

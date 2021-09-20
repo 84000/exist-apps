@@ -567,8 +567,7 @@ declare function update-tei:update-glossary($tei as element(tei:TEI), $glossary-
                         else if(matches($term-lang-type, '\-tr$')) then 
                             'transliterationReconstruction' 
                         else ()
-                    let $term-verified := request:get-parameter(concat('term-verified-', $term-index), '')
-                    let $term-type := string-join(($term-type, $term-verified[. gt '']), ' ')
+                    let $term-status := request:get-parameter(concat('term-status-', $term-index), '')
                     let $term-lang := common:valid-lang(replace($term-lang-type, '\-(sr|tr)$', ''))
                     where $term-text gt ''
                     return (
@@ -579,11 +578,9 @@ declare function update-tei:update-glossary($tei as element(tei:TEI), $glossary-
                             if($term-lang eq 'en') then
                                 attribute type {'alternative'}
                             else ( 
-                                if($term-type gt '') then
-                                    attribute type { $term-type }
-                                else ()
-                                ,
-                                attribute xml:lang { $term-lang }
+                                attribute xml:lang { $term-lang },
+                                if($term-type gt '') then attribute type { $term-type } else (),
+                                if($term-status gt '') then attribute status  { $term-status } else ()
                             )
                             ,
                             

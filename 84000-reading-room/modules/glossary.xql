@@ -280,7 +280,7 @@ declare function glossary:matching-gloss($term as xs:string, $lang as xs:string)
             
 };
 
-declare function glossary:items($glossary-ids as xs:string*, $include-context as xs:boolean) as element(m:item)* {
+declare function glossary:items($glossary-ids as xs:string*, $include-context as xs:boolean) as element(m:entry)* {
     
     for $gloss in $glossary:tei//tei:back//id($glossary-ids)
     where $gloss/self::tei:gloss
@@ -289,10 +289,10 @@ declare function glossary:items($glossary-ids as xs:string*, $include-context as
     
 };
 
-declare function local:glossary-item($gloss as element(tei:gloss), $include-context as xs:boolean) as element(m:item) {
+declare function local:glossary-item($gloss as element(tei:gloss), $include-context as xs:boolean) as element(m:entry) {
     
     (: This needs updating - use m:entry and optimise :)
-    element { QName('http://read.84000.co/ns/1.0', 'item') } {
+    element { QName('http://read.84000.co/ns/1.0', 'entry') } {
         
         attribute id { $gloss/@xml:id },
         $gloss/@mode,
@@ -310,12 +310,14 @@ declare function local:glossary-item($gloss as element(tei:gloss), $include-cont
                 element { QName('http://read.84000.co/ns/1.0', 'term') } {
                     attribute xml:lang { 'en' },
                     $term/@type,
+                    $term/@status,
                     functx:capitalize-first(normalize-space($term/text()))
                 }
             else if($term[@xml:lang][not(@xml:lang eq 'en')][not(@type = ('definition','alternative'))]) then
                 element { QName('http://read.84000.co/ns/1.0', 'term') } {
                     $term/@xml:lang,
                     $term/@type,
+                    $term/@status,
                     if (not($term[text()])) then
                         common:local-text(concat('glossary.term-empty-', lower-case($term/@xml:lang)), 'en')
                     else if ($term/@xml:lang eq 'Bo-Ltn') then 
@@ -628,7 +630,7 @@ declare function glossary:filter($tei as element(tei:TEI), $resource-type as xs:
                 let $search-score := if(normalize-space($search) gt '') then ft:score($gloss) else 1
                 
                 (: It seems to be significantly quicker to re-create the glossary-item than look it up :)
-                let $glossary-item := local:glossary-item($gloss, false()) (: $glossary/m:item[@xml:id = $gloss/@xml:id/string()] :)
+                let $glossary-item := local:glossary-item($gloss, false()) (: $glossary/m:entry[@xml:id = $gloss/@xml:id/string()] :)
                 
                 (: Expression locations :)
                 let $expression-locations := 

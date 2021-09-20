@@ -436,7 +436,7 @@
                     <ul class="list-inline inline-dots">
                         <xsl:for-each select="$term-lang-terms">
                             <li>
-                                <xsl:attribute name="class" select="string-join((common:lang-class($term-lang), if(tokenize(@type, ' ')[. = ('reconstruction', 'semanticReconstruction','transliterationReconstruction')]) then 'reconstructed' else ()), ' ')"/>
+                                <xsl:attribute name="class" select="string-join((common:lang-class($term-lang), if(@type = ('reconstruction', 'semanticReconstruction','transliterationReconstruction')) then 'reconstructed' else ()), ' ')"/>
                                 <xsl:apply-templates select="node()"/>
                             </li>
                         </xsl:for-each>

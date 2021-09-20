@@ -149,7 +149,7 @@
                             </xsl:if>
                             
                             <!-- Related content -->
-                            <xsl:variable name="related-entities" select="$article-entity[m:instance/m:item] | $article-entity/m:relation/m:entity[m:instance/m:page | m:instance/m:item]"/>
+                            <xsl:variable name="related-entities" select="$article-entity[m:instance/m:entry] | $article-entity/m:relation/m:entity[m:instance/m:page | m:instance/m:entry]"/>
                             <xsl:if test="$related-entities">
                                 
                                 <h3>
@@ -186,7 +186,7 @@
                                         
                                     </xsl:if>
                                     
-                                    <xsl:if test="$related-entities[m:instance/m:item]">
+                                    <xsl:if test="$related-entities[m:instance/m:entry]">
                                             
                                         <div class="list-group-item">
                                             <p class="list-group-item-text">
@@ -194,7 +194,7 @@
                                             </p>
                                         </div>
                                         
-                                        <xsl:for-each select="$related-entities[m:instance/m:item]">
+                                        <xsl:for-each select="$related-entities[m:instance/m:entry]">
                                             <a class="list-group-item">
                                                 
                                                 <xsl:attribute name="href" select="concat('/glossary.html?entity-id=', @xml:id)"/>
@@ -218,7 +218,7 @@
                                                             <xsl:value-of select="normalize-space($primary-transliterated/text())"/>
                                                         </span>
                                                     </li>
-                                                    <xsl:for-each-group select="m:instance/m:item" group-by="m:term[@xml:lang eq 'en'][1]/normalize-space(.)">
+                                                    <xsl:for-each-group select="m:instance/m:entry" group-by="m:term[@xml:lang eq 'en'][1]/normalize-space(.)">
                                                         <li>
                                                             <xsl:value-of select="m:term[@xml:lang eq 'en'][1] ! functx:capitalize-first(.)"/>
                                                         </li>
