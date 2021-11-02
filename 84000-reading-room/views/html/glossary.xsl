@@ -120,7 +120,7 @@
                             </div>
                             <hr/>
                             <p>
-                                <xsl:value-of select="'Our combined glossary of terms, people, places, and texts.'"/>
+                                <xsl:value-of select="'Our trilingual glossary combining entries from all of our publications into one useful resource, giving translations and definitions of thousands of terms, people, places, and texts from the Buddhist canon.'"/>
                             </p>
                         </div>
                     </div>
@@ -776,47 +776,49 @@
                 </xsl:variable>
                 
                 <xsl:if test="$term-lang-terms or $term-empty-text gt ''">
-                    <ul class="list-inline inline-dots">
-                        <xsl:choose>
-                            <xsl:when test="$term-lang-terms">
-                                <xsl:for-each select="$term-lang-terms">
-                                    <li>
-                                        
-                                        <span>
+                    <div>
+                        <ul class="list-inline inline-dots">
+                            <xsl:choose>
+                                <xsl:when test="$term-lang-terms">
+                                    <xsl:for-each select="$term-lang-terms">
+                                        <li>
                                             
-                                            <xsl:call-template name="class-attribute">
-                                                <xsl:with-param name="base-classes" as="xs:string*">
-                                                    <xsl:value-of select="'term'"/>
-                                                    <xsl:if test="@type = ('reconstruction', 'semanticReconstruction','transliterationReconstruction')">
-                                                        <xsl:value-of select="'reconstructed'"/>
-                                                    </xsl:if>
-                                                </xsl:with-param>
-                                                <xsl:with-param name="lang" select="$term-lang"/>
-                                            </xsl:call-template>
-                                            
-                                            <xsl:choose>
-                                                <xsl:when test="normalize-space(text())">
-                                                    <xsl:value-of select="normalize-space(text())"/>
-                                                </xsl:when>
-                                                <xsl:otherwise>
-                                                    <xsl:value-of select="$term-empty-text"/>
-                                                </xsl:otherwise>
-                                            </xsl:choose>
-                                            
-                                        </span>
-                                        
-                                        <xsl:if test="$view-mode[@id eq 'editor'] and @status eq 'verified'">
-                                            <xsl:value-of select="' '"/>
-                                            <span class="text-warning small">
-                                                <xsl:value-of select="'[Verified]'"/>
+                                            <span>
+                                                
+                                                <xsl:call-template name="class-attribute">
+                                                    <xsl:with-param name="base-classes" as="xs:string*">
+                                                        <xsl:value-of select="'term'"/>
+                                                        <xsl:if test="@type = ('reconstruction', 'semanticReconstruction','transliterationReconstruction')">
+                                                            <xsl:value-of select="'reconstructed'"/>
+                                                        </xsl:if>
+                                                    </xsl:with-param>
+                                                    <xsl:with-param name="lang" select="$term-lang"/>
+                                                </xsl:call-template>
+                                                
+                                                <xsl:choose>
+                                                    <xsl:when test="normalize-space(text())">
+                                                        <xsl:value-of select="normalize-space(text())"/>
+                                                    </xsl:when>
+                                                    <xsl:otherwise>
+                                                        <xsl:value-of select="$term-empty-text"/>
+                                                    </xsl:otherwise>
+                                                </xsl:choose>
+                                                
                                             </span>
-                                        </xsl:if>
-                                        
-                                    </li>
-                                </xsl:for-each>
-                            </xsl:when>
-                        </xsl:choose>
-                    </ul>
+                                            
+                                            <xsl:if test="$view-mode[@id eq 'editor'] and @status eq 'verified'">
+                                                <xsl:value-of select="' '"/>
+                                                <span class="text-warning small">
+                                                    <xsl:value-of select="'[Verified]'"/>
+                                                </span>
+                                            </xsl:if>
+                                            
+                                        </li>
+                                    </xsl:for-each>
+                                </xsl:when>
+                            </xsl:choose>
+                        </ul>
+                    </div>
                 </xsl:if>
                 
             </xsl:for-each>
@@ -824,22 +826,24 @@
             <!-- Alternatives -->
             <xsl:variable name="alternative-terms" select="m:alternative"/>
             <xsl:if test="$view-mode[@id eq 'editor'] and $alternative-terms">
-                <ul class="list-inline inline-dots">
-                    <xsl:for-each select="$alternative-terms">
-                        <li>
-                            <span>
-                                <xsl:call-template name="class-attribute">
-                                    <xsl:with-param name="base-classes" as="xs:string*">
-                                        <xsl:value-of select="'term'"/>
-                                        <xsl:value-of select="'alternative'"/>
-                                    </xsl:with-param>
-                                    <xsl:with-param name="lang" select="@xml:lang"/>
-                                </xsl:call-template>
-                                <xsl:value-of select="normalize-space(data())"/>
-                            </span>
-                        </li>
-                    </xsl:for-each>
-                </ul>
+                <div>
+                    <ul class="list-inline inline-dots">
+                        <xsl:for-each select="$alternative-terms">
+                            <li>
+                                <span>
+                                    <xsl:call-template name="class-attribute">
+                                        <xsl:with-param name="base-classes" as="xs:string*">
+                                            <xsl:value-of select="'term'"/>
+                                            <xsl:value-of select="'alternative'"/>
+                                        </xsl:with-param>
+                                        <xsl:with-param name="lang" select="@xml:lang"/>
+                                    </xsl:call-template>
+                                    <xsl:value-of select="normalize-space(data())"/>
+                                </span>
+                            </li>
+                        </xsl:for-each>
+                    </ul>
+                </div>
             </xsl:if>
             
             <!-- Definition -->

@@ -15,7 +15,7 @@
                     
                     <xsl:call-template name="alert-translation-locked"/>
                     
-                    <form method="post" class="form-horizontal form-update">
+                    <form method="post" class="form-horizontal form-update" data-loading="Updating sponsor...">
                         
                         <xsl:attribute name="action" select="'edit-sponsor.html'"/>
                         <xsl:variable name="sponsor-id" select="m:sponsor/@xml:id"/>

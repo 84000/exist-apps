@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" version="3.0" exclude-result-prefixes="#all">
     
     <!-- Indent nested sections -->
     <xsl:template name="indent">
@@ -109,12 +109,16 @@
         <xsl:param name="accordion-selector" required="yes" as="xs:string"/>
         <xsl:param name="active" as="xs:boolean" select="false()"/>
         <xsl:param name="content" required="no" as="node()*"/>
+        <xsl:param name="persist" as="xs:boolean" select="false()"/>
         
-        <div class="list-group-item collapse-background">
+        <div>
             
-            <xsl:if test="$active">
-                <xsl:attribute name="class" select="'list-group-item collapse-background show-background'"/>
-            </xsl:if>
+            <xsl:attribute name="class">
+                <xsl:value-of select="'list-group-item'"/>
+                <xsl:if test="$active">
+                    <xsl:value-of select="' show-background'"/>
+                </xsl:if>
+            </xsl:attribute>
             
             <div role="tab">
                 
@@ -146,15 +150,31 @@
                 </div>
             </div>
             
-            <div class="panel-collapse collapse" role="tabpanel" aria-expanded="false">
+            <div role="tabpanel" aria-expanded="false">
                 
                 <xsl:attribute name="id" select="concat('expand-item-',$id, '-detail')"/>
                 <xsl:attribute name="aria-labelledby" select="concat('expand-item-',$id, '-heading')"/>
                 
-                <xsl:if test="$active">
-                    <xsl:attribute name="class" select="'panel-collapse collapse in'"/>
-                    <xsl:attribute name="aria-expanded" select="'true'"/>
-                </xsl:if>
+                <xsl:attribute name="class">
+                    <xsl:value-of select="'panel-collapse collapse'"/>
+                    <xsl:if test="$active">
+                        <xsl:value-of select="' in'"/>
+                    </xsl:if>
+                    <xsl:if test="$persist">
+                        <xsl:value-of select="' persist'"/>
+                    </xsl:if>
+                </xsl:attribute>
+                
+                <xsl:attribute name="aria-expanded">
+                    <xsl:choose>
+                        <xsl:when test="$active">
+                            <xsl:value-of select="'true'"/>
+                        </xsl:when>
+                        <xsl:otherwise>
+                            <xsl:value-of select="'false'"/>
+                        </xsl:otherwise>
+                    </xsl:choose>
+                </xsl:attribute>
                 
                 <div class="panel-body no-padding">
                     <xsl:copy-of select="$content"/>

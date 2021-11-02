@@ -714,7 +714,7 @@
                 </xsl:if>
                 
                 <xsl:element name="{ if($primary-section) then 'h1' else 'div' }">
-                    <xsl:attribute name="class" select="'title main-title'"/>
+                    <xsl:attribute name="class" select="'title main-title break'"/>
                     <xsl:choose>
                         <xsl:when test="lower-case($section/@id) eq 'lobby'">
                             <xsl:value-of select="'Welcome to the Reading Room'"/>
@@ -1122,52 +1122,18 @@
                                     </span>
                                 </xsl:if>
                                 
+                                <!-- Authors -->
+                                <xsl:call-template name="source-authors">
+                                    <xsl:with-param name="text" select="$text"/>
+                                    <xsl:with-param name="entities" select="/m:response/m:entities/m:entity"/>
+                                </xsl:call-template>
+                                
                                 <!-- Summary and title variants -->
-                                <xsl:if test="$text/m:part[@type eq 'summary'][tei:p] or $text/m:title-variants/m:title[text()]">
-                                    
-                                    <hr class="hidden-print"/>
-                                    
-                                    <a class="summary-link collapsed hidden-print" role="button" data-toggle="collapse" aria-expanded="false">
-                                        <xsl:attribute name="href" select="concat('#summary-detail-', $toh-key)"/>
-                                        <xsl:attribute name="aria-controls" select="concat('summary-detail-', $toh-key)"/>
-                                        <i class="fa fa-chevron-down"/>
-                                        <xsl:value-of select="' Summary &amp; variant titles'"/>
-                                    </a>
-                                    
-                                    <div class="collapse summary-detail print-collapse-override">
-                                        <xsl:attribute name="id" select="concat('summary-detail-', $toh-key)"/>
-                                        <div class="well well-sm">
-                                            
-                                            <xsl:if test="$text/m:part[@type eq 'summary'][tei:p]">
-                                                <h4>
-                                                    <xsl:value-of select="'Summary'"/>
-                                                </h4>
-                                                <div class="summary">
-                                                    <xsl:apply-templates select="$text/m:part[@type eq 'summary']/tei:p"/>
-                                                </div>
-                                            </xsl:if>
-                                            
-                                            <xsl:if test="$text/m:title-variants/m:title[text()]">
-                                                <h4>
-                                                    <xsl:value-of select="'Title variants'"/>
-                                                </h4>
-                                                <ul class="list-unstyled">
-                                                    <xsl:attribute name="id" select="concat($toh-key, '-title-variants')"/>
-                                                    <xsl:for-each select="$text/m:title-variants/m:title">
-                                                        <li>
-                                                            <span>
-                                                                <xsl:attribute name="class" select="concat('title ', common:lang-class(@xml:lang))"/>
-                                                                <xsl:value-of select="text()"/>
-                                                            </span>
-                                                        </li>
-                                                    </xsl:for-each>
-                                                </ul>
-                                            </xsl:if>
-                                            
-                                        </div>
-                                    </div>
-                                    
-                                </xsl:if>
+                                <xsl:call-template name="expandable-summary">
+                                    <xsl:with-param name="text" select="$text"/>
+                                    <xsl:with-param name="expand-id" select="concat('summary-detail-', $toh-key)"/>
+                                    <xsl:with-param name="entities" select="/m:response/m:entities/m:entity"/>
+                                </xsl:call-template>
                                 
                             </div>
                             
@@ -1415,7 +1381,7 @@
                                     
                                     <xsl:attribute name="href" select="common:internal-link(concat('/section/', @id/string(), '.html'), (), '', /m:response/@lang)"/>
                                     
-                                    <h3 class="title main-title">
+                                    <h3 class="title main-title break">
                                         <xsl:value-of select="m:titles/m:title[@xml:lang='en']/text()"/> 
                                     </h3>
                                     
@@ -1513,51 +1479,6 @@
                 
             </xsl:for-each>
         </div>
-    </xsl:template>
-    
-    <xsl:template name="tantra-warning">
-        <xsl:param name="id"/>
-        <xsl:param name="node"/>
-        
-        <div class="hidden-print">
-            
-            <a data-toggle="modal" class="warning">
-                <xsl:attribute name="href" select="concat('#tantra-warning-', $id)"/>
-                <xsl:attribute name="data-target" select="concat('#tantra-warning-', $id)"/>
-                <i class="fa fa-exclamation-circle" aria-hidden="true"/>
-                <xsl:value-of select="' Tantra Text Warning'"/>
-            </a>
-            
-            <div class="modal fade warning" tabindex="-1" role="dialog">
-                <xsl:attribute name="id" select="concat('tantra-warning-', $id)"/>
-                <xsl:attribute name="aria-labelledby" select="concat('tantra-warning-label-', $id)"/>
-                <div class="modal-dialog" role="document">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                <span aria-hidden="true">
-                                    <i class="fa fa-times"/>
-                                </span>
-                            </button>
-                            <h4 class="modal-title">
-                                <xsl:attribute name="id" select="concat('tantra-warning-label-', $id)"/>
-                                <i class="fa fa-exclamation-circle" aria-hidden="true"/>
-                                <xsl:value-of select="' Tantra Text Warning'"/>
-                            </h4>
-                        </div>
-                        <div class="modal-body">
-                            <xsl:apply-templates select="$node"/>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-        </div>
-        
-        <div class="visible-print-block small">
-            <xsl:apply-templates select="$node"/>
-        </div>
-        
     </xsl:template>
     
     <xsl:template name="text-page-count">

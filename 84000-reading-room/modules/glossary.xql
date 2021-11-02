@@ -32,6 +32,8 @@ declare variable $glossary:view-modes :=
         <view-mode id="editor"  client="browser" layout="full" glossary="no-cache" parts="all"/>
     </view-modes>;
 
+declare variable $glossary:empty-term-placeholders := (common:local-text('glossary.term-empty-sa-ltn', 'en'), common:local-text('glossary.term-empty-bo-ltn', 'en'));
+
 declare function local:lookup-options() as element() {
     <options>
         <default-operator>or</default-operator>
@@ -83,7 +85,9 @@ declare function glossary:glossary-search($type as xs:string*, $lang as xs:strin
     let $valid-lang := common:valid-lang($lang)
     let $valid-type := local:valid-type($type)
     let $normalized-search := 
-        if($valid-lang eq 'Sa-Ltn') then
+        if($valid-lang = ('en', '')) then
+            replace(common:normalized-chars(lower-case($search)), '\-', ' ')
+        else if($valid-lang eq 'Sa-Ltn') then
             common:alphanumeric(common:normalized-chars(lower-case($search)))
         else
             common:normalized-chars(lower-case($search))
@@ -108,12 +112,14 @@ declare function glossary:glossary-search($type as xs:string*, $lang as xs:strin
     
     
     let $terms :=
+    
         (: Longer strings - do a search :)
         if(string-length($normalized-search) gt 1) then
             if($valid-lang = ('en', '')) then
                 $glossary:tei//tei:back//tei:gloss/tei:term[ft:query(., $query)][not(@type = ('definition', 'alternative'))][not(@xml:lang)]
             else
                 $glossary:tei//tei:back//tei:gloss/tei:term[ft:query(., $query)][not(@type = ('definition', 'alternative'))][@xml:lang = $valid-lang]
+                
         (: Single char strings - do a regex :)
         else
             let $match-regex :=
@@ -142,7 +148,6 @@ declare function glossary:glossary-terms($type as xs:string?, $lang as xs:string
     
     let $valid-lang := common:valid-lang($lang)
     let $valid-type := local:valid-type($type)
-    let $empty-term-placeholders := (common:local-text('glossary.term-empty-sa-ltn', 'en'), common:local-text('glossary.term-empty-bo-ltn', 'en'))
     
     let $normalized-search := common:alphanumeric(common:normalized-chars($search))
     
@@ -207,7 +212,7 @@ declare function glossary:glossary-terms($type as xs:string?, $lang as xs:string
             lang="{ $valid-lang }"
             search="{ $normalized-search }">
         {
-            for $term in $terms[normalize-space()][not(text() = $empty-term-placeholders)]
+            for $term in $terms[normalize-space()][not(text() = $glossary:empty-term-placeholders)]
                 
                 let $normalized-term := 
                     normalize-space(
@@ -280,18 +285,18 @@ declare function glossary:matching-gloss($term as xs:string, $lang as xs:string)
             
 };
 
-declare function glossary:items($glossary-ids as xs:string*, $include-context as xs:boolean) as element(m:entry)* {
+declare function glossary:entries($glossary-ids as xs:string*, $include-context as xs:boolean) as element(m:entry)* {
     
-    for $gloss in $glossary:tei//tei:back//id($glossary-ids)
+    for $gloss in $glossary:tei//id($glossary-ids)
     where $gloss/self::tei:gloss
     return
-        local:glossary-item($gloss, $include-context)
+        local:glossary-entry($gloss, $include-context)
     
 };
 
-declare function local:glossary-item($gloss as element(tei:gloss), $include-context as xs:boolean) as element(m:entry) {
+declare function local:glossary-entry($gloss as element(tei:gloss), $include-context as xs:boolean) as element(m:entry) {
     
-    (: This needs updating - use m:entry and optimise :)
+    (: This needs optimising :)
     element { QName('http://read.84000.co/ns/1.0', 'entry') } {
         
         attribute id { $gloss/@xml:id },
@@ -311,7 +316,7 @@ declare function local:glossary-item($gloss as element(tei:gloss), $include-cont
                     attribute xml:lang { 'en' },
                     $term/@type,
                     $term/@status,
-                    functx:capitalize-first(normalize-space($term/text()))
+                    normalize-space($term/text())
                 }
             else if($term[@xml:lang][not(@xml:lang eq 'en')][not(@type = ('definition','alternative'))]) then
                 element { QName('http://read.84000.co/ns/1.0', 'term') } {
@@ -413,7 +418,7 @@ declare function glossary:sort-term($gloss as element(tei:gloss)) as element(m:s
         
 };
 
-declare function glossary:matching-items($term as xs:string, $lang as xs:string) as element(m:glossary) {
+declare function glossary:matching-entries($term as xs:string, $lang as xs:string) as element(m:glossary) {
     <glossary
         xmlns="http://read.84000.co/ns/1.0"
         model="glossary-items">
@@ -422,7 +427,7 @@ declare function glossary:matching-items($term as xs:string, $lang as xs:string)
             for $gloss in glossary:matching-gloss($term, $lang)
                 order by ft:score($gloss) descending
             return 
-                local:glossary-item($gloss, true())
+                local:glossary-entry($gloss, true())
         }
     </glossary>
 };
@@ -449,7 +454,7 @@ declare function glossary:cumulative-glossary($chunk as xs:integer) as element()
                 return
                     <term listing-number="{ ($first + $position) - 1 }">
                     {
-                        glossary:matching-items($term/m:main-term, $term/m:main-term/@xml:lang)/*
+                        glossary:matching-entries($term/m:main-term, $term/m:main-term/@xml:lang)/*
                     }
                     </term>
             }
@@ -484,111 +489,116 @@ declare function glossary:item-query($gloss as element(tei:gloss)) as element() 
 
 declare function glossary:xml-response($tei as element(tei:TEI), $resource-id as xs:string, $resource-type as xs:string, $test-glossary-ids as xs:string*) as element(m:response) {
     
-    common:response(
-        $resource-type,
-        $common:app-id,
-        (
-        
-            (: Include request parameters :)
-            element { QName('http://read.84000.co/ns/1.0', 'request')} {
-                attribute resource-id { $resource-id },
-                attribute resource-suffix { 'html' },
-                attribute doc-type { 'html' },
-                attribute part { 'all' },
-                
-                (: View mode :)
-                if($resource-type eq 'knowledgebase') then 
-                    $knowledgebase:view-modes/m:view-mode[@id eq 'glossary-check']
-                else
-                    $translation:view-modes/m:view-mode[@id eq 'glossary-check']
-                ,
-                
-                (: Glossary ids to test :)
-                for $test-glossary-id in $test-glossary-ids
-                return
-                    element test-glossary {
-                        attribute id { $test-glossary-id }
-                    }
-                
-            },
-        
-            if($resource-type eq 'knowledgebase') then
+    let $request := 
+        (: Include request parameters :)
+        element { QName('http://read.84000.co/ns/1.0', 'request')} {
+            attribute resource-id { $resource-id },
+            attribute resource-suffix { 'html' },
+            attribute doc-type { 'html' },
+            attribute part { 'all' },
             
-                (: Knowledgebase data for a glossary query :)
-                element { QName('http://read.84000.co/ns/1.0', 'knowledgebase') } {
-                
-                    knowledgebase:page($tei),
-                    knowledgebase:publication($tei),
-                    knowledgebase:taxonomy($tei),
-                    knowledgebase:article($tei),
-                    knowledgebase:bibliography($tei),
-                    knowledgebase:end-notes($tei),
-                    knowledgebase:glossary($tei)
-                    
-                }
-                
+            (: View mode :)
+            if($resource-type eq 'knowledgebase') then 
+                $knowledgebase:view-modes/m:view-mode[@id eq 'glossary-check']
             else
-            
-                (: Translation data for a glossary query :)
-                let $source := tei-content:source($tei, $resource-id)
-                return
-                element { QName('http://read.84000.co/ns/1.0', 'translation')} {
-                    attribute id { tei-content:id($tei) },
-                    attribute status { tei-content:translation-status($tei) },
-                    attribute status-group { tei-content:translation-status-group($tei) },
-                    attribute relative-html { translation:relative-html($source/@key, '') },
-                    attribute canonical-html { translation:canonical-html($source/@key, '') },
-                    
-                    (: Parts relevant to glossary :)
-                    translation:titles($tei),
-                    translation:long-titles($tei),
-                    $source,
-                    translation:toh($tei, $source/@key),
-                    translation:publication($tei),
-                    translation:parts($tei, 'all', $translation:view-modes/m:view-mode[@id eq 'glossary-check'])
-                    
-                }
+                $translation:view-modes/m:view-mode[@id eq 'glossary-check']
             ,
             
-            element { QName('http://read.84000.co/ns/1.0', 'replace-text')} {
-                element value {
-                    attribute key { '#CurrentDateTime' },
-                    text { format-dateTime(current-dateTime(), '[h].[m01][Pn] on [FNn], [D1o] [MNn] [Y0001]') }
-                },
-                element value {
-                    attribute key { '#LinkToSelf' },
-                    text { concat($common:environment/m:url[@id eq 'reading-room'], '/', $resource-type, '/', $resource-id, '.html') }
-                },
-                element value {
-                    attribute key { '#canonicalHTML' },
-                    text { concat('https://read.84000.co', '/', $resource-type, '/', $resource-id, '.html') }
+            (: Glossary ids to test :)
+            for $test-glossary-id in $test-glossary-ids
+            return
+                element test-glossary {
+                    attribute id { $test-glossary-id }
                 }
-            },
             
-            (: Include caches - do not call glossary:cache(), this causes a recursion problem :)
-            tei-content:cache($tei, false())/m:*
+        }
+    
+    let $resource := 
+        if($resource-type eq 'knowledgebase') then
+                
+            (: Knowledgebase data for a glossary query :)
+            element { QName('http://read.84000.co/ns/1.0', 'knowledgebase') } {
+                knowledgebase:page($tei),
+                knowledgebase:publication($tei),
+                knowledgebase:taxonomy($tei),
+                knowledgebase:article($tei),
+                knowledgebase:bibliography($tei),
+                knowledgebase:end-notes($tei),
+                knowledgebase:glossary($tei)
+            }
+            
+        else
+        
+            (: Translation data for a glossary query :)
+            let $source := tei-content:source($tei, $resource-id)
+            return
+            element { QName('http://read.84000.co/ns/1.0', 'translation')} {
+                attribute id { tei-content:id($tei) },
+                attribute status { tei-content:translation-status($tei) },
+                attribute status-group { tei-content:translation-status-group($tei) },
+                attribute relative-html { translation:relative-html($source/@key, '') },
+                attribute canonical-html { translation:canonical-html($source/@key, '') },
+                (: Parts relevant to glossary :)
+                translation:titles($tei),
+                translation:long-titles($tei),
+                $source,
+                translation:toh($tei, $source/@key),
+                translation:publication($tei),
+                translation:parts($tei, 'all', $translation:view-modes/m:view-mode[@id eq 'glossary-check'])
+            }
+    
+    (: Include caches - do not call glossary:cache(), this causes a recursion problem :)
+    let $cache := tei-content:cache($tei, false())/m:*
+    
+    let $replace-text :=
+        element { QName('http://read.84000.co/ns/1.0', 'replace-text')} {
+            element value {
+                attribute key { '#CurrentDateTime' },
+                text { format-dateTime(current-dateTime(), '[h].[m01][Pn] on [FNn], [D1o] [MNn] [Y0001]') }
+            },
+            element value {
+                attribute key { '#LinkToSelf' },
+                text { concat($common:environment/m:url[@id eq 'reading-room'], '/', $resource-type, '/', $resource-id, '.html') }
+            },
+            element value {
+                attribute key { '#canonicalHTML' },
+                text { concat('https://read.84000.co', '/', $resource-type, '/', $resource-id, '.html') }
+            }
+        }
+    
+    return
+        common:response(
+            $resource-type,
+            $common:app-id,
+            (
+                $request,
+                $resource,
+                $cache,
+                $replace-text
+            )
         )
-    )
 };
 
 declare function glossary:filter($tei as element(tei:TEI), $resource-type as xs:string, $filter as xs:string, $search as xs:string) as element(m:part) {
     
-    let $glossary-cache := glossary:cache($tei, (), false())
+    let $glossary-cache := tei-content:cache($tei, false())/m:glossary-cache
     
     (: Pre-defined filters :)
     let $tei-gloss :=
         if($filter eq 'missing-entities') then
-            let $entity-instance-ids := $entities:entities//m:entity/m:instance/@id/string()
+            let $glosses-with-instances := $tei//tei:back//tei:div[@type eq 'glossary']//tei:gloss/id($entities:entities//m:entity/m:instance/@id)
             return
-                $tei//tei:back//tei:div[@type eq 'glossary']//tei:gloss[not(@xml:id = $entity-instance-ids)]
+                $tei//tei:back//tei:div[@type eq 'glossary']//tei:gloss except $glosses-with-instances
         else if($filter eq 'no-cache') then
-            $tei//tei:back//tei:div[@type eq 'glossary']//tei:gloss[not(@xml:id = $glossary-cache/m:gloss[m:location]/@id)]
+            let $glosses-with-cache := $tei//tei:back//tei:div[@type eq 'glossary']//tei:gloss/id($glossary-cache/m:gloss[m:location]/@id)
+            return
+                $tei//tei:back//tei:div[@type eq 'glossary']//tei:gloss except $glosses-with-cache
         else if($filter eq 'blank-form') then
             ()
         else if($entities:flags//m:flag[@id eq $filter]) then
             let $entity-instance-ids := $entities:entities//m:entity[m:flag[@type eq $filter]]/m:instance/@id/string()
             return
-                $tei//tei:back//tei:div[@type eq 'glossary']//tei:gloss[@xml:id = $entity-instance-ids]
+                $tei//tei:back//tei:div[@type eq 'glossary']//tei:gloss/id($entity-instance-ids)
         else
             $tei//tei:back//tei:div[@type eq 'glossary']//tei:gloss[@xml:id]
     
@@ -630,28 +640,28 @@ declare function glossary:filter($tei as element(tei:TEI), $resource-type as xs:
                 let $search-score := if(normalize-space($search) gt '') then ft:score($gloss) else 1
                 
                 (: It seems to be significantly quicker to re-create the glossary-item than look it up :)
-                let $glossary-item := local:glossary-item($gloss, false()) (: $glossary/m:entry[@xml:id = $gloss/@xml:id/string()] :)
+                let $glossary-entry := local:glossary-entry($gloss, false()) (: $glossary/m:entry[@xml:id = $gloss/@xml:id/string()] :)
                 
                 (: Expression locations :)
                 let $expression-locations := 
                     if($filter = ('new-expressions', 'no-expressions')) then
-                        glossary:expression-locations($html, $glossary-item/@id)
+                        local:instance-locations($html, $glossary-entry/@id)
                     else()
             
             where 
                 (: If filtering by new expressions, return where there are expression locations not in the cache :)
                 not($filter = ('new-expressions', 'no-expressions')) 
-                or ($filter eq 'new-expressions' and $expression-locations[not(@id = $glossary-cache/m:gloss[@id eq $glossary-item/@id]/m:location/@id)])
+                or ($filter eq 'new-expressions' and $expression-locations[not(@id = $glossary-cache/m:gloss[@id eq $glossary-entry/@id]/m:location/@id)])
                 or ($filter eq 'no-expressions' and not($expression-locations))
             
             order by 
                 $search-score descending,
-                $glossary-item/m:sort-term
+                $glossary-entry/m:sort-term
             
             return
-                element { node-name($glossary-item) }{
-                    $glossary-item/@*,
-                    $glossary-item/node(),
+                element { node-name($glossary-entry) }{
+                    $glossary-entry/@*,
+                    $glossary-entry/node(),
                     
                     (: Add expressions to save work later :)
                     if($expression-locations) then
@@ -663,7 +673,7 @@ declare function glossary:filter($tei as element(tei:TEI), $resource-type as xs:
         }
 };
 
-declare function glossary:expressions($tei as element(tei:TEI), $resource-id as xs:string, $resource-type as xs:string, $glossary-ids as xs:string*) as element(m:expressions) {
+declare function glossary:instances($tei as element(tei:TEI), $resource-id as xs:string, $resource-type as xs:string, $glossary-ids as xs:string*) as element(m:expressions) {
     
     let $html := 
         transform:transform(
@@ -676,20 +686,16 @@ declare function glossary:expressions($tei as element(tei:TEI), $resource-id as 
         element { QName('http://read.84000.co/ns/1.0', 'expressions') }{
             attribute text-id { tei-content:id($tei) },
             attribute resource-id { $resource-id },
-            glossary:expression-locations($html, $glossary-ids)
+            local:instance-locations($html, $glossary-ids)
         }
 };
 
-declare function glossary:expression-locations($translation-html as element(xhtml:html), $glossary-ids as xs:string*) as element()* {
+declare function local:instance-locations($translation-html as element(xhtml:html), $glossary-ids as xs:string*) as element()* {
     
     (: Get and elements with the match :)
     (: Also get the nearest preceding milestone if there isn't one :)
     (: Also get the nearest preceding ref :)
-    for $expression at $sort-index in 
-        if(count($glossary-ids[not(. = 'all')]) gt 0) then
-            $translation-html/descendant::xhtml:*[@data-glossary-id = $glossary-ids]
-        else
-            $translation-html/descendant::xhtml:*[@data-glossary-id]
+    for $expression at $sort-index in $translation-html/descendant::xhtml:*[@data-glossary-id = $glossary-ids]
     
     let $expression-location := $expression/ancestor-or-self::xhtml:*[@data-passage-id][1]
     
@@ -725,19 +731,22 @@ declare function glossary:expression-locations($translation-html as element(xhtm
 
 };
 
-declare function glossary:cache($tei as element(tei:TEI), $refresh-ids as xs:string*, $create-if-unavailable as xs:boolean?) as element(m:glossary-cache) {
+declare function glossary:cache($tei as element(tei:TEI), $refresh-locations as xs:string*, $create-if-unavailable as xs:boolean?) as element(m:glossary-cache) {
     
     let $cache := tei-content:cache($tei, $create-if-unavailable)
     
     return
         (: If there is one and there's nothing to refresh, just return the cache :)
-        if($cache[m:glossary-cache] and count($refresh-ids) eq 0) then
+        if($cache[m:glossary-cache] and count($refresh-locations) eq 0) then
             $cache/m:glossary-cache
-            
+
         (: Build the cache :)
         else
             
-            let $start-time := util:system-dateTime()
+            (: Meta data :)
+            let $resource-id := tei-content:id($tei)
+            let $resource-type := tei-content:type($tei)
+            let $tei-version := tei-content:version-str($tei)
             
             (: Existing cache :)
             let $glossary-cache := $cache/m:glossary-cache
@@ -745,17 +754,8 @@ declare function glossary:cache($tei as element(tei:TEI), $refresh-ids as xs:str
             (: TEI glossary items :)
             let $tei-glossary := $tei//tei:back//tei:list[@type eq 'glossary']/tei:item/tei:gloss[@xml:id]
             
-            let $resource-id := tei-content:id($tei)
-            let $resource-type := tei-content:type($tei)
-            
-            (: Glossary expressions :)
-            let $glossary-expressions :=
-                (: We can optimise by passing 'all' instead of all the ids :)
-                if($refresh-ids = 'all') then 
-                    glossary:expressions($tei, $resource-id, $resource-type, 'all')
-                else if (count($tei-glossary[@xml:id = $refresh-ids]) gt 0) then
-                    glossary:expressions($tei, $resource-id, $resource-type, $refresh-ids)
-                else ()
+            (: Get glossary instances :)
+            let $glossary-instances := glossary:instances($tei, $resource-id, $resource-type, $refresh-locations)
             
             (: Sort glossaries :)
             let $glossary-sorted :=
@@ -771,17 +771,20 @@ declare function glossary:cache($tei as element(tei:TEI), $refresh-ids as xs:str
                 group by $gloss-id
                     let $sort-term := glossary:sort-term($gloss[1])
                 return 
-                    (: If we processed it then add it with the new $glossary-expressions :)
-                    if ($refresh-ids = 'all' or $gloss-id = $refresh-ids) then (
+                
+                    (: If we processed it then add it with the new $glossary-instances :)
+                    if ($gloss-id = $refresh-locations) then (
                         common:ws(2),
                         element { QName('http://read.84000.co/ns/1.0', 'gloss') } {
+                        
                             attribute id { $gloss-id },
                             attribute index { $index },
+                            attribute tei-version { $tei-version },
                             attribute timestamp { current-dateTime() },
-                            $sort-term/@word-count ,
-                            $sort-term/@letter-count ,
+                            $sort-term/@word-count,
+                            $sort-term/@letter-count,
                             
-                            for $location in $glossary-expressions/m:location[descendant::xhtml:*[@data-glossary-id eq $gloss-id]]
+                            for $location in $glossary-instances/m:location[descendant::xhtml:*[@data-glossary-id eq $gloss-id]]
                             let $location-id := $location/@id
                             group by $location-id
                             order by $location[1]/@sort-index ! xs:integer(.)
@@ -791,6 +794,7 @@ declare function glossary:cache($tei as element(tei:TEI), $refresh-ids as xs:str
                                     attribute id { $location/@id }
                                 }
                             ),
+                            
                             common:ws(2)
                         }
                     )
@@ -812,22 +816,10 @@ declare function glossary:cache($tei as element(tei:TEI), $refresh-ids as xs:str
                             
                     )
             
-            let $end-time := util:system-dateTime()
-            
             return
                 element { QName('http://read.84000.co/ns/1.0', 'glossary-cache') } {
-                
-                    attribute timestamp { current-dateTime() },
-                    
-                    if($refresh-ids = 'all') then
-                        attribute seconds-to-build { functx:total-seconds-from-duration($end-time - $start-time) }
-                    else
-                        $glossary-cache/@seconds-to-build
-                    ,
-                    
+                    $glossary-cache/@*,
                     $glosses,
-                    
                     common:ws(1)
                 }
 };
-

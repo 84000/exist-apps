@@ -23,9 +23,12 @@
             <text match="//tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl" boost="2.0">
                 <inline qname="tei:ref"/>
                 <ignore qname="tei:biblScope"/>
-                <ignore qname="tei:author"/>
+                <!--<ignore qname="tei:author"/>-->
+                <!--<ignore qname="tei:editor"/>-->
             </text>
             <text match="//tei:teiHeader/tei:fileDesc/tei:sourceDesc//tei:biblScope"/>
+            <text match="//tei:teiHeader/tei:fileDesc/tei:sourceDesc//tei:author" boost="1.5"/>
+            <text match="//tei:teiHeader/tei:fileDesc/tei:sourceDesc//tei:editor" boost="1.5"/>
             <text match="//tei:text//tei:head" boost="1.5"/>
             <text match="//tei:text//tei:p">
                 <inline qname="tei:note"/>

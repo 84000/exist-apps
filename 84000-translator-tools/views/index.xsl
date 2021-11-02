@@ -622,7 +622,7 @@
                                         
                                         <div class="translators text-muted small">
                                             <xsl:value-of select="'Translated by '"/>
-                                            <xsl:variable name="author-ids" select="m:tei/m:publication/m:contributors/m:author[@role eq 'translatorEng']/@ref ! replace(., '^(EFT:|contributors\.xml#)', '', 'i')"/>
+                                            <xsl:variable name="author-ids" select="m:tei/m:publication/m:contributors/m:author[@role eq 'translatorEng']/@ref ! replace(., '^(eft:|contributors\.xml#)', '', 'i')"/>
                                             <xsl:value-of select="string-join(/m:response/m:contributor-persons/m:person[@xml:id = $author-ids]/m:label, ' · ')"/>
                                         </div>
                                         

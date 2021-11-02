@@ -110,73 +110,75 @@
                                 <xsl:value-of select="concat(' \ ', @id)"/>
                             </small>
                         </div>
-                        <ul class="list-inline inline-dots sml-margin bottom">
-                            <li>
-                                <a>
-                                    <xsl:attribute name="href" select="concat($reading-room-path ,'/section/', @id, '.tei')"/>
-                                    <xsl:attribute name="target" select="concat(@id, '.tei')"/>
-                                    <span class="small">
-                                        <xsl:value-of select="'tei'"/>
-                                    </span>
-                                </a>
-                            </li>
-                            <li>
-                                <a>
-                                    <xsl:attribute name="href" select="concat($reading-room-path ,'/section/', @id, '.xml')"/>
-                                    <xsl:attribute name="target" select="concat(@id, '.xml')"/>
-                                    <span class="small">
-                                        <xsl:value-of select="'xml'"/>
-                                    </span>
-                                </a>
-                            </li>
-                            <li>
-                                <a>
-                                    <xsl:attribute name="href" select="concat($reading-room-path ,'/section/', @id, '.json')"/>
-                                    <xsl:attribute name="target" select="concat(@id, '.json')"/>
-                                    <span class="small">
-                                        <xsl:value-of select="'json'"/>
-                                    </span>
-                                </a>
-                            </li>
-                            <li>
-                                <a>
-                                    <xsl:attribute name="href" select="concat($reading-room-path ,'/section/', @id, '.html')"/>
-                                    <xsl:attribute name="target" select="concat(@id, '.html')"/>
-                                    <span class="small">
-                                        <xsl:value-of select="'html'"/>
-                                    </span>
-                                </a>
-                            </li>
-                            <li>
-                                <a>
-                                    <xsl:attribute name="href" select="concat($reading-room-path ,'/section/', @id, '.navigation.atom')"/>
-                                    <xsl:attribute name="target" select="concat(@id, '.navigation.atom')"/>
-                                    <span class="small">
-                                        <xsl:value-of select="'navigation.atom'"/>
-                                    </span>
-                                </a>
-                            </li>
-                            <xsl:if test="xs:integer(m:text-stats/m:stat[@type eq 'count-published-children']/@value) gt 0">
+                        <div class="sml-margin bottom">
+                            <ul class="list-inline inline-dots">
                                 <li>
                                     <a>
-                                        <xsl:attribute name="href" select="concat($reading-room-path ,'/section/', @id, '.acquisition.atom')"/>
-                                        <xsl:attribute name="target" select="concat(@id, '.acquisition.atom')"/>
+                                        <xsl:attribute name="href" select="concat($reading-room-path ,'/section/', @id, '.tei')"/>
+                                        <xsl:attribute name="target" select="concat(@id, '.tei')"/>
                                         <span class="small">
-                                            <xsl:value-of select="'acquisition.atom'"/>
+                                            <xsl:value-of select="'tei'"/>
                                         </span>
                                     </a>
                                 </li>
-                            </xsl:if>
-                            <li>
-                                <a>
-                                    <xsl:attribute name="href" select="concat('/test-sections.html?section-id=', @id)"/>
-                                    <xsl:attribute name="target" select="concat(@id, 'tests')"/>
-                                    <span class="small">
-                                        <xsl:value-of select="'run tests'"/>
-                                    </span>
-                                </a>
-                            </li>
-                        </ul>
+                                <li>
+                                    <a>
+                                        <xsl:attribute name="href" select="concat($reading-room-path ,'/section/', @id, '.xml')"/>
+                                        <xsl:attribute name="target" select="concat(@id, '.xml')"/>
+                                        <span class="small">
+                                            <xsl:value-of select="'xml'"/>
+                                        </span>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a>
+                                        <xsl:attribute name="href" select="concat($reading-room-path ,'/section/', @id, '.json')"/>
+                                        <xsl:attribute name="target" select="concat(@id, '.json')"/>
+                                        <span class="small">
+                                            <xsl:value-of select="'json'"/>
+                                        </span>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a>
+                                        <xsl:attribute name="href" select="concat($reading-room-path ,'/section/', @id, '.html')"/>
+                                        <xsl:attribute name="target" select="concat(@id, '.html')"/>
+                                        <span class="small">
+                                            <xsl:value-of select="'html'"/>
+                                        </span>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a>
+                                        <xsl:attribute name="href" select="concat($reading-room-path ,'/section/', @id, '.navigation.atom')"/>
+                                        <xsl:attribute name="target" select="concat(@id, '.navigation.atom')"/>
+                                        <span class="small">
+                                            <xsl:value-of select="'navigation.atom'"/>
+                                        </span>
+                                    </a>
+                                </li>
+                                <xsl:if test="xs:integer(m:text-stats/m:stat[@type eq 'count-published-children']/@value) gt 0">
+                                    <li>
+                                        <a>
+                                            <xsl:attribute name="href" select="concat($reading-room-path ,'/section/', @id, '.acquisition.atom')"/>
+                                            <xsl:attribute name="target" select="concat(@id, '.acquisition.atom')"/>
+                                            <span class="small">
+                                                <xsl:value-of select="'acquisition.atom'"/>
+                                            </span>
+                                        </a>
+                                    </li>
+                                </xsl:if>
+                                <li>
+                                    <a>
+                                        <xsl:attribute name="href" select="concat('/test-sections.html?section-id=', @id)"/>
+                                        <xsl:attribute name="target" select="concat(@id, 'tests')"/>
+                                        <span class="small">
+                                            <xsl:value-of select="'run tests'"/>
+                                        </span>
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
                         <div class="small text-muted">
                             <xsl:value-of select="'File: '"/>
                             <span class="break">

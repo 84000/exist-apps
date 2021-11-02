@@ -32,8 +32,8 @@ declare variable $common:import-data-path := concat('/db/apps', $common:import-d
 declare variable $common:environment-path := '/db/system/config/db/system/environment.xml';
 declare variable $common:environment := doc($common:environment-path)/m:environment;
 
-declare variable $common:diacritic-letters := 'āḍḥīḷḹṃṇñṅṛṝṣśṭūṁ';
-declare variable $common:diacritic-letters-without := 'adhillmnnnrrsstum';
+declare variable $common:diacritic-letters := 'āḍéḥīḷḹṃṇñṅṛṝṣśṭūṁ';
+declare variable $common:diacritic-letters-without := 'adehillmnnnrrsstum';
 declare variable $common:chr-nl := '&#10;';
 declare variable $common:chr-tab := '&#32;&#32;&#32;&#32;';
 declare variable $common:node-ws := $common:chr-nl || $common:chr-tab;
@@ -232,11 +232,10 @@ declare function common:strip-ids($nodes as node()*) as node()*{
             text { $node }
         else if ($node instance of element()) then
             element { node-name($node) }{
-                $node/@*[not(local-name() = ('id', 'tid'))],
+                $node/@*[not(local-name(.) = ('id', 'tid'))],
                 common:strip-ids($node/node())
            }
-        else
-            ()
+        else ()
 };
 
 declare function common:integer($node as xs:anyAtomicType?) as xs:integer {
@@ -336,11 +335,8 @@ function common:bo-term($bo-ltn as xs:string) as xs:string {
     (: add a shad :)
     let $bo-ltn-length := string-length($bo-ltn-underscores)
     let $bo-ltn-shad :=
-        if (
-            (: check there isn't already a shad :)
-            substring($bo-ltn-underscores, $bo-ltn-length, 1) ne "/"
-            
-        ) then
+        (: check there isn't already a shad :)
+        if(not(matches($bo-ltn-underscores, '/$'))) then
         
             (: these cases add a tshek and a shad :)
             if(substring($bo-ltn-underscores, ($bo-ltn-length - 2), 3) = ('ang','eng','ing','ong','ung')) then
@@ -507,15 +503,14 @@ declare
     %test:assertEquals('nnnrrsstuadhillmm')
 function common:normalized-chars($string as xs:string?) as xs:string {
     if($string) then
-        translate(
-            replace(
-                replace(
-                    normalize-unicode($string)
-                , '­'(: This is a soft-hyphen :), ''), 
-            '&#39;', '&#8217;'),
-            string-join(($common:diacritic-letters, upper-case($common:diacritic-letters)), ''), 
-            string-join(($common:diacritic-letters-without, upper-case($common:diacritic-letters-without)), '')
-        )
+        normalize-unicode($string)
+        ! replace(., '­'(: This is a soft-hyphen :), '')
+        ! replace(., '&#39;', '&#8217;') (: Use correct apostrophe :)
+        ! translate(
+                ., 
+                string-join(($common:diacritic-letters, upper-case($common:diacritic-letters)), ''), 
+                string-join(($common:diacritic-letters-without, upper-case($common:diacritic-letters-without)), '')
+            )
     else
         ''
 };
@@ -607,6 +602,7 @@ declare function common:letter-variations($letter as xs:string) as xs:string* {
     return
         if($letter eq 'a') then ('a','ā')
         else if($letter eq 'd') then ('d','ḍ')
+        else if($letter eq 'e') then ('e','é')
         else if($letter eq 'h') then ('h','h','ḥ')
         else if($letter eq 'i') then ('i','ī')
         else if($letter eq 'l') then ('l','ḷ','ḹ')
@@ -684,10 +680,14 @@ declare function common:update($request-parameter as xs:string, $existing-value 
     else 
         
         (: Add whitespace so it's not too unreadable :)
-        let $padding-ws :=
-            if(not($new-value instance of xs:anyAtomicType) and functx:node-kind($new-value) eq 'element') then
-                text { $common:node-ws }
-            else ()
+        let $new-value-padded :=
+            if($new-value instance of element()) then (
+                text {common:ws(1)}, 
+                $new-value, 
+                text {$common:chr-nl}
+            )
+            else 
+                $new-value
         
         (: Return <updated/> :)
         return
@@ -700,11 +700,11 @@ declare function common:update($request-parameter as xs:string, $existing-value 
                 if(not($existing-value) and $new-value) then            (: Insert :)
                 
                     if($insert-following) then (                        (: Insert following :)
-                        update insert ($padding-ws, $new-value) following $insert-following,
+                        update insert $new-value-padded following $insert-following,
                         attribute update { 'insert' }
                     )
                     else if($insert-into) then (                        (: Insert wherever :)
-                        update insert ($padding-ws, $new-value) into $insert-into,
+                        update insert $new-value-padded into $insert-into,
                         attribute update { 'insert' }
                     )
                     else ()

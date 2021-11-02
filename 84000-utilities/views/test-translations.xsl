@@ -44,45 +44,49 @@
                 <p class="italic sml-margin bottom text-danger">
                     <xsl:value-of select="$test-title"/>
                 </p>
-                <ul class="list-inline inline-dots">
-                    <li>
-                        <xsl:value-of select="$text-title"/>
-                    </li>
-                    <li>
-                        <xsl:value-of select="$text-id"/>
-                    </li>
-                    <li>
-                        <a>
-                            <xsl:attribute name="href" select="concat($test-domain, '/translation/', $text-id, '.html?view-mode=tests')"/>
-                            <xsl:attribute name="target" select="concat($text-id, '-html')"/>
-                            <xsl:value-of select="'html'"/>
-                        </a>
-                    </li>
-                    <li>
-                        <a>
-                            <xsl:attribute name="href" select="concat($test-domain, '/translation/', $text-id, '.xml?view-mode=tests')"/>
-                            <xsl:attribute name="target" select="concat($text-id, '-xml')"/>
-                            <xsl:value-of select="'xml'"/>
-                        </a>
-                    </li>
-                    <li>
-                        <a>
-                            <xsl:attribute name="href" select="concat($test-domain, '/translation/', $text-id, '.tei')"/>
-                            <xsl:attribute name="target" select="concat($text-id, '-tei')"/>
-                            <xsl:value-of select="'tei'"/>
-                        </a>
-                    </li>
-                </ul>
-                <ul>
-                    <xsl:for-each select="$test-detail/m:detail">
+                <div>
+                    <ul class="list-inline inline-dots">
                         <li>
-                            <xsl:if test="@type eq 'debug'">
-                                <xsl:attribute name="class" select="'debug'"/>
-                            </xsl:if>
-                            <xsl:copy-of select="node()"/>
+                            <xsl:value-of select="$text-title"/>
                         </li>
-                    </xsl:for-each>
-                </ul>
+                        <li>
+                            <xsl:value-of select="$text-id"/>
+                        </li>
+                        <li>
+                            <a>
+                                <xsl:attribute name="href" select="concat($test-domain, '/translation/', $text-id, '.html?view-mode=tests')"/>
+                                <xsl:attribute name="target" select="concat($text-id, '-html')"/>
+                                <xsl:value-of select="'html'"/>
+                            </a>
+                        </li>
+                        <li>
+                            <a>
+                                <xsl:attribute name="href" select="concat($test-domain, '/translation/', $text-id, '.xml?view-mode=tests')"/>
+                                <xsl:attribute name="target" select="concat($text-id, '-xml')"/>
+                                <xsl:value-of select="'xml'"/>
+                            </a>
+                        </li>
+                        <li>
+                            <a>
+                                <xsl:attribute name="href" select="concat($test-domain, '/translation/', $text-id, '.tei')"/>
+                                <xsl:attribute name="target" select="concat($text-id, '-tei')"/>
+                                <xsl:value-of select="'tei'"/>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+                <div>
+                    <ul>
+                        <xsl:for-each select="$test-detail/m:detail">
+                            <li>
+                                <xsl:if test="@type eq 'debug'">
+                                    <xsl:attribute name="class" select="'debug'"/>
+                                </xsl:if>
+                                <xsl:copy-of select="node()"/>
+                            </li>
+                        </xsl:for-each>
+                    </ul>
+                </div>
             </div>
         </div>
         

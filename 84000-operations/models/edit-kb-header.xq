@@ -77,7 +77,7 @@ let $xml-response :=
             let $search-terms := (
                 tei-content:titles($tei)//m:title/data(),
                 normalize-space($similar-search)
-            )[. gt '']
+            )[not(. eq '')]
             return
                 element { QName('http://read.84000.co/ns/1.0', 'similar-entities') }{
                     entities:similar($entity, $search-terms, $knowledgebase-id)

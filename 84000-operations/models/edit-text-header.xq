@@ -9,6 +9,7 @@ import module namespace common="http://read.84000.co/common" at "../../84000-rea
 import module namespace tei-content="http://read.84000.co/tei-content" at "../../84000-reading-room/modules/tei-content.xql";
 import module namespace translation="http://read.84000.co/translation" at "../../84000-reading-room/modules/translation.xql";
 import module namespace contributors="http://read.84000.co/contributors" at "../../84000-reading-room/modules/contributors.xql";
+import module namespace entities = "http://read.84000.co/entities" at "../../84000-reading-room/modules/entities.xql";
 
 import module namespace deploy="http://read.84000.co/deploy" at "../../84000-reading-room/modules/deploy.xql";
 import module namespace store="http://read.84000.co/store" at "../../84000-reading-room/modules/store.xql";
@@ -47,16 +48,20 @@ let $delete-submission :=
 let $updated := 
     if($form-action = ('update-titles', 'update-contributors') and $tei) then
         update-tei:title-statement($tei)
-    else if($form-action eq 'update-locations' and $tei) then
-        update-tei:locations($tei)
+        
+    else if($form-action eq 'update-source' and $tei) then
+        update-tei:source($tei)
+        
     else if($form-action eq 'update-publication-status' and $tei) then (
         update-tei:publication-status($tei),
         translation-status:update($text-id)
     )
+    
     else if($form-action eq 'process-upload' and $text-id gt '') then (
         file-upload:process-upload($text-id),
         translation-status:update($text-id)
     )
+    
     else ()
 
 (: If it's a new version :)
@@ -75,6 +80,16 @@ let $generate-files :=
     if($form-action eq 'generate-files' and $store:conf and $translation-status-group eq 'published')then
         store:create(concat($text-id, '.all'))
     else ()
+    
+let $attribution-entities :=
+    element { QName('http://read.84000.co/ns/1.0', 'attribution-entities') } {
+        let $authorship-refs-text := $tei//tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl//@ref
+        let $authorship-refs-rest := $tei-content:translations-collection//tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl//@ref except $authorship-refs-text
+        return (
+            $entities:entities/m:entity/id($authorship-refs-text ! replace(., '^eft:', '')) ! entities:entity(., true(), true(), false()),
+            $entities:entities/m:entity/id($authorship-refs-rest ! replace(., '^eft:', ''))
+        )
+    }
 
 let $xml-response := 
     common:response(
@@ -100,7 +115,7 @@ let $xml-response :=
                 for $bibl in $tei//tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl
                 return (
                     translation:toh($tei, $bibl/@key),
-                    translation:location($tei, $bibl/@key),
+                    tei-content:source($tei, $bibl/@key),
                     translation:downloads($tei, $bibl/@key, 'all')
                 ),
                 
@@ -120,6 +135,7 @@ let $xml-response :=
             tei-content:text-statuses-selected(tei-content:translation-status($tei), 'translation'),
             contributors:persons(false(), false()),
             contributors:teams(true(), false(), false()),
+            $attribution-entities,
             $tei-content:title-types,
             $contributors:contributor-types,
             doc('../config/submission-checklist.xml')

@@ -7,6 +7,7 @@ import module namespace common="http://read.84000.co/common" at "../../modules/c
 import module namespace tei-content="http://read.84000.co/tei-content" at "../../modules/tei-content.xql";
 import module namespace source="http://read.84000.co/source" at "../../modules/source.xql";
 import module namespace translations="http://read.84000.co/translations" at "../../modules/translations.xql";
+import module namespace entities="http://read.84000.co/entities" at "../../modules/entities.xql";
 
 declare option exist:serialize "method=xml indent=no";
 
@@ -26,6 +27,13 @@ let $summary-tengyur := translations:summary($source:etengyur-work)
 let $translations-published := translations:translation-status-texts($tei-content:text-statuses/m:status[@type eq 'translation'][@group = ('published')]/@status-id)
 let $translations-translated := translations:translation-status-texts($tei-content:text-statuses/m:status[@type eq 'translation'][@group = ('translated')]/@status-id)
 let $translations-in-translation := translations:translation-status-texts($tei-content:text-statuses/m:status[@type eq 'translation'][@group = ('in-translation')]/@status-id)
+
+let $entities := 
+    element { QName('http://read.84000.co/ns/1.0', 'entities') }{
+        let $attribution-entity-ids := ($translations-published//m:attribution/@ref, $translations-translated//m:attribution/@ref, $translations-in-translation//m:attribution/@ref) ! replace(., '^eft:', '')
+        return 
+            $entities:entities/m:entity/id($attribution-entity-ids) ! entities:entity(., true(), true(), false())
+    }
 
 let $xml-response :=
     common:response(
@@ -48,7 +56,8 @@ let $xml-response :=
             },
             element { QName('http://read.84000.co/ns/1.0', 'translations-in-translation') } {
                 $translations-in-translation
-            }
+            },
+            $entities
         )
     )
 

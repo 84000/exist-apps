@@ -39,7 +39,6 @@ declare variable $translation:published-status-ids := $tei-content:text-statuses
 declare variable $translation:in-progress-status-ids := $tei-content:text-statuses/m:status[@type eq 'translation'][@group = ('translated', 'in-translation')]/@status-id;
 declare variable $translation:marked-up-status-ids := $tei-content:text-statuses/m:status[@type eq 'translation'][@marked-up = 'true']/@status-id;
 
-
 declare function translation:titles($tei as element(tei:TEI)) as element() {
     element {QName('http://read.84000.co/ns/1.0', 'titles')} {
         tei-content:title-set($tei, 'mainTitle')
@@ -278,40 +277,43 @@ declare function translation:parts($tei as element(tei:TEI), $passage-id as xs:s
     
     return (
     
-        (: Always include summary :)
-        translation:summary($tei, $passage-id, $view-mode, ''),
-        
         (: Only include these parts if the text has a render status :)
         if($common:environment/m:render/m:status[@type eq 'translation'][@status-id = $status-id]) then (
             
-            translation:acknowledgment($tei, $passage-id, $view-mode),
+            let $parts := (
+                translation:summary($tei, $passage-id, $view-mode, ''),
+                translation:acknowledgment($tei, $passage-id, $view-mode),
+                translation:preface($tei, $passage-id, $view-mode),
+                translation:introduction($tei, $passage-id, $view-mode),
+                translation:body($tei, $passage-id, $view-mode),
+                translation:appendix($tei, $passage-id, $view-mode),
+                translation:abbreviations($tei, $passage-id, $view-mode),
+                translation:bibliography($tei, $passage-id, $view-mode)
+            )
             
-            translation:preface($tei, $passage-id, $view-mode),
+            let $end-notes := translation:end-notes($tei, $passage-id, $view-mode, $parts//tei:note[@place eq 'end']/@xml:id)
             
-            translation:introduction($tei, $passage-id, $view-mode),
+            let $glossary := translation:glossary($tei, $passage-id, $view-mode, $parts[@glossarize eq 'true']//@xml:id)
             
-            translation:body($tei, $passage-id, $view-mode),
-            
-            translation:appendix($tei, $passage-id, $view-mode),
-            
-            translation:abbreviations($tei, $passage-id, $view-mode),
-            
-            translation:end-notes($tei, $passage-id, $view-mode),
-            
-            translation:bibliography($tei, $passage-id, $view-mode),
-            
-            translation:glossary($tei, $passage-id, $view-mode)
+            return (
+                $parts,
+                $end-notes,
+                $glossary
+            )
             
         )
-        else ()
+        
+        (: Always include summary :)
+        else 
+            translation:summary($tei, $passage-id, $view-mode, '')
     )
 };
 
-declare function translation:part($part as element(tei:div)?, $render as xs:string, $type as xs:string, $prefix as xs:string, $label as node()*, $passage-id as xs:string?) as element(m:part) {
-    local:part($part, $render, $type, $prefix, $label, $passage-id, 0, 1)
+declare function translation:part($part as element(tei:div)?, $render as xs:string, $type as xs:string, $prefix as xs:string, $label as node()*, $output-ids as xs:string*) as element(m:part) {
+    local:part($part, $render, $type, $prefix, $label,$output-ids, 0, 1)
 };
 
-declare function local:part($part as element(tei:div)?, $render as xs:string, $type as xs:string, $prefix as xs:string?, $label as node()*, $passage-id as xs:string?, $nesting as xs:integer, $section-index as xs:integer) as node()* {
+declare function local:part($part as element(tei:div)?, $render as xs:string, $type as xs:string, $prefix as xs:string?, $label as node()*, $output-ids as xs:string*, $nesting as xs:integer, $section-index as xs:integer) as node()* {
     
     (: Get heading :)
     let $titles := local:part-title($part, $type, $label)
@@ -335,12 +337,12 @@ declare function local:part($part as element(tei:div)?, $render as xs:string, $t
                 
                 $titles,
                 
-                local:part-content($part, $render, $type, (), $passage-id, $nesting, $section-index)
+                local:part-content($part, $render, $type, (), $output-ids, $nesting, $section-index)
             }
             
         (: If there's no header - move down the tree without adding a section :)
         else
-            local:part-content($part, $render, $type, (), $passage-id, $nesting - 1, $section-index)
+            local:part-content($part, $render, $type, (), $output-ids, $nesting - 1, $section-index)
 
 };
 
@@ -377,18 +379,36 @@ declare function local:part-title($part as element(tei:div)?, $type as xs:string
          else ()
 };
 
-declare function local:part-content($content as element(tei:div)?, $render as xs:string, $type as xs:string, $prefix as xs:string?, $passage-id as xs:string?, $nesting as xs:integer, $section-index as xs:integer) as node()* {
+declare function local:part-content($content as element(tei:div)?, $render as xs:string, $type as xs:string, $prefix as xs:string?, $output-ids as xs:string*, $nesting as xs:integer, $section-index as xs:integer) as node()* {
 
-    (: No structure in end-notes :)
-    if($type eq 'end-notes' and $render = ('persist', 'show', 'collapse', 'hide', 'passage')) then
-        if($render eq 'passage') then
-            $content/id($passage-id)
+    (: End-notes :)
+    if($type eq 'end-notes') then
+    
+        (: Just the specified id :)
+        if($render eq 'passage') then 
+            $content/id($output-ids)
+        
+        (: specified ids and first 8 :)
+        else if($render eq 'preview') then 
+            $content/id($output-ids)
+        
+        (: Return all :)
+        else $content
+    
+    (: Glossary :)
+    else if($type eq 'glossary') then
+        
+        (: Just the specified id :)
+        if($render eq 'passage') then 
+            $content/id($output-ids)
+            
+        (: specified ids and first 3 :)
+        else if($render eq 'preview') then 
+            $content/id($output-ids)
+        
+        (: Return all :)
         else 
             $content
-            
-    (: No structure in glossary :)
-    else if($type eq 'glossary' and $render = ('persist', 'show', 'collapse', 'hide', 'passage')) then
-        $content
     
     else
         (: Parse <div/>s to return structure and content where required :)
@@ -400,7 +420,7 @@ declare function local:part-content($content as element(tei:div)?, $render as xs
                 
                 let $section-index := functx:index-of-node($content/tei:div[@type = ('chapter', 'section')], $node)
                 return
-                    local:part($node, $render, $node/@type, $prefix, (), $passage-id, $nesting + 1, $section-index)
+                    local:part($node, $render, $node/@type, $prefix, (), $output-ids, $nesting + 1, $section-index)
             
             (: Head already included this in section-titles - so skip it :)
             else if ($node[local-name(.) eq 'head'][@type = ($type, 'chapterTitle', 'listBibl', 'notes')]) then
@@ -412,8 +432,9 @@ declare function local:part-content($content as element(tei:div)?, $render as xs
             
             (: Passage only - return only specified node  :)
             else if ($render eq 'passage') then 
-                let $passage-id-int := substring-after($passage-id, 'node-')
-                let $passage := $node/descendant-or-self::tei:*[@tid eq $passage-id-int]
+                for $output-id in $output-ids
+                let $output-id-int := substring-after($output-id, 'node-')
+                let $passage := $node/descendant-or-self::tei:*[@tid eq $output-id-int]
                 return
                     if($passage) then (
                         $node/ancestor-or-self::*[preceding-sibling::tei:milestone[@xml:id]][1]/preceding-sibling::tei:milestone[@xml:id][1],
@@ -449,27 +470,40 @@ declare function local:render($content as element()*, $show-ids as xs:string*, $
         - passage       Only include the passage specified by passage-id + hidden
     :)
     
+    (: If passage specified in $show-ids show it :)
     if($passage-id = $show-ids) then 
         'show'
+    
+    (: If show 'all' then all collapsed :)
     else if($passage-id = ('all')) then 
         'collapse'
+    
+    (: If glossary specified only then everything else empty :)
     else if($view-mode[@parts = ('glossary')]) then 
         if($content[@type eq 'glossary']) then
             'passage'
         else
             'empty'
+    
+    (: If we are showing the passage only then everything else empty :)
     else if($view-mode[@parts = ('passage')]) then 
         if(local:passage-in-content($content, $passage-id)) then
             'passage'
         else
             'empty'
+    
+    (: If we are showing the part only then everything else empty :)
     else if($view-mode[@parts = ('part')]) then 
         if(local:passage-in-content($content, $passage-id)) then
             'show'
         else
             'empty'
+    
+    (: If the passage is in the part show it :)
     else if(local:passage-in-content($content, $passage-id)) then
         'show'
+    
+    (: otherwise return the default :)
     else
         $default
     
@@ -689,7 +723,7 @@ declare function translation:abbreviations($tei as element(tei:TEI), $passage-id
 
 };
 
-declare function translation:end-notes($tei as element(tei:TEI), $passage-id as xs:string?, $view-mode as element(m:view-mode)?) as element()? {
+declare function translation:end-notes($tei as element(tei:TEI), $passage-id as xs:string?, $view-mode as element(m:view-mode)?, $note-ids as xs:string*) as element()? {
     
     let $end-notes := 
         element { QName('http://www.tei-c.org/ns/1.0', 'div') } {
@@ -698,10 +732,20 @@ declare function translation:end-notes($tei as element(tei:TEI), $passage-id as 
     
     where $end-notes[tei:note]
     
-    let $render := local:render($end-notes, ('end-notes', 'back'), $passage-id, $view-mode, 'collapse')
-
+    let $render := local:render($end-notes, ('end-notes', 'back'), $passage-id, $view-mode, 'preview')
+    
+    let $notes-cache := tei-content:cache($tei, false())/m:notes-cache/m:end-note
+    let $output-ids := (
+        $passage-id,
+        if($render eq 'preview') then (
+            $notes-cache[@index = ('1','2','3','4','5','6','7','8')]/@id/string(),
+            $note-ids
+        ) 
+        else ()
+    )
+    
     return
-        translation:part($end-notes, $render, 'end-notes', 'n', text {'Notes'}, $passage-id)
+        translation:part($end-notes, $render, 'end-notes', 'n', text {'Notes'}, $output-ids)
 
 };
 
@@ -722,35 +766,33 @@ declare function translation:bibliography($tei as element(tei:TEI), $passage-id 
 };
 
 declare function translation:glossary($tei as element(tei:TEI)) as element()? {
-    translation:glossary($tei, 'glossary', ())
+    translation:glossary($tei, 'glossary', (), ())
 };
 
-declare function translation:glossary($tei as element(tei:TEI), $passage-id as xs:string?, $view-mode as element(m:view-mode)?) as element()? {
+declare function translation:glossary($tei as element(tei:TEI), $passage-id as xs:string?, $view-mode as element(m:view-mode)?, $location-ids as xs:string*) as element()? {
     
     let $glossary := 
         element { QName('http://www.tei-c.org/ns/1.0', 'div') } {
             attribute type { 'glossary' },
             $tei/tei:text/tei:back//tei:list[@type eq 'glossary']/tei:item/tei:gloss[@xml:id]
         }
-    
+        
     where $glossary[tei:gloss]
     
-    let $render := 
-        if($passage-id = ('glossary', 'back')) then 
-            'show'
-        else if($view-mode[@parts eq 'glossary']) then
-            'show'
-        else if($passage-id = ('all')) then 
-            'collapse'
-        else if($view-mode[@parts eq 'passage'] and local:passage-in-content($glossary, $passage-id)) then 
-            'passage'
-        else if($view-mode[@parts = ('passage', 'part')]) then 
-            'hide'
-        else
-            'collapse'
+    let $render := local:render($glossary, ('glossary', 'back'), $passage-id, $view-mode, 'preview')
+    
+    let $glossary-cache := tei-content:cache($tei, false())/m:glossary-cache/m:gloss
+    let $output-ids := (
+        $passage-id,
+        if($render eq 'preview') then (
+            $glossary-cache[@index = ('1','2','3')]/@id/string(),
+            $glossary-cache[m:location/@id = $location-ids]/@id/string()
+        )
+        else ()
+    )
     
     return
-        translation:part($glossary, $render, 'glossary', 'g', text {'Glossary'}, ())
+        translation:part($glossary, $render, 'glossary', 'g', text {'Glossary'}, $output-ids)
 
 };
 

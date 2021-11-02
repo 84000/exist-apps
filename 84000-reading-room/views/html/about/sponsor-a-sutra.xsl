@@ -28,12 +28,23 @@
                     <xsl:if test="count($priority-texts)">
                         <xsl:call-template name="expand-item">
                             <xsl:with-param name="id" select="'priority'"/>
+                            <xsl:with-param name="accordion-selector" select="'#accordion'"/>
                             <xsl:with-param name="title">
-                                <xsl:call-template name="local-text">
-                                    <xsl:with-param name="local-key" select="'priority-title'"/>
-                                </xsl:call-template>
+                                <div class="center-vertical align-left">
+                                    <div>
+                                        <h3 class="list-group-item-heading">
+                                            <xsl:call-template name="local-text">
+                                                <xsl:with-param name="local-key" select="'priority-title'"/>
+                                            </xsl:call-template>
+                                        </h3>
+                                    </div>
+                                    <div>
+                                        <span class="badge badge-notification">
+                                            <xsl:value-of select="count($priority-texts)"/>
+                                        </span>
+                                    </div>
+                                </div>
                             </xsl:with-param>
-                            <xsl:with-param name="show-count" select="count($priority-texts)"/>
                             <xsl:with-param name="content">
                                 <div class="top-margin">
                                     <p class="italic">
@@ -71,8 +82,21 @@
                         
                         <xsl:call-template name="expand-item">
                             <xsl:with-param name="id" select="concat('cost-group-', position())"/>
-                            <xsl:with-param name="title" select="replace(replace($group-title-app-text, '#pageUpper', xs:string($page-upper)), '#groupCost', format-number($group-cost, '#,###'))"/>
-                            <xsl:with-param name="show-count" select="count($single-part-cost-group-texts)"/>
+                            <xsl:with-param name="accordion-selector" select="'#accordion'"/>
+                            <xsl:with-param name="title">
+                                <div class="center-vertical align-left">
+                                    <div>
+                                        <h3 class="list-group-item-heading">
+                                            <xsl:value-of select="replace(replace($group-title-app-text, '#pageUpper', xs:string($page-upper)), '#groupCost', format-number($group-cost, '#,###'))"/>
+                                        </h3>
+                                    </div>
+                                    <div>
+                                        <span class="badge badge-notification">
+                                            <xsl:value-of select="count($single-part-cost-group-texts)"/>
+                                        </span>
+                                    </div>
+                                </div>
+                            </xsl:with-param>
                             <xsl:with-param name="content">
                                 <div class="top-margin">
                                     <xsl:call-template name="text-list">
@@ -98,8 +122,21 @@
                     
                     <xsl:call-template name="expand-item">
                         <xsl:with-param name="id" select="concat('group-', count($single-part-cost-groups) + 1)"/>
-                        <xsl:with-param name="title" select="replace($remainder-title-app-text, '#pageLower', xs:string($remainder-page-lower))"/>
-                        <xsl:with-param name="show-count" select="count($remainder-texts)"/>
+                        <xsl:with-param name="accordion-selector" select="'#accordion'"/>
+                        <xsl:with-param name="title">
+                            <div class="center-vertical align-left">
+                                <div>
+                                    <h3 class="list-group-item-heading">
+                                        <xsl:value-of select="replace($remainder-title-app-text, '#pageLower', xs:string($remainder-page-lower))"/>
+                                    </h3>
+                                </div>
+                                <div>
+                                    <span class="badge badge-notification">
+                                        <xsl:value-of select="count($remainder-texts)"/>
+                                    </span>
+                                </div>
+                            </div>
+                        </xsl:with-param>
                         <xsl:with-param name="content">
                             
                             <div class="row top-margin">

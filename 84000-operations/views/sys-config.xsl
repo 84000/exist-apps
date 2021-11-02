@@ -12,7 +12,7 @@
                 <xsl:with-param name="page-content">
                     
                     <!-- Dropdown list of config files -->
-                    <form action="sys-config.html" method="post" class="filter-form">
+                    <form action="sys-config.html" method="post" class="filter-form" data-loading="Loading...">
                         <select name="config-set" class="form-control">
                             <xsl:for-each select="m:sys-config-files/m:option">
                                 <option>

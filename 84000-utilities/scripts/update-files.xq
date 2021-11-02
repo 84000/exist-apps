@@ -36,8 +36,8 @@ declare function local:files-permissions($collection-uri as xs:string, $file-ext
     )
 };
 
-local:files-permissions('/db/apps/84000-data/tei/translations/tengyur/placeholders', 'xml', 'admin', 'tei', 'rw-rw-r--')
-(:local:files-mimetype-xml('/db/apps/84000-data/cache', 'cache'):)
+(:local:files-permissions('/db/apps/84000-data/tei/translations/tengyur/placeholders', 'xml', 'admin', 'tei', 'rw-rw-r--'):)
+local:files-mimetype-xml('/db/apps/84000-data/cache', 'cache')
 (:local:files-permissions('/db/apps/84000-data/azw3', 'azw3', 'admin', 'utilities', 'rw-rw-r--'),:)
 (:local:files-permissions('/db/apps/84000-data/cache', 'cache', 'admin', 'tei', 'rw-rw-r--'),
 local:files-permissions('/db/apps/84000-data/epub', 'epub', 'admin', 'utilities', 'rw-rw-r--'),

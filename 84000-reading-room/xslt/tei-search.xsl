@@ -161,8 +161,11 @@
                                         </xsl:for-each>
                                         
                                         <xsl:for-each select="$tei[@type eq 'knowledgebase']/m:page">
-                                            <p class="small text-muted">
-                                                <xsl:value-of select="'in The 84000 Knowledge Base'"/>
+                                            <p class="small">
+                                                <span class="text-muted">
+                                                    <xsl:value-of select="'in '"/>
+                                                </span>
+                                                <xsl:value-of select="'The 84000 Knowledge Base'"/>
                                             </p>
                                         </xsl:for-each>
                                         
@@ -253,9 +256,6 @@
                                                     <xsl:when test="@node-name eq 'title' and @node-type eq 'mainTitle' and @node-lang eq 'en'">
                                                         <!-- Don't bother if it's the title, we already show this -->
                                                     </xsl:when>
-                                                    <xsl:when test="@node-name eq 'bibl' and @key">
-                                                        <!-- Don't bother if it's the toh, we already show this -->
-                                                    </xsl:when>
                                                     <xsl:otherwise>
                                                         <xsl:apply-templates select="."/>
                                                     </xsl:otherwise>
@@ -328,12 +328,7 @@
                 <!-- A main title replaces the title string -->
                 <xsl:apply-templates select="node()"/>
             </xsl:when>
-            
-            <xsl:when test="@node-name eq 'bibl' and @key gt ''">
-                <!-- A bibl ref replaces the Toh string -->
-                <xsl:apply-templates select=".//tei:ref"/>
-            </xsl:when>
-            
+
             <xsl:otherwise>
                 <!-- Everything else is listed as a search-match -->
                 <div class="search-match">
@@ -366,13 +361,15 @@
                         </div>
                     </xsl:for-each>
                     
-                    <div>
-                        <a>
-                            <xsl:attribute name="href" select="common:internal-link(concat($reading-room-path, @link), (), '', /m:response/@lang)"/>
-                            <xsl:attribute name="target" select="concat(parent::m:item/m:tei/@resource-id, '.html')"/>
-                            <xsl:value-of select="'read...'"/>
-                        </a>
-                    </div>
+                    <xsl:if test="parent::m:item/m:tei[@translation-status-group eq 'published']">
+                        <div>
+                            <a>
+                                <xsl:attribute name="href" select="common:internal-link(concat($reading-room-path, @link), (), '', /m:response/@lang)"/>
+                                <xsl:attribute name="target" select="concat(parent::m:item/m:tei/@resource-id, '.html')"/>
+                                <xsl:value-of select="'read...'"/>
+                            </a>
+                        </div>
+                    </xsl:if>
                     
                 </div>
             </xsl:otherwise>
@@ -413,9 +410,7 @@
     </xsl:template>
     
     <xsl:template match="tei:bibl">
-        <p>
-            <xsl:apply-templates select="node()"/>
-        </p>
+        <xsl:apply-templates select="node()"/>
     </xsl:template>
     
     <xsl:template match="tei:gloss">
@@ -473,10 +468,47 @@
             <xsl:when test="@cRef">
                 <span class="ref">[<xsl:apply-templates select="@cRef"/>]</span>
             </xsl:when>
+            <xsl:when test="following-sibling::*">
+                <xsl:apply-templates select="node()"/>
+                <br/>
+            </xsl:when>
             <xsl:otherwise>
                 <xsl:apply-templates select="node()"/>
             </xsl:otherwise>
         </xsl:choose>
+    </xsl:template>
+    
+    <xsl:template match="tei:biblScope | tei:author | tei:editor">
+        
+        <xsl:choose>
+            <xsl:when test="local-name(.) eq 'author' and not(@role)">
+                <xsl:value-of select="'By '"/>
+            </xsl:when>
+            <xsl:when test="local-name(.) eq 'author'">
+                <xsl:value-of select="'Tibetan translation: '"/>
+            </xsl:when>
+            <xsl:when test="local-name(.) eq 'editor'">
+                <xsl:value-of select="'Revision: '"/>
+            </xsl:when>
+        </xsl:choose>
+        
+        <xsl:variable name="lang-class" select="common:lang-class(@xml:lang)"/>
+        
+        <xsl:choose>
+            <xsl:when test="$lang-class gt ''">
+                <span class="{ $lang-class }">
+                    <xsl:apply-templates select="node()"/>
+                </span>
+            </xsl:when>
+            <xsl:otherwise>
+                <xsl:apply-templates select="node()"/>
+            </xsl:otherwise>
+        </xsl:choose>
+        
+        <xsl:if test="following-sibling::*[self::tei:biblScope | self::tei:author | self::tei:editor]">
+            <br/>
+        </xsl:if>
+        
     </xsl:template>
     
     <xsl:template match="m:full[parent::m:toh]">

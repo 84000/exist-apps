@@ -25,19 +25,20 @@
                     <xsl:with-param name="local-key" select="'matching-funds-description'"/>
                 </xsl:call-template>
                 
-                <hr class="no-margin"/>
-                
                 <div id="matching-funds" class="list-group accordion" role="tablist" aria-multiselectable="false">
                     
                     <xsl:call-template name="expand-item">
                         <xsl:with-param name="id" select="'matching-funds-sponsors'"/>
+                        <xsl:with-param name="accordion-selector" select="'#matching-funds'"/>
                         <xsl:with-param name="title">
-                            <xsl:call-template name="local-text">
-                                <xsl:with-param name="local-key" select="'matching-funds-list-title'"/>
-                            </xsl:call-template>
+                            <h3 class="list-group-item-heading">
+                                <xsl:call-template name="local-text">
+                                    <xsl:with-param name="local-key" select="'matching-funds-list-title'"/>
+                                </xsl:call-template>
+                            </h3>
                         </xsl:with-param>
                         <xsl:with-param name="content">
-                            <ul>
+                            <ul class="top-margin">
                                 <xsl:for-each select="m:sponsors/m:sponsor[m:type[@id eq 'matching-funds']]">
                                     <li>
                                         <xsl:value-of select="m:label"/>
@@ -58,22 +59,23 @@
                     <xsl:with-param name="local-key" select="'sutras-description'"/>
                 </xsl:call-template>
                 
-                <hr class="no-margin"/>
-                
                 <div id="sutra" class="list-group accordion" role="tablist" aria-multiselectable="false">
                     <xsl:call-template name="expand-item">
                         <xsl:with-param name="id" select="'sutra-sponsors'"/>
+                        <xsl:with-param name="accordion-selector" select="'#sutra'"/>
                         <xsl:with-param name="title">
-                            <xsl:call-template name="local-text">
-                                <xsl:with-param name="local-key" select="'sutras-list-title'"/>
-                            </xsl:call-template>
+                            <h3 class="list-group-item-heading">
+                                <xsl:call-template name="local-text">
+                                    <xsl:with-param name="local-key" select="'sutras-list-title'"/>
+                                </xsl:call-template>
+                            </h3>
                         </xsl:with-param>
                         <xsl:with-param name="content">
                             <div class="top-margin">
                                 <xsl:call-template name="text-list">
                                     <xsl:with-param name="texts" select="m:sponsored-texts/m:text"/>
                                     <xsl:with-param name="list-id" select="'single-part-cost-group'"/>
-                                    <xsl:with-param name="grouping" select="'sutra-sponsors'"/>
+                                    <xsl:with-param name="grouping" select="'text'"/>
                                     <xsl:with-param name="show-sponsors" select="true()"/>
                                 </xsl:call-template>
                             </div>
@@ -91,18 +93,19 @@
                     <xsl:with-param name="local-key" select="'founding-description'"/>
                 </xsl:call-template>
                 
-                <hr class="no-margin"/>
-                
                 <div id="founding" class="list-group accordion" role="tablist" aria-multiselectable="false">
                     <xsl:call-template name="expand-item">
                         <xsl:with-param name="id" select="'founding-sponsors'"/>
+                        <xsl:with-param name="accordion-selector" select="'#founding'"/>
                         <xsl:with-param name="title">
-                            <xsl:call-template name="local-text">
-                                <xsl:with-param name="local-key" select="'founding-list-title'"/>
-                            </xsl:call-template>
+                            <h3 class="list-group-item-heading">
+                                <xsl:call-template name="local-text">
+                                    <xsl:with-param name="local-key" select="'founding-list-title'"/>
+                                </xsl:call-template>
+                            </h3>
                         </xsl:with-param>
                         <xsl:with-param name="content">
-                            <table class="table no-border">
+                            <table class="table no-border top-margin">
                                 <xsl:for-each select="m:sponsors/m:sponsor[m:type[@id eq 'founding']]">
                                     <xsl:sort select="xs:integer(fn:substring-after(@xml:id, 'sponsor-'))"/>
                                     <tr>

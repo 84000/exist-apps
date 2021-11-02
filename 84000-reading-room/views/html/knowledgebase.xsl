@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:common="http://read.84000.co/common" xmlns:epub="http://www.idpf.org/2007/ops" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:functx="http://www.functx.com" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" exclude-result-prefixes="#all" version="3.0">
     
-    <xsl:import href="../../xslt/tei-to-xhtml.xsl"/>
+    <xsl:import href="about/about.xsl"/>
     
     <!-- Look up environment variables -->
     <xsl:variable name="environment" select="/m:response/m:environment"/>
@@ -11,6 +11,17 @@
     <xsl:variable name="article-id" select="/m:response/m:knowledgebase/m:page/@xml:id"/>
     <xsl:variable name="article-title" select="/m:response/m:knowledgebase/m:page/m:titles/m:title[@type = 'mainTitle'][1]"/>
     <xsl:variable name="article-entity" select="/m:response/m:entities/m:entity[m:instance[@id eq $article-id]]"/>
+    
+    <!-- Ignore any nodes with @rend='default-text' unless it's editor mode -->
+    <xsl:template match="tei:*[$view-mode[not(@id eq 'editor')] and @rend eq 'default-text']">
+        <!-- Ignore these -->
+    </xsl:template>
+    
+    <!-- Check nodes have more that default text -->
+    <xsl:function name="m:has-user-content" as="xs:boolean">
+        <xsl:param name="content" as="node()*"/>
+        <xsl:sequence select="if($view-mode[@id eq 'editor'] or $content/descendant-or-self::text()[normalize-space(.)][not(ancestor::tei:head)][not(ancestor::*/@rend = 'default-text')]) then true() else false()"/>
+    </xsl:function>
     
     <xsl:template match="/m:response">
         
@@ -83,63 +94,76 @@
                 <div class="container">
                     <div class="row">
                         
-                        <main class="col-md-8 col-lg-9">
+                        <main class="col-md-8">
                             
                             <h1>
-                                <xsl:apply-templates select="$article-title"/>
+                                <!--<xsl:apply-templates select="$article-title"/>-->
+                                <xsl:value-of select="$article-title"/>
                             </h1>
                             
-                            <xsl:for-each select="m:knowledgebase/m:page/m:titles/m:title[count((. | $article-title)) ne 1]">
-                                <div class="h4">
-                                    <xsl:value-of select="common:lang-label(@xml:lang)"/>
-                                    <span>
-                                        <xsl:call-template name="class-attribute">
-                                            <xsl:with-param name="lang" select="@xml:lang"/>
-                                        </xsl:call-template>
-                                        <xsl:value-of select="text()"/>
-                                    </span>
-                                </div>
-                            </xsl:for-each>
+                            <xsl:variable name="otherTitles" select="m:knowledgebase/m:page/m:titles/m:title[count((. | $article-title)) ne 1]"/>
+                            <xsl:if test="$otherTitles">
+                                <ul class="small">
+                                    <xsl:for-each-group select="$otherTitles" group-by="@xml:lang">
+                                        <li>
+                                            <xsl:value-of select="common:lang-label(@xml:lang)"/>
+                                            <span>
+                                                <xsl:call-template name="class-attribute">
+                                                    <xsl:with-param name="lang" select="@xml:lang"/>
+                                                </xsl:call-template>
+                                                <xsl:value-of select="text()[1]"/>
+                                            </span>
+                                        </li>
+                                    </xsl:for-each-group>
+                                </ul>
+                            </xsl:if>
                             
-                            <p class="text-muted small">
-                                <xsl:choose>
-                                    <xsl:when test="m:knowledgebase/m:page/m:publication/m:publication-date castable as xs:date">
-                                        <xsl:value-of select="concat('First published ', format-date(m:knowledgebase/m:page/m:publication/m:publication-date, '[Y]'))"/>
-                                    </xsl:when>
-                                    <xsl:otherwise>
-                                        <xsl:value-of select="'Not yet published'"/>
-                                    </xsl:otherwise>
-                                </xsl:choose>
-                            </p>
+                            <xsl:if test="m:has-user-content(m:knowledgebase/m:part[@type eq 'article'])">
+                                <section class="tei-parser gtr-right">
+                                    <xsl:apply-templates select="m:knowledgebase/m:part[@type eq 'article']"/>
+                                </section>
+                            </xsl:if>
                             
-                            <section class="tei-parser no-top-margin">
-                                <xsl:apply-templates select="m:knowledgebase/m:part[@type eq 'article']"/>
-                            </section>
+                            <xsl:if test="m:knowledgebase/m:part[@type eq 'related-texts'][m:text]">
+                                <section class="top-margin">
+                                    <!--<hr class="hidden-print"/>-->
+                                    <h2>
+                                        <xsl:apply-templates select="m:knowledgebase/m:part[@type eq 'related-texts']/tei:head/node()"/>
+                                    </h2>
+                                    <xsl:call-template name="text-list">
+                                        <xsl:with-param name="texts" select="m:knowledgebase/m:part[@type eq 'related-texts']/m:text"/>
+                                        <xsl:with-param name="list-id" select="'related-texts'"/>
+                                        <xsl:with-param name="show-translation-status" select="true()"/>
+                                    </xsl:call-template>
+                                </section>
+                            </xsl:if>
                             
-                            <xsl:if test="m:knowledgebase/m:part[@type eq 'bibliography'][tei:div[tei:bibl] or $view-mode[@id = ('editor')]]">
-                                <section class="tei-parser">
-                                    <hr class="hidden-print"/>
+                            <xsl:if test="m:has-user-content(m:knowledgebase/m:part[@type eq 'bibliography'])">
+                                <section class="tei-parser gtr-right">
+                                    <!--<hr class="hidden-print"/>-->
                                     <xsl:apply-templates select="m:knowledgebase/m:part[@type eq 'bibliography']"/>
                                 </section>
                             </xsl:if>
                             
-                            <xsl:if test="m:knowledgebase/m:part[@type eq 'end-notes'][tei:note]">
+                            <xsl:if test="m:has-user-content(m:knowledgebase/m:part[@type = ('article','bibliography')]//tei:note[@place eq 'end'][@xml:id])">
                                 <section class="tei-parser">
-                                    <hr class="hidden-print"/>
-                                    <xsl:call-template name="end-notes"/>
+                                    <!--<hr class="hidden-print"/>-->
+                                    <xsl:call-template name="end-notes">
+                                        <xsl:with-param name="end-notes" select="m:knowledgebase/m:part[@type = ('article','bibliography')]//tei:note[@place eq 'end'][@xml:id][m:has-user-content(.)]"/>
+                                    </xsl:call-template>
                                 </section>
                             </xsl:if>
                             
-                            <xsl:if test="m:knowledgebase/m:part[@type eq 'glossary'][tei:item]">
+                            <xsl:if test="m:has-user-content(m:knowledgebase/m:part[@type eq 'glossary'])">
                                 <section class="tei-parser">
-                                    <hr class="hidden-print"/>
+                                    <!--<hr class="hidden-print"/>-->
                                     <xsl:call-template name="glossary"/>
                                 </section>
                             </xsl:if>
                             
                         </main>
                         
-                        <aside class="col-md-4 col-lg-3">
+                        <aside class="col-md-4 col-lg-offset-1 col-lg-3">
                             
                             <xsl:if test="$tei-editor and m:knowledgebase/m:page[@locked-by-user gt '']">
                                 <div class="alert alert-danger" role="alert">
@@ -149,7 +173,7 @@
                             </xsl:if>
                             
                             <!-- Related content -->
-                            <xsl:variable name="related-entities" select="$article-entity[m:instance/m:entry] | $article-entity/m:relation/m:entity[m:instance/m:page | m:instance/m:entry]"/>
+                            <xsl:variable name="related-entities" select="$article-entity[m:instance/m:entry] | $article-entity/m:relation[not(@predicate eq 'isUnrelated')]/m:entity[m:instance/m:page | m:instance/m:entry]"/>
                             <xsl:if test="$related-entities">
                                 
                                 <h3>
@@ -364,7 +388,7 @@
         </xsl:call-template>
         
     </xsl:template>
-    
+        
     <xsl:template name="taxonomy">
         
         <ul class="list-unstyled taxonomy">

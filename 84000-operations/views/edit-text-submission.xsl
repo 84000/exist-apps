@@ -46,7 +46,7 @@
                     </div>
                     <hr/>
                     
-                    <form method="post" class="form-update">
+                    <form method="post" class="form-update" data-loading="Updating submission...">
                         <xsl:attribute name="action" select="'edit-text-submission.html'"/>
                         <input name="text-id" type="hidden">
                             <xsl:attribute name="value" select="m:request/@text-id"/>

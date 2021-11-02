@@ -12,6 +12,7 @@ import module namespace common="http://read.84000.co/common" at "../modules/comm
 import module namespace tei-content="http://read.84000.co/tei-content" at "../modules/tei-content.xql";
 import module namespace knowledgebase="http://read.84000.co/knowledgebase" at "../modules/knowledgebase.xql";
 import module namespace entities="http://read.84000.co/entities" at "../modules/entities.xql";
+import module namespace functx="http://www.functx.com";
 
 let $resource-id := request:get-parameter('resource-id', '')[1]
 let $resource-suffix := request:get-parameter('resource-suffix', '')
@@ -19,7 +20,7 @@ let $view-mode := request:get-parameter('view-mode', 'default')
 let $view-mode := $knowledgebase:view-modes/m:view-mode[@id eq $view-mode]
 
 let $tei := tei-content:tei($resource-id, 'knowledgebase')
-let $glossary := knowledgebase:glossary($tei)
+let $knowledgebase-id := tei-content:id($tei)
 
 let $knowledgebase-content :=
     element { QName('http://read.84000.co/ns/1.0', 'knowledgebase') } {
@@ -29,12 +30,25 @@ let $knowledgebase-content :=
         knowledgebase:article($tei),
         knowledgebase:bibliography($tei),
         knowledgebase:end-notes($tei),
-        $glossary
+        knowledgebase:related-texts($tei),
+        knowledgebase:glossary($tei)
+    }
+
+let $glossary-ids := 
+    if($common:environment/m:enable[@type eq 'glossary-of-terms']) then 
+        $knowledgebase-content/m:part[@type eq 'glossary']//tei:gloss/@xml:id
+    else ()
+
+let $entities := 
+    element { QName('http://read.84000.co/ns/1.0', 'entities') }{
+        let $attribution-entity-ids := $knowledgebase-content/m:part[@type eq 'related-texts']//m:attribution/@ref ! replace(., '^eft:', '')
+        return (
+            $entities:entities/m:entity/id($attribution-entity-ids)
+            | $entities:entities//m:entity[m:instance/@id = ($knowledgebase-id, $glossary-ids)]
+        ) ! entities:entity(., true(), true(), true())
     }
 
 let $caches := tei-content:cache($tei, false())/m:*
-let $glossary-ids := $glossary//tei:gloss/@xml:id
-let $entities := entities:entities(($glossary-ids, tei-content:id($tei)), true(), true(), true())
 
 let $xml-response := 
     if(not($resource-suffix = ('tei'))) then

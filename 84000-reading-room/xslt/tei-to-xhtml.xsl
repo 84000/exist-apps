@@ -18,6 +18,7 @@
     <!-- Useful keys -->
     <xsl:key name="text-parts" match="m:part[@id]" use="@id"/>
     <xsl:key name="glossary-cache-gloss" match="m:glossary-cache/m:gloss" use="@id"/>
+    <xsl:key name="glossary-cache-index" match="m:glossary-cache/m:gloss" use="@index"/>
     <xsl:key name="glossary-cache-location" match="m:glossary-cache/m:gloss/m:location" use="@id"/>
     <xsl:key name="folios-cache-ref" match="m:folios-cache/m:folio-ref" use="@id"/>
     <xsl:key name="notes-cache-end-note" match="m:notes-cache/m:end-note" use="@id"/>
@@ -944,11 +945,13 @@
     <!-- List at the end -->
     <xsl:template name="end-notes">
         
+        <xsl:param name="end-notes" select="$translation/m:part[@type eq 'end-notes']//tei:note[@place eq 'end'][@xml:id] | $knowledgebase/m:part[@type eq 'end-notes']//tei:note[@place eq 'end'][@xml:id]" as="element(tei:note)*"/>
+        
         <xsl:variable name="end-notes-part" select="($translation/m:part[@type eq 'end-notes'] | $knowledgebase/m:part[@type eq 'end-notes'])[1]"/>
         
         <xsl:apply-templates select="$end-notes-part/tei:head"/>
         
-        <xsl:for-each select="$end-notes-part//tei:note[@place eq 'end'][@xml:id]">
+        <xsl:for-each select="$end-notes">
             
             <xsl:sort select="key('notes-cache-end-note', @xml:id, $root)[1]/@index ! common:enforce-integer(.)"/>
             
@@ -1125,7 +1128,7 @@
         
         <xsl:apply-templates select="$glossary-part/tei:head"/>
         
-        <xsl:for-each select="$glossary-part//tei:gloss[@xml:id][$glossary-part[not(@render eq 'passage')] or @xml:id eq $requested-part]">
+        <xsl:for-each select="$glossary-part//tei:gloss">
             
             <xsl:sort select="key('glossary-cache-gloss', @xml:id, $root)[1]/@index ! common:enforce-integer(.)"/>
             
@@ -1186,7 +1189,7 @@
                     <xsl:for-each select="('Bo-Ltn','bo','Sa-Ltn', 'zh')">
                         
                         <xsl:variable name="term-lang" select="."/>
-                        <xsl:variable name="term-lang-terms" select="$glossary-item/tei:term[not(@type = ('definition','alternative'))][@xml:lang eq $term-lang]"/>
+                        <xsl:variable name="term-lang-terms" select="$glossary-item/tei:term[not(@type = ('definition','alternative'))][@xml:lang eq $term-lang][normalize-space(text())]"/>
                         <xsl:variable name="term-empty-text">
                             <xsl:call-template name="text">
                                 <xsl:with-param name="global-key" select="concat('glossary.term-empty-', lower-case($term-lang))"/>
@@ -1194,47 +1197,50 @@
                         </xsl:variable>
                         
                         <xsl:if test="$term-lang-terms or $term-empty-text gt ''">
-                            <ul class="list-inline inline-dots">
-                                <xsl:choose>
-                                    <xsl:when test="$term-lang-terms">
-                                        <xsl:for-each select="$term-lang-terms">
-                                            <li>
-                                                
-                                                <span>
+                            <div>
+                                <ul class="list-inline inline-dots">
+                                    <xsl:choose>
+                                        
+                                        <xsl:when test="$term-lang-terms">
+                                            <xsl:for-each select="$term-lang-terms">
+                                                <li>
                                                     
-                                                    <xsl:call-template name="class-attribute">
-                                                        <xsl:with-param name="base-classes" as="xs:string*">
-                                                            <xsl:value-of select="'term'"/>
-                                                            <xsl:if test="@type = ('reconstruction', 'semanticReconstruction','transliterationReconstruction')">
-                                                                <xsl:value-of select="'reconstructed'"/>
-                                                            </xsl:if>
-                                                        </xsl:with-param>
-                                                        <xsl:with-param name="lang" select="$term-lang"/>
-                                                    </xsl:call-template>
-                                                    
-                                                    <xsl:choose>
-                                                        <xsl:when test="normalize-space(text())">
-                                                            <xsl:value-of select="normalize-space(text())"/>
-                                                        </xsl:when>
-                                                        <xsl:otherwise>
-                                                            <xsl:value-of select="$term-empty-text"/>
-                                                        </xsl:otherwise>
-                                                    </xsl:choose>
-                                                    
-                                                </span>
-                                                
-                                                <xsl:if test="$view-mode[@id = ('editor', 'annotation', 'editor-passage')] and @status eq 'verified'">
-                                                    <xsl:value-of select="' '"/>
-                                                    <span class="text-warning small">
-                                                        <xsl:value-of select="'[Verified]'"/>
+                                                    <span>
+                                                        
+                                                        <xsl:call-template name="class-attribute">
+                                                            <xsl:with-param name="base-classes" as="xs:string*">
+                                                                <xsl:value-of select="'term'"/>
+                                                                <xsl:if test="@type = ('reconstruction', 'semanticReconstruction','transliterationReconstruction')">
+                                                                    <xsl:value-of select="'reconstructed'"/>
+                                                                </xsl:if>
+                                                            </xsl:with-param>
+                                                            <xsl:with-param name="lang" select="$term-lang"/>
+                                                        </xsl:call-template>
+                                                        
+                                                        <xsl:value-of select="normalize-space(text())"/>
+                                                        
                                                     </span>
-                                                </xsl:if>
-                                                
+                                                    
+                                                    <xsl:if test="$view-mode[@id = ('editor', 'annotation', 'editor-passage')] and @status eq 'verified'">
+                                                        <xsl:value-of select="' '"/>
+                                                        <span class="text-warning small">
+                                                            <xsl:value-of select="'[Verified]'"/>
+                                                        </span>
+                                                    </xsl:if>
+                                                    
+                                                </li>
+                                            </xsl:for-each>
+                                        </xsl:when>
+                                        
+                                        <xsl:otherwise>
+                                            <li>
+                                                <xsl:value-of select="$term-empty-text"/>
                                             </li>
-                                        </xsl:for-each>
-                                    </xsl:when>
-                                </xsl:choose>
-                            </ul>
+                                        </xsl:otherwise>
+                                        
+                                    </xsl:choose>
+                                </ul>
+                            </div>
                         </xsl:if>
                         
                     </xsl:for-each>
@@ -1568,7 +1574,7 @@
                             <xsl:with-param name="node" select="."/>
                         </xsl:call-template>
                         
-                        <xsl:attribute name="class" select="'section-title'"/>
+                        <xsl:attribute name="class" select="'section-title break'"/>
                         
                         <xsl:apply-templates select="node()"/>
                         
@@ -1597,6 +1603,7 @@
             </div>
             
         </div>
+        
         
     </xsl:template>
     <!-- Other headers, could be anywhere in text -->
@@ -1666,6 +1673,7 @@
     </xsl:template>
 
     <xsl:template match="m:part | tei:div">
+        
         <div>
             
             <!-- Set the id -->
@@ -1684,6 +1692,7 @@
             </xsl:call-template>
             
         </div>
+        
     </xsl:template>
     
     <xsl:template match="tei:media">
@@ -1728,8 +1737,13 @@
                     <xsl:with-param name="base-classes" as="xs:string*">
                         <xsl:value-of select="'rw'"/>
                         <xsl:value-of select="concat('rw-', $row-type)"/>
+                        <!-- .rw-first specifies no preceding siblings -->
                         <xsl:if test="count(preceding-sibling::tei:*) eq 0">
                             <xsl:value-of select="'rw-first'"/>
+                            <!-- .rw-no-head specifies no preceding siblings -->
+                            <xsl:if test="parent::tei:div">
+                                <xsl:value-of select="'rw-first-in-section'"/>
+                            </xsl:if>
                         </xsl:if>
                     </xsl:with-param>
                 </xsl:call-template>
@@ -1911,10 +1925,10 @@
         </xsl:if>
     </xsl:template>
     
-    <!-- Table of Contents - html rendering -->
+    <!-- Table of Contents - html rendering - derived from parts, not a part itself -->
     <xsl:template name="table-of-contents">
         
-        <section id="toc" class="page page-force">
+        <section id="toc" class="page page-force tei-parser">
             
             <hr class="hidden-print"/>
             
@@ -2947,5 +2961,213 @@
         <xsl:param name="glossary-items" as="element(tei:gloss)*"/>
         <xsl:sequence select="$glossary-items/tei:term[not(@type eq 'definition')][not(@xml:lang) or @xml:lang eq 'en'][normalize-space(data())]/data()"/>
     </xsl:function>
+    
+    <!-- Tantra warning -->
+    <xsl:template name="tantra-warning">
+        <xsl:param name="id"/>
+        <xsl:param name="node"/>
+        
+        <div class="hidden-print">
+            
+            <a data-toggle="modal" class="warning">
+                <xsl:attribute name="href" select="concat('#tantra-warning-', $id)"/>
+                <xsl:attribute name="data-target" select="concat('#tantra-warning-', $id)"/>
+                <i class="fa fa-exclamation-circle" aria-hidden="true"/>
+                <xsl:value-of select="' Tantra Text Warning'"/>
+            </a>
+            
+            <div class="modal fade warning" tabindex="-1" role="dialog">
+                <xsl:attribute name="id" select="concat('tantra-warning-', $id)"/>
+                <xsl:attribute name="aria-labelledby" select="concat('tantra-warning-label-', $id)"/>
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">
+                                    <i class="fa fa-times"/>
+                                </span>
+                            </button>
+                            <h4 class="modal-title">
+                                <xsl:attribute name="id" select="concat('tantra-warning-label-', $id)"/>
+                                <i class="fa fa-exclamation-circle" aria-hidden="true"/>
+                                <xsl:value-of select="' Tantra Text Warning'"/>
+                            </h4>
+                        </div>
+                        <div class="modal-body">
+                            <xsl:apply-templates select="$node"/>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+        </div>
+        
+        <div class="visible-print-block small">
+            <xsl:apply-templates select="$node"/>
+        </div>
+        
+    </xsl:template>
+    
+    <!-- Expandable summary of text (summary, variant titles, supplementary roles) -->
+    <xsl:template name="expandable-summary">
+        
+        <xsl:param name="text"/>
+        <xsl:param name="expand-id" as="xs:string"/>
+        <xsl:param name="entities" as="element(m:entity)*"/>
+        
+        <xsl:variable name="toh-key" select="$text/m:toh/@key"/>
+        
+        <xsl:variable name="supplementaryRoles" select="('translator', 'reviser')"/>
+        <xsl:variable name="summary" select="$text/m:part[@type eq 'summary']/tei:p"/>
+        <xsl:variable name="titleVariants" select="$text/m:title-variants/m:title[normalize-space(text())]"/>
+        <xsl:variable name="supplementaryAttributions" select="$text/m:source/m:attribution[@ref][@role = $supplementaryRoles]"/>
+        <xsl:if test="$summary or $titleVariants or $supplementaryAttributions">
+            
+            <hr class="hidden-print"/>
+            
+            <a class="summary-link collapsed hidden-print" role="button" data-toggle="collapse" aria-expanded="false">
+                <xsl:attribute name="href" select="concat('#', $expand-id)"/>
+                <xsl:attribute name="aria-controls" select="concat('#', $expand-id)"/>
+                <i class="fa fa-chevron-down"/>
+                <xsl:value-of select="' '"/>
+                <xsl:value-of select="'Summary and further information'"/>
+            </a>
+            
+            <div class="collapse summary-detail print-collapse-override">
+                <xsl:attribute name="id" select="$expand-id"/>
+                <div class="well well-sm small">
+                    
+                    <h4>
+                        <xsl:value-of select="'Summary'"/>
+                    </h4>
+                    <div class="summary">
+                        <xsl:choose>
+                            <xsl:when test="$summary">
+                                <xsl:apply-templates select="$summary"/>
+                            </xsl:when>
+                            <xsl:otherwise>
+                                <p class="italic text-muted">
+                                    <xsl:value-of select="'No summary is currently available.'"/>
+                                </p>
+                            </xsl:otherwise>
+                        </xsl:choose>
+                    </div>
+                    
+                    <xsl:if test="$titleVariants">
+                        <div>
+                            <xsl:attribute name="id" select="concat($toh-key, '-title-variants')"/>
+                            <h4>
+                                <xsl:value-of select="'Title variants'"/>
+                            </h4>
+                            <ul>
+                                <xsl:for-each select="$titleVariants">
+                                    <li>
+                                        <span>
+                                            <xsl:attribute name="class" select="common:lang-class(@xml:lang)"/>
+                                            <xsl:value-of select="normalize-space(text())"/> 
+                                        </span>
+                                    </li>
+                                </xsl:for-each>
+                            </ul>
+                        </div>
+                    </xsl:if>
+                    
+                    <xsl:if test="$supplementaryAttributions">
+                        <div>
+                            <xsl:attribute name="id" select="concat($toh-key, '-supplementary-roles')"/>
+                            <xsl:for-each select="$supplementaryRoles">
+                                <xsl:variable name="supplementaryRole" select="."/>
+                                <xsl:variable name="roleAttributions" select="$supplementaryAttributions[@role eq $supplementaryRole]"/>
+                                <xsl:if test="$roleAttributions">
+                                    <h4>
+                                        <xsl:choose>
+                                            <xsl:when test="$supplementaryRole eq 'reviser'">
+                                                <xsl:value-of select="'Revision:'"/>
+                                            </xsl:when>
+                                            <xsl:otherwise>
+                                                <xsl:value-of select="'Tibetan translation:'"/>
+                                            </xsl:otherwise>
+                                        </xsl:choose>
+                                    </h4>
+                                    <ul>
+                                        <xsl:for-each select="$roleAttributions">
+                                            <xsl:variable name="entity-id" select="replace(@ref, '^eft:', '')"/>
+                                            <li>
+                                                <xsl:call-template name="attribution-label">
+                                                    <xsl:with-param name="attribution" select="."/>
+                                                    <xsl:with-param name="entity" select="$entities/id($entity-id)"/>
+                                                </xsl:call-template>
+                                            </li>
+                                        </xsl:for-each>
+                                    </ul>
+                                </xsl:if>
+                            </xsl:for-each>
+                        </div>
+                    </xsl:if>
+                    
+                </div>
+            </div>
+            
+        </xsl:if>
+        
+    </xsl:template>
+    
+    <!-- Authors -->
+    <xsl:template name="source-authors">
+        <xsl:param name="text" as="element(m:text)?"/>
+        <xsl:param name="entities" as="element(m:entity)*"/>
+        <xsl:if test="$text/m:source/m:attribution[@ref][@role eq 'author'][normalize-space(text())]">
+            <hr/>
+            <div role="navigation" aria-label="The attributed authors of the source text" class="small">
+                <span class="text-muted">
+                    <xsl:value-of select="'by '"/>
+                </span>
+                <ul class="list-inline inline-dots">
+                    <xsl:for-each select="$text/m:source/m:attribution[@ref][@role eq 'author'][normalize-space(text())]">
+                        <xsl:variable name="entity-id" select="replace(@ref, '^eft:', '')"/>
+                        <li>
+                            <xsl:call-template name="attribution-label">
+                                <xsl:with-param name="attribution" select="."/>
+                                <xsl:with-param name="entity" select="$entities/id($entity-id)"/>
+                            </xsl:call-template>
+                        </li>
+                    </xsl:for-each>
+                </ul>
+            </div>
+        </xsl:if>
+    </xsl:template>
+    
+    <xsl:template name="attribution-label">
+        
+        <xsl:param name="attribution" as="element(m:attribution)?"/>
+        <xsl:param name="entity" as="element(m:entity)?"/>
+        
+        <xsl:variable name="page" select="$entity/m:instance[@type eq 'knowledgebase-article']/m:page"/>
+        
+        <xsl:choose>
+            <xsl:when test="$page">
+                <a>
+                    <xsl:attribute name="href" select="common:internal-link(concat('/knowledgebase/', $page/@kb-id, '.html'), (), '', /m:response/@lang)"/>
+                    <span>
+                        <xsl:attribute name="class" select="common:lang-class($attribution/@xml:lang)"/>
+                        <xsl:value-of select="normalize-space($attribution/text())"/> 
+                    </span>
+                </a>
+            </xsl:when>
+            <xsl:when test="$entity">
+                <span>
+                    <xsl:attribute name="class" select="common:lang-class($attribution/@xml:lang)"/>
+                    <xsl:value-of select="normalize-space($attribution/text())"/> 
+                </span>
+            </xsl:when>
+            <xsl:otherwise>
+                <span>
+                    <xsl:attribute name="class" select="common:lang-class($attribution/@xml:lang)"/>
+                    <xsl:value-of select="normalize-space($attribution/text())"/> 
+                </span>
+            </xsl:otherwise>
+        </xsl:choose>
+        
+    </xsl:template>
     
 </xsl:stylesheet>

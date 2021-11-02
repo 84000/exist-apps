@@ -12,6 +12,7 @@ declare namespace m="http://read.84000.co/ns/1.0";
 import module namespace common="http://read.84000.co/common" at "../modules/common.xql";
 import module namespace tei-content="http://read.84000.co/tei-content" at "../modules/tei-content.xql";
 import module namespace section="http://read.84000.co/section" at "../modules/section.xql";
+import module namespace entities="http://read.84000.co/entities" at "../modules/entities.xql";
 import module namespace functx="http://www.functx.com";
 
 declare option exist:serialize "method=xml indent=no";
@@ -90,6 +91,13 @@ let $sections-data :=
     else
         section:section-tree($tei, true(), $include-texts)
 
+let $entities := 
+    element { QName('http://read.84000.co/ns/1.0', 'entities') }{
+        for $attribution-id in distinct-values($sections-data//m:attribution/@ref ! replace(., '^eft:', ''))
+        return
+            entities:entity($entities:entities/m:entity/id($attribution-id), true(), true(), false())
+    }
+
 let $xml-response := 
     if(not($request/@resource-suffix = ('tei'))) then
         common:response(
@@ -97,7 +105,8 @@ let $xml-response :=
             $common:app-id,
             (
                $request,
-               $sections-data
+               $sections-data,
+               $entities
             )
         )
     else

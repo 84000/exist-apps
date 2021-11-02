@@ -8,54 +8,70 @@ import module namespace functx="http://www.functx.com";
 declare namespace m = "http://read.84000.co/ns/1.0";
 declare namespace tei = "http://www.tei-c.org/ns/1.0";
 
-declare function update-entity:create($label-lang as xs:string, $label-text as xs:string, $instance-id as xs:string, $entity-type as xs:string, $instance-type as xs:string, $flag as xs:string) as element()? {
-    
-    let $entity := 
-        element { QName('http://read.84000.co/ns/1.0', 'entity') } {
-            
-            attribute xml:id { entities:next-id() },
-            if($label-lang eq 'Bo-Ltn') then
-                element label {
-                    attribute xml:lang { 'bo' },
-                    text { common:bo-from-wylie($label-text) }
-                }
-            else 
-                element label {
-                    attribute xml:lang { $label-lang },
-                    text { $label-text }
-                }
-            ,
-            element type {
-                attribute type { $entity-type }
-            },
+declare function update-entity:new-entity($label-lang as xs:string, $label-text as xs:string, $entity-type as xs:string, $instance-type as xs:string, $instance-id as xs:string, $flag as xs:string) as element()? {
+    element { QName('http://read.84000.co/ns/1.0', 'entity') } {
+        attribute xml:id { entities:next-id() },
+        common:ws(2),
+        if($label-lang eq 'bo') then
+            element label {
+                attribute xml:lang { 'Bo-ltn' },
+                text { common:wylie-from-bo($label-text) }
+            }
+        else 
+            element label {
+                attribute xml:lang { $label-lang },
+                text { $label-text }
+            }
+        ,
+        common:ws(2),
+        element type {
+            attribute type { $entity-type }
+        },
+        if($instance-id gt '') then (
+            common:ws(2),
             element instance {
                 attribute id { $instance-id },
                 attribute type { $instance-type }
-            },
-            if($entities:flags//m:flag[@id eq $flag]) then
-                element flag {
-                    attribute type { $flag },
-                    attribute user { common:user-name() },
-                    attribute timestamp { current-dateTime() }
-                }
-            else ()
-        }
-    return 
-        common:update('new-entity', (), $entity, (), $entities:entities//m:entity[last()])
+            }
+        )
+        else ()
+        ,
+        if($entities:flags//m:flag[@id eq $flag]) then (
+            common:ws(2),
+            element flag {
+                attribute type { $flag },
+                attribute user { common:user-name() },
+                attribute timestamp { current-dateTime() }
+            }
+        )
+        else ()
+        ,
+        common:ws(1)
+    }
+};
+
+declare function update-entity:create($label-lang as xs:string, $label-text as xs:string, $entity-type as xs:string, $instance-type as xs:string, $instance-id as xs:string, $flag as xs:string) as element()? {
+    
+    common:update('new-entity', (), update-entity:new-entity($label-lang, $label-text, $entity-type, $instance-type, $instance-id, $flag), $entities:entities, ())
+    
 };
 
 declare function update-entity:create($gloss as element(tei:gloss), $flag as xs:string) as element()? {
     
-    let $label-term := (
-        $gloss/tei:term[@xml:lang eq 'Bo-Ltn'][normalize-space(text())],
-        $gloss/tei:term[@xml:lang eq 'bo'][normalize-space(text())],
-        $gloss/tei:term[@xml:lang eq 'Sa-Ltn'][normalize-space(text())]
-    )[1]
+    (# exist:batch-transaction #) {
     
-    let $entity-type := $entities:types//m:type[@glossary-type eq $gloss/@type]
-    where $label-term and $entity-type
-    return 
-        update-entity:create($label-term/@xml:lang, $label-term/data(), $gloss/@xml:id, $entity-type/@id, 'glossary-item', $flag)
+        let $label-terms := 
+            for $term in $gloss/tei:term[normalize-space(text())]
+            order by if($term/@xml:lang eq 'Bo-Ltn') then 1 else if($term/@xml:lang eq 'Sa-Ltn') then 2 else 3
+            return 
+                $term
+        
+        let $entity-type := $entities:types//m:type[@glossary-type eq $gloss/@type]
+        where $label-terms and $entity-type
+        return 
+            update-entity:create($label-terms[1]/@xml:lang, $label-terms[1]/data(), $entity-type[1]/@id, 'glossary-item', $gloss/@xml:id, $flag)
+   
+   }
         
 };
 
@@ -294,37 +310,48 @@ declare function update-entity:resolve($entity-id as xs:string, $target-entity-i
 (: Merge entities together :)
 declare function update-entity:merge($entity-id as xs:string, $target-entity-id as xs:string) as element()* {
     
-    let $parent := $entities:entities
-    let $entity := $parent/id($entity-id)[self::m:entity]
-    let $target-entity := $parent/id($target-entity-id)[self::m:entity]
+    (# exist:batch-transaction #) {
     
-    let $target-entity-new := 
-        element { node-name($target-entity) } {
-            $target-entity/@*,
-            for $entity-node in functx:distinct-deep(($entity/* | $target-entity/*))
-            return (
-                common:ws(2),
-                $entity-node
-            )
-        }
+        let $parent := $entities:entities
+        let $entity := $parent/id($entity-id)[self::m:entity]
+        let $target-entity := $parent/id($target-entity-id)[self::m:entity]
+        
+        let $entity-new := 
+            element { node-name($entity) } {
+                $entity/@*,
+                for $entity-node in functx:distinct-deep(($entity/* | $target-entity/*))
+                return (
+                    common:ws(2),
+                    $entity-node
+                )
+            }
+        
+        where $entity and $target-entity
+        return (
+            
+            (: Update entity :)
+            common:update('entity-merge', $entity, $entity-new, (), ()),
+            
+            (: Update target references :)
+            for $relation in $entities:entities//m:relation[@id eq $target-entity-id]
+            return 
+                common:update('entity-merge-relation', $relation/@id, attribute id { $entity-id }, (), ())
+            ,
+            
+            (: Delete target :)
+            common:update('entity-remove', $target-entity, (), (), ())
+            
+            (:element update-debug {
+                attribute entity-id { $entity-id },
+                element existing-value { $target-entity }, 
+                element new-value { $target-entity-new }(\:, 
+                element parent { $parent }, 
+                element insert-following { () }:\)
+            }:)
+        )
+        
+    }
     
-    where $entity and $target-entity
-    return (
-        
-        (: Update target :)
-        common:update('entity-merge', $target-entity, $target-entity-new, (), ()),
-        
-        (: Delete source :)
-        common:update('entity-remove', $entity, (), (), ())
-        
-        (:element update-debug {
-            attribute entity-id { $entity-id },
-            element existing-value { $target-entity }, 
-            element new-value { $target-entity-new }(\:, 
-            element parent { $parent }, 
-            element insert-following { () }:\)
-        }:)
-    )
 };
 
 (:declare function update-entity:exclude($entity-ids as xs:string*) as element()* {
@@ -366,12 +393,14 @@ declare function update-entity:match-instance($entity-id as xs:string, $instance
     let $entity := $entities:entities/m:entity[@xml:id eq $entity-id][1]
     let $existing-instance := $entity/m:instance[@id eq  $instance-id][1]
     let $new-instance := 
-        element { QName('http://read.84000.co/ns/1.0', 'instance') } {
-            attribute id { $instance-id },
-            attribute type { $instance-type }
-        }
+        if($instance-id gt '' and $instance-type gt '') then
+            element { QName('http://read.84000.co/ns/1.0', 'instance') } {
+                attribute id { $instance-id },
+                attribute type { $instance-type }
+            }
+        else ()
     
-    where $instance-id gt '' and $instance-type gt ''
+    where $new-instance
     return
         common:update('entity-match-instance', $existing-instance, $new-instance, $entity, ())
     
@@ -401,7 +430,10 @@ declare function update-entity:merge-glossary($text-id as xs:string, $create as 
         let $matches-bo := 
             if(count($search-terms-bo) gt 0) then
                 $glossary:tei//tei:back//tei:gloss
-                    [tei:term[@xml:lang eq 'Bo-Ltn'][matches(., $regex-bo, 'i')]]
+                    [
+                        tei:term[@xml:lang eq 'Bo-Ltn']
+                        [matches(., $regex-bo, 'i')]
+                    ]
                     [not(@xml:id eq $gloss/@xml:id)]
             else ()
         

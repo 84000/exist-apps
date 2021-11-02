@@ -49,35 +49,37 @@
                 </small>
             </div>
             
-            <ul class="list-inline inline-dots sml-margin bottom">
-                <li>
-                    <a>
-                        <xsl:attribute name="href" select="concat($reading-room-path, '/knowledgebase/', @kb-id, '.tei')"/>
-                        <xsl:attribute name="target" select="concat(@kb-id, '.tei')"/>
-                        <span class="small">
-                            <xsl:value-of select="'tei'"/>
-                        </span>
-                    </a>
-                </li>
-                <li>
-                    <a>
-                        <xsl:attribute name="href" select="concat($reading-room-path, '/knowledgebase/', @kb-id, '.xml')"/>
-                        <xsl:attribute name="target" select="concat(@kb-id, '.xml')"/>
-                        <span class="small">
-                            <xsl:value-of select="'xml'"/>
-                        </span>
-                    </a>
-                </li>
-                <li>
-                    <a>
-                        <xsl:attribute name="href" select="concat($reading-room-path, '/knowledgebase/', @kb-id, '.html')"/>
-                        <xsl:attribute name="target" select="concat(@kb-id, '.html')"/>
-                        <span class="small">
-                            <xsl:value-of select="'html'"/>
-                        </span>
-                    </a>
-                </li>
-            </ul>
+            <div class="sml-margin bottom">
+                <ul class="list-inline inline-dots">
+                    <li>
+                        <a>
+                            <xsl:attribute name="href" select="concat($reading-room-path, '/knowledgebase/', @kb-id, '.tei')"/>
+                            <xsl:attribute name="target" select="concat(@kb-id, '.tei')"/>
+                            <span class="small">
+                                <xsl:value-of select="'tei'"/>
+                            </span>
+                        </a>
+                    </li>
+                    <li>
+                        <a>
+                            <xsl:attribute name="href" select="concat($reading-room-path, '/knowledgebase/', @kb-id, '.xml')"/>
+                            <xsl:attribute name="target" select="concat(@kb-id, '.xml')"/>
+                            <span class="small">
+                                <xsl:value-of select="'xml'"/>
+                            </span>
+                        </a>
+                    </li>
+                    <li>
+                        <a>
+                            <xsl:attribute name="href" select="concat($reading-room-path, '/knowledgebase/', @kb-id, '.html')"/>
+                            <xsl:attribute name="target" select="concat(@kb-id, '.html')"/>
+                            <span class="small">
+                                <xsl:value-of select="'html'"/>
+                            </span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
             
             <!-- Alert if file locked -->
             <xsl:if test="@locked-by-user gt ''">

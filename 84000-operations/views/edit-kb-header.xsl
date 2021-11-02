@@ -40,7 +40,7 @@
                     </div>
                     
                     <!-- Accordion -->
-                    <div class="list-group accordion" role="tablist" aria-multiselectable="false">
+                    <div class="list-group accordion accordion-background" role="tablist" aria-multiselectable="false">
                         
                         <xsl:attribute name="id" select="concat('accordion-', $tei-id)"/>
                         
@@ -50,6 +50,7 @@
                             <xsl:with-param name="id" select="concat('kb-form-', $tei-id)"/>
                             <xsl:with-param name="accordion-selector" select="concat('#accordion-', $tei-id)"/>
                             <xsl:with-param name="active" select="$request-show-tab eq 'kb-form'"/>
+                            <xsl:with-param name="persist" select="true()"/>
                             
                             <xsl:with-param name="title">
                                 <xsl:value-of select="'Edit Headers'"/>
@@ -63,7 +64,8 @@
                                     
                                     <!-- Form -->
                                     <div class="col-sm-8">
-                                        <form action="/edit-kb-header.html" method="post" class="form-horizontal form-update">
+                                        
+                                        <form action="/edit-kb-header.html" method="post" data-match-height="status-form" class="form-horizontal form-update match-this-height" data-loading="Updating knowledge base...">
                                             
                                             <input type="hidden" name="id" value="{ $tei-id }"/>
                                             <input type="hidden" name="form-action" value="update-kb-header"/>
@@ -82,13 +84,11 @@
                                                     <xsl:variable name="main-title-lang" select="$main-title/@xml:lang"/>
                                                     <xsl:variable name="other-titles" select="m:knowledgebase/m:page/m:titles/m:title[count((. | $main-title)) ne 1]"/>
                                                     <xsl:variable name="title-types" select="m:title-types/m:title-type"/>
-                                                    <xsl:variable name="title-langs" select="m:title-types/m:title-lang"/>
                                                     
                                                     <xsl:call-template name="title-controls">
                                                         <xsl:with-param name="title" select="$main-title"/>
                                                         <xsl:with-param name="title-index" select="1"/>
                                                         <xsl:with-param name="title-types" select="$title-types[@id eq 'mainTitle']"/>
-                                                        <xsl:with-param name="title-langs" select="$title-langs"/>
                                                     </xsl:call-template>
                                                     
                                                     <xsl:choose>
@@ -98,7 +98,6 @@
                                                                     <xsl:with-param name="title" select="."/>
                                                                     <xsl:with-param name="title-index" select="position() + 1"/>
                                                                     <xsl:with-param name="title-types" select="$title-types[@id eq 'otherTitle']"/>
-                                                                    <xsl:with-param name="title-langs" select="$title-langs"/>
                                                                 </xsl:call-template>
                                                             </xsl:for-each>
                                                         </xsl:when>
@@ -106,19 +105,23 @@
                                                             <xsl:call-template name="title-controls">
                                                                 <xsl:with-param name="title-index" select="2"/>
                                                                 <xsl:with-param name="title-types" select="$title-types[@id eq 'otherTitle']"/>
-                                                                <xsl:with-param name="title-langs" select="$title-langs"/>
                                                             </xsl:call-template>
                                                         </xsl:otherwise>
                                                     </xsl:choose>
                                                     
                                                     <div class="form-group">
-                                                        <div class="col-sm-12">
+                                                        <div class="col-sm-2">
                                                             <a href="#add-nodes" class="add-nodes">
                                                                 <span class="monospace">
                                                                     <xsl:value-of select="'+'"/>
                                                                 </span>
                                                                 <xsl:value-of select="' add a title'"/>
                                                             </a>
+                                                        </div>
+                                                        <div class="col-sm-10">
+                                                            <p class="text-muted small">
+                                                                <xsl:call-template name="hyphen-help-text"/>
+                                                            </p>
                                                         </div>
                                                     </div>
                                                 
@@ -257,16 +260,19 @@
                             <xsl:with-param name="id" select="concat('entity-form-', $tei-id)"/>
                             <xsl:with-param name="accordion-selector" select="concat('#accordion-', $tei-id)"/>
                             <xsl:with-param name="active" select="$request-show-tab eq 'entity-form'"/>
+                            <xsl:with-param name="persist" select="true()"/>
                             
                             <xsl:with-param name="title">
-                                <ul class="list-inline inline-dots no-bottom-margin">
+                                
+                                <span class="h4">
+                                    <xsl:value-of select="'Shared entity: '"/>
+                                </span>
+                                
+                                <ul class="list-inline inline-dots">
                                     <xsl:choose>
                                         <xsl:when test="$entity">
                                             
                                             <li>
-                                                <span class="small">
-                                                    <xsl:value-of select="'Entity: '"/>
-                                                </span>
                                                 <span>
                                                     <xsl:attribute name="class">
                                                         <xsl:value-of select="common:lang-class($entity/m:label[1]/@xml:lang)"/>
@@ -323,7 +329,7 @@
                                     <xsl:with-param name="entity" select="$entity"/>
                                 </xsl:call-template>
                                 
-                                <form action="/edit-kb-header.html" method="post" class="form-horizontal">
+                                <form action="/edit-kb-header.html" method="post" class="form-horizontal" data-loading="Updating entity...">
                                     
                                     <input type="hidden" name="id" value="{ $tei-id }"/>
                                     <input type="hidden" name="knowledgebase-id" value="{ $tei-id }"/>
@@ -354,6 +360,7 @@
                                 <xsl:with-param name="id" select="concat('entity-list-', $tei-id)"/>
                                 <xsl:with-param name="accordion-selector" select="concat('#accordion-', $tei-id)"/>
                                 <xsl:with-param name="active" select="$request-show-tab eq 'entity-list'"/>
+                                <xsl:with-param name="persist" select="true()"/>
                                 
                                 <xsl:with-param name="title">
                                     <xsl:variable name="count-entity-instances" select="count($entity/m:instance)"/>
@@ -408,6 +415,7 @@
                             <xsl:with-param name="id" select="concat('entity-relations-', $tei-id)"/>
                             <xsl:with-param name="accordion-selector" select="concat('#accordion-', $tei-id)"/>
                             <xsl:with-param name="active" select="$request-show-tab eq 'entity-relations'"/>
+                            <xsl:with-param name="persist" select="true()"/>
                             
                             <xsl:with-param name="title">
                                 
@@ -457,6 +465,7 @@
                                                     
                                                     <xsl:with-param name="accordion-selector" select="'#accordion-relations'"/>
                                                     <xsl:with-param name="id" select="concat('relation-', $relation/@id)"/>
+                                                    <xsl:with-param name="persist" select="true()"/>
                                                     
                                                     <xsl:with-param name="title">
                                                         
@@ -467,7 +476,7 @@
                                                             </div>
                                                             
                                                             <div>
-                                                                <ul class="list-inline inline-dots no-bottom-margin">
+                                                                <ul class="list-inline inline-dots">
                                                                     <li>
                                                                         <span>
                                                                             <xsl:choose>
@@ -482,7 +491,7 @@
                                                                             <xsl:value-of select="':'"/>
                                                                         </span>
                                                                     </li>
-                                                                    <xsl:for-each select="$relation/m:label">
+                                                                    <xsl:for-each select="$relation/m:entity/m:label[not(@derived) and not(@derived-transliterated)][1]">
                                                                         <li>
                                                                             <span>
                                                                                 <xsl:attribute name="class">
@@ -557,6 +566,7 @@
                             <xsl:with-param name="id" select="concat('entity-similar-', $tei-id)"/>
                             <xsl:with-param name="accordion-selector" select="concat('#accordion-', $tei-id)"/>
                             <xsl:with-param name="active" select="$request-show-tab eq 'entity-similar'"/>
+                            <xsl:with-param name="persist" select="true()"/>
                             
                             <xsl:with-param name="title">
                                 
@@ -566,7 +576,7 @@
                                     <xsl:value-of select="' ↳ '"/>
                                 </span>
                                 
-                                <span class="badge badge-notification">
+                                <span class="badge badge-notification badge-info">
                                     <xsl:if test="$count-similar-entities eq 0">
                                         <xsl:attribute name="class" select="'badge badge-notification badge-muted'"/>
                                     </xsl:if>
@@ -578,10 +588,10 @@
                                         <xsl:when test="$entity">
                                             <xsl:choose>
                                                 <xsl:when test="$count-similar-entities eq 1">
-                                                    <xsl:value-of select="'similar entity un-resolved'"/>
+                                                    <xsl:value-of select="'similar entity'"/>
                                                 </xsl:when>
                                                 <xsl:otherwise>
-                                                    <xsl:value-of select="'similar entities un-resolved'"/>
+                                                    <xsl:value-of select="'similar entities'"/>
                                                 </xsl:otherwise>
                                             </xsl:choose>
                                         </xsl:when>
@@ -604,7 +614,7 @@
                                 
                                 <hr class="sml-margin"/>
                                 
-                                <form action="/edit-kb-header.html#entity-search" method="post" id="entity-search" class="form-horizontal bottom-margin">
+                                <form action="/edit-kb-header.html#entity-search" method="post" id="entity-search" class="form-horizontal bottom-margin" data-loading="Loading possible matches...">
                                     
                                     <input type="hidden" name="id" value="{ $tei-id }"/>
                                     <input type="hidden" name="show-tab" value="entity-similar"/>
@@ -644,10 +654,11 @@
                                                     
                                                     <xsl:with-param name="accordion-selector" select="'accordion-similar-entities'"/>
                                                     <xsl:with-param name="id" select="concat('accordion-similar-entities-', @xml:id)"/>
+                                                    <xsl:with-param name="persist" select="true()"/>
                                                     
                                                     <xsl:with-param name="title">
                                                         
-                                                        <form action="/edit-kb-header.html#entity-search" method="post" class="form-inline">
+                                                        <form action="/edit-kb-header.html#entity-search" method="post" class="form-inline" data-loading="Merging entities...">
                                                             
                                                             <input type="hidden" name="id" value="{ $tei-id }"/>
                                                             <input type="hidden" name="form-action" value="{ if(not($entity)) then 'match-entity' else 'merge-entities' }"/>
@@ -662,7 +673,7 @@
                                                                     
                                                                     <xsl:variable name="label" select="m:label[not(@derived) and not(@derived-transliterated)][1]"/>
                                                                     
-                                                                    <ul class="list-inline inline-dots no-bottom-margin">
+                                                                    <ul class="list-inline inline-dots">
                                                                         <li class="small">
                                                                             <span>
                                                                                 <xsl:attribute name="class">

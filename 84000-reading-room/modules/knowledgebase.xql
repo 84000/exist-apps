@@ -7,6 +7,9 @@ declare namespace tei="http://www.tei-c.org/ns/1.0";
 
 import module namespace common="http://read.84000.co/common" at "common.xql";
 import module namespace tei-content="http://read.84000.co/tei-content" at "tei-content.xql";
+import module namespace entities="http://read.84000.co/entities" at "entities.xql";
+import module namespace translations="http://read.84000.co/translations" at "translations.xql";
+import module namespace functx="http://www.functx.com";
 
 declare variable $knowledgebase:tei := collection($common:knowledgebase-path)//tei:TEI;
 declare variable $knowledgebase:tei-render := 
@@ -29,31 +32,37 @@ declare function knowledgebase:kb-id($tei as element(tei:TEI)) as xs:string? {
 };
 
 declare function knowledgebase:sort-name($tei as element(tei:TEI)) as xs:string? {
-    replace(
-        tei-content:titles($tei)/m:title[@type eq 'mainTitle'][1]/data(), 
-        concat($knowledgebase:title-prefixes, '\s+'), ''
-    )
-    ! normalize-space(.)
-    ! lower-case(.)
-    ! common:normalized-chars(.)
-    ! common:alphanumeric(.)
+    
+    let $titles := tei-content:titles($tei)
+    
+    let $sort-title := (
+        $titles/m:title[@type eq 'mainTitle'][not(@xml:lang eq 'bo')],
+        $titles/m:title[not(@xml:lang eq 'bo')]
+    )[1]
+    
+    return
+        replace($sort-title/data(), concat($knowledgebase:title-prefixes, '\s+'), '')
+        ! normalize-space(.)
+        ! lower-case(.)
+        ! common:normalized-chars(.)
+        ! common:alphanumeric(.)
 };
 
 
 declare function knowledgebase:titles($tei as element(tei:TEI)) as element(m:titles) {
     
     let $tei-titles := tei-content:titles($tei)
+    let $titles :=
+        for $title at $index in $tei-titles/m:title
+        order by if($title/@type eq 'mainTitle') then 0 else 1 ascending
+        return $title
     return
         element { node-name($tei-titles) }{
-            for $title at $index in $tei-titles/m:title
-            order by if($title/@type eq 'mainTitle') then 0 else 1
+            for $title at $index in $titles
             return
                 element { node-name($title) }{
                     attribute type {
-                        if($index eq 1) then
-                            'mainTitle'
-                        else
-                            'otherTitle'
+                        if($index eq 1) then 'mainTitle' else 'otherTitle'
                     },
                     $title/@xml:lang,
                     $title/data()
@@ -86,7 +95,7 @@ declare function knowledgebase:page($tei as element(tei:TEI)) as element(m:page)
 
 declare function knowledgebase:pages() as element(m:knowledgebase) {
     element { QName('http://read.84000.co/ns/1.0', 'knowledgebase') }{
-        knowledgebase:pages((), false())
+        knowledgebase:pages('all', false())
     }
 };
 
@@ -94,9 +103,16 @@ declare function knowledgebase:pages($ids as xs:string*, $published-only as xs:b
     
     for $tei in 
         if($published-only) then
-            $knowledgebase:tei-render[if(count($ids) gt 0) then id($ids) else true()]
+            if($ids = 'all') then
+                $knowledgebase:tei-render
+            else
+                $knowledgebase:tei-render/id($ids)/ancestor::tei:TEI
         else
-            $knowledgebase:tei[if(count($ids) gt 0) then id($ids) else true()]
+            if($ids = 'all') then
+                $knowledgebase:tei
+            else
+                $knowledgebase:tei/id($ids)/ancestor::tei:TEI
+                
     return 
         knowledgebase:page($tei)
         
@@ -206,6 +222,41 @@ declare function knowledgebase:end-notes($tei as element(tei:TEI)) as element() 
 };
 
 
+declare function knowledgebase:related-texts($tei as element(tei:TEI)) as element()? {
+    
+    element { QName('http://read.84000.co/ns/1.0', 'part') } {
+        
+        attribute type { 'related-texts' },
+        attribute id { 'related-texts' },
+        attribute nesting { 0 },
+        attribute prefix { 'a' },
+        
+        let $knowledgebase-id := tei-content:id($tei)
+        let $knowledgebase-entity := entities:entities($knowledgebase-id, false(), false(), false())/m:entity
+        let $author-ref := concat('eft:', $knowledgebase-entity/@xml:id)
+        let $knowledgebase-title := knowledgebase:titles($tei)//m:title[@type eq 'mainTitle']
+        
+        return (
+            
+            element {QName('http://www.tei-c.org/ns/1.0', 'head')} {
+                attribute type { 'related-texts' },
+                text { 'Texts attributed to '},
+                element {QName('http://www.tei-c.org/ns/1.0', 'foreign')} {
+                    $knowledgebase-title/@xml:lang,
+                    $knowledgebase-title/text()
+                }
+            },
+            
+            for $attribution in $tei-content:translations-collection//tei:sourceDesc/tei:bibl//*[@ref eq $author-ref]
+            return
+                translations:filtered-text($attribution/ancestor::tei:TEI, $attribution/ancestor::tei:bibl/@key, false(), 'none', false())
+                
+        )
+        
+    }
+    
+};
+
 declare function knowledgebase:glossary($tei as element(tei:TEI)) as element()? {
 
     element { QName('http://read.84000.co/ns/1.0', 'part') } {
@@ -246,22 +297,30 @@ declare function knowledgebase:id($title as xs:string) as xs:string {
             tokenize(
                 replace(
                     common:normalized-chars(
-                        lower-case($title)      (: convert to lower case :)
-                    )                           (: remove diacritics :)
-                ,'[^a-zA-Z0-9\s]', ' ')         (: remove non-alphanumeric, except spaces :)
-            , '\s+')[not(. = $stopwords)]       (: remove stopwords and multiple spaces :)
-        , '-')                                  (: concat words with hyphens :)
+                        lower-case(
+                            normalize-space($title) (: remove leading & trailing spaces :)
+                        )                           (: convert to lower case :)
+                    )                               (: remove diacritics :)
+                ,'[^a-zA-Z0-9\s]', ' ')             (: remove non-alphanumeric, except spaces :)
+            , '\s+')[not(. = $stopwords)]           (: remove stopwords and multiple spaces :)
+        , '-')                                      (: concat words with hyphens :)
     
 };
 
-declare function knowledgebase:new-tei($id as xs:string, $title as xs:string) as document-node()? {
+declare function knowledgebase:new-tei($id as xs:string, $titles as element(tei:title)*) as document-node()? {
 document {
 <?xml-model href="../schema/current/knowledgebase.rng" schematypens="http://relaxng.org/ns/structure/1.0"?>,
 <TEI xmlns="http://www.tei-c.org/ns/1.0" xmlns:eft="http://read.84000.co/ns/1.0" xmlns:tei="http://www.tei-c.org/ns/1.0">
     <teiHeader>
         <fileDesc>
             <titleStmt>
-                <title type="mainTitle" xml:lang="en">{ $title }</title>
+            {
+                for $title in $titles
+                return (
+                    common:ws(4),
+                    $title
+                )
+            }
             </titleStmt>
             <editionStmt>
                 <edition>v 0.1.0 <date>{ format-date(current-date(), '[Y]') }</date></edition>

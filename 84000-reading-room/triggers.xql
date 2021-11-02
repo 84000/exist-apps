@@ -14,14 +14,14 @@ import module namespace functx = "http://www.functx.com";
 
 declare function trigger:after-update-document($uri as xs:anyURI) {
     
-    local:log-event("after", "update", "document", $uri),
+    (:local:log-event("after", "update", "document", $uri),:)
     local:after-update-document-functions(doc($uri))
     
 };
 
 declare function trigger:after-create-document($uri as xs:anyURI) {
     
-    local:log-event("after", "create", "document", $uri),
+    (:local:log-event("after", "create", "document", $uri),:)
     local:after-update-document-functions(doc($uri))
     
 };
@@ -85,7 +85,7 @@ declare function local:refresh-cache($doc) {
         where count($tei-ids) gt 0
         return
         if(count(($tei-ids[not(. = $cache-ids)], $cache-ids[not(. = $tei-ids)]))) then
-            common:update('trigger-cache-glossary', $cache/m:glossary-cache, glossary:cache($doc/tei:TEI, 'none', true()), $cache, $cache/m:glossary-cache/preceding-sibling::*[1])
+            common:update('trigger-cache-glossary', $cache/m:glossary-cache, glossary:cache($doc/tei:TEI, 'removed', true()), $cache, $cache/m:glossary-cache/preceding-sibling::*[1])
         else ()
         
     )

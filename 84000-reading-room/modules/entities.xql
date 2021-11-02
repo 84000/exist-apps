@@ -128,7 +128,6 @@ declare function entities:instance-ids-validated($instance-ids as xs:string*) as
     )
 };
 
-(: Validates and expands an entity :)
 declare function entities:entity($entity as element(m:entity)?, $validate as xs:boolean, $expand-instances as xs:boolean, $expand-relations as xs:boolean)  as element(m:entity)? {
     
     if($entity) then
@@ -150,10 +149,10 @@ declare function entities:entity($entity as element(m:entity)?, $validate as xs:
             let $valid-instances := $entity/m:instance[@id = $instance-ids]
             let $valid-instances :=
                 (: Expand to include details of the instance: glossary or article :)
-                    if($expand-instances) then
-                        entities:expand-instances($valid-instances)
-                    else
-                        $valid-instances
+                if($expand-instances) then
+                    entities:expand-instances($valid-instances)
+                else
+                    $valid-instances
                     
             return (
             
@@ -161,8 +160,9 @@ declare function entities:entity($entity as element(m:entity)?, $validate as xs:
                 
                 (: Sort the labels :)
                 $entity/m:label[@xml:lang eq 'en'],
+                $entity/m:label[@xml:lang eq 'Sa-Ltn'],
                 $entity/m:label[@xml:lang eq 'Bo-Ltn'],
-                $entity/m:label[not(@xml:lang = ('en', 'Bo-Ltn'))],
+                $entity/m:label[not(@xml:lang = ('en', 'Bo-Ltn', 'Sa-Ltn'))],
                 
                 (: Derive label based on content :)
                 if(not($entity/m:label[@derived])) then
@@ -207,7 +207,7 @@ declare function entities:entity($entity as element(m:entity)?, $validate as xs:
                                 attribute xml:lang { 'Bo-Ltn' },
                                 text { 
                                     if($terms-longest[@xml:lang eq 'bo']) then
-                                        common:wylie-from-bo(normalize-space($terms-longest/data()))
+                                        replace(common:wylie-from-bo(normalize-space($terms-longest/data())), '/$', '')
                                     else
                                         $terms-longest/data()
                                 }
@@ -259,10 +259,10 @@ declare function entities:entity($entity as element(m:entity)?, $validate as xs:
 
 declare function entities:expand-instances($instances as element(m:instance)*) as element(m:instance)* {
 
-    let $instance-items := glossary:items($instances/@id, true())
+    let $instance-entries := glossary:entries($instances/@id, true())
     let $instance-pages := knowledgebase:pages($instances/@id, true())
     for $instance in $instances
-        let $instance-element := $instance-items[@id eq $instance/@id]
+        let $instance-element := $instance-entries[@id eq $instance/@id]
         let $instance-element :=
             if(not($instance-element)) then
                 $instance-pages[@xml:id eq $instance/@id]
@@ -299,15 +299,15 @@ declare function entities:expand-relations($relations as element(m:relation)*, $
         
 };
 
-declare function entities:similar($entity as element(m:entity)?, $search-terms as xs:string*, $exclude-ids as xs:string*)  {
+declare function entities:similar($entity as element(m:entity)?, $search-terms as xs:string*, $exclude-ids as xs:string*) as element(m:entity)* {
     
-    let $instance-items := glossary:items($entity/m:instance/@id, false())
+    let $instance-entries := glossary:entries($entity/m:instance/@id, false())
     
     let $search-terms := distinct-values((
         $search-terms,
-        $instance-items/m:term[@xml:lang = ('Bo-Ltn', 'Sa-Ltn')]/data(),
-        $instance-items/m:alternatives[@xml:lang = ('Bo-Ltn', 'Sa-Ltn')]/data()
-    ) ! common:alphanumeric(common:normalized-chars(lower-case(.))))
+        $instance-entries/m:term[@xml:lang = ('Bo-Ltn', 'Sa-Ltn')]/data(),
+        $instance-entries/m:alternatives[@xml:lang = ('Bo-Ltn', 'Sa-Ltn')]/data()
+    )[not(. = $glossary:empty-term-placeholders)] ! lower-case(.) ! common:normalized-chars(.) (:! replace(.,"’", "'"):))
     
     let $exclude-ids := distinct-values((
         $exclude-ids,
@@ -329,7 +329,7 @@ declare function entities:similar($entity as element(m:entity)?, $search-terms a
         }
         </query>
     
-    let $matches := (
+    let $matching-instance-ids := (
         $glossary:tei//tei:back//tei:gloss
             [tei:term
                 [ft:query(., $search-query)]
@@ -347,17 +347,33 @@ declare function entities:similar($entity as element(m:entity)?, $search-terms a
                 [not(@xml:id = $exclude-ids)]
     )/@xml:id/string()
     
-    for $similar-entity in 
-        if($entity[m:type/@type = $entities:types//m:type[@glossary-type]/@id]) then
-            $entities:entities//m:entity
-                [m:instance/@id = $matches]
-                [m:type/@type = $entity/m:type/@type]
-        else
-            $entities:entities//m:entity
-                [m:instance/@id = $matches]
+    let $matching-entity-ids := (
+        $glossary:tei//tei:teiHeader//tei:sourceDesc/tei:bibl/tei:author
+            [ft:query(., $search-query)][@ref]
+        | $glossary:tei//tei:teiHeader//tei:sourceDesc/tei:bibl/tei:editor
+            [ft:query(., $search-query)][@ref]
+    )/@ref/string() ! replace(., '^eft:', '')
     
-    order by if($similar-entity[m:label/text() = $search-terms]) then 1 else 0 descending
-    return 
-        (: Copy entity expanded to include instance detail :)
-        entities:entity($similar-entity, false(), true(), false())
+    return (
+        
+        (: debug :)
+        (:element m:entity {element debug {$search-query, $matching-entity-ids} },:)
+    
+        for $similar-entity in (
+            if($entity[m:type/@type = $entities:types//m:type[@glossary-type]/@id]) then
+                $entities:entities//m:entity
+                    [m:instance/@id = $matching-instance-ids]
+                    [m:type/@type = $entity/m:type/@type]
+            else
+                $entities:entities//m:entity
+                    [m:instance/@id = $matching-instance-ids]
+            | $entities:entities//m:entity/id($matching-entity-ids)
+        )
+        
+        order by if($similar-entity[m:label/text() = $search-terms]) then 1 else 0 descending
+        return  
+            (: Copy entity expanded to include instance detail :)
+            entities:entity($similar-entity, false(), true(), false())
+            
+        )
 };

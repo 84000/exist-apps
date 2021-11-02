@@ -156,7 +156,7 @@
                         <xsl:if test="m:translation/m:publication/m:contributors/m:author[@role = 'translatorEng']">
                             <xsl:comment>Creators</xsl:comment>
                             <xsl:for-each select="m:translation/m:publication/m:contributors/m:author[@role = 'translatorEng']">
-                                <xsl:variable name="contributor-id" select="replace(@ref, '^(EFT:|contributors\.xml#)', '', 'i')"/>
+                                <xsl:variable name="contributor-id" select="replace(@ref, '^(eft:|contributors\.xml#)', '', 'i')"/>
                                 <xsl:variable name="contributor" select="$contributors//m:person[@xml:id eq lower-case($contributor-id)]"/>
                                 <xsl:if test="$contributor">
                                     <bdo:creator>

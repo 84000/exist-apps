@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <eft-header xmlns="http://read.84000.co/ns/1.0">
-    <!-- Updated 18.08.2021 -->
+    <!-- Updated 19.10.2021 -->
     <translation id="tag-line">
         <text xml:lang="en">Translating the words of the Buddha</text>
         <text xml:lang="zh">八萬四千 • 佛典傳譯</text>
@@ -57,9 +57,9 @@
             <item url="https://read.84000.co/search.html">
                 <label key="label-search">Search the Reading Room</label>
             </item>
-            <item url="https://read.84000.co/glossary.html">
+            <!--<item url="https://read.84000.co/glossary.html">
                 <label key="label-glossary">Glossary of Terms</label>
-            </item>
+            </item>-->
         </item>
         <item class="resources" url="#resources">
             <label key="label-resources">Resources</label>
@@ -68,6 +68,9 @@
             </item>
             <item url="https://84000.co/resources/teachings-on-sutra">
                 <label key="label-teachings-on-sutra">Teachings on Sūtra</label>
+            </item>
+            <item url="https://84000.co/resources/mobile-apps-android-ios">
+                <label key="label-mobile">Mobile App for iOS &amp; Android</label>
             </item>
             <item url="https://84000.co/resources/sutras-for-well-being">
                 <label key="label-well-being">Sūtras for Well-Being</label>
@@ -130,6 +133,9 @@
                 </item>
                 <item url="https://read.84000.co/about/translators.html">
                     <label key="label-translators">Translation Teams</label>
+                </item>
+                <item url="https://84000.co/about/postdoctoral-fellowships">
+                    <label key="label-postdoc">Postdoctoral Fellows</label>
                 </item>
                 <item url="https://read.84000.co/about/sponsors.html">
                     <label key="label-sponsors">Sponsors</label>
@@ -203,9 +209,9 @@
             <item url="https://read.84000.co/search.html?lang=zh">
                 <label key="label-search">雲端藏經閣檢索</label>
             </item>
-            <item url="https://read.84000.co/glossary.html?lang=zh">
+            <!--<item url="https://read.84000.co/glossary.html?lang=zh">
                 <label key="label-search">Browse Glossary Terms</label>
-            </item>
+            </item>-->
         </item>
         <item class="resources" url="#resources">
             <label key="label-resources">資源分享</label>
@@ -214,6 +220,9 @@
             </item>
             <item url="https://84000.co/ch-resources/ch-sutras-for-well-being">
                 <label key="label-well-being">「消災祈福」系列經典</label>
+            </item>
+            <item url="https://84000.co/ch-resources/ch-mobile-apps-android-ios">
+                <label key="label-mobile">手機應用程式 iOS/安卓</label>
             </item>
             <item url="https://84000.co/ch-resources/ch-commentaries">
                 <label key="label-commentaries">特殊出版物</label>

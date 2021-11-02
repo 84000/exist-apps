@@ -15,7 +15,7 @@
                     
                     <xsl:call-template name="alert-translation-locked"/>
                     
-                    <form method="post" class="form-horizontal form-update">
+                    <form method="post" class="form-horizontal form-update" data-loading="Updating contributor...">
                         
                         <xsl:attribute name="action" select="'edit-translator.html'"/>
                         <xsl:variable name="person-id" select="m:person/@xml:id"/>

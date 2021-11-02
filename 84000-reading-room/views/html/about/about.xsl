@@ -153,6 +153,203 @@
         
     </xsl:template>
     
+    <xsl:template name="text-list">
+        
+        <xsl:param name="texts" required="yes" as="element(m:text)*"/>
+        <xsl:param name="list-id" required="yes" as="xs:string"/>
+        <xsl:param name="grouping" required="no" as="xs:string?"/>
+        <xsl:param name="show-sponsorship" required="no" as="xs:boolean" select="false()"/>
+        <xsl:param name="show-sponsorship-cost" required="no" as="xs:boolean" select="false()"/>
+        <xsl:param name="show-sponsors" required="no" as="xs:boolean" select="false()"/>
+        <xsl:param name="show-translation-status" required="no" as="xs:boolean" select="false()"/>
+        
+        <xsl:choose>
+            
+            <xsl:when test="count($texts)">
+                <div class="text-list">
+                    <div class="row table-headers">
+                        
+                        <!-- <div class="col-sm-8 hidden-xs"> -->
+                        <div class="col-sm-10 hidden-xs">
+                            <xsl:call-template name="local-text">
+                                <xsl:with-param name="local-key" select="'column-title-label'"/>
+                            </xsl:call-template>
+                        </div>
+                        <div class="col-sm-2 hidden-xs">
+                            <xsl:call-template name="local-text">
+                                <xsl:with-param name="local-key" select="'column-toh-label'"/>
+                            </xsl:call-template>
+                        </div>
+                        <!-- 
+                        <div class="col-sm-2 hidden-xs">
+                            <xsl:call-template name="local-text">
+                                <xsl:with-param name="local-key" select="'column-pages-label'"/>
+                            </xsl:call-template>
+                        </div> -->
+                        <div class="col-xs-8 visible-xs">
+                            <xsl:call-template name="local-text">
+                                <xsl:with-param name="local-key" select="'column-toh-label'"/>
+                            </xsl:call-template>
+                            <xsl:value-of select="' / '"/>
+                            <xsl:call-template name="local-text">
+                                <xsl:with-param name="local-key" select="'column-title-label'"/>
+                            </xsl:call-template>
+                        </div>
+                        <xsl:if test="$show-translation-status">
+                            <div class="col-xs-4 visible-xs text-right">
+                                <xsl:call-template name="local-text">
+                                    <xsl:with-param name="local-key" select="'column-status-label'"/>
+                                </xsl:call-template>
+                            </div>
+                        </xsl:if>
+                    </div>
+                    <div class="list-section">
+                        <xsl:for-each-group select="$texts" group-by="if($grouping eq 'sponsorship' and not(m:sponsorship-status/@project-id eq '')) then m:sponsorship-status/@project-id else if($grouping eq 'text') then @id else m:toh/@key">
+                            
+                            <xsl:sort select="number(m:toh/@number)"/>
+                            <xsl:sort select="m:toh/@letter"/>
+                            <xsl:sort select="number(m:toh/@chapter-number)"/>
+                            <xsl:sort select="m:toh/@chapter-letter"/>
+                            
+                            <xsl:variable name="group-index" select="position()"/>
+                            
+                            <div class="row list-item">
+                                
+                                <xsl:attribute name="id" select="concat($list-id, '-', @id)"/>
+                                
+                                <xsl:variable name="toh-content">
+                                    
+                                    <xsl:for-each select="current-group()">
+                                        
+                                        <xsl:sort select="number(m:toh/@number)"/>
+                                        <xsl:sort select="m:toh/@letter"/>
+                                        <xsl:sort select="number(m:toh/@chapter-number)"/>
+                                        <xsl:sort select="m:toh/@chapter-letter"/>
+                                        
+                                        <xsl:if test="position() ne 1">
+                                            <br class="hidden-xs"/>
+                                            <xsl:value-of select="'+'"/>
+                                        </xsl:if>
+                                        <xsl:value-of select="m:toh/m:full"/>
+                                        
+                                    </xsl:for-each>
+                                    
+                                    <xsl:if test="$show-translation-status">
+                                        
+                                        <br class="hidden-xs"/>
+                                        
+                                        <span class="col-xs-pull-right">
+                                            <xsl:sequence select="common:translation-status(@status-group)"/>
+                                        </span>
+                                        
+                                    </xsl:if>
+                                    
+                                    <hr class="sml-margin visible-xs"/>
+                                    
+                                </xsl:variable>
+                                
+                                <!-- <div class="col-sm-8"> -->
+                                <div class="col-sm-10">
+                                    
+                                    <div class="visible-xs">
+                                        <xsl:sequence select="$toh-content"/>
+                                    </div>
+                                    
+                                    <xsl:for-each-group select="current-group()" group-by="if($grouping eq 'text') then @id else m:toh/@key">
+                                        
+                                        <xsl:sort select="number(m:toh/@number)"/>
+                                        <xsl:sort select="m:toh/@letter"/>
+                                        <xsl:sort select="number(m:toh/@chapter-number)"/>
+                                        <xsl:sort select="m:toh/@chapter-letter"/>
+                                        
+                                        <xsl:if test="position() ne 1">
+                                            <hr/>
+                                        </xsl:if>
+                                        
+                                        <xsl:call-template name="text-list-title">
+                                            <xsl:with-param name="text" select="."/>
+                                        </xsl:call-template>
+                                        
+                                        <!-- Location breadcrumbs -->
+                                        <hr/>
+                                        <div role="navigation" aria-label="The location of this text in the collection" class="text-muted small">
+                                            <xsl:value-of select="'in '"/>
+                                            <ul class="breadcrumb">
+                                                <xsl:sequence select="common:breadcrumb-items(m:parent/descendant-or-self::m:parent, /m:response/@lang)"/>
+                                            </ul>
+                                        </div>
+                                        
+                                        <!-- Tantric warning -->
+                                        <xsl:if test="m:publication/m:tantric-restriction/tei:p">
+                                            <hr/>
+                                            <xsl:call-template name="tantra-warning">
+                                                <xsl:with-param name="id" select="@resource-id"/>
+                                                <xsl:with-param name="node" select="m:publication/m:tantric-restriction/tei:p"/>
+                                            </xsl:call-template>
+                                        </xsl:if>
+                                        
+                                        <xsl:call-template name="text-list-subtitles">
+                                            <xsl:with-param name="text" select="."/>
+                                        </xsl:call-template>
+                                        
+                                        <!-- Authors -->
+                                        <xsl:call-template name="source-authors">
+                                            <xsl:with-param name="text" select="."/>
+                                            <xsl:with-param name="entities" select="/m:response/m:entities/m:entity"/>
+                                        </xsl:call-template>
+                                        
+                                        <xsl:call-template name="expandable-summary">
+                                            <xsl:with-param name="text" select="."/>
+                                            <xsl:with-param name="expand-id" select="concat('summary-detail-', $group-index, '-', m:toh/@key)"/>
+                                            <xsl:with-param name="entities" select="/m:response/m:entities/m:entity"/>
+                                        </xsl:call-template>
+                                        
+                                    </xsl:for-each-group>
+                                    
+                                    <xsl:if test="$show-sponsorship">
+                                        <xsl:call-template name="sponsorship-status">
+                                            <xsl:with-param name="sponsorship-status" select="m:sponsorship-status"/>
+                                            <xsl:with-param name="show-cost" select="$show-sponsorship-cost"/>
+                                        </xsl:call-template>
+                                    </xsl:if>
+                                    
+                                    <xsl:if test="$show-sponsors">
+                                        <xsl:variable name="sponsors-text" select="current-group()[m:sponsors[m:sponsor]][1]"/>
+                                        <xsl:call-template name="sponsors">
+                                            <xsl:with-param name="sponsor-expressions" select="$sponsors-text/m:publication/m:sponsors"/>
+                                            <xsl:with-param name="sponsors" select="$sponsors-text/m:sponsors"/>
+                                            <xsl:with-param name="sponsorship-status" select="$sponsors-text/m:sponsorship-status"/>
+                                        </xsl:call-template>
+                                    </xsl:if>
+                                    
+                                </div>
+                                
+                                <div class="col-sm-2 nowrap hidden-xs">
+                                    
+                                    <xsl:sequence select="$toh-content"/>
+                                    
+                                </div>
+                                
+                            </div>
+                            
+                        </xsl:for-each-group>
+                    </div>
+                </div>
+            </xsl:when>
+            
+            <xsl:otherwise>
+                <hr class="sml-margin"/>
+                <p class="text-muted">
+                    <xsl:call-template name="local-text">
+                        <xsl:with-param name="local-key" select="'no-texts-of-type'"/>
+                    </xsl:call-template>
+                </p>
+            </xsl:otherwise>
+            
+        </xsl:choose>
+        
+    </xsl:template>
+    
     <xsl:template name="text-list-title">
         
         <xsl:param name="text"/>
@@ -167,7 +364,7 @@
             <xsl:choose>
                 <xsl:when test="$text/@status eq '1'">
                     <a>
-                        <xsl:attribute name="href" select="$text/@page-url"/>
+                        <xsl:attribute name="href" select="concat($reading-room-path, '/translation/', $text/m:toh/@key, '.html')"/>
                         <xsl:attribute name="target" select="concat($text/@id, '.html')"/>
                         <xsl:value-of select="$title"/>
                     </a>
@@ -226,264 +423,6 @@
         
     </xsl:template>
     
-    <xsl:template name="expandable-summary">
-        
-        <xsl:param name="text"/>
-        <xsl:param name="expand-id" as="xs:string"/>
-        
-        <xsl:if test="$text/m:part[@type eq 'summary'][tei:p]">
-            <hr/>
-            <a class="summary-link collapsed" role="button" data-toggle="collapse" aria-expanded="false">
-                <xsl:attribute name="href" select="concat('#', $expand-id)"/>
-                <xsl:attribute name="aria-controls" select="$expand-id"/>
-                <i class="fa fa-chevron-down"/>
-                <xsl:value-of select="' '"/>
-                <xsl:call-template name="local-text">
-                    <xsl:with-param name="local-key" select="'summary-label'"/>
-                </xsl:call-template>
-            </a>
-            
-            <div class="collapse summary-detail">
-                
-                <xsl:attribute name="id" select="$expand-id"/>
-                
-                <div class="well well-sm">
-                    
-                    <xsl:apply-templates select="$text/m:part[@type eq 'summary']/tei:p"/>
-                    
-                </div>
-            </div>
-            
-        </xsl:if>
-    </xsl:template>
-    
-    <xsl:template name="expand-item">
-        
-        <xsl:param name="id" required="yes" as="xs:string"/>
-        <xsl:param name="title" required="yes" as="xs:string"/>
-        <xsl:param name="show-count" required="no" as="xs:integer?"/>
-        <xsl:param name="content" required="no" as="node()*"/>
-        
-        <section class="list-group-item">
-            
-            <div role="tab">
-                
-                <xsl:attribute name="id" select="concat($id, '-heading')"/>
-                
-                <a class="center-vertical full-width collapsed" role="button" data-toggle="collapse" data-parent="#accordion" aria-expanded="false">
-                    
-                    <xsl:attribute name="href" select="concat('#', $id, '-detail')"/>
-                    <xsl:attribute name="aria-controls" select="concat($id, '-detail')"/>
-                    
-                    <div>
-                        <h3 class="list-group-item-heading">
-                            <xsl:value-of select="concat($title, ' ')"/>
-                            <xsl:if test="$show-count">
-                                <span class="badge badge-notification">
-                                    <xsl:value-of select="$show-count"/>
-                                </span>
-                            </xsl:if>
-                        </h3>
-                    </div>
-                    
-                    <div class="text-right">
-                        <i class="fa fa-plus collapsed-show"/>
-                        <i class="fa fa-minus collapsed-hide"/>
-                    </div>
-                    
-                </a>
-            </div>
-            
-            <div class="panel-collapse collapse" role="tabpanel" aria-expanded="false">
-                
-                <xsl:attribute name="id" select="concat($id, '-detail')"/>
-                <xsl:attribute name="aria-labelledby" select="concat($id, '-heading')"/>
-                
-                <div class="panel-body no-padding">
-                    <xsl:copy-of select="$content"/>
-                </div>
-                
-            </div>
-            
-        </section>
-    </xsl:template>
-    
-    <xsl:template name="text-list">
-        
-        <xsl:param name="texts" required="yes" as="element()*"/>
-        <xsl:param name="list-id" required="yes" as="xs:string"/>
-        <xsl:param name="grouping" required="no" as="xs:string?"/>
-        <xsl:param name="show-sponsorship" required="no" as="xs:boolean" select="false()"/>
-        <xsl:param name="show-sponsorship-cost" required="no" as="xs:boolean" select="false()"/>
-        <xsl:param name="show-sponsors" required="no" as="xs:boolean" select="false()"/>
-        <xsl:param name="show-translation-status" required="no" as="xs:boolean" select="false()"/>
-        
-        <xsl:choose>
-            <xsl:when test="count($texts)">
-                <div class="text-list">
-                    <div class="row table-headers">
-                        <div class="col-sm-2 hidden-xs">
-                            <xsl:call-template name="local-text">
-                                <xsl:with-param name="local-key" select="'column-toh-label'"/>
-                            </xsl:call-template>
-                        </div>
-                        <!-- <div class="col-sm-8 hidden-xs"> -->
-                        <div class="col-sm-10 hidden-xs">
-                            <xsl:call-template name="local-text">
-                                <xsl:with-param name="local-key" select="'column-title-label'"/>
-                            </xsl:call-template>
-                        </div>
-                        <!-- 
-                        <div class="col-sm-2 hidden-xs">
-                            <xsl:call-template name="local-text">
-                                <xsl:with-param name="local-key" select="'column-pages-label'"/>
-                            </xsl:call-template>
-                        </div> -->
-                        <div class="col-xs-8 visible-xs">
-                            <xsl:call-template name="local-text">
-                                <xsl:with-param name="local-key" select="'column-toh-label'"/>
-                            </xsl:call-template>
-                            <xsl:value-of select="' / '"/>
-                            <xsl:call-template name="local-text">
-                                <xsl:with-param name="local-key" select="'column-title-label'"/>
-                            </xsl:call-template>
-                        </div>
-                        <div class="col-xs-4 visible-xs text-right">
-                            <xsl:call-template name="local-text">
-                                <xsl:with-param name="local-key" select="'column-status-label'"/>
-                            </xsl:call-template>
-                        </div>
-                    </div>
-                    <div class="list-section">
-                        <xsl:for-each-group select="$texts" group-by="if($grouping eq 'sponsorship' and not(m:sponsorship-status/@project-id eq '')) then m:sponsorship-status/@project-id else if($grouping eq 'text') then @id else m:toh/@key">
-                            
-                            <xsl:sort select="number(m:toh/@number)"/>
-                            <xsl:sort select="m:toh/@letter"/>
-                            <xsl:sort select="number(m:toh/@chapter-number)"/>
-                            <xsl:sort select="m:toh/@chapter-letter"/>
-                            
-                            <xsl:variable name="group-index" select="position()"/>
-                            
-                            <div class="row list-item">
-                                
-                                <xsl:attribute name="id" select="concat($list-id, '-', @id)"/>
-                                
-                                <div class="col-sm-2 nowrap">
-                                    
-                                    <xsl:for-each select="current-group()">
-                                        
-                                        <xsl:sort select="number(m:toh/@number)"/>
-                                        <xsl:sort select="m:toh/@letter"/>
-                                        <xsl:sort select="number(m:toh/@chapter-number)"/>
-                                        <xsl:sort select="m:toh/@chapter-letter"/>
-                                        
-                                        <xsl:if test="position() ne 1">
-                                            <br class="hidden-xs"/>
-                                            <xsl:value-of select="'+'"/>
-                                        </xsl:if>
-                                        <xsl:value-of select="m:toh/m:full"/>
-                                        
-                                    </xsl:for-each>
-                                    
-                                    <xsl:if test="$show-translation-status">
-                                        
-                                        <br class="hidden-xs"/>
-                                        
-                                        <span class="col-xs-pull-right">
-                                            <xsl:sequence select="common:translation-status(@status-group)"/>
-                                        </span>
-                                        
-                                    </xsl:if>
-                                    
-                                    <hr class="visible-xs sml-margin"/>
-                                    
-                                </div>
-                                
-                                <!-- <div class="col-sm-8"> -->
-                                <div class="col-sm-10">
-                                        
-                                    <xsl:for-each-group select="current-group()" group-by="if($grouping eq 'text') then @id else m:toh/@key">
-                                        
-                                        <xsl:sort select="number(m:toh/@number)"/>
-                                        <xsl:sort select="m:toh/@letter"/>
-                                        <xsl:sort select="number(m:toh/@chapter-number)"/>
-                                        <xsl:sort select="m:toh/@chapter-letter"/>
-                                        
-                                        <xsl:if test="position() ne 1">
-                                            <hr/>
-                                        </xsl:if>
-                                        
-                                        <xsl:call-template name="text-list-title">
-                                            <xsl:with-param name="text" select="."/>
-                                        </xsl:call-template>
-                                        
-                                        <xsl:call-template name="text-list-subtitles">
-                                            <xsl:with-param name="text" select="."/>
-                                        </xsl:call-template>
-                                        
-                                        <xsl:call-template name="expandable-summary">
-                                            <xsl:with-param name="text" select="."/>
-                                            <xsl:with-param name="expand-id" select="concat('summary-detail-', $group-index, '-', m:toh/@key)"/>
-                                        </xsl:call-template>
-                                        
-                                    </xsl:for-each-group>
-                                    
-                                    <xsl:if test="$show-sponsorship">
-                                        <xsl:call-template name="sponsorship-status">
-                                            <xsl:with-param name="sponsorship-status" select="m:sponsorship-status"/>
-                                            <xsl:with-param name="show-cost" select="$show-sponsorship-cost"/>
-                                        </xsl:call-template>
-                                    </xsl:if>
-                                    
-                                    <xsl:if test="$show-sponsors">
-                                        <xsl:variable name="sponsors-text" select="current-group()[m:sponsors[m:sponsor]][1]"/>
-                                        <xsl:call-template name="sponsors">
-                                            <xsl:with-param name="sponsor-expressions" select="$sponsors-text/m:publication/m:sponsors"/>
-                                            <xsl:with-param name="sponsors" select="$sponsors-text/m:sponsors"/>
-                                            <xsl:with-param name="sponsorship-status" select="$sponsors-text/m:sponsorship-status"/>
-                                        </xsl:call-template>
-                                    </xsl:if>
-                                    
-                                </div>
-                                <!-- 
-                                <div class="col-sm-2">
-                                    
-                                    <hr class="sml-margin visible-xs"/>
-                                    
-                                    <xsl:choose>
-                                        <xsl:when test="$show-sponsorship">
-                                            <xsl:value-of select="format-number(sum(m:sponsorship-status/m:cost/@pages), '#,###')"/>
-                                        </xsl:when>
-                                        <xsl:otherwise>
-                                            <xsl:value-of select="format-number(sum(m:location/@count-pages), '#,###')"/>
-                                        </xsl:otherwise>
-                                    </xsl:choose>
-                                    
-                                    <span class="visible-xs-inline">
-                                        <xsl:value-of select="' '"/>
-                                        <xsl:call-template name="local-text">
-                                            <xsl:with-param name="local-key" select="'pages-label'"/>
-                                        </xsl:call-template>
-                                    </span>
-                                    
-                                </div> -->
-                            </div>
-                            
-                        </xsl:for-each-group>
-                    </div>
-                </div>
-            </xsl:when>
-            <xsl:otherwise>
-                <hr class="sml-margin"/>
-                <p class="text-muted">
-                    <xsl:call-template name="local-text">
-                        <xsl:with-param name="local-key" select="'no-texts-of-type'"/>
-                    </xsl:call-template>
-                </p>
-            </xsl:otherwise>
-        </xsl:choose>
-    </xsl:template>
-    
     <xsl:template name="sponsors">
         
         <xsl:param name="sponsor-expressions" required="no" as="element(m:sponsors)?"/>
@@ -494,7 +433,7 @@
             <hr/>
             <xsl:variable name="sponsor-strings" as="xs:string*">
                 <xsl:for-each select="$sponsor-expressions/m:sponsor">
-                    <xsl:variable name="sponsor-id" select="replace(@ref, '^(EFT:|sponsors\.xml#)', '', 'i')"/>
+                    <xsl:variable name="sponsor-id" select="replace(@ref, '^(eft:|sponsors\.xml#)', '', 'i')"/>
                     <xsl:choose>
                         <xsl:when test="normalize-space(text())">
                             <xsl:value-of select="normalize-space(text())"/>
@@ -534,11 +473,13 @@
         
         <xsl:if test="$sponsorship-status/m:status[@id eq 'reserved']">
             <hr/>
-            <p class="italic text-danger">
-                <xsl:call-template name="local-text">
-                    <xsl:with-param name="local-key" select="'reserved-label'"/>
-                </xsl:call-template>
-            </p>
+            <div>
+                <span class="label label-warning">
+                    <xsl:call-template name="local-text">
+                        <xsl:with-param name="local-key" select="'reserved-label'"/>
+                    </xsl:call-template>
+                </span>
+            </div>
         </xsl:if>
         
         <xsl:if test="$show-cost">
@@ -549,9 +490,11 @@
                 <xsl:if test="count($sponsorship-status/m:cost/m:part) gt 1">
                     <div class="col-sm-6">
                         <div>
-                            <xsl:call-template name="local-text">
-                                <xsl:with-param name="local-key" select="'sponsor-part-label'"/>
-                            </xsl:call-template>
+                            <label class="text-muted small">
+                                <xsl:call-template name="local-text">
+                                    <xsl:with-param name="local-key" select="'sponsor-part-label'"/>
+                                </xsl:call-template>
+                            </label>
                         </div>
                         <div class="center-vertical align-left">
                             <xsl:for-each-group select="$sponsorship-status/m:cost/m:part" group-by="@amount">
@@ -586,9 +529,11 @@
                 <xsl:if test="not($sponsorship-status/m:cost/m:part[@status eq 'sponsored'])">
                     <div class="col-sm-6">
                         <div>
-                            <xsl:call-template name="local-text">
-                                <xsl:with-param name="local-key" select="'sponsor-whole-label'"/>
-                            </xsl:call-template>
+                            <label class="text-muted small">
+                                <xsl:call-template name="local-text">
+                                    <xsl:with-param name="local-key" select="'sponsor-whole-label'"/>
+                                </xsl:call-template>
+                            </label>
                         </div>
                         <div class="center-vertical align-left">
                             <span>
@@ -607,6 +552,5 @@
         </xsl:if>
         
     </xsl:template>
-    
     
 </xsl:stylesheet>

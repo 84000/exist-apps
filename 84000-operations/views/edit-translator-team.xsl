@@ -15,7 +15,7 @@
                     
                     <xsl:call-template name="alert-translation-locked"/>
                     
-                    <form method="post" class="form-horizontal form-update">
+                    <form method="post" class="form-horizontal form-update" data-loading="Updating team...">
                         
                         <xsl:attribute name="action" select="'edit-translator-team.html'"/>
                         <xsl:variable name="team-id" select="m:team/@xml:id"/>

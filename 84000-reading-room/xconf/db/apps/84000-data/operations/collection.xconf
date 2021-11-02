@@ -17,6 +17,11 @@
             <create qname="@type" type="xs:string"/>
             <create qname="@predicate" type="xs:string"/>
             
+            <!-- publication-status.xml -->
+            <create qname="@updated" type="xs:string"/>
+            <create qname="@key" type="xs:string"/>
+            <create qname="@parent-id" type="xs:string"/>
+            
         </range>
         
     </index>

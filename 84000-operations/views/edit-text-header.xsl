@@ -95,6 +95,7 @@
                     <!-- Files -->
                     <xsl:if test="m:translation/@status-group eq 'published'">
                         
+                        <!-- Downloads -->
                         <div>
                             <xsl:for-each select="m:translation/m:downloads">
                                 
@@ -189,15 +190,23 @@
                         
                     </xsl:if>
                     
-                    <div class="panel-group" role="tablist" aria-multiselectable="true" id="forms-accordion">
+                    <div class="list-group accordion accordion-background" role="tablist" aria-multiselectable="true" id="forms-accordion">
                         
-                        <xsl:call-template name="titles-form-panel"/>
+                        <xsl:call-template name="titles-form-panel">
+                            <xsl:with-param name="active" select="false()"/>
+                        </xsl:call-template>
                         
-                        <xsl:call-template name="source-form-panel"/>
+                        <xsl:call-template name="source-form-panel">
+                            <xsl:with-param name="active" select="false()"/>
+                        </xsl:call-template>
                         
-                        <xsl:call-template name="contributors-form-panel"/>
+                        <xsl:call-template name="contributors-form-panel">
+                            <xsl:with-param name="active" select="false()"/>
+                        </xsl:call-template>
                         
-                        <xsl:call-template name="submissions-form-panel"/>
+                        <xsl:call-template name="submissions-form-panel">
+                            <xsl:with-param name="active" select="false()"/>
+                        </xsl:call-template>
                         
                         <xsl:call-template name="translation-status-form-panel">
                             <xsl:with-param name="active" select="true()"/>
@@ -219,15 +228,25 @@
         
     </xsl:template>
     
-    <!-- Titles in a panel -->
+    <!-- Titles form -->
     <xsl:template name="titles-form-panel">
+        
         <xsl:param name="active"/>
-        <xsl:call-template name="panel">
-            <xsl:with-param name="type" select="'titles'"/>
-            <xsl:with-param name="title" select="'Titles'"/>
+        
+        <xsl:call-template name="expand-item">
+            
+            <xsl:with-param name="accordion-selector" select="'#forms-accordion'"/>
+            <xsl:with-param name="id" select="'titles'"/>
             <xsl:with-param name="active" select="$active"/>
-            <xsl:with-param name="form">
-                <form method="post" class="form-horizontal form-update" id="titles-form">
+            
+            <xsl:with-param name="title">
+                <span class="h4">
+                    <xsl:value-of select="'Titles'"/>
+                </span>
+            </xsl:with-param>
+            
+            <xsl:with-param name="content">
+                <form method="post" class="form-horizontal form-update top-margin" id="titles-form" data-loading="Updating titles...">
                     <xsl:attribute name="action" select="'edit-text-header.html#titles-form'"/>
                     
                     <input type="hidden" name="form-action" value="update-titles"/>
@@ -238,24 +257,24 @@
                     <div class="add-nodes-container">
                         <xsl:choose>
                             <xsl:when test="m:translation/m:titles/m:title">
-                                <xsl:call-template name="titles-controls">
-                                    <xsl:with-param name="text-titles" select="m:translation/m:titles/m:title"/>
-                                    <xsl:with-param name="title-types" select="/m:response/m:title-types/m:title-type"/>
-                                    <xsl:with-param name="title-langs" select="/m:response/m:title-types/m:title-lang"/>
-                                </xsl:call-template>
+                                <xsl:for-each select="m:translation/m:titles/m:title">
+                                    <xsl:call-template name="title-controls">
+                                        <xsl:with-param name="title" select="."/>
+                                        <xsl:with-param name="title-index" select="position()"/>
+                                        <xsl:with-param name="title-types" select="/m:response/m:title-types/m:title-type"/>
+                                    </xsl:call-template>
+                                </xsl:for-each>
                             </xsl:when>
                             <xsl:otherwise>
-                                <xsl:call-template name="titles-controls">
-                                    <xsl:with-param name="text-titles">
-                                        <m:title/>
-                                    </xsl:with-param>
+                                <xsl:call-template name="title-controls">
+                                    <xsl:with-param name="title" select="()"/>
+                                    <xsl:with-param name="title-index" select="1"/>
                                     <xsl:with-param name="title-types" select="/m:response/m:title-types/m:title-type"/>
-                                    <xsl:with-param name="title-langs" select="/m:response/m:title-types/m:title-lang"/>
                                 </xsl:call-template>
                             </xsl:otherwise>
                         </xsl:choose>
                         <div class="form-group">
-                            <div class="col-sm-12">
+                            <div class="col-sm-2">
                                 <a href="#add-nodes" class="add-nodes">
                                     <span class="monospace">
                                         <xsl:value-of select="'+'"/>
@@ -263,46 +282,51 @@
                                     <xsl:value-of select="' add a title'"/>
                                 </a>
                             </div>
+                            <div class="col-sm-10">
+                                <p class="text-muted small">
+                                    <xsl:call-template name="hyphen-help-text"/>
+                                </p>
+                            </div>
                         </div>
                     </div>
                     
                     <div class="form-group">
                         <div class="col-sm-12">
-                            <div class="center-vertical full-width">
-                                <div>
-                                    <p class="text-muted small">
-                                        <xsl:value-of select="'* Standard hyphens can be added to Sanskrit strings and will be converted to soft-hyphens when saved'"/>
-                                    </p>
-                                </div>
-                                <div>
-                                    <button type="submit" class="btn btn-primary pull-right">
-                                        <xsl:value-of select="'Save'"/>
-                                    </button>
-                                </div>
-                            </div>
+                            <button type="submit" class="btn btn-primary pull-right">
+                                <xsl:value-of select="'Save'"/>
+                            </button>
                         </div>
                     </div>
                     
                 </form>
             </xsl:with-param>
         </xsl:call-template>
+        
     </xsl:template>
     
-    <!-- Contributors in a panel -->
+    <!-- Contributors form -->
     <xsl:template name="contributors-form-panel">
         
         <xsl:param name="active"/>
         
-        <xsl:call-template name="panel">
-            <xsl:with-param name="type" select="'contributors'"/>
-            <xsl:with-param name="title" select="'Contributors'"/>
+        <xsl:call-template name="expand-item">
+            
+            <xsl:with-param name="accordion-selector" select="'#forms-accordion'"/>
+            <xsl:with-param name="id" select="'contributors'"/>
             <xsl:with-param name="active" select="$active"/>
-            <xsl:with-param name="form">
+            
+            <xsl:with-param name="title">
+                <span class="h4">
+                    <xsl:value-of select="'Contributors'"/>
+                </span>
+            </xsl:with-param>
+            
+            <xsl:with-param name="content">
                 
                 <xsl:variable name="summary" select="/m:response/m:translation/m:publication/m:contributors/m:summary[1]"/>
                 <xsl:variable name="translator-team-id" select="lower-case(replace($summary/@ref, '^(eft:|contributors\.xml#)', '', 'i'))"/>
                 
-                <form method="post" class="form-horizontal form-update" id="contributors-form">
+                <form method="post" class="form-horizontal form-update labels-left top-margin" id="contributors-form" data-loading="Updating contributors...">
                     
                     <xsl:attribute name="action" select="'edit-text-header.html#contributors-form'"/>
                     
@@ -314,6 +338,7 @@
                     
                     <div class="row">
                         <div class="col-sm-8">
+                            
                             <div class="form-group">
                                 <label class="control-label col-sm-3">
                                     <xsl:value-of select="'Translator Team'"/>
@@ -336,8 +361,8 @@
                                     </select>
                                 </div>
                             </div>
-                            <hr class="sml-margin"/>
-                            <div class="add-nodes-container">
+                            
+                            <div class="add-nodes-container top-margin">
                                 
                                 <xsl:variable name="team-contributors" select="/m:response/m:contributor-persons/m:person[m:team[@id = $translator-team-id]]"/>
                                 <xsl:variable name="other-contributors" select="/m:response/m:contributor-persons/m:person[not(m:team[@id = $translator-team-id])]"/>
@@ -357,29 +382,51 @@
                             </div>
                         </div>
                         <div class="col-sm-4">
-                            <xsl:if test="m:translation/m:publication/m:contributors/m:summary">
-                                <div class="text-bold">Attribution</div>
-                                <xsl:for-each select="m:translation/m:publication/m:contributors/m:summary">
-                                    <p>
-                                        <xsl:apply-templates select="node()"/>
+                            
+                            <div class="text-bold">
+                                <xsl:value-of select="'Attribution'"/>
+                            </div>
+                            <xsl:choose>
+                                <xsl:when test="m:translation/m:publication/m:contributors/m:summary">
+                                    <xsl:for-each select="m:translation/m:publication/m:contributors/m:summary">
+                                        <p>
+                                            <xsl:apply-templates select="node()"/>
+                                        </p>
+                                    </xsl:for-each>
+                                </xsl:when>
+                                <xsl:otherwise>
+                                    <p class="text-muted italic">
+                                        <xsl:value-of select="'No attribution text in the TEI'"/>
                                     </p>
-                                </xsl:for-each>
-                            </xsl:if>
+                                </xsl:otherwise>
+                            </xsl:choose>
+                            
                             <hr class="sml-margin"/>
-                            <xsl:if test="m:translation/m:contributors/tei:div[@type eq 'acknowledgment']/tei:p">
-                                <div class="text-bold">
-                                    <xsl:value-of select="'Acknowledgments'"/>
-                                </div>
-                                <xsl:apply-templates select="m:translation/m:contributors/tei:div[@type eq 'acknowledgment']/tei:p"/>
-                            </xsl:if>
+                            
+                            <div class="text-bold">
+                                <xsl:value-of select="'Acknowledgments'"/>
+                            </div>
+                            <xsl:choose>
+                                <xsl:when test="m:translation/m:contributors/tei:div[@type eq 'acknowledgment']/tei:p">
+                                    <xsl:apply-templates select="m:translation/m:contributors/tei:div[@type eq 'acknowledgment']/tei:p"/>
+                                </xsl:when>
+                                <xsl:otherwise>
+                                    <p class="text-muted italic">
+                                        <xsl:value-of select="'No acknowledgment text in the TEI'"/>
+                                    </p>
+                                </xsl:otherwise>
+                            </xsl:choose>
+                            
                         </div>
                     </div>
-                    <hr class="sml-margin"/>
-                    <div>
-                        <p class="small text-muted">
-                            <xsl:value-of select="'If a contributor is not automatically recognised in the acknowledgement text then please specify what they are &#34;expressed as&#34;. If a contributor is already highlighted then you can leave this field blank.'"/>
-                        </p>
-                    </div>
+                    <xsl:if test="m:translation/m:contributors/tei:div[@type eq 'acknowledgment']/tei:p">
+                        <hr class="sml-margin"/>
+                        <div>
+                            <p class="small text-muted">
+                                <xsl:value-of select="'If a contributor is not automatically recognised in the acknowledgement text then please specify how they are expressed (their &#34;expression&#34;). If a contributor is already highlighted then you can leave this field blank.'"/>
+                            </p>
+                        </div>
+                    </xsl:if>
                     <hr class="sml-margin"/>
                     <div class="form-group">
                         <div class="col-sm-offset-2 col-sm-10">
@@ -403,66 +450,9 @@
                         </div>
                     </div>
                 </form>
-            
             </xsl:with-param>
+            
         </xsl:call-template>
-    </xsl:template>
-    
-    <!-- Contributor type <select/> -->
-    <xsl:template name="select-contributor-type">
-        <xsl:param name="contributor-types" required="yes"/>
-        <xsl:param name="control-name" required="yes"/>
-        <xsl:param name="selected-value" required="yes"/>
-        <select class="form-control">
-            <xsl:attribute name="name" select="$control-name"/>
-            <xsl:for-each select="$contributor-types">
-                <option>
-                    <xsl:variable name="value" select="concat(@node-name, '-', @role)"/>
-                    <xsl:attribute name="value" select="$value"/>
-                    <xsl:if test="$value eq $selected-value">
-                        <xsl:attribute name="selected" select="'selected'"/>
-                    </xsl:if>
-                    <xsl:value-of select="m:label/text()"/>
-                </option>
-            </xsl:for-each>
-        </select>
-    </xsl:template>
-    
-    <!-- Contributor <select/> -->
-    <xsl:template name="select-contributor">
-        
-        <xsl:param name="contributor-id" as="xs:string?"/>
-        <xsl:param name="control-name" as="xs:string"/>
-        <xsl:param name="team-contributors" as="element(m:person)*"/>
-        <xsl:param name="other-contributors" as="element(m:person)*"/>
-        
-        <select class="form-control">
-            <xsl:attribute name="name" select="$control-name"/>
-            <option value="">
-                <xsl:value-of select="'[none]'"/>
-            </option>
-            <xsl:if test="$team-contributors">
-                <xsl:for-each select="$team-contributors">
-                    <option>
-                        <xsl:attribute name="value" select="@xml:id"/>
-                        <xsl:if test="@xml:id eq $contributor-id">
-                            <xsl:attribute name="selected" select="'selected'"/>
-                        </xsl:if>
-                        <xsl:value-of select="m:label/text()"/>
-                    </option>
-                </xsl:for-each>
-                <option value="">-</option>
-            </xsl:if>
-            <xsl:for-each select="$other-contributors">
-                <option>
-                    <xsl:attribute name="value" select="@xml:id"/>
-                    <xsl:if test="@xml:id eq $contributor-id">
-                        <xsl:attribute name="selected" select="'selected'"/>
-                    </xsl:if>
-                    <xsl:value-of select="m:label/text()"/>
-                </option>
-            </xsl:for-each>
-        </select>
         
     </xsl:template>
     
@@ -524,7 +514,7 @@
                 <!-- No existing contributors so show an set of controls -->
                 <div class="form-group add-nodes-group">
                     
-                    <div class="col-sm-2">
+                    <div class="col-sm-3">
                         <xsl:call-template name="select-contributor-type">
                             <xsl:with-param name="contributor-types" select="$contributor-types"/>
                             <xsl:with-param name="control-name" select="'contributor-type-1'"/>
@@ -532,7 +522,7 @@
                         </xsl:call-template>
                     </div>
                     
-                    <div class="col-sm-4">
+                    <div class="col-sm-3">
                         <xsl:call-template name="select-contributor">
                             <xsl:with-param name="control-name" select="'contributor-id-1'"/>
                             <xsl:with-param name="contributor-id" select="''"/>
@@ -542,7 +532,7 @@
                     </div>
                     
                     <label class="control-label col-sm-2">
-                        <xsl:value-of select="'expressed as:'"/>
+                        <xsl:value-of select="'expression:'"/>
                     </label>
                     
                     <div class="col-sm-4">
@@ -557,15 +547,84 @@
         
     </xsl:template>
     
-    <!-- Translation status in a panel -->
+    <!-- Contributor type <select/> -->
+    <xsl:template name="select-contributor-type">
+        <xsl:param name="contributor-types" required="yes"/>
+        <xsl:param name="control-name" required="yes"/>
+        <xsl:param name="selected-value" required="yes"/>
+        <select class="form-control">
+            <xsl:attribute name="name" select="$control-name"/>
+            <xsl:for-each select="$contributor-types">
+                <option>
+                    <xsl:variable name="value" select="concat(@node-name, '-', @role)"/>
+                    <xsl:attribute name="value" select="$value"/>
+                    <xsl:if test="$value eq $selected-value">
+                        <xsl:attribute name="selected" select="'selected'"/>
+                    </xsl:if>
+                    <xsl:value-of select="m:label/text()"/>
+                </option>
+            </xsl:for-each>
+        </select>
+    </xsl:template>
+    
+    <!-- Contributor <select/> -->
+    <xsl:template name="select-contributor">
+        
+        <xsl:param name="contributor-id" as="xs:string?"/>
+        <xsl:param name="control-name" as="xs:string"/>
+        <xsl:param name="team-contributors" as="element(m:person)*"/>
+        <xsl:param name="other-contributors" as="element(m:person)*"/>
+        
+        <select class="form-control">
+            <xsl:attribute name="name" select="$control-name"/>
+            <option value="">
+                <xsl:value-of select="'[none]'"/>
+            </option>
+            <xsl:if test="$team-contributors">
+                <xsl:for-each select="$team-contributors">
+                    <option>
+                        <xsl:attribute name="value" select="@xml:id"/>
+                        <xsl:if test="@xml:id eq $contributor-id">
+                            <xsl:attribute name="selected" select="'selected'"/>
+                        </xsl:if>
+                        <xsl:value-of select="m:label/text()"/>
+                    </option>
+                </xsl:for-each>
+                <option value="">-</option>
+            </xsl:if>
+            <xsl:for-each select="$other-contributors">
+                <option>
+                    <xsl:attribute name="value" select="@xml:id"/>
+                    <xsl:if test="@xml:id eq $contributor-id">
+                        <xsl:attribute name="selected" select="'selected'"/>
+                    </xsl:if>
+                    <xsl:value-of select="m:label/text()"/>
+                </option>
+            </xsl:for-each>
+        </select>
+        
+    </xsl:template>
+    
+    <!-- Translation status form -->
     <xsl:template name="translation-status-form-panel">
+        
         <xsl:param name="active"/>
-        <xsl:call-template name="panel">
-            <xsl:with-param name="type" select="'publication-status'"/>
-            <xsl:with-param name="title" select="'Publication Status'"/>
+        
+        <xsl:call-template name="expand-item">
+            
+            <xsl:with-param name="accordion-selector" select="'#forms-accordion'"/>
+            <xsl:with-param name="id" select="'translation-status'"/>
             <xsl:with-param name="active" select="$active"/>
-            <xsl:with-param name="form">
-                <form method="post" class="form-horizontal form-update" id="publication-status-form">
+            
+            <xsl:with-param name="title">
+                <span class="h4">
+                    <xsl:value-of select="'Translation project status'"/>
+                </span>
+            </xsl:with-param>
+            
+            <xsl:with-param name="content">
+                
+                <form method="post" class="form-horizontal form-update top-margin" id="publication-status-form" data-loading="Updating status...">
                     <xsl:attribute name="action" select="'edit-text-header.html'"/>
                     <input type="hidden" name="form-action" value="update-publication-status"/>
                     <input type="hidden" name="post-id">
@@ -842,7 +901,7 @@
                             <xsl:apply-templates select="m:translation/m:status-updates"/>
                             
                         </div>
-                    
+                        
                     </div>
                     <hr/>
                     <div class="center-vertical full-width">
@@ -853,29 +912,40 @@
                         </span>
                     </div>
                 </form>
+                
             </xsl:with-param>
+            
         </xsl:call-template>
+        
     </xsl:template>
     
-    <!-- Submissions panel prototype -->
+    <!-- Submissions form -->
     <xsl:template name="submissions-form-panel">
+        
         <xsl:param name="active"/>
-        <xsl:call-template name="panel">
+        
+        <xsl:call-template name="expand-item">
             
-            <xsl:with-param name="type" select="'submissions'"/>
-            <xsl:with-param name="title" select="'Submissions'"/>
+            <xsl:with-param name="accordion-selector" select="'#forms-accordion'"/>
+            <xsl:with-param name="id" select="'submissions'"/>
             <xsl:with-param name="active" select="$active"/>
             
-            <xsl:with-param name="flag">
-                <span class="badge badge-notification">
-                    <xsl:value-of select="count(m:translation-status/m:text/m:submission)"/>
+            <xsl:with-param name="title">
+                <span class="h4">
+                    <xsl:value-of select="'Submissions '"/>
+                    <span class="badge badge-notification">
+                        <xsl:value-of select="count(m:translation-status/m:text/m:submission)"/>
+                    </span>
                 </span>
             </xsl:with-param>
             
-            <xsl:with-param name="form">
+            <xsl:with-param name="content">
                 
                 <xsl:for-each select="m:translation-status/m:text/m:submission">
+                    
                     <xsl:variable name="submission" select="."/>
+                    
+                    <hr class="sml-margin"/>
                     
                     <div class="row">
                         <div class="col-sm-8">
@@ -950,57 +1020,71 @@
                             
                         </div>
                     </div>
-                    <hr class="sml-margin"/>
+                    
                 </xsl:for-each>
                 
-                <form method="post" enctype="multipart/form-data" class="form-horizontal form-update" id="submissions-form">
+                <hr class="sml-margin"/>
+                
+                <form method="post" enctype="multipart/form-data" class="form-horizontal form-update labels-left" id="submissions-form" data-loading="Uploading submission...">
+                    
                     <xsl:attribute name="action" select="'edit-text-header.html#submissions-form'"/>
+                    
                     <input type="hidden" name="form-action" value="process-upload"/>
                     <input type="hidden" name="post-id">
                         <xsl:attribute name="value" select="m:translation/@id"/>
                     </input>
                     
                     <div class="form-group">
-                        <label for="submit-file" class="col-sm-3 control-label">
-                            <xsl:value-of select="'Upload a translation file'"/>
-                        </label>
-                        <div class="col-sm-7">
-                            <input type="file" name="submit-translation-file" id="submit-translation-file" class="form-control" required="required" accept=".doc,.docx,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"/>
+                        <div class="col-sm-10">
+                            <input type="file" name="submit-translation-file" id="submit-translation-file" required="required" accept=".doc,.docx,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"/>
                         </div>
                         <div class="col-sm-2">
                             <button type="submit" class="btn btn-primary pull-right">
-                                <xsl:value-of select="'Submit'"/>
+                                <xsl:value-of select="'Upload a file'"/>
                             </button>
                         </div>
                     </div>
+                    
                 </form>
                 
             </xsl:with-param>
         </xsl:call-template>
+        
     </xsl:template>
     
-    <!-- Locations in a panel -->
+    <!-- Source form -->
     <xsl:template name="source-form-panel">
+        
         <xsl:param name="active"/>
-        <xsl:call-template name="panel">
-            <xsl:with-param name="type" select="'source'"/>
-            <xsl:with-param name="title" select="'Source'"/>
+        
+        <xsl:call-template name="expand-item">
+            
+            <xsl:with-param name="accordion-selector" select="'#forms-accordion'"/>
+            <xsl:with-param name="id" select="'source'"/>
             <xsl:with-param name="active" select="$active"/>
-            <xsl:with-param name="form">
-                <form method="post" class="form-horizontal form-update" id="locations-form">
+            
+            <xsl:with-param name="title">
+                <span class="h4">
+                    <xsl:value-of select="'Source'"/>
+                </span>
+            </xsl:with-param>
+            
+            <xsl:with-param name="content">
+                
+                <form method="post" class="form-horizontal labels-left labels-light form-update" id="locations-form" data-loading="Updating source...">
                     
                     <xsl:attribute name="action" select="'edit-text-header.html#locations-form'"/>
                     
-                    <input type="hidden" name="form-action" value="update-locations"/>
+                    <input type="hidden" name="form-action" value="update-source"/>
                     
                     <input type="hidden" name="post-id">
                         <xsl:attribute name="value" select="m:translation/@id"/>
                     </input>
                     
-                    <xsl:for-each select="m:translation/m:toh">
+                    <xsl:for-each select="m:translation/m:source">
                         
-                        <xsl:variable name="toh-key" select="./@key"/>
-                        <xsl:variable name="toh-location" select="/m:response/m:translation/m:location[@key eq $toh-key][1]"/>
+                        <xsl:variable name="toh-key" select="@key"/>
+                        <xsl:variable name="toh-location" select="m:location"/>
                         
                         <input type="hidden">
                             <xsl:attribute name="name" select="concat('work-', $toh-key)"/>
@@ -1015,25 +1099,48 @@
                         <fieldset>
                             
                             <legend>
-                                <xsl:value-of select="concat('Toh ', ./m:base)"/>
+                                <xsl:value-of select="m:toh"/>
                             </legend>
                             
-                            <!--<div class="add-nodes-container">
-                                <xsl:call-template name="contributors-controls">
-                                    <xsl:with-param name="text-contributors" select="m:translation/m:source/m:contributors/m:*[self::m:author | self::m:editor | self::m:consultant]"/>
-                                    <xsl:with-param name="contributor-types" select="/m:response/m:contributor-types/m:contributor-type[@type eq 'source']"/>
-                                    <xsl:with-param name="team-contributors" select="()"/>
-                                    <xsl:with-param name="other-contributors" select="()"/>
-                                </xsl:call-template>
+                            <div class="add-nodes-container bottom-margin">
+                                <xsl:variable name="attributions" select="m:attribution"/>
+                                <xsl:variable name="attribution-entities" as="element(m:entity)*">
+                                    <xsl:for-each select="/m:response/m:attribution-entities/m:entity">
+                                        <xsl:sort select="m:label[not(@derived) and not(@derived-transliterated)][1] ! lower-case(.)"/>
+                                        <xsl:sequence select="."/>
+                                    </xsl:for-each>
+                                </xsl:variable>
+                                <xsl:choose>
+                                    <xsl:when test="$attributions">
+                                        <xsl:for-each select="$attributions">
+                                            <xsl:call-template name="attribution-controls">
+                                                <xsl:with-param name="attribution" select="."/>
+                                                <xsl:with-param name="attribution-index" select="common:index-of-node($attributions, .)"/>
+                                                <xsl:with-param name="toh-key" select="$toh-key"/>
+                                                <xsl:with-param name="attribution-entities" select="$attribution-entities"/>
+                                            </xsl:call-template>
+                                        </xsl:for-each>
+                                    </xsl:when>
+                                    <xsl:otherwise>
+                                        <xsl:call-template name="attribution-controls">
+                                            <xsl:with-param name="attribution-index" select="1"/>
+                                            <xsl:with-param name="toh-key" select="$toh-key"/>
+                                            <xsl:with-param name="attribution-entities" select="$attribution-entities"/>
+                                        </xsl:call-template>
+                                    </xsl:otherwise>
+                                </xsl:choose>
                                 <div>
                                     <a href="#add-nodes" class="add-nodes">
-                                        <span class="monospace">+</span> add a contributor </a>
+                                        <span class="monospace">+</span> add an attribution </a>
                                 </div>
                             </div>
                             
-                            <hr class="sml-margin"/>-->
+                            <hr/>
                             
                             <div class="add-nodes-container">
+                                <h4>
+                                    <xsl:value-of select="concat('Location in the Degé ', if($toh-location/@work eq 'UT4CZ5369') then 'Kangyur' else 'Tengyur')"/>
+                                </h4>
                                 <xsl:for-each select="$toh-location/m:volume">
                                     <div class="row add-nodes-group">
                                         <div class="col-sm-3">
@@ -1050,24 +1157,27 @@
                                         </div>
                                     </div>
                                 </xsl:for-each>
-                                <div>
-                                    <a href="#add-nodes" class="add-nodes">
-                                        <span class="monospace">+</span> add a volume </a>
+                                
+                                <div class="row">
+                                    <div class="col-sm-3 sml-margin top">
+                                        <a href="#add-nodes" class="add-nodes">
+                                            <span class="monospace">+</span> add a volume </a>
+                                    </div>
+                                    <div class="col-sm-6 sml-margin top">
+                                        <xsl:variable name="sum-volume-pages" select="sum($toh-location/m:volume ! (xs:integer(@end-page) - (xs:integer(@start-page) - 1))) ! xs:integer(.)"/>
+                                        <xsl:if test="$sum-volume-pages ne xs:integer($toh-location/@count-pages)">
+                                            <div class="text-right">
+                                                <span class="label label-danger">
+                                                    <xsl:value-of select="concat('The sum of the above pages is ', $sum-volume-pages)"/>
+                                                </span>
+                                            </div>
+                                        </xsl:if>
+                                    </div>
+                                    <div class="col-sm-3">
+                                        <xsl:copy-of select="ops:text-input('Total pages: ', concat('count-pages-', $toh-key), $toh-location/@count-pages, 6, 'required')"/>
+                                    </div>
                                 </div>
-                            </div>
-                            
-                            <div class="row">
-                                <div class="col-sm-9">
-                                    <xsl:variable name="sum-volume-pages" select="sum($toh-location/m:volume ! (xs:integer(@end-page) - (xs:integer(@start-page) - 1))) ! xs:integer(.)"/>
-                                    <xsl:if test="$sum-volume-pages ne xs:integer($toh-location/@count-pages)">
-                                        <div class="text-danger text-right sml-margin top small">
-                                            <xsl:value-of select="concat('[The sum of the above pages is ', $sum-volume-pages, ']')"/>
-                                        </div>
-                                    </xsl:if>
-                                </div>
-                                <div class="col-sm-3">
-                                    <xsl:copy-of select="ops:text-input('Page count: ', concat('count-pages-', $toh-key), $toh-location/@count-pages, 6, 'required')"/>
-                                </div>
+                                
                             </div>
                             
                         </fieldset>
@@ -1082,7 +1192,193 @@
                     
                 </form>
             </xsl:with-param>
+        
         </xsl:call-template>
+        
+    </xsl:template>
+    
+    <!-- Attribution row -->
+    <xsl:template name="attribution-controls">
+        
+        <xsl:param name="attribution" as="element(m:attribution)?"/>
+        <xsl:param name="attribution-index" as="xs:integer"/>
+        <xsl:param name="toh-key" as="xs:string"/>
+        <xsl:param name="attribution-entities" as="element(m:entity)*"/>
+        
+        <xsl:variable name="attribution-entity-id" select="$attribution/@ref ! replace(., '^eft:', '')"/>
+        
+        <div class="row add-nodes-group sml-margin bottom">
+            
+            <input type="hidden">
+                <xsl:attribute name="name" select="concat('attribution-revision-', $toh-key, '-', $attribution-index)"/>
+                <xsl:attribute name="value" select="$attribution/@revision"/>
+            </input>
+            
+            <input type="hidden">
+                <xsl:attribute name="name" select="concat('attribution-key-', $toh-key, '-', $attribution-index)"/>
+                <xsl:attribute name="value" select="$attribution/@key"/>
+            </input>
+            
+            <div class="col-sm-3">
+                <label class="control-label">
+                    <xsl:attribute name="for" select="concat('attribution-role-', $toh-key, '-', $attribution-index)"/>
+                    <xsl:value-of select="'Attribution role:'"/>
+                </label>
+                <xsl:call-template name="select-attribution-role">
+                    <xsl:with-param name="selected-value" select="$attribution/@role"/>
+                    <xsl:with-param name="control-name" select="concat('attribution-role-', $toh-key, '-', $attribution-index)"/>
+                </xsl:call-template>
+            </div>
+            
+            <div class="col-sm-3">
+                
+                <xsl:variable name="entity" select="/m:response/m:attribution-entities/m:entity/id($attribution-entity-id)"/>
+                <xsl:variable name="kb-id" select="$entity/m:instance/m:page/@kb-id"/>
+                <xsl:variable name="glossary-id" select="$entity/m:instance/m:entry/@id"/>
+                
+                <label class="control-label">
+                    <xsl:attribute name="for" select="concat('attribution-entity-', $toh-key, '-', $attribution-index)"/>
+                    <xsl:value-of select="'Entity:'"/>
+                </label>
+                
+                <xsl:if test="$entity">
+                    
+                    <ul class="list-inline inline-dots small add-nodes-remove">
+
+                        <li>
+                            <xsl:choose>
+                                <xsl:when test="$kb-id">
+                                    <a>
+                                        <xsl:attribute name="href" select="concat($reading-room-path, '/knowledgebase/', $kb-id, '.html')"/>
+                                        <xsl:attribute name="target" select="$kb-id"/>
+                                        <xsl:value-of select="'Knowledge base'"/>
+                                    </a>
+                                    <xsl:value-of select="' '"/>
+                                    <span>
+                                        <xsl:choose>
+                                            <xsl:when test="$entity/m:instance/m:page/@status-group eq 'published'">
+                                                <xsl:attribute name="class" select="'label label-success'"/>
+                                            </xsl:when>
+                                            <xsl:when test="$entity/m:instance/m:page/@status-group eq 'in-progress'">
+                                                <xsl:attribute name="class" select="'label label-warning'"/>
+                                            </xsl:when>
+                                            <xsl:otherwise>
+                                                <xsl:attribute name="class" select="'label label-default'"/>
+                                            </xsl:otherwise>
+                                        </xsl:choose>
+                                        <xsl:value-of select="if($entity/m:instance/m:page/@status) then $entity/m:instance/m:page/@status else '0'"/>
+                                    </span>
+                                </xsl:when>
+                                <xsl:otherwise>
+                                    <a href="/knowledgebase.html#new-article-form">
+                                        <xsl:value-of select="'Add to knowledge base'"/>
+                                    </a>
+                                </xsl:otherwise>
+                            </xsl:choose>
+                        </li>
+                        
+                        <xsl:if test="$glossary-id">
+                            <li>
+                                <a>
+                                    <xsl:attribute name="href" select="concat($reading-room-path, '/glossary.html?entity-id=', $entity/@xml:id)"/>
+                                    <xsl:attribute name="target" select="'84000-glossary'"/>
+                                    <xsl:value-of select="'Glossary'"/>
+                                </a>
+                            </li>
+                        </xsl:if>
+                        
+                    </ul>
+                    
+                </xsl:if>
+                
+                <select class="form-control">
+                    <xsl:attribute name="name" select="concat('attribution-entity-', $toh-key, '-', $attribution-index)"/>
+                    <xsl:attribute name="id" select="concat('attribution-entity-', $toh-key, '-', $attribution-index)"/>
+                    <option>
+                        <xsl:attribute name="value" select="''"/>
+                        <xsl:value-of select="'[No entity]'"/>
+                    </option>
+                    <option>
+                        <xsl:attribute name="value" select="'create-entity-for-expression'"/>
+                        <xsl:value-of select="'[Create an entity for expression]'"/>
+                    </option>
+                    <xsl:for-each select="$attribution-entities">
+                        <option>
+                            <xsl:attribute name="value" select="@xml:id"/>
+                            <xsl:if test="@xml:id eq $attribution-entity-id">
+                                <xsl:attribute name="selected" select="'selected'"/>
+                            </xsl:if>
+                            <xsl:value-of select="m:label[not(@derived) and not(@derived-transliterated)][1]"/>
+                        </option>
+                    </xsl:for-each>
+                </select>
+                
+            </div>
+            
+            <div class="col-sm-4">
+                <label class="control-label">
+                    <xsl:attribute name="for" select="concat('attribution-expression-', $toh-key, '-', $attribution-index)"/>
+                    <xsl:value-of select="'Expression in this text:'"/>
+                </label>
+                <input type="text" class="form-control">
+                    <xsl:attribute name="name" select="concat('attribution-expression-', $toh-key, '-', $attribution-index)"/>
+                    <xsl:attribute name="id" select="concat('attribution-expression-', $toh-key, '-', $attribution-index)"/>
+                    <xsl:attribute name="value" select="text()"/>
+                </input>
+            </div>
+            
+            <div class="col-sm-2">
+                <label class="control-label">
+                    <xsl:attribute name="for" select="concat('attribution-lang-', $toh-key, '-', $attribution-index)"/>
+                    <xsl:value-of select="'Expr. lang.:'"/>
+                </label>
+                <xsl:call-template name="select-language">
+                    <xsl:with-param name="input-id" select="concat('attribution-lang-', $toh-key, '-', $attribution-index)"/>
+                    <xsl:with-param name="input-name" select="concat('attribution-lang-', $toh-key, '-', $attribution-index)"/>
+                    <xsl:with-param name="language-options" select="('','en','Bo-Ltn','Sa-Ltn')"/>
+                    <xsl:with-param name="selected-language" select="@xml:lang"/>
+                </xsl:call-template>
+            </div>
+            
+        </div>
+        
+    </xsl:template>
+    
+    <!-- Attribution role <select/> -->
+    <xsl:template name="select-attribution-role">
+        <xsl:param name="control-name" required="yes"/>
+        <xsl:param name="selected-value" required="yes"/>
+        <select class="form-control">
+            
+            <xsl:attribute name="name" select="$control-name"/>
+            <xsl:attribute name="id" select="$control-name"/>
+            
+            <option value="">
+                <xsl:value-of select="'[No role]'"/>
+            </option>
+            
+            <option value="author">
+                <xsl:if test="$selected-value eq 'author'">
+                    <xsl:attribute name="selected" select="'selected'"/>
+                </xsl:if>
+                <xsl:value-of select="'Author'"/>
+            </option>
+            
+            <option value="translator">
+                <xsl:if test="$selected-value eq 'translator'">
+                    <xsl:attribute name="selected" select="'selected'"/>
+                </xsl:if>
+                <xsl:value-of select="'Translator'"/>
+            </option>
+            
+            <option value="reviser">
+                <xsl:if test="$selected-value eq 'reviser'">
+                    <xsl:attribute name="selected" select="'selected'"/>
+                </xsl:if>
+                <xsl:value-of select="'Reviser'"/>
+            </option>
+            
+        </select>
     </xsl:template>
     
 </xsl:stylesheet>

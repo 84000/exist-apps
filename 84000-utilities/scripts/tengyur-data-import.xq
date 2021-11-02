@@ -7,14 +7,14 @@ import module namespace common="http://read.84000.co/common" at "../../84000-rea
 import module namespace tei-content="http://read.84000.co/tei-content" at "../../84000-reading-room/modules/tei-content.xql";
 import module namespace translation="http://read.84000.co/translation" at "../../84000-reading-room/modules/translation.xql";
 import module namespace entities="http://read.84000.co/entities" at "../../84000-reading-room/modules/entities.xql";
+import module namespace update-tei="http://operations.84000.co/update-tei" at "../../84000-operations/modules/update-tei.xql";
 import module namespace functx="http://www.functx.com";
 
-declare variable $local:tengyur-tei := 
-    collection($common:translations-path)//tei:TEI[tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl/tei:location/@work = 'UT23703'];
+declare variable $local:tengyur-tei := collection($common:translations-path)//tei:TEI[tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl/tei:location/@work = 'UT23703'];
 
 declare variable $local:import-texts := collection('/db/apps/84000-data/uploads/tengyur-import');
 
-(: ~ Standalone xpath to check what's been done
+(: ~ Standalone xquery to check what's been done
 
 declare namespace tei="http://www.tei-c.org/ns/1.0";
 
@@ -25,14 +25,18 @@ return $import-id
 
 :)
 
-declare function local:merge-element ($element as element(), $import-text as element(m:text)) {
+declare function local:merge-element ($element as element(), $import-text as element(m:text), $import-key as xs:string, $indent as xs:integer) {
     
     let $import-file-name := $import-text/parent::m:tengyur-data/m:head[1]/m:doc[1]/@doc_id/string()
     where $import-file-name
-    return
+    return 
     
     (: Titles :)
-    if(local-name($element) eq 'titleStmt') then
+    if(local-name($element) eq 'titleStmt') then (
+        
+        (: Prettify with an indent :)
+        common:ws($indent),
+            
         element { node-name($element) } {
         
             (: Copy attributes :)
@@ -44,15 +48,16 @@ declare function local:merge-element ($element as element(), $import-text as ele
             where $title[not(@xml:lang/string() eq 'Bo-Ltn')]
             for $lang in (common:valid-lang($title/@xml:lang), if($title[@xml:lang = ('Bo', 'bo')]) then 'Bo-Ltn' else ())
             for $title-tokenized at $token-index in tokenize($title/data(), '/')
-            return
+            return (
+                common:ws($indent + 1),
                 element title {
                     $title/@*[not(local-name(.) = ('lang', 'type'))],
                     attribute xml:lang { $lang },
                     if ($title[@type = ('mainTitle', 'longTitle', 'otherTitle')] and $token-index eq 1) then 
                         $title/@type
                     else (
-                        attribute type { 'otherTitle' },
-                        attribute group { $title/@type/string() }
+                        attribute type { 'otherTitle' }(:,
+                        attribute group { $title/@type/string() }:)
                     ),
                     if($title[not(@rend)] and matches($title-tokenized, '^\*.*')) then
                         attribute rend { 'reconstruction' }
@@ -72,11 +77,16 @@ declare function local:merge-element ($element as element(), $import-text as ele
                         normalize-space($title-tokenized)
                     
                 }
+            )
             ,
             (: Copy non-title elements :)
             $element/*[not(self::tei:title)]
+            ,
+        
+            (: Prettify with an indent :)
+            common:ws($indent)
         }
-    
+    )
     (: Contributors :)
     (: Ignore existing contributors :)
     else if(local-name($element) = ('author', 'editor')) then
@@ -84,36 +94,42 @@ declare function local:merge-element ($element as element(), $import-text as ele
     
     (: Process imported contributors after biblScope  :)
     else if(local-name($element) eq 'biblScope') then (
-    
+        
         (: biblScope :)
+        (: Prettify with an indent :)
+        common:ws($indent),
         $element,
         
         (: Contributors :)
-        (:for $statement in $import-text/m:authorstatement | $import-text/m:translatorstatement | $import-text/m:revision:)
+        (: Collect all the contributors in a text and de-dupe :)
         for $contributor in $import-text//m:author | $import-text//m:translator | $import-text//m:reviser
         let $contributor-ref := $contributor/@ref/string()
         let $contributor-node := local-name($contributor)
+        (: Group translations of the name together :)
         group by $contributor-ref, $contributor-node
-        let $contributor-1 := ($contributor[@xml:lang eq 'Sa-Ltn'], $contributor[not(@xml:lang eq 'Sa-Ltn')])[1]
-        order by if($contributor-1[self::m:author]) then 1 else if($contributor-1[self::m:translator]) then 2 else 3 ascending
+        let $contributor-1 := $contributor[1]
+        (: List them author first in the TEI :)
+        order by if($contributor-node eq 'author') then 1 else if($contributor-node eq 'translator') then 2 else 3 ascending
         return
-        
-            let $import-id := concat('tengyur-data-2021-PH', $contributor-ref ! concat('#', .))
             
-            let $entity-labels :=
+            (: A unique reference for this import record :)
+            let $import-id := concat($import-key, $contributor-ref ! concat('#', .))
+            
+            (: Process all the labels :)
+            let $contributor-labels :=
                 for $label in $contributor
                 let $label-data := $label/data()
                 group by $label-data
                 let $label-lang := common:valid-lang($label[1]/@xml:lang)
-                order by if($label-lang eq 'Sa-Ltn') then 1 else if($label-lang eq 'bo') then 2 else 3
-                    for $lang in ($label-lang[not(. eq 'Bo-Ltn')], if($label-lang eq 'bo') then 'Bo-Ltn' else ())
-                    return 
+                order by 
+                    if($label-lang eq 'Sa-Ltn') then 1 else if($label-lang eq 'bo') then 2 else 3 ascending,
+                    string-length($label-data) ascending
+                return 
+                    (: Normalise Sanskrit :)
+                    if($label-lang eq 'Sa-Ltn') then
                         element { QName('http://read.84000.co/ns/1.0', 'label') } {
-                            attribute xml:lang { $lang },
-                            attribute text-id { $import-text/@text-id/string() },
-                            if($lang eq 'Bo-Ltn') then
-                                common:wylie-from-bo($label-data)
-                            else if($lang eq 'Sa-Ltn') then
+                            attribute xml:lang { 'Sa-Ltn' },
+                            text {
                                 functx:capitalize-first(
                                     replace(
                                         replace(
@@ -121,11 +137,30 @@ declare function local:merge-element ($element as element(), $import-text as ele
                                         , '^\*', '')                        (: Remove leading * :)
                                     , '\-', '­')                            (: Hard to soft-hyphens :)
                                 )                                           (: Title case :)
-                            else if($lang eq 'en' and $contributor-1[@ref eq 'anon']) then
-                                'Anon'
-                            else 
-                                $label-data
+                            }
                         }
+                    (: Skip Bo-Ltn if there's a bo already :)
+                    else if($label-lang eq 'Bo-Ltn' and $contributor[common:valid-lang(@xml:lang) eq 'bo']) then
+                        ()
+                    (: Generate Bo-Ltn if there's bo :)
+                    else if($label-lang eq 'bo') then (
+                        element { QName('http://read.84000.co/ns/1.0', 'label') } {
+                            attribute xml:lang { 'Bo-Ltn' },
+                            text { common:wylie-from-bo($label-data) ! replace(., '/$', '') }
+                        }
+                    )
+                    else if($label-lang eq 'en' and $contributor-1[@ref eq 'anon']) then
+                        element { QName('http://read.84000.co/ns/1.0', 'label') } {
+                            attribute xml:lang { 'en' },
+                            text { 'Anon' }
+                        }
+                    else
+                        element { QName('http://read.84000.co/ns/1.0', 'label') } {
+                            attribute xml:lang { $label-lang },
+                            text { normalize-space($label-data) }
+                        }
+            
+            let $contributor-label := $contributor-labels[1]
             
             (: See if it already exists :)
             let $contributor-entity := 
@@ -133,43 +168,12 @@ declare function local:merge-element ($element as element(), $import-text as ele
                     $entities:entities/m:entity[m:source[@key eq $import-id]]
                 else ()
             
-            (: Add/update entity record :)
+            (: Handle entity record :)
             let $new-entity := 
-                (: Update the existing record :)
-                if($contributor-entity) then
-                    element { QName('http://read.84000.co/ns/1.0', 'entity') } {
-                        (: Copy existing :)
-                        $contributor-entity/@*,
-                        (: Existing labels :)
-                        for $label in $contributor-entity/m:label
-                        return (
-                            common:ws(2),
-                            $label
-                        ),
-                        (: Additional labels :)
-                        for $label in $entity-labels
-                        where $label[not(text() = $contributor-entity/m:label/text())]
-                        return (
-                            common:ws(2),
-                            $label
-                        ),
-                        (: Other element :)
-                        for $contributor-element in $contributor-entity/*[not(self::m:label)]
-                        return (
-                            common:ws(2),
-                            $contributor-element
-                        ),
-                        common:ws(1)
-                    }
-                else
-                    (: New record :)
+                if(not($contributor-entity)) then (
                     element { QName('http://read.84000.co/ns/1.0', 'entity') } {
                         attribute xml:id { entities:next-id() },
-                        for $label in $entity-labels
-                        return (
-                            common:ws(2),
-                            $label
-                        ),
+                        $contributor-label,
                         common:ws(2),
                         element source {
                             attribute key { $import-id }
@@ -180,30 +184,34 @@ declare function local:merge-element ($element as element(), $import-text as ele
                         },
                         common:ws(1)
                     }
-                    
-            let $update-entities := common:update('entity', $contributor-entity, $new-entity, $entities:entities, ())
+                )
+                (: Update entity exists already :)
+                else ()
             
+            (: Create entity :)
+            let $update-entity := 
+                if($new-entity) then
+                    common:update('entity', $contributor-entity, $new-entity, $entities:entities, ())
+                else ()
+            
+            (: Create the reference for the TEI :)
             let $contributor-id := 
-                if($new-entity[@xml:id]) then
+                if($new-entity[@xml:id] and $update-entity) then
                     concat('eft:', $new-entity/@xml:id)
+                else if($contributor-entity[@xml:id]) then
+                    concat('eft:', $contributor-entity/@xml:id)
                 else
                     concat('IMPORT-ERROR:', $import-id)
             
-            let $element-name :=
-                if($contributor-1[self::m:reviser]) then
-                    'editor'
-                else
-                    'author'
-        
             let $contributor-role :=
-                if($contributor-1[self::m:reviser]) then
+                if($contributor-node eq 'reviser') then
                     'reviser'
-                else if($contributor-1[self::m:translator]) then
+                else if($contributor-node eq 'translator') then
                     'translatorTib'
                 else ()
         
             let $contributor-revision :=
-                if($contributor-1[self::m:reviser] and $contributor-1[parent::m:revision[@rev_id]]) then
+                if($contributor-node eq 'reviser' and $contributor-1[parent::m:revision[@rev_id]]) then
                     $contributor-1/parent::m:revision/@rev_id/string()
                 else ()
         
@@ -212,14 +220,16 @@ declare function local:merge-element ($element as element(), $import-text as ele
                     $contributor-1/parent::*/@type/string()
                 else ()
         
-            return 
-                element { QName('http://www.tei-c.org/ns/1.0', $element-name) } {
-                    $contributor-1/@*[not(local-name(.) = ('ref', 'lang'))],
-                    attribute xml:lang { common:valid-lang($contributor-1/@xml:lang) },
+            return (
+                common:ws($indent),
+                element { QName('http://www.tei-c.org/ns/1.0', if($contributor-node eq 'reviser') then 'editor' else 'author') } {
+                    (: Calculated attributes :)
                     if($contributor-role) then
                         attribute role { $contributor-role }
                     else ()
                     ,
+                    attribute ref { $contributor-id },
+                    attribute xml:lang { $contributor-label/@xml:lang },
                     if($contributor-revision) then
                         attribute revision { $contributor-revision }
                     else ()
@@ -228,31 +238,32 @@ declare function local:merge-element ($element as element(), $import-text as ele
                         attribute key { $contributor-key }
                     else ()
                     ,
-                    attribute ref { $contributor-id },
-                    if($contributor-1[@xml:lang eq 'en'][@ref eq 'anon']) then
-                        'Anon'
-                    else if($contributor-1[@xml:lang eq 'Sa-Ltn']) then
-                        $contributor-1/node() ! 
-                            functx:capitalize-first(
-                                    replace(
-                                        replace(
-                                            normalize-space(.)  (: Normalize space :)
-                                        , '^\*', '')            (: Remove leading * :)
-                                    , '\-', '­')                (: Hard to soft-hyphens :)
-                                )                               (: Title case :)
-                    else 
-                        $contributor-1/node() ! normalize-space(.)
+                    (: Any other attributes :)
+                    $contributor-1/@*[not(local-name(.) = ('ref', 'lang'))],
+                    $contributor-label/text()
                 }
+            )
     )
     
     (: Notes :)
-    else if(local-name($element) eq 'notesStmt') then
+    else if(local-name($element) eq 'notesStmt') then (
+        
+        (: Prettify with an indent :)
+        common:ws($indent),
+            
         element { node-name($element) } {
         
             $element/@*,
             
             (: Copy notes that are not from this import :)
-            $element/*[not(@import(: eq $import-file-name:))],
+            for $node in $element/*[not(@import(: eq $import-file-name:))]
+            return (
+                common:ws($indent + 1),
+                $node
+            )
+            ,
+            
+            common:ws($indent + 1),
             
             (: Note the import :)
             element { QName('http://www.tei-c.org/ns/1.0', 'note') } {
@@ -266,7 +277,8 @@ declare function local:merge-element ($element as element(), $import-text as ele
             
             (: Import notes :)
             for $note in $import-text//m:note
-            return
+            return (
+                common:ws($indent + 1),
                 element { QName('http://www.tei-c.org/ns/1.0', 'note') } {
                     (:$note/@*[not(local-name(.) = ('lang', 'type'))],:)
                     attribute type { 'updated' },
@@ -281,9 +293,17 @@ declare function local:merge-element ($element as element(), $import-text as ele
                     attribute user { 'admin' },
                     $note/node()
                 }
+            ),
+            
+            (: Prettify with an indent :)
+            common:ws($indent)
+            
         }
-        
-    else if(local-name($element) eq 'sourceDesc') then
+    )
+    else if(local-name($element) eq 'sourceDesc') then (
+    
+        (: Prettify with an indent :)
+        common:ws($indent),
     
         element { node-name($element) } {
         
@@ -291,7 +311,7 @@ declare function local:merge-element ($element as element(), $import-text as ele
             
             for $node in $element/*[not(self::tei:link)](:[not(@import eq $import-file-name)]:)
             return
-                local:merge-element($node, $import-text)
+                local:merge-element($node, $import-text, $import-key, $indent + 1)
             ,
             for $link in $import-text/m:rel
             return
@@ -300,10 +320,20 @@ declare function local:merge-element ($element as element(), $import-text as ele
                     attribute target { $link/@resource }(:,
                     attribute import { $import-file-name }:)
                 }
+            ,
+            (: Prettify with an indent :)
+            common:ws($indent)
+            
         }
+    )
+    else (
     
-    else
-    
+        (: Prettify with an indent :)
+        if(not(local-name($element) eq 'fileDesc')) then
+            common:ws($indent)
+        else ()
+        ,
+        
         (: Copy other nodes and recurse :)
         element { node-name($element) } {
             
@@ -312,37 +342,41 @@ declare function local:merge-element ($element as element(), $import-text as ele
             for $node in $element/node()
             return
                 if($node instance of element()) then
-                    local:merge-element($node, $import-text)
+                    local:merge-element($node, $import-text, $import-key, $indent + 1)
                 else if($node instance of text() and normalize-space($node)) then
                     $node
                 else ()
+            ,
+            
+            (: Prettify with an indent :)
+            if($element/*) then
+                common:ws($indent)
+            else ()
             
         }
+    )
 };
 
-(: DON'T FORGET TO DISABLE TRIGGER :)
-element { QName('http://read.84000.co/ns/1.0', 'imported') } {
+(:element { QName('http://read.84000.co/ns/1.0', 'imported') } {:)
     
     let $import-texts :=
         for $import-text in $local:import-texts//m:text(:[@text-id = ('UT23703-001-001','UT23703-001-019', 'UT23703-001-046','UT23703-001-053')]:)
         let $import-file-name := $import-text/parent::m:tengyur-data/m:head[1]/m:doc[1]/@doc_id/string()
         where $import-file-name = (
-            "tengyur-data-1109-1179_PH_new_v2.3.xml",
-            "tengyur-data-1180-1304_PH_new_v2.3.xml",
-            "tengyur-data-1305-1345_PH_new_v2.3.xml",
-            "tengyur-data-1346-1400_PH_new_v2.3.xml"
+            "tengyur-data-1109-1179_PH_new_v2.4.xml"
+            (:"tengyur-data-3981-4085_CD_v1.xml":)
         )
         return $import-text
     
-    let $import-text-ids := $import-texts/@text-id/string()
+    let $import-text-ids := $import-texts/@text-id/string() ! upper-case(.)
     let $tei-texts := $local:tengyur-tei/id($import-text-ids)/ancestor::tei:TEI
 
     let $validation-issues := 
-        for $import-text in $import-texts
+        for $import-text in $import-texts[1]
         
-        let $import-text-id := $import-text/@text-id/string()
+        let $import-text-id := $import-text/@text-id/string() ! upper-case(.)
         let $tei-text := $tei-texts/id($import-text-id)/ancestor::tei:TEI
-        let $import-text-toh-keys := $import-text/m:toh/@key/string()
+        let $import-text-toh-keys := $import-text/m:toh/@key/string() ! lower-case(.)
         let $tei-text-toh-keys := $tei-text/tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl/@key/string()
         
         order by $import-text-toh-keys[1]
@@ -372,24 +406,27 @@ element { QName('http://read.84000.co/ns/1.0', 'imported') } {
         )
     
     return 
-    if(doc(concat('/db/system/config',$common:tei-path, '/collection.xconf'))/ex:collection/ex:triggers) then
-        <warning>{ 'DISABLE TRIGGERS BEFORE RUNNING SCRIPT' }</warning>
-    else if( $validation-issues ) then
-        $validation-issues
+    
+    (: RESOLVE VALIDATION ISSUES :)
+    if( $validation-issues ) then $validation-issues
+    
+    (: DISABLE TRIGGER :)
+    else if(doc(concat('/db/system/config',$common:tei-path, '/collection.xconf'))/ex:collection/ex:triggers) then <warning>{ 'DISABLE TRIGGERS BEFORE RUNNING SCRIPT' }</warning>
+    
+    (: DO THE IMPORT :)
     else
-        (: Do the import :)
         for $import-text in $import-texts
-            let $tei := tei-content:tei($import-text/@text-id, 'translation')
+            let $tei := tei-content:tei($import-text/@text-id ! upper-case(.), 'translation')
             let $fileDesc := $tei/tei:teiHeader/tei:fileDesc
         return
         if($fileDesc) then
-            let $fileDesc-merged := local:merge-element ($fileDesc, $import-text)
+            let $fileDesc-merged := local:merge-element($fileDesc, $import-text, 'tengyur-data-2021-1', 2)
             return (
-                (:$import-text,:)
-                (:$fileDesc-merged,:)
+                (:$import-text:)
+                (:$fileDesc-merged:)
                 common:update(tei-content:id($tei), $fileDesc, $fileDesc-merged, (), ())
             )
         else
             <error>{$import-text/@text-id}</error>
         
-}
+(:}:)

@@ -32,7 +32,7 @@
                             
                             <hr class="sml-margin"/>
                             
-                            <form action="/knowledgebase.html" method="post" class="form-inline text-center bottom-margin">
+                            <form action="/knowledgebase.html" method="post" id="new-article-form" class="form-inline text-center bottom-margin" data-loading="Adding new article...">
                                 <input type="hidden" name="form-action" value="new-article"/>
                                 <div class="form-group">
                                     <div class="input-group">
@@ -118,27 +118,29 @@
                                                 </div>
                                             </xsl:if>
                                             
-                                            <ul class="list-inline inline-dots no-bottom-margin small hidden-print">
-                                                <li>
-                                                    <a>
-                                                        <xsl:attribute name="href" select="concat('/edit-kb-header.html?id=', @xml:id)"/>
-                                                        <xsl:value-of select="'Edit headers'"/>
-                                                    </a>
-                                                </li>
-                                                <li>
-                                                    <a>
-                                                        <xsl:attribute name="href" select="concat($reading-room-path, '/knowledgebase/', @kb-id, '.html?view-mode=editor')"/>
-                                                        <xsl:attribute name="target" select="concat(@xml:id, '.html')"/>
-                                                        <xsl:value-of select="'Edit article'"/>
-                                                    </a>
-                                                </li>
-                                                <li>
-                                                    <a>
-                                                        <xsl:attribute name="href" select="concat('/edit-glossary.html?resource-id=', @xml:id, '&amp;resource-type=knowledgebase')"/>
-                                                        <xsl:value-of select="'Edit glossary'"/>
-                                                    </a>
-                                                </li>
-                                            </ul>
+                                            <div>
+                                                <ul class="list-inline inline-dots small hidden-print">
+                                                    <li>
+                                                        <a>
+                                                            <xsl:attribute name="href" select="concat('/edit-kb-header.html?id=', @xml:id)"/>
+                                                            <xsl:value-of select="'Edit headers'"/>
+                                                        </a>
+                                                    </li>
+                                                    <li>
+                                                        <a>
+                                                            <xsl:attribute name="href" select="concat($reading-room-path, '/knowledgebase/', @kb-id, '.html?view-mode=editor')"/>
+                                                            <xsl:attribute name="target" select="concat(@xml:id, '.html')"/>
+                                                            <xsl:value-of select="'Edit article'"/>
+                                                        </a>
+                                                    </li>
+                                                    <li>
+                                                        <a>
+                                                            <xsl:attribute name="href" select="concat('/edit-glossary.html?resource-id=', @xml:id, '&amp;resource-type=knowledgebase')"/>
+                                                            <xsl:value-of select="'Edit glossary'"/>
+                                                        </a>
+                                                    </li>
+                                                </ul>
+                                            </div>
                                             
                                         </div>
                                         

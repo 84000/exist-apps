@@ -17,10 +17,12 @@ declare variable $contributors:person-prefixes := '(Dr\.|Prof\.|Ven\.|Rev\.)';
 declare variable $contributors:team-prefixes := '(Dr\.|The|Prof\.)';
 declare variable $contributors:institution-prefixes := '(The|University\s+of)';
 
-declare function contributors:contributor-uri($contributor-id as xs:string) as xs:string {
-    lower-case(concat('contributors.xml#', $contributor-id))
-    (: Switch to eft: prefix once this version is on Distribution and can accept that prefix :)
-    (:lower-case(concat('eft:', $contributor-id)):)
+declare function contributors:contributor-uri($contributor-id as xs:string) as xs:string* {
+    (: Switch to eft: prefix once data is migrated :)
+    (
+        lower-case(concat('eft:', $contributor-id)),
+        lower-case(concat('contributors.xml#', $contributor-id))
+    )
 };
 
 declare function contributors:contributor-id($contributor-uri as xs:string) as xs:string {
@@ -150,7 +152,7 @@ declare function contributors:team($team-id as xs:string, $include-acknowledgeme
     let $team := $contributors:contributors/id(lower-case($team-id))[self::m:team]
     let $team-persons := $contributors:contributors/m:contributors/m:person[m:team/@id eq lower-case($team-id)]
     let $team-ref := contributors:contributor-uri($team/@xml:id)
-    let $team-texts := $contributors:texts//tei:TEI[tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:author[@ref eq $team-ref]]
+    let $team-texts := $contributors:texts//tei:TEI[tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:author[@ref = $team-ref]]
     let $contributor-types := $contributors:contributor-types//m:contributor-type
     
     return
@@ -161,7 +163,7 @@ declare function contributors:team($team-id as xs:string, $include-acknowledgeme
             $team/*,
             if($include-acknowledgements) then
                 for $tei in $team-texts
-                    let $acknowledgement := $tei/tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:*[@ref eq $team-ref]
+                    let $acknowledgement := $tei/tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:*[@ref = $team-ref]
                 return
                     local:acknowledgement($tei, element tei:p { $acknowledgement }, ())
             else (),
@@ -170,7 +172,7 @@ declare function contributors:team($team-id as xs:string, $include-acknowledgeme
                 (: Sort by role :)
                 for $person in $contributors:contributors/m:contributors/m:person[m:team/@id eq lower-case($team-id)]
                 let $person-ref := contributors:contributor-uri($person/@xml:id)
-                let $person-roles := $team-texts/tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:*[@ref eq $person-ref]/@role/string()
+                let $person-roles := $team-texts/tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:*[@ref = $person-ref]/@role/string()
                 let $person-top-role := min($contributor-types[@role/string() = $person-roles] ! functx:index-of-node($contributor-types, .))
                 (: Push no role to last :)
                 let $sort-value := ($person-top-role, count($contributor-types))[1]

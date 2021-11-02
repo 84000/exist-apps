@@ -14,10 +14,12 @@ declare variable $sponsors:sponsors := doc(concat($common:data-path, '/operation
 declare variable $sponsors:texts := collection($common:translations-path);
 declare variable $sponsors:prefixes := '(Dr\.|Prof\.)';
 
-declare function sponsors:sponsor-uri($sponsor-id as xs:string) as xs:string {
-    lower-case(concat('sponsors.xml#', $sponsor-id))
-    (: Switch to eft: prefix once this version is on Distribution and can accept that prefix :)
-    (:lower-case(concat('eft:', $sponsor-id)):)
+declare function sponsors:sponsor-uri($sponsor-id as xs:string) as xs:string* {
+    (: Switch to eft: prefix once data is migrated :)
+    (
+        lower-case(concat('eft:', $sponsor-id)),
+        lower-case(concat('sponsors.xml#', $sponsor-id))
+    )
 };
 
 declare function sponsors:sponsor-id($sponsor-uri as xs:string) as xs:string {
@@ -60,7 +62,7 @@ declare function sponsors:sponsor($id as xs:string, $include-acknowledgements as
             else ()
             ,
             if($include-acknowledgements) then
-                sponsors:acknowledgements(sponsors:sponsor-uri($sponsor/@xml:id))
+                sponsors:acknowledgements(sponsors:sponsor-uri($sponsor/@xml:id)[1])
             else ()
         }
 };

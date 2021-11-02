@@ -11,5 +11,5 @@ declare option exist:serialize "method=xml indent=no";
 common:response(
     'translator-tools/glossary-items',
     'translator-tools',
-    glossary:matching-items(request:get-parameter('term', ''), request:get-parameter('lang', ''))
+    glossary:matching-entries(request:get-parameter('term', ''), request:get-parameter('lang', ''))
 )

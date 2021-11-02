@@ -63,81 +63,85 @@
                                 
                             </xsl:if>
                             
-                            <!-- Summary -->
-                            <xsl:call-template name="part">
-                                <xsl:with-param name="part" select="m:translation/m:part[@type eq 'summary']"/>
-                                <xsl:with-param name="css-classes" select="'page text'"/>
-                            </xsl:call-template>
-                        
-                            <xsl:if test="m:translation/@status = $render-status">
-                            
-                                <!-- Acknowledgment -->
+                            <div id="parts">
+                                
+                                <!-- Summary -->
                                 <xsl:call-template name="part">
-                                    <xsl:with-param name="part" select="m:translation/m:part[@type eq 'acknowledgment']"/>
-                                    <xsl:with-param name="css-classes" select="'page text'"/>
+                                    <xsl:with-param name="part" select="m:translation/m:part[@type eq 'summary']"/>
+                                    <xsl:with-param name="css-classes" select="'page page-force text'"/>
                                 </xsl:call-template>
                                 
-                                <!-- Preface -->
-                                <xsl:call-template name="part">
-                                    <xsl:with-param name="part" select="m:translation/m:part[@type eq 'preface']"/>
-                                    <xsl:with-param name="css-classes" select="'page text'"/>
-                                </xsl:call-template>
-                                
-                                <!-- Introduction -->
-                                <xsl:call-template name="part">
-                                    <xsl:with-param name="part" select="m:translation/m:part[@type eq 'introduction']"/>
-                                    <xsl:with-param name="css-classes" select="'page text'"/>
-                                </xsl:call-template>
-    
-                                <!-- Main title -->
-                                <xsl:call-template name="body-title"/>
-                                
-                                <!-- The Chapters -->
-                                <xsl:for-each select="m:translation/m:part[@type eq 'translation']/m:part">
+                                <xsl:if test="m:translation/@status = $render-status">
+                                    
+                                    <!-- Acknowledgment -->
                                     <xsl:call-template name="part">
-                                        <xsl:with-param name="part" select="."/>
-                                        <xsl:with-param name="css-classes" select="'text page'"/>
+                                        <xsl:with-param name="part" select="m:translation/m:part[@type eq 'acknowledgment']"/>
+                                        <xsl:with-param name="css-classes" select="'page text'"/>
                                     </xsl:call-template>
-                                </xsl:for-each>
+                                    
+                                    <!-- Preface -->
+                                    <xsl:call-template name="part">
+                                        <xsl:with-param name="part" select="m:translation/m:part[@type eq 'preface']"/>
+                                        <xsl:with-param name="css-classes" select="'page text'"/>
+                                    </xsl:call-template>
+                                    
+                                    <!-- Introduction -->
+                                    <xsl:call-template name="part">
+                                        <xsl:with-param name="part" select="m:translation/m:part[@type eq 'introduction']"/>
+                                        <xsl:with-param name="css-classes" select="'page text'"/>
+                                    </xsl:call-template>
+                                    
+                                    <!-- Main title -->
+                                    <xsl:call-template name="body-title"/>
+                                    
+                                    <!-- The Chapters -->
+                                    <xsl:for-each select="m:translation/m:part[@type eq 'translation']/m:part">
+                                        <xsl:call-template name="part">
+                                            <xsl:with-param name="part" select="."/>
+                                            <xsl:with-param name="css-classes" select="'text page'"/>
+                                        </xsl:call-template>
+                                    </xsl:for-each>
+                                    
+                                    <!-- Appendix -->
+                                    <xsl:call-template name="part">
+                                        <xsl:with-param name="part" select="m:translation/m:part[@type eq 'appendix']"/>
+                                        <xsl:with-param name="css-classes" select="'page text'"/>
+                                    </xsl:call-template>
+                                    
+                                    <!-- Abbreviations -->
+                                    <xsl:call-template name="part">
+                                        <xsl:with-param name="part" select="m:translation/m:part[@type eq 'abbreviations']"/>
+                                        <xsl:with-param name="css-classes" select="'page'"/>
+                                    </xsl:call-template>
+                                    
+                                    <!-- Notes -->
+                                    <xsl:call-template name="part">
+                                        <xsl:with-param name="part" select="m:translation/m:part[@type eq 'end-notes']"/>
+                                        <xsl:with-param name="css-classes" select="'page'"/>
+                                    </xsl:call-template>
+                                    
+                                    <!-- Bilbiography -->
+                                    <xsl:call-template name="part">
+                                        <xsl:with-param name="part" select="m:translation/m:part[@type eq 'bibliography']"/>
+                                        <xsl:with-param name="css-classes" select="'page'"/>
+                                    </xsl:call-template>
+                                    
+                                    <!-- Glossary -->
+                                    <xsl:call-template name="part">
+                                        <xsl:with-param name="part" select="m:translation/m:part[@type eq 'glossary']"/>
+                                        <xsl:with-param name="css-classes" select="'page'"/>
+                                    </xsl:call-template>
+                                    
+                                </xsl:if>
                                 
-                                <!-- Appendix -->
-                                <xsl:call-template name="part">
-                                    <xsl:with-param name="part" select="m:translation/m:part[@type eq 'appendix']"/>
-                                    <xsl:with-param name="css-classes" select="'page text'"/>
-                                </xsl:call-template>
-                                
-                                <!-- Abbreviations -->
-                                <xsl:call-template name="part">
-                                    <xsl:with-param name="part" select="m:translation/m:part[@type eq 'abbreviations']"/>
-                                    <xsl:with-param name="css-classes" select="'page'"/>
-                                </xsl:call-template>
-                                
-                                <!-- Notes -->
-                                <xsl:call-template name="part">
-                                    <xsl:with-param name="part" select="m:translation/m:part[@type eq 'end-notes']"/>
-                                    <xsl:with-param name="css-classes" select="'page'"/>
-                                </xsl:call-template>
-                                
-                                <!-- Bilbiography -->
-                                <xsl:call-template name="part">
-                                    <xsl:with-param name="part" select="m:translation/m:part[@type eq 'bibliography']"/>
-                                    <xsl:with-param name="css-classes" select="'page'"/>
-                                </xsl:call-template>
-                                
-                                <!-- Glossary -->
-                                <xsl:call-template name="part">
-                                    <xsl:with-param name="part" select="m:translation/m:part[@type eq 'glossary']"/>
-                                    <xsl:with-param name="css-classes" select="'page'"/>
-                                </xsl:call-template>
-                                
-                            </xsl:if>
-                        
+                            </div>
+                            
                         </div>
                     </div>
-                    
                 </div>
             </main>
             
+            <!-- Additional functional elements -->
             <xsl:if test="$view-mode[@client eq 'browser'][not(@layout eq 'part-only')]">
                 
                 <!-- Navigation controls -->
@@ -219,32 +223,34 @@
                     <div class="fix-width">
                         <div class="sidebar-content">
                             
-                            <h4>
-                                <xsl:value-of select="'Contents'"/>
-                            </h4>
-                            
-                            <div class="data-container bottom-margin"/>
-                            
-                            <h4>
-                                <xsl:value-of select="'Search this translation'"/>
-                            </h4>
-                            
-                            <form action="/search.html" method="post" role="search" class="form-horizontal bottom-margin">
-                                <input type="hidden" name="resource-id" value="{ m:translation/@id }"/>
-                                <div class="input-group">
-                                    <input type="search" name="search" id="search" class="form-control" placeholder="Search" required="required" aria-label="Search text" value=""/>
-                                    <span class="input-group-btn">
-                                        <button type="submit" class="btn btn-primary">
-                                            <i class="fa fa-search"/>
-                                        </button>
-                                    </span>
-                                </div>
-                            </form>
-                            
                             <xsl:if test="m:translation/@status = $render-status">
+                                
+                                <h4>
+                                    <xsl:value-of select="'Contents'"/>
+                                </h4>
+                                
+                                <div class="data-container bottom-margin"/>
+                                
+                                <h4>
+                                    <xsl:value-of select="'Search this translation'"/>
+                                </h4>
+                                
+                                <form action="/search.html" method="post" role="search" class="form-horizontal bottom-margin">
+                                    <input type="hidden" name="resource-id" value="{ m:translation/@id }"/>
+                                    <div class="input-group">
+                                        <input type="search" name="search" id="search" class="form-control" placeholder="Search" required="required" aria-label="Search text" value=""/>
+                                        <span class="input-group-btn">
+                                            <button type="submit" class="btn btn-primary">
+                                                <i class="fa fa-search"/>
+                                            </button>
+                                        </span>
+                                    </div>
+                                </form>
+                            
                                 <h4>
                                     <xsl:value-of select="'Download Options'"/>
                                 </h4>
+                                
                                 <table class="contents-table bottom-margin">
                                     <tbody>
                                         <xsl:if test="$part-status eq 'complete'">
@@ -301,6 +307,7 @@
                                         </xsl:for-each>
                                     </tbody>
                                 </table>
+                            
                             </xsl:if>
                             
                             <h4>
@@ -351,6 +358,37 @@
                                             </a>
                                         </td>
                                     </tr>
+                                    <!-- Add a link to other texts by this author -->
+                                    <xsl:for-each select="m:translation/m:source/m:attribution[@role eq 'author'][@ref]">
+                                        <xsl:variable name="entity-id" select="replace(@ref, '^eft:', '')"/>
+                                        <xsl:variable name="entity" select="/m:response/m:entities/m:entity/id($entity-id)"/>
+                                        <xsl:variable name="page" select="$entity/m:instance[@type eq 'knowledgebase-article']/m:page"/>
+                                        <xsl:variable name="href" select="common:internal-link(concat('/knowledgebase/', $page/@kb-id, '.html'), (), '', /m:response/@lang)"/>
+                                        <tr>
+                                            <td>
+                                                <a>
+                                                    <xsl:attribute name="href" select="$href"/>
+                                                    <i class="fa fa-user"/>
+                                                </a>
+                                            </td>
+                                            <td>
+                                                <ul class="list-inline inline-dots">
+                                                    <li>
+                                                        <a>
+                                                            <xsl:attribute name="href" select="$href"/>
+                                                            <xsl:value-of select="'Other texts by '"/>
+                                                            <span>
+                                                                <xsl:call-template name="class-attribute">
+                                                                    <xsl:with-param name="lang" select="@xml:lang"/>
+                                                                </xsl:call-template>
+                                                                <xsl:value-of select="normalize-space(text())"/> 
+                                                            </span>
+                                                        </a>
+                                                    </li>
+                                                </ul>
+                                            </td>
+                                        </tr>
+                                    </xsl:for-each>
                                     <tr>
                                         <td>
                                             <a>
@@ -420,8 +458,8 @@
                 <xsl:value-of select="'reading-room'"/>
                 <xsl:value-of select="' translation'"/>
                 <xsl:value-of select="concat(' ', $part-status)"/>
-                <xsl:if test="$part-status eq 'part' and m:request[@part gt '']">
-                    <xsl:value-of select="concat(' part-', m:request/@part)"/>
+                <xsl:if test="$part-status eq 'part' and $requested-part gt ''">
+                    <xsl:value-of select="concat(' part-', $requested-part)"/>
                 </xsl:if>
             </xsl:with-param>
             <xsl:with-param name="page-title" select="string-join(($page-title/data(), '84000 Reading Room'), ' | ')"/>
@@ -463,7 +501,7 @@
         
         <!-- 'hide' allows the inclusion of content in the xml structure without outputting -->
         <xsl:if test="$part[@render = ('persist', 'show', 'collapse', 'preview', 'passage')]">
-            <section>
+            <xsl:element name="{ if($part[@render = ('preview')]) then 'aside' else 'section' }" namespace="http://www.w3.org/1999/xhtml">
                 
                 <xsl:attribute name="id" select="$part/@id"/>
                 
@@ -507,7 +545,9 @@
                     
                 </xsl:call-template>
                 
-                <hr class="hidden-print"/>
+                <xsl:if test="$view-mode[not(@layout eq 'part-only')]">
+                    <hr class="hidden-print"/>
+                </xsl:if>
                 
                 <!-- The content -->
                 <xsl:choose>
@@ -545,7 +585,7 @@
                     
                 </xsl:if>
                 
-            </section>
+            </xsl:element>
         </xsl:if>
         
     </xsl:template>
@@ -634,11 +674,34 @@
                     <xsl:apply-templates select="$main-titles[@xml:lang eq 'bo']"/>
                     
                     <xsl:element name="{ if(count($page-title) gt 1) then 'div' else 'h1' }">
-                        <xsl:attribute name="class" select="'title main-title'"/>
+                        <xsl:attribute name="class" select="'title main-title break'"/>
                         <xsl:value-of select="$main-titles[@xml:lang eq 'en']"/>
                     </xsl:element>
                     
                     <xsl:apply-templates select="$main-titles[@xml:lang eq 'Sa-Ltn']"/>
+                    
+                    <xsl:variable name="sourceAuthors" select="m:translation/m:source/m:attribution[@role eq 'author'][@ref]"/>
+                    <xsl:if test="$sourceAuthors">
+                        <div class="title">
+                            <div class="small text-muted">
+                                <xsl:value-of select="'by'"/>
+                            </div>
+                            <div>
+                                <ul class="list-inline inline-dots">
+                                    <xsl:for-each select="$sourceAuthors">
+                                        <li>
+                                            <span>
+                                                <xsl:call-template name="class-attribute">
+                                                    <xsl:with-param name="lang" select="@xml:lang"/>
+                                                </xsl:call-template>
+                                                <xsl:value-of select="normalize-space(text())"/> 
+                                            </span>
+                                        </li>
+                                    </xsl:for-each>
+                                </ul>
+                            </div>
+                        </div>
+                    </xsl:if>
                 
                 </div>
                 
@@ -647,6 +710,40 @@
                         <xsl:apply-templates select="$long-titles[@xml:lang eq 'Bo-Ltn']"/>
                     </div>
                 </xsl:if>
+                
+                <xsl:variable name="supplementaryRoles" select="('translator', 'reviser')"/>
+                <xsl:for-each select="$supplementaryRoles">
+                    <xsl:variable name="supplementaryRole" select="."/>
+                    <xsl:variable name="roleAttributions" select="$root//m:translation/m:source/m:attribution[@role eq $supplementaryRole][@ref]"/>
+                    <xsl:if test="$roleAttributions">
+                        <div class="top-margin">
+                            <div class="small text-muted">
+                                <xsl:choose>
+                                    <xsl:when test="$supplementaryRole eq 'reviser'">
+                                        <xsl:value-of select="'Revision'"/>
+                                    </xsl:when>
+                                    <xsl:otherwise>
+                                        <xsl:value-of select="'Tibetan translation'"/>
+                                    </xsl:otherwise>
+                                </xsl:choose>
+                            </div>
+                            <div>
+                                <ul class="list-inline inline-dots">
+                                    <xsl:for-each select="$roleAttributions">
+                                        <li>
+                                            <span>
+                                                <xsl:call-template name="class-attribute">
+                                                    <xsl:with-param name="lang" select="@xml:lang"/>
+                                                </xsl:call-template>
+                                                <xsl:value-of select="normalize-space(text())"/> 
+                                            </span>
+                                        </li>
+                                    </xsl:for-each>
+                                </ul>
+                            </div>
+                        </div>
+                    </xsl:if>
+                </xsl:for-each>
                 
             </div>
             
@@ -793,10 +890,6 @@
                             </a>
                         </xsl:for-each>
                         
-                        <!--<a href="#" class="btn-round print-preview" title="Print">
-                            <i class="fa fa-print"/>
-                        </a>-->
-                        
                     </nav>
                     
                     <!-- Print statement -->
@@ -816,7 +909,7 @@
     
     <xsl:template name="body-title">
         
-        <xsl:if test="m:translation/m:part[@type eq 'translation']">
+        <xsl:if test="m:translation/m:part[@type eq 'translation'] and $view-mode[not(@layout eq 'part-only')]">
             <section id="body-title">
                 
                 <xsl:call-template name="class-attribute">
@@ -843,13 +936,13 @@
                         </xsl:if>
                         
                         <xsl:if test="m:translation/m:part[@type eq 'translation']/m:honoration[text()]">
-                            <div class="h2">
+                            <div class="h2 break">
                                 <xsl:apply-templates select="m:translation/m:part[@type eq 'translation']/m:honoration"/>
                             </div>
                         </xsl:if>
                         
                         <xsl:if test="m:translation/m:part[@type eq 'translation']/m:main-title[text()]">
-                            <div class="h1">
+                            <div class="h1 break">
                                 <xsl:apply-templates select="m:translation/m:part[@type eq 'translation']/m:main-title"/>
                                 <xsl:if test="m:translation/m:part[@type eq 'translation']/m:sub-title[text()]">
                                     <br/>

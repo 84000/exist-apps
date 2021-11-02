@@ -18,18 +18,24 @@ import module namespace entities="http://read.84000.co/entities" at "../modules/
 
 declare option exist:serialize "method=xml indent=no";
 
+let $resource-id := request:get-parameter('resource-id', '')
 let $resource-suffix := request:get-parameter('resource-suffix', '')
 let $view-mode := request:get-parameter('view-mode', 'default')
+let $archive-path := request:get-parameter('archive-path', ())
+let $passage-id := request:get-parameter('part', 'none')
+
+let $tei := tei-content:tei($resource-id, 'translation', $archive-path)
+let $part := $tei//id($passage-id)/ancestor-or-self::tei:div[@type][not(@type eq 'translation')][last()]
 
 let $request := 
     element { QName('http://read.84000.co/ns/1.0', 'request')} {
         attribute model { 'translation' },
-        attribute resource-id { request:get-parameter('resource-id', '') },
+        attribute resource-id { $resource-id },
         attribute resource-suffix { $resource-suffix },
         attribute doc-type { request:get-parameter('resource-suffix', 'html') },
-        attribute part { request:get-parameter('part', 'none') },
+        attribute part { ($part/@xml:id, $part/@type, $passage-id)[1] },
         attribute view-mode { $view-mode },
-        attribute archive-path { request:get-parameter('archive-path', ()) },
+        attribute archive-path { $archive-path },
         
         (: Set the view-mode which controls variations in the display :)
         if($resource-suffix eq 'epub') then
@@ -46,13 +52,14 @@ let $request :=
             
     }
 
-let $tei := tei-content:tei($request/@resource-id, 'translation', $request/@archive-path)
 (: Suppress cache for some view modes :)
 let $cache-timestamp := 
     if(not($request[@view-mode = ('editor', 'passage', 'editor-passage', 'glossary-check')])) then
         tei-content:last-modified($tei)
     else ()
+
 let $cached := common:cache-get($request, $cache-timestamp)
+
 return 
     (: Cached html :)
     if($cached) then  $cached 
@@ -70,16 +77,19 @@ return
         let $source := tei-content:source($tei, $request/@resource-id)
         
         (: Compile all the translation parts :)
-        let $parts := translation:parts($tei, $request/@part, $request/m:view-mode)
+        let $parts := translation:parts($tei, $passage-id, $request/m:view-mode)
         
         let $canonical-id := (
             $request/@archive-path ! concat('id=', .), 
-            ($parts//descendant-or-self::m:part[@prefix][@render eq 'show'])[1] ! concat('part=', @id)
+            concat('part=', $request/@part)
         )
         
         (: Get entities :)
         let $instance-ids := $parts[@id eq 'glossary']//tei:gloss/@xml:id/string()
-        let $glossary-entities := entities:entities($instance-ids, true(), false(), false())
+        let $glossary-entities := 
+            if($common:environment/m:enable[@type eq 'glossary-of-terms']) then
+                entities:entities($instance-ids, true(), false(), false())
+            else ()
         
         (: Compile all the translation data :)
         let $translation-response :=

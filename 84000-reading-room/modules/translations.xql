@@ -49,27 +49,26 @@ declare function translations:summary($work as xs:string) as element() {
     let $in-translation-statuses := $tei-content:text-statuses/m:status[@type eq 'translation'][@group = ('in-translation')]/@status-id
     let $all-statuses := $tei-content:text-statuses/m:status[@type eq 'translation'][@group = ('published','translated', 'in-translation')]/@status-id
     
-    let $fileDescs := $tei/tei:teiHeader/tei:fileDesc
-    let $published-fileDesc := $fileDescs[tei:publicationStmt/@status = $translation:published-status-ids]
-    let $translated-fileDesc := $fileDescs[tei:publicationStmt/@status = $translated-statuses]
-    let $in-translation-fileDesc := $fileDescs[tei:publicationStmt/@status = $in-translation-statuses]
-    let $commissioned-fileDesc := $fileDescs[tei:publicationStmt/@status = $all-statuses]
+    let $published-fileDesc := $tei/tei:teiHeader/tei:fileDesc[tei:publicationStmt[@status = $translation:published-status-ids]]
+    let $translated-fileDesc := $tei/tei:teiHeader/tei:fileDesc[tei:publicationStmt[@status = $translated-statuses]]
+    let $in-translation-fileDesc := $tei/tei:teiHeader/tei:fileDesc[tei:publicationStmt[@status = $in-translation-statuses]]
+    let $commissioned-fileDesc := $tei/tei:teiHeader/tei:fileDesc[tei:publicationStmt[@status = $all-statuses]]
     let $sponsorship-text-ids := sponsorship:text-ids('sponsored')
-    let $sponsored-fileDesc := $fileDescs/id($sponsorship-text-ids)/ancestor::tei:fileDesc(:tei:publicationStmt[tei:idno/@xml:id = $sponsorship-text-ids]:)
+    let $sponsored-fileDesc := $tei/tei:teiHeader/tei:fileDesc/id($sponsorship-text-ids)/ancestor::tei:fileDesc(:tei:publicationStmt[tei:idno/@xml:id = $sponsorship-text-ids]:)
     
-    let $all-text-count := count($fileDescs)
+    let $all-text-count := count($tei/tei:teiHeader/tei:fileDesc)
     let $commissioned-text-count := count($commissioned-fileDesc)
     let $not-started-text-count := $all-text-count - $commissioned-text-count
     
-    let $all-text-page-count := sum($fileDescs/tei:sourceDesc/tei:bibl[1]/tei:location/@count-pages ! common:integer(.))
+    let $all-text-page-count := sum($tei//tei:sourceDesc/tei:bibl[1]/tei:location/@count-pages ! common:integer(.))
     let $commissioned-text-page-count := sum($commissioned-fileDesc/tei:sourceDesc/tei:bibl[1]/tei:location/@count-pages ! common:integer(.))
     let $not-started-text-page-count := $all-text-page-count - $commissioned-text-page-count
     
-    let $all-toh-count := count($fileDescs/tei:sourceDesc/tei:bibl)
+    let $all-toh-count := count($tei/tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl)
     let $commissioned-toh-count := count($commissioned-fileDesc/tei:sourceDesc/tei:bibl)
     let $not-started-toh-count := $all-toh-count - $commissioned-toh-count
     
-    let $all-toh-page-count := sum($fileDescs/tei:sourceDesc/tei:bibl/tei:location/@count-pages ! common:integer(.))
+    let $all-toh-page-count := sum($tei//tei:sourceDesc/tei:bibl/tei:location/@count-pages ! common:integer(.))
     let $commissioned-toh-page-count := sum($commissioned-fileDesc/tei:sourceDesc/tei:bibl/tei:location/@count-pages ! common:integer(.))
     let $not-started-toh-page-count := $all-toh-page-count - $commissioned-toh-page-count
     
@@ -393,12 +392,12 @@ declare function translations:sorted-texts($texts as element(m:text)*, $sort as 
     
     else if($sort eq 'longest') then
         for $text in $texts
-            order by if(functx:is-a-number($text/tei:bibl/tei:location/@count-pages)) then xs:integer($text/tei:bibl/tei:location/@count-pages) else 1 descending
+            order by if(functx:is-a-number($text/m:source/m:location/@count-pages)) then xs:integer($text/m:source/m:location/@count-pages) else 1 descending
         return $text
     
     else if($sort eq 'shortest') then
         for $text in $texts
-            order by if(functx:is-a-number($text/tei:bibl/tei:location/@count-pages)) then xs:integer($text/tei:bibl/tei:location/@count-pages) else 1
+            order by if(functx:is-a-number($text/m:source/m:location/@count-pages)) then xs:integer($text/m:source/m:location/@count-pages) else 1
         return $text
     
     else if($sort eq 'publication-date') then
@@ -410,7 +409,7 @@ declare function translations:sorted-texts($texts as element(m:text)*, $sort as 
         $texts
 };
 
-declare function translations:filtered-text($tei as element(tei:TEI), $toh-key as xs:string?, $include-sponsors as xs:boolean, $include-downloads as xs:string, $include-folios as xs:boolean) as element(){
+declare function translations:filtered-text($tei as element(tei:TEI), $toh-key as xs:string, $include-sponsors as xs:boolean, $include-downloads as xs:string, $include-folios as xs:boolean) as element(){
     
     let $text-id := tei-content:id($tei)
     let $lang := request:get-parameter('lang', 'en')
@@ -428,8 +427,10 @@ declare function translations:filtered-text($tei as element(tei:TEI), $toh-key a
             $toh,
             translation:titles($tei),
             translation:title-variants($tei),
-            tei-content:source-bibl($tei, $toh-key),
+            (:tei-content:source-bibl($tei, $toh-key),:)
+            tei-content:source($tei, $toh-key),
             translation:location($tei, $toh-key),
+            tei-content:ancestors($tei, $toh-key, 0),
             translation:publication($tei),
             translation:contributors($tei, false()),
             translation:summary($tei, 'show', (), $lang),

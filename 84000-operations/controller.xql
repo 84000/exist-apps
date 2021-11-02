@@ -15,7 +15,7 @@ declare variable $collection-path := lower-case(substring-before(substring-after
 declare variable $controller-root := lower-case(substring-after($exist:controller, "/"));
 declare variable $models-collection := concat('/db/apps', $exist:controller, '/models/');
 declare variable $model-file := concat($resource-id, '.xq');
-declare variable $model-file-exists := xmldb:get-child-resources($models-collection)[. eq $model-file] gt '';
+declare variable $model-file-exists := xmldb:get-child-resources($models-collection)[. eq $model-file][not(. eq '')];
 declare variable $user-name := common:user-name();
 declare variable $var-debug := 
     <debug>

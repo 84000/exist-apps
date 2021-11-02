@@ -42,10 +42,22 @@
                     
                     <xsl:call-template name="expand-item">
                         <xsl:with-param name="id" select="'translations-published'"/>
+                        <xsl:with-param name="accordion-selector" select="'#accordion'"/>
                         <xsl:with-param name="title">
-                            <xsl:call-template name="local-text">
-                                <xsl:with-param name="local-key" select="'translations-published-label'"/>
-                            </xsl:call-template>
+                            <div class="center-vertical align-left">
+                                <div>
+                                    <h3 class="list-group-item-heading">
+                                        <xsl:call-template name="local-text">
+                                            <xsl:with-param name="local-key" select="'translations-published-label'"/>
+                                        </xsl:call-template>
+                                    </h3>
+                                </div>
+                                <div>
+                                    <span class="badge badge-notification">
+                                        <xsl:value-of select="count(m:translations-published/m:translation-status-texts/m:text)"/>
+                                    </span>
+                                </div>
+                            </div>
                         </xsl:with-param>
                         <xsl:with-param name="content">
                             <div class="top-margin">
@@ -60,10 +72,22 @@
                     
                     <xsl:call-template name="expand-item">
                         <xsl:with-param name="id" select="'translations-translated'"/>
+                        <xsl:with-param name="accordion-selector" select="'#accordion'"/>
                         <xsl:with-param name="title">
-                            <xsl:call-template name="local-text">
-                                <xsl:with-param name="local-key" select="'translations-awaiting-label'"/>
-                            </xsl:call-template>
+                            <div class="center-vertical align-left">
+                                <div>
+                                    <h3 class="list-group-item-heading">
+                                        <xsl:call-template name="local-text">
+                                            <xsl:with-param name="local-key" select="'translations-awaiting-label'"/>
+                                        </xsl:call-template>
+                                    </h3>
+                                </div>
+                                <div>
+                                    <span class="badge badge-notification">
+                                        <xsl:value-of select="count(m:translations-translated/m:translation-status-texts/m:text)"/>
+                                    </span>
+                                </div>
+                            </div>
                         </xsl:with-param>
                         <xsl:with-param name="content">
                             <div class="top-margin">
@@ -78,10 +102,22 @@
                     
                     <xsl:call-template name="expand-item">
                         <xsl:with-param name="id" select="'translations-in-translation'"/>
+                        <xsl:with-param name="accordion-selector" select="'#accordion'"/>
                         <xsl:with-param name="title">
-                            <xsl:call-template name="local-text">
-                                <xsl:with-param name="local-key" select="'translations-remaining-label'"/>
-                            </xsl:call-template>
+                            <div class="center-vertical align-left">
+                                <div>
+                                    <h3 class="list-group-item-heading">
+                                        <xsl:call-template name="local-text">
+                                            <xsl:with-param name="local-key" select="'translations-remaining-label'"/>
+                                        </xsl:call-template>
+                                    </h3>
+                                </div>
+                                <div>
+                                    <span class="badge badge-notification">
+                                        <xsl:value-of select="count(m:translations-in-translation/m:translation-status-texts/m:text)"/>
+                                    </span>
+                                </div>
+                            </div>
                         </xsl:with-param>
                         <xsl:with-param name="content">
                             <div class="top-margin">

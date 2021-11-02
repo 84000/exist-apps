@@ -48,7 +48,7 @@
     
     <!-- Sponsors form -->
     <xsl:template name="text-sponsors-form">
-        <form method="post" class="form-horizontal form-update">
+        <form method="post" class="form-horizontal form-update" data-loading="Updating sponsors...">
             <xsl:attribute name="action" select="'edit-text-sponsors.html'"/>
             <input type="hidden" name="form-action" value="update-sponsorship"/>
             <input type="hidden" name="post-id">

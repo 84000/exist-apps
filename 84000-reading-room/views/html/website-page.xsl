@@ -24,7 +24,7 @@
     <!-- language [en|zh] -->
     <xsl:variable name="lang" select="if(/m:response/@lang) then /m:response/@lang else 'en'" as="xs:string"/>
     
-    <!-- view-mode [default|editor|annotation|ajax-part|passage|editor-passage|ebook|pdf||app|tests|glossary-editor|glossary-check] -->
+    <!-- view-mode [default|editor|annotation|txt|ebook|pdf|app|tests|glossary-editor|glossary-check|ajax-part|passage|editor-passage] -->
     <xsl:variable name="view-mode" select="/m:response/m:request/m:view-mode" as="element(m:view-mode)?"/>
     <xsl:function name="m:view-mode-parameter" as="xs:string">
         <xsl:param name="override" as="xs:string?"/>

@@ -43,12 +43,6 @@ declare variable $tei-content:title-types :=
         <title-type id="mainTitle">Main</title-type>
         <title-type id="longTitle">Long</title-type>
         <title-type id="otherTitle">Other</title-type>
-        <title-lang id="en">English</title-lang>
-        <title-lang id="bo">Tibetan</title-lang>
-        <title-lang id="Bo-Ltn">Wylie</title-lang>
-        <title-lang id="Sa-Ltn">Sanskrit</title-lang>
-        <title-lang id="zh">Chinese</title-lang>
-        <title-lang id="Pi-Ltn">Pali</title-lang>
     </title-types>;
 
 declare function tei-content:id($tei as element(tei:TEI)) as xs:string {
@@ -125,13 +119,13 @@ declare function tei-content:tei($resource-id as xs:string, $resource-type as xs
 declare function tei-content:title($tei as element(tei:TEI)) as xs:string? {
     (: Returns a standardised title in a given tei doc :)
     
-    let $title := $tei//tei:titleStmt/tei:title[@xml:lang eq 'en'][normalize-space(text())][1] ! normalize-space(text())
+    let $title := $tei//tei:titleStmt/tei:title[@xml:lang eq 'en'][normalize-space(text())]
     
     return
         if(not($title))then
             concat($tei//tei:titleStmt/tei:title[@xml:lang eq 'Sa-Ltn'][normalize-space(text())][1] ! normalize-space(text()), ' (awaiting English title)')
         else
-            $title
+            $title[1] ! normalize-space(text())
     
 };
 
@@ -294,14 +288,42 @@ declare function tei-content:source($tei as element(tei:TEI), $resource-id as xs
             <series>{ normalize-space(data($bibl/tei:series)) }</series>
             <scope>{ normalize-space(data($bibl/tei:biblScope)) }</scope>
             <range>{ normalize-space(data($bibl/tei:citedRange)) }</range>
-            <authors>
             {
-                for $author in $bibl/tei:author
+                for $attribution in $bibl/tei:author | $bibl/tei:editor
                 return 
-                    <author>{ normalize-space($author/text()) }</author>
-            }
-            </authors>
-            {
+                    element { QName('http://read.84000.co/ns/1.0', 'attribution') } {
+                        attribute role {
+                            if($attribution[@role eq 'translatorTib']) then
+                                'translator'
+                            else if($attribution[@role eq 'reviser']) then
+                                'reviser'
+                            else 
+                                'author'
+                        },
+                        $attribution/@ref,
+                        if($attribution[@xml:lang eq 'bo']) then
+                            attribute xml:lang {'Bo-Ltn'}
+                        else
+                            $attribution/@xml:lang
+                        ,
+                        $attribution/@revision,
+                        $attribution/@key,
+                        text {
+                            if($attribution[@xml:lang eq 'bo']) then
+                                replace(common:wylie-from-bo(normalize-space($attribution/text())), '/$', '')
+                            else if($attribution[@xml:lang eq 'Sa-Ltn']) then
+                                functx:capitalize-first(
+                                    replace(
+                                        replace(
+                                            normalize-space($attribution/text())  (: Normalize space :)
+                                        , '^\*', '')                              (: Remove leading * :)
+                                    , '­', '-')                                   (: Soft to hard-hyphens :)
+                                )                                                 (: Title case :)
+                            else
+                                normalize-space($attribution/text())
+                        }
+                    }
+                ,
                 tei-content:location($bibl)
             }
         </source>
@@ -635,16 +657,16 @@ declare function tei-content:new-section($type as xs:string?) as element(tei:div
     if($type eq 'listBibl') then
     
         <div type="section" xmlns="http://www.tei-c.org/ns/1.0">
-            <head type="section">Bibliography Section Heading</head>
-            <bibl>This is a sample bibliographic reference with a <ref target="https://read.84000.co/translation/toh46.html">link example</ref>.</bibl>
+            <head type="section" rend="default-text">Bibliography Section Heading</head>
+            <bibl rend="default-text">This is a sample bibliographic reference with a <ref target="https://read.84000.co/translation/toh46.html">link example</ref>.</bibl>
         </div>
         
     else
     
         <div type="section" xmlns="http://www.tei-c.org/ns/1.0">
-            <head type="section">Article Section Heading</head>
+            <head type="section" rend="default-text">Article Section Heading</head>
             <milestone unit="chunk"/>
-            <p>Here's a paragraph to get you started. Replace this as you wish<note place="end">This is a ready-made footnote.</note>.</p>
+            <p rend="default-text">Here's a paragraph to get you started. Replace this as you wish<note place="end">This is a ready-made footnote.</note>.</p>
         </div>
     
 };

@@ -224,56 +224,56 @@
                                         
                                         <xsl:variable name="target-file" select="tokenize(tei:ref/@target, '/')[last()]"/>
                                         
-                                        <ul class="list-inline inline-dots no-bottom-margin">
-                                            <li>
-                                                
-                                                <xsl:value-of select="' ↳ '"/>
-                                                
-                                                <code class="small">
-                                                    <xsl:if test="@target-domain-validated eq 'false'">
-                                                        <xsl:attribute name="class" select="'small red-alert'"/>
-                                                    </xsl:if>
-                                                    <xsl:value-of select="concat('@target=&#34;', tei:ref/@target, '&#34;')"/>
-                                                </code>
-                                                
-                                                <xsl:value-of select="' '"/>
-                                                
-                                                <xsl:choose>
-                                                    <xsl:when test="tei:ref[@rend eq 'pending']">
-                                                        <span class="label label-warning">
-                                                            <xsl:value-of select="'Pending'"/>
-                                                        </span>
-                                                    </xsl:when>
-                                                    <xsl:otherwise>
-                                                        <span class="label label-info">
-                                                            <xsl:value-of select="'Active'"/>
-                                                        </span>
-                                                    </xsl:otherwise>
-                                                </xsl:choose>
-                                                
-                                                <xsl:if test="@target-id-validated eq 'false'">
+                                        <div>
+                                            <ul class="list-inline inline-dots">
+                                                <li>
+                                                    
+                                                    <xsl:value-of select="' ↳ '"/>
+                                                    
+                                                    <code class="small">
+                                                        <xsl:if test="@target-domain-validated eq 'false'">
+                                                            <xsl:attribute name="class" select="'small red-alert'"/>
+                                                        </xsl:if>
+                                                        <xsl:value-of select="concat('@target=&#34;', tei:ref/@target, '&#34;')"/>
+                                                    </code>
+                                                    
                                                     <xsl:value-of select="' '"/>
-                                                    <span class="label label-danger">
-                                                        <xsl:value-of select="concat('@xml:id=&#34;', @target-hash, '&#34; not found in ', @target-toh-key)"/>
-                                                    </span>
-                                                </xsl:if>
-                                                
-                                            </li>
-                                            <li>
-                                                <a target="_blank" class="small">
-                                                    <xsl:attribute name="href" select="tei:ref/@target"/>
-                                                    <xsl:value-of select="'actual link'"/>
-                                                </a>
-                                            </li>
-                                            <li>
-                                                <a target="_blank" class="small">
-                                                    <xsl:attribute name="href" select="concat($reading-room-path, '/translation/', $target-file)"/>
-                                                    <xsl:value-of select="'local link'"/>
-                                                </a>
-                                            </li>
-                                            
-                                            
-                                        </ul>
+                                                    
+                                                    <xsl:choose>
+                                                        <xsl:when test="tei:ref[@rend eq 'pending']">
+                                                            <span class="label label-warning">
+                                                                <xsl:value-of select="'Pending'"/>
+                                                            </span>
+                                                        </xsl:when>
+                                                        <xsl:otherwise>
+                                                            <span class="label label-info">
+                                                                <xsl:value-of select="'Active'"/>
+                                                            </span>
+                                                        </xsl:otherwise>
+                                                    </xsl:choose>
+                                                    
+                                                    <xsl:if test="@target-id-validated eq 'false'">
+                                                        <xsl:value-of select="' '"/>
+                                                        <span class="label label-danger">
+                                                            <xsl:value-of select="concat('@xml:id=&#34;', @target-hash, '&#34; not found in ', @target-toh-key)"/>
+                                                        </span>
+                                                    </xsl:if>
+                                                    
+                                                </li>
+                                                <li>
+                                                    <a target="_blank" class="small">
+                                                        <xsl:attribute name="href" select="tei:ref/@target"/>
+                                                        <xsl:value-of select="'actual link'"/>
+                                                    </a>
+                                                </li>
+                                                <li>
+                                                    <a target="_blank" class="small">
+                                                        <xsl:attribute name="href" select="concat($reading-room-path, '/translation/', $target-file)"/>
+                                                        <xsl:value-of select="'local link'"/>
+                                                    </a>
+                                                </li>
+                                            </ul>
+                                        </div>
                                         
                                     </xsl:for-each>
                                     
