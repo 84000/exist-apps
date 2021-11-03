@@ -2312,7 +2312,7 @@
         <xsl:param name="target-id" as="xs:string"/>
         <xsl:param name="part-id" as="xs:string?"/>
         <xsl:param name="mark-id" as="xs:string?"/>
-        <xsl:attribute name="data-view-mode" select="$view-mode/@id"/>
+        
         <xsl:choose>
             
             <xsl:when test="$view-mode[@client = ('browser', 'ajax', 'pdf')]">
