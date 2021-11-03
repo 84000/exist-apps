@@ -11,6 +11,7 @@
     <xsl:variable name="section" select="/m:response/m:section"/>
     <xsl:variable name="knowledgebase" select="/m:response/m:knowledgebase"/>
     <xsl:variable name="requested-part" select="/m:response/m:request/@part"/>
+    <xsl:variable name="requested-passage" select="/m:response/m:request/m:passage/@id"/>
     <xsl:variable name="toh-key" select="$translation/m:toh/@key"/>
     <xsl:variable name="kb-id" select="$knowledgebase/m:page/@xml:id"/>
     <xsl:variable name="part-status" select="if(not($translation//m:part[@render = ('preview', 'empty')])) then 'complete' else if($translation//m:part[@render eq 'show']) then 'part' else 'empty'" as="xs:string"/>
@@ -1128,7 +1129,7 @@
         
         <xsl:apply-templates select="$glossary-part/tei:head"/>
         
-        <xsl:for-each select="$glossary-part//tei:gloss">
+        <xsl:for-each select="$glossary-part//tei:gloss[@xml:id][$view-mode[not(@parts eq 'passage')] or @xml:id eq $requested-passage]">
             
             <xsl:sort select="key('glossary-cache-gloss', @xml:id, $root)[1]/@index ! common:enforce-integer(.)"/>
             
@@ -2311,7 +2312,7 @@
         <xsl:param name="target-id" as="xs:string"/>
         <xsl:param name="part-id" as="xs:string?"/>
         <xsl:param name="mark-id" as="xs:string?"/>
-        
+        <xsl:attribute name="data-view-mode" select="$view-mode/@id"/>
         <xsl:choose>
             
             <xsl:when test="$view-mode[@client = ('browser', 'ajax', 'pdf')]">

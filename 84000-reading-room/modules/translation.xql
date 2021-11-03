@@ -29,7 +29,7 @@ declare variable $translation:view-modes :=
       <view-mode id="app"               client="app"      layout="expanded-fixed"  glossary="use-cache"       parts="all"/>,
       <view-mode id="tests"             client="none"     layout="expanded-fixed"  glossary="suppress"        parts="all"/>,
       <view-mode id="glossary-editor"   client="browser"  layout="full"            glossary="use-cache"       parts="glossary"/>,
-      <view-mode id="glossary-check"    client="none"     layout="expanded-fixed"  glossary="no-cache"        parts="all"/>,
+      <view-mode id="glossary-check"    client="browser"  layout="expanded-fixed"  glossary="no-cache"        parts="all"/>,
       <view-mode id="ajax-part"         client="ajax"     layout="part-only"       glossary="use-cache"       parts="part"/>,
       <view-mode id="passage"           client="ajax"     layout="part-only"       glossary="use-cache"       parts="passage"/>,
       <view-mode id="editor-passage"    client="ajax"     layout="part-only"       glossary="no-cache"        parts="passage"/>
@@ -287,17 +287,19 @@ declare function translation:parts($tei as element(tei:TEI), $passage-id as xs:s
                 translation:introduction($tei, $passage-id, $view-mode),
                 translation:body($tei, $passage-id, $view-mode),
                 translation:appendix($tei, $passage-id, $view-mode),
-                translation:abbreviations($tei, $passage-id, $view-mode),
-                translation:bibliography($tei, $passage-id, $view-mode)
+                translation:abbreviations($tei, $passage-id, $view-mode)
             )
             
-            let $end-notes := translation:end-notes($tei, $passage-id, $view-mode, $parts//tei:note[@place eq 'end']/@xml:id)
+            let $bibliography := translation:bibliography($tei, $passage-id, $view-mode)
             
-            let $glossary := translation:glossary($tei, $passage-id, $view-mode, $parts[@glossarize eq 'true']//@xml:id)
+            let $end-notes := translation:end-notes($tei, $passage-id, $view-mode, ($parts,$bibliography)//tei:note[@place eq 'end']/@xml:id)
+            
+            let $glossary := translation:glossary($tei, $passage-id, $view-mode, ($parts,$bibliography)[@glossarize eq 'true']//@xml:id)
             
             return (
                 $parts,
                 $end-notes,
+                $bibliography,
                 $glossary
             )
             
@@ -384,31 +386,28 @@ declare function local:part-content($content as element(tei:div)?, $render as xs
     (: End-notes :)
     if($type eq 'end-notes') then
     
-        (: Just the specified id :)
-        if($render eq 'passage') then 
-            $content/id($output-ids)
-        
-        (: specified ids and first 8 :)
-        else if($render eq 'preview') then 
+        (: Just the specified ids :)
+        if($render = ('preview', 'passage')) then 
             $content/id($output-ids)
         
         (: Return all :)
-        else $content
+        else if(not($render eq 'empty')) then
+            $content
+        
+        else ()
     
     (: Glossary :)
     else if($type eq 'glossary') then
         
-        (: Just the specified id :)
-        if($render eq 'passage') then 
-            $content/id($output-ids)
-            
-        (: specified ids and first 3 :)
-        else if($render eq 'preview') then 
+        (: Just the specified ids :)
+        if($render = ('preview', 'passage')) then 
             $content/id($output-ids)
         
         (: Return all :)
-        else 
+        else if(not($render eq 'empty')) then
             $content
+        
+        else ()
     
     else
         (: Parse <div/>s to return structure and content where required :)
@@ -478,12 +477,11 @@ declare function local:render($content as element()*, $show-ids as xs:string*, $
     else if($passage-id = ('all')) then 
         'collapse'
     
-    (: If glossary specified only then everything else empty :)
-    else if($view-mode[@parts = ('glossary')]) then 
-        if($content[@type eq 'glossary']) then
-            'passage'
-        else
-            'empty'
+    (: Special case for the glossary :)
+    (: If no-cache then include the whole thing :)
+    (: If glossary part then include whole thing :)
+    else if($content[@type eq 'glossary'] and ($view-mode[@glossary = ('no-cache')] or $view-mode[@parts = ('glossary')])) then
+        'show'
     
     (: If we are showing the passage only then everything else empty :)
     else if($view-mode[@parts = ('passage')]) then 
@@ -740,7 +738,7 @@ declare function translation:end-notes($tei as element(tei:TEI), $passage-id as 
         if($render eq 'preview') then (
             $notes-cache[@index = ('1','2','3','4','5','6','7','8')]/@id/string(),
             $note-ids
-        ) 
+        )
         else ()
     )
     

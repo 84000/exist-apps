@@ -49,6 +49,11 @@ let $request :=
             
         else
             $translation:view-modes/m:view-mode[@id eq 'default']
+        ,
+        
+        element passage {
+            attribute id { $passage-id }
+        }
             
     }
 

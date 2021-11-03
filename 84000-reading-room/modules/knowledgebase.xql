@@ -24,7 +24,7 @@ declare variable $knowledgebase:view-modes :=
         <view-mode id="default"         client="browser"    layout="full"            glossary="use-cache"       parts="all"/>,
         <view-mode id="editor"          client="browser"    layout="full"            glossary="no-cache"        parts="all"/>,
         <view-mode id="glossary-editor" client="browser"    layout="full"            glossary="use-cache"       parts="all"/>,
-        <view-mode id="glossary-check"  client="none"       layout="expanded-fixed"  glossary="no-cache"        parts="all"/>
+        <view-mode id="glossary-check"  client="browser"    layout="expanded-fixed"  glossary="no-cache"        parts="all"/>
     </view-modes>;
 
 declare function knowledgebase:kb-id($tei as element(tei:TEI)) as xs:string? {

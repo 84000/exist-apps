@@ -1053,7 +1053,17 @@
         <xsl:call-template name="reading-room-page">
             <xsl:with-param name="page-url" select="''"/>
             <xsl:with-param name="page-class" select="'utilities'"/>
-            <xsl:with-param name="page-title" select="$main-title || ' | Glossary | 84000 Project Management'"/>
+            <xsl:with-param name="page-title">
+                <xsl:if test="$text[m:toh]">
+                    <xsl:value-of select="$text/m:toh/m:full/data()"/>
+                    <xsl:value-of select="' | '"/>
+                </xsl:if>
+                <xsl:value-of select="common:limit-str($main-title, 80)"/>
+                <xsl:value-of select="' | '"/>
+                <xsl:value-of select="'Glossary'"/>
+                <xsl:value-of select="' | '"/>
+                <xsl:value-of select="'84000 Project Management'"/>
+            </xsl:with-param>
             <xsl:with-param name="page-description" select="'84000 Glossary'"/>
             <xsl:with-param name="content" select="$content"/>
         </xsl:call-template>

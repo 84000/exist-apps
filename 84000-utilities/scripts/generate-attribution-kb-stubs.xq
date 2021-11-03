@@ -23,7 +23,7 @@ if(not(doc(concat('/db/system/config',$common:tei-path, '/collection.xconf'))/ex
 else 
 
 (: Look for imported entities without a KB instance :)
-for $entity in $entities:entities//m:entity[m:source[matches(@key, concat('^', functx:escape-for-regex($import-key), '#'))]][not(m:instance[@type eq 'knowledgebase-article'])]
+for $entity in subsequence($entities:entities//m:entity[m:source[matches(@key, concat('^', functx:escape-for-regex($import-key), '#'))]][not(m:instance[@type eq 'knowledgebase-article'])],1,10)
 
 let $import-id := $entity/m:source/@key ! replace(., concat('^', functx:escape-for-regex($import-key), '#'), '')
 (: Make sure it's attributed somewhere - and only authors for now :)
