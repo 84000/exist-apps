@@ -64,188 +64,192 @@
                                     
                                     <!-- Form -->
                                     <div class="col-sm-8">
+                                        <div class="match-this-height" data-match-height="status-form">
                                         
-                                        <form action="/edit-kb-header.html" method="post" data-match-height="status-form" class="form-horizontal form-update match-this-height" data-loading="Updating knowledge base...">
-                                            
-                                            <input type="hidden" name="id" value="{ $tei-id }"/>
-                                            <input type="hidden" name="form-action" value="update-kb-header"/>
-                                            <input type="hidden" name="show-tab" value="kb-form"/>
-                                            
-                                            <!-- Titles -->
-                                            <fieldset>
+                                            <form action="/edit-kb-header.html" method="post" data-match-height="status-form" class="form-horizontal form-update" data-loading="Updating knowledge base...">
                                                 
-                                                <legend>
-                                                    <xsl:value-of select="'Titles'"/>
-                                                </legend>
+                                                <input type="hidden" name="id" value="{ $tei-id }"/>
+                                                <input type="hidden" name="form-action" value="update-kb-header"/>
+                                                <input type="hidden" name="show-tab" value="kb-form"/>
                                                 
-                                                <div class="add-nodes-container">
+                                                <!-- Titles -->
+                                                <fieldset>
                                                     
-                                                    <xsl:variable name="main-title" select="m:knowledgebase/m:page/m:titles/m:title[@type eq 'mainTitle'][1]"/>
-                                                    <xsl:variable name="main-title-lang" select="$main-title/@xml:lang"/>
-                                                    <xsl:variable name="other-titles" select="m:knowledgebase/m:page/m:titles/m:title[count((. | $main-title)) ne 1]"/>
-                                                    <xsl:variable name="title-types" select="m:title-types/m:title-type"/>
+                                                    <legend>
+                                                        <xsl:value-of select="'Titles'"/>
+                                                    </legend>
                                                     
-                                                    <xsl:call-template name="title-controls">
-                                                        <xsl:with-param name="title" select="$main-title"/>
-                                                        <xsl:with-param name="title-index" select="1"/>
-                                                        <xsl:with-param name="title-types" select="$title-types[@id eq 'mainTitle']"/>
-                                                    </xsl:call-template>
-                                                    
-                                                    <xsl:choose>
-                                                        <xsl:when test="$other-titles">
-                                                            <xsl:for-each select="$other-titles">
+                                                    <div class="add-nodes-container">
+                                                        
+                                                        <xsl:variable name="main-title" select="m:knowledgebase/m:page/m:titles/m:title[@type eq 'mainTitle'][1]"/>
+                                                        <xsl:variable name="main-title-lang" select="$main-title/@xml:lang"/>
+                                                        <xsl:variable name="other-titles" select="m:knowledgebase/m:page/m:titles/m:title[count((. | $main-title)) ne 1]"/>
+                                                        <xsl:variable name="title-types" select="m:title-types/m:title-type"/>
+                                                        
+                                                        <xsl:call-template name="title-controls">
+                                                            <xsl:with-param name="title" select="$main-title"/>
+                                                            <xsl:with-param name="title-index" select="1"/>
+                                                            <xsl:with-param name="title-types" select="$title-types[@id eq 'mainTitle']"/>
+                                                        </xsl:call-template>
+                                                        
+                                                        <xsl:choose>
+                                                            <xsl:when test="$other-titles">
+                                                                <xsl:for-each select="$other-titles">
+                                                                    <xsl:call-template name="title-controls">
+                                                                        <xsl:with-param name="title" select="."/>
+                                                                        <xsl:with-param name="title-index" select="position() + 1"/>
+                                                                        <xsl:with-param name="title-types" select="$title-types[@id eq 'otherTitle']"/>
+                                                                    </xsl:call-template>
+                                                                </xsl:for-each>
+                                                            </xsl:when>
+                                                            <xsl:otherwise>
                                                                 <xsl:call-template name="title-controls">
-                                                                    <xsl:with-param name="title" select="."/>
-                                                                    <xsl:with-param name="title-index" select="position() + 1"/>
+                                                                    <xsl:with-param name="title-index" select="2"/>
                                                                     <xsl:with-param name="title-types" select="$title-types[@id eq 'otherTitle']"/>
                                                                 </xsl:call-template>
-                                                            </xsl:for-each>
-                                                        </xsl:when>
-                                                        <xsl:otherwise>
-                                                            <xsl:call-template name="title-controls">
-                                                                <xsl:with-param name="title-index" select="2"/>
-                                                                <xsl:with-param name="title-types" select="$title-types[@id eq 'otherTitle']"/>
-                                                            </xsl:call-template>
-                                                        </xsl:otherwise>
-                                                    </xsl:choose>
+                                                            </xsl:otherwise>
+                                                        </xsl:choose>
+                                                        
+                                                        <div class="form-group">
+                                                            <div class="col-sm-2">
+                                                                <a href="#add-nodes" class="add-nodes">
+                                                                    <span class="monospace">
+                                                                        <xsl:value-of select="'+'"/>
+                                                                    </span>
+                                                                    <xsl:value-of select="' add a title'"/>
+                                                                </a>
+                                                            </div>
+                                                            <div class="col-sm-10">
+                                                                <p class="text-muted small">
+                                                                    <xsl:call-template name="hyphen-help-text"/>
+                                                                </p>
+                                                            </div>
+                                                        </div>
+                                                        
+                                                    </div>
                                                     
+                                                </fieldset>
+                                                
+                                                <!-- Status -->
+                                                <fieldset>
+                                                    
+                                                    <legend>
+                                                        <xsl:value-of select="'Status'"/>
+                                                    </legend>
+                                                    
+                                                    <!--Translation Status-->
                                                     <div class="form-group">
-                                                        <div class="col-sm-2">
-                                                            <a href="#add-nodes" class="add-nodes">
-                                                                <span class="monospace">
-                                                                    <xsl:value-of select="'+'"/>
-                                                                </span>
-                                                                <xsl:value-of select="' add a title'"/>
-                                                            </a>
+                                                        <label class="control-label col-sm-3" for="publication-status">
+                                                            <xsl:value-of select="'Publication status:'"/>
+                                                        </label>
+                                                        <div class="col-sm-9">
+                                                            <select class="form-control" name="publication-status" id="publication-status">
+                                                                <xsl:for-each select="m:text-statuses/m:status">
+                                                                    <xsl:sort select="@value eq '0'"/>
+                                                                    <xsl:sort select="@value"/>
+                                                                    <option>
+                                                                        <xsl:attribute name="value" select="@value"/>
+                                                                        <xsl:if test="@selected eq 'selected'">
+                                                                            <xsl:attribute name="selected" select="'selected'"/>
+                                                                        </xsl:if>
+                                                                        <xsl:value-of select="concat(@value, ' / ', text())"/>
+                                                                    </option>
+                                                                </xsl:for-each>
+                                                            </select>
                                                         </div>
-                                                        <div class="col-sm-10">
-                                                            <p class="text-muted small">
-                                                                <xsl:call-template name="hyphen-help-text"/>
-                                                            </p>
-                                                        </div>
-                                                    </div>
-                                                
-                                                </div>
-                                                
-                                            </fieldset>
-                                            
-                                            <!-- Status -->
-                                            <fieldset>
-                                                
-                                                <legend>
-                                                    <xsl:value-of select="'Status'"/>
-                                                </legend>
-                                                
-                                                <!--Translation Status-->
-                                                <div class="form-group">
-                                                    <label class="control-label col-sm-3" for="publication-status">
-                                                        <xsl:value-of select="'Publication status:'"/>
-                                                    </label>
-                                                    <div class="col-sm-9">
-                                                        <select class="form-control" name="publication-status" id="publication-status">
-                                                            <xsl:for-each select="m:text-statuses/m:status">
-                                                                <xsl:sort select="@value eq '0'"/>
-                                                                <xsl:sort select="@value"/>
-                                                                <option>
-                                                                    <xsl:attribute name="value" select="@value"/>
-                                                                    <xsl:if test="@selected eq 'selected'">
-                                                                        <xsl:attribute name="selected" select="'selected'"/>
-                                                                    </xsl:if>
-                                                                    <xsl:value-of select="concat(@value, ' / ', text())"/>
-                                                                </option>
-                                                            </xsl:for-each>
-                                                        </select>
-                                                    </div>
-                                                </div>
-                                                
-                                                <!--Publication Date-->
-                                                <div class="form-group">
-                                                    <label class="control-label col-sm-3" for="publication-date">
-                                                        <xsl:value-of select="'Publication date:'"/>
-                                                    </label>
-                                                    <div class="col-sm-3">
-                                                        <input type="date" name="publication-date" id="publication-date" class="form-control">
-                                                            <xsl:attribute name="value" select="m:knowledgebase/m:publication/m:publication-date"/>
-                                                            <xsl:if test="m:text-statuses/m:status[@selected eq 'selected']/@value eq '1'">
-                                                                <xsl:attribute name="required" select="'required'"/>
-                                                            </xsl:if>
-                                                        </input>
                                                     </div>
                                                     
-                                                </div>
+                                                    <!--Publication Date-->
+                                                    <div class="form-group">
+                                                        <label class="control-label col-sm-3" for="publication-date">
+                                                            <xsl:value-of select="'Publication date:'"/>
+                                                        </label>
+                                                        <div class="col-sm-3">
+                                                            <input type="date" name="publication-date" id="publication-date" class="form-control">
+                                                                <xsl:attribute name="value" select="m:knowledgebase/m:publication/m:publication-date"/>
+                                                                <xsl:if test="m:text-statuses/m:status[@selected eq 'selected']/@value eq '1'">
+                                                                    <xsl:attribute name="required" select="'required'"/>
+                                                                </xsl:if>
+                                                            </input>
+                                                        </div>
+                                                        
+                                                    </div>
+                                                    
+                                                    <!--Version-->
+                                                    <div class="form-group">
+                                                        <label class="control-label col-sm-3" for="text-version">
+                                                            <xsl:value-of select="'Version:'"/>
+                                                        </label>
+                                                        <div class="col-sm-2">
+                                                            <input type="text" name="text-version" id="text-version" class="form-control" placeholder="e.g. v 1.0">
+                                                                <!-- Force the addition of a version number if the form is used -->
+                                                                <xsl:attribute name="value">
+                                                                    <xsl:choose>
+                                                                        <xsl:when test="m:knowledgebase/m:publication/m:edition/text()[1]/normalize-space()">
+                                                                            <xsl:value-of select="m:knowledgebase/m:publication/m:edition/text()[1]/normalize-space()"/>
+                                                                        </xsl:when>
+                                                                        <xsl:otherwise>
+                                                                            <xsl:value-of select="'0.0.1'"/>
+                                                                        </xsl:otherwise>
+                                                                    </xsl:choose>
+                                                                </xsl:attribute>
+                                                                <xsl:if test="m:text-statuses/m:status[@selected eq 'selected']/@value eq '1'">
+                                                                    <xsl:attribute name="required" select="'required'"/>
+                                                                </xsl:if>
+                                                            </input>
+                                                        </div>
+                                                        <div class="col-sm-2">
+                                                            <input type="text" name="text-version-date" id="text-version-date" class="form-control" placeholder="e.g. 2019">
+                                                                <xsl:attribute name="value">
+                                                                    <xsl:choose>
+                                                                        <xsl:when test="m:knowledgebase/m:publication/m:edition/tei:date/text()/normalize-space()">
+                                                                            <xsl:value-of select="m:knowledgebase/m:publication/m:edition/tei:date/text()/normalize-space()"/>
+                                                                        </xsl:when>
+                                                                        <xsl:otherwise>
+                                                                            <xsl:value-of select="format-dateTime(current-dateTime(), '[Y]')"/>
+                                                                        </xsl:otherwise>
+                                                                    </xsl:choose>
+                                                                </xsl:attribute>
+                                                                <xsl:if test="m:text-statuses/m:status[@selected eq 'selected']/@value eq '1'">
+                                                                    <xsl:attribute name="required" select="'required'"/>
+                                                                </xsl:if>
+                                                            </input>
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    <!-- Version note -->
+                                                    <div class="form-group">
+                                                        <label class="control-label col-sm-3" for="text-version">
+                                                            <xsl:value-of select="'Version note:'"/>
+                                                        </label>
+                                                        <div class="col-sm-9">
+                                                            <input type="text" name="update-notes" id="update-notes" class="form-control"/>
+                                                        </div>
+                                                    </div>
+                                                    
+                                                </fieldset>
                                                 
-                                                <!--Version-->
+                                                <!-- Submit button -->
                                                 <div class="form-group">
-                                                    <label class="control-label col-sm-3" for="text-version">
-                                                        <xsl:value-of select="'Version:'"/>
-                                                    </label>
-                                                    <div class="col-sm-2">
-                                                        <input type="text" name="text-version" id="text-version" class="form-control" placeholder="e.g. v 1.0">
-                                                            <!-- Force the addition of a version number if the form is used -->
-                                                            <xsl:attribute name="value">
-                                                                <xsl:choose>
-                                                                    <xsl:when test="m:knowledgebase/m:publication/m:edition/text()[1]/normalize-space()">
-                                                                        <xsl:value-of select="m:knowledgebase/m:publication/m:edition/text()[1]/normalize-space()"/>
-                                                                    </xsl:when>
-                                                                    <xsl:otherwise>
-                                                                        <xsl:value-of select="'0.0.1'"/>
-                                                                    </xsl:otherwise>
-                                                                </xsl:choose>
-                                                            </xsl:attribute>
-                                                            <xsl:if test="m:text-statuses/m:status[@selected eq 'selected']/@value eq '1'">
-                                                                <xsl:attribute name="required" select="'required'"/>
-                                                            </xsl:if>
-                                                        </input>
-                                                    </div>
-                                                    <div class="col-sm-2">
-                                                        <input type="text" name="text-version-date" id="text-version-date" class="form-control" placeholder="e.g. 2019">
-                                                            <xsl:attribute name="value">
-                                                                <xsl:choose>
-                                                                    <xsl:when test="m:knowledgebase/m:publication/m:edition/tei:date/text()/normalize-space()">
-                                                                        <xsl:value-of select="m:knowledgebase/m:publication/m:edition/tei:date/text()/normalize-space()"/>
-                                                                    </xsl:when>
-                                                                    <xsl:otherwise>
-                                                                        <xsl:value-of select="format-dateTime(current-dateTime(), '[Y]')"/>
-                                                                    </xsl:otherwise>
-                                                                </xsl:choose>
-                                                            </xsl:attribute>
-                                                            <xsl:if test="m:text-statuses/m:status[@selected eq 'selected']/@value eq '1'">
-                                                                <xsl:attribute name="required" select="'required'"/>
-                                                            </xsl:if>
-                                                        </input>
+                                                    <div class="col-sm-12">
+                                                        <button type="submit" class="btn btn-primary pull-right">
+                                                            <xsl:value-of select="'Save'"/>
+                                                        </button>
                                                     </div>
                                                 </div>
                                                 
-                                                <!-- Version note -->
-                                                <div class="form-group">
-                                                    <label class="control-label col-sm-3" for="text-version">
-                                                        <xsl:value-of select="'Version note:'"/>
-                                                    </label>
-                                                    <div class="col-sm-9">
-                                                        <input type="text" name="update-notes" id="update-notes" class="form-control"/>
-                                                    </div>
-                                                </div>
-                                                
-                                            </fieldset>
+                                            </form>
                                             
-                                            <!-- Submit button -->
-                                            <div class="form-group">
-                                                <div class="col-sm-12">
-                                                    <button type="submit" class="btn btn-primary pull-right">
-                                                        <xsl:value-of select="'Save'"/>
-                                                    </button>
-                                                </div>
-                                            </div>
-                                            
-                                        </form>
-                                        
+                                        </div>
                                     </div>
                                     
                                     <!-- History -->
                                     <div class="col-sm-4">
-                                        
-                                        <xsl:apply-templates select="m:knowledgebase/m:status-updates"/>
-                                        
+                                        <div class="match-height-overflow" data-match-height="status-form">
+                                            
+                                            <xsl:apply-templates select="m:knowledgebase/m:status-updates"/>
+                                            
+                                        </div>
                                     </div>
                                     
                                 </div>

@@ -248,6 +248,7 @@
             
             <xsl:with-param name="content">
                 <form method="post" class="form-horizontal labels-left labels-light form-update top-margin" id="titles-form" data-loading="Updating titles...">
+                    
                     <xsl:attribute name="action" select="'edit-text-header.html'"/>
                     
                     <input type="hidden" name="form-action" value="update-titles"/>
@@ -399,13 +400,13 @@
                 
                 <form method="post" class="form-horizontal form-update labels-left top-margin" id="contributors-form" data-loading="Updating contributors...">
                     
-                    <xsl:attribute name="action" select="'edit-text-header.html#contributors-form'"/>
+                    <xsl:attribute name="action" select="'edit-text-header.html'"/>
                     
                     <input type="hidden" name="form-action" value="update-contributors"/>
-                    
                     <input type="hidden" name="post-id">
                         <xsl:attribute name="value" select="m:translation/@id"/>
                     </input>
+                    <input type="hidden" name="form-expand" value="contributors"/>
                     
                     <div class="row">
                         <div class="col-sm-8">
@@ -697,11 +698,14 @@
             <xsl:with-param name="content">
                 
                 <form method="post" class="form-horizontal form-update top-margin" id="publication-status-form" data-loading="Updating status...">
+                    
                     <xsl:attribute name="action" select="'edit-text-header.html'"/>
+                    
                     <input type="hidden" name="form-action" value="update-publication-status"/>
                     <input type="hidden" name="post-id">
                         <xsl:attribute name="value" select="m:translation/@id"/>
                     </input>
+                    <input type="hidden" name="form-expand" value="translation-status"/>
                     
                     <div class="alert alert-warning small text-center">
                         <p>
@@ -720,258 +724,262 @@
                     <div class="row">
                         
                         <!-- Form -->
-                        <div class="col-sm-8 match-this-height" data-match-height="status-form">
-                            
-                            <!--Contract details-->
-                            <div class="form-group">
-                                <label class="control-label col-sm-3" for="contract-number">
-                                    <xsl:value-of select="'Contract number:'"/>
-                                </label>
-                                <div class="col-sm-3">
-                                    <input type="text" name="contract-number" id="contract-number" class="form-control" placeholder="">
-                                        <xsl:attribute name="value" select="normalize-space(m:translation-status/m:text/m:contract/@number)"/>
-                                    </input>
+                        <div class="col-sm-8">
+                            <div class="match-this-height" data-match-height="status-form">
+                                
+                                <!--Contract details-->
+                                <div class="form-group">
+                                    <label class="control-label col-sm-3" for="contract-number">
+                                        <xsl:value-of select="'Contract number:'"/>
+                                    </label>
+                                    <div class="col-sm-3">
+                                        <input type="text" name="contract-number" id="contract-number" class="form-control" placeholder="">
+                                            <xsl:attribute name="value" select="normalize-space(m:translation-status/m:text/m:contract/@number)"/>
+                                        </input>
+                                    </div>
+                                    <label class="control-label col-sm-3" for="contract-date">
+                                        <xsl:value-of select="'Contract date:'"/>
+                                    </label>
+                                    <div class="col-sm-3">
+                                        <input type="date" name="contract-date" id="contract-date" class="form-control">
+                                            <xsl:attribute name="value" select="m:translation-status/m:text/m:contract/@date"/>
+                                        </input>
+                                    </div>
                                 </div>
-                                <label class="control-label col-sm-3" for="contract-date">
-                                    <xsl:value-of select="'Contract date:'"/>
-                                </label>
-                                <div class="col-sm-3">
-                                    <input type="date" name="contract-date" id="contract-date" class="form-control">
-                                        <xsl:attribute name="value" select="m:translation-status/m:text/m:contract/@date"/>
-                                    </input>
-                                </div>
-                            </div>
-                            
-                            <!--Translation Status-->
-                            <div class="form-group">
-                                <label class="control-label col-sm-3" for="translation-status">
-                                    <xsl:value-of select="'Translation Status:'"/>
-                                </label>
-                                <div class="col-sm-9">
-                                    <select class="form-control" name="translation-status" id="translation-status">
-                                        <xsl:for-each select="m:text-statuses/m:status">
-                                            <xsl:sort select="@value eq '0'"/>
-                                            <xsl:sort select="@value"/>
-                                            <option>
-                                                <xsl:attribute name="value" select="@value"/>
-                                                <xsl:if test="@selected eq 'selected'">
-                                                    <xsl:attribute name="selected" select="'selected'"/>
-                                                </xsl:if>
-                                                <xsl:value-of select="concat(@value, ' / ', text())"/>
-                                            </option>
-                                        </xsl:for-each>
-                                    </select>
-                                </div>
-                            </div>
-                            
-                            <!--Publication Date-->
-                            <div class="form-group">
-                                <label class="control-label col-sm-3" for="publication-date">
-                                    <xsl:value-of select="'Publication Date:'"/>
-                                </label>
-                                <div class="col-sm-3">
-                                    <input type="date" name="publication-date" id="publication-date" class="form-control">
-                                        <xsl:attribute name="value" select="m:translation/m:publication/m:publication-date"/>
-                                        <xsl:if test="m:text-statuses/m:status[@selected eq 'selected']/@value eq '1'">
-                                            <xsl:attribute name="required" select="'required'"/>
-                                        </xsl:if>
-                                    </input>
-                                </div>
-                            </div>
-                            
-                            <!--Version-->
-                            <div class="form-group">
-                                <label class="control-label col-sm-3" for="text-version">
-                                    <xsl:value-of select="'Version:'"/>
-                                </label>
-                                <div class="col-sm-2">
-                                    <input type="text" name="text-version" id="text-version" class="form-control" placeholder="e.g. v 1.0">
-                                        <!-- Force the addition of a version number if the form is used -->
-                                        <xsl:attribute name="value">
-                                            <xsl:choose>
-                                                <xsl:when test="m:translation/m:publication/m:edition/text()[1]/normalize-space()">
-                                                    <xsl:value-of select="m:translation/m:publication/m:edition/text()[1]/normalize-space()"/>
-                                                </xsl:when>
-                                                <xsl:otherwise>
-                                                    <xsl:value-of select="'0.0.1'"/>
-                                                </xsl:otherwise>
-                                            </xsl:choose>
-                                        </xsl:attribute>
-                                        <xsl:if test="m:text-statuses/m:status[@selected eq 'selected']/@value eq '1'">
-                                            <xsl:attribute name="required" select="'required'"/>
-                                        </xsl:if>
-                                    </input>
-                                </div>
-                                <div class="col-sm-2">
-                                    <input type="text" name="text-version-date" id="text-version-date" class="form-control" placeholder="e.g. 2019">
-                                        <xsl:attribute name="value">
-                                            <xsl:choose>
-                                                <xsl:when test="m:translation/m:publication/m:edition/tei:date/text()/normalize-space()">
-                                                    <xsl:value-of select="m:translation/m:publication/m:edition/tei:date/text()/normalize-space()"/>
-                                                </xsl:when>
-                                                <xsl:otherwise>
-                                                    <xsl:value-of select="format-dateTime(current-dateTime(), '[Y]')"/>
-                                                </xsl:otherwise>
-                                            </xsl:choose>
-                                        </xsl:attribute>
-                                        <xsl:if test="m:text-statuses/m:status[@selected eq 'selected']/@value eq '1'">
-                                            <xsl:attribute name="required" select="'required'"/>
-                                        </xsl:if>
-                                    </input>
-                                </div>
-                                <div class="col-sm-5">
-                                    <input type="text" name="update-notes" id="update-notes" class="form-control" placeholder="Add a note about this version"/>
-                                </div>
-                            </div>
-                            
-                            <!-- Action note -->
-                            <div class="form-group">
-                                <label class="control-label col-sm-3" for="progress-notes">
-                                    <xsl:value-of select="'Awaiting action from:'"/>
-                                </label>
-                                <div class="col-sm-3">
-                                    <input type="text" class="form-control" name="action-note" id="action-note" placeholder="e.g. Konchog">
-                                        <xsl:attribute name="value" select="normalize-space(m:translation-status/m:text/m:action-note)"/>
-                                    </input>
-                                </div>
-                            </div>
-                            
-                            <!-- Progress note -->
-                            <div class="form-group">
-                                <label class="control-label col-sm-3" for="progress-note">
-                                    <xsl:value-of select="'Progress notes:'"/>
-                                </label>
-                                <div class="col-sm-9">
-                                    <textarea class="form-control" rows="4" name="progress-note" id="progress-note" placeholder="Notes about the status of the translation...">
-                                        <xsl:copy-of select="normalize-space(m:translation-status/m:text/m:progress-note)"/>
-                                    </textarea>
-                                    <xsl:if test="m:translation-status/m:text/m:progress-note/@last-edited">
-                                        <div class="small text-muted sml-margin top">
-                                            <xsl:value-of select="common:date-user-string('Last updated', m:translation-status/m:text/m:progress-note/@last-edited, m:translation-status/m:text/m:progress-note/@last-edited-by)"/>
-                                        </div>
-                                    </xsl:if>
-                                </div>
-                            </div>
-                            
-                            <!-- Text note -->
-                            <div class="form-group">
-                                <label class="control-label col-sm-3" for="text-note">
-                                    <xsl:value-of select="'Text notes:'"/>
-                                </label>
-                                <div class="col-sm-9">
-                                    <textarea class="form-control" rows="4" name="text-note" id="text-note" placeholder="Notes about the text itself...">
-                                        <xsl:copy-of select="normalize-space(m:translation-status/m:text/m:text-note)"/>
-                                    </textarea>
-                                    <xsl:if test="m:translation-status/m:text/m:text-note/@last-edited">
-                                        <div class="small text-muted sml-margin top">
-                                            <xsl:value-of select="common:date-user-string('Last updated', m:translation-status/m:text/m:text-note/@last-edited, m:translation-status/m:text/m:text-note/@last-edited-by)"/>
-                                        </div>
-                                    </xsl:if>
-                                </div>
-                            </div>
-                            
-                            <!-- Target dates -->
-                            <xsl:variable name="target-dates" select="m:translation-status/m:text/m:target-date"/>
-                            <xsl:variable name="actual-dates" select="m:translation/m:status-updates/m:status-update[@update eq 'translation-status']"/>
-                            <div class="form-group">
-                                <label class="control-label col-sm-3 top-margin" for="text-note">
-                                    <xsl:value-of select="'Target dates:'"/>
-                                </label>
-                                <div class="col-sm-9 tests">
-                                    <table class="table table-responsive table-icons no-border">
-                                        <thead>
-                                            <tr>
-                                                <th>
-                                                    <xsl:value-of select="'Status'"/>
-                                                </th>
-                                                <th>
-                                                    <xsl:value-of select="'Target date'"/>
-                                                </th>
-                                                <th colspan="2">
-                                                    <xsl:value-of select="'Actual date'"/>
-                                                </th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <xsl:for-each select="m:text-statuses/m:status[@target-date eq 'true']">
-                                                
-                                                <xsl:variable name="status-id" select="@status-id"/>
-                                                <xsl:variable name="status-surpassed" select="@selected eq 'selected' or preceding-sibling::m:status[@selected eq 'selected']"/>
-                                                <xsl:variable name="target-date" select="$target-dates[@status-id eq $status-id][1]"/>
-                                                
-                                                <xsl:variable name="actual-date" select="if($status-surpassed) then $actual-dates[@value eq $status-id][last()] else ()"/>
-                                                <xsl:variable name="target-date-hit" select="($target-date[@date-time] and $actual-date[@date-time] and xs:dateTime($target-date/@date-time) ge xs:dateTime($actual-date/@date-time))"/>
-                                                <xsl:variable name="target-date-miss" select="($target-date[@date-time] and (xs:dateTime($target-date/@date-time) lt current-dateTime()) or ($actual-date[@date-time] and xs:dateTime($target-date/@date-time) lt xs:dateTime($actual-date/@date-time)))"/>
-                                                
-                                                <tr>
-                                                    <td class="small">
-                                                        <xsl:if test="$status-surpassed">
-                                                            <xsl:attribute name="class" select="'text-muted'"/>
-                                                        </xsl:if>
-                                                        <xsl:value-of select="common:limit-str(concat($status-id, ' / ', text()), 28)"/>
-                                                    </td>
-                                                    <td>
-                                                        <input type="date" class="form-control">
-                                                            <xsl:attribute name="name" select="concat('target-date-', @index)"/>
-                                                            <xsl:if test="$target-date">
-                                                                <xsl:attribute name="value" select="format-dateTime($target-date/@date-time, '[Y]-[M01]-[D01]')"/>
-                                                            </xsl:if>
-                                                            <xsl:if test="$status-surpassed">
-                                                                <xsl:attribute name="disabled" select="'disabled'"/>
-                                                            </xsl:if>
-                                                        </input>
-                                                    </td>
-                                                    <td class="icon">
-                                                        <xsl:choose>
-                                                            <xsl:when test="$target-date-hit">
-                                                                <i class="fa fa-check-circle"/>
-                                                            </xsl:when>
-                                                            <xsl:when test="$target-date-miss">
-                                                                <i class="fa fa-times-circle"/>
-                                                            </xsl:when>
-                                                            <xsl:when test="$target-date[@next eq 'true']">
-                                                                <i class="fa fa-exclamation-circle"/>
-                                                            </xsl:when>
-                                                            <xsl:when test="$status-surpassed">
-                                                                <i class="fa fa-question-circle"/>
-                                                            </xsl:when>
-                                                        </xsl:choose>
-                                                    </td>
-                                                    <td class="small">
-                                                        <xsl:choose>
-                                                            <xsl:when test="$actual-date[@date-time]">
-                                                                <xsl:value-of select="format-dateTime($actual-date/@date-time, '[D01] [MNn,*-3] [Y]')"/>
-                                                            </xsl:when>
-                                                            <xsl:when test="$target-date[@next eq 'true']">
-                                                                <xsl:choose>
-                                                                    <xsl:when test="xs:integer($target-date/@due-days) ge 0">
-                                                                        <xsl:value-of select="'Due in '"/>
-                                                                        <xsl:value-of select="$target-date/@due-days"/>
-                                                                        <xsl:value-of select="' days'"/>
-                                                                    </xsl:when>
-                                                                    <xsl:when test="xs:integer($target-date/@due-days) lt 0">
-                                                                        <xsl:value-of select="'Overdue '"/>
-                                                                        <xsl:value-of select="abs($target-date/@due-days)"/>
-                                                                        <xsl:value-of select="' days'"/>
-                                                                    </xsl:when>
-                                                                </xsl:choose>
-                                                            </xsl:when>
-                                                        </xsl:choose>
-                                                    </td>
-                                                </tr>
+                                
+                                <!--Translation Status-->
+                                <div class="form-group">
+                                    <label class="control-label col-sm-3" for="translation-status">
+                                        <xsl:value-of select="'Translation Status:'"/>
+                                    </label>
+                                    <div class="col-sm-9">
+                                        <select class="form-control" name="translation-status" id="translation-status">
+                                            <xsl:for-each select="m:text-statuses/m:status">
+                                                <xsl:sort select="@value eq '0'"/>
+                                                <xsl:sort select="@value"/>
+                                                <option>
+                                                    <xsl:attribute name="value" select="@value"/>
+                                                    <xsl:if test="@selected eq 'selected'">
+                                                        <xsl:attribute name="selected" select="'selected'"/>
+                                                    </xsl:if>
+                                                    <xsl:value-of select="concat(@value, ' / ', text())"/>
+                                                </option>
                                             </xsl:for-each>
-                                        </tbody>
-                                    </table>
+                                        </select>
+                                    </div>
                                 </div>
+                                
+                                <!--Publication Date-->
+                                <div class="form-group">
+                                    <label class="control-label col-sm-3" for="publication-date">
+                                        <xsl:value-of select="'Publication Date:'"/>
+                                    </label>
+                                    <div class="col-sm-3">
+                                        <input type="date" name="publication-date" id="publication-date" class="form-control">
+                                            <xsl:attribute name="value" select="m:translation/m:publication/m:publication-date"/>
+                                            <xsl:if test="m:text-statuses/m:status[@selected eq 'selected']/@value eq '1'">
+                                                <xsl:attribute name="required" select="'required'"/>
+                                            </xsl:if>
+                                        </input>
+                                    </div>
+                                </div>
+                                
+                                <!--Version-->
+                                <div class="form-group">
+                                    <label class="control-label col-sm-3" for="text-version">
+                                        <xsl:value-of select="'Version:'"/>
+                                    </label>
+                                    <div class="col-sm-2">
+                                        <input type="text" name="text-version" id="text-version" class="form-control" placeholder="e.g. v 1.0">
+                                            <!-- Force the addition of a version number if the form is used -->
+                                            <xsl:attribute name="value">
+                                                <xsl:choose>
+                                                    <xsl:when test="m:translation/m:publication/m:edition/text()[1]/normalize-space()">
+                                                        <xsl:value-of select="m:translation/m:publication/m:edition/text()[1]/normalize-space()"/>
+                                                    </xsl:when>
+                                                    <xsl:otherwise>
+                                                        <xsl:value-of select="'0.0.1'"/>
+                                                    </xsl:otherwise>
+                                                </xsl:choose>
+                                            </xsl:attribute>
+                                            <xsl:if test="m:text-statuses/m:status[@selected eq 'selected']/@value eq '1'">
+                                                <xsl:attribute name="required" select="'required'"/>
+                                            </xsl:if>
+                                        </input>
+                                    </div>
+                                    <div class="col-sm-2">
+                                        <input type="text" name="text-version-date" id="text-version-date" class="form-control" placeholder="e.g. 2019">
+                                            <xsl:attribute name="value">
+                                                <xsl:choose>
+                                                    <xsl:when test="m:translation/m:publication/m:edition/tei:date/text()/normalize-space()">
+                                                        <xsl:value-of select="m:translation/m:publication/m:edition/tei:date/text()/normalize-space()"/>
+                                                    </xsl:when>
+                                                    <xsl:otherwise>
+                                                        <xsl:value-of select="format-dateTime(current-dateTime(), '[Y]')"/>
+                                                    </xsl:otherwise>
+                                                </xsl:choose>
+                                            </xsl:attribute>
+                                            <xsl:if test="m:text-statuses/m:status[@selected eq 'selected']/@value eq '1'">
+                                                <xsl:attribute name="required" select="'required'"/>
+                                            </xsl:if>
+                                        </input>
+                                    </div>
+                                    <div class="col-sm-5">
+                                        <input type="text" name="update-notes" id="update-notes" class="form-control" placeholder="Add a note about this version"/>
+                                    </div>
+                                </div>
+                                
+                                <!-- Action note -->
+                                <div class="form-group">
+                                    <label class="control-label col-sm-3" for="progress-notes">
+                                        <xsl:value-of select="'Awaiting action from:'"/>
+                                    </label>
+                                    <div class="col-sm-3">
+                                        <input type="text" class="form-control" name="action-note" id="action-note" placeholder="e.g. Konchog">
+                                            <xsl:attribute name="value" select="normalize-space(m:translation-status/m:text/m:action-note)"/>
+                                        </input>
+                                    </div>
+                                </div>
+                                
+                                <!-- Progress note -->
+                                <div class="form-group">
+                                    <label class="control-label col-sm-3" for="progress-note">
+                                        <xsl:value-of select="'Progress notes:'"/>
+                                    </label>
+                                    <div class="col-sm-9">
+                                        <textarea class="form-control" rows="4" name="progress-note" id="progress-note" placeholder="Notes about the status of the translation...">
+                                            <xsl:copy-of select="normalize-space(m:translation-status/m:text/m:progress-note)"/>
+                                        </textarea>
+                                        <xsl:if test="m:translation-status/m:text/m:progress-note/@last-edited">
+                                            <div class="small text-muted sml-margin top">
+                                                <xsl:value-of select="common:date-user-string('Last updated', m:translation-status/m:text/m:progress-note/@last-edited, m:translation-status/m:text/m:progress-note/@last-edited-by)"/>
+                                            </div>
+                                        </xsl:if>
+                                    </div>
+                                </div>
+                                
+                                <!-- Text note -->
+                                <div class="form-group">
+                                    <label class="control-label col-sm-3" for="text-note">
+                                        <xsl:value-of select="'Text notes:'"/>
+                                    </label>
+                                    <div class="col-sm-9">
+                                        <textarea class="form-control" rows="4" name="text-note" id="text-note" placeholder="Notes about the text itself...">
+                                            <xsl:copy-of select="normalize-space(m:translation-status/m:text/m:text-note)"/>
+                                        </textarea>
+                                        <xsl:if test="m:translation-status/m:text/m:text-note/@last-edited">
+                                            <div class="small text-muted sml-margin top">
+                                                <xsl:value-of select="common:date-user-string('Last updated', m:translation-status/m:text/m:text-note/@last-edited, m:translation-status/m:text/m:text-note/@last-edited-by)"/>
+                                            </div>
+                                        </xsl:if>
+                                    </div>
+                                </div>
+                                
+                                <!-- Target dates -->
+                                <xsl:variable name="target-dates" select="m:translation-status/m:text/m:target-date"/>
+                                <xsl:variable name="actual-dates" select="m:translation/m:status-updates/m:status-update[@update eq 'translation-status']"/>
+                                <div class="form-group">
+                                    <label class="control-label col-sm-3 top-margin" for="text-note">
+                                        <xsl:value-of select="'Target dates:'"/>
+                                    </label>
+                                    <div class="col-sm-9 tests">
+                                        <table class="table table-responsive table-icons no-border">
+                                            <thead>
+                                                <tr>
+                                                    <th>
+                                                        <xsl:value-of select="'Status'"/>
+                                                    </th>
+                                                    <th>
+                                                        <xsl:value-of select="'Target date'"/>
+                                                    </th>
+                                                    <th colspan="2">
+                                                        <xsl:value-of select="'Actual date'"/>
+                                                    </th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <xsl:for-each select="m:text-statuses/m:status[@target-date eq 'true']">
+                                                    
+                                                    <xsl:variable name="status-id" select="@status-id"/>
+                                                    <xsl:variable name="status-surpassed" select="@selected eq 'selected' or preceding-sibling::m:status[@selected eq 'selected']"/>
+                                                    <xsl:variable name="target-date" select="$target-dates[@status-id eq $status-id][1]"/>
+                                                    
+                                                    <xsl:variable name="actual-date" select="if($status-surpassed) then $actual-dates[@value eq $status-id][last()] else ()"/>
+                                                    <xsl:variable name="target-date-hit" select="($target-date[@date-time] and $actual-date[@date-time] and xs:dateTime($target-date/@date-time) ge xs:dateTime($actual-date/@date-time))"/>
+                                                    <xsl:variable name="target-date-miss" select="($target-date[@date-time] and (xs:dateTime($target-date/@date-time) lt current-dateTime()) or ($actual-date[@date-time] and xs:dateTime($target-date/@date-time) lt xs:dateTime($actual-date/@date-time)))"/>
+                                                    
+                                                    <tr>
+                                                        <td class="small">
+                                                            <xsl:if test="$status-surpassed">
+                                                                <xsl:attribute name="class" select="'text-muted'"/>
+                                                            </xsl:if>
+                                                            <xsl:value-of select="common:limit-str(concat($status-id, ' / ', text()), 28)"/>
+                                                        </td>
+                                                        <td>
+                                                            <input type="date" class="form-control">
+                                                                <xsl:attribute name="name" select="concat('target-date-', @index)"/>
+                                                                <xsl:if test="$target-date">
+                                                                    <xsl:attribute name="value" select="format-dateTime($target-date/@date-time, '[Y]-[M01]-[D01]')"/>
+                                                                </xsl:if>
+                                                                <xsl:if test="$status-surpassed">
+                                                                    <xsl:attribute name="disabled" select="'disabled'"/>
+                                                                </xsl:if>
+                                                            </input>
+                                                        </td>
+                                                        <td class="icon">
+                                                            <xsl:choose>
+                                                                <xsl:when test="$target-date-hit">
+                                                                    <i class="fa fa-check-circle"/>
+                                                                </xsl:when>
+                                                                <xsl:when test="$target-date-miss">
+                                                                    <i class="fa fa-times-circle"/>
+                                                                </xsl:when>
+                                                                <xsl:when test="$target-date[@next eq 'true']">
+                                                                    <i class="fa fa-exclamation-circle"/>
+                                                                </xsl:when>
+                                                                <xsl:when test="$status-surpassed">
+                                                                    <i class="fa fa-question-circle"/>
+                                                                </xsl:when>
+                                                            </xsl:choose>
+                                                        </td>
+                                                        <td class="small">
+                                                            <xsl:choose>
+                                                                <xsl:when test="$actual-date[@date-time]">
+                                                                    <xsl:value-of select="format-dateTime($actual-date/@date-time, '[D01] [MNn,*-3] [Y]')"/>
+                                                                </xsl:when>
+                                                                <xsl:when test="$target-date[@next eq 'true']">
+                                                                    <xsl:choose>
+                                                                        <xsl:when test="xs:integer($target-date/@due-days) ge 0">
+                                                                            <xsl:value-of select="'Due in '"/>
+                                                                            <xsl:value-of select="$target-date/@due-days"/>
+                                                                            <xsl:value-of select="' days'"/>
+                                                                        </xsl:when>
+                                                                        <xsl:when test="xs:integer($target-date/@due-days) lt 0">
+                                                                            <xsl:value-of select="'Overdue '"/>
+                                                                            <xsl:value-of select="abs($target-date/@due-days)"/>
+                                                                            <xsl:value-of select="' days'"/>
+                                                                        </xsl:when>
+                                                                    </xsl:choose>
+                                                                </xsl:when>
+                                                            </xsl:choose>
+                                                        </td>
+                                                    </tr>
+                                                </xsl:for-each>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                                
                             </div>
-                            
                         </div>
                         
                         <!-- History -->
                         <div class="col-sm-4">
+                            <div class="match-height-overflow" data-match-height="status-form">
+                                
+                                <xsl:apply-templates select="m:translation/m:status-updates"/>
                             
-                            <xsl:apply-templates select="m:translation/m:status-updates"/>
-                            
+                            </div>
                         </div>
                         
                     </div>
@@ -1100,12 +1108,13 @@
                 
                 <form method="post" enctype="multipart/form-data" class="form-horizontal form-update labels-left" id="submissions-form" data-loading="Uploading submission...">
                     
-                    <xsl:attribute name="action" select="'edit-text-header.html#submissions-form'"/>
+                    <xsl:attribute name="action" select="'edit-text-header.html'"/>
                     
                     <input type="hidden" name="form-action" value="process-upload"/>
                     <input type="hidden" name="post-id">
                         <xsl:attribute name="value" select="m:translation/@id"/>
                     </input>
+                    <input type="hidden" name="form-expand" value="submissions"/>
                     
                     <div class="form-group">
                         <div class="col-sm-10">
@@ -1146,13 +1155,13 @@
                 
                 <form method="post" class="form-horizontal labels-left labels-light form-update" id="locations-form" data-loading="Updating source...">
                     
-                    <xsl:attribute name="action" select="'edit-text-header.html#locations-form'"/>
+                    <xsl:attribute name="action" select="'edit-text-header.html'"/>
                     
                     <input type="hidden" name="form-action" value="update-source"/>
-                    
                     <input type="hidden" name="post-id">
                         <xsl:attribute name="value" select="m:translation/@id"/>
                     </input>
+                    <input type="hidden" name="form-expand" value="source"/>
                     
                     <xsl:for-each select="m:translation/m:source">
                         

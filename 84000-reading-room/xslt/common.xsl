@@ -612,7 +612,7 @@
         
         <xsl:if test="m:status-update[@date-time]">
             
-            <div xmlns="http://www.w3.org/1999/xhtml" class="match-height-overflow" data-match-height="status-form">
+            <div xmlns="http://www.w3.org/1999/xhtml">
                 
                 <h4 class="no-top-margin no-bottom-margin">
                     <xsl:value-of select="'History'"/>
