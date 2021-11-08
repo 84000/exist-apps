@@ -59,6 +59,15 @@ declare function translation:title-variants($tei as element(tei:TEI)) as element
                 attribute xml:lang {$title/@xml:lang},
                 normalize-space($title/text())
             }
+        ,
+        for $note in 
+            $tei/tei:teiHeader/tei:fileDesc/tei:notesStmt/tei:note[@type  = ('title','title-internal')]
+            | $tei/tei:teiHeader/tei:fileDesc/tei:notesStmt/tei:note[@type eq 'updated'][@update eq 'title']
+        return
+            element {QName('http://read.84000.co/ns/1.0', 'note')} {
+                $note/@*,
+                $note/node()
+            }
     }
 };
 
@@ -459,7 +468,7 @@ declare function local:part-content($content as element(tei:div)?, $render as xs
 };
 
 declare function local:render($content as element()*, $show-ids as xs:string*, $passage-id as xs:string?, $view-mode as element(m:view-mode)?, $default as xs:string) as xs:string {
-    
+
     (: ~ Possible values for render 
         - show          All content + show
         - collapse      All content + collapsed

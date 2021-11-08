@@ -144,6 +144,13 @@ declare function tei-content:titles($tei as element(tei:TEI)) as element(m:title
                 $title/@*,
                 $title/text() ! normalize-space(.)
             }
+        ,
+        for $note in $tei//tei:fileDesc/tei:notesStmt/tei:note[@type = ('title','title-internal')]
+        return
+            element note {
+                $note/@*,
+                $note/text() ! normalize-space(.)
+            }
     }
     
 };
@@ -324,7 +331,17 @@ declare function tei-content:source($tei as element(tei:TEI), $resource-id as xs
                         }
                     }
                 ,
-                tei-content:location($bibl)
+                
+                tei-content:location($bibl),
+                
+                for $note in 
+                    $tei/tei:teiHeader/tei:fileDesc/tei:notesStmt/tei:note[@type = ('author', 'translator', 'reviser')]
+                    | $tei/tei:teiHeader/tei:fileDesc/tei:notesStmt/tei:note[@update = ('author', 'translator', 'reviser')]
+                return
+                    element {QName('http://read.84000.co/ns/1.0', 'note')} {
+                        $note/@*,
+                        $note/node()
+                    }
             }
         </source>
 };

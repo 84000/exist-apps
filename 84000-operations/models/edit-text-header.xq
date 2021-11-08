@@ -98,7 +98,8 @@ let $xml-response :=
         (
             element { QName('http://read.84000.co/ns/1.0', 'request') } {
                 attribute id { $text-id },
-                attribute delete-submission { $delete-submission-id }
+                attribute delete-submission { $delete-submission-id },
+                attribute form-expand { request:get-parameter('form-expand', 'translation-status') }
             },
             element { QName('http://read.84000.co/ns/1.0', 'updates') } {
                 $updated

@@ -165,12 +165,22 @@
                         
                         <aside class="col-md-4 col-lg-offset-1 col-lg-3">
                             
+                            <!-- Alert locked file -->
                             <xsl:if test="$tei-editor and m:knowledgebase/m:page[@locked-by-user gt '']">
                                 <div class="alert alert-danger" role="alert">
                                     <xsl:value-of select="concat('File ', m:knowledgebase/m:page/@document-url, ' is currenly locked by user ', m:knowledgebase/m:page/@locked-by-user, '. ')"/>
                                     <xsl:value-of select="'You cannot modify this file until the lock is released.'"/>
                                 </div>
                             </xsl:if>
+                            
+                            <!-- Table of contents -->
+                            <xsl:variable name="toc">
+                                <!-- Article -->
+                                <!-- Attributions -->
+                                <!-- Bibliography -->
+                                <!-- Notes -->
+                                <!-- Glossary -->
+                            </xsl:variable>
                             
                             <!-- Related content -->
                             <xsl:variable name="related-entities" select="$article-entity[m:instance/m:entry] | $article-entity/m:relation[not(@predicate eq 'isUnrelated')]/m:entity[m:instance/m:page | m:instance/m:entry]"/>

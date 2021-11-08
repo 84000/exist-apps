@@ -51,7 +51,7 @@
                             <a class="label label-info">
                                 <xsl:attribute name="href" select="concat($reading-room-path, '/translation/', $text-id, '.tei')"/>
                                 <xsl:attribute name="target" select="concat($text-id, '.tei')"/>
-                                <xsl:value-of select="concat('TEI VERSION: ', m:translation/@tei-version)"/>
+                                <xsl:value-of select="concat('TEI VERSION: ', if(m:translation[@tei-version gt '']) then m:translation/@tei-version else '[none]')"/>
                             </a>
                         </span>
                         
@@ -193,23 +193,23 @@
                     <div class="list-group accordion accordion-background" role="tablist" aria-multiselectable="true" id="forms-accordion">
                         
                         <xsl:call-template name="titles-form-panel">
-                            <xsl:with-param name="active" select="false()"/>
+                            <xsl:with-param name="active" select="if(m:request/@form-expand eq 'titles') then true() else false()"/>
                         </xsl:call-template>
                         
                         <xsl:call-template name="source-form-panel">
-                            <xsl:with-param name="active" select="false()"/>
+                            <xsl:with-param name="active" select="if(m:request/@form-expand eq 'source') then true() else false()"/>
                         </xsl:call-template>
                         
                         <xsl:call-template name="contributors-form-panel">
-                            <xsl:with-param name="active" select="false()"/>
+                            <xsl:with-param name="active" select="if(m:request/@form-expand eq 'contributors') then true() else false()"/>
                         </xsl:call-template>
                         
                         <xsl:call-template name="submissions-form-panel">
-                            <xsl:with-param name="active" select="false()"/>
+                            <xsl:with-param name="active" select="if(m:request/@form-expand eq 'submissions') then true() else false()"/>
                         </xsl:call-template>
                         
                         <xsl:call-template name="translation-status-form-panel">
-                            <xsl:with-param name="active" select="true()"/>
+                            <xsl:with-param name="active" select="if(m:request/@form-expand eq 'translation-status') then true() else false()"/>
                         </xsl:call-template>
                         
                     </div>
@@ -238,6 +238,7 @@
             <xsl:with-param name="accordion-selector" select="'#forms-accordion'"/>
             <xsl:with-param name="id" select="'titles'"/>
             <xsl:with-param name="active" select="$active"/>
+            <xsl:with-param name="persist" select="true()"/>
             
             <xsl:with-param name="title">
                 <span class="h4">
@@ -246,14 +247,16 @@
             </xsl:with-param>
             
             <xsl:with-param name="content">
-                <form method="post" class="form-horizontal form-update top-margin" id="titles-form" data-loading="Updating titles...">
-                    <xsl:attribute name="action" select="'edit-text-header.html#titles-form'"/>
+                <form method="post" class="form-horizontal labels-left labels-light form-update top-margin" id="titles-form" data-loading="Updating titles...">
+                    <xsl:attribute name="action" select="'edit-text-header.html'"/>
                     
                     <input type="hidden" name="form-action" value="update-titles"/>
                     <input type="hidden" name="post-id">
                         <xsl:attribute name="value" select="m:translation/@id"/>
                     </input>
+                    <input type="hidden" name="form-expand" value="titles"/>
                     
+                    <!-- Titles -->
                     <div class="add-nodes-container">
                         <xsl:choose>
                             <xsl:when test="m:translation/m:titles/m:title">
@@ -290,6 +293,39 @@
                         </div>
                     </div>
                     
+                    <!-- Title notes -->
+                    <h5>
+                        <xsl:value-of select="'Title note(s)'"/>
+                    </h5>
+                    <div class="add-nodes-container">
+                        
+                        <xsl:choose>
+                            <xsl:when test="m:translation/m:titles/m:note">
+                                <xsl:for-each select="m:translation/m:titles/m:note">
+                                    <xsl:call-template name="title-note">
+                                        <xsl:with-param name="index" select="position()"/>
+                                        <xsl:with-param name="note" select="."/>
+                                    </xsl:call-template>
+                                </xsl:for-each>
+                            </xsl:when>
+                            <xsl:otherwise>
+                                <xsl:call-template name="title-note">
+                                    <xsl:with-param name="index" select="1"/>
+                                </xsl:call-template>
+                            </xsl:otherwise>
+                        </xsl:choose>
+                        
+                        <div>
+                            <a href="#add-nodes" class="add-nodes">
+                                <span class="monospace">
+                                    <xsl:value-of select="'+'"/>
+                                </span>
+                                <xsl:value-of select="' add a note'"/>
+                            </a>
+                        </div>
+                        
+                    </div>
+                    
                     <div class="form-group">
                         <div class="col-sm-12">
                             <button type="submit" class="btn btn-primary pull-right">
@@ -304,6 +340,40 @@
         
     </xsl:template>
     
+    <xsl:template name="title-note">
+        
+        <xsl:param name="index" as="xs:integer"/>
+        <xsl:param name="note" as="element(m:note)?"/>
+        
+        <div class="form-group add-nodes-group">
+            <div class="col-sm-2">
+                <select class="form-control">
+                    <xsl:attribute name="name" select="concat('titles-note-type-', $index)"/>
+                    <option value="public">
+                        <xsl:if test="$note[@type eq 'title']">
+                            <xsl:attribute name="selected" select="'selected'"/>
+                        </xsl:if>
+                        <xsl:value-of select="'Public'"/>
+                    </option>
+                    <option value="internal">
+                        <xsl:if test="$note[@type eq 'title-internal']">
+                            <xsl:attribute name="selected" select="'selected'"/>
+                        </xsl:if>
+                        <xsl:value-of select="'Internal'"/>
+                    </option>
+                </select>
+            </div>
+            <div class="col-sm-10">
+                <input class="form-control">
+                    <xsl:attribute name="name" select="concat('titles-note-text-', $index)"/>
+                    <xsl:attribute name="value" select="$note/text()"/>
+                    <xsl:attribute name="placeholder" select="'e.g. In the Pedurma this text is also known as...'"/>
+                </input>
+            </div>
+        </div>
+        
+    </xsl:template>
+    
     <!-- Contributors form -->
     <xsl:template name="contributors-form-panel">
         
@@ -314,6 +384,7 @@
             <xsl:with-param name="accordion-selector" select="'#forms-accordion'"/>
             <xsl:with-param name="id" select="'contributors'"/>
             <xsl:with-param name="active" select="$active"/>
+            <xsl:with-param name="persist" select="true()"/>
             
             <xsl:with-param name="title">
                 <span class="h4">
@@ -615,6 +686,7 @@
             <xsl:with-param name="accordion-selector" select="'#forms-accordion'"/>
             <xsl:with-param name="id" select="'translation-status'"/>
             <xsl:with-param name="active" select="$active"/>
+            <xsl:with-param name="persist" select="true()"/>
             
             <xsl:with-param name="title">
                 <span class="h4">
@@ -929,6 +1001,7 @@
             <xsl:with-param name="accordion-selector" select="'#forms-accordion'"/>
             <xsl:with-param name="id" select="'submissions'"/>
             <xsl:with-param name="active" select="$active"/>
+            <xsl:with-param name="persist" select="true()"/>
             
             <xsl:with-param name="title">
                 <span class="h4">

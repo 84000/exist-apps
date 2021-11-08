@@ -61,7 +61,7 @@ declare function update-entity:create($gloss as element(tei:gloss), $flag as xs:
     (# exist:batch-transaction #) {
     
         let $label-terms := 
-            for $term in $gloss/tei:term[normalize-space(text())]
+            for $term in $gloss/tei:term[not(@type = ('definition','alternative'))][normalize-space(string-join(text(),''))]
             order by if($term/@xml:lang eq 'Bo-Ltn') then 1 else if($term/@xml:lang eq 'Sa-Ltn') then 2 else 3
             return 
                 $term

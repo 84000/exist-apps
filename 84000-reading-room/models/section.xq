@@ -25,6 +25,7 @@ let $doc-type :=
         $resource-suffix
 let $filter-section-ids := request:get-parameter('filter-section-id[]', '')
 let $filter-max-pages := request:get-parameter('filter-max-pages', '')
+let $view-mode := request:get-parameter('view-mode', 'default')
 
 let $request := 
     element { QName('http://read.84000.co/ns/1.0', 'request')} {
@@ -37,12 +38,20 @@ let $request :=
         attribute translations-order { request:get-parameter('translations-order', 'toh') }, 
         attribute filter-id { request:get-parameter('filter-id', '') }, 
         attribute filter-section-ids { $filter-section-ids }, 
-        attribute filter-max-pages { $filter-max-pages }
+        attribute filter-max-pages { $filter-max-pages },
+        
+        if(not($view-mode eq 'default')) then
+            element view-mode { 
+                attribute id { $view-mode },
+                attribute client { 'browser' }
+            }
+        else ()
+        
     }
 
-(: Suppress cache if there's user input :)
+(: Suppress cache if there's user input, or a view-mode :)
 let $cache-timestamp := 
-    if($request[@filter-section-ids eq ''][@filter-max-pages eq '']) then
+    if($view-mode eq 'default' and $request[@filter-section-ids eq ''][@filter-max-pages eq '']) then
         max(collection($common:tei-path)//tei:TEI//tei:notesStmt/tei:note[@type eq "lastUpdated"]/@date-time ! xs:dateTime(.))
     else ()
 let $cached := common:cache-get($request, $cache-timestamp)
@@ -50,12 +59,12 @@ return if($cached) then $cached else
 
 let $include-texts := 
     if(xs:boolean($request/@published-only)) then
-        if(xs:boolean($request/@child-texts-only)) then
+        if($request/@child-texts-only eq 'true') then
             'children-published'
         else
             'descendants-published'
     else
-        if(xs:boolean($request/@child-texts-only)) then
+        if($request/@child-texts-only eq 'true') then
             'children'
         else
             'descendants'

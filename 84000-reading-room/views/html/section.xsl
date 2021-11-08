@@ -334,7 +334,6 @@
                         </xsl:if>
                         
                     </xsl:variable>
-                    
                     <xsl:if test="not($section-id = ('lobby', 'all-translated')) and $tabs[xhtml:li]">
                         <div class="tabs-container-center hidden-print">
                             <ul class="nav nav-tabs" role="tablist">
@@ -954,37 +953,66 @@
             
             <!-- Text rows -->
             <!-- Texts can either be direct children of the section or a sub-section which is a grouping -->
-            <xsl:for-each select="$section | $section/m:section[@type eq 'grouping']">
+            <xsl:call-template name="text-grouping">
+                <xsl:with-param name="section" select="$section"/>
+            </xsl:call-template>
+            
+            <!-- No texts -->
+            <xsl:if test="not($section[m:texts/m:text] | $section/m:section[@type eq 'grouping'][m:texts/m:text])">
+                <p class="top-margin text-center text-muted italic">
+                    <xsl:value-of select="'No published translations found for these criteria'"/>
+                </p>
+            </xsl:if>
+        
+        </div>
+    
+    </xsl:template>
+    
+    <xsl:template name="text-grouping">
+        
+        <xsl:param name="section" as="element(m:section)"/>
+        
+        <xsl:variable name="texts" select="$section/m:texts/m:text"/>
+        <xsl:variable name="texts-groups" select="$section/m:section[@type eq 'grouping']"/>
+        
+        <section class="list-grouping">
+            
+            <!-- Change the class and add a title if they are a grouped sub-section -->
+            <xsl:choose>
+                <xsl:when test="$section/@nesting gt '1' and $texts">
+                    <xsl:attribute name="class" select="'list-grouping border'"/>
+                    <xsl:attribute name="id" select="concat('grouping-', $section/@id)"/>
+                    <header class="text-center top-margin bottom-margin">
+                        <xsl:call-template name="section-title">
+                            <xsl:with-param name="section" select="$section"/>
+                        </xsl:call-template>
+                    </header>
+                </xsl:when>
+            </xsl:choose>
+            
+            <!-- loop through the texts -->
+            <xsl:for-each select="$texts | $texts-groups">
                 
-                <xsl:sort select="number(m:texts/m:text[1]/m:toh/@number)"/>
+                <!-- Sort options - only in all-translated -->
+                <xsl:sort select="if(/m:response/m:request/@translations-order eq 'latest' and m:publication/m:publication-date) then xs:date(m:publication/m:publication-date) else ''" order="descending"/>
+                <xsl:sort select="if(/m:response/m:request/@translations-order eq 'shortest' and m:source/m:location/@count-pages) then xs:integer(m:source/m:location/@count-pages) else ''" order="ascending"/>
+                <xsl:sort select="if(/m:response/m:request/@translations-order eq 'longest' and m:source/m:location/@count-pages) then xs:integer(m:source/m:location/@count-pages) else ''" order="descending"/>
                 
-                <xsl:variable name="texts" select="m:texts/m:text"/>
+                <!-- Default to toh -->
+                <xsl:sort select="number(m:toh/@number | @toh-number-first)"/>
+                <xsl:sort select="m:toh/@letter"/>
+                <xsl:sort select="number(m:toh/@chapter-number)"/>
+                <xsl:sort select="m:toh/@chapter-letter"/>
                 
-                <section class="list-grouping">
-                    
-                    <!-- Change the class and add a title if they are a grouped sub-section -->
-                    <xsl:choose>
-                        <xsl:when test="@nesting gt '1' and $texts">
-                            <xsl:attribute name="class" select="'list-grouping border'"/>
-                            <xsl:attribute name="id" select="concat('grouping-', @id)"/>
-                            <header class="text-center top-margin bottom-margin">
-                                <xsl:call-template name="section-title">
-                                    <xsl:with-param name="section" select="."/>
-                                </xsl:call-template>
-                            </header>
-                        </xsl:when>
-                    </xsl:choose>
-                    
-                    <!-- loop through the texts -->
-                    <xsl:for-each select="$texts">
+                <xsl:choose>
+                    <xsl:when test="self::m:section">
                         
-                        <xsl:sort select="if(/m:response/m:request/@translations-order eq 'latest' and m:publication/m:publication-date) then xs:date(m:publication/m:publication-date) else ''" order="descending"/>
-                        <xsl:sort select="if(/m:response/m:request/@translations-order eq 'shortest' and m:source/m:location/@count-pages) then xs:integer(m:source/m:location/@count-pages) else ''" order="ascending"/>
-                        <xsl:sort select="if(/m:response/m:request/@translations-order eq 'longest' and m:source/m:location/@count-pages) then xs:integer(m:source/m:location/@count-pages) else ''" order="descending"/>
-                        <xsl:sort select="number(m:toh/@number)"/>
-                        <xsl:sort select="m:toh/@letter"/>
-                        <xsl:sort select="number(m:toh/@chapter-number)"/>
-                        <xsl:sort select="m:toh/@chapter-letter"/>
+                        <xsl:call-template name="text-grouping">
+                            <xsl:with-param name="section" select="."/>
+                        </xsl:call-template>
+                        
+                    </xsl:when>
+                    <xsl:otherwise>
                         
                         <xsl:variable name="text" select="."/>
                         <xsl:variable name="toh-key" select="$text/m:toh/@key"/>
@@ -1097,7 +1125,7 @@
                                 <xsl:if test="$text/m:titles/m:title[@xml:lang = 'Bo-Ltn'][text()]">
                                     <xsl:choose>
                                         <xsl:when test="normalize-space($text/m:titles/m:title[@xml:lang = 'bo'])">
-                                           <xsl:value-of select="' · '"/>
+                                            <xsl:value-of select="' · '"/>
                                         </xsl:when>
                                         <xsl:otherwise>
                                             <hr/>
@@ -1134,6 +1162,31 @@
                                     <xsl:with-param name="expand-id" select="concat('summary-detail-', $toh-key)"/>
                                     <xsl:with-param name="entities" select="/m:response/m:entities/m:entity"/>
                                 </xsl:call-template>
+                                
+                                <!-- Editor notes -->
+                                <xsl:variable name="editor-notes" select="($text//m:note[@type = ('title-internal', 'author', 'translator', 'reviser')] | $text//m:note[@update = ('title', 'author', 'translator', 'reviser')])[normalize-space(string-join(text(), ''))]"/>
+                                <xsl:if test="$view-mode[@id eq 'editor'] and $environment[m:url/@id = 'operations'] and $editor-notes">
+                                    <hr/>
+                                    <h5 class="no-bottom-margin">
+                                        <xsl:value-of select="'Editor notes:'"/>
+                                    </h5>
+                                    <ul>
+                                        <xsl:for-each select="$editor-notes">
+                                            <li class="text-warning small">
+                                                <xsl:value-of select="'['"/>
+                                                <xsl:value-of select="(@type, @update)[. = ('title', 'title-internal', 'author', 'translator', 'reviser')][1] ! tokenize(., '-')[1] ! concat('Note (', ., '): ')"/>
+                                                <xsl:value-of select="node()[normalize-space(string-join(., ''))]"/>
+                                                <xsl:value-of select="']'"/>
+                                                <xsl:if test="@import[normalize-space(string-join(., ''))]">
+                                                    <br/>
+                                                    <span class="text-muted">
+                                                        <xsl:value-of select="concat('- ', @import)"/>
+                                                    </span>
+                                                </xsl:if>
+                                            </li>
+                                        </xsl:for-each>
+                                    </ul>
+                                </xsl:if>
                                 
                             </div>
                             
@@ -1226,24 +1279,26 @@
                                     </xsl:otherwise>
                                 </xsl:choose>
                                 
+                                <xsl:if test="$view-mode[@id eq 'editor'] and $environment[m:url/@id = 'operations']">
+                                    <a>
+                                        <xsl:attribute name="href" select="concat($environment/m:url[@id eq 'operations'], '/edit-text-header.html?id=', $text/@id, '&amp;form-expand=titles')"/>
+                                        <xsl:attribute name="target" select="'84000-operations'"/>
+                                        <xsl:attribute name="class" select="'editor'"/>
+                                        <xsl:value-of select="'Edit headers'"/>
+                                    </a>
+                                </xsl:if>
+                                
                             </div>
-                        
+                            
                         </div>
-                    </xsl:for-each>
+                        
+                    </xsl:otherwise>
+                </xsl:choose>
                 
-                </section>
-            
             </xsl:for-each>
             
-            <!-- No texts -->
-            <xsl:if test="not($section[m:texts/m:text] | $section/m:section[@type eq 'grouping'][m:texts/m:text])">
-                <p class="top-margin text-center text-muted italic">
-                    <xsl:value-of select="'No published translations found for these criteria'"/>
-                </p>
-            </xsl:if>
+        </section>
         
-        </div>
-    
     </xsl:template>
     
     <xsl:template name="sub-sections">

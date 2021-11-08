@@ -3020,7 +3020,7 @@
         
         <xsl:variable name="supplementaryRoles" select="('translator', 'reviser')"/>
         <xsl:variable name="summary" select="$text/m:part[@type eq 'summary']/tei:p"/>
-        <xsl:variable name="titleVariants" select="$text/m:title-variants/m:title[normalize-space(text())]"/>
+        <xsl:variable name="titleVariants" select="$text/m:title-variants/m:title[normalize-space(string-join(text(), ' '))] | $text/m:title-variants/m:note[@type eq 'title'][normalize-space(string-join(text(), ''))]"/>
         <xsl:variable name="supplementaryAttributions" select="$text/m:source/m:attribution[@ref][@role = $supplementaryRoles]"/>
         <xsl:if test="$summary or $titleVariants or $supplementaryAttributions">
             

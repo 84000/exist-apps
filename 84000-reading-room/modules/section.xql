@@ -221,6 +221,7 @@ declare function section:child-sections($tei as element(tei:TEI), $include-text-
             attribute sort-index { $tei/tei:teiHeader/tei:fileDesc/tei:sourceDesc/@sort-index },
             attribute last-updated { $last-updated },
             attribute include-texts { $include-texts },
+            attribute toh-number-first { min($child-texts-output/m:toh/@number ! number(.)) },
             section:titles($tei),
             
             (: avoid duplicate ids :)

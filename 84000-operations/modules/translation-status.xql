@@ -395,18 +395,18 @@ declare function translation-status:update($text-id as xs:string) as element()? 
             :)
             (:$existing-value/m:target-date:)
             for $text-status in tei-content:text-statuses-selected(tei-content:translation-status($tei), 'translation')/m:status[@target-date]
-                let $request-target-date := request:get-parameter(concat('target-date-', $text-status/@index), '')
+                let $request-target-date := request:get-parameter(concat('target-date-', $text-status/@index), 'not-in-request')
                 let $existing-target-date := $existing-value/m:target-date[@status-id eq $text-status/@status-id]
             return 
-                if($request-target-date gt '') then (
-                    text { $common:line-ws },
+                if (not($request-target-date = ('','not-in-request'))) then (
+                    $common:line-ws,
                     element target-date {
                         attribute status-id { $text-status/@status-id },
                         attribute date-time { xs:dateTime(concat($request-target-date, 'T23:59:59')) }
                     }
                 )
-                else if ($existing-target-date) then (
-                    text { $common:line-ws },
+                else if ($request-target-date eq 'not-in-request' and $existing-target-date) then (
+                    $common:line-ws,
                     $existing-target-date
                 )
                 else ()

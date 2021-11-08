@@ -44,10 +44,13 @@ declare function update-tei:minor-version-increment($tei as element(tei:TEI), $f
     
     where not(tei-content:locked-by-user($tei) gt '')
     return (
+    
         (: Do the update :)
         common:update('text-version', $existing-editionStmt, $new-editionStmt, $fileDesc, $fileDesc/tei:titleStmt),
+        
         (: Add a note :)
         local:add-note($tei, 'text-version', $version-number-str-increment, concat('Auto (', $form-action, ')'))
+        
     )
 
 };
@@ -386,6 +389,8 @@ declare function update-tei:title-statement($tei as element(tei:TEI), $titles as
                 $existing-node
              )
         ,
+        
+        
         (: Copy anything else in case there are comments or something :)
         for $existing-node in $existing-value/*[not(. instance of text())][not(self::tei:title | self::tei:author | self::tei:editor | self::tei:consultant | self::tei:sponsor)]
         return (
@@ -395,6 +400,33 @@ declare function update-tei:title-statement($tei as element(tei:TEI), $titles as
         ,
         $container-ws
     }
+    
+    let $notes-statement := 
+        element { QName("http://www.tei-c.org/ns/1.0", "notesStmt") } {
+            $parent/tei:notesStmt/@*,
+            
+            for $note in $parent/tei:notesStmt/*[not(local-name(.) eq 'note' and @type = ('title', 'title-internal'))]
+            return (
+                $node-ws,
+                $note
+            ),
+            
+            for $titles-note-param in common:sort-trailing-number-in-string(request:get-parameter-names()[starts-with(., 'titles-note-text-')], '-')
+            let $titles-note := request:get-parameter($titles-note-param, '')
+            let $titles-note-index := substring-after($titles-note-param, 'titles-note-text-')
+            let $titles-note-type := request:get-parameter(concat('titles-note-type-', $titles-note-index), '')
+            where normalize-space($titles-note) gt ''
+            return (
+                $node-ws,
+                element {QName("http://www.tei-c.org/ns/1.0", "note")} {
+                    attribute type { if($titles-note-type eq 'internal') then 'title-internal' else 'title' },
+                    attribute date-time {current-dateTime()},
+                    attribute user {common:user-name()},
+                    text {$titles-note}
+                }
+            ),
+            $container-ws
+        }
     
     where 
         not(tei-content:locked-by-user($tei) gt '')
@@ -408,8 +440,13 @@ declare function update-tei:title-statement($tei as element(tei:TEI), $titles as
             else ()
             ,
             
-            (: Do the update :)
-            common:update($form-action, $existing-value, $new-value, $parent, ())
+            (: Update titles :)
+            common:update($form-action, $existing-value, $new-value, $parent, ()),
+            
+            (: Update notes :)
+            if (request:get-parameter('form-action', '') eq 'update-titles') then
+                common:update('titles-notes', $parent/tei:notesStmt, $notes-statement, $parent, ())
+            else ()
             
             (:(
                 element update-debug {
