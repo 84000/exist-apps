@@ -144,65 +144,12 @@ declare function glossary:glossary-search($type as xs:string*, $lang as xs:strin
         
 };
 
-declare function glossary:glossary-terms($type as xs:string?, $lang as xs:string, $search as xs:string, $include-count as xs:boolean) as element() {
+declare function glossary:glossary-terms($type as xs:string?, $lang as xs:string, $search as xs:string, $include-count as xs:boolean) as element(m:glossary)* {
     
     let $valid-lang := common:valid-lang($lang)
     let $valid-type := local:valid-type($type)
     
     let $normalized-search := common:alphanumeric(common:normalized-chars($search))
-    
-    let $terms := 
-        
-        (: Search for term - all languages and types :)
-        if($type eq 'search' and $normalized-search gt '') then
-            $glossary:tei//tei:back//tei:gloss[@xml:id]/tei:term
-                [not(@type eq 'definition')]
-                [ft:query(., local:search-query($normalized-search), local:search-options())]
-        
-        (: Look-up terms based on letter, type and lang :)
-        else if($valid-type and $normalized-search gt '') then
-            
-            (: this shouldn't be necessary if collation were working!?? :)
-            let $alt-searches := common:letter-variations($normalized-search)
-            
-            return
-                if($valid-lang = ('en', '')) then
-                    $glossary:tei//tei:back//tei:gloss[@xml:id][@type = $valid-type]/tei:term
-                       [not(@xml:lang) or @xml:lang eq 'en']
-                       [not(@type = ('definition','alternative'))]
-                       [matches(., concat('^(\d*\s+|The\s+|A\s+)?(', string-join($alt-searches, '|'), ').*'), 'i')]
-                else
-                    $glossary:tei//tei:back//tei:gloss[@xml:id][@type = $valid-type]/tei:term
-                        [@xml:lang eq $valid-lang]
-                        [not(@type = ('definition','alternative'))]
-                        [matches(., concat('^(\d*\s+|The\s+|A\s+)?(', string-join($alt-searches, '|'), ').*'), 'i')]
-        
-        (: All terms for type and lang :)
-        else if($valid-type) then
-            if($valid-lang = ('en', '')) then
-                $glossary:tei//tei:back//tei:gloss[@xml:id][@type = $valid-type]/tei:term
-                    [not(@xml:lang) or @xml:lang eq 'en']
-                    [not(@type = ('definition','alternative'))]
-            else
-                $glossary:tei//tei:back//tei:gloss[@xml:id][@type = $valid-type]/tei:term
-                    [@xml:lang eq $valid-lang]
-                    [not(@type = ('definition','alternative'))]
-        
-        (: All terms for cumulative glossary :)
-        else if($type eq 'all') then
-            $glossary:tei//tei:back//tei:gloss[@xml:id]/tei:term
-                [not(@type = ('definition','alternative'))]
-        
-        (: All terms for lang only :)
-        else
-            if($valid-lang = ('en', '')) then
-                $glossary:tei//tei:back//tei:gloss[@xml:id]/tei:term
-                    [not(@xml:lang) or @xml:lang eq 'en']
-                    [not(@type = ('definition','alternative'))]
-            else
-                $glossary:tei//tei:back//tei:gloss[@xml:id]/tei:term
-                    [@xml:lang eq $valid-lang]
-                    [not(@type = ('definition','alternative'))]
     
     return
         <glossary
@@ -212,6 +159,63 @@ declare function glossary:glossary-terms($type as xs:string?, $lang as xs:string
             lang="{ $valid-lang }"
             search="{ $normalized-search }">
         {
+        
+            let $terms := 
+        
+                (: Search for term - all languages and types :)
+                if($type eq 'search') then
+                    if($normalized-search gt '') then
+                        $glossary:tei//tei:back//tei:gloss[@xml:id]/tei:term
+                            [not(@type eq 'definition')]
+                            [ft:query(., local:search-query($normalized-search), local:search-options())]
+                    else ()
+                
+                (: Look-up terms based on letter, type and lang :)
+                else if($valid-type and $normalized-search gt '') then
+                    
+                    (: this shouldn't be necessary if collation were working!?? :)
+                    let $alt-searches := common:letter-variations($normalized-search)
+                    
+                    return
+                        if($valid-lang = ('en', '')) then
+                            $glossary:tei//tei:back//tei:gloss[@xml:id][@type = $valid-type]/tei:term
+                               [not(@xml:lang) or @xml:lang eq 'en']
+                               [not(@type = ('definition','alternative'))]
+                               [matches(., concat('^(\d*\s+|The\s+|A\s+)?(', string-join($alt-searches, '|'), ').*'), 'i')]
+                        else
+                            $glossary:tei//tei:back//tei:gloss[@xml:id][@type = $valid-type]/tei:term
+                                [@xml:lang eq $valid-lang]
+                                [not(@type = ('definition','alternative'))]
+                                [matches(., concat('^(\d*\s+|The\s+|A\s+)?(', string-join($alt-searches, '|'), ').*'), 'i')]
+                
+                (: All terms for type and lang :)
+                else if($valid-type) then
+                    if($valid-lang = ('en', '')) then
+                        $glossary:tei//tei:back//tei:gloss[@xml:id][@type = $valid-type]/tei:term
+                            [not(@xml:lang) or @xml:lang eq 'en']
+                            [not(@type = ('definition','alternative'))]
+                    else
+                        $glossary:tei//tei:back//tei:gloss[@xml:id][@type = $valid-type]/tei:term
+                            [@xml:lang eq $valid-lang]
+                            [not(@type = ('definition','alternative'))]
+                
+                (: All terms for cumulative glossary :)
+                else if($type eq 'all') then
+                    $glossary:tei//tei:back//tei:gloss[@xml:id]/tei:term
+                        [not(@type = ('definition','alternative'))]
+                
+                (: All terms for lang only :)
+                else
+                    if($valid-lang = ('en', '')) then
+                        $glossary:tei//tei:back//tei:gloss[@xml:id]/tei:term
+                            [not(@xml:lang) or @xml:lang eq 'en']
+                            [not(@type = ('definition','alternative'))]
+                    else
+                        $glossary:tei//tei:back//tei:gloss[@xml:id]/tei:term
+                            [@xml:lang eq $valid-lang]
+                            [not(@type = ('definition','alternative'))]
+            
+            return
             for $term in $terms[normalize-space()][not(text() = $glossary:empty-term-placeholders)]
                 
                 let $normalized-term := 
@@ -754,72 +758,73 @@ declare function glossary:cache($tei as element(tei:TEI), $refresh-locations as 
             (: TEI glossary items :)
             let $tei-glossary := $tei//tei:back//tei:list[@type eq 'glossary']/tei:item/tei:gloss[@xml:id]
             
-            (: Get glossary instances :)
-            let $glossary-instances := glossary:instances($tei, $resource-id, $resource-type, $refresh-locations)
+            (: Get glossary instances, if valid ids have been requested :)
+            let $glossary-instances := 
+                if($tei-glossary[@xml:id = $refresh-locations]) then
+                    glossary:instances($tei, $resource-id, $resource-type, $refresh-locations)
+                else ()
             
             (: Sort glossaries :)
-            let $glossary-sorted :=
+            let $tei-glossary-sorted :=
                 for $gloss in $tei-glossary
                 let $sort-term := glossary:sort-term($gloss)
                 order by $sort-term/text()
                 return $gloss
             
-            (: Process all glossaries :)
-            let $glosses :=
-                for $gloss at $index in $glossary-sorted
-                    let $gloss-id := $gloss/@xml:id
-                group by $gloss-id
-                    let $sort-term := glossary:sort-term($gloss[1])
-                return 
+            return
+                element { QName('http://read.84000.co/ns/1.0', 'glossary-cache') } {
                 
-                    (: If we processed it then add it with the new $glossary-instances :)
-                    if ($gloss-id = $refresh-locations) then (
+                    $glossary-cache/@*,
+                    
+                    for $gloss at $index in $tei-glossary-sorted
+                    let $sort-term := glossary:sort-term($gloss)
+                    return (
                         common:ws(2),
                         element { QName('http://read.84000.co/ns/1.0', 'gloss') } {
                         
-                            attribute id { $gloss-id },
+                            attribute id { $gloss/@xml:id },
                             attribute index { $index },
-                            attribute tei-version { $tei-version },
-                            attribute timestamp { current-dateTime() },
-                            $sort-term/@word-count,
-                            $sort-term/@letter-count,
+                            attribute word-count { $sort-term/@word-count },
+                            attribute letter-count { $sort-term/@letter-count },
                             
-                            for $location in $glossary-instances/m:location[descendant::xhtml:*[@data-glossary-id eq $gloss-id]]
-                            let $location-id := $location/@id
-                            group by $location-id
-                            order by $location[1]/@sort-index ! xs:integer(.)
-                            return (
-                                common:ws(3),
-                                element location {
-                                    attribute id { $location/@id }
-                                }
-                            ),
+                            (: If we processed it then add it with the new $glossary-instances :)
+                            if ($gloss/@xml:id = $refresh-locations) then  (
+                            
+                                attribute tei-version { $tei-version },
+                                attribute timestamp { current-dateTime() },
+                                
+                                for $location in $glossary-instances/m:location[descendant::xhtml:*[@data-glossary-id eq $gloss/@xml:id]]
+                                let $location-id := $location/@id
+                                group by $location-id
+                                order by $location[1]/@sort-index ! xs:integer(.)
+                                return (
+                                    common:ws(3),
+                                    element location {
+                                        attribute id { $location/@id }
+                                    }
+                                )
+                                
+                            )
+                            
+                            (: Otherwise copy the existing locations :)
+                            else 
+                                let $existing-cache := $glossary-cache/m:gloss[@id eq $gloss/@xml:id]
+                                return (
+                                    $existing-cache/@tei-version,
+                                    $existing-cache/@timestamp,
+                                    for $location in $existing-cache/m:location
+                                    return (
+                                        common:ws(3),
+                                        $location
+                                    )
+                                )
+                            ,
                             
                             common:ws(2)
                         }
-                    )
+                    ),
                     
-                    (: Otherwise copy the existing cache :)
-                    else (
-                        common:ws(2),
-                        
-                        let $existing-cache := $glossary-cache/m:gloss[@id eq $gloss-id]
-                        return
-                            element { QName('http://read.84000.co/ns/1.0', 'gloss') } {
-                                attribute id { $gloss-id },
-                                attribute index { $index },
-                                $sort-term/@word-count ,
-                                $sort-term/@letter-count ,
-                                $existing-cache/@*[not(name(.) = ('id', 'index', 'word-count', 'letter-count', 'priority'))],
-                                $existing-cache/node()
-                            }
-                            
-                    )
-            
-            return
-                element { QName('http://read.84000.co/ns/1.0', 'glossary-cache') } {
-                    $glossary-cache/@*,
-                    $glosses,
                     common:ws(1)
                 }
+                
 };

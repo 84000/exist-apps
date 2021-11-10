@@ -879,13 +879,17 @@ declare function local:cache-glossary-chunk($tei as element(tei:TEI), $cache as 
     
     return (
         if($chunk-start le $count) then (
+        
             (: Get subsequence :)
             let $refresh-locations-chunk := subsequence($refresh-locations, $chunk-start, $chunk-size)
+            
             (: Get new cache :)
             let $glossary-cache-new := glossary:cache($tei, $refresh-locations-chunk, true())
+            
             (: Save new cache :)
             return 
                 common:update('cache-glossary', $cache/m:glossary-cache, $glossary-cache-new, $cache, ())
+                
         )
         else ()
         ,

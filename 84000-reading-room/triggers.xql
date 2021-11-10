@@ -50,42 +50,61 @@ declare function local:after-update-document-functions($doc) {
 
 declare function local:refresh-cache($doc) {
     
-    let $cache := tei-content:cache($doc/tei:TEI, true())
+    let $tei := $doc/tei:TEI
+    let $cache := tei-content:cache($tei, true())
+    let $text-id := tei-content:id($tei)
+    let $log := util:log('info', concat('trigger-refresh-cache:', $text-id))
     
     return (
     
         (: Cache notes :)
-        let $tei-ids := $doc/tei:TEI/tei:text//tei:note[@place eq 'end']/@xml:id/string()
+        let $tei-ids := $tei/tei:text//tei:note[@place eq 'end']/@xml:id/string()
         let $cache-ids := $cache/m:notes-cache/m:end-note/@id/string()
         return
         if(count(($tei-ids[not(. = $cache-ids)], $cache-ids[not(. = $tei-ids)]))) then
-            common:update('trigger-notes-cache', $cache/m:notes-cache, tei-content:notes-cache($doc/tei:TEI, true(), true()), $cache, $cache/m:notes-cache/preceding-sibling::*[1])
+            let $notes-cache := tei-content:notes-cache($tei, true(), true())
+            return (
+                common:update('trigger-notes-cache', $cache/m:notes-cache, $notes-cache, $cache, $cache/m:notes-cache/preceding-sibling::*[1]),
+                util:log('info', concat('trigger-notes-cached:', $text-id))
+            )
         else (),
         
         (: Cache milestones :)
-        let $tei-ids := $doc/tei:TEI/tei:text//tei:milestone/@xml:id/string()
+        let $tei-ids := $tei/tei:text//tei:milestone/@xml:id/string()
         let $cache-ids := $cache/m:milestones-cache/m:milestone/@id/string()
         return
         if(count(($tei-ids[not(. = $cache-ids)], $cache-ids[not(. = $tei-ids)]))) then
-            common:update('trigger-milestones-cache', $cache/m:milestones-cache, tei-content:milestones-cache($doc/tei:TEI, true(), true()), $cache, $cache/m:milestones-cache/preceding-sibling::*[1])
+            let $milestones-cache := tei-content:milestones-cache($tei, true(), true())
+            return (
+                common:update('trigger-milestones-cache', $cache/m:milestones-cache, $milestones-cache, $cache, $cache/m:milestones-cache/preceding-sibling::*[1]),
+                util:log('info', concat('trigger-milestones-cached:', $text-id))
+            )
         else (),
         
         (: Cache folios :)
-        let $tei-ids := $doc/tei:TEI/tei:text/tei:body//tei:ref[@type eq 'folio']/@xml:id/string()
+        let $tei-ids := $tei/tei:text/tei:body//tei:ref[@type eq 'folio']/@xml:id/string()
         let $cache-ids := $cache/m:folios-cache/m:folio-ref/@id/string()
         where count($tei-ids) gt 0
         return
         if(count(($tei-ids[not(. = $cache-ids)], $cache-ids[not(. = $tei-ids)]))) then
-            common:update('trigger-cache-folio-refs', $cache/m:folios-cache, translation:folios-cache($doc/tei:TEI, true(), true()), $cache, $cache/m:folios-cache/preceding-sibling::*[1])
+            let $folios-cache := translation:folios-cache($tei, true(), true())
+            return (
+                common:update('trigger-cache-folio-refs', $cache/m:folios-cache, $folios-cache, $cache, $cache/m:folios-cache/preceding-sibling::*[1]),
+                util:log('info', concat('trigger-folio-refs-cached:', $text-id))
+            )
         else (),
         
         (: Cache glossary :)
-        let $tei-ids := $doc/tei:TEI//tei:back//tei:list[@type eq 'glossary']/tei:item/tei:gloss/@xml:id/string()
+        let $tei-ids := $tei//tei:back//tei:list[@type eq 'glossary']/tei:item/tei:gloss/@xml:id/string()
         let $cache-ids := $cache/m:glossary-cache/m:gloss/@id/string()
         where count($tei-ids) gt 0
         return
         if(count(($tei-ids[not(. = $cache-ids)], $cache-ids[not(. = $tei-ids)]))) then
-            common:update('trigger-cache-glossary', $cache/m:glossary-cache, glossary:cache($doc/tei:TEI, 'removed', true()), $cache, $cache/m:glossary-cache/preceding-sibling::*[1])
+            let $glossary-cache := glossary:cache($tei, 'removed', true())
+            return (
+                common:update('trigger-cache-glossary', $cache/m:glossary-cache, $glossary-cache, $cache, $cache/m:glossary-cache/preceding-sibling::*[1]),
+                util:log('info', concat('trigger-glossary-cached:', $text-id))
+            )
         else ()
         
     )
@@ -99,6 +118,8 @@ declare function local:permanent-ids($doc) {
     let $translation-id := tei-content:id($doc/tei:TEI)
     where $translation-id
     return (
+    
+        util:log('info', concat('trigger-permanent-ids:', $translation-id)),
     
         let $elements := (
             $doc//tei:text//tei:milestone
@@ -143,6 +164,7 @@ declare function local:permanent-ids($doc) {
             let $part-id := string-join(($translation-id, ($base-type, $part/@type)[1], $part/@xml:lang, $part-indexes), '-')
             return
                 update insert attribute xml:id { $part-id } into $part
+        
     )
 };
 
@@ -152,94 +174,127 @@ declare function local:temporary-ids($doc) {
     (: This allows the search to link through to this block of text :)
     (: These only need to persist for a request/response cycle:)
     
-    let $elements := 
-        $doc//tei:text//tei:head
-        | $doc//tei:text//tei:p
-        | $doc//tei:text//tei:label[not(parent::tei:p)]
-        | $doc//tei:text//tei:lg
-        | $doc//tei:text//tei:ab
-        | $doc//tei:text//tei:trailer
-        (: These are covered in tei:text//tei:head
-        | $doc//tei:front//tei:list/tei:head
-        | $doc//tei:body//tei:list/tei:head:)
+    let $translation-id := tei-content:id($doc/tei:TEI)
+    where $translation-id
+    return (
     
-    let $elements-to-update := (
-        for $element in $elements[@tid]
-        let $element-id := $element/@tid
-        group by $element-id
-        where count($element) gt 1
-        return $element
-        ,
-        $elements[not(@tid) or @tid eq '']
+        util:log('info', concat('trigger-temporary-ids:', $translation-id)),
+        
+        let $elements := 
+            $doc//tei:text//tei:head
+            | $doc//tei:text//tei:p
+            | $doc//tei:text//tei:label[not(parent::tei:p)]
+            | $doc//tei:text//tei:lg
+            | $doc//tei:text//tei:ab
+            | $doc//tei:text//tei:trailer
+            (: These are covered in tei:text//tei:head
+            | $doc//tei:front//tei:list/tei:head
+            | $doc//tei:body//tei:list/tei:head:)
+        
+        let $elements-to-update := (
+            for $element in $elements[@tid]
+            let $element-id := $element/@tid
+            group by $element-id
+            where count($element) gt 1
+            return $element
+            ,
+            $elements[not(@tid) or @tid eq '']
+        )
+        
+        where $elements-to-update
+        
+        let $max-id := max($doc//@tid ! common:integer(.))
+        
+        for $element at $index in $elements-to-update
+        return
+            update insert attribute tid { sum(($max-id, $index)) } into $element
     )
-    
-    where $elements-to-update
-    
-    let $max-id := max($doc//@tid ! common:integer(.))
-    
-    for $element at $index in $elements-to-update
-    return
-        update insert attribute tid { sum(($max-id, $index)) } into $element
 };
 
 declare function local:remove-temporary-ids($doc) {
+
     (: Remove ids :)
-    for $tid in $doc//tei:text//@tid
-    return
-        update delete $tid
+    
+    let $translation-id := tei-content:id($doc/tei:TEI)
+    where $translation-id
+    return (
+    
+        util:log('info', concat('trigger-remove-temporary-ids:', $translation-id)),
+    
+        for $tid in $doc//tei:text//@tid
+        return
+            update delete $tid
+    )
+        
 };
 
 declare function local:last-updated($doc) {
+
     (: Set last updated note :)
-    let $notesStmt := $doc//tei:teiHeader/tei:fileDesc/tei:notesStmt
-    let $note := 
-        element { QName('http://www.tei-c.org/ns/1.0', 'note') }{
-            attribute type {'lastUpdated'},
-            attribute date-time { current-dateTime() },
-            attribute user { common:user-name() },
-            text { format-dateTime(current-dateTime(), '[D01]/[M01]/[Y0001] [H01]:[m01]:[s01]') }
-        }
     
-    return
-        if(not($notesStmt)) then 
-            update insert 
-                element { QName('http://www.tei-c.org/ns/1.0', 'notesStmt') }{
-                    $note
-                }
-            following $doc//tei:teiHeader/tei:fileDesc/tei:sourceDesc
-        else if (not($notesStmt/tei:note[@type eq 'lastUpdated'])) then 
-            update insert $note into $notesStmt
-        else
-            update replace $notesStmt/tei:note[@type eq 'lastUpdated'] with $note
+    let $translation-id := tei-content:id($doc/tei:TEI)
+    where $translation-id
+    return (
+    
+        util:log('info', concat('trigger-last-updated:', $translation-id)),
+    
+        let $notesStmt := $doc//tei:teiHeader/tei:fileDesc/tei:notesStmt
+        let $note := 
+            element { QName('http://www.tei-c.org/ns/1.0', 'note') }{
+                attribute type {'lastUpdated'},
+                attribute date-time { current-dateTime() },
+                attribute user { common:user-name() },
+                text { format-dateTime(current-dateTime(), '[D01]/[M01]/[Y0001] [H01]:[m01]:[s01]') }
+            }
+        
+        return
+            if(not($notesStmt)) then 
+                update insert 
+                    element { QName('http://www.tei-c.org/ns/1.0', 'notesStmt') }{
+                        $note
+                    }
+                following $doc//tei:teiHeader/tei:fileDesc/tei:sourceDesc
+            else if (not($notesStmt/tei:note[@type eq 'lastUpdated'])) then 
+                update insert $note into $notesStmt
+            else
+                update replace $notesStmt/tei:note[@type eq 'lastUpdated'] with $note
                 
+    )
 };
 
 declare function local:glossary-bo($doc, $do-all as xs:boolean) {
 
     (: Convert bo-ltn to bo term for glossary items :)
     
-    let $glosses := 
-        if($do-all) then
-            $doc//tei:div[@type='glossary']//tei:gloss
-        else
-            $doc//tei:div[@type='glossary']//tei:gloss[not(count(tei:term[@xml:lang eq 'bo']) eq count(tei:term[@xml:lang eq 'Bo-Ltn']))]
-    
-    for $gloss in $glosses
+    let $translation-id := tei-content:id($doc/tei:TEI)
+    where $translation-id
     return (
-        (: Delete existing :)
-        update delete $gloss/tei:term[@xml:lang = 'bo'],
+    
+        util:log('info', concat('trigger-glossary-bo:', $translation-id)),
+    
+        let $glosses := 
+            if($do-all) then
+                $doc//tei:div[@type='glossary']//tei:gloss
+            else
+                $doc//tei:div[@type='glossary']//tei:gloss[not(count(tei:term[@xml:lang eq 'bo']) eq count(tei:term[@xml:lang eq 'Bo-Ltn']))]
         
-        (: Insert new :)
-        for $bo-ltn-term in $gloss/tei:term[@xml:lang = 'Bo-Ltn'][normalize-space(text())]
-        
-            let $bo-term := 
-                element { QName('http://www.tei-c.org/ns/1.0', 'term') } {
-                    attribute xml:lang { 'bo' },
-                    text { common:bo-term($bo-ltn-term/text()) } 
-                }
+        for $gloss in $glosses
+        return (
+            (: Delete existing :)
+            update delete $gloss/tei:term[@xml:lang = 'bo'],
             
-        return
-            update insert (text{ common:ws(7) }, $bo-term) following $bo-ltn-term
+            (: Insert new :)
+            for $bo-ltn-term in $gloss/tei:term[@xml:lang = 'Bo-Ltn'][normalize-space(text())]
+            
+                let $bo-term := 
+                    element { QName('http://www.tei-c.org/ns/1.0', 'term') } {
+                        attribute xml:lang { 'bo' },
+                        text { common:bo-term($bo-ltn-term/text()) } 
+                    }
+                
+            return
+                update insert (text{ common:ws(7) }, $bo-term) following $bo-ltn-term
+        )
    )
 };
 
