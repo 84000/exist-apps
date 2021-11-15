@@ -1615,14 +1615,14 @@
                                         </a>
                                     </span>
                                     
-                                    <!-- A link to remove as instance -->
+                                    <!-- Links to remove as instance -->
                                     <xsl:if test="$remove-instance-href">
                                         <xsl:value-of select="' / '"/>
-                                        <span>
-                                            <a class="small">
+                                        <span class="small">
+                                            <a>
                                                 <xsl:attribute name="href" select="replace($remove-instance-href, '\{instance\-id\}', $item/@id)"/>
                                                 <xsl:attribute name="target" select="'_self'"/>
-                                                <xsl:value-of select="'remove from entity'"/>
+                                                <xsl:value-of select="'Un-link (create new)'"/>
                                             </a>
                                         </span>
                                     </xsl:if>
