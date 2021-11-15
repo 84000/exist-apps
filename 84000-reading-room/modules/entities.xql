@@ -61,11 +61,16 @@ declare function entities:entities($instance-ids as xs:string*, $validate as xs:
             else
                 $instance-ids
         
-        let $instance-ids := distinct-values($instance-ids)
-        
         (: Chunk the ids as there can be very many :)
-        return
-            local:entities-chunk($instance-ids, $validate, $expand-instances, $expand-relations, 1)
+        let $instance-ids := distinct-values($instance-ids)
+        let $entities-chunks := local:entities-chunk($instance-ids, $validate, $expand-instances, $expand-relations, 1)
+        
+        (: Chunking can leave duplicates :)
+        for $entity in $entities-chunks/self::m:entity
+        let $entity-id := $entity/@xml:id/string()
+        group by $entity-id
+        return 
+            $entity[1]
         
     }
     
@@ -78,6 +83,7 @@ declare function local:entities-chunk($instance-ids as xs:string*, $validate as 
     let $chunks-count := xs:integer(ceiling($instance-ids-count div $chunk-size))
     let $chunk-start := ($chunk-size * ($chunk - 1)) + 1
     let $chunk-end := ($chunk-start + $chunk-size) - 1
+    
     return (
     
         if($chunk-start le $instance-ids-count) then

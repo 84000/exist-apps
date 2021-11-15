@@ -72,15 +72,16 @@ let $glossary-search :=
 
 let $entity-list := 
     if($flag) then
-        entities:flagged($flagged, true(), true(), false())
+        entities:flagged($flagged, true(), true(), false())/m:entity
     else
-        entities:entities($glossary-search/@xml:id, true(), true(), false())
+        entities:entities($glossary-search/@xml:id, true(), true(), false())/m:entity
 
 (:return if(true()) then $entity-list else:)
 
 (: Sort the results :)
 let $entity-list :=
-    for $entity in $entity-list/m:entity
+    for $entity in $entity-list
+    
     (: Get relevant terms :)
     let $matching-terms :=
         for $term in $entity/m:instance/m:entry/m:term
@@ -95,6 +96,7 @@ let $entity-list :=
         order by $term
         return
             $term ! common:normalized-chars(.) ! common:alphanumeric(.)
+    
     (: Order by the fewest words / shortest relevant term, then alphabetically :)
     order by 
         if(string-length($search) gt 1) then min($matching-terms ! count(tokenize(data(), '\s+'))) else 1 ascending,
@@ -108,7 +110,7 @@ let $entity-list :=
 (: Show the first result :)
 let $entity-show := 
     if(not($entity-show)) then
-        entities:entity($entity-list[1], true(), true(), true())
+        entities:entity($entity-list[self::m:entity][1], true(), true(), true())
     else 
         $entity-show
 
