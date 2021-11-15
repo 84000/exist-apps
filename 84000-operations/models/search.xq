@@ -19,7 +19,7 @@ let $status := local:get-status-parameter()
 let $sort := request:get-parameter('sort', '')
 let $pages-min := request:get-parameter('pages-min', '')
 let $pages-max := request:get-parameter('pages-max', '')
-let $sponsorship-group := request:get-parameter('sponsorship-group', '')
+let $filter := request:get-parameter('filter', '')
 let $deduplicate := request:get-parameter('deduplicate', '')
 let $toh-min := request:get-parameter('toh-min', '')
 let $toh-max := request:get-parameter('toh-max', '')
@@ -47,7 +47,7 @@ let $texts :=
             translations:texts($status, $translation-statuses/@text-id, $sort, $deduplicate, '', false())
         else ()
     else
-        translations:filtered-texts($work, $status, $sort, $pages-min, $pages-max, $sponsorship-group, $toh-min, $toh-max, $deduplicate, $target-date-start, $target-date-end)
+        translations:filtered-texts($work, $status, $sort, $pages-min, $pages-max, $filter, $toh-min, $toh-max, $deduplicate, $target-date-start, $target-date-end)
 
 (: If not a date query then get the translation-statuses retrospectively :)
 let $translation-statuses := 
@@ -81,7 +81,7 @@ let $xml-response :=
                 sort="{ $sort }"
                 pages-min="{ $pages-min }"
                 pages-max="{ $pages-max }"
-                sponsorship-group="{ $sponsorship-group }"
+                filter="{ $filter }"
                 deduplicate="{ $deduplicate }"
                 toh-min="{ $toh-min }"
                 toh-max="{ $toh-max }"

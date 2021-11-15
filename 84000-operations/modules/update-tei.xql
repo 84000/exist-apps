@@ -817,6 +817,8 @@ declare function update-tei:cache-glossary($tei as element(tei:TEI), $glossary-i
     
     (: Start the clock :)
     let $start-time := util:system-dateTime()
+    let $text-id := tei-content:id($tei)
+    let $log := util:log('info', concat('update-tei-cache-glossary:', $text-id))
     
     (: Get data :)
     let $cache := tei-content:cache($tei, true())
@@ -877,6 +879,8 @@ declare function local:cache-glossary-chunk($tei as element(tei:TEI), $cache as 
     let $chunk-start := ($chunk-size * ($chunk - 1)) + 1
     let $chunk-end := ($chunk-start + $chunk-size) - 1
     
+    let $text-id := tei-content:id($tei)
+    
     return (
         if($chunk-start le $count) then (
         
@@ -887,8 +891,10 @@ declare function local:cache-glossary-chunk($tei as element(tei:TEI), $cache as 
             let $glossary-cache-new := glossary:cache($tei, $refresh-locations-chunk, true())
             
             (: Save new cache :)
-            return 
-                common:update('cache-glossary', $cache/m:glossary-cache, $glossary-cache-new, $cache, ())
+            return (
+                common:update('cache-glossary', $cache/m:glossary-cache, $glossary-cache-new, $cache, ()),
+                util:log('info', concat('update-tei-cache-glossary-chunk:', $text-id, ' ', $chunk, '/', $chunks-count))
+            )
                 
         )
         else ()

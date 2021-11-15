@@ -69,7 +69,7 @@ let $translations-local :=
     else if($request-page-filter = ('search') and ($request-toh-min gt '' or $request-toh-max gt '')) then
         
         (: Search Toh range :)
-        translations:filtered-texts('all', (), '', '', '', '', $request-toh-min, $request-toh-max, 'text', '', '')
+        translations:filtered-texts('all', (), '', '', '', '', $request-toh-min, $request-toh-max, 'toh', '', '')
         
     else if($texts-status) then
     

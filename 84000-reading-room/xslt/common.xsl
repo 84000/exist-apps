@@ -320,16 +320,23 @@
     <xsl:function name="common:breadcrumb-items">
         <xsl:param name="parents" required="yes"/>
         <xsl:param name="lang" required="yes"/>
+        <xsl:sequence select="common:breadcrumb-items($parents, $lang, ())"/>
+    </xsl:function>
+    
+    <xsl:function name="common:breadcrumb-items">
+        <xsl:param name="parents" required="yes"/>
+        <xsl:param name="lang" required="yes"/>
+        <xsl:param name="attributes" as="xs:string*"/>
         <xsl:for-each select="$parents">
             <xsl:sort select="@nesting" order="descending"/>
             <li xmlns="http://www.w3.org/1999/xhtml">
                 <a class="printable">
                     <xsl:choose>
                         <xsl:when test="@type eq 'grouping'">
-                            <xsl:attribute name="href" select="common:internal-link(concat('/section/', m:parent/@id, '.html'), (), concat('#grouping-', @id), /m:response/@lang)"/>
+                            <xsl:attribute name="href" select="common:internal-link(concat('/section/', m:parent/@id, '.html'), $attributes, concat('#grouping-', @id), /m:response/@lang)"/>
                         </xsl:when>
                         <xsl:otherwise>
-                            <xsl:attribute name="href" select="common:internal-link(concat('/section/', @id, '.html'), (), '', /m:response/@lang)"/>
+                            <xsl:attribute name="href" select="common:internal-link(concat('/section/', @id, '.html'), $attributes, '', /m:response/@lang)"/>
                         </xsl:otherwise>
                     </xsl:choose>
                     <xsl:apply-templates select="m:titles/m:title[@xml:lang='en']/text()"/>
@@ -405,15 +412,15 @@
      -->
     
     <!-- Localization helpers -->
-    <xsl:function name="common:internal-link" as="xs:string">
+    <xsl:function name="common:internal-link" as="xs:string?">
         <xsl:param name="url" required="yes"/>
         <xsl:param name="attributes" required="yes" as="xs:string*"/>
-        <xsl:param name="fragment-id" required="yes" as="xs:string"/>
+        <xsl:param name="fragment-id" required="yes" as="xs:string?"/>
         <xsl:param name="lang" as="xs:string" required="yes"/>
         <xsl:variable name="lang-attribute" select="if($lang = ('zh')) then concat('lang=', $lang) else ()"/>
-        <xsl:variable name="attributes-with-lang" select="($attributes, $lang-attribute)"/>
-        <xsl:variable name="url-append" select="if(contains($url, '?')) then '&amp;' else '?'"/>
-        <xsl:value-of select="concat($url, if(count($attributes-with-lang) gt 0) then concat($url-append, string-join($attributes-with-lang, '&amp;')) else '', $fragment-id)"/>
+        <xsl:variable name="attributes-with-lang" select="($attributes[. gt ''], $lang-attribute)"/>
+        <xsl:variable name="url-append" select="if(count($attributes-with-lang) gt 0) then if(contains($url, '?')) then '&amp;' else '?' else ()"/>
+        <xsl:value-of select="concat($url, if(count($attributes-with-lang) gt 0) then concat($url-append, string-join($attributes-with-lang, '&amp;')) else (), $fragment-id)"/>
     </xsl:function>
     
     <xsl:function name="common:homepage-link" as="xs:string">

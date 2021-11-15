@@ -27,8 +27,6 @@ let $tab :=
     else
         $tab
 
-let $xml-section := doc(concat($common:data-path, '/translator-tools/sections/', $tab, '.xml'))
-
 let $type := request:get-parameter('type', if($tab eq 'tm-search') then 'folio' else 'term')
 let $search := request:get-parameter('search', if($tab eq 'glossary') then 'a' else '')
 let $lang := request:get-parameter('lang', if($tab eq 'tm-search') then 'bo' else 'en')
@@ -49,8 +47,23 @@ let $etext-page :=
         source:etext-page($work, $volume, $page, true(), ())
     else ()
 
-return
+let $content :=
+    if($tab eq 'search' and compare($search, '') gt 0) then 
+        search:search($search, $resource-id, $first-record, 15)
+    else if($tab eq 'glossary') then 
+        glossary:glossary-terms($type, $lang, $search, true())
+    else if($tab eq 'tm-search') then (
+        $etext-page,
+        search:tm-search($search, $lang, $first-record, 10),
+        source:etext-volumes($work, xs:integer($volume)),
+        contributors:persons(false(), false())
+    )
+    else if($tab eq 'translations') then 
+        translations:texts($translation:published-status-ids, (), '', '', '', false())
+    else
+        doc(concat($common:data-path, '/translator-tools/sections/', $tab, '.xml'))
 
+return
     common:response(
         concat('translator-tools/', $tab),
         'translator-tools',
@@ -59,19 +72,6 @@ return
                 <search>{ $search }</search>
             </request>,
             $tabs,
-            if($tab eq 'search' and compare($search, '') gt 0) then 
-                search:search($search, $resource-id, $first-record, 15)
-            else if($tab eq 'glossary') then 
-                glossary:glossary-terms($type, $lang, $search, true())
-            else if($tab eq 'tm-search') then (
-                $etext-page,
-                search:tm-search($search, $lang, $first-record, 10),
-                source:etext-volumes($work, xs:integer($volume)),
-                contributors:persons(false(), false())
-            )
-            else if($tab eq 'translations') then 
-                translations:texts($translation:published-status-ids, (), '', '', '', false())
-            else
-                $xml-section
+            $content
         )
     )

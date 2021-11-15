@@ -151,141 +151,127 @@ declare function glossary:glossary-terms($type as xs:string?, $lang as xs:string
     
     let $normalized-search := common:alphanumeric(common:normalized-chars($search))
     
-    return
-        <glossary
-            xmlns="http://read.84000.co/ns/1.0"
-            model="glossary-terms"
-            type="{ $valid-type }"
-            lang="{ $valid-lang }"
-            search="{ $normalized-search }">
-        {
+    let $terms := 
+
+        (: Search for term - all languages and types :)
+        if($type eq 'search') then
+            if($normalized-search gt '') then
+                $glossary:tei//tei:back//tei:gloss[@xml:id]/tei:term
+                    [not(@type eq 'definition')]
+                    [ft:query(., local:search-query($normalized-search), local:search-options())]
+            else ()
         
-            let $terms := 
-        
-                (: Search for term - all languages and types :)
-                if($type eq 'search') then
-                    if($normalized-search gt '') then
-                        $glossary:tei//tei:back//tei:gloss[@xml:id]/tei:term
-                            [not(@type eq 'definition')]
-                            [ft:query(., local:search-query($normalized-search), local:search-options())]
-                    else ()
-                
-                (: Look-up terms based on letter, type and lang :)
-                else if($valid-type and $normalized-search gt '') then
-                    
-                    (: this shouldn't be necessary if collation were working!?? :)
-                    let $alt-searches := common:letter-variations($normalized-search)
-                    
-                    return
-                        if($valid-lang = ('en', '')) then
-                            $glossary:tei//tei:back//tei:gloss[@xml:id][@type = $valid-type]/tei:term
-                               [not(@xml:lang) or @xml:lang eq 'en']
-                               [not(@type = ('definition','alternative'))]
-                               [matches(., concat('^(\d*\s+|The\s+|A\s+)?(', string-join($alt-searches, '|'), ').*'), 'i')]
-                        else
-                            $glossary:tei//tei:back//tei:gloss[@xml:id][@type = $valid-type]/tei:term
-                                [@xml:lang eq $valid-lang]
-                                [not(@type = ('definition','alternative'))]
-                                [matches(., concat('^(\d*\s+|The\s+|A\s+)?(', string-join($alt-searches, '|'), ').*'), 'i')]
-                
-                (: All terms for type and lang :)
-                else if($valid-type) then
-                    if($valid-lang = ('en', '')) then
-                        $glossary:tei//tei:back//tei:gloss[@xml:id][@type = $valid-type]/tei:term
-                            [not(@xml:lang) or @xml:lang eq 'en']
-                            [not(@type = ('definition','alternative'))]
-                    else
-                        $glossary:tei//tei:back//tei:gloss[@xml:id][@type = $valid-type]/tei:term
-                            [@xml:lang eq $valid-lang]
-                            [not(@type = ('definition','alternative'))]
-                
-                (: All terms for cumulative glossary :)
-                else if($type eq 'all') then
-                    $glossary:tei//tei:back//tei:gloss[@xml:id]/tei:term
-                        [not(@type = ('definition','alternative'))]
-                
-                (: All terms for lang only :)
-                else
-                    if($valid-lang = ('en', '')) then
-                        $glossary:tei//tei:back//tei:gloss[@xml:id]/tei:term
-                            [not(@xml:lang) or @xml:lang eq 'en']
-                            [not(@type = ('definition','alternative'))]
-                    else
-                        $glossary:tei//tei:back//tei:gloss[@xml:id]/tei:term
-                            [@xml:lang eq $valid-lang]
-                            [not(@type = ('definition','alternative'))]
+        (: Look-up terms based on letter, type and lang :)
+        else if($valid-type and $normalized-search gt '') then
+            
+            (: this shouldn't be necessary if collation were working!?? :)
+            let $alt-searches := common:letter-variations($normalized-search)
+            let $regex := concat('^(\d*\s+|The\s+|A\s+)?(', string-join($alt-searches, '|'), ').*')
             
             return
+                if($valid-lang = ('en', '')) then
+                    $glossary:tei//tei:back//tei:gloss[@xml:id][@type = $valid-type]/tei:term
+                       [matches(., $regex, 'i')]
+                       [not(@xml:lang) or @xml:lang eq 'en']
+                       [not(@type = ('definition','alternative'))]
+                else
+                    $glossary:tei//tei:back//tei:gloss[@xml:id][@type = $valid-type]/tei:term
+                        [matches(., $regex, 'i')]
+                        [@xml:lang eq $valid-lang]
+                        [not(@type = ('definition','alternative'))]
+        
+        (: All terms for type and lang :)
+        else if($valid-type) then
+            if($valid-lang = ('en', '')) then
+                $glossary:tei//tei:back//tei:gloss[@xml:id][@type = $valid-type]/tei:term
+                    [not(@xml:lang) or @xml:lang eq 'en']
+                    [not(@type = ('definition','alternative'))]
+            else
+                $glossary:tei//tei:back//tei:gloss[@xml:id][@type = $valid-type]/tei:term
+                    [@xml:lang eq $valid-lang]
+                    [not(@type = ('definition','alternative'))]
+        
+        (: All terms for cumulative glossary :)
+        else if($type eq 'all') then
+            $glossary:tei//tei:back//tei:gloss[@xml:id]/tei:term
+                [not(@type = ('definition','alternative'))]
+        
+        (: All terms for lang only :)
+        else
+            if($valid-lang = ('en', '')) then
+                $glossary:tei//tei:back//tei:gloss[@xml:id]/tei:term
+                    [not(@xml:lang) or @xml:lang eq 'en']
+                    [not(@type = ('definition','alternative'))]
+            else
+                $glossary:tei//tei:back//tei:gloss[@xml:id]/tei:term
+                    [@xml:lang eq $valid-lang]
+                    [not(@type = ('definition','alternative'))]
+    
+    return
+        element { QName('http://read.84000.co/ns/1.0','glossary') } {
+        
+            attribute model { "glossary-terms" },
+            attribute type { $valid-type },
+            attribute lang { $valid-lang },
+            attribute search { $normalized-search },
+
             for $term in $terms[normalize-space()][not(text() = $glossary:empty-term-placeholders)]
-                
-                let $normalized-term := 
-                    normalize-space(
-                        replace(
-                            common:normalized-chars(
-                                normalize-unicode(
-                                    replace(
-                                        normalize-space(
-                                            $term
-                                        )
-                                    , '\-­'(: soft-hyphen :), '')
-                                , 'NFC')
-                            )
-                        , '[^a-zA-Z\s]', '')
-                    )
-                
-                group by $normalized-term
-                
-                let $matches := 
-                    if($include-count) then
-                        glossary:matching-gloss($term[1], if(not($term[1]/@xml:lang)) then 'en' else $term[1]/@xml:lang)
-                    else
-                        ()
-                
-                let $score := ft:score($term[1])
-                
-                order by $normalized-term
-                where $normalized-term gt ''
+            
+            let $normalized-term := 
+                normalize-space(
+                    replace(
+                        common:normalized-chars(
+                            normalize-unicode(
+                                replace(
+                                    normalize-space(lower-case($term))
+                                , '\-­'(: soft-hyphen :), '')
+                            , 'NFC')
+                        )
+                    , '[^a-zA-Z\s]', '')
+                )
+            
+            group by $normalized-term
+            
+            let $matches := 
+                if($include-count) then
+                    glossary:matching-gloss($term[1], if(not($term[1]/@xml:lang)) then 'en' else $term[1]/@xml:lang)
+                else ()
+            
+            let $score := ft:score($term[1])
+            
+            order by $normalized-term
+            where $normalized-term gt ''
             return
-                <term start-letter="{ substring($normalized-term, 1, 1) }" count-items="{ count($matches) }" score="{ $score }">
-                    <main-term xml:lang="{ if(not($term[1]/@xml:lang)) then 'en' else $term[1]/@xml:lang }">{ normalize-space($term[1]) }</main-term>
-                    <normalized-term>{ $normalized-term }</normalized-term>
-                </term>
+                element term {
+                    attribute start-letter { substring($normalized-term, 1, 1) },
+                    attribute count-items { count($matches) },
+                    attribute score { $score },
+                    element main-term {
+                        attribute xml:lang { if(not($term[1]/@xml:lang)) then 'en' else $term[1]/@xml:lang },
+                        normalize-space($term[1])
+                    },
+                    element normalized-term {
+                        $normalized-term
+                    }
+                }
                 
         }
-        </glossary>
         
 };
 
-declare function glossary:matching-gloss($term as xs:string, $lang as xs:string) as element()* {
+declare function glossary:matching-gloss($term as xs:string, $lang as xs:string) as element(tei:gloss)* {
     
     let $valid-lang := common:valid-lang($lang)
+    let $matches := 
+        if($valid-lang eq 'en') then
+            $glossary:tei//tei:back//tei:gloss/tei:term[ft:query-field('full-term', local:lookup-query($term), local:lookup-options())][not(@type eq 'definition')][not(@xml:lang) or @xml:lang eq 'en']
+        else if($valid-lang gt '') then
+            $glossary:tei//tei:back//tei:gloss/tei:term[ft:query-field('full-term', local:lookup-query($term), local:lookup-options())][not(@type eq 'definition')][@xml:lang eq $valid-lang]
+        else
+            $glossary:tei//tei:back//tei:gloss/tei:term[ft:query-field('full-term', local:lookup-query($term), local:lookup-options())][not(@type eq 'definition')]
     
     return
-        if($valid-lang eq 'en') then
-            $glossary:tei//tei:back//tei:gloss[@xml:id]/tei:term
-                [not(@type eq 'definition')]
-                [not(@xml:lang) or @xml:lang eq 'en']
-                [ft:query-field(
-                    'full-term',
-                    local:lookup-query($term),
-                    local:lookup-options()
-                )]/parent::tei:gloss
-        else if($valid-lang gt '') then
-            $glossary:tei//tei:back//tei:gloss[@xml:id]/tei:term
-                [not(@type eq 'definition')]
-                [ft:query-field(
-                    'full-term',
-                    local:lookup-query($term),
-                    local:lookup-options()
-                )]/parent::tei:gloss
-        else
-            $glossary:tei//tei:back//tei:gloss[@xml:id]/tei:term
-                [not(@type eq 'definition')]
-                [ft:query-field(
-                    'full-term',
-                    local:lookup-query($term),
-                    local:lookup-options()
-                )]/parent::tei:gloss
+        $matches/parent::tei:gloss
             
 };
 

@@ -12,6 +12,7 @@ import module namespace translation="http://read.84000.co/translation" at "trans
 import module namespace sponsors="http://read.84000.co/sponsors" at "sponsors.xql";
 import module namespace sponsorship="http://read.84000.co/sponsorship" at "sponsorship.xql";
 import module namespace source="http://read.84000.co/source" at "source.xql";
+import module namespace entities="http://read.84000.co/entities" at "entities.xql";
 import module namespace functx="http://www.functx.com";
 
 declare variable $translations:total-kangyur-pages as xs:integer := 70000;
@@ -177,17 +178,8 @@ declare function translations:texts($status as xs:string*, $resource-ids as xs:s
 };
 
 declare function translations:filtered-texts(
-        $work as xs:string, 
-        $status as xs:string*, 
-        $sort as xs:string, 
-        $pages-min as xs:string, 
-        $pages-max as xs:string, 
-        $sponsorship-group as xs:string, 
-        $toh-min as xs:string, 
-        $toh-max as xs:string, 
-        $deduplicate as xs:string, 
-        $status-date-start as xs:string, 
-        $status-date-end as xs:string
+        $work as xs:string, $status as xs:string*, $sort as xs:string, $pages-min as xs:string, $pages-max as xs:string, 
+        $filter as xs:string, $toh-min as xs:string, $toh-max as xs:string, $deduplicate as xs:string, $status-date-start as xs:string, $status-date-end as xs:string
     ) as element(m:texts)? {
     
     (: Status parameter :)
@@ -206,8 +198,11 @@ declare function translations:filtered-texts(
         else
             $pages-upper
     
-    (: Sponsorship parameter :)
-    let $selected-sponsorship-group := $sponsorship:sponsorship-groups/m:group[@id eq $sponsorship-group]
+    (: Sponsorship filter :)
+    let $selected-sponsorship-group := $sponsorship:sponsorship-groups/m:group[@id eq $filter]
+    
+    (: Entities filter :)
+    let $selected-entities-group := if($filter = ('entities-missing', 'entities-flagged-attention')) then $filter else ''
     
     (: Toh range :)
     let $toh-min := 
@@ -227,6 +222,7 @@ declare function translations:filtered-texts(
         or $pages-min gt 0 
         or $pages-max lt $pages-upper 
         or $selected-sponsorship-group 
+        or $selected-entities-group 
         or $toh-min gt 0
         or $status-date-start gt ''
         or $status-date-end gt ''
@@ -297,20 +293,37 @@ declare function translations:filtered-texts(
             else
                 $teis
         
-        (: Filter by sponsorship :)
+        (: Filter :)
         let $teis := 
+            (: All tei WITHOUT sponsorship :)
             if($selected-sponsorship-group/@id = 'no-status')then
-                (: Get all tei WITHOUT sponsorship :)
                 let $sponsorship-group-text-ids := sponsorship:text-ids('all')
                 return
                     $teis[not(tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:idno[@xml:id = $sponsorship-group-text-ids])]
+                    
+            (: With the selected sponsorship group :)
             else if($selected-sponsorship-group) then
-                (: Get ones with the selected group :)
+                
                 let $sponsorship-group-text-ids := sponsorship:text-ids($selected-sponsorship-group/@id)
                 return
                     $teis[tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:idno[@xml:id = $sponsorship-group-text-ids]]
+            
+            (: Has glossaries missing entities :)
+            else if($selected-entities-group eq 'entities-missing') then
+                let $glosses-with-entities := $teis/tei:text/tei:back//tei:gloss/id($entities:entities//m:entity/m:instance/@id)
+                return 
+                    $teis[tei:text/tei:back//tei:gloss except $glosses-with-entities]
+                
+            (: Has glossaries requiring attention :)
+            else if($selected-entities-group eq 'entities-flagged-attention') then
+                let $instance-requites-attention := $entities:entities//m:entity[m:flag[@type = 'requires-attention']]/m:instance
+                for $tei in $teis
+                where $tei/id($instance-requites-attention/@id/string())[1]
+                return
+                    $tei
+                
+            (: Get them all :)
             else
-                (: Get them all :)
                 $teis
         
         (: Filter by Toh:)
@@ -330,7 +343,7 @@ declare function translations:filtered-texts(
                 $teis
         
         (: Include sponsors? :)
-        let $include-sponsors := not(empty($sponsorship:sponsorship-groups//m:group[@id eq $sponsorship-group]))
+        let $include-sponsors := not(empty($selected-sponsorship-group))
         
         (: Return result per Toh or per text :)
         let $texts := 
@@ -358,7 +371,7 @@ declare function translations:filtered-texts(
                 attribute sort { $sort },
                 attribute pages-min { $pages-min },
                 attribute pages-max { $pages-max },
-                attribute sponsorship-group { $sponsorship-group },
+                attribute filter { $filter },
                 attribute toh-min { $toh-min },
                 attribute toh-max { $toh-max },
                 attribute deduplicate { $deduplicate },

@@ -35,6 +35,8 @@ let $entity-id := request:get-parameter('entity-id', '')
 let $target-entity-id := request:get-parameter('target-entity-id', '')
 let $predicate := request:get-parameter('predicate', '')
 let $similar-search := request:get-parameter('similar-search', '')
+let $remove-instance := request:get-parameter('remove-instance', '')
+let $unlink-glossary := request:get-parameter('unlink-glossary', '')
 
 let $resource-id := 
     if($resource-id eq '' and $resource-type eq 'translation') then
@@ -82,14 +84,19 @@ let $updates :=
         else if($form-action eq 'merge-all-entities') then
             update-entity:merge-glossary($resource-id, true())
             
-        else if(not(request:get-parameter('remove-instance', '') eq '')) then 
-            let $remove-instance-id := request:get-parameter('remove-instance', '')
-            let $remove-instance-gloss := $glossary:tei//tei:back//id($remove-instance-id)[self::tei:gloss]
+        else if(not($remove-instance eq '')) then 
+            let $remove-instance-gloss := $glossary:tei//tei:back//id($remove-instance)[self::tei:gloss]
             where $remove-instance-gloss
             return (
-                update-entity:remove-instance($remove-instance-id),
+                update-entity:remove-instance($remove-instance),
                 update-entity:create($remove-instance-gloss, '')
             )
+        
+        else if(not($unlink-glossary eq '')) then 
+            let $unlink-glossary-gloss := $glossary:tei//tei:back//id($unlink-glossary)[self::tei:gloss]
+            where $unlink-glossary-gloss
+            return 
+                update-entity:remove-instance($unlink-glossary)
             
         else ()
     

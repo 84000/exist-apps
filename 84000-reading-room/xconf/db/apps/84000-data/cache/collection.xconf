@@ -12,6 +12,9 @@
             <create qname="@file-name" type="xs:string"/>
             <create qname="@version" type="xs:string"/>
             
+            <!-- Cache files -->
+            <create qname="@id" type="xs:string"/>
+            
         </range>
         
     </index>

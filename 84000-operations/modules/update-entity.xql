@@ -354,40 +354,6 @@ declare function update-entity:merge($entity-id as xs:string, $target-entity-id 
     
 };
 
-(:declare function update-entity:exclude($entity-ids as xs:string*) as element()* {
-
-    let $exclusions :=
-        for $entity-id in $entity-ids
-        let $entity := $entities:entities/id($entity-id)[self::m:entity]
-        return
-            element { QName('http://read.84000.co/ns/1.0', 'exclude') } {
-                attribute id { $entity-id },
-                $entity/m:label[not(@derived) and not(@derived-transliterated)][1]
-            }
-    
-    for $entity-id in $entity-ids
-    let $existing-entity := $entities:entities/id($entity-id)[self::m:entity]
-    where $existing-entity
-    return
-        let $new-entity := 
-            element { node-name($existing-entity) } {
-                $existing-entity/@*,
-                for $entity-node in $existing-entity/*
-                return (
-                    common:ws(2),
-                    $entity-node
-                ),
-                (\: Add exclusions that are not this id and not already there :\)
-                for $exclude in $exclusions[not(@id/string() = ($existing-entity/@xml:id/string(), $existing-entity/m:exclude/@id/string()))]
-                return (
-                    common:ws(2),
-                    $exclude
-                )
-            }
-        return
-            common:update('entity-exclude', $existing-entity, $new-entity, (), ())
-};:)
-
 declare function update-entity:match-instance($entity-id as xs:string, $instance-id as xs:string, $instance-type as xs:string) as element()* {
     
     let $entity := $entities:entities/m:entity[@xml:id eq $entity-id][1]
@@ -406,7 +372,80 @@ declare function update-entity:match-instance($entity-id as xs:string, $instance
     
 };
 
-(: Add the glossary of a text to the entities :)
+declare function update-entity:remove-instance($instance-id as xs:string) as element()* {
+    
+    let $instance := $entities:entities/m:entity/m:instance[@id eq $instance-id][1]
+    let $entity := $instance/parent::m:entity
+    
+    where $instance
+    return (
+        
+        (: If there are other instances just remove this instance :)
+        if($entity/m:instance except $instance) then
+            common:update('entity-remove-instance', $instance, (), (), ())
+        
+        (: Otherwise delete the whole entity :)
+        else 
+            common:update('entity-remove', $entity, (), (), ())
+            
+    )
+        
+};
+
+declare function update-entity:update-instance($instance-id as xs:string) as element()* {
+    
+    let $use-definition := request:get-parameter('use-definition', 'no-value-submitted')
+    
+    where not($use-definition eq 'no-value-submitted')
+    let $existing-value := $entities:entities/m:entity/m:instance[@id eq  $instance-id][1]
+    
+    let $new-value :=
+        element { QName('http://read.84000.co/ns/1.0', 'instance') } {
+            $existing-value/@*[not(local-name(.) eq 'use-definition')],
+            if($use-definition gt '') then
+                attribute use-definition { $use-definition }
+            else ()
+        }
+    
+    where $existing-value and $new-value
+    return
+        common:update('entity-update-instance', $existing-value, $new-value, (), ())
+        
+};
+
+declare function update-entity:set-flag($entity-id as xs:string, $type as xs:string) as element()* {
+    local:set-flag($entity-id, $type, false())
+};
+
+declare function update-entity:clear-flag($entity-id as xs:string, $type as xs:string) as element()* {
+    local:set-flag($entity-id, $type, true())
+};
+
+declare function local:set-flag($entity-id as xs:string, $type as xs:string, $remove as xs:boolean) as element()* {
+
+    let $existing-entity := $entities:entities/m:entity[@xml:id eq $entity-id]
+    
+    let $flag := $entities:flags//m:flag[@id eq $type]
+    
+    let $new-entity :=
+        element { node-name($existing-entity) } {
+            $existing-entity/@*,
+            $existing-entity/*[not(local-name(.) eq 'flag' and @type eq $type)],
+            if(not($remove) and $flag) then
+                element flag {
+                    attribute type { $type },
+                    attribute user { common:user-name() },
+                    attribute timestamp { current-dateTime() }
+                }
+            else ()
+        }
+    
+    where $existing-entity and $new-entity
+    return
+        common:update('set-entity-flag', $existing-entity, $new-entity, (), ())
+};
+
+(: Merge all glossary entries in a text to the glossary :)
 declare function update-entity:merge-glossary($text-id as xs:string, $create as xs:boolean) as element()* {
     
     let $tei := $glossary:tei/id($text-id)/ancestor::tei:TEI
@@ -479,67 +518,4 @@ declare function update-entity:merge-glossary($text-id as xs:string, $create as 
                 }
             }
 
-};
-
-declare function update-entity:remove-instance($instance-id as xs:string) as element()* {
-
-    let $instance := $entities:entities/m:entity/m:instance[@id eq $instance-id][1]
-    (: Check instance exists and it's not the only one in the entity :)
-    where $instance and $instance/parent::m:entity/m:instance[not(@id eq $instance-id)]
-    return
-        common:update('entity-remove-instance', $instance, (), (), ())
-        
-};
-
-declare function update-entity:update-instance($instance-id as xs:string) as element()* {
-    
-    let $use-definition := request:get-parameter('use-definition', 'no-value-submitted')
-    
-    where not($use-definition eq 'no-value-submitted')
-    let $existing-value := $entities:entities/m:entity/m:instance[@id eq  $instance-id][1]
-    
-    let $new-value :=
-        element { QName('http://read.84000.co/ns/1.0', 'instance') } {
-            $existing-value/@*[not(local-name(.) eq 'use-definition')],
-            if($use-definition gt '') then
-                attribute use-definition { $use-definition }
-            else ()
-        }
-    
-    where $existing-value and $new-value
-    return
-        common:update('entity-update-instance', $existing-value, $new-value, (), ())
-        
-};
-
-declare function update-entity:set-flag($entity-id as xs:string, $type as xs:string) as element()* {
-    local:set-flag($entity-id, $type, false())
-};
-
-declare function update-entity:clear-flag($entity-id as xs:string, $type as xs:string) as element()* {
-    local:set-flag($entity-id, $type, true())
-};
-
-declare function local:set-flag($entity-id as xs:string, $type as xs:string, $remove as xs:boolean) as element()* {
-
-    let $existing-entity := $entities:entities/m:entity[@xml:id eq $entity-id]
-    
-    let $flag := $entities:flags//m:flag[@id eq $type]
-    
-    let $new-entity :=
-        element { node-name($existing-entity) } {
-            $existing-entity/@*,
-            $existing-entity/*[not(local-name(.) eq 'flag' and @type eq $type)],
-            if(not($remove) and $flag) then
-                element flag {
-                    attribute type { $type },
-                    attribute user { common:user-name() },
-                    attribute timestamp { current-dateTime() }
-                }
-            else ()
-        }
-    
-    where $existing-entity and $new-entity
-    return
-        common:update('set-entity-flag', $existing-entity, $new-entity, (), ())
 };

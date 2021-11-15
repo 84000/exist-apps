@@ -84,13 +84,16 @@
                                 
                             </div>
                             
+                            <!-- Other options -->
                             <div class="col-sm-5 print-width-override">
                                 
                                 <!-- Kangyur / Tengyur / All -->
                                 <div class="form-group hidden-print">
-                                    <div class="col-sm-12">
-                                        
-                                        <select class="form-control" name="work">
+                                    <label for="work" class="col-sm-4 control-label text-left">
+                                        <xsl:value-of select="'Section:'"/>
+                                    </label>
+                                    <div class="col-sm-8">
+                                        <select class="form-control" name="work" id="work">
                                             <option value="all">
                                                 <xsl:if test="m:texts/@work eq 'all'">
                                                     <xsl:attribute name="selected" select="'selected'"/>
@@ -110,7 +113,6 @@
                                                 <xsl:value-of select="'Tengyur'"/>
                                             </option>
                                         </select>
-                                        
                                     </div>
                                 </div>
                                 
@@ -127,33 +129,53 @@
                                    </div>
                                 </xsl:if>
                                 
-                                <!-- Sponsorship filter -->
+                                <!-- Filters -->
                                 <div class="form-group hidden-print">
-                                    <div class="col-sm-12">
-                                        <select name="sponsorship-group" class="form-control">
+                                    <label for="texts-filter" class="col-sm-4 control-label text-left">
+                                        <xsl:value-of select="'Filter:'"/>
+                                    </label>
+                                    <div class="col-sm-8">
+                                        <select name="filter" id="texts-filter" class="form-control">
                                             <option value="none">
-                                                <xsl:if test="m:texts/@sponsorship-group eq 'none'">
+                                                <xsl:if test="/m:response/m:texts/@filter eq 'none'">
                                                     <xsl:attribute name="selected" select="'selected'"/>
                                                 </xsl:if>
-                                                <xsl:value-of select="'[No sponsorship filter]'"/>
+                                                <xsl:value-of select="'[No filter]'"/>
                                             </option>
-                                            <xsl:for-each select="m:sponsorship-groups/m:group">
-                                                <xsl:variable name="group-id" select="@id"/>
-                                                <option>
-                                                    <xsl:attribute name="value" select="$group-id"/>
-                                                    <xsl:if test="/m:response/m:texts/@sponsorship-group eq $group-id">
+                                            <optgroup label="Sponsorship">
+                                                <xsl:for-each select="m:sponsorship-groups/m:group">
+                                                    <xsl:variable name="group-id" select="@id"/>
+                                                    <option>
+                                                        <xsl:attribute name="value" select="$group-id"/>
+                                                        <xsl:if test="/m:response/m:texts/@filter eq $group-id">
+                                                            <xsl:attribute name="selected" select="'selected'"/>
+                                                        </xsl:if>
+                                                        <xsl:value-of select="m:label"/>
+                                                    </option>
+                                                </xsl:for-each>
+                                            </optgroup>
+                                            <optgroup label="Entities">
+                                                <option value="entities-missing">
+                                                    <xsl:if test="/m:response/m:texts/@filter eq 'entities-missing'">
                                                         <xsl:attribute name="selected" select="'selected'"/>
                                                     </xsl:if>
-                                                    <xsl:value-of select="m:label"/>
+                                                    <xsl:value-of select="'Glossaries without entities'"/>
                                                 </option>
-                                            </xsl:for-each>
+                                                <option value="entities-flagged-attention">
+                                                    <xsl:if test="/m:response/m:texts/@filter eq 'entities-flagged-attention'">
+                                                        <xsl:attribute name="selected" select="'selected'"/>
+                                                    </xsl:if>
+                                                    <xsl:value-of select="'Entities requiring attention'"/>
+                                                </option>
+                                            </optgroup>
                                         </select>
                                     </div>
                                 </div>
                                 
-                                <xsl:if test="not(m:texts/@sponsorship-group eq 'none')">
+                                <xsl:variable name="selected-sponsorship-group" select="m:sponsorship-groups/m:group[@id eq /m:response/m:texts/@sponsorship-group]"/>
+                                <xsl:if test="$selected-sponsorship-group">
                                     <div class="visible-print-block">
-                                        <xsl:value-of select="concat('Sponsorship group: ', m:sponsorship-groups/m:group[@id eq /m:response/m:texts/@sponsorship-group])"/>
+                                        <xsl:value-of select="concat('Sponsorship group: ', $selected-sponsorship-group)"/>
                                     </div>
                                 </xsl:if>
                                 
@@ -368,33 +390,36 @@
                                         </xsl:when>
                                     </xsl:choose>
                                 </div>
+                                
+                                <!-- Results summary -->
+                                <xsl:if test="m:texts">
+                                    <div class="well well-sm small">
+                                        <h4 class="no-top-margin">
+                                            <xsl:value-of select="'Summary'"/>
+                                        </h4>
+                                        <strong>
+                                            <xsl:value-of select="format-number(count(m:texts/m:text), '#,###')"/>
+                                        </strong>
+                                        <xsl:value-of select="' texts / '"/>
+                                        <strong>
+                                            <xsl:value-of select="format-number(sum(m:texts/m:text/m:source/m:location/@count-pages ! xs:integer(.)), '#,###')"/>
+                                        </strong>
+                                        <xsl:value-of select="' pages / '"/>
+                                        <strong>
+                                            <xsl:value-of select="format-number(sum(/m:response/m:translation-status/m:text[@text-id = /m:response/m:texts/m:text/@id]/@word-count ! xs:integer(.)), '#,###')"/>
+                                        </strong>
+                                        <xsl:value-of select="' words / '"/>
+                                        <strong>
+                                            <xsl:value-of select="format-number(sum(/m:response/m:translation-status/m:text[@text-id = /m:response/m:texts/m:text/@id]/@glossary-count ! xs:integer(.)), '#,###')"/>
+                                        </strong>
+                                        <xsl:value-of select="' glossaries'"/>
+                                    </div>
+                                </xsl:if>
+                                
                             </div>
                         
                         </div>
                     </form>
-                    
-                    <!-- Results summary -->
-                    <xsl:if test="m:texts">
-                        <div class="well well-sm small">
-                            <xsl:value-of select="'Summary: '"/>
-                            <strong>
-                                <xsl:value-of select="format-number(count(m:texts/m:text), '#,###')"/>
-                            </strong>
-                            <xsl:value-of select="' texts / '"/>
-                            <strong>
-                                <xsl:value-of select="format-number(sum(m:texts/m:text/m:source/m:location/@count-pages ! xs:integer(.)), '#,###')"/>
-                            </strong>
-                            <xsl:value-of select="' pages / '"/>
-                            <strong>
-                                <xsl:value-of select="format-number(sum(/m:response/m:translation-status/m:text[@text-id = /m:response/m:texts/m:text/@id]/@word-count ! xs:integer(.)), '#,###')"/>
-                            </strong>
-                            <xsl:value-of select="' words / '"/>
-                            <strong>
-                                <xsl:value-of select="format-number(sum(/m:response/m:translation-status/m:text[@text-id = /m:response/m:texts/m:text/@id]/@glossary-count ! xs:integer(.)), '#,###')"/>
-                            </strong>
-                            <xsl:value-of select="' glossaries'"/>
-                        </div>
-                    </xsl:if>
                     
                     <xsl:if test="count(m:texts/m:text) eq 1024">
                         <div class="alert alert-danger small text-center">
@@ -540,7 +565,18 @@
                                                     <xsl:if test="$status/@marked-up eq 'true'">
                                                         <li>
                                                             <a data-loading="Loading glossary editor...">
-                                                                <xsl:attribute name="href" select="concat('/edit-glossary.html?resource-id=', $text-id)"/>
+                                                                <xsl:choose>
+                                                                    <xsl:when test="/m:response/m:texts/@filter eq 'entities-missing'">
+                                                                        <xsl:attribute name="href" select="concat('/edit-glossary.html?resource-id=', $text-id, '&amp;filter=missing-entities')"/>
+                                                                    </xsl:when>
+                                                                    <xsl:when test="/m:response/m:texts/@filter eq 'entities-flagged-attention'">
+                                                                        <xsl:attribute name="href" select="concat('/edit-glossary.html?resource-id=', $text-id, '&amp;filter=requires-attention')"/>
+                                                                    </xsl:when>
+                                                                    <xsl:otherwise>
+                                                                        <xsl:attribute name="href" select="concat('/edit-glossary.html?resource-id=', $text-id)"/>
+                                                                    </xsl:otherwise>
+                                                                </xsl:choose>
+                                                                
                                                                 <xsl:value-of select="'Edit glossary'"/>
                                                             </a>
                                                         </li>
@@ -592,8 +628,8 @@
                                             <xsl:value-of select="format-number(m:source/m:location/@count-pages, '#,###')"/>
                                         </td>
                                         <td class="nowrap small hidden-print">
-                                            <xsl:variable name="start-volume-number" select="min(m:source/m:location/tei:volume/@number)"/>
-                                            <xsl:variable name="start-volume" select="m:source/m:location/tei:volume[xs:integer(@number) eq $start-volume-number][1]"/>
+                                            <xsl:variable name="start-volume-number" select="min(m:source/m:location/m:volume/@number)"/>
+                                            <xsl:variable name="start-volume" select="m:source/m:location/m:volume[xs:integer(@number) eq $start-volume-number][1]"/>
                                             <xsl:value-of select="concat('vol. ' , $start-volume/@number, ', p. ', $start-volume/@start-page)"/>
                                         </td>
                                         <td class="nowrap small hidden-print">

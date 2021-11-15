@@ -268,7 +268,7 @@
                 <tr class="sponsored">
                     <td>
                         <a>
-                            <xsl:attribute name="href" select="concat('search.html?sponsorship-group=sponsored&amp;work=', $outline-summary/@work)"/>
+                            <xsl:attribute name="href" select="concat('search.html?filter=sponsored&amp;work=', $outline-summary/@work)"/>
                             <xsl:value-of select="'Sponsored'"/>
                         </a>
                     </td>

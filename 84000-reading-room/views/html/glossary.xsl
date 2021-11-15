@@ -135,14 +135,14 @@
                         <ul class="nav nav-tabs" role="tablist">
                             
                             <xsl:variable name="alphabet" select="'ABCDEFGHIJKLMNOPQRSTUVWXYZ'"/>
-                            <xsl:variable name="internal-link-attrs" select="(concat('term-lang=', /m:response/m:request/@term-lang), concat('type[]=', ($selected-type[1]/@id, /m:response/m:request/m:entity-types/m:type[1]/@id)[1]))"/>
+                            <xsl:variable name="internal-link-attrs" select="(concat('term-lang=', /m:response/m:request/@term-lang), concat('type[]=', ($selected-type[1]/@id, /m:response/m:request/m:entity-types/m:type[1]/@id)[1]), m:view-mode-parameter((),()))"/>
                               
                             <li role="presentation">
                                 <xsl:if test="string-length(normalize-space($root/m:response/m:request/m:search)) ne 1 and not($flagged gt '')">
                                     <xsl:attribute name="class" select="'active'"/>
                                 </xsl:if>
                                 <a>
-                                    <xsl:attribute name="href" select="common:internal-link(concat('/glossary.html?search=', '', m:view-mode-parameter(())), $internal-link-attrs, '', $root/m:response/@lang)"/>
+                                    <xsl:attribute name="href" select="common:internal-link('/glossary.html?search=', $internal-link-attrs, '', $root/m:response/@lang)"/>
                                     <xsl:value-of select="'Search '"/>
                                     <i class="fa fa-search"/>
                                 </a>
@@ -155,7 +155,7 @@
                                         <xsl:attribute name="class" select="'active letter'"/>
                                     </xsl:if>
                                     <a>
-                                        <xsl:attribute name="href" select="common:internal-link(concat('/glossary.html?search=', $letter, m:view-mode-parameter(())), $internal-link-attrs, '', $root/m:response/@lang)"/>
+                                        <xsl:attribute name="href" select="common:internal-link(concat('/glossary.html?search=', $letter), $internal-link-attrs, '', $root/m:response/@lang)"/>
                                         <xsl:value-of select="$letter"/>
                                     </a>
                                 </li>
@@ -169,7 +169,7 @@
                                             <xsl:attribute name="class" select="'active'"/>
                                         </xsl:if>
                                         <a class="editor">
-                                            <xsl:attribute name="href" select="concat('glossary.html?flagged=', @id, m:view-mode-parameter(()))"/>
+                                            <xsl:attribute name="href" select="common:internal-link(concat('/glossary.html?flagged=', @id), (m:view-mode-parameter((),())), '', $root/m:response/@lang)"/>
                                             <xsl:value-of select="m:label"/>
                                         </a>
                                     </li>
@@ -261,7 +261,7 @@
                                 <div>
                                     <ul class="nav nav-pills">
                                         
-                                        <xsl:variable name="internal-link-attrs" select="(concat('term-lang=', $selected-term-lang/@id), concat('search=', $search-text))"/>
+                                        <xsl:variable name="internal-link-attrs" select="(concat('term-lang=', $selected-term-lang/@id), concat('search=', $search-text), m:view-mode-parameter((),()))"/>
                                         
                                         <xsl:for-each select="m:request/m:entity-types/m:type[@glossary-type]">
                                             
@@ -270,7 +270,7 @@
                                                     <xsl:attribute name="class" select="'active'"/>
                                                 </xsl:if>
                                                 <a>
-                                                    <xsl:attribute name="href" select="common:internal-link(concat('/glossary.html?type[]=', @id, m:view-mode-parameter(())), $internal-link-attrs, '', /m:response/@lang)"/>
+                                                    <xsl:attribute name="href" select="common:internal-link(concat('/glossary.html?type[]=', @id), $internal-link-attrs, '', /m:response/@lang)"/>
                                                     <xsl:value-of select="m:label[@type eq 'plural']"/>
                                                 </a>
                                             </li>
@@ -284,7 +284,7 @@
                                 <div>
                                     <ul class="nav nav-pills">
                                         
-                                        <xsl:variable name="internal-link-attrs" select="(concat('type[]=', string-join($selected-type[1]/@id, ',')), concat('search=', $search-text))"/>
+                                        <xsl:variable name="internal-link-attrs" select="(concat('type[]=', string-join($selected-type[1]/@id, ',')), concat('search=', $search-text), m:view-mode-parameter((),()))"/>
                                         
                                         <xsl:for-each select="m:request/m:term-langs/m:lang">
                                             
@@ -293,7 +293,7 @@
                                                     <xsl:attribute name="class" select="'active'"/>
                                                 </xsl:if>
                                                 <a>
-                                                    <xsl:attribute name="href" select="common:internal-link(concat('/glossary.html?term-lang=', @id, m:view-mode-parameter(())), $internal-link-attrs, '', /m:response/@lang)"/>
+                                                    <xsl:attribute name="href" select="common:internal-link(concat('/glossary.html?term-lang=', @id), $internal-link-attrs, '', /m:response/@lang)"/>
                                                     <xsl:value-of select="text()"/>
                                                 </a>
                                             </li>
@@ -618,7 +618,7 @@
                                                             <xsl:if test="$active-item">
                                                                 <xsl:attribute name="class" select="'results-list-item active'"/>
                                                             </xsl:if>
-                                                            <xsl:attribute name="href" select="concat('glossary.html?entity-id=', @xml:id, m:view-mode-parameter(()), '#', @xml:id, '-detail')"/>
+                                                            <xsl:attribute name="href" select="common:internal-link(concat('/glossary.html?entity-id=', @xml:id), (m:view-mode-parameter((),())), concat('#', @xml:id, '-detail'), $root/m:response/@lang)"/>
                                                             <xsl:attribute name="data-ajax-target" select="'#entity-detail .entity-detail-container'"/>
                                                             <xsl:attribute name="data-toggle-active" select="'_self'"/>
                                                             
@@ -878,7 +878,7 @@
         <xsl:variable name="primary-transliterated" select="$entity/m:label[@derived-transliterated eq 'true']"/>
         
         <a class="no-underline">
-            <xsl:attribute name="href" select="concat('glossary.html?entity-id=', $entity/@xml:id, m:view-mode-parameter(()))"/>
+            <xsl:attribute name="href" select="common:internal-link(concat('/glossary.html?entity-id=', $entity/@xml:id), (m:view-mode-parameter((),())), '', $root/m:response/@lang)"/>
             <span>
                 <xsl:attribute name="class">
                     <xsl:value-of select="string-join(('results-list-item-heading', common:lang-class($primary-label/@xml:lang)),' ')"/>

@@ -110,6 +110,7 @@
                                         <td>
                                             <a>
                                                 <xsl:attribute name="href" select="concat('?tab=', @id)"/>
+                                                <xsl:attribute name="data-loading" select="'Loading ' || m:label || '...'"/>
                                                 <xsl:value-of select="m:label"/>
                                             </a>
                                         </td>
@@ -179,6 +180,7 @@
                                         <xsl:with-param name="type" select="'term'"/>
                                     </xsl:call-template>
                                 </xsl:attribute>
+                                <xsl:attribute name="data-loading" select="'Loading terms...'"/>
                                 <xsl:value-of select="'Terms'"/>
                             </a>
                         </li>
@@ -192,7 +194,8 @@
                                         <xsl:with-param name="type" select="'person'"/>
                                     </xsl:call-template>
                                 </xsl:attribute>
-                                <xsl:value-of select="'Persons'"/>
+                                <xsl:attribute name="data-loading" select="'Loading people...'"/>
+                                <xsl:value-of select="'People'"/>
                             </a>
                         </li>
                         <li role="presentation">
@@ -205,6 +208,7 @@
                                         <xsl:with-param name="type" select="'place'"/>
                                     </xsl:call-template>
                                 </xsl:attribute>
+                                <xsl:attribute name="data-loading" select="'Loading places...'"/>
                                 <xsl:value-of select="'Places'"/>
                             </a>
                         </li>
@@ -218,6 +222,7 @@
                                         <xsl:with-param name="type" select="'text'"/>
                                     </xsl:call-template>
                                 </xsl:attribute>
+                                <xsl:attribute name="data-loading" select="'Loading texts...'"/>
                                 <xsl:value-of select="'Texts'"/>
                             </a>
                         </li>
@@ -235,6 +240,7 @@
                                         <xsl:with-param name="lang" select="'en'"/>
                                     </xsl:call-template>
                                 </xsl:attribute>
+                                <xsl:attribute name="data-loading" select="'Loading translation...'"/>
                                 <xsl:value-of select="'Translation'"/>
                             </a>
                         </li>
@@ -248,6 +254,7 @@
                                         <xsl:with-param name="lang" select="'Sa-Ltn'"/>
                                     </xsl:call-template>
                                 </xsl:attribute>
+                                <xsl:attribute name="data-loading" select="'Loading Sanskrit...'"/>
                                 <xsl:value-of select="'Sanskrit'"/>
                             </a>
                         </li>
@@ -261,6 +268,7 @@
                                         <xsl:with-param name="lang" select="'Bo-Ltn'"/>
                                     </xsl:call-template>
                                 </xsl:attribute>
+                                <xsl:attribute name="data-loading" select="'Loading Wylie...'"/>
                                 <xsl:value-of select="'Wylie'"/>
                             </a>
                         </li>
@@ -269,6 +277,7 @@
                 <div>
                     <form method="post" role="search" class="form-inline">
                         <xsl:attribute name="action" select="'/index.html'"/>
+                        <xsl:attribute name="data-loading" select="'Searching...'"/>
                         <input type="hidden" name="tab" value="glossary"/>
                         <input type="hidden" name="type" value="search"/>
                         <input type="hidden" name="lang" value=""/>
@@ -319,6 +328,7 @@
                                     <xsl:with-param name="search" select="$letter"/>
                                 </xsl:call-template>
                             </xsl:attribute>
+                            <xsl:attribute name="data-loading" select="'Loading ' || $letter || '...'"/>
                             <xsl:value-of select="$letter"/>
                         </a>
                     </li>
@@ -338,8 +348,10 @@
                                                 <xsl:with-param name="glossary-sort" select="'name'"/>
                                             </xsl:call-template>
                                         </xsl:attribute>
-                                        <xsl:value-of select="'Term'"/>
+                                        <xsl:value-of select="'Terms'"/>
                                     </a>
+                                    <xsl:value-of select="' / '"/>
+                                    <xsl:value-of select="format-number(count(m:glossary/m:term),'#,###')"/>
                                 </div>
                                 <div class="col-sm-6 text-right">
                                     <a>
@@ -396,6 +408,7 @@
             </div>
             
         </div>
+    
     </xsl:template>
     
     <xsl:template name="link-to-self">

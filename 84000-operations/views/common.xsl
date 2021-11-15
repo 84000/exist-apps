@@ -782,7 +782,7 @@
             </xsl:when>
             <xsl:otherwise>
                 <span class="label label-danger">
-                    <xsl:value-of select="'No shared entity defined'"/>
+                    <xsl:value-of select="'No shared entity / excluded from 84000 glossary'"/>
                 </span>
             </xsl:otherwise>
         </xsl:choose>
@@ -2515,7 +2515,7 @@
                     </xsl:choose>
                 </xsl:variable>
                 
-                <!-- Add element name & attributes in round brackets -->
+                <!-- Add element name and attributes in round brackets -->
                 <xsl:value-of select="concat('(', string-join(($element-name, $attributes-strings), ' '), ')')"/>
                 
             </xsl:when>
