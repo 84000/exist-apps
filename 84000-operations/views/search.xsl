@@ -429,6 +429,7 @@
                                                 
                     <xsl:if test="m:texts/m:text">
                         <table class="table table-responsive">
+                            
                             <thead>
                                 <tr>
                                     <th>Toh</th>
@@ -442,6 +443,7 @@
                                     <th>Sponsorship</th>
                                 </tr>
                             </thead>
+                            
                             <tbody>
                                 <xsl:for-each select="m:texts/m:text">
                                     
@@ -879,6 +881,7 @@
                     <div class="small text-center">
                         <xsl:value-of select="concat('~ ', common:date-user-string('Report generated', current-dateTime(), /m:response/@user-name), ' ~')"/>
                     </div>
+                
                 </xsl:with-param>
             </xsl:call-template>
             

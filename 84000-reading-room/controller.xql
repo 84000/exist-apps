@@ -383,7 +383,12 @@ return (:if (true()) then $var-debug else :)
                     <add-parameter name="resource-suffix" value="{$resource-suffix}"/>
                 </forward>
             </dispatch>
-            
+        
+        else if ($collection-path eq ".well-known" and $resource-id = ('apple-app-site-association')) then
+            local:dispatch("/models/apple-app-site-association.xq", "", 
+                <parameters xmlns="http://exist.sourceforge.net/NS/exist"/>
+            )
+        
         else
             (: It's data :)
             if($resource-suffix eq 'html') then
