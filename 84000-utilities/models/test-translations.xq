@@ -11,6 +11,8 @@ declare namespace m="http://read.84000.co/ns/1.0";
 declare option exist:serialize "method=xml indent=no";
 
 let $translation-id := request:get-parameter('translation-id', 'in-markup')
+let $translation-tests := tests:translations($translation-id)
+let $translation-files := translations:files($translation:marked-up-status-ids)
 
 return 
     common:response(
@@ -18,7 +20,7 @@ return
         'utilities',
         (
             utilities:request(),
-            tests:translations($translation-id),
-            translations:files($translation:marked-up-status-ids)
+            $translation-tests,
+            $translation-files
         )
     )

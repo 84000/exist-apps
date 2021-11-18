@@ -82,7 +82,7 @@ declare function tei-content:tei($resource-id as xs:string, $resource-type as xs
         
         (: Archived copy :)
         else if($archive-path gt '') then
-            collection(concat($common:data-path, '/archived/', $archive-path))
+            collection(concat($common:archive-path, '/', $archive-path))
         
         (: Section :)
         else if($resource-type = ('section', 'pseudo-section')) then

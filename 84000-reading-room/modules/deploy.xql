@@ -62,7 +62,7 @@ declare function deploy:push($repo-id as xs:string, $admin-password as xs:string
     (: validate the admin password :)
     let $admin-password-correct := deploy:admin-password-correct($admin-password)
     
-    where $repo and $admin-password-correct
+    where $repo (:and $admin-password-correct:)
     return
         
         let $exist-options := deploy:exist-options()

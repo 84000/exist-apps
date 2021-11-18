@@ -298,8 +298,17 @@
                     </a>
                 </li>
             </xsl:if>
+            <xsl:if test="$active-tab eq 'operations/annotation-tei'">
+                <li role="presentation">
+                    <xsl:attribute name="class" select="'active'"/>
+                    <a>
+                        <xsl:attribute name="href" select="concat('/annotation-tei.html?text-id=', /m:response/m:request/@text-id)"/>
+                        <xsl:attribute name="data-loading" select="'Loading...'"/>
+                        <xsl:value-of select="'Archived for Annotations'"/>
+                    </a>
+                </li>
+            </xsl:if>
         </ul>
-        
     </xsl:template>
     
     <!-- Acknowledgements -->
@@ -2246,7 +2255,7 @@
             </xsl:variable>
             
             <!-- Loop through nodes to avoid whitespace from passing node() sequence -->
-            <xsl:for-each select="node()[normalize-space(.) gt '']">
+            <xsl:for-each select="node()">
                 <xsl:value-of select="replace(replace(serialize(., $serialization-parameters), '\s+', ' '), '\s*xmlns=&#34;\S*&#34;', '')"/>
             </xsl:for-each>
             

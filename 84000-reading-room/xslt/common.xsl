@@ -476,7 +476,7 @@
         
         <xsl:param name="arg" as="xs:string?"/>
         <!-- Shrink whitespace to one space -->
-        <!-- Add zero-width joiner to em-dash - regex includes zwj i.e. &zwj;*— -->
+        <!-- Add soft-hyphen to em-dash - regex includes soft-hyphen i.e. -*— -->
         <xsl:sequence select="replace(replace($arg, '\s+', ' '), '‍*—', '‍—')"/>
         
     </xsl:function>

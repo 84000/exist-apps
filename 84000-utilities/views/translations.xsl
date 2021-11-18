@@ -40,7 +40,7 @@
                                         <xsl:if test="$page-filter eq 'new-version-translations'">
                                             <xsl:attribute name="selected" select="'selected'"/>
                                         </xsl:if>
-                                        <xsl:value-of select="'New Versions - Translations'"/>
+                                        <xsl:value-of select="'New Versions - Publications'"/>
                                     </option>
                                     <option value="new-version-placeholders">
                                         <xsl:if test="$page-filter eq 'new-version-placeholders'">

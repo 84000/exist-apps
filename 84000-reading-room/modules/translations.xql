@@ -26,9 +26,10 @@ declare function translations:work-tei($work as xs:string) as element()* {
     else ()
 };
 
-declare function translations:files($text-statuses as xs:string*) as element() {
+declare function translations:files($publication-statuses as xs:string*) as element() {
+
     element { QName('http://read.84000.co/ns/1.0', 'translations') }{
-        for $tei in $tei-content:translations-collection//tei:TEI[tei:teiHeader/tei:fileDesc/tei:publicationStmt[@status = $text-statuses]]
+        for $tei in $tei-content:translations-collection//tei:fileDesc/tei:publicationStmt[@status = $publication-statuses]/ancestor::tei:TEI
             let $base-uri := base-uri($tei)
             let $file-name := util:unescape-uri(replace($base-uri, ".+/(.+)$", "$1"), 'UTF-8')
             order by $file-name
@@ -40,6 +41,7 @@ declare function translations:files($text-statuses as xs:string*) as element() {
                 concat(string-join($tei/tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl/tei:ref, ' / '), ' - ', tei-content:title($tei))
             }
     }
+    
 };
 
 declare function translations:summary($work as xs:string) as element() {
@@ -427,14 +429,23 @@ declare function translations:filtered-text($tei as element(tei:TEI), $toh-key a
     let $text-id := tei-content:id($tei)
     let $lang := request:get-parameter('lang', 'en')
     let $toh := translation:toh($tei, $toh-key)
+    let $document-url := tei-content:document-url($tei)
+    let $file-name := util:unescape-uri(replace($document-url, ".+/(.+)$", "$1"), 'UTF-8')
+    let $document-path := substring-before($document-url, concat('/', $file-name))
+    let $archive-path := 
+        if(contains($document-path, $common:archive-path)) then
+            substring-after($document-path, concat($common:archive-path, '/'))
+        else ''
     
     return
-        element { QName('http://read.84000.co/ns/1.0', 'text') }{
+        element { QName('http://read.84000.co/ns/1.0', 'text') } {
             attribute id { $text-id }, 
-            attribute document-url { tei-content:document-url($tei) },
+            attribute document-url { $document-url },
+            attribute file-name { $file-name },
+            attribute archive-path { $archive-path },
+            attribute last-modified { tei-content:last-modified($tei) },
             attribute locked-by-user { tei-content:locked-by-user($tei) },
-            attribute file-name { util:unescape-uri(replace(base-uri($tei), ".+/(.+)$", "$1"), 'UTF-8') },
-            attribute page-url { translation:canonical-html($toh/@key, '') },
+            attribute page-url { translation:canonical-html($toh/@key, $archive-path) },
             attribute status { tei-content:translation-status($tei) },
             attribute status-group { tei-content:translation-status-group($tei) },
             $toh,

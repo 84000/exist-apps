@@ -1433,7 +1433,7 @@
                             </xsl:variable>
                             
                             <xsl:attribute name="rows" select="ops:textarea-rows($definition-escaped, 2, 105)"/>
-                                
+                            
                             <xsl:sequence select="$definition-escaped/m:escaped/data()"/>
                             
                         </textarea>

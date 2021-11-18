@@ -192,6 +192,7 @@
             
             <th class="small nowrap text-warning">this section:</th>
             
+            <!-- Count of texts / pages -->
             <td class="small">
                 <a href="#" target="_self">
                     <xsl:choose>
@@ -229,6 +230,7 @@
                 </xsl:choose>
             </td>
             
+            <!-- Published -->
             <td class="small">
                 <xsl:choose>
                     <xsl:when test="$count-text-children gt 0">
@@ -267,6 +269,7 @@
                 </xsl:choose>
             </td>
             
+            <!-- In-progress -->
             <td class="small">
                 <xsl:choose>
                     <xsl:when test="$count-text-children gt 0">
@@ -305,11 +308,12 @@
                 </xsl:choose>
             </td>
             
+            <!-- Not-started -->
             <td class="small">
                 <xsl:choose>
                     <xsl:when test="$count-text-children gt 0">
-                        <xsl:variable name="texts-not-started" select="$count-text-children - m:text-stats/m:stat[@type eq 'count-in-progress-children']/@value ! xs:integer(.)"/>
-                        <xsl:variable name="pages-not-started" select="$sum-pages-text-children - m:text-stats/m:stat[@type eq 'sum-pages-in-progress-children']/@value ! xs:integer(.)"/>
+                        <xsl:variable name="texts-not-started" select="$count-text-children - sum(m:text-stats/m:stat[@type = ('count-published-children','count-in-progress-children')]/@value ! xs:integer(.))"/>
+                        <xsl:variable name="pages-not-started" select="$sum-pages-text-children - sum(m:text-stats/m:stat[@type = ('sum-pages-published-children','sum-pages-in-progress-children')]/@value ! xs:integer(.))"/>
                         <span class="nowrap">
                             <xsl:value-of select="fn:format-number(xs:integer($texts-not-started),'#,##0')"/>
                             <span class="text-muted">
@@ -453,8 +457,8 @@
                 <td class="small">
                     <xsl:choose>
                         <xsl:when test="$count-text-descendants gt $count-text-children">
-                            <xsl:variable name="texts-not-started" select="$count-text-descendants ! xs:integer(.) - m:text-stats/m:stat[@type eq 'count-in-progress-descendants']/@value ! xs:integer(.)"/>
-                            <xsl:variable name="pages-not-started" select="$sum-pages-text-descendants - (m:text-stats/m:stat[@type eq 'sum-pages-published-descendants']/@value ! xs:integer(.) + m:text-stats/m:stat[@type eq 'sum-pages-in-progress-descendants']/@value ! xs:integer(.))"/>
+                            <xsl:variable name="texts-not-started" select="$count-text-descendants ! xs:integer(.) - sum(m:text-stats/m:stat[@type = ('count-published-descendants','count-in-progress-descendants')]/@value ! xs:integer(.))"/>
+                            <xsl:variable name="pages-not-started" select="$sum-pages-text-descendants - sum(m:text-stats/m:stat[@type = ('sum-pages-published-descendants','sum-pages-in-progress-descendants')]/@value ! xs:integer(.))"/>
                             <span class="nowrap">
                                 <xsl:value-of select="fn:format-number(xs:integer($texts-not-started),'#,##0')"/>
                                 <span class="text-muted">

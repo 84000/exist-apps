@@ -482,6 +482,8 @@
                                     
                                     <!-- Main row - About the text -->
                                     <tr>
+                                        
+                                        <!-- Toh -->
                                         <td rowspan="3">
                                             
                                             <xsl:if test="m:sponsors/tei:div[@type eq 'acknowledgment']/tei:p">
@@ -506,6 +508,8 @@
                                             </xsl:choose>
                                             
                                         </td>
+                                        
+                                        <!-- Status -->
                                         <xsl:if test="not(/m:response/m:texts[@sort eq 'status'])">
                                             <td>
                                                 <span>
@@ -531,7 +535,11 @@
                                                 </span>
                                             </td>
                                         </xsl:if>
+                                        
+                                        <!-- Title / links to forms / stats -->
                                         <td>
+                                            
+                                            <!-- Title -->
                                             <a target="_blank" class="printable">
                                                 <xsl:attribute name="href" select="concat($reading-room-path ,'/translation/', m:toh/@key, '.html')"/>
                                                 <xsl:choose>
@@ -548,23 +556,52 @@
                                                     </xsl:otherwise>
                                                 </xsl:choose>
                                             </a>
-                                            <div>
-                                                <ul class="list-inline inline-dots sml-margin top small hidden-print">
+                                            
+                                            <!-- Stats -->
+                                            <xsl:if test="$translation-status/@word-count ! xs:integer(.) gt 0 or $translation-status/@glossary-count ! xs:integer(.) gt 0">
+                                                <div class="sml-margin top">
+                                                    <ul class="list-inline inline-dots small text-muted hidden-print">
+                                                        <xsl:if test="$translation-status/@word-count ! xs:integer(.) gt 0">
+                                                            <li>
+                                                                <xsl:value-of select="concat(format-number($translation-status/@word-count, '#,###'), ' words translated')"/>
+                                                            </li>
+                                                        </xsl:if>
+                                                        <xsl:if test="$translation-status/@glossary-count ! xs:integer(.) gt 0">
+                                                            <li>
+                                                                <xsl:value-of select="concat(format-number($translation-status/@glossary-count, '#,###'), ' glossaries')"/>
+                                                            </li>
+                                                        </xsl:if>
+                                                    </ul>
+                                                </div>
+                                            </xsl:if>
+                                            
+                                            <!-- Forms -->
+                                            <div class="sml-margin top">
+                                                <ul class="list-inline inline-dots hidden-print">
+                                                    
                                                     <li>
-                                                        <a data-loading="Loading headers form...">
+                                                        <a class="small" data-loading="Loading headers form...">
                                                             <xsl:attribute name="href" select="concat('/edit-text-header.html?id=', $text-id)"/>
                                                             <xsl:value-of select="'Edit headers'"/>
                                                         </a>
+                                                        <xsl:if test="@status-group eq 'published' and m:downloads[@tei-version != m:download/@version]">
+                                                            <xsl:value-of select="' '"/>
+                                                            <span class="text-danger" title="Associated file are out of date">
+                                                                <i class="fa fa-exclamation-circle"/>
+                                                            </span>
+                                                        </xsl:if>
                                                     </li>
+                                                    
                                                     <li>
-                                                        <a data-loading="Loading sponsorship form...">
+                                                        <a class="small" data-loading="Loading sponsorship form...">
                                                             <xsl:attribute name="href" select="concat('/edit-text-sponsors.html?id=', $text-id)"/>
                                                             <xsl:value-of select="'Edit sponsorship'"/>
                                                         </a>
                                                     </li>
+                                                    
                                                     <xsl:if test="$status/@marked-up eq 'true'">
                                                         <li>
-                                                            <a data-loading="Loading glossary editor...">
+                                                            <a class="small" data-loading="Loading glossary editor...">
                                                                 <xsl:choose>
                                                                     <xsl:when test="/m:response/m:texts/@filter eq 'entities-missing'">
                                                                         <xsl:attribute name="href" select="concat('/edit-glossary.html?resource-id=', $text-id, '&amp;filter=missing-entities')"/>
@@ -580,50 +617,32 @@
                                                                 <xsl:value-of select="'Edit glossary'"/>
                                                             </a>
                                                         </li>
-                                                        <!-- Link to list of archived copies of this text!!!
-                                                    <li>
-                                                        <a target="_blank">
-                                                            <xsl:attribute name="href" select="concat($reading-room-path ,'/translation/', m:toh/@key, '.html?view-mode=annotation')"/>
-                                                            <xsl:value-of select="'Annotate'"/>
-                                                        </a>
-                                                    </li>
-                                                    -->
                                                     </xsl:if>
-                                                    <xsl:if test="@status-group eq 'published' and m:downloads[@tei-version != m:download/@version]">
+                                                    
+                                                    <xsl:if test="$status/@marked-up eq 'true'">
                                                         <li>
-                                                            <span class="text-danger">
-                                                                <i class="fa fa-exclamation-circle"/>
-                                                                <xsl:value-of select="' out-of-date files'"/>
-                                                            </span>
+                                                            <a class="small">
+                                                                <xsl:attribute name="href" select="concat('/annotation-tei.html?text-id=', $text-id)"/>
+                                                                <xsl:value-of select="'Archived copies'"/>
+                                                            </a>
                                                         </li>
                                                     </xsl:if>
+                                                    
                                                     <xsl:if test="@locked-by-user gt ''">
                                                         <li>
-                                                            <span class="text-danger">
+                                                            <span class="text-danger small">
                                                                 <i class="fa fa-exclamation-circle"/>
                                                                 <xsl:value-of select="concat(' File locked by user ', @locked-by-user)"/>
                                                             </span>
                                                         </li>
                                                     </xsl:if>
+                                                    
                                                 </ul>
                                             </div>
-                                            <xsl:if test="$translation-status/@word-count ! xs:integer(.) gt 0 or $translation-status/@glossary-count ! xs:integer(.) gt 0">
-                                                <div>
-                                                    <ul class="list-inline inline-dots sml-margin top no-bottom-margin small text-muted hidden-print">
-                                                        <xsl:if test="$translation-status/@word-count ! xs:integer(.) gt 0">
-                                                            <li>
-                                                                <xsl:value-of select="concat(format-number($translation-status/@word-count, '#,###'), ' words translated')"/>
-                                                            </li>
-                                                        </xsl:if>
-                                                        <xsl:if test="$translation-status/@glossary-count ! xs:integer(.) gt 0">
-                                                            <li>
-                                                                <xsl:value-of select="concat(format-number($translation-status/@glossary-count, '#,###'), ' glossaries')"/>
-                                                            </li>
-                                                        </xsl:if>
-                                                    </ul>
-                                                </div>
-                                            </xsl:if>
+                                            
                                         </td>
+                                        
+                                        <!-- Location -->
                                         <td class="nowrap small">
                                             <xsl:value-of select="format-number(m:source/m:location/@count-pages, '#,###')"/>
                                         </td>
@@ -637,9 +656,12 @@
                                             <xsl:variable name="end-volume" select="m:source/m:location/m:volume[xs:integer(@number) eq $end-volume-number][1]"/>
                                             <xsl:value-of select="concat('vol. ' , $end-volume/@number, ', p. ', $end-volume/@end-page)"/>
                                         </td>
+                                        
+                                        <!-- Sponsorship -->
                                         <td>
                                             <xsl:copy-of select="ops:sponsorship-status(m:sponsorship-status/m:status)"/>
                                         </td>
+                                        
                                     </tr>
                                     
                                     <!-- Acknowlegment -->
@@ -707,6 +729,7 @@
                                         
                                         <td colspan="5">
                                             
+                                            <!-- Action note -->
                                             <xsl:if test="$translation-status/m:action-note[normalize-space(string-join(text(),''))]">
                                                 <hr/>
                                                 <div class="collapse-one-line one-line small italic text-danger">
@@ -714,6 +737,7 @@
                                                 </div>
                                             </xsl:if>
                                             
+                                            <!-- Status note -->
                                             <xsl:if test="$translation-status/m:progress-note[normalize-space(string-join(text(),''))]">
                                                 <hr/>
                                                 <div class="collapse-one-line one-line small italic text-danger">
@@ -721,6 +745,7 @@
                                                 </div>
                                             </xsl:if>
                                             
+                                            <!-- Text note -->
                                             <xsl:if test="$translation-status/m:text-note[normalize-space(string-join(text(),''))]">
                                                 <hr/>
                                                 <div class="collapse-one-line one-line small italic text-danger">
@@ -728,6 +753,7 @@
                                                 </div>
                                             </xsl:if>
                                             
+                                            <!-- Project targets -->
                                             <hr/>
                                             <div>
                                                 <ul class="list-inline inline-dots">
@@ -802,7 +828,7 @@
                                                 </ul>
                                             </div>
                                             
-                                            
+                                            <!-- Sponsorship alerts -->
                                             <xsl:variable name="sponsorship-alerts">
                                                 <div>
                                                     <ul class="small list-inline list-dots">

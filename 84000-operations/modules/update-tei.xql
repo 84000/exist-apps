@@ -1307,3 +1307,32 @@ declare function update-tei:comment($tei as element(tei:TEI), $passage-id as xs:
             
         }
 };
+
+declare function update-tei:archive-latest($tei as element(tei:TEI)) as element()? {
+    
+    (: Archive path is tei/toh-key/current-date-time :)
+    let $toh-key := translation:toh-key($tei, '')
+    let $document-url := tei-content:document-url($tei)
+    let $file-name := util:unescape-uri(replace($document-url, ".+/(.+)$", "$1"), 'UTF-8')
+
+    where $toh-key and $file-name
+    
+        let $archive-path := concat($common:archive-path, '/', 'tei')
+        let $store-folder := concat($toh-key, '/', format-dateTime(current-dateTime(), '[Y0001]-[M01]-[D01]_[H01]-[m01]-[s01]'))
+        let $store-path := concat($archive-path, '/', $store-folder)
+        let $store-file-uri := xs:anyURI(concat($store-path, '/', $file-name))
+        
+        let $document :=
+            document {
+                <?xml-model href="../../../../tei/schema/current/translation.rng" type="application/xml" schematypens="http://relaxng.org/ns/structure/1.0"?>,
+                $tei
+            }
+        
+        let $create-collection := xmldb:create-collection($archive-path, $store-folder)
+        let $store-file := xmldb:store($store-path, $file-name, $document, 'application/xml')
+        let $set-file-group:= sm:chgrp($store-file-uri, 'dba')
+        let $set-file-permissions:= sm:chmod($store-file-uri, 'rw-rw-r--')
+        
+        return
+            <stored xmlns="http://read.84000.co/ns/1.0">{ $store-file }</stored>
+};

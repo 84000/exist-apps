@@ -27,6 +27,7 @@ declare variable $common:tei-path := concat($common:data-path, '/tei');
 declare variable $common:translations-path := concat($common:tei-path, '/translations');
 declare variable $common:sections-path := concat($common:tei-path, '/sections');
 declare variable $common:knowledgebase-path := concat($common:tei-path, '/knowledgebase');
+declare variable $common:archive-path := concat($common:data-path, '/archived');
 declare variable $common:import-data-collection := '/84000-import-data';
 declare variable $common:import-data-path := concat('/db/apps', $common:import-data-collection);
 declare variable $common:environment-path := '/db/system/config/db/system/environment.xml';

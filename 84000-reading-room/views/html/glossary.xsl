@@ -467,7 +467,7 @@
                                                        <xsl:variable name="item-group-index" select="position()"/>
                                                        
                                                        <h3 class="term">
-                                                           <xsl:value-of select="m:term[@xml:lang eq 'en'][1] ! functx:capitalize-first(.)"/>
+                                                           <xsl:value-of select="m:term[@xml:lang eq 'en'][1]"/>
                                                        </h3>
                                                        
                                                        <!-- Group by type (translation/knowledgebase) -->

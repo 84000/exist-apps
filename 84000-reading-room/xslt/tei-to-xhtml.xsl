@@ -2434,39 +2434,28 @@
         
         <xsl:param name="target-element" as="element()"/>
         
+        <xsl:variable name="target-part" as="element()?">
+            <xsl:choose>
+                <xsl:when test="$target-element[self::m:end-note][@index]">
+                    <xsl:sequence select="key('text-parts', 'end-notes', $root)[1]"/>
+                </xsl:when>
+                <xsl:when test="$target-element[self::m:gloss][@index]">
+                    <xsl:sequence select="key('text-parts', 'glossary', $root)[1]"/>
+                </xsl:when>
+                <xsl:when test="$target-element[self::m:milestone][@index]">
+                    <xsl:sequence select="key('text-parts', $target-element/@part-id, $root)[1]"/>
+                </xsl:when>
+            </xsl:choose>
+        </xsl:variable>
+        
         <xsl:choose>
             
-            <!-- The target is a note -->
-            <xsl:when test="$target-element[self::m:end-note][@index]">
-                <xsl:variable name="part" select="key('text-parts', 'end-notes', $root)[1]"/>
-                <xsl:if test="$part[@prefix]">
-                    <xsl:call-template name="bookmark-label">
-                        <xsl:with-param name="prefix" select="$part/@prefix"/>
-                        <xsl:with-param name="index" select="$target-element/@index"/>
-                    </xsl:call-template>
-                </xsl:if>
-            </xsl:when>
-            
-            <!-- The target is a glossary item -->
-            <xsl:when test="$target-element[self::m:gloss][@index]">
-                <xsl:variable name="part" select="key('text-parts', 'glossary', $root)[1]"/>
-                <xsl:if test="$part[@prefix]">
-                    <xsl:call-template name="bookmark-label">
-                        <xsl:with-param name="prefix" select="$part/@prefix"/>
-                        <xsl:with-param name="index" select="$target-element/@index"/>
-                    </xsl:call-template>
-                </xsl:if>
-            </xsl:when>
-            
-            <!-- The target is a milestone -->
-            <xsl:when test="$target-element[self::m:milestone][@index]">
-                <xsl:variable name="part" select="key('text-parts', $target-element/@part-id, $root)[1]"/>
-                <xsl:if test="$part[@prefix]">
-                    <xsl:call-template name="bookmark-label">
-                        <xsl:with-param name="prefix" select="$part/@prefix"/>
-                        <xsl:with-param name="index" select="$target-element/@index"/>
-                    </xsl:call-template>
-                </xsl:if>
+            <!-- The target is one of above types -->
+            <xsl:when test="$target-part[@prefix]">
+                <xsl:call-template name="bookmark-label">
+                    <xsl:with-param name="prefix" select="$target-part/@prefix"/>
+                    <xsl:with-param name="index" select="$target-element/@index"/>
+                </xsl:call-template>
             </xsl:when>
             
             <!-- The target is a section -->
