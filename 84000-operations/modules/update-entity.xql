@@ -430,14 +430,22 @@ declare function local:set-flag($entity-id as xs:string, $type as xs:string, $re
     let $new-entity :=
         element { node-name($existing-entity) } {
             $existing-entity/@*,
-            $existing-entity/*[not(local-name(.) eq 'flag' and @type eq $type)],
-            if(not($remove) and $flag) then
+            for $other-element in $existing-entity/*[not(local-name(.) eq 'flag' and @type eq $type)]
+            return (
+                common:ws(2),
+                $other-element
+            ),
+            if(not($remove) and $flag) then (
+                common:ws(2),
                 element flag {
                     attribute type { $type },
                     attribute user { common:user-name() },
                     attribute timestamp { current-dateTime() }
                 }
+            )
             else ()
+            ,
+            common:ws(1)
         }
     
     where $existing-entity and $new-entity
@@ -448,74 +456,81 @@ declare function local:set-flag($entity-id as xs:string, $type as xs:string, $re
 (: Merge all glossary entries in a text to the glossary :)
 declare function update-entity:merge-glossary($text-id as xs:string, $create as xs:boolean) as element()* {
     
+    let $log := util:log('info', concat('update-entity-merge-glossary-started:', $text-id))
+    
     let $tei := $glossary:tei/id($text-id)/ancestor::tei:TEI
     let $glosses-with-entities := $tei//tei:back//tei:gloss/id($entities:entities//m:entity/m:instance/@id)
     
-    for $gloss in $tei//tei:back//tei:gloss except $glosses-with-entities
-    
-        (: Is there a matching Sanskrit term? :)
-        let $search-terms-sa := $gloss/tei:term[@xml:lang eq 'Sa-Ltn'][text()]
-        let $regex-sa := concat('^\s*(', string-join($search-terms-sa ! functx:escape-for-regex(.), '|'), ')\s*$')
-        let $matches-sa := 
-            if(count($search-terms-sa) gt 0) then
-                $glossary:tei//tei:back//tei:gloss
-                    [tei:term[@xml:lang eq 'Sa-Ltn'][matches(., $regex-sa, 'i')]]
-                    [not(@xml:id eq $gloss/@xml:id)]
-            else ()
+    let $merge-glossary :=
+        for $gloss in $tei//tei:back//tei:gloss except $glosses-with-entities
         
-        (: Is there a matching Tibetan term? :)
-        let $search-terms-bo := distinct-values(($gloss/tei:term[@xml:lang eq 'Bo-Ltn'][text()], $gloss/tei:term[@xml:lang eq 'bo'][text()] ! common:wylie-from-bo(.)))
-        let $regex-bo := concat('^\s*(', string-join($search-terms-bo ! functx:escape-for-regex(.), '|'), ')\s*$')
-        let $matches-bo := 
-            if(count($search-terms-bo) gt 0) then
-                $glossary:tei//tei:back//tei:gloss
-                    [
-                        tei:term[@xml:lang eq 'Bo-Ltn']
-                        [matches(., $regex-bo, 'i')]
-                    ]
-                    [not(@xml:id eq $gloss/@xml:id)]
-            else ()
-        
-        (: Does it match both Tibetan, Sanskrit and type? :)
-        let $matches-full := $matches-sa[@xml:id = $matches-bo/@xml:id][@type eq $gloss/@type]
-        
-        (: Does it have an entity? :)
-        let $matches-full-ids := $matches-full/@xml:id/string()
-        let $matches-entity := $entities:entities//m:entity[m:instance/@id = $matches-full-ids]
-        
-        (: If it's an unambigous, full match, with an entity (and a term) then merge :)
-        let $action :=
-            if($gloss[@type eq 'term'] and count($matches-entity) eq 1) then
-                'merge'
-            else
-                'create'
-        
-        (: If there is some match then it requires some attention :)
-        let $flag := if(count($matches-sa[@type eq $gloss/@type] | $matches-bo[@type eq $gloss/@type]) gt 0) then 'requires-attention' else ''
-        
-        (: Do the update :)
-        let $do-update := 
-            if($action eq 'merge') then
-                update-entity:match-instance($matches-entity/@xml:id, $gloss/@xml:id, 'glossary-item')
-            else if($create) then
-                update-entity:create($gloss, $flag)
-            else ()
-        
-        return 
-            element update {
-                attribute action { $action },
-                attribute flag { $flag },
-                $gloss,
-                element match {
-                    (:$matching-gloss,:)
-                    $matches-entity
-                },
-                $do-update,
-                element debug {
-                    attribute glossary-editor-url { 'https://projects.84000-translate.org/edit-glossary.html?resource-id=' || $text-id || '&amp;resource-type=translation&amp;max-records=1&amp;glossary-id=' || $gloss/@xml:id },
-                    element regex-sa {$regex-sa},
-                    element regex-bo {$regex-bo}
+            (: Is there a matching Sanskrit term? :)
+            let $search-terms-sa := $gloss/tei:term[@xml:lang eq 'Sa-Ltn'][text()]
+            let $regex-sa := concat('^\s*(', string-join($search-terms-sa ! functx:escape-for-regex(.), '|'), ')\s*$')
+            let $matches-sa := 
+                if(count($search-terms-sa) gt 0) then
+                    $glossary:tei//tei:back//tei:gloss
+                        [tei:term[@xml:lang eq 'Sa-Ltn'][matches(., $regex-sa, 'i')]]
+                        [not(@xml:id eq $gloss/@xml:id)]
+                else ()
+            
+            (: Is there a matching Tibetan term? :)
+            let $search-terms-bo := distinct-values(($gloss/tei:term[@xml:lang eq 'Bo-Ltn'][text()], $gloss/tei:term[@xml:lang eq 'bo'][text()] ! common:wylie-from-bo(.)))
+            let $regex-bo := concat('^\s*(', string-join($search-terms-bo ! functx:escape-for-regex(.), '|'), ')\s*$')
+            let $matches-bo := 
+                if(count($search-terms-bo) gt 0) then
+                    $glossary:tei//tei:back//tei:gloss
+                        [
+                            tei:term[@xml:lang eq 'Bo-Ltn']
+                            [matches(., $regex-bo, 'i')]
+                        ]
+                        [not(@xml:id eq $gloss/@xml:id)]
+                else ()
+            
+            (: Does it match both Tibetan, Sanskrit and type? :)
+            let $matches-full := $matches-sa[@xml:id = $matches-bo/@xml:id][@type eq $gloss/@type]
+            
+            (: Does it have an entity? :)
+            let $matches-full-ids := $matches-full/@xml:id/string()
+            let $matches-entity := $entities:entities//m:entity[m:instance/@id = $matches-full-ids]
+            
+            (: If it's an unambigous, full match, with an entity (and a term) then merge :)
+            let $action :=
+                if($gloss[@type eq 'term'] and count($matches-entity) eq 1) then
+                    'merge'
+                else
+                    'create'
+            
+            (: If there is some match then it requires some attention :)
+            let $flag := if(count($matches-sa[@type eq $gloss/@type] | $matches-bo[@type eq $gloss/@type]) gt 0) then 'requires-attention' else ''
+            
+            (: Do the update :)
+            let $do-update := 
+                if($action eq 'merge') then
+                    update-entity:match-instance($matches-entity/@xml:id, $gloss/@xml:id, 'glossary-item')
+                else if($create) then
+                    update-entity:create($gloss, $flag)
+                else ()
+            
+            return 
+                element update {
+                    attribute action { $action },
+                    attribute flag { $flag },
+                    $gloss,
+                    element match {
+                        (:$matching-gloss,:)
+                        $matches-entity
+                    },
+                    $do-update,
+                    element debug {
+                        attribute glossary-editor-url { 'https://projects.84000-translate.org/edit-glossary.html?resource-id=' || $text-id || '&amp;resource-type=translation&amp;max-records=1&amp;glossary-id=' || $gloss/@xml:id },
+                        element regex-sa {$regex-sa},
+                        element regex-bo {$regex-bo}
+                    }
                 }
-            }
-
+    
+    return (
+        $merge-glossary,
+        util:log('info', concat('update-entity-merge-glossary-complete:', $text-id))
+    )
 };

@@ -433,9 +433,6 @@
                             <thead>
                                 <tr>
                                     <th>Toh</th>
-                                    <xsl:if test="not(/m:response/m:texts[@sort eq 'status'])">
-                                        <th>Status</th>
-                                    </xsl:if>
                                     <th>Title</th>
                                     <th>Pages</th>
                                     <th class="hidden-print">Start</th>
@@ -475,7 +472,7 @@
                                     <!-- Status grouping -->
                                     <xsl:if test="/m:response/m:texts[@sort eq 'status'] and not($status-id eq $preceding-status-id)">
                                         <tr class="header">
-                                            <td colspan="6">
+                                            <td colspan="5">
                                                 <xsl:value-of select="concat($status/@status-id, ' / ', $status/text())"/>
                                                 <xsl:value-of select="concat(' (', format-number(count(/m:response/m:texts/m:text[@status eq $status-id]), '#,###'), ' texts, ', format-number(sum(/m:response/m:texts/m:text[@status eq $status-id]/m:source[1]/m:location/@count-pages), '#,###'),' pages)')"/>
                                             </td>
@@ -485,7 +482,7 @@
                                     <!-- Main row - About the text -->
                                     <tr>
                                         
-                                        <!-- Toh -->
+                                        <!-- Toh / status -->
                                         <td rowspan="3">
                                             
                                             <xsl:if test="m:sponsors/tei:div[@type eq 'acknowledgment']/tei:p">
@@ -509,34 +506,31 @@
                                                 </xsl:otherwise>
                                             </xsl:choose>
                                             
+                                            <!-- Status -->
+                                            <br/>
+                                            <span>
+                                                <xsl:choose>
+                                                    <xsl:when test="@status-group eq 'published'">
+                                                        <xsl:attribute name="class" select="'label label-success'"/>
+                                                    </xsl:when>
+                                                    <xsl:when test="@status-group eq 'translated'">
+                                                        <xsl:attribute name="class" select="'label label-primary'"/>
+                                                    </xsl:when>
+                                                    <xsl:when test="@status-group eq 'in-translation'">
+                                                        <xsl:attribute name="class" select="'label label-warning'"/>
+                                                    </xsl:when>
+                                                    <xsl:when test="@status-group eq 'in-application'">
+                                                        <xsl:attribute name="class" select="'label label-danger'"/>
+                                                    </xsl:when>
+                                                    <xsl:otherwise>
+                                                        <xsl:attribute name="class" select="'label label-default'"/>
+                                                    </xsl:otherwise>
+                                                </xsl:choose>
+                                                <xsl:attribute name="title" select="$status/text()"/>
+                                                <xsl:value-of select="if($status-id) then $status-id else '0'"/>
+                                            </span>
+                                            
                                         </td>
-                                        
-                                        <!-- Status -->
-                                        <xsl:if test="not(/m:response/m:texts[@sort eq 'status'])">
-                                            <td>
-                                                <span>
-                                                    <xsl:choose>
-                                                        <xsl:when test="@status-group eq 'published'">
-                                                            <xsl:attribute name="class" select="'label label-success'"/>
-                                                        </xsl:when>
-                                                        <xsl:when test="@status-group eq 'translated'">
-                                                            <xsl:attribute name="class" select="'label label-primary'"/>
-                                                        </xsl:when>
-                                                        <xsl:when test="@status-group eq 'in-translation'">
-                                                            <xsl:attribute name="class" select="'label label-warning'"/>
-                                                        </xsl:when>
-                                                        <xsl:when test="@status-group eq 'in-application'">
-                                                            <xsl:attribute name="class" select="'label label-danger'"/>
-                                                        </xsl:when>
-                                                        <xsl:otherwise>
-                                                            <xsl:attribute name="class" select="'label label-default'"/>
-                                                        </xsl:otherwise>
-                                                    </xsl:choose>
-                                                    <xsl:attribute name="title" select="$status/text()"/>
-                                                    <xsl:value-of select="if($status-id) then $status-id else '0'"/>
-                                                </span>
-                                            </td>
-                                        </xsl:if>
                                         
                                         <!-- Title / links to forms / stats -->
                                         <td>
@@ -670,10 +664,6 @@
                                     <xsl:if test="m:sponsors/tei:div[@type eq 'acknowledgment']/tei:p">
                                         <tr class="sub">
                                             
-                                            <xsl:if test="not(/m:response/m:texts[@sort eq 'status'])">
-                                                <td/>
-                                            </xsl:if>
-                                            
                                             <td colspan="5">
                                                 <div class="pull-quote green-quote no-bottom-margin small">
                                                     
@@ -699,10 +689,6 @@
                                     <!-- Translation team -->
                                     <tr class="sub">
                                         
-                                        <xsl:if test="not(/m:response/m:texts[@sort eq 'status'])">
-                                            <td/>
-                                        </xsl:if>
-                                        
                                         <td colspan="5">
                                             <hr/>
                                             <div class="collapse-one-line one-line small italic text-success">
@@ -724,10 +710,6 @@
                                     
                                     <!-- Notes and statuses -->
                                     <tr class="sub">
-                                        
-                                        <xsl:if test="not(/m:response/m:texts[@sort eq 'status'])">
-                                            <td/>
-                                        </xsl:if>
                                         
                                         <td colspan="5">
                                             

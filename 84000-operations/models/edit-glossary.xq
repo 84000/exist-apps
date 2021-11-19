@@ -37,6 +37,7 @@ let $predicate := request:get-parameter('predicate', '')
 let $similar-search := request:get-parameter('similar-search', '')
 let $remove-instance := request:get-parameter('remove-instance', '')
 let $unlink-glossary := request:get-parameter('unlink-glossary', '')
+let $remove-flag := request:get-parameter('remove-flag', '')
 
 let $resource-id := 
     if($resource-id eq '' and $resource-type eq 'translation') then
@@ -83,6 +84,9 @@ let $updates :=
             
         else if($form-action eq 'merge-all-entities') then
             update-entity:merge-glossary($resource-id, true())
+        
+        else if(not($remove-flag eq '') and not($entity-id eq '')) then
+            update-entity:clear-flag($entity-id, $remove-flag)
             
         else if(not($remove-instance eq '')) then 
             let $remove-instance-gloss := $glossary:tei//tei:back//id($remove-instance)[self::tei:gloss]
@@ -132,12 +136,12 @@ let $max-records :=
         $default-max-records
 
 (: Get the glossaries - applying any filters :)
-let $glossary-filtered := glossary:filter($tei, $resource-type, $filter, $search)
+let $gloss-filtered := glossary:filter($tei, $resource-type, $filter, $search)
 
 (: Override first-record to show the updated record :)
 let $selected-glossary-index := 
-    if($glossary-filtered/m:entry[@id eq $glossary-id]) then
-        functx:index-of-node($glossary-filtered/m:entry, $glossary-filtered/m:entry[@id eq $glossary-id])
+    if($gloss-filtered/id($glossary-id)) then
+        functx:index-of-node($gloss-filtered, $gloss-filtered/id($glossary-id))
     else 0
 
 let $first-record := 
@@ -162,8 +166,8 @@ let $request :=
         attribute form-action { request:get-parameter('form-action', '') },
         attribute entity-id { request:get-parameter('entity-id', '') },
         attribute show-tab { request:get-parameter('show-tab', '') },
-        element search { request:get-parameter('search', '') },
         element similar-search { request:get-parameter('similar-search', '') },
+        element search { $search },
         $translation:view-modes/m:view-mode[@id eq 'glossary-editor']
     }
 
@@ -181,42 +185,40 @@ let $text :=
 
 let $glossary :=
     element { QName('http://read.84000.co/ns/1.0', 'glossary') } {
-            
-        $glossary-filtered/@*,
         
-        attribute count-records { count($glossary-filtered/m:entry) },
+        attribute count-records { count($gloss-filtered) },
         attribute first-record { $first-record },
         attribute max-records { $max-records },
         attribute tei-version-cached { store:stored-version-str($resource-id, 'cache') },
         
-        let $glossary-filtered-subsequence := subsequence($glossary-filtered/m:entry, $first-record, $max-records)
+        let $gloss-filtered-subsequence := subsequence($gloss-filtered, $first-record, $max-records)
         
-        (: Check if we have expressions - we may have them from an expressions filter :)
-        let $glossary-item-expressions := 
-            if($glossary-filtered/m:entry[not(m:expressions)] and $filter = ('check-expressions', 'check-all', 'no-cache', 'new-expressions', 'no-expressions')) then
-                glossary:instances($tei, $resource-id, $resource-type, $glossary-filtered-subsequence/@id)
+        (: Get expressions for these entries :)
+        let $glossary-expressions := 
+            if($filter = ('check-expressions', 'check-all', 'no-cache', 'new-expressions', 'no-expressions')) then
+                glossary:instances($tei, $resource-id, $resource-type, $gloss-filtered-subsequence/@xml:id)
             else ()
         
-        for $glossary-item in $glossary-filtered-subsequence
-            let $entity := entities:entities($glossary-item/@id, false(), true(), true())/m:entity[1]
+        for $gloss in $gloss-filtered-subsequence
+            let $entry := glossary:glossary-entry($gloss, false())
+            let $entity := entities:entities($entry/@id, false(), true(), true())/m:entity[1]
         return 
-            (: Copy each glossary item :)
-            element { node-name($glossary-item) }{
+            (: Copy each glossary entry :)
+            element { node-name($entry) }{
             
-                $glossary-item/@*,
+                $entry/@*,
                 
-                if($glossary-item/@id eq $glossary-id) then
+                if($entry/@id eq $glossary-id) then
                     attribute active-item { true() }
                 else (),
                 
-                $glossary-item/node(),
+                $entry/node(),
                 
                 (: Add glossary expressions :)
-                (: They may already be included if we did an expressions filter :)
-                if(not($glossary-item[m:expressions]) and $filter = ('check-expressions', 'check-all', 'no-cache', 'new-expressions', 'no-expressions')) then
-                    element { node-name($glossary-item-expressions) }{
-                        $glossary-item-expressions/@*,
-                        $glossary-item-expressions/*[descendant::xhtml:*[@data-glossary-id eq $glossary-item/@id]]
+                if($glossary-expressions) then
+                    element { node-name($glossary-expressions) }{
+                        $glossary-expressions/@*,
+                        $glossary-expressions/*[descendant::xhtml:*[@data-glossary-id eq $entry/@id]]
                     }
                 else (),
                 
@@ -226,15 +228,15 @@ let $glossary :=
                 (: Report possible matches for reconciliation :)
                 if($filter = ('check-entities', 'check-all', 'missing-entities', 'requires-attention')) then
                     let $search-terms := (
-                        $glossary-item/m:term[@xml:lang = ('Bo-Ltn', 'Sa-Ltn')]/data(),
-                        $glossary-item/m:alternatives[@xml:lang = ('Bo-Ltn', 'Sa-Ltn')]/data(),
-                        if($glossary-item/@id eq $glossary-id) then
+                        $entry/m:term[@xml:lang = ('Bo-Ltn', 'Sa-Ltn')]/data(),
+                        $entry/m:alternatives[@xml:lang = ('Bo-Ltn', 'Sa-Ltn')]/data(),
+                        if($entry/@id eq $glossary-id) then
                             normalize-space($similar-search)[not(. eq '')]
                         else ()
                     )
                     return
                         element { QName('http://read.84000.co/ns/1.0', 'similar-entities') }{
-                            entities:similar($entity, $search-terms, $glossary-item/@id)
+                            entities:similar($entity, $search-terms, $entry/@id)
                         }
                 else ()
             }

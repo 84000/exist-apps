@@ -280,11 +280,11 @@ declare function glossary:entries($glossary-ids as xs:string*, $include-context 
     for $gloss in $glossary:tei//id($glossary-ids)
     where $gloss/self::tei:gloss
     return
-        local:glossary-entry($gloss, $include-context)
+        glossary:glossary-entry($gloss, $include-context)
     
 };
 
-declare function local:glossary-entry($gloss as element(tei:gloss), $include-context as xs:boolean) as element(m:entry) {
+declare function glossary:glossary-entry($gloss as element(tei:gloss), $include-context as xs:boolean) as element(m:entry) {
     
     (: This needs optimising :)
     element { QName('http://read.84000.co/ns/1.0', 'entry') } {
@@ -417,7 +417,7 @@ declare function glossary:matching-entries($term as xs:string, $lang as xs:strin
             for $gloss in glossary:matching-gloss($term, $lang)
                 order by ft:score($gloss) descending
             return 
-                local:glossary-entry($gloss, true())
+                glossary:glossary-entry($gloss, true())
         }
     </glossary>
 };
@@ -567,100 +567,92 @@ declare function glossary:xml-response($tei as element(tei:TEI), $resource-id as
                 $replace-text
             )
         )
+        
 };
 
-declare function glossary:filter($tei as element(tei:TEI), $resource-type as xs:string, $filter as xs:string, $search as xs:string) as element(m:part) {
+declare function glossary:filter($tei as element(tei:TEI), $resource-type as xs:string, $filter as xs:string, $search as xs:string) as element(tei:gloss)* {
     
+    (: Glossary cache :)
     let $glossary-cache := tei-content:cache($tei, false())/m:glossary-cache
     
     (: Pre-defined filters :)
     let $tei-gloss :=
+    
+        (: Entries with no assigned entity :)
         if($filter eq 'missing-entities') then
             let $glosses-with-instances := $tei//tei:back//tei:div[@type eq 'glossary']//tei:gloss/id($entities:entities//m:entity/m:instance/@id)
             return
                 $tei//tei:back//tei:div[@type eq 'glossary']//tei:gloss except $glosses-with-instances
+        
+        (: Entries with no cache :)
         else if($filter eq 'no-cache') then
             let $glosses-with-cache := $tei//tei:back//tei:div[@type eq 'glossary']//tei:gloss/id($glossary-cache/m:gloss[m:location]/@id)
             return
                 $tei//tei:back//tei:div[@type eq 'glossary']//tei:gloss except $glosses-with-cache
+        
+        (: Return none :)
         else if($filter eq 'blank-form') then
             ()
-        else if($entities:flags//m:flag[@id eq $filter]) then
-            let $entity-instance-ids := $entities:entities//m:entity[m:flag[@type eq $filter]]/m:instance/@id/string()
-            return
-                $tei//tei:back//tei:div[@type eq 'glossary']//tei:gloss/id($entity-instance-ids)
+        
+        (: Default to all :)
         else
             $tei//tei:back//tei:div[@type eq 'glossary']//tei:gloss[@xml:id]
     
-    (: Search :)
+    (: $filter matches a flag :)
+    let $tei-gloss :=
+        if($entities:flags//m:flag[@id eq $filter]) then
+            for $gloss in $tei-gloss
+            let $entity-flagged := $entities:entities//m:instance[@id eq $gloss/@xml:id]/parent::m:entity[m:flag/@type = 'requires-attention']
+            where $entity-flagged
+            return $gloss
+        else
+            $tei-gloss
+    
+    (: Filter by search term :)
     let $tei-gloss := 
         if(normalize-space($search) gt '') then
             $tei-gloss[tei:term[ft:query(., local:search-query($search), local:search-options())]]
         else
             $tei-gloss
     
-    let $resource-id := tei-content:id($tei)
-    let $xml-response := glossary:xml-response($tei, $resource-id, $resource-type, 'all')
-    
     (: Expression filters :)
-    (: Get the glossarized html :)
     let $html := 
         if($filter = ('new-expressions', 'no-expressions')) then
-            transform:transform(
-                $xml-response,
-                doc(concat($common:app-path, "/views/html/", $resource-type, ".xsl")), 
-                <parameters/>
-            )
+            let $resource-id := tei-content:id($tei)
+            let $xml-response := glossary:xml-response($tei, $resource-id, $resource-type, 'all')
+            return
+                transform:transform(
+                    $xml-response,
+                    doc(concat($common:app-path, "/views/html/", $resource-type, ".xsl")), 
+                    <parameters/>
+                )
         else ()
     
-    (: Seperate the glossary from the translation data :)
-    let $glossary := $xml-response//m:part[@type eq 'glossary']
+    (: Return the filtered glossary-part :)
+    for $gloss in $tei-gloss
     
-    (: Return the glossary - filtered :)
-    return
-        element { QName('http://read.84000.co/ns/1.0', 'part') }{
+        let $search-score := if(normalize-space($search) gt '') then ft:score($gloss) else 1
+        let $sort-term := glossary:sort-term($gloss)
         
-            $glossary/@*,
-            attribute filter { $filter },
-            attribute text-id { $resource-id },
-            element search { $search },
-            
-            for $gloss in $tei-gloss
-            
-                let $search-score := if(normalize-space($search) gt '') then ft:score($gloss) else 1
-                
-                (: It seems to be significantly quicker to re-create the glossary-item than look it up :)
-                let $glossary-entry := local:glossary-entry($gloss, false()) (: $glossary/m:entry[@xml:id = $gloss/@xml:id/string()] :)
-                
-                (: Expression locations :)
-                let $expression-locations := 
-                    if($filter = ('new-expressions', 'no-expressions')) then
-                        local:instance-locations($html, $glossary-entry/@id)
-                    else()
-            
-            where 
-                (: If filtering by new expressions, return where there are expression locations not in the cache :)
-                not($filter = ('new-expressions', 'no-expressions')) 
-                or ($filter eq 'new-expressions' and $expression-locations[not(@id = $glossary-cache/m:gloss[@id eq $glossary-entry/@id]/m:location/@id)])
-                or ($filter eq 'no-expressions' and not($expression-locations))
-            
-            order by 
-                $search-score descending,
-                $glossary-entry/m:sort-term
-            
-            return
-                element { node-name($glossary-entry) }{
-                    $glossary-entry/@*,
-                    $glossary-entry/node(),
-                    
-                    (: Add expressions to save work later :)
-                    if($expression-locations) then
-                        element { QName('http://read.84000.co/ns/1.0', 'expressions') }{     
-                            $expression-locations
-                        }
-                    else ()
-                }
-        }
+        (: Expression locations :)
+        let $expression-locations := 
+            if($html) then
+                local:instance-locations($html, $gloss/@xml:id)
+            else()
+        
+    where 
+        (: If filtering by new expressions, return where there are expression locations not in the cache :)
+        not($filter = ('new-expressions', 'no-expressions')) 
+        or ($filter eq 'new-expressions' and $expression-locations[not(@id = $glossary-cache/m:gloss[@id eq $gloss/@xml:id]/m:location/@id)])
+        or ($filter eq 'no-expressions' and not($expression-locations))
+    
+    order by 
+        $search-score descending,
+        $sort-term
+    
+    return 
+        $gloss
+        
 };
 
 declare function glossary:instances($tei as element(tei:TEI), $resource-id as xs:string, $resource-type as xs:string, $glossary-ids as xs:string*) as element(m:expressions) {
