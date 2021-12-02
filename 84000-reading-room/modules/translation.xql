@@ -5,6 +5,7 @@ module namespace translation = "http://read.84000.co/translation";
 declare namespace m = "http://read.84000.co/ns/1.0";
 declare namespace tei = "http://www.tei-c.org/ns/1.0";
 declare namespace xhtml = "http://www.w3.org/1999/xhtml";
+
 import module namespace common = "http://read.84000.co/common" at "common.xql";
 import module namespace tei-content = "http://read.84000.co/tei-content" at "tei-content.xql";
 import module namespace sponsors = "http://read.84000.co/sponsors" at "sponsors.xql";
@@ -34,7 +35,7 @@ declare variable $translation:view-modes :=
       <view-mode id="passage"           client="ajax"     layout="part-only"       glossary="use-cache"       parts="passage"/>,
       <view-mode id="editor-passage"    client="ajax"     layout="part-only"       glossary="no-cache"        parts="passage"/>
     </view-modes>;
-    
+
 declare variable $translation:published-status-ids := $tei-content:text-statuses/m:status[@type eq 'translation'][@group = ('published')]/@status-id;
 declare variable $translation:in-progress-status-ids := $tei-content:text-statuses/m:status[@type eq 'translation'][@group = ('translated', 'in-translation')]/@status-id;
 declare variable $translation:marked-up-status-ids := $tei-content:text-statuses/m:status[@type eq 'translation'][@marked-up = 'true']/@status-id;
@@ -281,43 +282,83 @@ declare function translation:parts($tei as element(tei:TEI), $passage-id as xs:s
         else
             $passage-id
     
-    (: Get the status so we can evaluate the render status :)
+    (: Get the status :)
     let $status-id := tei-content:translation-status($tei)
+    (: Evaluate if we are rendering this status :)
+    let $status-render := $common:environment/m:render/m:status[@type eq 'translation'][@status-id = $status-id]
     
-    return (
+    let $summary := translation:summary($tei, $passage-id, $view-mode, '')
     
-        (: Only include these parts if the text has a render status :)
-        if($common:environment/m:render/m:status[@type eq 'translation'][@status-id = $status-id]) then (
-            
-            let $parts := (
-                translation:summary($tei, $passage-id, $view-mode, ''),
-                translation:acknowledgment($tei, $passage-id, $view-mode),
-                translation:preface($tei, $passage-id, $view-mode),
-                translation:introduction($tei, $passage-id, $view-mode),
-                translation:body($tei, $passage-id, $view-mode),
-                translation:appendix($tei, $passage-id, $view-mode),
-                translation:abbreviations($tei, $passage-id, $view-mode)
-            )
-            
-            let $bibliography := translation:bibliography($tei, $passage-id, $view-mode)
-            
-            let $end-notes := translation:end-notes($tei, $passage-id, $view-mode, ($parts,$bibliography)//tei:note[@place eq 'end']/@xml:id)
-            
-            let $glossary := translation:glossary($tei, $passage-id, $view-mode, ($parts,$bibliography)[@glossarize eq 'true']//@xml:id)
-            
-            return (
-                $parts,
-                $end-notes,
-                $bibliography,
-                $glossary
-            )
-            
-        )
+    let $acknowledgment :=
+        if($status-render) then 
+            translation:acknowledgment($tei, $passage-id, $view-mode)
+        else ()
+    
+    let $preface :=
+        if($status-render) then 
+            translation:preface($tei, $passage-id, $view-mode)
+        else ()
+    
+    let $introduction :=
+        if($status-render) then 
+            translation:introduction($tei, $passage-id, $view-mode)
+        else ()
+    
+    let $introduction :=
+        if($status-render) then 
+            translation:introduction($tei, $passage-id, $view-mode)
+        else ()
+    
+    let $body :=
+        if($status-render) then 
+            translation:body($tei, $passage-id, $view-mode)
+        else ()
+   
+    let $appendix :=
+        if($status-render) then 
+            translation:appendix($tei, $passage-id, $view-mode)
+        else ()
         
-        (: Always include summary :)
-        else 
-            translation:summary($tei, $passage-id, $view-mode, '')
+    let $abbreviations :=
+        if($status-render) then 
+            translation:abbreviations($tei, $passage-id, $view-mode)
+        else ()
+    
+    let $bibliography :=
+        if($status-render) then 
+            translation:bibliography($tei, $passage-id, $view-mode)
+        else ()
+    
+    let $end-notes :=
+        if($status-render) then 
+            (: Derive relevant notes ids from other content :)
+            let $end-node-ids := ($summary, $acknowledgment, $preface, $introduction, $body, $appendix, $abbreviations, $bibliography)//tei:note[@place eq 'end']/@xml:id
+            return
+                translation:end-notes($tei, $passage-id, $view-mode, $end-node-ids)
+        else ()
+    
+    let $glossary :=
+        if($status-render) then 
+            (: Derive relevant glossary ids from other content :)
+            let $glossary-ids := ($summary, $acknowledgment, $preface, $introduction, $body, $appendix, $abbreviations, $bibliography)[@glossarize eq 'true']//@xml:id
+            return
+                translation:glossary($tei, $passage-id, $view-mode, $glossary-ids)
+        else ()
+    
+    (: Parts are displayed in the order returned here :)
+    return (
+        $summary,
+        $acknowledgment,
+        $preface,
+        $introduction,
+        $body,
+        $appendix,
+        $abbreviations,
+        $end-notes,
+        $bibliography,
+        $glossary
     )
+    
 };
 
 declare function translation:part($part as element(tei:div)?, $render as xs:string, $type as xs:string, $prefix as xs:string, $label as node()*, $output-ids as xs:string*) as element(m:part) {
@@ -742,17 +783,19 @@ declare function translation:end-notes($tei as element(tei:TEI), $passage-id as 
     let $render := local:render($end-notes, ('end-notes', 'back'), $passage-id, $view-mode, 'preview')
     
     let $notes-cache := tei-content:cache($tei, false())/m:notes-cache/m:end-note
-    let $output-ids := (
-        $passage-id,
-        if($render eq 'preview') then (
-            $notes-cache[@index = ('1','2','3','4','5','6','7','8')]/@id/string(),
-            $note-ids
-        )
+    
+    let $top-note-ids := 
+        if($render eq 'preview') then
+            $notes-cache[@index = ('1','2','3','4','5','6','7','8')]/@id
         else ()
-    )
+    
+    let $preview-note-ids :=
+        if($render eq 'preview') then
+            $note-ids
+        else ()
     
     return
-        translation:part($end-notes, $render, 'end-notes', 'n', text {'Notes'}, $output-ids)
+        translation:part($end-notes, $render, 'end-notes', 'n', text {'Notes'}, ($passage-id, $top-note-ids, $preview-note-ids))
 
 };
 
@@ -783,23 +826,32 @@ declare function translation:glossary($tei as element(tei:TEI), $passage-id as x
             attribute type { 'glossary' },
             $tei/tei:text/tei:back//tei:list[@type eq 'glossary']/tei:item/tei:gloss[@xml:id]
         }
-        
-    where $glossary[tei:gloss]
     
     let $render := local:render($glossary, ('glossary', 'back'), $passage-id, $view-mode, 'preview')
     
-    let $glossary-cache := tei-content:cache($tei, false())/m:glossary-cache/m:gloss
-    let $output-ids := (
-        $passage-id,
-        if($render eq 'preview') then (
-            $glossary-cache[@index = ('1','2','3')]/@id/string(),
-            $glossary-cache[m:location/@id = $location-ids]/@id/string()
-        )
-        else ()
-    )
+    let $glossary-cache := tei-content:cache($tei, false())/m:glossary-cache
     
+    (: Get top 3 :)
+    let $top-gloss := 
+        if($render eq 'preview') then
+            $glossary-cache/m:gloss[@index = ('1','2','3')]/@id
+        else ()
+    
+    (: Get based on location-ids :)
+    let $location-cache-gloss := 
+        if($render eq 'preview') then
+            let $chunk-size := xs:integer(1024)
+            let $chunks-count := xs:integer(ceiling(count($location-ids) div $chunk-size))
+            for $chunk in 1 to $chunks-count
+            let $chunk-start := (($chunk-size * ($chunk - 1)) + 1)
+            let $subsequence := subsequence($location-ids, $chunk-start, $chunk-size)
+            return
+                $glossary-cache/m:gloss[m:location/@id = $subsequence]/@id
+        else ()
+    
+    where $glossary[tei:gloss]
     return
-        translation:part($glossary, $render, 'glossary', 'g', text {'Glossary'}, $output-ids)
+        translation:part($glossary, $render, 'glossary', 'g', text {'Glossary'}, ($passage-id, $top-gloss, $location-cache-gloss))
 
 };
 

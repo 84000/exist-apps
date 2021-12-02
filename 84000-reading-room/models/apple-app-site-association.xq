@@ -30,7 +30,7 @@ declare option exist:serialize "method=json media-type=text/javascript";
 <apple-app-site-association>
     <applinks>
         <apps json:array="true"/>
-        <details>
+        <details json:array="true">
             <appID>KAZM92M7ZW.co.84000.reader</appID>
             {
                 for $bibl in $tei-content:translations-collection//tei:fileDesc[tei:publicationStmt/@status = '1']/tei:sourceDesc/tei:bibl

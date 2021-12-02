@@ -8,6 +8,7 @@ import module namespace common="http://read.84000.co/common" at "modules/common.
 import module namespace download="http://read.84000.co/download" at "modules/download.xql";
 import module namespace log = "http://read.84000.co/log" at "modules/log.xql";
 import module namespace tei-content = "http://read.84000.co/tei-content" at "modules/tei-content.xql";
+import module namespace functx="http://www.functx.com";
 
 declare variable $exist:path external;
 declare variable $exist:resource external;
@@ -22,6 +23,14 @@ declare variable $redirects := doc('/db/system/config/db/system/redirects.xml')/
 declare variable $user-name := common:user-name();
 declare variable $var-debug := 
     <debug>
+        <var name="request:get-hostname()" value="{ request:get-hostname() }"/>
+        <var name="request:get-remote-host()" value="{ request:get-remote-host() }"/>
+        <var name="request:get-server-name()" value="{ request:get-server-name() }"/>
+        {
+            for $header-name in request:get-header-names()
+            return
+            <var name="request:get-header('{ $header-name }')" value="{ request:get-header( $header-name ) }"/>
+        }
         <var name="exist:path" value="{ $exist:path }"/>
         <var name="exist:resource" value="{ $exist:resource }"/>
         <var name="exist:controller" value="{ $exist:controller }"/>
@@ -104,7 +113,7 @@ declare function local:dispatch-html($model as xs:string, $view as xs:string, $p
     </dispatch>
 };
 
-declare function local:redirect($url){
+declare function local:redirect($url as xs:string){
     <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
         <redirect url="{ $url }"/>
     </dispatch>
@@ -144,7 +153,7 @@ let $log-request := ()
     ):)
 
 (: Process the request :)
-return (:if (true()) then $var-debug else :)
+return
 
     (: Robots :)
     if (lower-case($exist:resource) = ('robots.txt')) then
@@ -162,8 +171,8 @@ return (:if (true()) then $var-debug else :)
     else if(not(common:auth-path($collection-path)) or sm:is-authenticated()) then
         
         (: Resource redirects :)
-        if (lower-case($exist:resource) = $redirects//m:resource/@xml:id) then
-            local:redirect($redirects//m:resource[@xml:id = lower-case($exist:resource)][1]/parent::m:redirect/@target)
+        if ($redirects//m:resource/id(lower-case($exist:resource))) then
+            local:redirect($redirects//m:resource/id(lower-case($exist:resource))[1]/parent::m:redirect/@target)
         
         (: Restrict view to single resource :)
         else if($redirects/m:redirect[@user-name eq $user-name][not(@resource-id eq $resource-id)]) then
@@ -176,6 +185,10 @@ return (:if (true()) then $var-debug else :)
                     <add-parameter name="resource-id" value="lobby.html"/>
                 </parameters>
             )
+            
+        (: Exist environment debug :)
+        else if (lower-case($exist:resource) eq "exist-debug.xml" and $common:environment/m:enable[@type eq 'debug']) then
+            $var-debug
         
         (: Spreadsheet test :)
         (:else if (lower-case($exist:resource) eq 'spreadsheet.xlsx') then
@@ -184,6 +197,25 @@ return (:if (true()) then $var-debug else :)
         (: Test :)
         (:else if ($collection-path eq "test") then
             local:dispatch($exist:path, "", <parameters/>):)
+        
+        (: iOS universal links :)
+        else if ($collection-path eq ".well-known" and $resource-id = ('apple-app-site-association')) then
+            local:dispatch("/models/apple-app-site-association.xq", "", 
+                <parameters xmlns="http://exist.sourceforge.net/NS/exist"/>
+            )
+        
+        (: Check for app subdomain and forward to the download page - do this after iOS universal links so these are still active on the app subdomain :)
+        else if (
+            $common:environment/m:url[@id eq 'communications-site'][text()]
+            and $common:environment/m:url[@id eq 'app'][text()]
+            and request:get-header('X-Forwarded-Host') gt ''
+            and matches(
+                    $common:environment/m:url[@id eq 'app']/text(), 
+                    concat('^https?://', functx:escape-for-regex(request:get-header('X-Forwarded-Host'))),
+                    'i'
+                )
+        ) then
+            local:redirect($common:environment/m:url[@id eq 'communications-site'] || '/mobile')
         
         (: These are URIs redirected from purl.84000.co :)
         else if ($path eq "/resource/core/") then 
@@ -383,11 +415,6 @@ return (:if (true()) then $var-debug else :)
                     <add-parameter name="resource-suffix" value="{$resource-suffix}"/>
                 </forward>
             </dispatch>
-        
-        else if ($collection-path eq ".well-known" and $resource-id = ('apple-app-site-association')) then
-            local:dispatch("/models/apple-app-site-association.xq", "", 
-                <parameters xmlns="http://exist.sourceforge.net/NS/exist"/>
-            )
         
         else
             (: It's data :)

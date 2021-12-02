@@ -5,6 +5,7 @@
 
     <!-- Look up environment variables -->
     <xsl:variable name="front-end-path" select="$environment/m:url[@id eq 'front-end']/text()"/>
+    <xsl:variable name="app-path" select="$environment/m:url[@id eq 'app']/text()"/>
     <xsl:variable name="render-status" select="$environment/m:render/m:status[@type eq 'translation']/@status-id"/>
     
     <xsl:variable name="page-title" as="node()*">
@@ -271,7 +272,7 @@
                                         </xsl:if>
                                         <xsl:for-each select="m:translation/m:downloads/m:download[@type = ('pdf', 'epub', 'azw3')]">
                                             <tr>
-                                                <td>
+                                                <td class="icon">
                                                     <a target="_blank">
                                                         <xsl:attribute name="title">
                                                             <xsl:call-template name="download-label">
@@ -305,6 +306,39 @@
                                                 </td>
                                             </tr>
                                         </xsl:for-each>
+                                        <xsl:if test="$app-path">
+                                            <xsl:variable name="app-href" select="concat($app-path, '/translation/', $toh-key, '.html')"/>
+                                            <tr>
+                                                <td class="icon">
+                                                    <a target="_blank">
+                                                        <xsl:attribute name="title">
+                                                            <xsl:call-template name="download-label">
+                                                                <xsl:with-param name="type" select="'app'"/>
+                                                            </xsl:call-template>
+                                                        </xsl:attribute>
+                                                        <xsl:attribute name="href" select="$app-href"/>
+                                                        <xsl:attribute name="class" select="'log-click'"/>
+                                                        <xsl:call-template name="download-icon">
+                                                            <xsl:with-param name="type" select="'app'"/>
+                                                        </xsl:call-template>
+                                                    </a>
+                                                </td>
+                                                <td>
+                                                    <a target="_blank">
+                                                        <xsl:attribute name="title">
+                                                            <xsl:call-template name="download-label">
+                                                                <xsl:with-param name="type" select="'app'"/>
+                                                            </xsl:call-template>
+                                                        </xsl:attribute>
+                                                        <xsl:attribute name="href" select="$app-href"/>
+                                                        <xsl:attribute name="class" select="'log-click'"/>
+                                                        <xsl:call-template name="download-label">
+                                                            <xsl:with-param name="type" select="'app'"/>
+                                                        </xsl:call-template>
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                        </xsl:if>
                                     </tbody>
                                 </table>
                             
@@ -317,7 +351,7 @@
                             <table class="contents-table bottom-margin">
                                 <tbody>
                                     <tr>
-                                        <td>
+                                        <td class="icon">
                                             <a>
                                                 <xsl:attribute name="href" select="common:homepage-link('', /m:response/@lang)"/>
                                                 <i class="fa fa-home"/>
@@ -331,7 +365,7 @@
                                         </td>
                                     </tr>
                                     <tr>
-                                        <td>
+                                        <td class="icon">
                                             <a>
                                                 <xsl:attribute name="href" select="common:internal-link('/', (), '', /m:response/@lang)"/>
                                                 <i class="fa fa-bookmark"/>
@@ -345,7 +379,7 @@
                                         </td>
                                     </tr>
                                     <tr>
-                                        <td>
+                                        <td class="icon">
                                             <a>
                                                 <xsl:attribute name="href" select="common:internal-link('/section/all-translated.html', (), '', /m:response/@lang)"/>
                                                 <i class="fa fa-list"/>
@@ -365,7 +399,7 @@
                                         <xsl:variable name="page" select="$entity/m:instance[@type eq 'knowledgebase-article']/m:page"/>
                                         <xsl:variable name="href" select="common:internal-link(concat('/knowledgebase/', $page/@kb-id, '.html'), (), '', /m:response/@lang)"/>
                                         <tr>
-                                            <td>
+                                            <td class="icon">
                                                 <a>
                                                     <xsl:attribute name="href" select="$href"/>
                                                     <i class="fa fa-user"/>
@@ -390,7 +424,7 @@
                                         </tr>
                                     </xsl:for-each>
                                     <tr>
-                                        <td>
+                                        <td class="icon">
                                             <a>
                                                 <xsl:attribute name="href" select="common:internal-link('/search.html', (), '', /m:response/@lang)"/>
                                                 <i class="fa fa-search"/>
@@ -404,7 +438,7 @@
                                         </td>
                                     </tr>
                                     <tr>
-                                        <td>
+                                        <td class="icon">
                                             <a>
                                                 <xsl:attribute name="href" select="common:homepage-link('sponsors', /m:response/@lang)"/>
                                                 <i class="fa fa-heart"/>

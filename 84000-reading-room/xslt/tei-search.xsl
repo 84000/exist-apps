@@ -428,14 +428,16 @@
             
             <xsl:choose>
                 <xsl:when test="$term-lang-terms">
-                    <ul class="list-inline inline-dots">
-                        <xsl:for-each select="$term-lang-terms">
-                            <li>
-                                <xsl:attribute name="class" select="string-join((common:lang-class($term-lang), if(@type = ('reconstruction', 'semanticReconstruction','transliterationReconstruction')) then 'reconstructed' else ()), ' ')"/>
-                                <xsl:apply-templates select="node()"/>
-                            </li>
-                        </xsl:for-each>
-                    </ul>
+                    <div>
+                        <ul class="list-inline inline-dots">
+                            <xsl:for-each select="$term-lang-terms">
+                                <li>
+                                    <xsl:attribute name="class" select="string-join((common:lang-class($term-lang), if(@type = ('reconstruction', 'semanticReconstruction','transliterationReconstruction')) then 'reconstructed' else ()), ' ')"/>
+                                    <xsl:apply-templates select="node()"/>
+                                </li>
+                            </xsl:for-each>
+                        </ul>
+                    </div>
                 </xsl:when>
             </xsl:choose>
         </xsl:for-each>

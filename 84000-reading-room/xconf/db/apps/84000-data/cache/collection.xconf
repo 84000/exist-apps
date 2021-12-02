@@ -14,6 +14,7 @@
             
             <!-- Cache files -->
             <create qname="@id" type="xs:string"/>
+            <create qname="@index" type="xs:string"/>
             
         </range>
         

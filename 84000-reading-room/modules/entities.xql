@@ -53,8 +53,11 @@ declare variable $entities:instance-types := ('glossary-item');
 declare function entities:entities($instance-ids as xs:string*, $validate as xs:boolean, $expand-instances as xs:boolean, $expand-relations as xs:boolean) as element(m:entities) {
 
     element { QName('http://read.84000.co/ns/1.0', 'entities') }{
-    
-        (: Check that the instance target exists :)
+        
+        (: De-dupe instance ids :)
+        let $instance-ids := distinct-values($instance-ids)
+        
+        (: Validate instance ids :)
         let $instance-ids := 
             if($validate) then 
                 entities:instance-ids-validated($instance-ids)
@@ -62,7 +65,6 @@ declare function entities:entities($instance-ids as xs:string*, $validate as xs:
                 $instance-ids
         
         (: Chunk the ids as there can be very many :)
-        let $instance-ids := distinct-values($instance-ids)
         let $entities-chunks := local:entities-chunk($instance-ids, $validate, $expand-instances, $expand-relations, 1)
         
         (: Chunking can leave duplicates :)

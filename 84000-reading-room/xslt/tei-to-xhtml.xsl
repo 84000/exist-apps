@@ -38,7 +38,7 @@
     <xsl:variable name="test-glossary" select="/m:response/m:request/m:test-glossary[@id]"/>
     <xsl:variable name="test-glossary-items" select="if($test-glossary) then $glossary-prioritised[@xml:id = $test-glossary/@id] else ()" as="element(tei:gloss)*"/>
     <xsl:variable name="test-glossary-items-terms" as="xs:string*" select="m:glossary-terms-to-match($test-glossary-items)"/>
-   
+    
     <!-- Create a prologue with the first refs -->
     <xsl:variable name="ref-1" select="($translation//tei:ref[@xml:id][@type eq 'folio'][not(@key) or @key eq $toh-key])[1]" as="element(tei:ref)?"/>
     <xsl:variable name="ref-1-validated" select="if(key('folios-cache-ref', $ref-1/@xml:id, $root)/@index-in-resource/string() = '1') then $ref-1 else ()"/>
@@ -1330,7 +1330,7 @@
                     </xsl:if>
                     
                     <!-- Link to the Glossary / Knowledge Base -->
-                    <xsl:variable name="glossary-instances" select="$entity/m:instance[@type eq 'glossary-item'][not(@id eq $glossary-item/@xml:id)]"/>
+                    <xsl:variable name="glossary-instances" select="$entity/m:instance[@type eq 'glossary-item'] except $entity/m:instance[@id eq $glossary-item/@xml:id]"/>
                     <xsl:variable name="knowledgebase-instances" select="$entity/m:instance[@type eq 'knowledgebase-article'][not(@id eq $kb-id)]"/>
                     <xsl:if test="$view-mode[@client = ('browser', 'ajax')] and ($glossary-instances or $knowledgebase-instances)">
                         <div class="footer entity-content" role="navigation">
@@ -2486,6 +2486,9 @@
             <xsl:when test="$type eq 'pdf'">
                 <xsl:value-of select="'Download PDF'"/>
             </xsl:when>
+            <xsl:when test="$type eq 'app'">
+                <xsl:value-of select="'Open in the 84000 App'"/>
+            </xsl:when>
         </xsl:choose>
     </xsl:template>
     
@@ -2504,6 +2507,9 @@
                 </xsl:when>
                 <xsl:when test="$type eq 'pdf'">
                     <xsl:attribute name="class" select="'fa fa-file-pdf-o'"/>
+                </xsl:when>
+                <xsl:when test="$type eq 'app'">
+                    <xsl:attribute name="class" select="'fa fa-tablet'"/>
                 </xsl:when>
             </xsl:choose>
         </i>
@@ -2583,7 +2589,7 @@
                 
                 <!-- Find the first glossary that matches the ref -->
                 <xsl:when test="$element/@ref[string() gt '']">
-                    <xsl:sequence select="$glossary-prioritised[@mode eq 'marked'][@xml:id/string() eq $element/@ref/string()][1]"/>
+                    <xsl:sequence select="$glossary-prioritised[@xml:id/string() eq $element/@ref/string()][1]"/>
                 </xsl:when>
                 
                 <!-- Find the first glossary that matches the string -->
@@ -2681,7 +2687,7 @@
         <xsl:variable name="match-complete-data" select="if($text-node[parent::tei:title | parent::tei:name]) then true() else false()" as="xs:boolean"/>
         
         <!-- Exclude itself if this is a glossary definition -->
-        <xsl:variable name="exclude-gloss-ids" select="if($text-node[ancestor::tei:gloss]) then $text-node/ancestor::tei:gloss[1]/@xml:id else if($text-node[ancestor::m:entry[parent::m:glossary]]) then $text-node/ancestor::m:entry[1]/@id else ()"/>
+        <xsl:variable name="exclude-gloss-ids" select="if($text-node[ancestor::tei:gloss]) then $text-node/ancestor::tei:gloss[1]/@xml:id else if($text-node[ancestor::m:entry[parent::m:glossary]]) then $text-node/ancestor::m:entry[1]/@id else ()" as="xs:string*"/>
         
         <!-- Narrow down the glossary items - we don't want to scan them all -->
         <xsl:variable name="match-glossary-items" as="element(tei:gloss)*">
@@ -2690,15 +2696,14 @@
                 <!-- Preferably use the cache -->
                 <xsl:when test="$view-mode[@glossary eq 'use-cache']">
                     <xsl:variable name="cached-location-gloss-ids" select="key('glossary-cache-location', $glossary-location, $root)/parent::m:gloss/@id" as="xs:string*"/>
-                    <xsl:sequence select="$glossary-prioritised[not(@mode eq 'marked')][@xml:id = $cached-location-gloss-ids][not(@xml:id = $exclude-gloss-ids)]"/>
+                    <xsl:sequence select="$glossary-prioritised[@xml:id = $cached-location-gloss-ids][not(@xml:id = $exclude-gloss-ids)][not(@mode eq 'marked')]"/>
                 </xsl:when>
                 
                 <!-- Which items should we scan for? -->
                 <xsl:otherwise>
-                    <xsl:for-each select="$glossary-prioritised[not(@mode eq 'marked')][not(@xml:id = $exclude-gloss-ids)]">
+                    <xsl:for-each select="$glossary-prioritised[not(@xml:id = $exclude-gloss-ids)][not(@mode eq 'marked')]">
                         
                         <xsl:variable name="terms" select="m:glossary-terms-to-match(.)"/>
-                        <xsl:variable name="glossary-cache-gloss" select="key('glossary-cache-gloss', @xml:id, $root)[1]"/>
                         
                         <!-- Do an initial check to avoid too much recursion -->
                         <xsl:variable name="match-glossary-item-terms-regex" as="xs:string">

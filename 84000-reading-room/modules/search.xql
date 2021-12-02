@@ -63,7 +63,7 @@ declare function search:search($request as xs:string, $resource-id as xs:string,
         | $published/tei:text//tei:ab[ft:query(., $query, $options)][@tid]
         | $published/tei:text//tei:trailer[ft:query(., $query, $options)][@tid]
         | $published/tei:text/tei:back//tei:bibl[ft:query(., $query, $options)][@xml:id]
-        | $published/tei:text/tei:back//tei:gloss[ft:query(., $query, $options)][@xml:id]
+        | $published/tei:text/tei:back//tei:gloss[ft:query(tei:term, $query, $options)][@xml:id]
         (:$published/tei:text//tei:p[ft:query(., concat("content: ", $request), map { "fields": "content" })]:)
     
     let $result-groups := 

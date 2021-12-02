@@ -79,43 +79,45 @@ function common:response($model as xs:string, $app-id as xs:string, $data as ite
         else
             doc(concat($common:app-config, '/', 'texts.en.xml'))/m:texts/m:item
     return
-        <response 
-            xmlns="http://read.84000.co/ns/1.0" 
-            model="{ $model }"
-            timestamp="{ current-dateTime() }"
-            app-id="{ $app-id }" 
-            app-version="{ $common:app-version }"
-            app-path="{ $common:app-path }" 
-            app-config="{ $common:app-config }" 
-            data-path="{ $common:data-path }" 
-            user-name="{ common:user-name() }" 
-            lang="{ $lang }"
-            exist-version="{ system:get-version() }"
-            tei-editor="{ common:tei-editor() }">
-            {
-                $data,
-                element { name($common:environment) } {
-                    $common:environment/@*,
-                    $common:environment/m:label,
-                    $common:environment/m:url,
-                    $common:environment/m:google-analytics,
-                    $common:environment/m:html-head,
-                    $common:environment/m:render,
-                    if($app-id eq 'utilities') then (
-                        $common:environment/m:store-conf,
-                        $common:environment/m:git-config
-                    )
-                    else if($app-id eq 'operations') then (
-                        $common:environment/m:store-conf,
-                        $common:environment/m:conversion-conf
-                    )
-                    else ()
-                },
-                element lang-items {
-                    $local-texts
-                }
+        element { QName('http://read.84000.co/ns/1.0','response') } {
+        
+            attribute model { $model },
+            attribute timestamp { current-dateTime() },
+            attribute app-id { $app-id },
+            attribute app-version { $common:app-version },
+            attribute app-path { $common:app-path },
+            attribute app-config { $common:app-config },
+            attribute data-path { $common:data-path },
+            attribute user-name { common:user-name() },
+            attribute lang { $lang },
+            attribute exist-version { system:get-version() },
+            attribute tei-editor { common:tei-editor() },
+            
+            $data,
+            
+            element { name($common:environment) } {
+                $common:environment/@*,
+                $common:environment/m:label,
+                $common:environment/m:url,
+                $common:environment/m:google-analytics,
+                $common:environment/m:html-head,
+                $common:environment/m:render,
+                if($app-id eq 'utilities') then (
+                    $common:environment/m:store-conf,
+                    $common:environment/m:git-config
+                )
+                else if($app-id eq 'operations') then (
+                    $common:environment/m:store-conf,
+                    $common:environment/m:conversion-conf
+                )
+                else ()
+            },
+            
+            element lang-items {
+                $local-texts
             }
-        </response>
+            
+        }
 };
 
 (: Return serialized as html :)

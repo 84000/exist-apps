@@ -54,7 +54,7 @@ let $request :=
         element passage {
             attribute id { $passage-id }
         }
-            
+        
     }
 
 (: Suppress cache for some view modes :)
@@ -90,14 +90,14 @@ return
         )
         
         (: Get entities :)
-        let $instance-ids := $parts[@id eq 'glossary']//tei:gloss/@xml:id/string()
+        let $instance-ids := $parts[@id eq 'glossary']//tei:gloss/@xml:id
         let $glossary-entities := 
             if($common:environment/m:enable[@type eq 'glossary-of-terms']) then
                 entities:entities($instance-ids, true(), false(), false())
             else ()
         
         (: Compile all the translation data :)
-        let $translation-response :=
+        let $translation-data :=
             element { QName('http://read.84000.co/ns/1.0', 'translation')} {
                 attribute id { tei-content:id($tei) },
                 attribute status { tei-content:translation-status($tei) },
@@ -148,7 +148,7 @@ return
                 $common:app-id,
                 (
                     $request,
-                    $translation-response,
+                    $translation-data,
                     $glossary-entities,
                     $cache,
                     $strings

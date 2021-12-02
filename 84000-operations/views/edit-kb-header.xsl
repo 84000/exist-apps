@@ -66,7 +66,7 @@
                                     <div class="col-sm-8">
                                         <div class="match-this-height" data-match-height="status-form">
                                         
-                                            <form action="/edit-kb-header.html" method="post" data-match-height="status-form" class="form-horizontal form-update" data-loading="Updating knowledge base...">
+                                            <form action="/edit-kb-header.html" method="post" class="form-horizontal form-update" data-loading="Updating knowledge base...">
                                                 
                                                 <input type="hidden" name="id" value="{ $tei-id }"/>
                                                 <input type="hidden" name="form-action" value="update-kb-header"/>

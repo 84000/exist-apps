@@ -699,7 +699,7 @@
                                                                                         <xsl:with-param name="add-parameters" select="('remove-flag=' || @id || '&amp;entity-id=' || $entity/@xml:id)"/>
                                                                                     </xsl:call-template>
                                                                                 </xsl:attribute>
-                                                                                <xsl:value-of select="'remove'"/>
+                                                                                <xsl:value-of select="'un-flag'"/>
                                                                             </a>
                                                                         </span>
                                                                     </li>
@@ -713,7 +713,7 @@
                                                                                 <xsl:with-param name="add-parameters" select="'unlink-glossary=' || $loop-glossary-id"/>
                                                                             </xsl:call-template>
                                                                         </xsl:attribute>
-                                                                        <xsl:value-of select="'Un-link'"/>
+                                                                        <xsl:value-of select="'un-link'"/>
                                                                     </a>
                                                                 </li>
                                                                 
