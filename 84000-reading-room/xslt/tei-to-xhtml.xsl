@@ -1330,7 +1330,7 @@
                     </xsl:if>
                     
                     <!-- Link to the Glossary / Knowledge Base -->
-                    <xsl:variable name="glossary-instances" select="$entity/m:instance[@type eq 'glossary-item'] except $entity/m:instance[@id eq $glossary-item/@xml:id]"/>
+                    <xsl:variable name="glossary-instances" select="$entity/m:instance[@type eq 'glossary-item'][not(@id eq $glossary-item/@xml:id)]"/>
                     <xsl:variable name="knowledgebase-instances" select="$entity/m:instance[@type eq 'knowledgebase-article'][not(@id eq $kb-id)]"/>
                     <xsl:if test="$view-mode[@client = ('browser', 'ajax')] and ($glossary-instances or $knowledgebase-instances)">
                         <div class="footer entity-content" role="navigation">
@@ -2589,7 +2589,7 @@
                 
                 <!-- Find the first glossary that matches the ref -->
                 <xsl:when test="$element/@ref[string() gt '']">
-                    <xsl:sequence select="$glossary-prioritised[@xml:id/string() eq $element/@ref/string()][1]"/>
+                    <xsl:sequence select="$glossary-prioritised[@mode eq 'marked'][@xml:id/string() eq $element/@ref/string()][1]"/>
                 </xsl:when>
                 
                 <!-- Find the first glossary that matches the string -->
@@ -3016,10 +3016,11 @@
         <xsl:variable name="summary" select="$text/m:part[@type eq 'summary']/tei:p"/>
         <xsl:variable name="titleVariants" select="$text/m:title-variants/m:title[normalize-space(string-join(text(), ' '))] | $text/m:title-variants/m:note[@type eq 'title'][normalize-space(string-join(text(), ''))]"/>
         <xsl:variable name="supplementaryAttributions" select="$text/m:source/m:attribution[@ref][@role = $supplementaryRoles]"/>
+        
         <xsl:if test="$summary or $titleVariants or $supplementaryAttributions">
             
             <hr class="hidden-print"/>
-            
+                
             <a class="summary-link collapsed hidden-print" role="button" data-toggle="collapse" aria-expanded="false">
                 <xsl:attribute name="href" select="concat('#', $expand-id)"/>
                 <xsl:attribute name="aria-controls" select="concat('#', $expand-id)"/>
@@ -3028,8 +3029,8 @@
                 <xsl:value-of select="'Summary and further information'"/>
             </a>
             
-            <div class="collapse summary-detail print-collapse-override">
-                <xsl:attribute name="id" select="$expand-id"/>
+            <xsl:variable name="summary-content">
+                
                 <div class="well well-sm small">
                     
                     <h4>
@@ -3101,7 +3102,30 @@
                     </xsl:if>
                     
                 </div>
+                
+            </xsl:variable>
+            
+            <div>
+                
+                <xsl:attribute name="id" select="$expand-id"/>
+                
+                <xsl:attribute name="class" select="'collapse summary-detail print-collapse-override'"/>
+                
+                <xsl:sequence select="$summary-content"/>
+                
             </div>
+            
+            <!--<section>
+                
+                <xsl:attribute name="class" select="'preview summary-detail print-collapse-override'"/>
+                
+                <xsl:call-template name="preview-controls">
+                    <xsl:with-param name="section-id" select="$expand-id"/>
+                </xsl:call-template>
+                
+                <xsl:sequence select="$summary-content"/>
+                
+            </section>-->
             
         </xsl:if>
         

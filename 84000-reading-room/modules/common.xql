@@ -813,6 +813,7 @@ declare function common:cache-put($request as element(m:request), $data, $timest
     
     where $cache-key gt '' and exists($timestamp)
     return
+    
         let $cache-filename := common:cache-filename($timestamp)
         let $cache-collection := common:cache-collection($request)
         
@@ -824,9 +825,13 @@ declare function common:cache-put($request as element(m:request), $data, $timest
                 else ()
         
             return (
-            
+                
+                (:util:log('info', substring-before($cache-collection, concat('/', $cache-key))),:)
+                
                 (: Create the collection :)
-                xmldb:create-collection(string-join(($common:data-path, 'html'), '/'), $cache-key),
+                xmldb:create-collection(substring-before($cache-collection, concat('/', $cache-key)), $cache-key),
+                sm:chgrp(xs:anyURI($cache-collection), 'guest'),
+                sm:chmod(xs:anyURI($cache-collection), 'rwxrwxrwx'),
                 
                 (: Store the file :)
                 if($request/@resource-suffix eq 'html') then
@@ -838,7 +843,7 @@ declare function common:cache-put($request as element(m:request), $data, $timest
                 (: Set permissions :)
                 if(not(common:user-name() eq 'guest')) then (
                     sm:chgrp(xs:anyURI(string-join(($cache-collection, $cache-filename), '/')), 'guest'),
-                    sm:chmod(xs:anyURI(string-join(($cache-collection, $cache-filename), '/')), 'rw-rw-rw-')
+                    sm:chmod(xs:anyURI(string-join(($cache-collection, $cache-filename), '/')), 'rwxrwxrwx')
                 )
                 else ()
         )

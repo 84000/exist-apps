@@ -318,6 +318,7 @@
                                                         </xsl:attribute>
                                                         <xsl:attribute name="href" select="$app-href"/>
                                                         <xsl:attribute name="class" select="'log-click'"/>
+                                                        <xsl:attribute name="target" select="'84000-comms'"/>
                                                         <xsl:call-template name="download-icon">
                                                             <xsl:with-param name="type" select="'app'"/>
                                                         </xsl:call-template>
@@ -332,6 +333,7 @@
                                                         </xsl:attribute>
                                                         <xsl:attribute name="href" select="$app-href"/>
                                                         <xsl:attribute name="class" select="'log-click'"/>
+                                                        <xsl:attribute name="target" select="'84000-comms'"/>
                                                         <xsl:call-template name="download-label">
                                                             <xsl:with-param name="type" select="'app'"/>
                                                         </xsl:call-template>

@@ -6,6 +6,7 @@
     <!-- Look up environment variables -->
     <xsl:variable name="environment" select="/m:response/m:environment"/>
     <xsl:variable name="front-end-path" select="$environment/m:url[@id eq 'front-end']/text()"/>
+    <xsl:variable name="app-path" select="$environment/m:url[@id eq 'app']/text()"/>
     
     <xsl:template match="/m:response">
         
@@ -1242,11 +1243,27 @@
                                                     </a>
                                                 </li>
                                             </xsl:for-each>
+                                            <xsl:if test="$app-path">
+                                                <xsl:variable name="app-href" select="concat($app-path, '/translation/', $toh-key, '.html')"/>
+                                                <li>
+                                                    <a>
+                                                        <xsl:attribute name="href" select="$app-href"/>
+                                                        <xsl:attribute name="class" select="'log-click'"/>
+                                                        <xsl:attribute name="target" select="'84000-comms'"/>
+                                                        <xsl:call-template name="download-icon">
+                                                            <xsl:with-param name="type" select="'app'"/>
+                                                        </xsl:call-template>
+                                                        <xsl:call-template name="download-label">
+                                                            <xsl:with-param name="type" select="'app'"/>
+                                                        </xsl:call-template>
+                                                    </a>
+                                                </li>
+                                            </xsl:if>
                                             <xsl:if test="$text/m:downloads/m:download[@type = ('epub', 'azw3')]">
                                                 <li class="hidden-print">
                                                     <a data-toggle="modal" href="#ebook-help" data-target="#ebook-help" class="visible-scripts text-muted">
                                                         <i class="fa fa-info-circle" aria-hidden="true"/>
-                                                        <span class="small">
+                                                        <span>
                                                             <xsl:call-template name="local-text">
                                                                 <xsl:with-param name="local-key" select="'ebook-help-title'"/>
                                                             </xsl:call-template>

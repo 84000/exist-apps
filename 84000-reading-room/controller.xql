@@ -162,10 +162,18 @@ return
         </dispatch>
         
     (: Accept the client error without 404. It is logged above. :)
-    else if (lower-case($exist:resource) eq "log-error.html") then
+    else if (lower-case($exist:resource) eq "log-error.html") then (
+        log:log-request(
+            concat($exist:controller, $exist:path), 
+            lower-case(substring-after($exist:controller, "/")), 
+            $collection-path, 
+            $resource-id, 
+            $resource-suffix
+        ),
         <response>
             <message>logged</message>
         </response>
+    )
     
     (: If environment wants login then check there is some authentication :)
     else if(not(common:auth-path($collection-path)) or sm:is-authenticated()) then
