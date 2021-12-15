@@ -562,7 +562,7 @@
                                                         <xsl:if test="$locations-not-cached">
                                                             <div>
                                                                 <span class="label label-danger">
-                                                                    <xsl:value-of select="concat(count($locations-not-cached), ' new location')"/>
+                                                                    <xsl:value-of select="concat(count($locations-not-cached), ' new locations')"/>
                                                                 </span>
                                                             </div>
                                                         </xsl:if>

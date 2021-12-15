@@ -32,6 +32,7 @@ let $request :=
         attribute model { "section" }, 
         attribute resource-id { upper-case(request:get-parameter('resource-id', 'lobby')) }, 
         attribute resource-suffix { $resource-suffix }, 
+        attribute lang { common:request-lang() },
         attribute doc-type { $doc-type }, 
         attribute published-only { request:get-parameter('published-only', if($doc-type eq 'atom') then true() else false()) ! xs:boolean(.) }, 
         attribute child-texts-only { request:get-parameter('child-texts-only', true()) ! xs:boolean(.) }, 

@@ -22,6 +22,7 @@ let $request :=
         attribute model { "source" }, 
         attribute resource-id { request:get-parameter('resource-id', '') },
         attribute resource-suffix { request:get-parameter('resource-suffix', '') },
+        attribute lang { common:request-lang() },
         attribute ref-index { request:get-parameter('ref-index', '') },
         attribute folio { request:get-parameter('folio', '') },
         attribute page { request:get-parameter('page', '') },

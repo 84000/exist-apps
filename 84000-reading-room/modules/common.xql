@@ -569,7 +569,9 @@ declare function common:tei-editor() as xs:boolean {
 
 declare function common:user-in-group($group as xs:string*) as xs:boolean {
     
-    if(sm:id()//sm:real/sm:groups/sm:group[text() = $group]) then
+    let $smid := sm:id()
+    return
+    if($smid//sm:real/sm:groups/sm:group[text() = $group]) then
         true()
     else
         false()
@@ -674,12 +676,12 @@ declare function common:update($request-parameter as xs:string, $existing-value 
     else if(functx:node-kind($existing-value) eq 'attribute' and compare($existing-value, $new-value) eq 0) then
         () (: Data unchanged, do nothing :)
     
-    else if(functx:node-kind($existing-value) eq 'element' and deep-equal($existing-value, $new-value)) then
-        () (: Data unchanged, do nothing :)
-    
     else if(not($existing-value) and not($new-value)) then
         () (: No data, do nothing :)
         
+    else if(functx:node-kind($existing-value) eq 'element' and deep-equal($existing-value, $new-value)) then
+        () (: Data unchanged, do nothing :)
+    
     else 
         
         (: Add whitespace so it's not too unreadable :)
@@ -766,31 +768,37 @@ declare function common:get-parameter($parameter-name as xs:string) {
         request:get-attribute($parameter-name)
 };
 
-declare function common:cache-key($request as element(m:request)) as xs:string {
-    string-join($request/@*/string(), '_') ! replace(., '[^A-Za-z0-9\-_]', '-') ! lower-case(.)
-};
-
-declare function common:cache-filename($timestamp as xs:dateTime) as xs:string {
-    string-join((format-dateTime($timestamp, "[Y0001]-[M01]-[D01]-[H01]-[m01]-[s01]"), replace($common:app-version, '\.', '-')), '_') ! lower-case(.)
-};
-
 declare function common:cache-collection($request as element(m:request)) as xs:string? {
 
     let $cache-conf := $common:environment/m:cache-conf/m:cache[@model eq $request/@model][@view eq $request/@resource-suffix]
-    let $cache-key := common:cache-key($request)
+    let $request-collection := 
+        string-join((
+            (: model/resource-id as folders :)
+            $request/@*[local-name(.) = ('model', 'resource-id')]/string() ! replace(., '[^A-Za-z0-9\-_]', '-'),
+            (: remainder attributes as one folder :)
+            string-join($request/@*[not(local-name(.) = ('model', 'resource-id'))]/string() ! replace(., '[^A-Za-z0-9\-_]', '-'), '_')
+        ), '/') ! lower-case(.)
     where $cache-conf
     return
-        string-join(($cache-conf/@collection, $cache-key), '/')
+        string-join(($cache-conf/@collection, $request-collection), '/')
         
+};
+
+declare function common:cache-filename($request as element(m:request), $timestamp as xs:dateTime?) as xs:string {
+    string-join((
+        format-dateTime($timestamp, "[Y0001]-[M01]-[D01]-[H01]-[m01]-[s01]"), 
+        replace($common:app-version, '\.', '-')
+    ), '_') || '.xml' ! lower-case(.)
 };
 
 declare function common:cache-get($request as element(m:request), $timestamp as xs:dateTime?) {
 
     let $cache-collection := common:cache-collection($request)
+    let $cache-filename := common:cache-filename($request, $timestamp)
     
-    where $cache-collection and exists($timestamp)
+    where $cache-collection and $cache-filename and exists($timestamp)
     return
-        let $cache-filename := common:cache-filename($timestamp)
+        
         let $cached := doc(xs:anyURI(concat($cache-collection, '/', $cache-filename)))
         where $cached
         return (
@@ -808,45 +816,60 @@ declare function common:cache-get($request as element(m:request), $timestamp as 
 };
 
 declare function common:cache-put($request as element(m:request), $data, $timestamp as xs:dateTime?) {
-
-    let $cache-key := common:cache-key($request)
     
-    where $cache-key gt '' and exists($timestamp)
+    let $cache-collection-parent := $common:environment/m:cache-conf/m:cache[@model eq $request/@model][@view eq $request/@resource-suffix]
+    let $cache-collection := common:cache-collection($request)
+    let $cache-filename := common:cache-filename($request, $timestamp)
+    
+    where $cache-collection-parent and $cache-collection and $cache-filename and exists($timestamp)
     return
+        
+        (: Clear existing cache :)
+        let $clear-cache := 
+            if(xmldb:collection-available($cache-collection)) then 
+                xmldb:remove($cache-collection)
+            else ()
     
-        let $cache-filename := common:cache-filename($timestamp)
-        let $cache-collection := common:cache-collection($request)
-        
-        where $cache-collection
-        return
-            let $clear-cache := 
-                if(xmldb:collection-available($cache-collection)) then 
-                    xmldb:remove($cache-collection)
-                else ()
-        
-            return (
+        return (
+            
+            util:log('info', concat('Cache: ', $cache-collection, '/', $cache-filename)),
+            
+            (: Create the collection :)
+            if(not(xmldb:collection-available($cache-collection))) then (
+            
                 
-                (:util:log('info', substring-before($cache-collection, concat('/', $cache-key))),:)
+                let $cache-collection-no-parent := substring-after($cache-collection, concat($cache-collection-parent, '/'))
+                let $cache-collection-dirs := tokenize($cache-collection-no-parent, '/')
                 
-                (: Create the collection :)
-                xmldb:create-collection(substring-before($cache-collection, concat('/', $cache-key)), $cache-key),
-                sm:chgrp(xs:anyURI($cache-collection), 'guest'),
-                sm:chmod(xs:anyURI($cache-collection), 'rwxrwxrwx'),
-                
-                (: Store the file :)
-                if($request/@resource-suffix eq 'html') then
-                    xmldb:store($cache-collection, $cache-filename, $data, 'text/html')
-                else
-                    xmldb:store($cache-collection, $cache-filename, $data, 'application/xml')
-                ,
-                
-                (: Set permissions :)
-                if(not(common:user-name() eq 'guest')) then (
-                    sm:chgrp(xs:anyURI(string-join(($cache-collection, $cache-filename), '/')), 'guest'),
-                    sm:chmod(xs:anyURI(string-join(($cache-collection, $cache-filename), '/')), 'rwxrwxrwx')
+                (: Loop through structure making sure collections are present with permissions set :)
+                for $nesting in 1 to count($cache-collection-dirs)
+                let $dir := $cache-collection-dirs[$nesting]
+                let $parent := string-join(($cache-collection-parent, subsequence($cache-collection-dirs, 1, ($nesting - 1))), '/')
+                where not(xmldb:collection-available(string-join(($parent, $dir), '/')))
+                return (
+                    (:string-join(($parent, $dir), '/'),:)
+                    xmldb:create-collection($parent, $dir),
+                    sm:chgrp(xs:anyURI(string-join(($parent, $dir), '/')), 'guest'),
+                    sm:chmod(xs:anyURI(string-join(($parent, $dir), '/')), 'rwxrwxrwx')
                 )
-                else ()
-        )
+                
+            )
+            else(),
+            
+            (: Store the file :)
+            if($request/@resource-suffix eq 'html') then
+                xmldb:store($cache-collection, $cache-filename, $data, 'text/html')
+            else
+                xmldb:store($cache-collection, $cache-filename, $data, 'application/xml')
+            ,
+            
+            (: Set permissions :)
+            if(not(common:user-name() eq 'guest')) then (
+                sm:chgrp(xs:anyURI(string-join(($cache-collection, $cache-filename), '/')), 'guest'),
+                sm:chmod(xs:anyURI(string-join(($cache-collection, $cache-filename), '/')), 'rwxrwxrwx')
+            )
+            else ()
+    )
     
 };
 

@@ -24,16 +24,24 @@ let $view-mode := request:get-parameter('view-mode', 'default')
 let $archive-path := request:get-parameter('archive-path', ())
 let $passage-id := request:get-parameter('part', 'none')
 
+(: Validate the resource-id :)
 let $tei := tei-content:tei($resource-id, 'translation', $archive-path)
-let $part := $tei//id($passage-id)/ancestor-or-self::tei:div[@type][not(@type eq 'translation')][last()]
-
+(: Get the Toh-key :)
+let $source := tei-content:source($tei, $resource-id)
+(: Get the part - if the passage-id is a part :)
+let $part := 
+    $tei//id($passage-id)/ancestor-or-self::tei:div[@type][not(@type eq 'translation')][last()]
+    | $tei//tei:div[@type eq $passage-id]
+    
+(:  Sanitize the request :)
 let $request := 
     element { QName('http://read.84000.co/ns/1.0', 'request')} {
         attribute model { 'translation' },
-        attribute resource-id { $resource-id },
+        attribute resource-id { $source/@key },
         attribute resource-suffix { $resource-suffix },
+        attribute lang { common:request-lang() },
         attribute doc-type { request:get-parameter('resource-suffix', 'html') },
-        attribute part { ($part/@xml:id, $part/@type, $passage-id)[1] },
+        attribute part { ($part/@xml:id, $part/@type, $passage-id[. = ('end-notes')])[1] },
         attribute view-mode { $view-mode },
         attribute archive-path { $archive-path },
         
@@ -58,12 +66,12 @@ let $request :=
     }
 
 (: Suppress cache for some view modes :)
-let $cache-timestamp := 
-    if(not($request[@view-mode = ('editor', 'passage', 'editor-passage', 'glossary-check')])) then
+let $tei-timestamp := 
+    if($request/m:view-mode[@cache eq 'use-cache']) then
         tei-content:last-modified($tei)
     else ()
 
-let $cached := common:cache-get($request, $cache-timestamp)
+let $cached := common:cache-get($request, $tei-timestamp)
 
 return 
     (: Cached html :)
@@ -78,9 +86,6 @@ return
     (: Compile response :)
     else
 
-        (: Get the source so we can extract the Toh :)
-        let $source := tei-content:source($tei, $request/@resource-id)
-        
         (: Compile all the translation parts :)
         let $parts := translation:parts($tei, $passage-id, $request/m:view-mode)
         
@@ -90,10 +95,16 @@ return
         )
         
         (: Get entities :)
-        let $instance-ids := $parts[@id eq 'glossary']//tei:gloss/@xml:id
         let $glossary-entities := 
             if($common:environment/m:enable[@type eq 'glossary-of-terms']) then
-                entities:entities($instance-ids, true(), false(), false())
+                (: Optimisation here: don't get entities for passage unless it's a glossary :)
+                let $instance-ids := 
+                    if($request/m:view-mode[@parts eq 'passage']) then
+                        $parts[@id eq 'glossary']//tei:gloss/id($passage-id)/@xml:id
+                    else
+                        $parts[@id eq 'glossary']//tei:gloss/@xml:id
+                return
+                    entities:entities($instance-ids, true(), false(), false())
             else ()
         
         (: Compile all the translation data :)
@@ -159,7 +170,7 @@ return
             
             (: html :)
             if($request/@resource-suffix = ('html')) then (
-                common:html($xml-response, concat($common:app-path, "/views/html/translation.xsl"), $cache-timestamp)
+                common:html($xml-response, concat($common:app-path, "/views/html/translation.xsl"), $tei-timestamp)
             )
             
             (: xml :)

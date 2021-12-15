@@ -51,10 +51,12 @@
                         <xsl:for-each select="m:source/m:page">
                             <div>
                                 
+                                <xsl:variable name="first-folio" select="(/m:response/m:translation/m:folio-content/tei:ref[@xml:id][@cRef][@type eq 'folio'][@key eq /m:response/m:translation/m:toh/@key], /m:response/m:translation/m:folio-content/tei:ref[@xml:id][@cRef][@type eq 'folio'][not(@key)])[1]" as="element(tei:ref)?"/>
+                                
                                 <xsl:variable name="folio-string" as="xs:string">
                                     <xsl:choose>
-                                        <xsl:when test="/m:response/m:translation/m:folio-content/tei:ref[@type eq 'folio'][@cRef]">
-                                            <xsl:value-of select="/m:response/m:translation/m:folio-content/tei:ref[@type eq 'folio'][1]/@cRef"/>
+                                        <xsl:when test="$first-folio">
+                                            <xsl:value-of select="$first-folio/@cRef"/>
                                         </xsl:when>
                                         <xsl:otherwise>
                                             <xsl:value-of select="concat('folio ', @folio-in-etext)"/>

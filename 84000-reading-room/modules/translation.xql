@@ -21,19 +21,19 @@ import module namespace functx = "http://www.functx.com";
 :)
 declare variable $translation:view-modes := 
     <view-modes xmlns="http://read.84000.co/ns/1.0">
-      <view-mode id="default"           client="browser"  layout="full"            glossary="use-cache"       parts="count-sections"/>,
-      <view-mode id="editor"            client="browser"  layout="expanded"        glossary="editor-defer"    parts="all"/>,
-      <view-mode id="annotation"        client="browser"  layout="expanded-fixed"  glossary="use-cache"       parts="all"/>,
-      <view-mode id="txt"               client="none"     layout="expanded-fixed"  glossary="suppress"        parts="all"/>,
-      <view-mode id="ebook"             client="ebook"    layout="expanded-fixed"  glossary="use-cache"       parts="all"/>,
-      <view-mode id="pdf"               client="pdf"      layout="expanded-fixed"  glossary="suppress"        parts="all"/>,
-      <view-mode id="app"               client="app"      layout="expanded-fixed"  glossary="use-cache"       parts="all"/>,
-      <view-mode id="tests"             client="none"     layout="expanded-fixed"  glossary="suppress"        parts="all"/>,
-      <view-mode id="glossary-editor"   client="browser"  layout="full"            glossary="use-cache"       parts="glossary"/>,
-      <view-mode id="glossary-check"    client="browser"  layout="expanded-fixed"  glossary="no-cache"        parts="all"/>,
-      <view-mode id="ajax-part"         client="ajax"     layout="part-only"       glossary="use-cache"       parts="part"/>,
-      <view-mode id="passage"           client="ajax"     layout="part-only"       glossary="use-cache"       parts="passage"/>,
-      <view-mode id="editor-passage"    client="ajax"     layout="part-only"       glossary="no-cache"        parts="passage"/>
+      <view-mode id="default"           client="browser"  cache="use-cache"  layout="full"            glossary="use-cache"       parts="count-sections"/>,
+      <view-mode id="editor"            client="browser"  cache="suppress"   layout="expanded"        glossary="editor-defer"    parts="all"/>,
+      <view-mode id="annotation"        client="browser"  cache="use-cache"  layout="expanded-fixed"  glossary="use-cache"       parts="all"/>,
+      <view-mode id="txt"               client="none"     cache="use-cache"  layout="expanded-fixed"  glossary="suppress"        parts="all"/>,
+      <view-mode id="ebook"             client="ebook"    cache="use-cache"  layout="expanded-fixed"  glossary="use-cache"       parts="all"/>,
+      <view-mode id="pdf"               client="pdf"      cache="use-cache"  layout="expanded-fixed"  glossary="suppress"        parts="all"/>,
+      <view-mode id="app"               client="app"      cache="use-cache"  layout="expanded-fixed"  glossary="use-cache"       parts="all"/>,
+      <view-mode id="tests"             client="none"     cache="suppress"   layout="expanded-fixed"  glossary="suppress"        parts="all"/>,
+      <view-mode id="glossary-editor"   client="browser"  cache="suppress"   layout="full"            glossary="use-cache"       parts="glossary"/>,
+      <view-mode id="glossary-check"    client="browser"  cache="suppress"   layout="expanded-fixed"  glossary="no-cache"        parts="all"/>,
+      <view-mode id="ajax-part"         client="ajax"     cache="use-cache"  layout="part-only"       glossary="use-cache"       parts="part"/>,
+      <view-mode id="passage"           client="ajax"     cache="suppress"   layout="part-only"       glossary="use-cache"       parts="passage"/>,
+      <view-mode id="editor-passage"    client="ajax"     cache="suppress"   layout="part-only"       glossary="no-cache"        parts="passage"/>
     </view-modes>;
 
 declare variable $translation:published-status-ids := $tei-content:text-statuses/m:status[@type eq 'translation'][@group = ('published')]/@status-id;
@@ -486,7 +486,11 @@ declare function local:part-content($content as element(tei:div)?, $render as xs
                 let $passage := $node/descendant-or-self::tei:*[@tid eq $output-id-int]
                 return
                     if($passage) then (
-                        $node/ancestor-or-self::*[preceding-sibling::tei:milestone[@xml:id]][1]/preceding-sibling::tei:milestone[@xml:id][1],
+                        (: Return the preceding milestone :)
+                        (:$passage/ancestor-or-self::*[preceding-sibling::tei:milestone[@unit eq 'chunk'][@xml:id]][1]/preceding-sibling::tei:milestone[@unit eq 'chunk'][@xml:id][1],:)
+                        (: Bizarre fix required here - milestone selector not selecting :)
+                        $passage/ancestor-or-self::*[preceding-sibling::tei:milestone[@unit eq 'chunk'][@xml:id]][1]/preceding-sibling::tei:*[@unit eq 'chunk'][@xml:id][1],
+                        (: And the passage :)
                         $passage
                     )
                     else ()
@@ -527,12 +531,15 @@ declare function local:render($content as element()*, $show-ids as xs:string*, $
     else if($passage-id = ('all')) then 
         'collapse'
     
-    (: Special case for the glossary :)
+    (: Special cases for the glossary :)
     (: If no-cache then include the whole thing :)
-    (: If glossary part then include whole thing :)
-    else if($content[@type eq 'glossary'] and ($view-mode[@glossary = ('no-cache')] or $view-mode[@parts = ('glossary')])) then
+    else if($content[@type eq 'glossary'] and $view-mode[@glossary = ('no-cache')]) then
         'show'
     
+    (: If glossary part then include whole thing :)
+    else if($content[@type eq 'glossary'] and $view-mode[@parts = ('glossary')]) then
+        'show'
+        
     (: If we are showing the passage only then everything else empty :)
     else if($view-mode[@parts = ('passage')]) then 
         if(local:passage-in-content($content, $passage-id)) then

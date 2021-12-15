@@ -65,7 +65,9 @@ declare function local:assign-thousand-buddhas() {
         common:update('assign-thousand-buddhas', $local:entity-thousand-buddhas, $entity-thousand-buddhas-new, (), ())
 };
 
-declare function local:analyze-thousand-buddhas() {
+declare function local:analyze-thousand-buddhas($update-definition as xs:boolean) {
+
+    (# exist:batch-transaction #) {
     
     (: Thousand buddhas entities :)
     let $thousand-buddhas-entity-ids := $local:entity-thousand-buddhas/m:relation[@predicate eq 'hasMember']/@id
@@ -88,39 +90,64 @@ declare function local:analyze-thousand-buddhas() {
     (: loop the glossary items :)
     for $buddha-gloss-id in $thousand-buddhas-gloss-ids
     let $gloss := $local:toh94//tei:back//tei:gloss/id($buddha-gloss-id)
+    
     let $list-of-names-node := $list-of-names-nodes[@data-glossary-id eq $buddha-gloss-id]
+    let $list-of-names-index := $list-of-names-node ! functx:index-of-node($list-of-names-nodes, .)
+    
     let $list-of-biographies-node := $list-of-biographies-nodes[@data-glossary-id eq $buddha-gloss-id]
+    let $list-of-biographies-index := $list-of-biographies-node ! functx:index-of-node($list-of-biographies-nodes, .)
+    
     let $list-of-occasions-node := $list-of-occasions-nodes[@data-glossary-id eq $buddha-gloss-id]
+    let $list-of-occasions-index := $list-of-occasions-node ! functx:index-of-node($list-of-occasions-nodes, .)
+    
+    let $definition :=
+        string-join ((
+            (
+                if($list-of-names-index) then
+                    $list-of-names-index ! concat('The ', functx:ordinal-number-en(.), ' buddha in the first list,')
+                else 'Not listed as a buddha in the first list,'
+            ),
+            (
+                if($list-of-biographies-index) then
+                    $list-of-biographies-index ! concat(functx:ordinal-number-en(.),' in the second list,')
+                else 'not listed in the second list,'
+            ),
+            (
+                if($list-of-occasions-index) then
+                    $list-of-occasions-index ! concat('and ',functx:ordinal-number-en(.), ' in the third list.')
+                else 'and not listed in the third list.'
+            )
+        ), ' ')
+    
     where $gloss
+    order by $list-of-names-index[1] ! xs:integer(.)
     return 
         element buddha {
+        
             attribute name { $gloss/tei:term[1] },
             (:attribute buddha-gloss-id { $buddha-gloss-id },:)
             attribute gloss-id { $gloss/@xml:id },
-            attribute position-list-of-names { 
-                for $node at $index in $list-of-names-node
-                return (
-                    if($index gt 1) then ',' else (),
-                    functx:index-of-node($list-of-names-nodes, $node)
+            attribute position-list-of-names { string-join($list-of-names-index, ',') },
+            attribute position-list-of-biographies { string-join($list-of-biographies-index, ',') },
+            attribute position-list-of-occasions { string-join($list-of-occasions-index, ',') },
+            attribute glossary-definition { $definition },
+            if($update-definition)then
+            
+                let $current-definition := $gloss/tei:term[@type eq 'definition'][1]
+                let $new-definition :=
+                    element { node-name($current-definition) }{
+                        $current-definition/@*,
+                        text { $definition }
+                    }
+                
+                return ( 
+                    $new-definition,
+                    common:update('update-gloss', $current-definition, $new-definition, $gloss, ())
                 )
-            },
-            attribute position-list-of-biographies { 
-                for $node at $index in $list-of-biographies-node
-                return (
-                    if($index gt 1) then ',' else (),
-                    functx:index-of-node($list-of-biographies-nodes, $node)
-                )
-            },
-            attribute position-list-of-occasions { 
-                for $node at $index in $list-of-occasions-node
-                return (
-                    if($index gt 1) then ',' else (),
-                    functx:index-of-node($list-of-occasions-nodes, $node)
-                )
-            }
+            else ()
         }
-        
+    }
 };
 
 (:local:assign-thousand-buddhas():)
-local:analyze-thousand-buddhas()
+local:analyze-thousand-buddhas(true())

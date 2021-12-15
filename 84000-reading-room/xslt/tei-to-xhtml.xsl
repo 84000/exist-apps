@@ -1127,259 +1127,265 @@
         
         <xsl:variable name="glossary-part" select="($translation/m:part[@type eq 'glossary'] | $knowledgebase/m:part[@type eq 'glossary'])[1]"/>
         
-        <xsl:apply-templates select="$glossary-part/tei:head"/>
+        <xsl:variable name="glossary-render" select="$glossary-part//tei:gloss[@xml:id][$view-mode[not(@parts eq 'passage')] or @xml:id eq $requested-passage]"/>
         
-        <xsl:for-each select="$glossary-part//tei:gloss[@xml:id][$view-mode[not(@parts eq 'passage')] or @xml:id eq $requested-passage]">
+        <xsl:if test="$glossary-render">
             
-            <xsl:sort select="key('glossary-cache-gloss', @xml:id, $root)[1]/@index ! common:enforce-integer(.)"/>
+            <xsl:apply-templates select="$glossary-part/tei:head"/>
             
-            <xsl:variable name="glossary-item" select="."/>
-            <xsl:variable name="glossary-cache-gloss" select="key('glossary-cache-gloss', $glossary-item/@xml:id, $root)[1]"/>
-            <xsl:variable name="cached-locations" select="$glossary-cache-gloss/m:location"/>
-            <xsl:variable name="glossary-item-label">
-                <xsl:call-template name="bookmark-label">
-                    <xsl:with-param name="prefix" select="$glossary-part/@prefix"/>
-                    <xsl:with-param name="index" select="$glossary-cache-gloss/@index"/>
-                </xsl:call-template>
-            </xsl:variable>
-            
-            <!-- Potential optimisation: only show glossaries with expressions in the text (Could be slower to filter them than to just parse them) -->
-            <div class="rw glossary-item">
+            <xsl:for-each select="$glossary-render">
                 
-                <xsl:attribute name="id" select="$glossary-item/@xml:id"/>
+                <xsl:sort select="key('glossary-cache-gloss', @xml:id, $root)[1]/@index ! common:enforce-integer(.)"/>
                 
-                <xsl:if test="$view-mode[not(@client = ('ebook', 'app'))]">
-                    <xsl:attribute name="data-passage-id" select="$glossary-item/@xml:id"/>
-                </xsl:if>
-                
-                <xsl:if test="$view-mode[@glossary = ('defer', 'editor-defer')]">
-                    <xsl:call-template name="in-view-replace-attribute">
-                        <xsl:with-param name="part-id" select="$glossary-item/@xml:id"/>
-                        <xsl:with-param name="target-id" select="$glossary-item/@xml:id"/>
+                <xsl:variable name="glossary-item" select="."/>
+                <xsl:variable name="glossary-cache-gloss" select="key('glossary-cache-gloss', $glossary-item/@xml:id, $root)[1]"/>
+                <xsl:variable name="cached-locations" select="$glossary-cache-gloss/m:location"/>
+                <xsl:variable name="glossary-item-label">
+                    <xsl:call-template name="bookmark-label">
+                        <xsl:with-param name="prefix" select="$glossary-part/@prefix"/>
+                        <xsl:with-param name="index" select="$glossary-cache-gloss/@index"/>
                     </xsl:call-template>
-                </xsl:if>
+                </xsl:variable>
                 
-                <div class="gtr">
-                    <xsl:choose>
-                        
-                        <xsl:when test="$view-mode[not(@client = ('ebook', 'app'))]">
-                            
-                            <xsl:call-template name="bookmark-link">
-                                <xsl:with-param name="bookmark-target-hash" select="$glossary-item/@xml:id"/>
-                                <xsl:with-param name="bookmark-target-part" select="'glossary'"/>
-                                <xsl:with-param name="bookmark-label" select="$glossary-item-label"/>
-                            </xsl:call-template>
-                            
-                        </xsl:when>
-                        
-                        <xsl:otherwise>
-                            <xsl:value-of select="$glossary-item-label"/>
-                        </xsl:otherwise>
-                        
-                    </xsl:choose>
-                </div>
-                
-                <div>
+                <!-- Potential optimisation: only show glossaries with expressions in the text (Could be slower to filter them than to just parse them) -->
+                <div class="rw glossary-item">
                     
-                    <!-- Main term -->
-                    <h3 class="term">
-                        <xsl:value-of select="($glossary-item/tei:term[not(@type = ('definition','alternative'))][not(@xml:lang) or @xml:lang eq 'en'])[1]/normalize-space(.) ! functx:capitalize-first(.)"/>
-                    </h3>
+                    <xsl:attribute name="id" select="$glossary-item/@xml:id"/>
                     
-                    <!-- Output terms grouped and ordered by language -->
-                    <xsl:for-each select="('Bo-Ltn','bo','Sa-Ltn', 'zh')">
+                    <xsl:if test="$view-mode[not(@client = ('ebook', 'app'))]">
+                        <xsl:attribute name="data-passage-id" select="$glossary-item/@xml:id"/>
+                    </xsl:if>
+                    
+                    <xsl:if test="$view-mode[@glossary = ('defer', 'editor-defer')]">
+                        <xsl:call-template name="in-view-replace-attribute">
+                            <xsl:with-param name="part-id" select="$glossary-item/@xml:id"/>
+                            <xsl:with-param name="target-id" select="$glossary-item/@xml:id"/>
+                        </xsl:call-template>
+                    </xsl:if>
+                    
+                    <div class="gtr">
+                        <xsl:choose>
+                            
+                            <xsl:when test="$view-mode[not(@client = ('ebook', 'app'))]">
+                                
+                                <xsl:call-template name="bookmark-link">
+                                    <xsl:with-param name="bookmark-target-hash" select="$glossary-item/@xml:id"/>
+                                    <xsl:with-param name="bookmark-target-part" select="'glossary'"/>
+                                    <xsl:with-param name="bookmark-label" select="$glossary-item-label"/>
+                                </xsl:call-template>
+                                
+                            </xsl:when>
+                            
+                            <xsl:otherwise>
+                                <xsl:value-of select="$glossary-item-label"/>
+                            </xsl:otherwise>
+                            
+                        </xsl:choose>
+                    </div>
+                    
+                    <div>
                         
-                        <xsl:variable name="term-lang" select="."/>
-                        <xsl:variable name="term-lang-terms" select="$glossary-item/tei:term[not(@type = ('definition','alternative'))][@xml:lang eq $term-lang][normalize-space(text())]"/>
-                        <xsl:variable name="term-empty-text">
-                            <xsl:call-template name="text">
-                                <xsl:with-param name="global-key" select="concat('glossary.term-empty-', lower-case($term-lang))"/>
-                            </xsl:call-template>
-                        </xsl:variable>
+                        <!-- Main term -->
+                        <h3 class="term">
+                            <xsl:value-of select="($glossary-item/tei:term[not(@type = ('definition','alternative'))][not(@xml:lang) or @xml:lang eq 'en'])[1]/normalize-space(.) ! functx:capitalize-first(.)"/>
+                        </h3>
                         
-                        <xsl:if test="$term-lang-terms or $term-empty-text gt ''">
-                            <div>
-                                <ul class="list-inline inline-dots">
-                                    <xsl:choose>
-                                        
-                                        <xsl:when test="$term-lang-terms">
-                                            <xsl:for-each select="$term-lang-terms">
-                                                <li>
-                                                    
-                                                    <span>
+                        <!-- Output terms grouped and ordered by language -->
+                        <xsl:for-each select="('Bo-Ltn','bo','Sa-Ltn', 'zh')">
+                            
+                            <xsl:variable name="term-lang" select="."/>
+                            <xsl:variable name="term-lang-terms" select="$glossary-item/tei:term[not(@type = ('definition','alternative'))][@xml:lang eq $term-lang][normalize-space(text())]"/>
+                            <xsl:variable name="term-empty-text">
+                                <xsl:call-template name="text">
+                                    <xsl:with-param name="global-key" select="concat('glossary.term-empty-', lower-case($term-lang))"/>
+                                </xsl:call-template>
+                            </xsl:variable>
+                            
+                            <xsl:if test="$term-lang-terms or $term-empty-text gt ''">
+                                <div>
+                                    <ul class="list-inline inline-dots">
+                                        <xsl:choose>
+                                            
+                                            <xsl:when test="$term-lang-terms">
+                                                <xsl:for-each select="$term-lang-terms">
+                                                    <li>
                                                         
-                                                        <xsl:call-template name="class-attribute">
-                                                            <xsl:with-param name="base-classes" as="xs:string*">
-                                                                <xsl:value-of select="'term'"/>
-                                                                <xsl:if test="@type = ('reconstruction', 'semanticReconstruction','transliterationReconstruction')">
-                                                                    <xsl:value-of select="'reconstructed'"/>
-                                                                </xsl:if>
-                                                            </xsl:with-param>
-                                                            <xsl:with-param name="lang" select="$term-lang"/>
-                                                        </xsl:call-template>
-                                                        
-                                                        <xsl:value-of select="normalize-space(text())"/>
-                                                        
-                                                    </span>
-                                                    
-                                                    <xsl:if test="$view-mode[@id = ('editor', 'annotation', 'editor-passage')] and @status eq 'verified'">
-                                                        <xsl:value-of select="' '"/>
-                                                        <span class="text-warning small">
-                                                            <xsl:value-of select="'[Verified]'"/>
+                                                        <span>
+                                                            
+                                                            <xsl:call-template name="class-attribute">
+                                                                <xsl:with-param name="base-classes" as="xs:string*">
+                                                                    <xsl:value-of select="'term'"/>
+                                                                    <xsl:if test="@type = ('reconstruction', 'semanticReconstruction','transliterationReconstruction')">
+                                                                        <xsl:value-of select="'reconstructed'"/>
+                                                                    </xsl:if>
+                                                                </xsl:with-param>
+                                                                <xsl:with-param name="lang" select="$term-lang"/>
+                                                            </xsl:call-template>
+                                                            
+                                                            <xsl:value-of select="normalize-space(text())"/>
+                                                            
                                                         </span>
-                                                    </xsl:if>
-                                                    
+                                                        
+                                                        <xsl:if test="$view-mode[@id = ('editor', 'annotation', 'editor-passage')] and @status eq 'verified'">
+                                                            <xsl:value-of select="' '"/>
+                                                            <span class="text-warning small">
+                                                                <xsl:value-of select="'[Verified]'"/>
+                                                            </span>
+                                                        </xsl:if>
+                                                        
+                                                    </li>
+                                                </xsl:for-each>
+                                            </xsl:when>
+                                            
+                                            <xsl:otherwise>
+                                                <li>
+                                                    <xsl:value-of select="$term-empty-text"/>
                                                 </li>
-                                            </xsl:for-each>
+                                            </xsl:otherwise>
+                                            
+                                        </xsl:choose>
+                                    </ul>
+                                </div>
+                            </xsl:if>
+                            
+                        </xsl:for-each>
+                        
+                        <!-- Alternatives -->
+                        <xsl:variable name="alternative-terms" select="$glossary-item/tei:term[@type eq 'alternative'][normalize-space(data())]"/>
+                        <xsl:if test="$view-mode[@id = ('editor', 'annotation', 'tests', 'editor-passage')] and $alternative-terms">
+                            <ul class="list-inline inline-dots">
+                                <xsl:for-each select="$alternative-terms">
+                                    <li>
+                                        <span>
+                                            <xsl:call-template name="class-attribute">
+                                                <xsl:with-param name="base-classes" as="xs:string*">
+                                                    <xsl:value-of select="'term'"/>
+                                                    <xsl:value-of select="'alternative'"/>
+                                                </xsl:with-param>
+                                                <xsl:with-param name="lang" select="@xml:lang"/>
+                                            </xsl:call-template>
+                                            <xsl:value-of select="normalize-space(data())"/>
+                                        </span>
+                                    </li>
+                                </xsl:for-each>
+                            </ul>
+                        </xsl:if>
+                        
+                        <!-- Definition -->
+                        <xsl:variable name="entry-definition" select="$glossary-item/tei:term[@type eq 'definition'][node()]"/>
+                        
+                        <!-- Entity -->
+                        <xsl:variable name="entity" select="key('entity-instance', $glossary-item/@xml:id, $root)[1]/parent::m:entity"/>
+                        <xsl:variable name="entity-instance" select="$entity/m:instance[@id eq $glossary-item/@xml:id]"/>
+                        <xsl:variable name="entity-definition" select="$entity/m:content[@type eq 'glossary-definition']"/>
+                        
+                        <!-- Definition -->
+                        <xsl:for-each select="$entry-definition">
+                            <p>
+                                <xsl:call-template name="class-attribute">
+                                    <xsl:with-param name="base-classes" select="'definition'"/>
+                                </xsl:call-template>
+                                <xsl:apply-templates select="node()"/>
+                            </p>
+                        </xsl:for-each>
+                        
+                        <!-- Entity definition -->
+                        <xsl:if test="$entity-definition and (not($entry-definition) or $entity-instance[@use-definition  eq 'both'])">
+                            <div class="footer">
+                                <h4 class="heading">
+                                    <xsl:value-of select="'Definition from the 84000 Glossary of Terms:'"/>
+                                </h4>
+                                <xsl:for-each select="$entity-definition">
+                                    <p>
+                                        <xsl:call-template name="class-attribute">
+                                            <xsl:with-param name="base-classes" select="'definition'"/>
+                                        </xsl:call-template>
+                                        <xsl:apply-templates select="node()"/>
+                                    </p>
+                                </xsl:for-each>
+                            </div>
+                        </xsl:if>
+                        
+                        <!-- Expressions -->
+                        <xsl:if test="$view-mode[not(@id eq 'pdf')]">
+                            <div class="footer hidden-print" role="navigation" aria-label="Locations of this term in the text">
+                                
+                                <xsl:variable name="count-expressions" select="count($cached-locations)"/>
+                                <h4 class="heading">
+                                    <xsl:choose>
+                                        <xsl:when test="$count-expressions gt 1">
+                                            <xsl:value-of select="concat(format-number($count-expressions, '#,###'), ' passages contain this term:')"/>
                                         </xsl:when>
-                                        
+                                        <xsl:when test="$count-expressions eq 1">
+                                            <xsl:value-of select="'1 passage contains this term:'"/>
+                                        </xsl:when>
                                         <xsl:otherwise>
-                                            <li>
-                                                <xsl:value-of select="$term-empty-text"/>
-                                            </li>
+                                            <xsl:value-of select="'No known locations for this term'"/>
                                         </xsl:otherwise>
-                                        
                                     </xsl:choose>
+                                </h4>
+                                
+                                <xsl:call-template name="cached-locations">
+                                    <xsl:with-param name="cached-locations" select="$cached-locations"/>
+                                    <xsl:with-param name="glossary-id" select="$glossary-item/@xml:id"/>
+                                </xsl:call-template>
+                                
+                            </div>
+                        </xsl:if>
+                        
+                        <!-- Link to the Glossary / Knowledge Base -->
+                        <xsl:variable name="glossary-instances" select="$entity/m:instance[@type eq 'glossary-item'][not(@id eq $glossary-item/@xml:id)]"/>
+                        <xsl:variable name="knowledgebase-instances" select="$entity/m:instance[@type eq 'knowledgebase-article'][not(@id eq $kb-id)]"/>
+                        <xsl:if test="$view-mode[@client = ('browser', 'ajax')] and ($glossary-instances or $knowledgebase-instances)">
+                            <div class="footer entity-content" role="navigation">
+                                <h4 class="heading">
+                                    <xsl:value-of select="'Links to further resources:'"/>
+                                </h4>
+                                <ul class="list-inline inline-dots small">
+                                    <xsl:if test="$glossary-instances">
+                                        <li>
+                                            <a target="84000-glossary">
+                                                <xsl:attribute name=" href" select="concat('/glossary.html?entity-id=', $entity/@xml:id)"/>
+                                                <xsl:value-of select="concat(format-number(count($glossary-instances), '#,###'), ' related glossary ', if(count($glossary-instances) eq 1) then 'entry' else 'entries')"/>
+                                            </a>
+                                        </li>
+                                    </xsl:if>
+                                    <xsl:if test="$knowledgebase-instances">
+                                        <li>
+                                            <a target="84000-knowledgebase">
+                                                <xsl:attribute name=" href" select="concat('/knowledgebase/', $knowledgebase-instances[1]/@id, '.html')"/>
+                                                <xsl:value-of select="'View the 84000 Knowledge Base article'"/>
+                                            </a>
+                                        </li>
+                                    </xsl:if>
                                 </ul>
                             </div>
                         </xsl:if>
                         
-                    </xsl:for-each>
-                    
-                    <!-- Alternatives -->
-                    <xsl:variable name="alternative-terms" select="$glossary-item/tei:term[@type eq 'alternative'][normalize-space(data())]"/>
-                    <xsl:if test="$view-mode[@id = ('editor', 'annotation', 'tests', 'editor-passage')] and $alternative-terms">
-                        <ul class="list-inline inline-dots">
-                            <xsl:for-each select="$alternative-terms">
-                                <li>
-                                    <span>
-                                        <xsl:call-template name="class-attribute">
-                                            <xsl:with-param name="base-classes" as="xs:string*">
-                                                <xsl:value-of select="'term'"/>
-                                                <xsl:value-of select="'alternative'"/>
-                                            </xsl:with-param>
-                                            <xsl:with-param name="lang" select="@xml:lang"/>
-                                        </xsl:call-template>
-                                        <xsl:value-of select="normalize-space(data())"/>
-                                    </span>
-                                </li>
-                            </xsl:for-each>
-                        </ul>
-                    </xsl:if>
-                    
-                    <!-- Definition -->
-                    <xsl:variable name="entry-definition" select="$glossary-item/tei:term[@type eq 'definition'][node()]"/>
-                    
-                    <!-- Entity -->
-                    <xsl:variable name="entity" select="key('entity-instance', $glossary-item/@xml:id, $root)[1]/parent::m:entity"/>
-                    <xsl:variable name="entity-instance" select="$entity/m:instance[@id eq $glossary-item/@xml:id]"/>
-                    <xsl:variable name="entity-definition" select="$entity/m:content[@type eq 'glossary-definition']"/>
-                    
-                    <!-- Definition -->
-                    <xsl:for-each select="$entry-definition">
-                        <p>
-                            <xsl:call-template name="class-attribute">
-                                <xsl:with-param name="base-classes" select="'definition'"/>
-                            </xsl:call-template>
-                            <xsl:apply-templates select="node()"/>
-                        </p>
-                    </xsl:for-each>
-                    
-                    <!-- Entity definition -->
-                    <xsl:if test="$entity-definition and (not($entry-definition) or $entity-instance[@use-definition  eq 'both'])">
-                        <div class="footer">
-                            <h4 class="heading">
-                                <xsl:value-of select="'Definition from the 84000 Glossary of Terms:'"/>
-                            </h4>
-                            <xsl:for-each select="$entity-definition">
-                                <p>
-                                    <xsl:call-template name="class-attribute">
-                                        <xsl:with-param name="base-classes" select="'definition'"/>
-                                    </xsl:call-template>
-                                    <xsl:apply-templates select="node()"/>
-                                </p>
-                            </xsl:for-each>
-                        </div>
-                    </xsl:if>
-                    
-                    <!-- Expressions -->
-                    <xsl:if test="$view-mode[not(@id eq 'pdf')]">
-                        <div class="footer hidden-print" role="navigation" aria-label="Locations of this term in the text">
+                        <!-- Link to glossary tool -->
+                        <xsl:if test="$view-mode[@id = ('editor', 'editor-passage')] and $environment/m:url[@id eq 'operations']">
                             
-                            <xsl:variable name="count-expressions" select="count($cached-locations)"/>
-                            <h4 class="heading">
-                                <xsl:choose>
-                                    <xsl:when test="$count-expressions gt 1">
-                                        <xsl:value-of select="concat(format-number($count-expressions, '#,###'), ' passages contain this term:')"/>
-                                    </xsl:when>
-                                    <xsl:when test="$count-expressions eq 1">
-                                        <xsl:value-of select="'1 passage contains this term:'"/>
-                                    </xsl:when>
-                                    <xsl:otherwise>
-                                        <xsl:value-of select="'No known locations for this term'"/>
-                                    </xsl:otherwise>
-                                </xsl:choose>
-                            </h4>
+                            <div>
+                                
+                                <xsl:variable name="resource-id" select="if($knowledgebase) then $knowledgebase/m:page/@xml:id else $glossary-part/parent::m:translation/@id"/>
+                                <xsl:variable name="resource-type" select="if($knowledgebase) then 'knowledgebase' else 'translation'"/>
+                                
+                                <a target="84000-glossary-tool" class="editor">
+                                    <xsl:attribute name="href" select="concat($environment/m:url[@id eq 'operations']/data(), '/edit-glossary.html', '?resource-id=', $resource-id, '&amp;resource-type=', $resource-type,'&amp;glossary-id=', $glossary-item/@xml:id, '&amp;max-records=1')"/>
+                                    <xsl:value-of select="'Open in the glossary editor'"/>
+                                </a>
+                                
+                            </div>
                             
-                            <xsl:call-template name="cached-locations">
-                                <xsl:with-param name="cached-locations" select="$cached-locations"/>
-                                <xsl:with-param name="glossary-id" select="$glossary-item/@xml:id"/>
-                            </xsl:call-template>
-                            
-                        </div>
-                    </xsl:if>
-                    
-                    <!-- Link to the Glossary / Knowledge Base -->
-                    <xsl:variable name="glossary-instances" select="$entity/m:instance[@type eq 'glossary-item'][not(@id eq $glossary-item/@xml:id)]"/>
-                    <xsl:variable name="knowledgebase-instances" select="$entity/m:instance[@type eq 'knowledgebase-article'][not(@id eq $kb-id)]"/>
-                    <xsl:if test="$view-mode[@client = ('browser', 'ajax')] and ($glossary-instances or $knowledgebase-instances)">
-                        <div class="footer entity-content" role="navigation">
-                            <h4 class="heading">
-                                <xsl:value-of select="'Links to further resources:'"/>
-                            </h4>
-                            <ul class="list-inline inline-dots small">
-                                <xsl:if test="$glossary-instances">
-                                    <li>
-                                        <a target="84000-glossary">
-                                            <xsl:attribute name=" href" select="concat('/glossary.html?entity-id=', $entity/@xml:id)"/>
-                                            <xsl:value-of select="concat(format-number(count($glossary-instances), '#,###'), ' related glossary ', if(count($glossary-instances) eq 1) then 'entry' else 'entries')"/>
-                                        </a>
-                                    </li>
-                                </xsl:if>
-                                <xsl:if test="$knowledgebase-instances">
-                                    <li>
-                                        <a target="84000-knowledgebase">
-                                            <xsl:attribute name=" href" select="concat('/knowledgebase/', $knowledgebase-instances[1]/@id, '.html')"/>
-                                            <xsl:value-of select="'View the 84000 Knowledge Base article'"/>
-                                        </a>
-                                    </li>
-                                </xsl:if>
-                            </ul>
-                        </div>
-                    </xsl:if>
-                    
-                    <!-- Link to glossary tool -->
-                    <xsl:if test="$view-mode[@id = ('editor', 'editor-passage')] and $environment/m:url[@id eq 'operations']">
+                        </xsl:if>
                         
-                        <div>
-                            
-                            <xsl:variable name="resource-id" select="if($knowledgebase) then $knowledgebase/m:page/@xml:id else $glossary-part/parent::m:translation/@id"/>
-                            <xsl:variable name="resource-type" select="if($knowledgebase) then 'knowledgebase' else 'translation'"/>
-                            
-                            <a target="84000-glossary-tool" class="editor">
-                                <xsl:attribute name="href" select="concat($environment/m:url[@id eq 'operations']/data(), '/edit-glossary.html', '?resource-id=', $resource-id, '&amp;resource-type=', $resource-type,'&amp;glossary-id=', $glossary-item/@xml:id, '&amp;max-records=1')"/>
-                                <xsl:value-of select="'Open in the glossary editor'"/>
-                            </a>
-                            
-                        </div>
-                        
-                    </xsl:if>
+                    </div>
                     
                 </div>
                 
-            </div>
+            </xsl:for-each>
             
-        </xsl:for-each>
+        </xsl:if>
         
         <!-- Link to glossary form -->
         <!-- Knowledge base only, editor mode, operations app, no child divs and an id -->
@@ -1685,7 +1691,9 @@
             <xsl:attribute name="class" select="'nested-section relative'"/>
             
             <!-- If the child is another div it will recurse -->
-            <xsl:apply-templates select="node()"/>
+            <xsl:if test="$view-mode[not(@parts eq 'passage')] or node()[not(self::tei:head)]">
+                <xsl:apply-templates select="node()"/>
+            </xsl:if>
             
             <!-- Add link to tei editor -->
             <xsl:call-template name="tei-editor">
