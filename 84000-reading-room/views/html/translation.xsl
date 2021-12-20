@@ -251,6 +251,7 @@
                                 </h4>
                                 <table class="contents-table bottom-margin">
                                     <tbody>
+                                        
                                         <xsl:if test="$part-status eq 'complete'">
                                             <tr>
                                                 <td>
@@ -267,6 +268,7 @@
                                                 </td>
                                             </tr>
                                         </xsl:if>
+                                        
                                         <xsl:for-each select="m:translation/m:downloads/m:download[@type = ('pdf', 'epub', 'azw3')]">
                                             <tr>
                                                 <td class="icon">
@@ -303,6 +305,7 @@
                                                 </td>
                                             </tr>
                                         </xsl:for-each>
+                                        
                                         <xsl:if test="$app-path">
                                             <xsl:variable name="app-href" select="concat($app-path, '/translation/', $toh-key, '.html')"/>
                                             <tr>
@@ -338,10 +341,11 @@
                                                 </td>
                                             </tr>
                                         </xsl:if>
+                                        
                                     </tbody>
                                 </table>
                                 
-                                <h4>
+                                <!--<h4>
                                     <xsl:value-of select="'Spotted a mistake?'"/>
                                 </h4>
                                 <p class="small text-muted">
@@ -351,7 +355,7 @@
                                         <xsl:value-of select="'suggest a correction'"/>
                                     </a>
                                     <xsl:value-of select="'.'"/>
-                                </p>
+                                </p>-->
                                 
                             </xsl:if>
                             
@@ -361,6 +365,7 @@
                             
                             <table class="contents-table bottom-margin">
                                 <tbody>
+                                    
                                     <tr>
                                         <td class="icon">
                                             <a target="84000-comms">
@@ -375,6 +380,7 @@
                                             </a>
                                         </td>
                                     </tr>
+                                    
                                     <tr>
                                         <td class="icon">
                                             <a>
@@ -389,6 +395,7 @@
                                             </a>
                                         </td>
                                     </tr>
+                                    
                                     <tr>
                                         <td class="icon">
                                             <a>
@@ -403,8 +410,9 @@
                                             </a>
                                         </td>
                                     </tr>
+                                    
                                     <!-- Add a link to other texts by this author -->
-                                    <xsl:for-each select="m:translation/m:source/m:attribution[@role eq 'author'][@ref]">
+                                    <!--<xsl:for-each select="m:translation/m:source/m:attribution[@role eq 'author'][@ref]">
                                         <xsl:variable name="entity-id" select="replace(@ref, '^eft:', '')"/>
                                         <xsl:variable name="entity" select="/m:response/m:entities/m:entity/id($entity-id)"/>
                                         <xsl:variable name="page" select="$entity/m:instance[@type eq 'knowledgebase-article']/m:page"/>
@@ -433,7 +441,8 @@
                                                 </ul>
                                             </td>
                                         </tr>
-                                    </xsl:for-each>
+                                    </xsl:for-each>-->
+                                    
                                     <tr>
                                         <td class="icon">
                                             <a>
@@ -448,6 +457,7 @@
                                             </a>
                                         </td>
                                     </tr>
+                                    
                                     <tr>
                                         <td class="icon">
                                             <a target="84000-comms">
@@ -462,6 +472,7 @@
                                             </a>
                                         </td>
                                     </tr>
+                                    
                                 </tbody>
                             </table>
                             
