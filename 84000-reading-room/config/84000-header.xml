@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <eft-header xmlns="http://read.84000.co/ns/1.0">
-    <!-- Updated 06.12.2021 -->
+    <!-- Updated 17.12.2021 -->
     <translation id="tag-line">
         <text xml:lang="en">Translating the words of the Buddha</text>
         <text xml:lang="zh">八萬四千 • 佛典傳譯</text>
@@ -118,11 +118,11 @@
                 <item url="https://read.84000.co/about/impact.html">
                     <label key="label-impact">Reader Engagement</label>
                 </item>
-                <item url="https://84000.co/about/media">
-                    <label key="label-achievements">Media</label>
-                </item>
                 <item url="https://84000.co/about/milestones">
                     <label key="label-milestones">Milestones</label>
+                </item>
+                <item url="https://84000.co/about/media">
+                    <label key="label-achievements">Press</label>
                 </item>
             </item>
             <item url="#people">

@@ -1,6 +1,6 @@
 xquery version "3.1";
 
-let $target-collection := '/db/apps/84000-data/html/section/lobby'
+let $target-collection := '/db/apps/84000-data/html'
 
 where 
     starts-with($target-collection, '/db/apps/84000-data/html')

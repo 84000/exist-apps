@@ -1118,10 +1118,10 @@ declare function translation:folios($tei as element(tei:TEI), $resource-id as xs
         }
 };
 
-declare function translation:folio-content($tei as element(tei:TEI), $resource-id as xs:string, $index-in-resource as xs:integer) as element()* {
+declare function translation:folio-content($tei as element(tei:TEI), $toh-key as xs:string, $index-in-resource as xs:integer) as element()* {
     
     (: Get all the <ref/>s in the doc :)
-    let $refs := translation:folio-refs($tei, $resource-id)
+    let $refs := translation:folio-refs($tei, $toh-key)
     let $start-ref := $refs[$index-in-resource]
     let $end-ref := $refs[$index-in-resource + 1]
     
@@ -1136,7 +1136,7 @@ declare function translation:folio-content($tei as element(tei:TEI), $resource-i
         else
             0
         
-        (: Find the container of the end <ref/> and it's index :)
+    (: Find the container of the end <ref/> and it's index :)
     let $end-ref-paragraph := $end-ref/ancestor::*[. = $translation-paragraphs][1]
     let $end-ref-paragraph-index :=
         if ($end-ref-paragraph) then

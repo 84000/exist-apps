@@ -229,13 +229,11 @@
                                 <h4>
                                     <xsl:value-of select="'Contents'"/>
                                 </h4>
-                                
                                 <div class="data-container bottom-margin"/>
                                 
                                 <h4>
-                                    <xsl:value-of select="'Search this translation'"/>
+                                    <xsl:value-of select="'Search this text'"/>
                                 </h4>
-                                
                                 <form action="/search.html" method="post" role="search" class="form-horizontal bottom-margin">
                                     <input type="hidden" name="resource-id" value="{ m:translation/@id }"/>
                                     <div class="input-group">
@@ -251,7 +249,6 @@
                                 <h4>
                                     <xsl:value-of select="'Download Options'"/>
                                 </h4>
-                                
                                 <table class="contents-table bottom-margin">
                                     <tbody>
                                         <xsl:if test="$part-status eq 'complete'">
@@ -343,7 +340,19 @@
                                         </xsl:if>
                                     </tbody>
                                 </table>
-                            
+                                
+                                <h4>
+                                    <xsl:value-of select="'Spotted a mistake?'"/>
+                                </h4>
+                                <p class="small text-muted">
+                                    <xsl:value-of select="'Please use the contact form provided to '"/>
+                                    <a target="84000-comms">
+                                        <xsl:attribute name="href" select="concat($communications-site-path, '/about/contact/?toh=', m:translation/m:source/m:toh ,'#contact-forms-suggest-a-correction')"/>
+                                        <xsl:value-of select="'suggest a correction'"/>
+                                    </a>
+                                    <xsl:value-of select="'.'"/>
+                                </p>
+                                
                             </xsl:if>
                             
                             <h4>
@@ -354,13 +363,13 @@
                                 <tbody>
                                     <tr>
                                         <td class="icon">
-                                            <a>
+                                            <a target="84000-comms">
                                                 <xsl:attribute name="href" select="common:homepage-link('', /m:response/@lang)"/>
                                                 <i class="fa fa-home"/>
                                             </a>
                                         </td>
                                         <td>
-                                            <a>
+                                            <a target="84000-comms">
                                                 <xsl:attribute name="href" select="common:homepage-link('', /m:response/@lang)"/>
                                                 <xsl:value-of select="'84000 Homepage'"/>
                                             </a>
@@ -441,13 +450,13 @@
                                     </tr>
                                     <tr>
                                         <td class="icon">
-                                            <a>
+                                            <a target="84000-comms">
                                                 <xsl:attribute name="href" select="common:homepage-link('sponsors', /m:response/@lang)"/>
                                                 <i class="fa fa-heart"/>
                                             </a>
                                         </td>
                                         <td>
-                                            <a href="/search.html">
+                                            <a href="/search.html" target="84000-comms">
                                                 <xsl:attribute name="href" select="common:homepage-link('sponsors',/m:response/@lang)"/>
                                                 <xsl:value-of select="'Our Sponsors'"/>
                                             </a>
@@ -456,7 +465,7 @@
                                 </tbody>
                             </table>
                             
-                            <a href="http://84000.co/how-you-can-help/donate/#sap" class="btn btn-primary btn-uppercase">
+                            <a href="http://84000.co/how-you-can-help/donate/#sap" class="btn btn-primary btn-uppercase" target="84000-comms">
                                 <xsl:copy-of select="common:override-href(/m:response/@lang, 'zh', 'http://84000.co/ch-howhelp/donate')"/>
                                 <xsl:value-of select="'Sponsor Translation'"/>
                             </a>
