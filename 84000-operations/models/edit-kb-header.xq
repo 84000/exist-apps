@@ -38,7 +38,25 @@ let $updated :=
     else ()
 
 let $knowledgebase-id := tei-content:id($tei)
-let $entity := entities:entities($knowledgebase-id, false(), true(), true())/m:entity[1]
+
+let $knowledgebase-entity := $entities:entities//m:instance[@id = $knowledgebase-id]/parent::m:entity
+
+let $similar-entities :=
+    (: Return possible matches for reconciliation :)
+    let $search-terms := (
+        tei-content:titles($tei)//m:title/data(),
+        normalize-space($similar-search)
+    )[not(. eq '')]
+    return
+        element { QName('http://read.84000.co/ns/1.0', 'similar') }{
+            entities:similar($knowledgebase-entity, $search-terms, $knowledgebase-id)
+        }
+
+let $entities := 
+    element { QName('http://read.84000.co/ns/1.0', 'entities') }{
+        $knowledgebase-entity,
+        element related { entities:related($knowledgebase-entity | $similar-entities/m:entity, true(), ()) }
+    }
 
 let $xml-response := 
     common:response(
@@ -48,7 +66,7 @@ let $xml-response :=
             (: Include request parameters :)
             element { QName('http://read.84000.co/ns/1.0', 'request') } {
                 attribute id { $knowledgebase-id },
-                attribute show-tab { request:get-parameter('show-tab', 'kb-form') },
+                attribute show-tab { request:get-parameter('show-tab', '') },
                 element similar-search { request:get-parameter('similar-search', '') }
             },
             
@@ -70,19 +88,9 @@ let $xml-response :=
                 
             },
             
-            (: Include the shared entity :)
-            $entity,
-            
-            (: Report possible matches for reconciliation :)
-            let $search-terms := (
-                tei-content:titles($tei)//m:title/data(),
-                normalize-space($similar-search)
-            )[not(. eq '')]
-            return
-                element { QName('http://read.84000.co/ns/1.0', 'similar-entities') }{
-                    entities:similar($entity, $search-terms, $knowledgebase-id)
-                }
-            ,
+            (: Include shared entity info :)
+            $entities,
+            $similar-entities,
             
             (: Translation statuses :)
             tei-content:text-statuses-selected(tei-content:translation-status($tei), 'article'),

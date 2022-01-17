@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:ops="http://operations.84000.co" xmlns:common="http://read.84000.co/common" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" version="3.0" exclude-result-prefixes="#all">
     
-    <xsl:import href="../../84000-reading-room/views/html/website-page.xsl"/>
+    <xsl:import href="../../84000-reading-room/xslt/tei-to-xhtml.xsl"/>
     <xsl:import href="common.xsl"/>
     
     <xsl:template match="/m:response">
@@ -1144,6 +1144,7 @@
             <xsl:with-param name="accordion-selector" select="'#forms-accordion'"/>
             <xsl:with-param name="id" select="'source'"/>
             <xsl:with-param name="active" select="$active"/>
+            <xsl:with-param name="persist" select="true()"/>
             
             <xsl:with-param name="title">
                 <span class="h4">
@@ -1186,11 +1187,10 @@
                             
                             <div class="add-nodes-container bottom-margin">
                                 <xsl:variable name="attributions" select="m:attribution"/>
-                                <xsl:variable name="attribution-entities" as="element(m:entity)*">
-                                    <xsl:for-each select="/m:response/m:attribution-entities/m:entity">
-                                        <xsl:sort select="m:label[not(@derived) and not(@derived-transliterated)][1] ! lower-case(.)"/>
-                                        <xsl:sequence select="."/>
-                                    </xsl:for-each>
+                                <xsl:variable name="entities-sorted" as="element(m:entity)*">
+                                    <xsl:perform-sort select="$entities">
+                                        <xsl:sort select="(m:label[@xml:lang eq 'en'], m:label[@xml:lang eq 'Sa-Ltn'], m:label)[1] ! lower-case(.)"/>
+                                    </xsl:perform-sort>
                                 </xsl:variable>
                                 <xsl:choose>
                                     <xsl:when test="$attributions">
@@ -1199,7 +1199,7 @@
                                                 <xsl:with-param name="attribution" select="."/>
                                                 <xsl:with-param name="attribution-index" select="common:index-of-node($attributions, .)"/>
                                                 <xsl:with-param name="toh-key" select="$toh-key"/>
-                                                <xsl:with-param name="attribution-entities" select="$attribution-entities"/>
+                                                <xsl:with-param name="entities-sorted" select="$entities-sorted"/>
                                             </xsl:call-template>
                                         </xsl:for-each>
                                     </xsl:when>
@@ -1207,13 +1207,15 @@
                                         <xsl:call-template name="attribution-controls">
                                             <xsl:with-param name="attribution-index" select="1"/>
                                             <xsl:with-param name="toh-key" select="$toh-key"/>
-                                            <xsl:with-param name="attribution-entities" select="$attribution-entities"/>
+                                            <xsl:with-param name="entities-sorted" select="$entities-sorted"/>
                                         </xsl:call-template>
                                     </xsl:otherwise>
                                 </xsl:choose>
                                 <div>
                                     <a href="#add-nodes" class="add-nodes">
-                                        <span class="monospace">+</span> add an attribution </a>
+                                        <span class="monospace">+</span>
+                                        <xsl:value-of select="' add an attribution'"/>
+                                    </a>
                                 </div>
                             </div>
                             
@@ -1285,7 +1287,7 @@
         <xsl:param name="attribution" as="element(m:attribution)?"/>
         <xsl:param name="attribution-index" as="xs:integer"/>
         <xsl:param name="toh-key" as="xs:string"/>
-        <xsl:param name="attribution-entities" as="element(m:entity)*"/>
+        <xsl:param name="entities-sorted" as="element(m:entity)*"/>
         
         <xsl:variable name="attribution-entity-id" select="$attribution/@ref ! replace(., '^eft:', '')"/>
         
@@ -1314,9 +1316,9 @@
             
             <div class="col-sm-3">
                 
-                <xsl:variable name="entity" select="/m:response/m:attribution-entities/m:entity/id($attribution-entity-id)"/>
-                <xsl:variable name="kb-id" select="$entity/m:instance/m:page/@kb-id"/>
-                <xsl:variable name="glossary-id" select="$entity/m:instance/m:entry/@id"/>
+                <xsl:variable name="entity" select="$entities/id($attribution-entity-id)"/>
+                <xsl:variable name="related-page" select="key('related-pages', $entity/m:instance/@id, $root)[1]"/>
+                <xsl:variable name="related-entries" select="key('related-entries', $entity/m:instance/@id, $root)"/>
                 
                 <label class="control-label">
                     <xsl:attribute name="for" select="concat('attribution-entity-', $toh-key, '-', $attribution-index)"/>
@@ -1329,26 +1331,26 @@
 
                         <li>
                             <xsl:choose>
-                                <xsl:when test="$kb-id">
+                                <xsl:when test="$related-page">
                                     <a>
-                                        <xsl:attribute name="href" select="concat($reading-room-path, '/knowledgebase/', $kb-id, '.html')"/>
-                                        <xsl:attribute name="target" select="$kb-id"/>
+                                        <xsl:attribute name="href" select="concat($reading-room-path, '/knowledgebase/', $related-page/@kb-id, '.html')"/>
+                                        <xsl:attribute name="target" select="$related-page/@xml:id"/>
                                         <xsl:value-of select="'Knowledge base'"/>
                                     </a>
                                     <xsl:value-of select="' '"/>
                                     <span>
                                         <xsl:choose>
-                                            <xsl:when test="$entity/m:instance/m:page/@status-group eq 'published'">
+                                            <xsl:when test="$related-page/@status-group eq 'published'">
                                                 <xsl:attribute name="class" select="'label label-success'"/>
                                             </xsl:when>
-                                            <xsl:when test="$entity/m:instance/m:page/@status-group eq 'in-progress'">
+                                            <xsl:when test="$related-page/@status-group eq 'in-progress'">
                                                 <xsl:attribute name="class" select="'label label-warning'"/>
                                             </xsl:when>
                                             <xsl:otherwise>
                                                 <xsl:attribute name="class" select="'label label-default'"/>
                                             </xsl:otherwise>
                                         </xsl:choose>
-                                        <xsl:value-of select="if($entity/m:instance/m:page/@status) then $entity/m:instance/m:page/@status else '0'"/>
+                                        <xsl:value-of select="if($related-page/@status) then $related-page/@status else '0'"/>
                                     </span>
                                 </xsl:when>
                                 <xsl:otherwise>
@@ -1359,7 +1361,7 @@
                             </xsl:choose>
                         </li>
                         
-                        <xsl:if test="$glossary-id">
+                        <xsl:if test="$related-entries">
                             <li>
                                 <a>
                                     <xsl:attribute name="href" select="concat($reading-room-path, '/glossary.html?entity-id=', $entity/@xml:id)"/>
@@ -1384,13 +1386,13 @@
                         <xsl:attribute name="value" select="'create-entity-for-expression'"/>
                         <xsl:value-of select="'[Create an entity for expression]'"/>
                     </option>
-                    <xsl:for-each select="$attribution-entities">
+                    <xsl:for-each select="$entities-sorted">
                         <option>
                             <xsl:attribute name="value" select="@xml:id"/>
                             <xsl:if test="@xml:id eq $attribution-entity-id">
                                 <xsl:attribute name="selected" select="'selected'"/>
                             </xsl:if>
-                            <xsl:value-of select="m:label[not(@derived) and not(@derived-transliterated)][1]"/>
+                            <xsl:value-of select="(m:label[@xml:lang eq 'en'], m:label[@xml:lang eq 'Sa-Ltn'], m:label)[1] ! lower-case(.)"/>
                         </option>
                     </xsl:for-each>
                 </select>
@@ -1418,7 +1420,7 @@
                     <xsl:with-param name="input-id" select="concat('attribution-lang-', $toh-key, '-', $attribution-index)"/>
                     <xsl:with-param name="input-name" select="concat('attribution-lang-', $toh-key, '-', $attribution-index)"/>
                     <xsl:with-param name="language-options" select="('','en','Bo-Ltn','Sa-Ltn')"/>
-                    <xsl:with-param name="selected-language" select="@xml:lang"/>
+                    <xsl:with-param name="selected-language" select="$attribution/@xml:lang"/>
                 </xsl:call-template>
             </div>
             

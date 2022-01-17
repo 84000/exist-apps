@@ -32,7 +32,7 @@ let $entities :=
     element { QName('http://read.84000.co/ns/1.0', 'entities') }{
         let $attribution-entity-ids := ($translations-published//m:attribution/@ref, $translations-translated//m:attribution/@ref, $translations-in-translation//m:attribution/@ref) ! replace(., '^eft:', '')
         return 
-            $entities:entities/m:entity/id($attribution-entity-ids) ! entities:entity(., true(), true(), false())
+            $entities:entities/m:entity/id($attribution-entity-ids)
     }
 
 let $xml-response :=

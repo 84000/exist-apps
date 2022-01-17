@@ -28,7 +28,6 @@
                     <xsl:call-template name="entity-form-input">
                         <xsl:with-param name="entity" select="m:entity"/>
                         <xsl:with-param name="entity-types" select="m:entity-types/m:type"/>
-                        <xsl:with-param name="entity-flags" select="m:entity-flags/m:flag"/>
                         <xsl:with-param name="context-id" select="'edit-entity-form'"/>
                         <xsl:with-param name="default-entity-type" select="m:entity-types/m:type[1]/@id"/>
                     </xsl:call-template>

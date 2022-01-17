@@ -1145,7 +1145,6 @@
                                 <!-- Authors -->
                                 <xsl:call-template name="source-authors">
                                     <xsl:with-param name="text" select="$text"/>
-                                    <xsl:with-param name="entities" select="/m:response/m:entities/m:entity"/>
                                 </xsl:call-template>
                                 
                                 <!-- Tantric warning -->
@@ -1161,7 +1160,6 @@
                                 <xsl:call-template name="expandable-summary">
                                     <xsl:with-param name="text" select="$text"/>
                                     <xsl:with-param name="expand-id" select="concat('summary-detail-', $toh-key)"/>
-                                    <xsl:with-param name="entities" select="/m:response/m:entities/m:entity"/>
                                 </xsl:call-template>
                                 
                                 <!-- Editor notes -->

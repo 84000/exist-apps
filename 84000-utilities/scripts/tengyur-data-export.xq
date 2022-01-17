@@ -39,8 +39,10 @@ declare function local:contributor($author as element(tei:author)) as element()*
             'author'
         else if(matches($author-data, '^r[\.:]\s*')) then
             'reviser'
-        else 
+        else if($author[@role eq 'translatorTib']) then
             'translator'
+        else 
+            local-name($author)
     
     let $author-tokenized := tokenize(replace($author-data, '^[atr][\.:]\s*', ''), '[,:]') ! normalize-space(.)
     
@@ -66,15 +68,13 @@ declare function local:contributor($author as element(tei:author)) as element()*
                 replace($author-string, '^[atr][\.:]\s*', '')
             }
     
-    
-    
     let $contributor-Bo-Ltn := $contributors[@xml:lang eq 'Bo-Ltn'][1]
     let $contributor-Sa-Ltn := $contributors[@xml:lang eq 'Sa-Ltn'][1]
     
-    let $contributor-ref := replace(($contributor-Bo-Ltn, $contributor-Sa-Ltn)[1]/text() ! lower-case(.), "[^a-zA-Z0-9']+", "-")
+    (:let $contributor-ref := replace(($contributor-Bo-Ltn, $contributor-Sa-Ltn)[1]/text() ! lower-case(.), "[^a-zA-Z0-9']+", "-"):)
     
     return (
-            element { QName('http://read.84000.co/ns/1.0', if($contributor-Bo-Ltn[@type]) then $contributor-Bo-Ltn/@type else $type) } {
+            (:element { QName('http://read.84000.co/ns/1.0', if($contributor-Bo-Ltn[@type]) then $contributor-Bo-Ltn/@type else $type) } {
                 attribute xml:lang { 'Bo-Ltn' },
                 attribute ref { $contributor-ref },
                 $contributor-Bo-Ltn/text()
@@ -83,12 +83,13 @@ declare function local:contributor($author as element(tei:author)) as element()*
                 attribute xml:lang { 'Sa-Ltn' },
                 attribute ref { $contributor-ref },
                 $contributor-Sa-Ltn/text()
-            },
-            for $contributor in $contributors[not(text() = ($contributor-Sa-Ltn/text(), $contributor-Bo-Ltn/text()))]
+            },:)
+            for $contributor in $contributors(:[not(text() = ($contributor-Sa-Ltn/text(), $contributor-Bo-Ltn/text()))]:)
             return
                 element { QName('http://read.84000.co/ns/1.0', $contributor/@type) } {
                     $contributor/@xml:lang,
-                    attribute ref { $contributor-ref },
+                    $author/@ref,
+                    (:$author/@role,:)
                     $contributor/text()
                 }
     )
@@ -124,8 +125,8 @@ element { QName('http://read.84000.co/ns/1.0', 'tengyur-data') } {
     },
     
     (:let $current-block := ("O1JC76301JC21614"):)
-    let $lowest-toh := 3140
-    let $highest-toh := 3399
+    let $lowest-toh := 3981
+    let $highest-toh := 4085
     
     return
     for $tei in $local:tengyur-tei(:[tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl[tei:idno[@parent-id = $current-block]]]:)

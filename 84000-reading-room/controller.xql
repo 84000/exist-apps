@@ -386,15 +386,11 @@ return
         
         (: Glossary :)
         else if ($resource-id eq "glossary") then
-            if ($resource-suffix eq 'html') then
-                local:dispatch-html("/models/glossary.xq", "/views/html/glossary.xsl", 
-                    <parameters xmlns="http://exist.sourceforge.net/NS/exist"/>
-                )
-            else
-                (: return the xml :)
-                local:dispatch("/models/glossary.xq", "", 
-                    <parameters xmlns="http://exist.sourceforge.net/NS/exist"/>
-                )
+            local:dispatch("/models/glossary.xq", "",
+                <parameters xmlns="http://exist.sourceforge.net/NS/exist">
+                    <add-parameter name="resource-suffix" value="{ $resource-suffix }"/>
+                </parameters>
+            )
         
         (: Downloads - used on Dist to get Collab files :)
         else if ($resource-id eq "downloads") then

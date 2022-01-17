@@ -8,6 +8,7 @@ import module namespace glossary="http://read.84000.co/glossary" at "../../84000
 
 for $instance-id in $entities:entities//m:instance/@id
 group by $instance-id
+order by $instance-id
 let $entities-with-instance := $entities:entities//m:instance[@id eq $instance-id]/parent::m:entity
 let $count-matches := count($entities-with-instance)
 where $count-matches gt 1

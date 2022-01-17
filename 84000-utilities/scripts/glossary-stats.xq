@@ -7,7 +7,9 @@ Date             Glossary count       Glossaries to do    Completed
 2021-11-26       36,058               12,483              65.38%        
 2021-12-06       36,084               11,998              66.75%        
 2021-12-10       36,112               11,601              67.87%     
-2021-12-17       36,111               11,600              67.88%        
+2021-12-17       36,111               11,600              67.88%    
+2021-12-31       36,170               11,084              69.36%        
+2022-01-14       36,288               7,842               78.39%        
 :)
 
 declare namespace tei="http://www.tei-c.org/ns/1.0";
@@ -25,7 +27,7 @@ let $glossaries-count := count($glossaries)
 let $glossaries-resolved := 
     for $gloss in $glossaries
     (: It must have an entity, but not a flagged one :)
-    let $entity-not-flagged := $entities:entities//m:instance[@id eq $gloss/@xml:id]/parent::m:entity[not(m:flag/@type = 'requires-attention')]
+    let $entity-not-flagged := $entities:entities//m:instance[@id eq $gloss/@xml:id][not(m:flag/@type = 'requires-attention')]
     where $entity-not-flagged
     return $gloss
 

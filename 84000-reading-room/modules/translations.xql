@@ -255,7 +255,9 @@ declare function translations:filtered-texts(
             else if($selected-statuses[@selected eq 'selected'] ) then
                 (
                     (: Add tei with selected statuses :)
-                    $teis[tei:teiHeader/tei:fileDesc/tei:publicationStmt[@status = $selected-statuses[@selected eq 'selected']/@status-id]],
+                    let $selected-status-ids := $selected-statuses[@selected eq 'selected']/@status-id
+                    return
+                        $teis[tei:teiHeader/tei:fileDesc/tei:publicationStmt[@status = $selected-status-ids]],
                     
                     (: If status 0 (not started) is selected then add also @status = '' and not(@status) :)
                     if(functx:is-value-in-sequence('0', $status)) then
@@ -300,29 +302,28 @@ declare function translations:filtered-texts(
             (: All tei WITHOUT sponsorship :)
             if($selected-sponsorship-group/@id = 'no-status')then
                 let $sponsorship-group-text-ids := sponsorship:text-ids('all')
+                let $sponsorship-group-teis := $teis/id($sponsorship-group-text-ids)/self::tei:idno/ancestor::tei:TEI
                 return
-                    $teis[not(tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:idno[@xml:id = $sponsorship-group-text-ids])]
+                    $teis except $sponsorship-group-teis
                     
             (: With the selected sponsorship group :)
             else if($selected-sponsorship-group) then
-                
                 let $sponsorship-group-text-ids := sponsorship:text-ids($selected-sponsorship-group/@id)
                 return
-                    $teis[tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:idno[@xml:id = $sponsorship-group-text-ids]]
+                    $teis/id($sponsorship-group-text-ids)/ancestor::tei:TEI
             
             (: Has glossaries missing entities :)
             else if($selected-entities-group eq 'entities-missing') then
-                let $glosses-with-entities := $teis/tei:text/tei:back//tei:gloss/id($entities:entities//m:entity/m:instance/@id)
+                let $instance-ids := $entities:entities//m:entity/m:instance/@id
+                let $glosses-with-entities := $teis/id($instance-ids)
                 return 
                     $teis[tei:text/tei:back//tei:gloss except $glosses-with-entities]
                 
             (: Has glossaries requiring attention :)
             else if($selected-entities-group eq 'entities-flagged-attention') then
-                let $instance-requites-attention := $entities:entities//m:entity[m:flag[@type = 'requires-attention']]/m:instance
-                for $tei in $teis
-                where $tei/id($instance-requites-attention/@id/string())[1]
+                let $instances-requiring-attention := $entities:entities//m:instance[m:flag/@type = 'requires-attention']
                 return
-                    $tei
+                    $teis/id($instances-requiring-attention/@id/string())/ancestor::tei:TEI
                 
             (: Get them all :)
             else
@@ -490,8 +491,7 @@ declare function translations:sponsored-texts() as element() {
     
     <sponsored-texts xmlns="http://read.84000.co/ns/1.0">
     {
-        let $sponsored-ids := sponsorship:text-ids('sponsored')
-        for $tei in $tei-content:translations-collection//tei:teiHeader//tei:idno/id($sponsored-ids)/ancestor::tei:TEI
+        for $tei in $tei-content:translations-collection//tei:teiHeader//tei:titleStmt[tei:sponsor]/ancestor::tei:TEI
         return
             translations:filtered-text($tei, '', true(), '', false())
     }

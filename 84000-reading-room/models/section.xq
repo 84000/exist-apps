@@ -103,9 +103,15 @@ let $sections-data :=
 
 let $entities := 
     element { QName('http://read.84000.co/ns/1.0', 'entities') }{
-        for $attribution-id in distinct-values($sections-data//m:attribution/@ref ! replace(., '^eft:', ''))
-        return
-            entities:entity($entities:entities/m:entity/id($attribution-id), true(), true(), false())
+        
+        let $attribution-ids := distinct-values($sections-data//m:attribution/@ref ! replace(., '^eft:', ''))
+        let $entity-list := $entities:entities//m:entity[@xml:id = $attribution-ids]
+        let $related := entities:related($entity-list)
+        return (
+            $entity-list,
+            element related { $related }
+        )
+        
     }
 
 let $xml-response := 

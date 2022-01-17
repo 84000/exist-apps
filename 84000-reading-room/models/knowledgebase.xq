@@ -41,11 +41,16 @@ let $glossary-ids :=
 
 let $entities := 
     element { QName('http://read.84000.co/ns/1.0', 'entities') }{
-        let $attribution-entity-ids := $knowledgebase-content/m:part[@type eq 'related-texts']//m:attribution/@ref ! replace(., '^eft:', '')
+    
+        let $attribution-ids := $knowledgebase-content/m:part[@type eq 'related-texts']//m:attribution/@ref ! replace(., '^eft:', '')
+        let $article-entity := $entities:entities//m:entity[m:instance/@id = $knowledgebase-id]
+        let $entity-list := $entities:entities//m:entity/id($attribution-ids)
+        let $related := entities:related($article-entity | $entity-list)
         return (
-            $entities:entities/m:entity/id($attribution-entity-ids)
-            | $entities:entities//m:entity[m:instance/@id = ($knowledgebase-id, $glossary-ids)]
-        ) ! entities:entity(., true(), true(), true())
+            $entity-list,
+            element related { $related }
+        )
+        
     }
 
 let $caches := tei-content:cache($tei, false())/m:*
@@ -64,10 +69,7 @@ let $xml-response :=
                 },
                 
                 $knowledgebase-content,
-                
                 $caches,
-                
-                (: Entities :)
                 $entities,
                 
                 (: Calculated strings :)

@@ -121,6 +121,9 @@ small, .small {
 }
 
 /* other scripts */
+.foreign {
+    font-style: italic;
+}
 .text-bo {
     font-family: "Jomolhari" !important;
     font-size: 1.3em;

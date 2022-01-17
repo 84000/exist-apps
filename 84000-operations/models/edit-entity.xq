@@ -13,19 +13,20 @@ declare namespace tei="http://www.tei-c.org/ns/1.0";
 let $request :=
     element { QName('http://read.84000.co/ns/1.0', 'request') } {
         attribute resource-suffix { request:get-parameter('resource-suffix', '') },
-        attribute entity-id { request:get-parameter('entity-id', '') }
+        attribute entity-id { request:get-parameter('entity-id', '') },
+        attribute instance-id { request:get-parameter('instance-id', '') }
     }
 
 let $update-entity := 
     if(request:get-parameter('form-action', '') eq 'update-entity') then
         update-entity:headers($request/@entity-id)
-    else if(request:get-parameter('form-action', '') eq 'entity-set-flag') then
-        update-entity:set-flag($request/@entity-id, request:get-parameter('entity-flag', ''))
-    else if(request:get-parameter('form-action', '') eq 'entity-clear-flag') then
-        update-entity:clear-flag($request/@entity-id, request:get-parameter('entity-flag', ''))
+    else if(request:get-parameter('form-action', '') eq 'instance-set-flag') then
+        update-entity:set-flag($request/@instance-id, request:get-parameter('entity-flag', ''))
+    else if(request:get-parameter('form-action', '') eq 'instance-clear-flag') then
+        update-entity:clear-flag($request/@instance-id, request:get-parameter('entity-flag', ''))
     else ()
 
-let $entity := entities:entity($entities:entities//m:entity[@xml:id eq $request/@entity-id], false(), true(), true())
+let $entity := $entities:entities//m:entity[@xml:id eq $request/@entity-id]
 
 let $xml-response := 
     common:response(

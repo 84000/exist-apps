@@ -86,7 +86,7 @@ let $updates :=
             update-entity:merge-glossary($resource-id, true())
         
         else if(not($remove-flag eq '') and not($entity-id eq '')) then
-            update-entity:clear-flag($entity-id, $remove-flag)
+            update-entity:clear-flag($glossary-id, $remove-flag)
             
         else if(not($remove-instance eq '')) then 
             let $remove-instance-gloss := $glossary:tei//tei:back//id($remove-instance)[self::tei:gloss]
@@ -183,6 +183,8 @@ let $text :=
         else ()
     }
 
+let $gloss-filtered-subsequence := subsequence($gloss-filtered, $first-record, $max-records)
+
 let $glossary :=
     element { QName('http://read.84000.co/ns/1.0', 'glossary') } {
         
@@ -191,17 +193,15 @@ let $glossary :=
         attribute max-records { $max-records },
         attribute tei-version-cached { store:stored-version-str($resource-id, 'cache') },
         
-        let $gloss-filtered-subsequence := subsequence($gloss-filtered, $first-record, $max-records)
-        
         (: Get expressions for these entries :)
         let $glossary-expressions := 
-            if($filter = ('check-expressions', 'check-all', 'no-cache', 'new-expressions', 'no-expressions')) then
+            if($filter = ('check-expressions', 'check-all', 'no-cache', 'new-expressions', 'no-expressions') and $gloss-filtered-subsequence) then
                 glossary:instances($tei, $resource-id, $resource-type, $gloss-filtered-subsequence/@xml:id)
             else ()
         
         for $gloss in $gloss-filtered-subsequence
             let $entry := glossary:glossary-entry($gloss, false())
-            let $entity := entities:entities($entry/@id, false(), true(), true())/m:entity[1]
+            let $entity := $entities:entities//m:instance[@id = $gloss/@xml:id]/parent::m:entity
         return 
             (: Copy each glossary entry :)
             element { node-name($entry) }{
@@ -222,11 +222,8 @@ let $glossary :=
                     }
                 else (),
                 
-                (: Include the shared entity :)
-                $entity,
-                
                 (: Report possible matches for reconciliation :)
-                if($filter = ('check-entities', 'check-all', 'missing-entities', 'requires-attention')) then
+                if($filter = ('check-entities', 'check-all', 'check-terms', 'check-people', 'check-places', 'check-texts', 'missing-entities', 'requires-attention')) then
                     let $search-terms := (
                         $entry/m:term[@xml:lang = ('Bo-Ltn', 'Sa-Ltn')]/data(),
                         $entry/m:alternatives[@xml:lang = ('Bo-Ltn', 'Sa-Ltn')]/data(),
@@ -235,12 +232,28 @@ let $glossary :=
                         else ()
                     )
                     return
-                        element { QName('http://read.84000.co/ns/1.0', 'similar-entities') }{
+                        element { QName('http://read.84000.co/ns/1.0', 'similar') }{
                             entities:similar($entity, $search-terms, $entry/@id)
                         }
                 else ()
             }
        
+    }
+
+let $entities := 
+    element { QName('http://read.84000.co/ns/1.0', 'entities') }{
+        
+        let $entities := 
+            for $gloss-id in distinct-values($gloss-filtered-subsequence/@xml:id)
+            let $instance := $entities:entities//m:instance[@id = $gloss-id]
+            return 
+                $instance[1]/parent::m:entity
+        
+        return (
+            $entities,
+            element related { entities:related($entities | $glossary/m:entry/m:similar/m:entity, true(), ()) }
+        )
+        
     }
 
 let $caches := tei-content:cache($tei, false())/m:*
@@ -249,22 +262,17 @@ let $xml-response :=
     common:response(
         'operations/glossary',
         'operations', (
-            (: Request parameters :)
             $request,
-            (: Details of updates :)
             $updates,
-            (: Text data :)
             $text,
-            (: Additional glossary data for selected items :)
             $glossary,
-            (: Caches :)
+            $entities,
             $caches,
             (:scheduler:get-scheduled-jobs()//scheduler:job[@name eq 'cache-glossary-locations'],:)
             (: Entities config :)
             $entities:predicates,
             $entities:types,
             $entities:flags
-            
         )
     )
 

@@ -26,115 +26,113 @@ let $term-langs :=
         <lang id="en" short-code="Eng">Our translation</lang>
     </term-langs>
 
-(: The requested entity :)
-let $entity-id := request:get-parameter('entity-id', '')
-let $view-mode := request:get-parameter('view-mode', '')
 let $flagged := request:get-parameter('flagged', '')
 let $flag := $entities:flags//m:flag[@id eq  $flagged]
 
-let $request-entity := $entities:entities//m:entity[@xml:id eq $entity-id]
-let $request-entity := entities:entity($request-entity, true(), true(), true())
-let $entity-show := 
-    if($request-entity) then
-        $request-entity
-    else ()
+let $view-mode := request:get-parameter('view-mode', '')
+let $view-mode := $glossary:view-modes/m:view-mode[@id eq $view-mode]
+let $exclude-flagged := if($view-mode[@id eq 'editor']) then () else 'requires-attention'
+
+(: The requested entity :)
+let $entity-id := request:get-parameter('entity-id', '')
+let $request-entity := $entities:entities//m:entity/id($entity-id)
+let $request-entity-instances-exclude := $request-entity/m:instance[m:flag[@type eq $exclude-flagged]]
+let $request-entity-instances := $request-entity/m:instance[@type eq 'glossary-item'] except $request-entity-instances-exclude
+let $request-entity-entries := glossary:entries($request-entity-instances/@id, false())
+let $request-entity-terms-sorted := 
+    for $term in $request-entity-entries/m:term[@xml:lang = ('Bo-Ltn', 'Sa-Ltn')]
+    where not($term/data() = $glossary:empty-term-placeholders)
+    order by 
+        if($term[@xml:lang eq 'Bo-Ltn']) then 1 else 2,
+        string-length($term) descending
+    return
+        $term
+let $request-entity-terms-longest := $request-entity-terms-sorted[1]
 
 (: Search parameters :)
 (: Default to find similar matches to selected entity :)
 let $search-default := (
-        $entity-show/m:label[@derived-transliterated eq 'true'][@xml:lang eq 'Bo-Ltn']/data(), 
-        $entity-show/m:label[@derived eq 'true'][@xml:lang eq 'Sa-Ltn']/data(),
-        if($flag) then '' else (),
-        'a'
-    )[1]
+    $request-entity-terms-longest/data(), 
+    if($flag) then '' else (),
+    'a'
+)[1]
 let $search := request:get-parameter('search', $search-default) ! normalize-space(.)
 
 let $type-default := (
-        $entities:types/m:type[@id eq $entity-show/m:type[1]/@type]/@id, 
-        $entities:types/m:type[1]/@id
-    )[1]
+    $entities:types/m:type[@id eq $request-entity/m:type[1]/@type]/@id, 
+    $entities:types/m:type[1]/@id
+)[1]
 let $type := request:get-parameter('type[]', $type-default)
+let $entity-type := $entities:types/m:type[@id = $type]
+let $entity-types := common:add-selected-children($entities:types, $entity-type/@id)
 
 let $term-lang-default := (
-        $entity-show/m:label[@derived-transliterated eq 'true'][@xml:lang eq 'Bo-Ltn']/@xml:lang, 
-        $entity-show/m:label[@derived eq 'true'][@xml:lang eq 'Sa-Ltn']/@xml:lang, 
-        if($flag) then 'en' else (),
-        'Bo-Ltn'
-    )[1]
-    
+    $request-entity-terms-longest/@xml:lang, 
+    if($flag) then 'en' else (),
+    'Bo-Ltn'
+)[1]
 let $term-lang := request:get-parameter('term-lang', $term-lang-default) ! common:valid-lang(.)
+let $term-lang := $term-langs/m:lang[@id eq  $term-lang]
+let $term-langs := common:add-selected-children($term-langs, $term-lang/@id)
 
-let $type-glossary-type := $entities:types/m:type[@id = $type]/@glossary-type
+let $request := 
+    element { QName('http://read.84000.co/ns/1.0', 'request')} {
+        attribute model { 'glossary' },
+        attribute resource-suffix { request:get-parameter('resource-suffix', '') },
+        attribute entity-id { $request-entity/@xml:id },
+        attribute term-lang { $term-lang/@id },
+        attribute type { $entity-type/@id },
+        attribute view-mode { $view-mode/@id },
+        attribute flagged { $flag/@id },
+        element search { $search },
+        $entity-types,
+        $term-langs,
+        $view-mode
+    }
+
+let $type-glossary-type := $entity-type/@glossary-type
+
 let $glossary-search := 
-    if(not($flag)) then
-        glossary:glossary-search($type-glossary-type, $term-lang, $search)
-    else()
+    (: Get flagged entries :)
+    if($flag) then
+        glossary:glossary-flagged($flag/@id)
+    (: Get glossary entries based on criteria :)
+    else
+        glossary:glossary-search($type-glossary-type, $term-lang/@id, $search)
 
 let $entity-list := 
-    if($flag) then
-        entities:flagged($flagged, true(), true(), false())/m:entity
-    else
-        entities:entities($glossary-search/@xml:id, true(), true(), false())/m:entity
-
-(:return if(true()) then $entity-list else:)
-
-(: Sort the results :)
-let $entity-list :=
-    for $entity in $entity-list
-    
-    (: Get relevant terms :)
-    let $matching-terms :=
-        for $term in $entity/m:instance/m:entry/m:term
-            [@xml:lang eq $term-lang]
-            [
-                matches(
-                    string-join(tokenize(data(), '\s+') ! common:normalized-chars(.) ! common:alphanumeric(.), ' '),
-                    concat(if(string-length($search) gt 1) then '(?:^|\s+)' else '^', string-join(tokenize($search, '\s+') ! common:normalized-chars(.) ! common:alphanumeric(.), '.*\s+'), ''), 
-                    'i'
-                )
-            ]
-        order by $term
-        return
-            $term ! common:normalized-chars(.) ! common:alphanumeric(.)
-    
-    (: Order by the fewest words / shortest relevant term, then alphabetically :)
-    order by 
-        if(string-length($search) gt 1) then min($matching-terms ! count(tokenize(data(), '\s+'))) else 1 ascending,
-        (:min($matching-terms ! string-length(.)) ascending,:)
-        lower-case($matching-terms[1]),
-        $entity/m:instance[1]/m:entry/m:sort-term
-    
+    for $gloss-id in distinct-values($glossary-search/@xml:id)
+    let $instances-exclude := $entities:entities//m:instance[@id = $gloss-id][m:flag[@type eq $exclude-flagged]]
+    let $instances := $entities:entities//m:instance[@id = $gloss-id] except $instances-exclude
     return
-        $entity
+        $instances/parent::m:entity
 
-(: Show the first result :)
-let $entity-show := 
-    if(not($entity-show)) then
-        entities:entity($entity-list[self::m:entity][1], true(), true(), true())
-    else 
-        $entity-show
+let $related := entities:related($request-entity | $entity-list, false(), $exclude-flagged)
 
-let $entity-types := common:add-selected-children($entities:types, $type)
-let $term-langs := common:add-selected-children($term-langs, $term-lang)
-return
+let $xml-response :=
     common:response(
-        "glossary", 
+        $request/@model, 
         $common:app-id, 
         (
-            <request xmlns="http://read.84000.co/ns/1.0" 
-                entity-id="{ $entity-id }" 
-                term-lang="{ $term-lang }" 
-                view-mode="{ $view-mode }"
-                flagged="{ $flagged }">
-                <search>{ $search }</search>
-                {
-                    $entity-types,
-                    $term-langs,
-                    $glossary:view-modes/m:view-mode[@id eq $view-mode]
-                }
-            </request>,
-            <browse-entities xmlns="http://read.84000.co/ns/1.0">{ $entity-list }</browse-entities>,
-            <show-entity xmlns="http://read.84000.co/ns/1.0">{ $entity-show }</show-entity>,
+            $request,
+            <show-entity xmlns="http://read.84000.co/ns/1.0">{ $request-entity }</show-entity>,
+            <entities xmlns="http://read.84000.co/ns/1.0">
+                { $request-entity | $entity-list }
+                <related>{ $related }</related>
+            </entities>,
             $entities:flags
         )
+    )
+
+return
+
+    (: html :)
+    if($request/@resource-suffix = ('html')) then (
+        common:html($xml-response, concat($common:app-path, "/views/html/glossary.xsl"), ())
+    )
+    
+    (: xml :)
+    else (
+        util:declare-option("exist:serialize", "method=xml indent=no"),
+        $xml-response
     )

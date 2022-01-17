@@ -228,9 +228,14 @@
                                         
                                         <xsl:if test="position() ne 1">
                                             <br class="hidden-xs"/>
-                                            <xsl:value-of select="'+'"/>
+                                            <xsl:value-of select="'+ '"/>
                                         </xsl:if>
+                                        
                                         <xsl:value-of select="m:toh/m:full"/>
+                                        
+                                        <xsl:for-each select="m:toh/m:duplicates/m:duplicate">
+                                            <xsl:value-of select="concat(' / ', m:base)"/>
+                                        </xsl:for-each>
                                         
                                     </xsl:for-each>
                                     
@@ -295,13 +300,11 @@
                                         <!-- Authors -->
                                         <xsl:call-template name="source-authors">
                                             <xsl:with-param name="text" select="."/>
-                                            <xsl:with-param name="entities" select="/m:response/m:entities/m:entity"/>
                                         </xsl:call-template>
                                         
                                         <xsl:call-template name="expandable-summary">
                                             <xsl:with-param name="text" select="."/>
                                             <xsl:with-param name="expand-id" select="concat('summary-detail-', $group-index, '-', m:toh/@key)"/>
-                                            <xsl:with-param name="entities" select="/m:response/m:entities/m:entity"/>
                                         </xsl:call-template>
                                         
                                     </xsl:for-each-group>

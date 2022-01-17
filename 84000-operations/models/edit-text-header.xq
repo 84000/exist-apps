@@ -81,13 +81,14 @@ let $generate-files :=
         store:create(concat($text-id, '.all'))
     else ()
     
-let $attribution-entities :=
-    element { QName('http://read.84000.co/ns/1.0', 'attribution-entities') } {
-        let $authorship-refs-text := $tei//tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl//@ref
-        let $authorship-refs-rest := $tei-content:translations-collection//tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl//@ref except $authorship-refs-text
+let $entities :=
+    element { QName('http://read.84000.co/ns/1.0', 'entities') } {
+        let $attribution-refs-text := $tei//tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl//@ref ! replace(., '^eft:', '')
+        let $attribution-entities := $entities:entities/m:entity/id($attribution-refs-text)
+        let $attribution-refs := $tei-content:translations-collection//tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl//@ref ! replace(., '^eft:', '')
         return (
-            $entities:entities/m:entity/id($authorship-refs-text ! replace(., '^eft:', '')) ! entities:entity(., true(), true(), false()),
-            $entities:entities/m:entity/id($authorship-refs-rest ! replace(., '^eft:', ''))
+            ($attribution-entities | $entities:entities/m:entity/id($attribution-refs)),
+            element related { entities:related($attribution-entities, true()) }
         )
     }
 
@@ -136,7 +137,7 @@ let $xml-response :=
             tei-content:text-statuses-selected(tei-content:translation-status($tei), 'translation'),
             contributors:persons(false(), false()),
             contributors:teams(true(), false(), false()),
-            $attribution-entities,
+            $entities,
             $tei-content:title-types,
             $contributors:contributor-types,
             doc('../config/submission-checklist.xml')

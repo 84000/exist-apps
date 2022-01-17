@@ -1129,7 +1129,7 @@ declare function translation:folio-content($tei as element(tei:TEI), $toh-key as
     let $translation-paragraphs := $tei/tei:text/tei:body//tei:div[@type = 'translation']//tei:div[@type = ('prologue', 'homage', 'section', 'chapter', 'colophon')]/tei:*[self::tei:head | self::tei:p | self::tei:ab | self::tei:q | self::tei:lg | self::tei:list | self::tei:table | self::tei:trailer]
     
     (: Find the container of the start <ref/> and it's index :)
-    let $start-ref-paragraph := $start-ref/ancestor::*[. = $translation-paragraphs][1]
+    let $start-ref-paragraph := $translation-paragraphs[count($start-ref) eq 1 and count(descendant::* | $start-ref) eq count(descendant::*)]
     let $start-ref-paragraph-index :=
         if ($start-ref-paragraph) then
             functx:index-of-node($translation-paragraphs, $start-ref-paragraph)
@@ -1137,7 +1137,7 @@ declare function translation:folio-content($tei as element(tei:TEI), $toh-key as
             0
         
     (: Find the container of the end <ref/> and it's index :)
-    let $end-ref-paragraph := $end-ref/ancestor::*[. = $translation-paragraphs][1]
+    let $end-ref-paragraph := $translation-paragraphs[count($end-ref) eq 1 and count(descendant::* | $end-ref) eq count(descendant::*)]
     let $end-ref-paragraph-index :=
         if ($end-ref-paragraph) then
             functx:index-of-node($translation-paragraphs, $end-ref-paragraph)
@@ -1154,10 +1154,9 @@ declare function translation:folio-content($tei as element(tei:TEI), $toh-key as
         element {QName('http://read.84000.co/ns/1.0', 'folio-content')} {
             attribute start-ref {$start-ref/@cRef},
             attribute end-ref {$end-ref/@cRef},
-            
             (: Convert the content to text and <ref/>s only :)
             for $node in 
-                $folio-paragraphs//text()[not(ancestor::tei:note)]
+                $folio-paragraphs//text()[count(ancestor::tei:note)  eq 0]
                 | $folio-paragraphs//tei:ref[count(. | $start-ref) eq 1]
                 | $folio-paragraphs//tei:ref[count(. | $end-ref) eq 1]
             return 

@@ -232,7 +232,7 @@ declare function knowledgebase:related-texts($tei as element(tei:TEI)) as elemen
         attribute prefix { 'a' },
         
         let $knowledgebase-id := tei-content:id($tei)
-        let $knowledgebase-entity := entities:entities($knowledgebase-id, false(), false(), false())/m:entity
+        let $knowledgebase-entity := $entities:entities//m:instance[@id eq $knowledgebase-id]/parent::m:entity
         let $author-ref := concat('eft:', $knowledgebase-entity/@xml:id)
         let $knowledgebase-title := knowledgebase:titles($tei)//m:title[@type eq 'mainTitle']
         

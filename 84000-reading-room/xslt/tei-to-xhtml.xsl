@@ -7,13 +7,14 @@
     <xsl:import href="../views/html/website-page.xsl"/>
     
     <!-- Global variables -->
-    <xsl:variable name="translation" select="/m:response/m:translation"/>
-    <xsl:variable name="section" select="/m:response/m:section"/>
-    <xsl:variable name="knowledgebase" select="/m:response/m:knowledgebase"/>
-    <xsl:variable name="requested-part" select="/m:response/m:request/@part"/>
-    <xsl:variable name="requested-passage" select="/m:response/m:request/m:passage/@id"/>
-    <xsl:variable name="toh-key" select="$translation/m:toh/@key"/>
-    <xsl:variable name="kb-id" select="$knowledgebase/m:page/@xml:id"/>
+    <xsl:variable name="translation" select="/m:response/m:translation" as="element(m:translation)?"/>
+    <xsl:variable name="section" select="/m:response/m:section" as="element(m:section)?"/>
+    <xsl:variable name="knowledgebase" select="/m:response/m:knowledgebase" as="element(m:knowledgebase)?"/>
+    <xsl:variable name="entities" select="/m:response/m:entities/m:entity" as="element(m:entity)*"/>
+    <xsl:variable name="requested-part" select="/m:response/m:request/@part" as="xs:string?"/>
+    <xsl:variable name="requested-passage" select="/m:response/m:request/m:passage/@id" as="xs:string?"/>
+    <xsl:variable name="toh-key" select="$translation/m:toh/@key" as="xs:string?"/>
+    <xsl:variable name="kb-id" select="$knowledgebase/m:page/@xml:id" as="xs:string?"/>
     <xsl:variable name="part-status" select="if(not($translation//m:part[@render = ('preview', 'empty')])) then 'complete' else if($translation//m:part[@render eq 'show']) then 'part' else 'empty'" as="xs:string"/>
     
     <!-- Useful keys -->
@@ -25,6 +26,9 @@
     <xsl:key name="notes-cache-end-note" match="m:notes-cache/m:end-note" use="@id"/>
     <xsl:key name="milestones-cache-milestone" match="m:milestones-cache/m:milestone" use="@id"/>
     <xsl:key name="entity-instance" match="m:entities/m:entity/m:instance" use="@id"/>
+    <xsl:key name="related-entries" match="m:entities/m:related/m:text/m:entry" use="@id"/>
+    <xsl:key name="related-pages" match="m:entities/m:related/m:page" use="@xml:id"/>
+    <xsl:key name="related-entities" match="m:entities/m:related/m:entity" use="@xml:id"/>
     
     <!-- Pre-sort the glossaries by priority -->
     <xsl:variable name="glossary-prioritised" as="element(tei:gloss)*">
@@ -2428,7 +2432,7 @@
                 
                 <xsl:call-template name="href-attribute">
                     <xsl:with-param name="target-id" select=" $target-element/@id"/>
-                    <xsl:with-param name="part-id" select="$target-element/@id"/>
+                    <xsl:with-param name="part-id" select="$target-element/ancestor-or-self::m:part[@id][not(@type = ('translation', 'appendix'))][last()]/@id"/>
                     <xsl:with-param name="mark-id" select="$mark-id"/>
                 </xsl:call-template>
                 
@@ -3016,7 +3020,6 @@
         
         <xsl:param name="text"/>
         <xsl:param name="expand-id" as="xs:string"/>
-        <xsl:param name="entities" as="element(m:entity)*"/>
         
         <xsl:variable name="toh-key" select="$text/m:toh/@key"/>
         
@@ -3096,10 +3099,12 @@
                                     <ul>
                                         <xsl:for-each select="$roleAttributions">
                                             <xsl:variable name="entity-id" select="replace(@ref, '^eft:', '')"/>
+                                            <xsl:variable name="entity" select="$entities/id($entity-id)"/>
                                             <li>
                                                 <xsl:call-template name="attribution-label">
                                                     <xsl:with-param name="attribution" select="."/>
-                                                    <xsl:with-param name="entity" select="$entities/id($entity-id)"/>
+                                                    <xsl:with-param name="entity" select="$entity"/>
+                                                    <xsl:with-param name="page" select="key('related-pages', $entity/m:instance/@id, $root)[1]"/>
                                                 </xsl:call-template>
                                             </li>
                                         </xsl:for-each>
@@ -3141,8 +3146,9 @@
     
     <!-- Authors -->
     <xsl:template name="source-authors">
+        
         <xsl:param name="text" as="element(m:text)?"/>
-        <xsl:param name="entities" as="element(m:entity)*"/>
+        
         <xsl:if test="$text/m:source/m:attribution[@ref][@role eq 'author'][normalize-space(text())]">
             <hr/>
             <div role="navigation" aria-label="The attributed authors of the source text" class="small">
@@ -3152,24 +3158,26 @@
                 <ul class="list-inline inline-dots">
                     <xsl:for-each select="$text/m:source/m:attribution[@ref][@role eq 'author'][normalize-space(text())]">
                         <xsl:variable name="entity-id" select="replace(@ref, '^eft:', '')"/>
+                        <xsl:variable name="entity" select="$entities/id($entity-id)"/>
                         <li>
                             <xsl:call-template name="attribution-label">
                                 <xsl:with-param name="attribution" select="."/>
-                                <xsl:with-param name="entity" select="$entities/id($entity-id)"/>
+                                <xsl:with-param name="entity" select="$entity"/>
+                                <xsl:with-param name="page" select="key('related-pages', $entity/m:instance/@id, $root)[1]"/>
                             </xsl:call-template>
                         </li>
                     </xsl:for-each>
                 </ul>
             </div>
         </xsl:if>
+        
     </xsl:template>
     
     <xsl:template name="attribution-label">
         
         <xsl:param name="attribution" as="element(m:attribution)?"/>
         <xsl:param name="entity" as="element(m:entity)?"/>
-        
-        <xsl:variable name="page" select="$entity/m:instance[@type eq 'knowledgebase-article']/m:page"/>
+        <xsl:param name="page" as="element(m:page)?"/>
         
         <xsl:choose>
             <xsl:when test="$page">
@@ -3194,6 +3202,107 @@
                 </span>
             </xsl:otherwise>
         </xsl:choose>
+        
+    </xsl:template>
+    
+    <xsl:template name="entity-data">
+        
+        <xsl:param name="entity" as="element(m:entity)"/>
+        <xsl:param name="search-text" as="xs:string"/>
+        <xsl:param name="selected-term-lang" as="xs:string"/>
+        
+        <xsl:element name="entity-data" namespace="http://read.84000.co/ns/1.0">
+            
+            <xsl:attribute name="ref" select="$entity/@xml:id"/>
+            
+            <xsl:variable name="related-entries" select="key('related-entries', $entity/m:instance/@id, $root)" as="element(m:entry)*"/>
+            
+            <xsl:variable name="term-empty-bo">
+                <xsl:call-template name="text">
+                    <xsl:with-param name="global-key" select="'glossary.term-empty-bo'"/>
+                </xsl:call-template>
+            </xsl:variable>
+            
+            <xsl:variable name="term-empty-sa-ltn">
+                <xsl:call-template name="text">
+                    <xsl:with-param name="global-key" select="'glossary.term-empty-sa-ltn'"/>
+                </xsl:call-template>
+            </xsl:variable>
+            
+            <xsl:variable name="primary-terms" as="element(m:term)*">
+                <xsl:choose>
+                    <xsl:when test="$related-entries/m:term[@xml:lang eq 'bo'][text()][not(text() = ('', $term-empty-bo))]">
+                        <xsl:sequence select="$related-entries/m:term[@xml:lang eq 'bo']"/>
+                    </xsl:when>
+                    <xsl:otherwise>
+                        <xsl:sequence select="$related-entries/m:term[@xml:lang eq 'Sa-Ltn'][text()][not(text() = ('', $term-empty-sa-ltn))]"/>
+                    </xsl:otherwise>
+                </xsl:choose>
+            </xsl:variable>
+            
+            <xsl:variable name="sorted-terms" as="element(m:term)*">
+                <xsl:perform-sort select="$primary-terms">
+                    <xsl:sort select="string-length(lower-case(data()))" order="descending"/>
+                </xsl:perform-sort>
+            </xsl:variable>
+            
+            <xsl:variable name="longest-term" select="$sorted-terms[1]" as="element(m:term)?"/>
+            
+            <xsl:element name="label" namespace="http://read.84000.co/ns/1.0">
+                <xsl:attribute name="type" select="'primary'"/>
+                <xsl:attribute name="xml:lang" select="$longest-term/@xml:lang"/>
+                <xsl:value-of select="$longest-term"/>
+            </xsl:element>
+            
+            <xsl:if test="$longest-term[@xml:lang eq 'bo']">
+                
+                <xsl:variable name="sorted-secondary-terms" as="element(m:term)*">
+                    <xsl:perform-sort select="$related-entries/m:term[@xml:lang eq 'Bo-Ltn']">
+                        <xsl:sort select="string-length(lower-case(data()))" order="descending"/>
+                    </xsl:perform-sort>
+                </xsl:variable>
+                
+                <xsl:if test="$sorted-secondary-terms">
+                    <xsl:element name="label" namespace="http://read.84000.co/ns/1.0">
+                        <xsl:attribute name="type" select="'secondary'"/>
+                        <xsl:attribute name="xml:lang" select="$sorted-secondary-terms[1]/@xml:lang"/>
+                        <xsl:value-of select="$sorted-secondary-terms[1]"/>
+                    </xsl:element>
+                </xsl:if>
+                
+            </xsl:if>
+            
+            <xsl:for-each-group select="$related-entries/m:term[@xml:lang eq $selected-term-lang]" group-by="string-join(tokenize(data(), '\s+') ! lower-case(data()) ! common:standardized-sa(.) ! common:alphanumeric(.), ' ')">
+                
+                <xsl:sort select="string-join(tokenize(data(), '\s+') ! lower-case(data()) ! common:standardized-sa(.) ! common:alphanumeric(.), ' ')"/>
+                
+                <xsl:variable name="match-text" select="string-join(tokenize(data(), '\s+') ! lower-case(.) ! common:standardized-sa(.) ! common:alphanumeric(.), ' ')" as="xs:string"/>
+                <xsl:variable name="match-regex" as="xs:string">
+                    <xsl:choose>
+                        <xsl:when test="@xml:lang eq 'en'">
+                            <xsl:value-of select="concat(if(string-length($search-text) ne 1) then '(?:^|\s+)' else '^(The\s+|A\s+|An\s+)?', string-join(tokenize($search-text, '\s+') ! common:standardized-sa(.) ! common:alphanumeric(.), '.*\s+'))"/>
+                        </xsl:when>
+                        <xsl:when test="@xml:lang eq 'Bo-Ltn'">
+                            <xsl:value-of select="concat(if(string-length($search-text) ne 1) then '' else '^', string-join(tokenize($search-text, '\s+') ! common:standardized-sa(.) ! common:alphanumeric(.), '.*\s+'))"/>
+                        </xsl:when>
+                        <xsl:otherwise>
+                            <xsl:value-of select="concat(if(string-length($search-text) ne 1) then '(?:^|\s+)' else '^', string-join(tokenize($search-text, '\s+') ! common:standardized-sa(.) ! common:alphanumeric(.), '.*\s+'))"/>
+                        </xsl:otherwise>
+                    </xsl:choose>
+                </xsl:variable>
+                
+                <xsl:element name="term" namespace="http://read.84000.co/ns/1.0">
+                    <xsl:attribute name="word-count" select="count(tokenize($match-text, '\s+'))"/>
+                    <xsl:attribute name="letter-count" select="string-length($match-text)"/>
+                    <xsl:if test="matches($match-text, $match-regex, 'i')">
+                        <xsl:attribute name="matches" select="true()"/>
+                    </xsl:if>
+                    <xsl:value-of select="data()"/>
+                </xsl:element>
+                
+            </xsl:for-each-group>
+            
+        </xsl:element>
         
     </xsl:template>
     
