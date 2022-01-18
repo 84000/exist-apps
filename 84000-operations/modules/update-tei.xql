@@ -698,9 +698,11 @@ declare function update-tei:update-glossary($tei as element(tei:TEI), $glossary-
                             'semanticReconstruction' 
                         else if(matches($term-lang-type, '\-tr$')) then 
                             'transliterationReconstruction' 
+                        else if(matches($term-lang-type, '\-sa$')) then 
+                            'sourceAttested' 
                         else ()
                     let $term-status := request:get-parameter(concat('term-status-', $term-index), '')
-                    let $term-lang := common:valid-lang(replace($term-lang-type, '\-(sr|tr)$', ''))
+                    let $term-lang := common:valid-lang(replace($term-lang-type, '\-(sr|tr|sa)$', ''))
                     where $term-text gt ''
                     return (
                         common:ws(7),

@@ -1426,6 +1426,14 @@
                     <xsl:value-of select="'Sanskrit* / Transliteration Reconstruction'"/>
                 </option>
             </xsl:if>
+            <xsl:if test="$language-options = 'Sa-Ltn-sa'">
+                <option value="sa-ltn-sa">
+                    <xsl:if test="$selected-language eq 'Sa-Ltn-sa'">
+                        <xsl:attribute name="selected" select="'selected'"/>
+                    </xsl:if>
+                    <xsl:value-of select="'Sanskrit* / Source Attested'"/>
+                </option>
+            </xsl:if>
             <xsl:if test="$language-options = 'zh'">
                 <option value="zh">
                     <xsl:if test="$selected-language eq 'zh'">
@@ -1442,7 +1450,7 @@
                     <xsl:value-of select="'Pali'"/>
                 </option>
             </xsl:if>
-            <xsl:if test="not($selected-language = ('','en','bo','Bo-Ltn','Sa-Ltn','Sa-Ltn-rc','Sa-Ltn-tr','Sa-Ltn-sr','zh','Pi-Ltn'))">
+            <xsl:if test="not($selected-language = ('','en','bo','Bo-Ltn','Sa-Ltn','Sa-Ltn-rc','Sa-Ltn-tr','Sa-Ltn-sr','Sa-Ltn-sa','zh','Pi-Ltn'))">
                 <option>
                     <xsl:attribute name="value" select="$selected-language"/>
                     <xsl:attribute name="selected" select="'selected'"/>

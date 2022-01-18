@@ -1313,9 +1313,9 @@
                     <xsl:with-param name="input-name" select="'term'"/>
                     <xsl:with-param name="label" select="'Equivalent(s):'"/>
                     <xsl:with-param name="term" select="$source-terms[$index]/text()"/>
-                    <xsl:with-param name="lang" select="if(tokenize($source-terms[$index]/@type, '\s+')[. = ('semanticReconstruction')]) then concat($element-lang, '-sr') else if(tokenize($source-terms[$index]/@type, '\s+')[. = ('transliterationReconstruction')]) then concat($element-lang, '-tr') else $element-lang"/>
+                    <xsl:with-param name="lang" select="if(tokenize($source-terms[$index]/@type, '\s+')[. = ('semanticReconstruction')]) then concat($element-lang, '-sr') else if(tokenize($source-terms[$index]/@type, '\s+')[. = ('transliterationReconstruction')]) then concat($element-lang, '-tr') else if(tokenize($source-terms[$index]/@type, '\s+')[. = ('sourceAttested')]) then concat($element-lang, '-sa') else $element-lang"/>
                     <xsl:with-param name="status" select="($source-terms[$index]/@status, '')[1]"/>
-                    <xsl:with-param name="language-options" select="('en', 'Bo-Ltn', 'Sa-Ltn', 'Sa-Ltn-sr', 'Sa-Ltn-tr', 'zh')"/>
+                    <xsl:with-param name="language-options" select="('en', 'Bo-Ltn', 'Sa-Ltn', 'Sa-Ltn-sr', 'Sa-Ltn-tr', 'Sa-Ltn-sa', 'zh')"/>
                 </xsl:call-template>
                 
             </xsl:for-each>
@@ -1330,7 +1330,7 @@
                     <xsl:with-param name="label" select="''"/>
                     <xsl:with-param name="term" select="text()"/>
                     <xsl:with-param name="lang" select="'en'"/>
-                    <xsl:with-param name="language-options" select="('en', 'Bo-Ltn', 'Sa-Ltn', 'Sa-Ltn-sr', 'Sa-Ltn-tr', 'zh')"/>
+                    <xsl:with-param name="language-options" select="('en', 'Bo-Ltn', 'Sa-Ltn', 'Sa-Ltn-sr', 'Sa-Ltn-tr', 'Sa-Ltn-sa', 'zh')"/>
                 </xsl:call-template>
                 
             </xsl:for-each>
