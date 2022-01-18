@@ -10,6 +10,51 @@ declare variable $operations-collection := '/db/apps/84000-data/operations';
 declare variable $filename-new := 'entities-2-9-0.xml';
 declare variable $teis := collection($common:translations-path)//tei:TEI;
 
+declare variable $corrections :=
+    <corrections xmlns="http://read.84000.co/ns/1.0">
+        <merge source="entity-18248" target="entity-7072"/>
+        <merge source="entity-18455" target="entity-3512"/>
+        <merge source="entity-17465" target="entity-29506"/>
+        <merge source="entity-17467" target="entity-31953"/>
+        <merge source="entity-17460" target="entity-28840"/>
+        <merge source="entity-18133" target="entity-10129"/>
+        <merge source="entity-18368" target="entity-28464"/>
+        <merge source="entity-17569" target="entity-8724"/>
+        <merge source="entity-18401" target="entity-29526"/>
+        <merge source="entity-17558" target="entity-8406"/>
+        <merge source="entity-18618" target="entity-29035"/>
+    </corrections>;
+
+declare function local:correct-orphaned-attributions() {
+
+    (# exist:batch-transaction #) {
+    
+        (: Loop all attribution @refs :)
+        for $tei in $teis
+        let $text-id := tei-content:id($tei)
+        order by $text-id
+        (:where $text-id eq 'UT23703-001-002':)
+        
+        for $attribution in $tei//tei:sourceDesc/tei:bibl/tei:author[@ref] | $tei//tei:sourceDesc/tei:bibl/tei:editor[@ref]
+        (: Check the entity exists :)
+        let $entity-id := replace($attribution/@ref, '^eft:', '')
+        let $merge := $corrections/m:merge[@source eq $entity-id]
+        where not($entities:entities//m:entity/id($entity-id))
+        return (
+            $text-id,
+            if($merge) then (
+                (: Merge to target :)
+                $merge,
+                update replace $attribution/@ref with concat('eft:', $merge/@target)
+            )
+            else
+                (: Flag for merge target :)
+                $attribution
+        )
+        
+    }
+};
+
 declare function local:migrate-entities() {
     
     let $entities-migrated := 
@@ -36,12 +81,14 @@ declare function local:migrate-entities() {
                             element { node-name($element) } {
                                 $element/@*,
                                 $element/node(),
-                                if($entity[m:flag]) then (
+                                for $flag in $entity/m:flag
+                                let $flag-type := $flag/@type
+                                group by $flag-type
+                                return (
                                    common:ws(3),
-                                   $entity/m:flag,
+                                   $flag[1],
                                    common:ws(2)
                                 )
-                                else ()
                             }
                         )
                         else (
@@ -53,11 +100,12 @@ declare function local:migrate-entities() {
                 }
             ),
             
-            for $entity in local:orphaned-attribution-entities()
+            (:for $entity in local:orphaned-attribution-entities()
             return (
                 common:ws(1),
                 $entity
-            ),
+            ),:)
+            
             $common:chr-nl
             
         }
@@ -116,6 +164,7 @@ declare function local:orphaned-attribution-entities() {
     
 };
 
-local:migrate-entities()
-(:local:orphaned-attribution-entities():)
+local:correct-orphaned-attributions()
+(:local:migrate-entities():)
+
 

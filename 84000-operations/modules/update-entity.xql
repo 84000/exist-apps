@@ -310,10 +310,13 @@ declare function update-entity:merge($entity-id as xs:string, $target-entity-id 
             element { node-name($entity) } {
                 $entity/@*,
                 for $entity-node in functx:distinct-deep(($entity/* | $target-entity/*))
+                let $element-name := local-name($entity-node)
+                order by if($element-name eq 'label') then 1 else if($element-name eq 'type') then 2 else if($element-name eq 'instance') then 3 else 4
                 return (
                     common:ws(2),
                     $entity-node
-                )
+                ),
+                common:ws(1)
             }
         
         where $entity and $target-entity
@@ -332,7 +335,7 @@ declare function update-entity:merge($entity-id as xs:string, $target-entity-id 
             (: TO DO: this could get very slow if it triggers TEI file :)
             for $attribution-ref in collection($common:tei-path)//tei:sourceDesc/tei:bibl/tei:*/@ref[. eq concat('eft:', $target-entity-id)]
             return 
-                common:update('entity-merge-attribution', $attribution-ref, attribute ref { concat('eft:', $target-entity-id) }, (), ())
+                common:update('entity-merge-attribution', $attribution-ref, concat('eft:', $entity-id), (), ())
             ,
             
             (: Delete target :)

@@ -433,10 +433,10 @@
                                                            <xsl:if test="$show-entity/m:instance[m:flag]">
                                                                <div>
                                                                    <span class="badge badge-notification">
-                                                                       <xsl:value-of select="count($show-entity/m:instance/m:flag)"/>
+                                                                       <xsl:value-of select="count($show-entity/m:instance[m:flag])"/>
                                                                    </span>
                                                                    <span class="badge-text">
-                                                                       <xsl:value-of select="if (count($show-entity/m:instance/m:flag) eq 1) then 'entry flagged' else 'entries flagged'"/>
+                                                                       <xsl:value-of select="if (count($show-entity/m:instance[m:flag]) eq 1) then 'entry flagged' else 'entries flagged'"/>
                                                                    </span>
                                                                </div>
                                                            </xsl:if>
