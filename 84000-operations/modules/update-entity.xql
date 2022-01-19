@@ -1,5 +1,6 @@
 module namespace update-entity = "http://operations.84000.co/update-entity";
 
+import module namespace update-tei = "http://operations.84000.co/update-tei" at "update-tei.xql";
 import module namespace common = "http://read.84000.co/common" at "../../84000-reading-room/modules/common.xql";
 import module namespace entities = "http://read.84000.co/entities" at "../../84000-reading-room/modules/entities.xql";
 import module namespace glossary = "http://read.84000.co/glossary" at "../../84000-reading-room/modules/glossary.xql";
@@ -333,10 +334,14 @@ declare function update-entity:merge($entity-id as xs:string, $target-entity-id 
             
             (: Update attributions :)
             (: TO DO: this could get very slow if it triggers TEI file :)
-            for $attribution-ref in collection($common:tei-path)//tei:sourceDesc/tei:bibl/tei:*/@ref[. eq concat('eft:', $target-entity-id)]
-            return 
-                common:update('entity-merge-attribution', $attribution-ref, concat('eft:', $entity-id), (), ())
-            ,
+            for $tei in collection($common:tei-path)//tei:TEI[descendant::tei:*/@ref[. eq concat('eft:', $target-entity-id)]]
+            return (
+                for $attribution-ref in $tei/descendant::tei:*/@ref[. eq concat('eft:', $target-entity-id)]
+                return 
+                    common:update('entity-merge-attribution', $attribution-ref, concat('eft:', $entity-id), (), ())
+                ,
+                update-tei:minor-version-increment($tei, 'entity-merge-attribution')
+            ),
             
             (: Delete target :)
             common:update('entity-remove', $target-entity, (), (), ())

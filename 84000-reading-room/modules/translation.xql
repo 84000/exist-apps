@@ -36,9 +36,12 @@ declare variable $translation:view-modes :=
       <view-mode id="editor-passage"    client="ajax"     cache="suppress"   layout="part-only"       glossary="no-cache"        parts="passage"/>
     </view-modes>;
 
-declare variable $translation:published-status-ids := $tei-content:text-statuses/m:status[@type eq 'translation'][@group = ('published')]/@status-id;
-declare variable $translation:in-progress-status-ids := $tei-content:text-statuses/m:status[@type eq 'translation'][@group = ('translated', 'in-translation')]/@status-id;
-declare variable $translation:marked-up-status-ids := $tei-content:text-statuses/m:status[@type eq 'translation'][@marked-up = 'true']/@status-id;
+declare variable $translation:status-statuses := $tei-content:text-statuses/m:status[@type eq 'translation'];
+declare variable $translation:published-status-ids := $translation:status-statuses[@group = ('published')]/@status-id;
+declare variable $translation:translated-status-ids := $translation:status-statuses[@group = ('translated')]/@status-id;
+declare variable $translation:in-translation-status-ids := $translation:status-statuses[@group = ('in-translation')]/@status-id;
+declare variable $translation:in-progress-status-ids := $translation:translated-status-ids | $translation:in-translation-status-ids;
+declare variable $translation:marked-up-status-ids := $translation:status-statuses[@marked-up = 'true']/@status-id;
 
 declare function translation:titles($tei as element(tei:TEI)) as element() {
     element {QName('http://read.84000.co/ns/1.0', 'titles')} {

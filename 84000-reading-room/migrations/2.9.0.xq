@@ -5,6 +5,7 @@ import module namespace common = "http://read.84000.co/common" at "../modules/co
 import module namespace tei-content="http://read.84000.co/tei-content" at "../../84000-reading-room/modules/tei-content.xql";
 import module namespace entities="http://read.84000.co/entities" at "../../84000-reading-room/modules/entities.xql";
 import module namespace update-entity="http://operations.84000.co/update-entity" at "../../84000-operations/modules/update-entity.xql";
+import module namespace update-tei="http://operations.84000.co/update-tei" at "../../84000-operations/modules/update-tei.xql";
 
 declare variable $operations-collection := '/db/apps/84000-data/operations';
 declare variable $filename-new := 'entities-2-9-0.xml';
@@ -29,29 +30,42 @@ declare function local:correct-orphaned-attributions() {
 
     (# exist:batch-transaction #) {
     
-        (: Loop all attribution @refs :)
+        (: Loop all tei :)
         for $tei in $teis
         let $text-id := tei-content:id($tei)
         order by $text-id
-        (:where $text-id eq 'UT23703-001-002':)
         
-        for $attribution in $tei//tei:sourceDesc/tei:bibl/tei:author[@ref] | $tei//tei:sourceDesc/tei:bibl/tei:editor[@ref]
-        (: Check the entity exists :)
-        let $entity-id := replace($attribution/@ref, '^eft:', '')
-        let $merge := $corrections/m:merge[@source eq $entity-id]
-        where not($entities:entities//m:entity/id($entity-id))
+        (: Check for orphans :)
+        let $attributions-orphaned :=
+            for $attribution in $tei//tei:sourceDesc/tei:bibl/tei:author[@ref] | $tei//tei:sourceDesc/tei:bibl/tei:editor[@ref]
+            (: Check the entity exists :)
+            let $entity-id := replace($attribution/@ref, '^eft:', '')
+            where not($entities:entities//m:entity/id($entity-id))
+            return 
+                $attribution
+                
+        where $attributions-orphaned
         return (
             $text-id,
-            if($merge) then (
-                (: Merge to target :)
-                $merge,
-                update replace $attribution/@ref with concat('eft:', $merge/@target)
+            
+            let $attributions-merge :=
+                for $attribution in $attributions-orphaned
+                let $entity-id := replace($attribution/@ref, '^eft:', '')
+                let $merge := $corrections/m:merge[@source eq $entity-id]
+                where $merge
+                return (
+                    $merge,
+                    update replace $attribution/@ref with concat('eft:', $merge/@target)
+                )
+            
+            return (
+                $attributions-merge,
+                if($attributions-merge) then
+                    update-tei:minor-version-increment($tei, 'correct-orphaned-attributions')
+                else (),
+                $attributions-orphaned[not(@ref = $attributions-merge/@target ! concat('eft:',.))]
             )
-            else
-                (: Flag for merge target :)
-                $attribution
         )
-        
     }
 };
 

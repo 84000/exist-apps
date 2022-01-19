@@ -1,7 +1,6 @@
 module namespace update-tei = "http://operations.84000.co/update-tei";
 
 import module namespace update-entity = "http://operations.84000.co/update-entity" at "update-entity.xql";
-
 import module namespace common = "http://read.84000.co/common" at "../../84000-reading-room/modules/common.xql";
 import module namespace tei-content = "http://read.84000.co/tei-content" at "../../84000-reading-room/modules/tei-content.xql";
 import module namespace sponsors = "http://read.84000.co/sponsors" at "../../84000-reading-room/modules/sponsors.xql";

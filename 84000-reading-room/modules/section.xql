@@ -101,6 +101,16 @@ declare function section:child-sections($tei as element(tei:TEI), $include-text-
     
     (: Child texts for stats :)
     let $child-texts := $section:texts//tei:TEI[tei:teiHeader//tei:sourceDesc/tei:bibl/tei:idno[@parent-id eq $id]]
+    let $child-texts-fileDesc-published := $child-texts/tei:teiHeader/tei:fileDesc[tei:publicationStmt[@status = $translation:published-status-ids]]
+    let $child-texts-fileDesc-translated := $child-texts/tei:teiHeader/tei:fileDesc[tei:publicationStmt[@status = $translation:translated-status-ids]]
+    let $child-texts-fileDesc-in-translation := $child-texts/tei:teiHeader/tei:fileDesc[tei:publicationStmt[@status = $translation:in-translation-status-ids]]
+    let $child-texts-fileDesc-in-progress := $child-texts/tei:teiHeader/tei:fileDesc[tei:publicationStmt[@status = $translation:in-progress-status-ids]]
+    
+    let $child-texts-bibls := $child-texts/tei:teiHeader//tei:sourceDesc/tei:bibl[tei:idno/@parent-id eq $id]
+    let $child-texts-bibls-published := $child-texts-fileDesc-published/tei:sourceDesc/tei:bibl[tei:idno/@parent-id eq $id]
+    let $child-texts-bibls-translated := $child-texts-fileDesc-translated/tei:sourceDesc/tei:bibl[tei:idno/@parent-id eq $id]
+    let $child-texts-bibls-in-translation := $child-texts-fileDesc-in-translation/tei:sourceDesc/tei:bibl[tei:idno/@parent-id eq $id]
+    let $child-texts-bibls-in-progress := $child-texts-fileDesc-in-progress/tei:sourceDesc/tei:bibl[tei:idno/@parent-id eq $id]
     
     (: Child texts to list :)
     let $child-texts-output := 
@@ -119,32 +129,33 @@ declare function section:child-sections($tei as element(tei:TEI), $include-text-
                     section:text($text-tei, $resource-id, false())
         else ()
     
-    let $child-texts-fileDesc-published := $child-texts/tei:teiHeader/tei:fileDesc[tei:publicationStmt[@status = $translation:published-status-ids]]
-    let $child-texts-fileDesc-in-progress := $child-texts/tei:teiHeader/tei:fileDesc[tei:publicationStmt[@status = $translation:in-progress-status-ids]]
-    
-    let $child-texts-bibls := $child-texts/tei:teiHeader//tei:sourceDesc/tei:bibl[tei:idno/@parent-id eq $id]
-    let $child-texts-bibls-published := $child-texts-fileDesc-published/tei:sourceDesc/tei:bibl[tei:idno/@parent-id eq $id]
-    let $child-texts-bibls-in-progress := $child-texts-fileDesc-in-progress/tei:sourceDesc/tei:bibl[tei:idno/@parent-id eq $id]
-    
     (: Get stats on progress :)
     let $text-stats := 
         if($include-text-stats) then
             
             let $count-text-children :=             count($child-texts-bibls)
             let $count-published-children :=        count($child-texts-bibls-published)
+            let $count-translated-children :=       count($child-texts-bibls-translated)
+            let $count-in-translation-children :=   count($child-texts-bibls-in-translation)
             let $count-in-progress-children :=      count($child-texts-bibls-in-progress)
             
-            let $sum-pages-text-children :=         sum($child-texts-bibls/tei:location/@count-pages ! common:integer(.)) 
-            let $sum-pages-published-children :=    sum($child-texts-bibls-published/tei:location/@count-pages ! common:integer(.))
-            let $sum-pages-in-progress-children :=  sum($child-texts-bibls-in-progress/tei:location/@count-pages ! common:integer(.))
+            let $sum-pages-text-children :=            sum($child-texts-bibls/tei:location/@count-pages ! common:integer(.)) 
+            let $sum-pages-published-children :=       sum($child-texts-bibls-published/tei:location/@count-pages ! common:integer(.))
+            let $sum-pages-translated-children :=      sum($child-texts-bibls-translated/tei:location/@count-pages ! common:integer(.))
+            let $sum-pages-in-translation-children :=  sum($child-texts-bibls-in-translation/tei:location/@count-pages ! common:integer(.))
+            let $sum-pages-in-progress-children :=     sum($child-texts-bibls-in-progress/tei:location/@count-pages ! common:integer(.))
             
-            let $sum-child-sections-count-text-children :=            sum($child-sections//m:stat[@type = 'count-text-children']/@value ! xs:integer(.))
-            let $sum-child-sections-count-published-children :=       sum($child-sections//m:stat[@type = 'count-published-children']/@value ! xs:integer(.))
-            let $sum-child-sections-count-in-progress-children :=     sum($child-sections//m:stat[@type = 'count-in-progress-children']/@value ! xs:integer(.))
+            let $sum-child-sections-count-text-children :=               sum($child-sections//m:stat[@type = 'count-text-children']/@value ! xs:integer(.))
+            let $sum-child-sections-count-published-children :=          sum($child-sections//m:stat[@type = 'count-published-children']/@value ! xs:integer(.))
+            let $sum-child-sections-count-translated-children :=         sum($child-sections//m:stat[@type = 'count-translated-children']/@value ! xs:integer(.))
+            let $sum-child-sections-count-in-translation-children :=     sum($child-sections//m:stat[@type = 'count-in-translation-children']/@value ! xs:integer(.))
+            let $sum-child-sections-count-in-progress-children :=        sum($child-sections//m:stat[@type = 'count-in-progress-children']/@value ! xs:integer(.))
             
-            let $sum-child-sections-sum-pages-text-children :=        sum($child-sections//m:stat[@type = 'sum-pages-text-children']/@value ! xs:integer(.))
-            let $sum-child-sections-sum-pages-published-children :=   sum($child-sections//m:stat[@type = 'sum-pages-published-children']/@value ! xs:integer(.))
-            let $sum-child-sections-sum-pages-in-progress-children := sum($child-sections//m:stat[@type = 'sum-pages-in-progress-children']/@value ! xs:integer(.))
+            let $sum-child-sections-sum-pages-text-children :=           sum($child-sections//m:stat[@type = 'sum-pages-text-children']/@value ! xs:integer(.))
+            let $sum-child-sections-sum-pages-published-children :=      sum($child-sections//m:stat[@type = 'sum-pages-published-children']/@value ! xs:integer(.))
+            let $sum-child-sections-sum-pages-translated-children :=     sum($child-sections//m:stat[@type = 'sum-pages-translated-children']/@value ! xs:integer(.))
+            let $sum-child-sections-sum-pages-in-translation-children := sum($child-sections//m:stat[@type = 'sum-pages-in-translation-children']/@value ! xs:integer(.))
+            let $sum-child-sections-sum-pages-in-progress-children :=    sum($child-sections//m:stat[@type = 'sum-pages-in-progress-children']/@value ! xs:integer(.))
             
             return
                 element { QName('http://read.84000.co/ns/1.0', 'text-stats') } { 
@@ -155,6 +166,14 @@ declare function section:child-sections($tei as element(tei:TEI), $include-text-
                     element stat {
                         attribute type { 'count-published-children' },
                         attribute value { $count-published-children }
+                    },
+                    element stat {
+                        attribute type { 'count-translated-children' },
+                        attribute value { $count-translated-children }
+                    },
+                    element stat {
+                        attribute type { 'count-in-translation-children' },
+                        attribute value { $count-in-translation-children }
                     },
                     element stat {
                         attribute type { 'count-in-progress-children' },
@@ -169,6 +188,14 @@ declare function section:child-sections($tei as element(tei:TEI), $include-text-
                         attribute value { $count-published-children + $sum-child-sections-count-published-children }
                     },
                     element stat {
+                        attribute type { 'count-translated-descendants' },
+                        attribute value { $count-translated-children + $sum-child-sections-count-translated-children }
+                    },
+                    element stat {
+                        attribute type { 'count-in-translation-descendants' },
+                        attribute value { $count-in-translation-children + $sum-child-sections-count-in-translation-children }
+                    },
+                    element stat {
                         attribute type { 'count-in-progress-descendants' },
                         attribute value { $count-in-progress-children + $sum-child-sections-count-in-progress-children }
                     },
@@ -181,6 +208,14 @@ declare function section:child-sections($tei as element(tei:TEI), $include-text-
                         attribute value { $sum-pages-published-children }
                     },
                     element stat {
+                        attribute type { 'sum-pages-translated-children' },
+                        attribute value { $sum-pages-translated-children }
+                    },
+                    element stat {
+                        attribute type { 'sum-pages-in-translation-children' },
+                        attribute value { $sum-pages-in-translation-children }
+                    },
+                    element stat {
                         attribute type { 'sum-pages-in-progress-children' },
                         attribute value { $sum-pages-in-progress-children }
                     },
@@ -191,6 +226,14 @@ declare function section:child-sections($tei as element(tei:TEI), $include-text-
                     element stat {
                         attribute type { 'sum-pages-published-descendants' },
                         attribute value { $sum-pages-published-children + $sum-child-sections-sum-pages-published-children }
+                    },
+                    element stat {
+                        attribute type { 'sum-pages-translated-descendants' },
+                        attribute value { $sum-pages-translated-children + $sum-child-sections-sum-pages-translated-children }
+                    },
+                    element stat {
+                        attribute type { 'sum-pages-in-translation-descendants' },
+                        attribute value { $sum-pages-in-translation-children + $sum-child-sections-sum-pages-in-translation-children }
                     },
                     element stat {
                         attribute type { 'sum-pages-in-progress-descendants' },
