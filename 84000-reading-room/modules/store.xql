@@ -319,46 +319,6 @@ declare function store:stored-version-str($resource-id as xs:string, $file-exten
             '0'
     
 };
-(:
-declare function store:store-new-html($file-path as xs:string, $version as xs:string) as element() {
-    
-    let $file-path-tokenized := tokenize($file-path, '/')
-    let $file-collection := string-join(subsequence($file-path-tokenized, 1, count($file-path-tokenized) - 1), '/')
-    let $file-name := lower-case($file-path-tokenized[last()])
-    let $resource-id := substring-before($file-name, '.html')
-    let $tei := tei-content:tei($resource-id, 'translation')
-    
-    (\: Get the source so we can extract the Toh :\)
-    let $source := tei-content:source($tei, $resource-id)
-    
-    (\: Get the status so we can evaluate the render status :\)
-    let $status-id := tei-content:translation-status($tei)
-    
-    return
-        if($common:environment/m:render/m:status[@type eq 'translation'][@status-id = $status-id]) then
-            
-            let $response-data := glossary:translation-data($tei, $resource-id, ())
-            
-            let $translation-html := 
-                transform:transform(
-                    $response-data,
-                    doc(concat($common:app-path, "/views/html/translation.xsl")), 
-                    <parameters/>
-                )
-            
-            let $store-file := xmldb:store($file-collection, $file-name, $translation-html, 'text/html')
-            let $set-file-group:= sm:chgrp(xs:anyURI($file-path), $store:file-group)
-            let $set-file-permissions:= sm:chmod(xs:anyURI($file-path), $store:file-permissions)
-            let $store-version-number := store:store-version-str($file-collection, $file-name, $version)
-            return
-                <stored xmlns="http://read.84000.co/ns/1.0">{ concat('New version saved as ', $file-path) }</stored>
-        
-        else
-            <error xmlns="http://read.84000.co/ns/1.0">
-                <message>{ concat('HTML generation failed: (', $file-path,'). This text is not ready for publication.') }</message>
-            </error>
-};
-:)
 
 declare function store:store-new-pdf($file-path as xs:string, $version as xs:string) as element() {
     
@@ -597,7 +557,6 @@ declare function store:http-download($file-url as xs:string, $collection as xs:s
                 else if(contains(lower-case($file-url), '.tei')) then
                     document {
                         <?xml-model href="../../../schema/current/translation.rng" type="application/xml" schematypens="http://relaxng.org/ns/structure/1.0"?>,
-                        <?xml-model href="../../../schema/current/translation.rng" type="application/xml" schematypens="http://purl.oclc.org/dsdl/schematron"?>,
                         $body
                     }
                 else 

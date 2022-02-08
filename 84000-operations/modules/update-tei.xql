@@ -774,11 +774,6 @@ declare function update-tei:update-glossary($tei as element(tei:TEI), $glossary-
             }
         else ()
     
-    let $insert-following := 
-        if($existing-item) then
-            $existing-item/preceding-sibling::tei:item[1]
-        else
-            $parent/tei:item[last()]
     
     where 
         not(tei-content:locked-by-user($tei) gt '')
@@ -786,7 +781,7 @@ declare function update-tei:update-glossary($tei as element(tei:TEI), $glossary-
     return (
     
         (: Update the glossary entry :)
-        common:update('glossary-item', $existing-item, $new-value, $parent, $insert-following),
+        common:update('glossary-item', $existing-item, $new-value, $parent, ()),
         
         (: If we are removing the instance then also remove the entity instance and refresh the cache :)
         if ($remove) then (
