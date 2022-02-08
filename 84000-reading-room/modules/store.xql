@@ -597,6 +597,7 @@ declare function store:http-download($file-url as xs:string, $collection as xs:s
                 else if(contains(lower-case($file-url), '.tei')) then
                     document {
                         <?xml-model href="../../../schema/current/translation.rng" type="application/xml" schematypens="http://relaxng.org/ns/structure/1.0"?>,
+                        <?xml-model href="../../../schema/current/translation.rng" type="application/xml" schematypens="http://purl.oclc.org/dsdl/schematron"?>,
                         $body
                     }
                 else 

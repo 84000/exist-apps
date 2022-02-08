@@ -527,7 +527,7 @@ declare function tei-content:version-str($tei as element(tei:TEI)) as xs:string 
     , '\s', '-')                                                (: Replace the spaces with hyphens :)
 };
 
-declare function tei-content:cache($tei as element(tei:TEI), $create-if-unavailable as xs:boolean?) as element(m:cache) {
+declare function tei-content:cache($tei as element(tei:TEI), $create-if-unavailable as xs:boolean?) as element(m:cache)? {
     
     let $text-id := tei-content:id($tei)
     let $cache-collection := concat($common:data-path, '/', 'cache')

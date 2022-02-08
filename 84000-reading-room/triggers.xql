@@ -58,51 +58,57 @@ declare function local:refresh-cache($doc) {
     return (
     
         (: Cache notes :)
-        let $tei-ids := $tei/tei:text//tei:note[@place eq 'end']/@xml:id/string()
-        let $cache-ids := $cache/m:notes-cache/m:end-note/@id/string()
+        let $tei-items := $tei/tei:text//tei:note[@place eq 'end']
+        let $cache-items := $cache/m:notes-cache/m:end-note
+        let $count-matches := count($tei-items/id($cache-items/@id))
+        where count($tei-items) gt 0
         return
-        if(count(($tei-ids[not(. = $cache-ids)], $cache-ids[not(. = $tei-ids)]))) then
+        if(not($count-matches eq count($tei-items)) or not($count-matches eq count($cache-items))) then
             let $notes-cache := tei-content:notes-cache($tei, true(), true())
             return (
-                common:update('trigger-notes-cache', $cache/m:notes-cache, $notes-cache, $cache, $cache/m:notes-cache/preceding-sibling::*[1]),
+                common:update('trigger-notes-cache', $cache/m:notes-cache, $notes-cache, $cache, $cache/m:notes-cache/preceding-sibling::*[1], false()),
                 util:log('info', concat('trigger-notes-cached:', $text-id))
             )
         else (),
         
         (: Cache milestones :)
-        let $tei-ids := $tei/tei:text//tei:milestone/@xml:id/string()
-        let $cache-ids := $cache/m:milestones-cache/m:milestone/@id/string()
+        let $tei-items := $tei/tei:text//tei:milestone
+        let $cache-items := $cache/m:milestones-cache/m:milestone
+        let $count-matches := count($tei-items/id($cache-items/@id))
+        where count($tei-items) gt 0
         return
-        if(count(($tei-ids[not(. = $cache-ids)], $cache-ids[not(. = $tei-ids)]))) then
+        if(not($count-matches eq count($tei-items)) or not($count-matches eq count($cache-items))) then
             let $milestones-cache := tei-content:milestones-cache($tei, true(), true())
             return (
-                common:update('trigger-milestones-cache', $cache/m:milestones-cache, $milestones-cache, $cache, $cache/m:milestones-cache/preceding-sibling::*[1]),
+                common:update('trigger-milestones-cache', $cache/m:milestones-cache, $milestones-cache, $cache, $cache/m:milestones-cache/preceding-sibling::*[1], false()),
                 util:log('info', concat('trigger-milestones-cached:', $text-id))
             )
         else (),
         
         (: Cache folios :)
-        let $tei-ids := $tei/tei:text/tei:body//tei:ref[@type eq 'folio']/@xml:id/string()
-        let $cache-ids := $cache/m:folios-cache/m:folio-ref/@id/string()
-        where count($tei-ids) gt 0
+        let $tei-items := $tei/tei:text/tei:body//tei:ref[@type eq 'folio']
+        let $cache-items := $cache/m:folios-cache/m:folio-ref
+        let $count-matches := count($tei-items/id($cache-items/@id))
+        where count($tei-items) gt 0
         return
-        if(count(($tei-ids[not(. = $cache-ids)], $cache-ids[not(. = $tei-ids)]))) then
+        if(not($count-matches eq count($tei-items)) or not($count-matches eq count($cache-items))) then
             let $folios-cache := translation:folios-cache($tei, true(), true())
             return (
-                common:update('trigger-cache-folio-refs', $cache/m:folios-cache, $folios-cache, $cache, $cache/m:folios-cache/preceding-sibling::*[1]),
+                common:update('trigger-cache-folio-refs', $cache/m:folios-cache, $folios-cache, $cache, $cache/m:folios-cache/preceding-sibling::*[1], false()),
                 util:log('info', concat('trigger-folio-refs-cached:', $text-id))
             )
         else (),
         
         (: Cache glossary :)
-        let $tei-ids := $tei//tei:back//tei:list[@type eq 'glossary']/tei:item/tei:gloss/@xml:id/string()
-        let $cache-ids := $cache/m:glossary-cache/m:gloss/@id/string()
-        where count($tei-ids) gt 0
+        let $tei-items := $tei//tei:back//tei:list[@type eq 'glossary']/tei:item/tei:gloss
+        let $cache-items := $cache/m:glossary-cache/m:gloss
+        let $count-matches := count($tei-items/id($cache-items/@id))
+        where count($tei-items) gt 0
         return
-        if(count(($tei-ids[not(. = $cache-ids)], $cache-ids[not(. = $tei-ids)]))) then
+        if(not($count-matches eq count($tei-items)) or not($count-matches eq count($cache-items))) then
             let $glossary-cache := glossary:cache($tei, 'removed', true())
             return (
-                common:update('trigger-cache-glossary', $cache/m:glossary-cache, $glossary-cache, $cache, $cache/m:glossary-cache/preceding-sibling::*[1]),
+                common:update('trigger-cache-glossary', $cache/m:glossary-cache, $glossary-cache, $cache, $cache/m:glossary-cache/preceding-sibling::*[1], false()),
                 util:log('info', concat('trigger-glossary-cached:', $text-id))
             )
         else ()

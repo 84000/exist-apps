@@ -50,6 +50,6 @@ declare function local:entities() {
     }
 };
 
-(:local:texts(),:)
+(:local:texts():)
 local:entities()
 

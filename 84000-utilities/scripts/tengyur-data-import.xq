@@ -403,8 +403,9 @@ declare function local:merge-element ($element as element(), $import-text as ele
             "tengyur-data-3645-3706_PH_new_v2.4.xml",
             "tengyur-data-3707-3785_PH_new_v2.4.xml",
             "tengyur-data-3786-3823_PH_new_v2.4.xml",
-            "tengyur-data-3824-3980_PH_new_v2.4.xml",
-            "tengyur-data-3981-4085_CD_v1.xml",
+            "tengyur-data-3824-3980_PH_new_v2.4.xml",:)
+            "tengyur-data-3981-4019_PH_new_v2.4.xml",
+            "tengyur-data-4020-4085_PH_new_v2.4.xml"(:,
             "tengyur-data-4086-4103_PH_new_v2.4.xml",
             "tengyur-data-4104-4149_PH_new_v2.4.xml",
             "tengyur-data-4150-4157_PH_new_v2.4.xml",
@@ -413,8 +414,8 @@ declare function local:merge-element ($element as element(), $import-text as ele
             "tengyur-data-4269-4305_PH_new_v2.4.xml",
             "tengyur-data-4306-4312_PH_new_v2.4.xml",
             "tengyur-data-4313-4327_PH_new_v2.4.xml",
-            "tengyur-data-4328-4397_PH_new_v2.4.xml",:)
-            "tengyur-data-4398-4464_PH_new_v2.4.xml"
+            "tengyur-data-4328-4397_PH_new_v2.4.xml",
+            "tengyur-data-4398-4464_PH_new_v2.4.xml":)
         )
         return $import-text
     
@@ -472,8 +473,8 @@ declare function local:merge-element ($element as element(), $import-text as ele
         if($fileDesc) then
             let $fileDesc-merged := local:merge-element($fileDesc, $import-text, 'tengyur-data-2021-1', 2)
             return (
-                (:$import-text:)
-                (:$fileDesc-merged:)
+                (:$import-text,:)
+                $fileDesc-merged,
                 common:update(tei-content:id($tei), $fileDesc, $fileDesc-merged, (), ())
             )
         else

@@ -659,8 +659,11 @@ function common:contains-class($string as xs:string?, $class as xs:string*) as x
     )
 }; 
 
-(: Generic update fumction :)
+(: Generic update function :)
 declare function common:update($request-parameter as xs:string, $existing-value as item()?, $new-value as item()?, $insert-into as element()?, $insert-following as node()?) as element()? {
+    common:update($request-parameter, $existing-value, $new-value, $insert-into, $insert-following, true())
+};
+declare function common:update($request-parameter as xs:string, $existing-value as item()?, $new-value as item()?, $insert-into as element()?, $insert-following as node()?, $compare as xs:boolean) as element()? {
     
     (:<debug>
         <request-parameter>{$request-parameter}</request-parameter>
@@ -679,54 +682,70 @@ declare function common:update($request-parameter as xs:string, $existing-value 
     else if(not($existing-value) and not($new-value)) then
         () (: No data, do nothing :)
         
-    else if(functx:node-kind($existing-value) eq 'element' and deep-equal($existing-value, $new-value)) then
+    else if(functx:node-kind($existing-value) eq 'element' and $compare and deep-equal($existing-value, $new-value)) then
         () (: Data unchanged, do nothing :)
     
     else 
         
-        (: Add whitespace so it's not too unreadable :)
-        let $new-value-padded :=
-            if($new-value instance of element()) then (
-                text {common:ws(1)}, 
-                $new-value, 
-                text {$common:chr-nl}
-            )
-            else 
-                $new-value
+        element { QName('http://read.84000.co/ns/1.0', 'updated') } {
         
-        (: Return <updated/> :)
-        return
-            element { QName('http://read.84000.co/ns/1.0', 'updated') } {
+            (: Request parameter :)
+            attribute node { $request-parameter },             
             
-                (: Request parameter :)
-                attribute node { $request-parameter },             
+            (: Do the update :)
+            if(not($existing-value) and $new-value) then
+            
+                (: Insert following :)
+                if($insert-following) then (
                 
-                (: Do the update :)
-                if(not($existing-value) and $new-value) then            (: Insert :)
-                
-                    if($insert-following) then (                        (: Insert following :)
-                        update insert $new-value-padded following $insert-following,
-                        attribute update { 'insert' }
-                    )
-                    else if($insert-into) then (                        (: Insert wherever :)
-                        update insert $new-value-padded into $insert-into,
-                        attribute update { 'insert' }
-                    )
-                    else ()
+                    (: Add whitespace so it's not too unreadable :)
+                    (: Only apply to single elements :)
+                    let $padding-before :=
+                        if($new-value instance of element()) then 
+                            text { $insert-following/preceding-sibling::text()[1] }
+                        else ()
+                    return
+                    update insert ($padding-before, $new-value) following $insert-following,
                     
-                else if($existing-value and not($new-value)) then (     (: Delete:)
-                
-                    update delete $existing-value,
-                    attribute update { 'delete' }
+                    attribute update { 'insert' }
                     
                 )
-                else (                                                  (: Replace :)
                 
-                    update replace $existing-value with $new-value,
-                    attribute update { 'replace' }
+                (: Insert at end :)
+                else if($insert-into) then (    
+                    
+                    (: Add whitespace so it's not too unreadable :)
+                    (: Only apply to single elements :)
+                    let $padding-before :=
+                        if($new-value instance of element()) then 
+                            text { $common:chr-tab }
+                        else ()
+                    let $padding-after :=
+                        if($new-value instance of element()) then 
+                            text { $insert-into/*[last()]/following-sibling::text()[1] }
+                        else ()
+                    return
+                    update insert ($padding-before, $new-value, $padding-after) into $insert-into,
+                    
+                    attribute update { 'insert' }
                     
                 )
-            }
+                
+                (: No target element :)
+                else ()
+            
+            (: Delete:)
+            else if($existing-value and not($new-value)) then (                
+                update delete $existing-value,
+                attribute update { 'delete' }
+            )
+            
+            (: Replace :)
+            else (
+                update replace $existing-value with $new-value,
+                attribute update { 'replace' }
+            )
+        }
 };
 
 (: Sorts a sequence based on the trailing number e.g. ('n-3', 'n-1', 'n-2') -> ('n-1', 'n-2', 'n-3') :)

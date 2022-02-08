@@ -52,8 +52,8 @@ let $request-entity-terms-longest := $request-entity-terms-sorted[1]
 (: Search parameters :)
 (: Default to find similar matches to selected entity :)
 let $search-default := (
-    $request-entity-terms-longest/data(), 
     if($flag) then '' else (),
+    $request-entity-terms-longest/data(), 
     'a'
 )[1]
 let $search := request:get-parameter('search', $search-default) ! normalize-space(.)
@@ -67,8 +67,8 @@ let $entity-type := $entities:types/m:type[@id = $type]
 let $entity-types := common:add-selected-children($entities:types, $entity-type/@id)
 
 let $term-lang-default := (
-    $request-entity-terms-longest/@xml:lang, 
     if($flag) then 'en' else (),
+    $request-entity-terms-longest/@xml:lang, 
     'Bo-Ltn'
 )[1]
 let $term-lang := request:get-parameter('term-lang', $term-lang-default) ! common:valid-lang(.)
@@ -95,7 +95,7 @@ let $type-glossary-type := $entity-type/@glossary-type
 let $glossary-search := 
     (: Get flagged entries :)
     if($flag) then
-        glossary:glossary-flagged($flag/@id)
+        glossary:glossary-flagged($flag/@id, $type-glossary-type)
     (: Get glossary entries based on criteria :)
     else
         glossary:glossary-search($type-glossary-type, $term-lang/@id, $search)

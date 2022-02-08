@@ -88,7 +88,7 @@ let $entities :=
         let $attribution-refs := $tei-content:translations-collection//tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl//@ref ! replace(., '^eft:', '')
         return (
             ($attribution-entities | $entities:entities/m:entity/id($attribution-refs)),
-            element related { entities:related($attribution-entities, true()) }
+            element related { entities:related($attribution-entities, true(), ()) }
         )
     }
 

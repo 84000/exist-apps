@@ -33,6 +33,7 @@ declare function local:correct-orphaned-attributions() {
         (: Loop all tei :)
         for $tei in $teis
         let $text-id := tei-content:id($tei)
+        (:where $text-id eq 'UT23703-001-005':)
         order by $text-id
         
         (: Check for orphans :)
@@ -67,6 +68,7 @@ declare function local:correct-orphaned-attributions() {
             )
         )
     }
+    
 };
 
 declare function local:migrate-entities() {

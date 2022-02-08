@@ -774,7 +774,11 @@ declare function update-tei:update-glossary($tei as element(tei:TEI), $glossary-
             }
         else ()
     
-    let $insert-following := $existing-item/preceding-sibling::tei:item[1]
+    let $insert-following := 
+        if($existing-item) then
+            $existing-item/preceding-sibling::tei:item[1]
+        else
+            $parent/tei:item[last()]
     
     where 
         not(tei-content:locked-by-user($tei) gt '')

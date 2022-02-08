@@ -1340,8 +1340,17 @@
                         <!-- Link to the Glossary / Knowledge Base -->
                         <xsl:variable name="glossary-instances" select="$entity/m:instance[@type eq 'glossary-item'][not(@id eq $glossary-item/@xml:id)]"/>
                         <xsl:variable name="knowledgebase-instances" select="$entity/m:instance[@type eq 'knowledgebase-article'][not(@id eq $kb-id)]"/>
-                        <xsl:if test="$view-mode[@client = ('browser', 'ajax')] and ($glossary-instances or $knowledgebase-instances)">
+                        <xsl:variable name="requires-attention" select="$entity-instance/m:flag[@type eq 'requires-attention']"/>
+                        <xsl:if test="$view-mode[@client = ('browser', 'ajax')] and ($glossary-instances, $knowledgebase-instances) and ($view-mode[@id = ('editor', 'editor-passage')] or not($requires-attention))">
                             <div class="footer entity-content" role="navigation">
+                                <xsl:if test="$view-mode[@id = ('editor', 'editor-passage')] and $requires-attention">
+                                    <xsl:attribute name="class" select="'footer entity-content well well-sm'"/>
+                                    <div>
+                                        <span class="label label-danger">
+                                            <xsl:value-of select="/m:response/m:entity-flags/m:flag[@id eq 'requires-attention']/m:label"/>
+                                        </span>
+                                    </div>
+                                </xsl:if>
                                 <h4 class="heading">
                                     <xsl:value-of select="'Links to further resources:'"/>
                                 </h4>
@@ -1349,7 +1358,7 @@
                                     <xsl:if test="$glossary-instances">
                                         <li>
                                             <a target="84000-glossary">
-                                                <xsl:attribute name=" href" select="concat('/glossary.html?entity-id=', $entity/@xml:id)"/>
+                                                <xsl:attribute name=" href" select="concat('/glossary.html?entity-id=', $entity/@xml:id, if($view-mode[@id = ('editor', 'editor-passage')]) then '&amp;view-mode=editor' else '')"/>
                                                 <xsl:value-of select="concat(format-number(count($glossary-instances), '#,###'), ' related glossary ', if(count($glossary-instances) eq 1) then 'entry' else 'entries')"/>
                                             </a>
                                         </li>
@@ -1357,7 +1366,7 @@
                                     <xsl:if test="$knowledgebase-instances">
                                         <li>
                                             <a target="84000-knowledgebase">
-                                                <xsl:attribute name=" href" select="concat('/knowledgebase/', $knowledgebase-instances[1]/@id, '.html')"/>
+                                                <xsl:attribute name=" href" select="concat('/knowledgebase/', $knowledgebase-instances[1]/@id, '.html', if($view-mode[@id = ('editor', 'editor-passage')]) then '?view-mode=editor' else '')"/>
                                                 <xsl:value-of select="'View the 84000 Knowledge Base article'"/>
                                             </a>
                                         </li>
@@ -1849,7 +1858,7 @@
                         <xsl:attribute name="id" select="$id"/>
                     </xsl:if>
                     
-                    <xsl:if test="$view-mode[@glossary = ('defer', 'editor-defer')] and m:glossarize-context($node) and not(self::tei:head) and $node[@tid]">
+                    <xsl:if test="$view-mode[@glossary = ('defer', 'editor-defer')] and m:glossarize-context($node) and not(self::tei:head) and $node[@tid] and not($node[descendant::*/@tid])">
                         <xsl:call-template name="in-view-replace-attribute">
                             <xsl:with-param name="part-id" select="$id"/>
                             <xsl:with-param name="target-id" select="$id"/>
@@ -3217,6 +3226,8 @@
             
             <xsl:variable name="related-entries" select="key('related-entries', $entity/m:instance/@id, $root)" as="element(m:entry)*"/>
             
+            <xsl:attribute name="related-entries" select="count($related-entries)"/>
+            
             <xsl:variable name="term-empty-bo">
                 <xsl:call-template name="text">
                     <xsl:with-param name="global-key" select="'glossary.term-empty-bo'"/>
@@ -3246,7 +3257,7 @@
                 </xsl:perform-sort>
             </xsl:variable>
             
-            <xsl:variable name="longest-term" select="$sorted-terms[1]" as="element(m:term)?"/>
+            <xsl:variable name="longest-term" select="if($sorted-terms) then $sorted-terms[1] else ($entity/m:label[@xml:lang eq 'en'], $entity/m:label[@xml:lang eq 'Sa-Ltn'], $entity/m:label[@xml:lang eq 'Bo-Ltn'])[1]"/>
             
             <xsl:element name="label" namespace="http://read.84000.co/ns/1.0">
                 <xsl:attribute name="type" select="'primary'"/>

@@ -12,7 +12,7 @@ return
     let $permissions := sm:get-permissions(xs:anyURI($sub-collection-uri))
     where $permissions/sm:permission[@group eq 'guest']
     return (
-        (:xmldb:remove($sub-collection-uri),:)
+        xmldb:remove($sub-collection-uri),
         (:$permissions,:)
         'Collection cleared: ' || $sub-collection-uri
     )

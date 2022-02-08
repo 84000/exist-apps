@@ -194,9 +194,9 @@ let $glossary :=
         attribute tei-version-cached { store:stored-version-str($resource-id, 'cache') },
         
         (: Get expressions for these entries :)
-        let $glossary-expressions := 
+        let $glossary-locations := 
             if($filter = ('check-expressions', 'check-all', 'no-cache', 'new-expressions', 'no-expressions') and $gloss-filtered-subsequence) then
-                glossary:instances($tei, $resource-id, $resource-type, $gloss-filtered-subsequence/@xml:id)
+                glossary:locations($tei, $resource-id, $resource-type, $gloss-filtered-subsequence/@xml:id)
             else ()
         
         for $gloss in $gloss-filtered-subsequence
@@ -215,10 +215,10 @@ let $glossary :=
                 $entry/node(),
                 
                 (: Add glossary expressions :)
-                if($glossary-expressions) then
-                    element { node-name($glossary-expressions) }{
-                        $glossary-expressions/@*,
-                        $glossary-expressions/*[descendant::xhtml:*[@data-glossary-id eq $entry/@id]]
+                if($glossary-locations) then
+                    element { node-name($glossary-locations) }{
+                        $glossary-locations/@*,
+                        glossary:locations($glossary-locations/*[descendant::xhtml:*[@data-glossary-id eq $entry/@id]], $entry/@id)
                     }
                 else (),
                 

@@ -345,17 +345,19 @@
                                     </tbody>
                                 </table>
                                 
-                                <!--<h4>
-                                    <xsl:value-of select="'Spotted a mistake?'"/>
-                                </h4>
-                                <p class="small text-muted">
-                                    <xsl:value-of select="'Please use the contact form provided to '"/>
-                                    <a target="84000-comms">
-                                        <xsl:attribute name="href" select="concat($communications-site-path, '/about/contact/?toh=', m:translation/m:source/m:toh ,'#contact-forms-suggest-a-correction')"/>
-                                        <xsl:value-of select="'suggest a correction'"/>
-                                    </a>
-                                    <xsl:value-of select="'.'"/>
-                                </p>-->
+                                <xsl:if test="$communications-site-path">
+                                    <h4>
+                                        <xsl:value-of select="'Spotted a mistake?'"/>
+                                    </h4>
+                                    <p class="small text-muted">
+                                        <xsl:value-of select="'Please use the contact form provided to '"/>
+                                        <a target="84000-comms">
+                                            <xsl:attribute name="href" select="concat($communications-site-path, '/about/contact/?toh=', m:translation/m:source/m:toh[1] ,'#contact-forms-suggest-a-correction')"/>
+                                            <xsl:value-of select="'suggest a correction'"/>
+                                        </a>
+                                        <xsl:value-of select="'.'"/>
+                                    </p>
+                                </xsl:if>
                                 
                             </xsl:if>
                             

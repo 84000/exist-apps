@@ -149,12 +149,13 @@ declare function glossary:glossary-search($type as xs:string*, $lang as xs:strin
         
 };
 
-declare function glossary:glossary-flagged($type as xs:string*) as element(tei:gloss)* {
+declare function glossary:glossary-flagged($flag-type as xs:string*, $glossary-type as xs:string*) as element(tei:gloss)* {
     
-    let $flag := $entities:flags//m:flag[@id eq $type]
+    let $flag := $entities:flags//m:flag[@id eq $flag-type]
     let $flagged-instances := $entities:entities//m:flag[@type eq $flag/@id]/parent::m:instance
+    let $valid-glossary-type := local:valid-type($glossary-type)
     return
-        subsequence($glossary:tei//tei:gloss/id($flagged-instances/@id), 1, 1000)
+        subsequence($glossary:tei//tei:gloss/id($flagged-instances/@id)[@type = $valid-glossary-type], 1, 1000)
         
 };
 
@@ -660,16 +661,16 @@ declare function glossary:filter($tei as element(tei:TEI), $resource-type as xs:
         let $sort-term := glossary:sort-term($gloss)
         
         (: Expression locations :)
-        let $expression-locations := 
+        let $locations := 
             if($html) then
-                local:instance-locations($html, $gloss/@xml:id)
+                glossary:locations(local:instance-locations($html, $gloss/@xml:id), $gloss/@xml:id)
             else()
         
     where 
         (: If filtering by new expressions, return where there are expression locations not in the cache :)
         not($filter = ('new-expressions', 'no-expressions')) 
-        or ($filter eq 'new-expressions' and $expression-locations[not(@id = $glossary-cache[@id eq $gloss/@xml:id]/m:location/@id)])
-        or ($filter eq 'no-expressions' and not($expression-locations))
+        or ($filter eq 'new-expressions' and $locations[not(@id = $glossary-cache[@id eq $gloss/@xml:id]/m:location/@id)])
+        or ($filter eq 'no-expressions' and not($locations))
     
     order by 
         $search-score descending,
@@ -680,7 +681,16 @@ declare function glossary:filter($tei as element(tei:TEI), $resource-type as xs:
         
 };
 
-declare function glossary:instances($tei as element(tei:TEI), $resource-id as xs:string, $resource-type as xs:string, $glossary-ids as xs:string*) as element(m:expressions) {
+declare function glossary:locations($locations as element(m:location)*, $glossary-id as xs:string) as element(m:location)* {
+    (: Filter out locations containing this glossary match but have a higher nested location :)
+    for $location in $locations[descendant::xhtml:*[@data-glossary-id eq $glossary-id]]
+    let $glossary-matches := $location/descendant::xhtml:*[@data-glossary-id eq $glossary-id]
+    where not($glossary-matches/ancestor::xhtml:*[@data-passage-id][1][not(@data-passage-id eq $location/@id)])
+    return
+        $location
+};
+
+declare function glossary:locations($tei as element(tei:TEI), $resource-id as xs:string, $resource-type as xs:string, $glossary-ids as xs:string*) as element(m:locations) {
     
     let $html := 
         transform:transform(
@@ -690,7 +700,7 @@ declare function glossary:instances($tei as element(tei:TEI), $resource-id as xs
         )
     
     return
-        element { QName('http://read.84000.co/ns/1.0', 'expressions') }{
+        element { QName('http://read.84000.co/ns/1.0', 'locations') }{
             attribute text-id { tei-content:id($tei) },
             attribute resource-id { $resource-id },
             local:instance-locations($html, $glossary-ids)
@@ -702,69 +712,70 @@ declare function local:instance-locations($translation-html as element(xhtml:htm
     (: Get and elements with the match :)
     (: Also get the nearest preceding milestone if there isn't one :)
     (: Also get the nearest preceding ref :)
+    
+    (: Select any node with a data-glossary-id :)
     for $expression at $sort-index in $translation-html/descendant::xhtml:*[@data-glossary-id = $glossary-ids]
     
-    let $expression-location := $expression/ancestor-or-self::xhtml:*[@data-passage-id][1]
+    (: Select the nearest parent with a data-passage-id :)
+    let $expression-container := $expression/ancestor-or-self::xhtml:*[@data-passage-id][1]
     
-    let $expression-location := 
-        if(not($expression-location)) then
+    let $expression-container := 
+        if(not($expression-container)) then
             $expression/ancestor-or-self::xhtml:*[@id][1]
         else
-            $expression-location
+            $expression-container
     
-    let $location := ($expression-location/@data-passage-id, $expression-location/@id)[1]
+    let $location-id := ($expression-container/@data-passage-id, $expression-container/@id)[1]
     
-    group by $location
+    group by $location-id
     order by $sort-index[1]
     return
         element { QName('http://read.84000.co/ns/1.0', 'location') } {
         
-            attribute id { $location[1] },
+            attribute id { $location-id[1] },
             attribute sort-index { $sort-index[1] },
             
             element preceding-ref {
-                $expression-location/preceding-sibling::xhtml:div[descendant::xhtml:a[@data-ref]][1]/descendant::xhtml:a[@data-ref][last()]
+                $expression-container/preceding-sibling::xhtml:div[descendant::xhtml:a[@data-ref]][1]/descendant::xhtml:a[@data-ref][last()]
             },
             
             element preceding-bookmark {
-                if(not($expression-location[descendant::xhtml:a[@data-bookmark]])) then
-                    $expression-location/preceding-sibling::xhtml:div[descendant::xhtml:a[@data-bookmark]][1]/descendant::xhtml:a[@data-bookmark][1]
+                if(not($expression-container[descendant::xhtml:a[@data-bookmark]])) then
+                    $expression-container/preceding-sibling::xhtml:div[descendant::xhtml:a[@data-bookmark]][1]/descendant::xhtml:a[@data-bookmark][1]
                 else 
                     ()
             },
             
-            $expression-location
+            $expression-container
+            
         }
 
 };
 
 declare function glossary:cache($tei as element(tei:TEI), $refresh-locations as xs:string*, $create-if-unavailable as xs:boolean?) as element(m:glossary-cache) {
     
-    let $cache := tei-content:cache($tei, $create-if-unavailable)
+    let $glossary-cache := tei-content:cache($tei, $create-if-unavailable)/m:glossary-cache
     
     return
         (: If there is one and there's nothing to refresh, just return the cache :)
-        if($cache[m:glossary-cache] and count($refresh-locations) eq 0) then
-            $cache/m:glossary-cache
+        if($glossary-cache and count($refresh-locations) eq 0) then
+            $glossary-cache
 
         (: Build the cache :)
         else
-            
+        
             (: Meta data :)
             let $resource-id := tei-content:id($tei)
             let $resource-type := tei-content:type($tei)
             let $tei-version := tei-content:version-str($tei)
             
-            (: Existing cache :)
-            let $glossary-cache := $cache/m:glossary-cache
-            
             (: TEI glossary items :)
             let $tei-glossary := $tei//tei:back//tei:list[@type eq 'glossary']/tei:item/tei:gloss[@xml:id]
             
             (: Get glossary instances, if valid ids have been requested :)
-            let $glossary-instances := 
-                if($tei-glossary[@xml:id = $refresh-locations]) then
-                    glossary:instances($tei, $resource-id, $resource-type, $refresh-locations)
+            let $glossary-locations := 
+                if($tei-glossary/id($refresh-locations)) then
+                    glossary:locations($tei, $resource-id, $resource-type, $refresh-locations)
                 else ()
             
             (: Sort glossaries :)
@@ -774,60 +785,74 @@ declare function glossary:cache($tei as element(tei:TEI), $refresh-locations as 
                 order by $sort-term/text()
                 return $gloss
             
+            let $cache-glosses := 
+                for $gloss at $index in $tei-glossary-sorted
+                let $sort-term := glossary:sort-term($gloss)
+                let $existing-cache := $glossary-cache/m:gloss[range:eq(@id, $gloss/@xml:id)]
+                let $gloss-refresh-locations := $gloss[@xml:id = $refresh-locations]
+                let $cache-locations :=
+                
+                    (: If we processed it then add it with the new $glossary-instances :)
+                    if ($gloss-refresh-locations) then
+                    
+                        let $gloss-locations := $glossary-locations/m:location[descendant::xhtml:*[@data-glossary-id eq $gloss/@xml:id]]
+                        for $location in glossary:locations($gloss-locations, $gloss/@xml:id)
+                        let $location-id := $location/@id
+                        group by $location-id
+                        order by $location[1]/@sort-index ! xs:integer(.)
+                        return
+                            element { QName('http://read.84000.co/ns/1.0', 'location') } {
+                                attribute id { $location/@id }
+                            }
+                    
+                    (: Otherwise copy the existing locations :)
+                    else
+                        $existing-cache/m:location
+                        
+                return 
+                
+                    element { QName('http://read.84000.co/ns/1.0', 'gloss') } {
+                    
+                        attribute id { $gloss/@xml:id },
+                        attribute index { $index },
+                        attribute word-count { $sort-term/@word-count },
+                        attribute letter-count { $sort-term/@letter-count },
+                        
+                        if($gloss-refresh-locations) then (
+                            attribute tei-version { $tei-version },
+                            attribute timestamp { current-dateTime() }
+                        )
+                        else (
+                            $existing-cache/@tei-version,
+                            $existing-cache/@timestamp
+                        ),
+                        
+                        (:$cache-locations:)
+                        if($cache-locations) then (
+                            for $cache-location in $cache-locations
+                            return (
+                                common:ws(3),
+                                $cache-location
+                            ),
+                            common:ws(2)
+                        )
+                        else ()
+                    }
+            
             return
                 element { QName('http://read.84000.co/ns/1.0', 'glossary-cache') } {
                 
                     $glossary-cache/@*,
-                    
-                    for $gloss at $index in $tei-glossary-sorted
-                    let $sort-term := glossary:sort-term($gloss)
-                    return (
-                        common:ws(2),
-                        element { QName('http://read.84000.co/ns/1.0', 'gloss') } {
-                        
-                            attribute id { $gloss/@xml:id },
-                            attribute index { $index },
-                            attribute word-count { $sort-term/@word-count },
-                            attribute letter-count { $sort-term/@letter-count },
-                            
-                            (: If we processed it then add it with the new $glossary-instances :)
-                            if ($gloss/@xml:id = $refresh-locations) then  (
-                            
-                                attribute tei-version { $tei-version },
-                                attribute timestamp { current-dateTime() },
-                                
-                                for $location in $glossary-instances/m:location[descendant::xhtml:*[@data-glossary-id eq $gloss/@xml:id]]
-                                let $location-id := $location/@id
-                                group by $location-id
-                                order by $location[1]/@sort-index ! xs:integer(.)
-                                return (
-                                    common:ws(3),
-                                    element location {
-                                        attribute id { $location/@id }
-                                    }
-                                )
-                                
-                            )
-                            
-                            (: Otherwise copy the existing locations :)
-                            else 
-                                let $existing-cache := $glossary-cache/m:gloss[@id eq $gloss/@xml:id]
-                                return (
-                                    $existing-cache/@tei-version,
-                                    $existing-cache/@timestamp,
-                                    for $location in $existing-cache/m:location
-                                    return (
-                                        common:ws(3),
-                                        $location
-                                    )
-                                )
-                            ,
-                            
-                            common:ws(2)
-                        }
-                    ),
-                    
-                    common:ws(1)
+                    (:$cache-glosses:)
+                    if($cache-glosses) then (
+                        for $cache-gloss in $cache-glosses
+                        return (
+                            common:ws(2),
+                            $cache-gloss
+                        ),
+                        common:ws(1)
+                    )
+                    else ()
                 }
                 
 };

@@ -412,11 +412,12 @@
                                 <xsl:variable name="loop-glossary" select="."/>
                                 <xsl:variable name="loop-glossary-id" select="($loop-glossary/@id, 'new-glossary')[1]"/>
                                 <xsl:variable name="loop-glossary-cache" select="$glossary-cache/m:gloss[@id eq $loop-glossary-id][m:location]"/>
-                                <xsl:variable name="locations-cached" select="$loop-glossary/m:expressions/m:location[@id = $loop-glossary-cache/m:location/@id]"/>
-                                <xsl:variable name="locations-cache-mismatch" select="$loop-glossary/m:expressions/m:location[not(@id = $loop-glossary-cache/m:location/@id)] | $loop-glossary-cache/m:location[not(@id = $loop-glossary/m:expressions/m:location/@id)]"/>
+                                <xsl:variable name="locations-cached" select="$loop-glossary/m:locations/m:location[@id = $loop-glossary-cache/m:location/@id]"/>
+                                <xsl:variable name="locations-cache-mismatch" select="$loop-glossary/m:locations/m:location[not(@id = $loop-glossary-cache/m:location/@id)] | $loop-glossary-cache/m:location[not(@id = $loop-glossary/m:locations/m:location/@id)]"/>
                                 
                                 <xsl:variable name="loop-glossary-instance" select="key('entity-instance', $loop-glossary/@id, $root)[1]"/>
                                 <xsl:variable name="loop-glossary-entity" select="$loop-glossary-instance/parent::m:entity"/>
+                                <xsl:variable name="loop-glossary-entity-relations" select="$loop-glossary-entity/m:relation | /m:response/m:entities/m:related/m:entity/m:relation[@id eq $loop-glossary-entity/@xml:id]"/>
                                 
                                 <div>
                                     
@@ -549,7 +550,7 @@
                                                     <div class="center-vertical align-left">
                                                         
                                                         <div>
-                                                            <xsl:variable name="count-locations" select="count($loop-glossary/m:expressions/m:location)"/>
+                                                            <xsl:variable name="count-locations" select="count($loop-glossary/m:locations/m:location)"/>
                                                             <span>
                                                                 <xsl:value-of select="' ↳ '"/>
                                                             </span>
@@ -558,10 +559,10 @@
                                                                     <xsl:when test="$locations-cache-mismatch">
                                                                         <xsl:attribute name="class" select="'badge badge-notification'"/>
                                                                     </xsl:when>
-                                                                    <xsl:when test="$loop-glossary[m:expressions[m:location]]">
+                                                                    <xsl:when test="$loop-glossary[m:locations[m:location]]">
                                                                         <xsl:attribute name="class" select="'badge badge-notification badge-info'"/>
                                                                     </xsl:when>
-                                                                    <xsl:when test="$loop-glossary[m:expressions]">
+                                                                    <xsl:when test="$loop-glossary[m:locations]">
                                                                         <xsl:attribute name="class" select="'badge badge-notification'"/>
                                                                     </xsl:when>
                                                                     <xsl:otherwise>
@@ -616,11 +617,11 @@
                                                             
                                                             <xsl:choose>
                                                                 
-                                                                <xsl:when test="$loop-glossary/m:expressions[m:location]">
+                                                                <xsl:when test="$loop-glossary/m:locations[m:location]">
                                                                     
                                                                     <div class="div-list sml-margin top bottom">
                                                                         
-                                                                        <xsl:for-each select="$loop-glossary/m:expressions/m:location">
+                                                                        <xsl:for-each select="$loop-glossary/m:locations/m:location">
                                                                             <xsl:sort select="xs:integer(@sort-index)"/>
                                                                             <xsl:apply-templates select="."/>  
                                                                         </xsl:for-each>
@@ -853,7 +854,7 @@
                                                     
                                                     <xsl:with-param name="title">
                                                         
-                                                        <xsl:variable name="count-relations" select="count($loop-glossary-entity/m:relation)"/>
+                                                        <xsl:variable name="count-relations" select="count($loop-glossary-entity-relations)"/>
                                                         <span>
                                                             <xsl:value-of select="' ↳ '"/>
                                                         </span>
@@ -872,7 +873,7 @@
                                                         
                                                         <xsl:choose>
                                                             
-                                                            <xsl:when test="$loop-glossary-entity/m:relation">
+                                                            <xsl:when test="$loop-glossary-entity-relations">
                                                                 
                                                                 <div class="sml-margin bottom">
                                                                     <xsl:call-template name="glossary-terms">
@@ -884,17 +885,26 @@
                                                                     
                                                                     <xsl:attribute name="id" select="concat('accordion-glossary-', $loop-glossary-id, '-relations')"/>
                                                                     
-                                                                    <xsl:for-each select="$loop-glossary-entity/m:relation">
+                                                                    <xsl:for-each select="$loop-glossary-entity-relations">
                                                                         
                                                                         <xsl:sort select="if(@predicate = 'isUnrelated') then 1 else 0"/>
                                                                         
                                                                         <xsl:variable name="relation" select="."/>
-                                                                        <xsl:variable name="relation-entity" select="key('related-entities', $relation/@id, $root)[1]"/>
+                                                                        <xsl:variable name="relation-entity" as="element(m:entity)?">
+                                                                            <xsl:choose>
+                                                                                <xsl:when test="$relation/@id eq $loop-glossary-entity/@xml:id">
+                                                                                    <xsl:sequence select="key('related-entities', $relation/parent::m:entity/@xml:id, $root)[1]"/>
+                                                                                </xsl:when>
+                                                                                <xsl:otherwise>
+                                                                                    <xsl:sequence select="key('related-entities', $relation/@id, $root)[1]"/>
+                                                                                </xsl:otherwise>
+                                                                            </xsl:choose>
+                                                                        </xsl:variable>
                                                                         
                                                                         <xsl:call-template name="expand-item">
                                                                             
                                                                             <xsl:with-param name="accordion-selector" select="concat('#accordion-glossary-', $loop-glossary-id, '-relations')"/>
-                                                                            <xsl:with-param name="id" select="concat('glossary-', $loop-glossary-id, '-relation-', $relation/@id)"/>
+                                                                            <xsl:with-param name="id" select="concat('glossary-', $loop-glossary-id, '-relation-', $relation-entity/@xml:id)"/>
                                                                             <xsl:with-param name="persist" select="true()"/>
                                                                             
                                                                             <xsl:with-param name="title">
@@ -957,7 +967,7 @@
                                                                                                     <xsl:with-param name="link-text" select="'remove relation'"/>
                                                                                                     <xsl:with-param name="link-class" select="'small'"/>
                                                                                                     <xsl:with-param name="glossary-id" select="$loop-glossary-id"/>
-                                                                                                    <xsl:with-param name="add-parameters" select="('form-action=merge-entities', 'predicate=removeRelation', 'entity-id=' || $loop-glossary-entity/@xml:id, 'target-entity-id=' || $relation/@id)"/>
+                                                                                                    <xsl:with-param name="add-parameters" select="('form-action=merge-entities', 'predicate=removeRelation', 'entity-id=' || $relation-entity/@xml:id, 'target-entity-id=' || $relation/@id)"/>
                                                                                                 </xsl:call-template>
                                                                                             </li>
                                                                                             
@@ -1635,7 +1645,7 @@
                             <xsl:with-param name="predicates" select="/m:response/m:entity-predicates//m:predicate"/>
                             <xsl:with-param name="target-entity-label">
                                 
-                                <xsl:variable name="entity-label" select="$entity/m:label[not(@derived) and not(@derived-transliterated)][1]"/>
+                                <xsl:variable name="entity-label" select="($entity/m:label[@xml:lang eq 'en'], $entity/m:label[@xml:lang eq 'Sa-Ltn'], $entity/m:label)[1]"/>
                                 
                                 <ul class="list-inline inline-dots">
                                     
@@ -1717,7 +1727,7 @@
     <xsl:template match="m:location">
         
         <xsl:variable name="location-id" select="@id" as="xs:string"/>
-        <xsl:variable name="glossary-entry" select="parent::m:expressions/parent::m:entry"/>
+        <xsl:variable name="glossary-entry" select="parent::m:locations/parent::m:entry"/>
         <xsl:variable name="cache-location" select="$glossary-cache/m:gloss[@id eq $glossary-entry/@id]/m:location[@id = $location-id]"/>
         
         <div class="item tei-parser editor-mode rw-full-width small pad">

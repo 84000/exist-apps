@@ -163,6 +163,7 @@ return
                     $request,
                     $translation-data,
                     $glossary-entities,
+                    $entities:flags,
                     $cache,
                     $strings
                 )

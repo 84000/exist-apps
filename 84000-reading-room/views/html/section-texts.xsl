@@ -11,7 +11,7 @@
                 <xsl:value-of select="@id"/>
             </small>
         </h2>
-        <table id="ajax-source" class="table table-responsive ajax-target">
+        <table id="ajax-source" class="table table-responsive table-transparent ajax-target">
             <thead>
                 <tr>
                     <th>#</th>

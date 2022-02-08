@@ -351,8 +351,8 @@
         </xsl:if>
         
         <tr class="sub">
-            <td colspan="6">
-                <div class="collapse">
+            <td colspan="7">
+                <div class="collapse well well-sm">
                     <xsl:attribute name="id" select="$section-texts-id"/>
                     <div class="ajax-target"/>
                 </div>
@@ -363,6 +363,7 @@
             <xsl:sort select="xs:integer(@sort-index)"/>
             <xsl:call-template name="section-row"/>
         </xsl:for-each>
+        
     </xsl:template>
     
     <xsl:template name="section-stat">
