@@ -16,11 +16,15 @@ import module namespace functx="http://www.functx.com";
 
 declare option exist:serialize "method=xml indent=no";
 
+let $resource-id := request:get-parameter('resource-id', '')
+let $tei := tei-content:tei($resource-id, 'translation')
+let $tei-location := translation:location($tei, $resource-id)
+
 (: Request parameters :)
 let $request := 
     element { QName('http://read.84000.co/ns/1.0', 'request')} {
         attribute model { "source" }, 
-        attribute resource-id { request:get-parameter('resource-id', '') },
+        attribute resource-id { $tei-location/@key },
         attribute resource-suffix { request:get-parameter('resource-suffix', '') },
         attribute lang { common:request-lang() },
         attribute ref-index { request:get-parameter('ref-index', '') },
@@ -29,13 +33,10 @@ let $request :=
         attribute highlight { request:get-parameter('highlight', '') }
     }
 
-let $tei := tei-content:tei($request/@resource-id, 'translation')
 (: Suppress cache if there's a highlight :)
 let $cache-timestamp := if($request[@highlight eq '']) then tei-content:last-modified($tei) else ()
 let $cached := common:cache-get($request, $cache-timestamp)
 return if($cached) then $cached else
-
-let $tei-location := translation:location($tei, $request/@resource-id)
 
 (: Prefer ref-index parameter :)
 let $ref-resource-index := 
