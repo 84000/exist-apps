@@ -56,6 +56,7 @@
         <!-- Prepare the text -->
         <xsl:variable name="text-normalized" as="text()">
             <xsl:choose>
+                
                 <!-- 
                     Strip leading or trailing empty text nodes
                     - If it's whitespace only
@@ -65,17 +66,21 @@
                 <xsl:when test="not(normalize-space(.)) and common:index-of-node(../node(), .) = (1, count(../node()))">
                     <xsl:value-of select="normalize-space(.)"/>
                 </xsl:when>
+                
                 <!-- If it's following by a note then leave the whitespace -->
                 <xsl:when test="preceding-sibling::tei:*[1][self::tei:note[@place = 'end']]">
                     <xsl:value-of select="common:normalize-data(data(.))"/>
                 </xsl:when>
+                
                 <!-- If it's trailed by a note then remove the whitespace -->
                 <xsl:when test="following-sibling::tei:*[1][self::tei:note[@place = 'end']]">
                     <xsl:value-of select="common:normalize-data(replace(data(.), '\s+$', ''))"/>
                 </xsl:when>
+                
                 <xsl:otherwise>
                     <xsl:value-of select="common:normalize-data(data(.))"/>
                 </xsl:otherwise>
+                
             </xsl:choose>
         </xsl:variable>
         
@@ -1718,24 +1723,49 @@
     </xsl:template>
     
     <xsl:template match="tei:media">
-        <xsl:if test="$view-mode[@client = ('browser', 'ajax', 'app')]">
-            <xsl:choose>
-                <xsl:when test="@mimeType eq 'audio/mpeg'">
-                    <xsl:call-template name="milestone">
-                        <xsl:with-param name="content">
-                            <audio controls="controls">
-                                <xsl:attribute name="title" select="tei:desc"/>
-                                <source src="horse.mp3" type="audio/mpeg">
+        <xsl:choose>
+            
+            <xsl:when test="@mimeType eq 'audio/mpeg' and $view-mode[@client = ('browser', 'ajax')]">
+                <xsl:call-template name="milestone">
+                    <xsl:with-param name="content">
+                        <audio controls="controls">
+                            <xsl:attribute name="title" select="tei:desc"/>
+                            <source src="horse.mp3" type="audio/mpeg">
+                                <xsl:attribute name="src" select="@url"/>
+                            </source>
+                            Your browser does not support the <code>audio</code> element.
+                        </audio>
+                    </xsl:with-param>
+                    <xsl:with-param name="row-type" select="'audio'"/>
+                </xsl:call-template>
+            </xsl:when>
+            
+            <xsl:when test="@mimeType eq 'image/png' and $view-mode[@client = ('browser', 'ajax', 'pdf')]">
+                <xsl:variable name="caption" select="tei:desc/text() ! normalize-space()"/>
+                <xsl:choose>
+                    <xsl:when test="$caption">
+                        <div class="row sml-margin top bottom">
+                            <div class="col-sm-8 col-xs-6">
+                                <xsl:apply-templates select="$caption"/>
+                            </div>
+                            <div class="col-sm-4 col-xs-6">
+                                <img class="img-responsive pull-right">
                                     <xsl:attribute name="src" select="@url"/>
-                                </source>
-                                Your browser does not support the <code>audio</code> element.
-                            </audio>
-                        </xsl:with-param>
-                        <xsl:with-param name="row-type" select="'audio'"/>
-                    </xsl:call-template>
-                </xsl:when>
-            </xsl:choose>
-        </xsl:if>
+                                    <xsl:attribute name="title" select="$caption"/>
+                                </img>
+                            </div>
+                        </div>
+                    </xsl:when>
+                    <xsl:otherwise>
+                        <img class="img-responsive">
+                            <xsl:attribute name="src" select="@url"/>
+                        </img>
+                    </xsl:otherwise>
+                </xsl:choose>
+            </xsl:when>
+            
+        </xsl:choose>
+        
     </xsl:template>
     
     <!-- Milestone -->

@@ -477,10 +477,7 @@
                                             </xsl:if>
                                             
                                             <!-- Version update message -->
-                                            <div class="small italic text-danger">
-                                                <xsl:if test="$environment/m:store-conf[@type eq 'client'] and $group-master-first-text[@locked-by-user gt '']">
-                                                    <xsl:attribute name="class" select="'small italic text-danger sml-margin bottom'"/>
-                                                </xsl:if>
+                                            <xsl:variable name="version-update-message" as="xs:string?">
                                                 <xsl:choose>
                                                     <xsl:when test="$environment/m:store-conf[@type eq 'client'] and $group-master-status-updates/m:status-update[@update eq 'text-version'][@current-version eq 'true'][text()]">
                                                         <xsl:value-of select="concat('Master TEI: ', $group-master-tei-version, ' - ', $group-master-status-updates/m:status-update[@update eq 'text-version'][@current-version eq 'true'][1])"/>
@@ -489,11 +486,23 @@
                                                         <xsl:value-of select="concat('Version note: ', m:status-updates/m:status-update[@update eq 'text-version'][@current-version eq 'true'][1])"/>
                                                     </xsl:when>
                                                 </xsl:choose>
-                                            </div>
+                                            </xsl:variable>
+                                            <xsl:if test="$version-update-message">
+                                                <div class="small">
+                                                    <span class="italic text-danger">
+                                                        <xsl:value-of select="$version-update-message"/>
+                                                    </span>
+                                                    <xsl:value-of select="' / '"/>
+                                                    <a target="84000-github">
+                                                        <xsl:attribute name="href" select="concat('https://github.com/84000/data-tei/commits/master', substring-after(@document-url, concat($environment/@data-path, '/tei')))"/>
+                                                        <xsl:value-of select="'Github'"/>
+                                                    </a>
+                                                </div>
+                                            </xsl:if>
                                             
                                             <!-- Alert if file locked -->
                                             <xsl:if test="$environment/m:store-conf[@type eq 'client'] and $group-master-first-text[@locked-by-user gt '']">
-                                                <div>
+                                                <div class="sml-margin top">
                                                     <span class="label label-danger">
                                                         <xsl:value-of select="concat('Master TEI file is currenly locked by user ', $group-master-first-text/@locked-by-user)"/>
                                                     </span>

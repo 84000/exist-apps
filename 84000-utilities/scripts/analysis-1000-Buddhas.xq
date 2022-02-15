@@ -76,15 +76,15 @@ declare function local:analyze-thousand-buddhas($update-definition as xs:boolean
     
     (: Parse the html :)
     let $list-of-names-id := 'UT22084-045-001-section-2-A'
-    let $list-of-names-html := collection(concat('/db/apps/84000-data/html/translation_toh94_html_html_', lower-case($list-of-names-id), '_default_'))//xhtml:section[@id eq $list-of-names-id]
+    let $list-of-names-html := collection(concat('/db/apps/84000-data/html/translation/toh94/html_en_html_', lower-case($list-of-names-id), '_default_'))//xhtml:section[@id eq $list-of-names-id]
     let $list-of-names-nodes := $list-of-names-html//*[@data-glossary-id = $thousand-buddhas-gloss-ids]
     
     let $list-of-biographies-id := 'UT22084-045-001-section-2-B'
-    let $list-of-biographies-html := collection(concat('/db/apps/84000-data/html/translation_toh94_html_html_', lower-case($list-of-biographies-id), '_default_'))//xhtml:section[@id eq $list-of-biographies-id]
+    let $list-of-biographies-html := collection(concat('/db/apps/84000-data/html/translation/toh94/html_en_html_', lower-case($list-of-biographies-id), '_default_'))//xhtml:section[@id eq $list-of-biographies-id]
     let $list-of-biographies-nodes := $list-of-biographies-html//*[@data-glossary-id = $thousand-buddhas-gloss-ids]
     
     let $list-of-occasions-id := 'UT22084-045-001-section-2-C'
-    let $list-of-occasions-html := collection(concat('/db/apps/84000-data/html/translation_toh94_html_html_', lower-case($list-of-occasions-id), '_default_'))//xhtml:section[@id eq $list-of-occasions-id]
+    let $list-of-occasions-html := collection(concat('/db/apps/84000-data/html/translation/toh94/html_en_html_', lower-case($list-of-occasions-id), '_default_'))//xhtml:section[@id eq $list-of-occasions-id]
     let $list-of-occasions-nodes := $list-of-occasions-html//*[@data-glossary-id = $thousand-buddhas-gloss-ids]
     
     (: loop the glossary items :)
@@ -150,4 +150,4 @@ declare function local:analyze-thousand-buddhas($update-definition as xs:boolean
 };
 
 (:local:assign-thousand-buddhas():)
-local:analyze-thousand-buddhas(true())
+local:analyze-thousand-buddhas(false())

@@ -304,7 +304,6 @@ declare function section:section-tree($tei as element(tei:TEI), $include-text-st
 declare function section:all-translated($apply-filters as element(m:filter)*) as element(m:section) {
     
     let $section-tei := tei-content:tei('ALL-TRANSLATED', 'section')
-    (:let $sections := section:section-tree(tei-content:tei('lobby', 'section'), true(), 'descendants-published'):)
     
     return
         element { QName('http://read.84000.co/ns/1.0', 'section') }{
@@ -313,12 +312,13 @@ declare function section:all-translated($apply-filters as element(m:filter)*) as
             attribute document-url { tei-content:document-url($section-tei) },
             attribute sort-index { $section-tei/tei:teiHeader/tei:fileDesc/tei:sourceDesc/@sort-index },
             attribute last-updated { tei-content:last-updated($section-tei/tei:teiHeader/tei:fileDesc) },
+            
             section:titles($section-tei),
             section:abstract($section-tei),
             section:warning($section-tei),
             section:about($section-tei),
             section:filters($section-tei),
-            (:$sections,:)
+            
             element { QName('http://read.84000.co/ns/1.0', 'texts') }{
                 
                 (: Include filters :)

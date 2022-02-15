@@ -388,6 +388,8 @@
                                                <xsl:variable name="related-entries" select="key('related-entries', $show-entity/m:instance/@id, $root)"/>
                                                <xsl:variable name="related-entity-pages" select="key('related-pages', $show-entity/m:instance/@id | /m:response/m:entities/m:related/m:entity/m:instance/@id, $root)" as="element(m:page)*"/>
                                                <xsl:variable name="related-entity-entries" select="key('related-entries', /m:response/m:entities/m:related/m:entity[@xml:id = $show-entity/m:relation/@id]/m:instance/@id, $root)" as="element(m:entry)*"/>
+                                               <xsl:variable name="instances-flagged" select="$show-entity/m:instance[m:flag]"/>
+                                               <xsl:variable name="related-entries-excluded" select="$related-entries[parent::m:text/@glossary-status eq 'excluded']"/>
                                                
                                                <div class="entity-detail-container replace" id="term-translations">
                                                    
@@ -443,10 +445,10 @@
                                                    </div>
                                                    
                                                    <!-- Notes -->
-                                                   <xsl:if test="$tei-editor and ($show-entity/m:content[@type eq 'glossary-notes'] or $show-entity/m:instance[m:flag])">
+                                                   <xsl:if test="$tei-editor and ($show-entity/m:content[@type eq 'glossary-notes'] or $instances-flagged or $related-entries-excluded)">
                                                        <div class="well well-sm">
                                                            
-                                                           <h4 class="no-top-margin">
+                                                           <h4 class="no-top-margin no-bottom-margin">
                                                                <xsl:value-of select="'Notes (internal):'"/>
                                                            </h4>
                                                            
@@ -456,13 +458,24 @@
                                                                </p>
                                                            </xsl:for-each>
                                                            
-                                                           <xsl:if test="$show-entity/m:instance[m:flag]">
-                                                               <div>
+                                                           <xsl:if test="$related-entries-excluded">
+                                                               <div class="sml-margin top">
                                                                    <span class="badge badge-notification">
-                                                                       <xsl:value-of select="count($show-entity/m:instance[m:flag])"/>
+                                                                       <xsl:value-of select="count($related-entries-excluded)"/>
                                                                    </span>
                                                                    <span class="badge-text">
-                                                                       <xsl:value-of select="if (count($show-entity/m:instance[m:flag]) eq 1) then 'entry flagged' else 'entries flagged'"/>
+                                                                       <xsl:value-of select="if (count($related-entries-excluded) eq 1) then 'entry in an excluded text' else 'entries in excluded texts'"/>
+                                                                   </span>
+                                                               </div>
+                                                           </xsl:if>
+                                                           
+                                                           <xsl:if test="$instances-flagged">
+                                                               <div class="sml-margin top">
+                                                                   <span class="badge badge-notification">
+                                                                       <xsl:value-of select="count($instances-flagged)"/>
+                                                                   </span>
+                                                                   <span class="badge-text">
+                                                                       <xsl:value-of select="if (count($instances-flagged) eq 1) then 'entry flagged' else 'entries flagged'"/>
                                                                    </span>
                                                                </div>
                                                            </xsl:if>
@@ -492,6 +505,7 @@
                                                            
                                                            <xsl:variable name="text-type" select="parent::m:text/@type"/>
                                                            <xsl:variable name="text-type-entries" select="current-group()"/>
+                                                           <xsl:variable name="text-type-related-texts" select="/m:response/m:entities/m:related/m:text[m:entry/@id = $text-type-entries/@id]"/>
                                                            
                                                            <xsl:call-template name="expand-item">
                                                                
@@ -506,6 +520,9 @@
                                                                        
                                                                        <div>
                                                                            <span class="badge badge-notification">
+                                                                               <xsl:if test="$tei-editor and ($show-entity/m:instance[@id = $text-type-entries/@id][m:flag] or $text-type-entries[parent::m:text/@glossary-status eq 'excluded'])">
+                                                                                   <xsl:attribute name="class" select="'badge badge-notification badge-danger'"/>
+                                                                               </xsl:if>
                                                                                <xsl:value-of select="count($text-type-entries)"/>
                                                                            </span>
                                                                            <span class="badge-text">
@@ -527,7 +544,7 @@
                                                                <xsl:with-param name="content">
                                                                    
                                                                    <div class="sml-margin top">
-                                                                       <xsl:for-each select="/m:response/m:entities/m:related/m:text[m:entry/@id = $text-type-entries/@id]">
+                                                                       <xsl:for-each select="$text-type-related-texts">
                                                                            
                                                                            <!-- Order by Toh numerically needs improving -->
                                                                            <xsl:sort select="m:toh[1]/@number ! xs:integer(.)"/>
@@ -802,11 +819,17 @@
         <xsl:param name="text" as="element(m:text)"/>
         <xsl:param name="instance" as="element(m:instance)"/>
         
+        <xsl:variable name="glossary-status" select="$text/@glossary-status"/>
+        
         <div class="result">
             
             <xsl:attribute name="id" select="concat('glossary-entry-', $entry/@id)"/>
             
-            <!-- Text -->
+            <xsl:if test="$tei-editor and ($glossary-status eq 'excluded' or $instance[m:flag/@type eq 'requires-attention'])">
+                <xsl:attribute name="class" select="'result excluded'"/>
+            </xsl:if>
+            
+            <!-- Title -->
             <h4>
                 
                 <a>
@@ -822,67 +845,92 @@
                     </small>
                 </xsl:if>
                 
-                <xsl:if test="$tei-editor">
-                    
-                    <small>
-                        <xsl:value-of select="' / '"/>
-                        <a target="84000-glossary-tool" class="editor">
-                            <xsl:attribute name="href" select="concat($environment/m:url[@id eq 'operations']/data(), '/edit-glossary.html?resource-id=', $text/@id, '&amp;glossary-id=', @id, '&amp;resource-type=', $text/@type, '&amp;max-records=1')"/>
-                            <xsl:value-of select="'Glossary editor'"/>
-                        </a>
-                    </small>
-                    
-                    <xsl:for-each select="/m:response/m:entity-flags/m:flag">
-                        
-                        <xsl:variable name="config-flag" select="."/>
-                        <xsl:variable name="entity-flag" select="$instance/m:flag[@type eq $config-flag/@id][1]"/>
-                        
-                        <form action="/edit-entity.html" method="post" data-ajax-target="#ajax-source" class="form-inline inline-block">
-                            
-                            <xsl:attribute name="data-ajax-target-callbackurl" select="$page-url || '&amp;' || concat('flagged=', $flagged) || m:view-mode-parameter('editor') ||  concat('#glossary-entry-', $entry/@id)"/>
-                            <input type="hidden" name="instance-id" value="{ $instance/@id }"/>
-                            <input type="hidden" name="entity-flag" value="{ $config-flag/@id }"/>
-                            
-                            <xsl:value-of select="' / '"/>
-                            
-                            <xsl:choose>
-                                <xsl:when test="$entity-flag">
-                                    
-                                    <!-- Option to clear flag -->
-                                    <input type="hidden" name="form-action" value="instance-clear-flag"/>
-                                    
-                                    <span class="label label-danger">
-                                        <xsl:value-of select="$config-flag/m:label[1]"/>
-                                    </span>
-                                    
-                                    <span class="small">
-                                        <xsl:value-of select="' '"/>
-                                        
-                                        <button type="submit" data-loading="Clearing flag..." class="btn-link editor">
-                                            <xsl:value-of select="'Clear flag'"/>
-                                        </button>
-                                    </span>
-                                    
-                                </xsl:when>
-                                <xsl:otherwise>
-                                    
-                                    <!-- Option to set flag -->
-                                    <input type="hidden" name="form-action" value="instance-set-flag"/>
-                                    
-                                    <button type="submit" data-loading="Setting flag..." class="btn-link editor small">
-                                        <xsl:value-of select="'Flag as ' || $config-flag/m:label"/>
-                                    </button>
-                                    
-                                </xsl:otherwise>
-                            </xsl:choose>
-                            
-                        </form>
-                        
-                    </xsl:for-each>
-                    
-                </xsl:if>
-                
             </h4>
+            
+            
+            <!-- Editor options -->
+            <xsl:if test="$tei-editor">
+                
+                <div>
+                    <ul class="list-inline inline-dots">
+                        
+                        <xsl:if test="$glossary-status">
+                            <li>
+                                <span class="label label-danger">
+                                    
+                                    <xsl:value-of select="$text/m:toh/m:full/text()"/>
+                                    
+                                    <xsl:choose>
+                                        <xsl:when test="$glossary-status eq 'excluded'">
+                                            <xsl:value-of select="' glossary excluded'"/>
+                                        </xsl:when>
+                                        <xsl:otherwise>
+                                            <xsl:value-of select="' ' || $glossary-status"/>
+                                        </xsl:otherwise>
+                                    </xsl:choose>
+                                    
+                                </span>
+                            </li>
+                        </xsl:if>
+                        
+                        <li class="small">
+                            <a target="84000-glossary-tool" class="editor">
+                                <xsl:attribute name="href" select="concat($environment/m:url[@id eq 'operations']/data(), '/edit-glossary.html?resource-id=', $text/@id, '&amp;glossary-id=', @id, '&amp;resource-type=', $text/@type, '&amp;max-records=1')"/>
+                                <xsl:value-of select="'Glossary editor'"/>
+                            </a>
+                        </li>
+                        
+                        <xsl:for-each select="/m:response/m:entity-flags/m:flag">
+                            <li>
+                            
+                                <xsl:variable name="config-flag" select="."/>
+                                <xsl:variable name="entity-flag" select="$instance/m:flag[@type eq $config-flag/@id][1]"/>
+                                
+                                <form action="/edit-entity.html" method="post" data-ajax-target="#ajax-source" class="form-inline inline-block">
+                                    
+                                    <xsl:attribute name="data-ajax-target-callbackurl" select="$page-url || '&amp;' || concat('flagged=', $flagged) || m:view-mode-parameter('editor') ||  concat('#glossary-entry-', $entry/@id)"/>
+                                    <input type="hidden" name="instance-id" value="{ $instance/@id }"/>
+                                    <input type="hidden" name="entity-flag" value="{ $config-flag/@id }"/>
+                                    
+                                    <xsl:choose>
+                                        <xsl:when test="$entity-flag">
+                                            
+                                            <!-- Option to clear flag -->
+                                            <input type="hidden" name="form-action" value="instance-clear-flag"/>
+                                            
+                                            <span class="label label-danger">
+                                                <xsl:value-of select="$config-flag/m:label[1]"/>
+                                            </span>
+                                            
+                                            <span class="small">
+                                                <xsl:value-of select="' '"/>
+                                                
+                                                <button type="submit" data-loading="Clearing flag..." class="btn-link editor">
+                                                    <xsl:value-of select="'Clear flag'"/>
+                                                </button>
+                                            </span>
+                                            
+                                        </xsl:when>
+                                        <xsl:otherwise>
+                                            
+                                            <!-- Option to set flag -->
+                                            <input type="hidden" name="form-action" value="instance-set-flag"/>
+                                            
+                                            <button type="submit" data-loading="Setting flag..." class="btn-link editor small">
+                                                <xsl:value-of select="'Flag as ' || $config-flag/m:label"/>
+                                            </button>
+                                            
+                                        </xsl:otherwise>
+                                    </xsl:choose>
+                                    
+                                </form>
+                            
+                            </li>
+                        </xsl:for-each>
+                        
+                    </ul>
+                </div>
+            </xsl:if>
             
             <!-- Translators -->
             <xsl:variable name="translators" select="$text/m:publication/m:contributors/m:author[normalize-space(text())]"/>
@@ -956,7 +1004,7 @@
             <xsl:variable name="alternative-terms" select="m:alternative"/>
             <xsl:if test="$view-mode[@id eq 'editor'] and $alternative-terms">
                 <div>
-                    <ul class="list-inline inline-dots">
+                    <ul class="list-inline inline-dots inline-pad-first">
                         <xsl:for-each select="$alternative-terms">
                             <li>
                                 <span>
@@ -984,10 +1032,10 @@
                     <p>
                         <xsl:choose>
                             <xsl:when test="$view-mode[@id eq 'editor'] and not($use-definition)">
-                                <xsl:attribute name="class" select="'definition alternative'"/>
+                                <xsl:attribute name="class" select="'definition small alternative'"/>
                             </xsl:when>
                             <xsl:otherwise>
-                                <xsl:attribute name="class" select="'definition'"/>
+                                <xsl:attribute name="class" select="'definition small'"/>
                             </xsl:otherwise>
                         </xsl:choose>
                         <xsl:apply-templates select="."/>

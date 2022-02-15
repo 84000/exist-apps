@@ -251,7 +251,7 @@ let $entities :=
         
         return (
             $entities,
-            element related { entities:related($entities | $glossary/m:entry/m:similar/m:entity, true(), ()) }
+            element related { entities:related($entities | $glossary/m:entry/m:similar/m:entity, true(), (), ()) }
         )
         
     }

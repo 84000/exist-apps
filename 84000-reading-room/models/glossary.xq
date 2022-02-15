@@ -107,7 +107,7 @@ let $entity-list :=
     return
         $instances/parent::m:entity
 
-let $related := entities:related($request-entity | $entity-list, false(), $exclude-flagged)
+let $related := entities:related($request-entity | $entity-list, false(), $exclude-flagged, if(not($view-mode[@id eq 'editor'])) then 'excluded' else '')
 
 let $xml-response :=
     common:response(

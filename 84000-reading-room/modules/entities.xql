@@ -129,10 +129,10 @@ declare function entities:similar($entity as element(m:entity)?, $search-terms a
 };
 
 declare function entities:related($entities as element(m:entity)*) as element()* {
-    entities:related($entities, false(), 'requires-attention')
+    entities:related($entities, false(), 'requires-attention', 'excluded')
 };
 
-declare function entities:related($entities as element(m:entity)*, $include-unrelated as xs:boolean, $exclude-flagged as xs:string*) as element()* {
+declare function entities:related($entities as element(m:entity)*, $include-unrelated as xs:boolean, $exclude-flagged as xs:string*, $exclude-status as xs:string*) as element()* {
 
     (: Related entities :)
     let $related-entities := (
@@ -161,6 +161,8 @@ declare function entities:related($entities as element(m:entity)*, $include-unre
         
         let $tei := $gloss/ancestor::tei:TEI
         let $text-id := tei-content:id($tei)
+        let $glossary-status := $tei//tei:div[@type eq 'glossary']/@status
+        where not($glossary-status = $exclude-status)
         group by $text-id
         let $text-type := tei-content:type($tei[1])
         return
@@ -168,6 +170,7 @@ declare function entities:related($entities as element(m:entity)*, $include-unre
         
                 attribute id { $text-id }, 
                 attribute type { $text-type },
+                $tei//tei:div[@type eq 'glossary']/@status ! attribute glossary-status { . },
                 
                 tei-content:titles($tei[1]),
                 if($text-type eq 'translation') then (

@@ -895,7 +895,7 @@ declare function local:cache-glossary-chunk($tei as element(tei:TEI), $cache as 
                 common:update('cache-glossary', $cache/m:glossary-cache, $glossary-cache-new, $cache, ()),
                 util:log('info', concat('update-tei-cache-glossary-chunk:', $text-id, ' ', $chunk, '/', $chunks-count))
             )
-                
+            
         )
         else ()
         ,

@@ -77,23 +77,29 @@
     <!-- Generic alert -->
     <xsl:template name="alert-updated">
         <xsl:if test="m:updates/m:updated[@update]">
+            
             <div class="alert alert-success alert-temporary" role="alert">
                 <xsl:value-of select="'Updated'"/>
             </div>
-            <!--<xsl:if test="/m:response/@model eq 'operations/edit-text-header'">-->
-                <xsl:choose>
-                    <xsl:when test="m:updates/m:updated[@update][@node eq 'text-version']">
-                        <div class="alert alert-warning" role="alert">
-                            <xsl:value-of select="'The version number has been updated'"/>
-                        </div>
-                    </xsl:when>
-                    <xsl:otherwise>
-                        <div class="alert alert-danger" role="alert">
-                            <xsl:value-of select="'To ensure these updates are deployed to the distribution server please update the version in the status section!!'"/>
-                        </div>
-                    </xsl:otherwise>
-                </xsl:choose>
-            <!--</xsl:if>-->
+            
+            <xsl:choose>
+                <xsl:when test="m:updates/m:updated[@update][@node eq 'text-version']">
+                    <div class="alert alert-warning" role="alert">
+                        <xsl:value-of select="'The version number has been updated'"/>
+                    </div>
+                </xsl:when>
+                <xsl:when test="m:updates/m:updated[@update][@node eq 'cache-glossary']">
+                    <div class="alert alert-warning" role="alert">
+                        <xsl:value-of select="'Glossary locations have been cached'"/>
+                    </div>
+                </xsl:when>
+                <xsl:otherwise>
+                    <div class="alert alert-danger" role="alert">
+                        <xsl:value-of select="'To ensure these updates are deployed to the distribution server please update the version in the status section!!'"/>
+                    </div>
+                </xsl:otherwise>
+            </xsl:choose>
+            
         </xsl:if>
     </xsl:template>
     

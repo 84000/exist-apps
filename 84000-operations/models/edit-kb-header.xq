@@ -55,7 +55,7 @@ let $similar-entities :=
 let $entities := 
     element { QName('http://read.84000.co/ns/1.0', 'entities') }{
         $knowledgebase-entity,
-        element related { entities:related($knowledgebase-entity | $similar-entities/m:entity, true(), ()) }
+        element related { entities:related($knowledgebase-entity | $similar-entities/m:entity, true(), (), ()) }
     }
 
 let $xml-response := 

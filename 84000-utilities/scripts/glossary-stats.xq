@@ -11,6 +11,7 @@ Date             Glossary count       Glossaries to do    Completed
 2022-01-14       36,288                7,842              78.39%        
 2022-01-28       36,311                7,423              79.56%        
 2022-02-04       36,336                7,394              79.65%        
+2022-02-11       40,482               11,509              71.57%        
 :)
 
 declare namespace tei="http://www.tei-c.org/ns/1.0";

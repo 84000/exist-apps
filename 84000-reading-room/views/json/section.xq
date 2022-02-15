@@ -75,7 +75,8 @@ declare function local:child-texts($texts as element()*) {
         $text/m:toh/@chapter-letter
     return
         element { 'text' } {
-            attribute id { $text/@resource-id },
+            attribute id { $text/@id },
+            attribute key { $text/@resource-id },
             attribute translation-status { $text/@status-group },
             attribute canonical-html { $text/@canonical-html },
             eft-json:titles($text/m:titles/m:title),
@@ -104,8 +105,8 @@ return
                 '?published-only=', xs:boolean($request/@published-only),
                 '&amp;child-texts-only=', xs:boolean($request/@child-texts-only),
                 '&amp;api-version=', $api-version
-            ) 
-       },
+            )
+        },
         local:section($section)
     }
     </section>
