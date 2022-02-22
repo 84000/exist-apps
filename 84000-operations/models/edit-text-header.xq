@@ -44,25 +44,33 @@ let $delete-submission :=
     )
     else ()
 
+(: Return request parameters :)
+let $request :=
+    element { QName('http://read.84000.co/ns/1.0', 'request') } {
+        attribute id { $text-id },
+        attribute delete-submission { $delete-submission-id },
+        attribute form-expand { request:get-parameter('form-expand', 'translation-status') }
+    }
+
 (: Process input, if it's posted :)
 let $updated := 
-    if($form-action = ('update-titles', 'update-contributors') and $tei) then
-        update-tei:title-statement($tei)
-        
-    else if($form-action eq 'update-source' and $tei) then
-        update-tei:source($tei)
-        
-    else if($form-action eq 'update-publication-status' and $tei) then (
-        update-tei:publication-status($tei),
-        translation-status:update($text-id)
-    )
-    
-    else if($form-action eq 'process-upload' and $text-id gt '') then (
-        file-upload:process-upload($text-id),
-        translation-status:update($text-id)
-    )
-    
-    else ()
+    element { QName('http://read.84000.co/ns/1.0', 'updates') } {
+        if($form-action = ('update-titles', 'update-contributors') and $tei) then
+            update-tei:title-statement($tei)
+            
+        else if($form-action eq 'update-source' and $tei) then
+            update-tei:source($tei)
+            
+        else if($form-action eq 'update-publication-status' and $tei) then (
+            update-tei:publication-status($tei),
+            translation-status:update($text-id)
+        )
+        else if($form-action eq 'process-upload' and $text-id gt '') then (
+            file-upload:process-upload($text-id),
+            translation-status:update($text-id)
+        )
+        else ()
+    }
 
 (: If it's a new version :)
 let $tei-version-str := tei-content:version-str($tei)
@@ -77,10 +85,10 @@ let $commit-version :=
 
 (: Generate new versions of associated files :)
 let $generate-files :=
-    if($form-action eq 'generate-files' and $store:conf and $translation-status-group eq 'published')then
+    if($form-action eq 'generate-files' and $text-id gt '' and $store:conf and $translation-status-group eq 'published')then
         store:create(concat($text-id, '.all'))
     else ()
-    
+
 let $entities :=
     element { QName('http://read.84000.co/ns/1.0', 'entities') } {
         let $attribution-refs-text := $tei//tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl//@ref ! replace(., '^eft:', '')
@@ -91,56 +99,63 @@ let $entities :=
             element related { entities:related($attribution-entities, true(), (), ()) }
         )
     }
+    
+let $text := 
+    element { QName('http://read.84000.co/ns/1.0', 'text') } {
+            
+        attribute id { $text-id },
+        attribute document-url { tei-content:document-url($tei) },
+        attribute locked-by-user { tei-content:locked-by-user($tei) },
+        attribute status { tei-content:translation-status($tei) },
+        attribute status-group { $translation-status-group },
+        attribute tei-version { $tei-version-str },
+        
+        for $bibl in $tei//tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl
+        return (
+            translation:toh($tei, $bibl/@key),
+            tei-content:source($tei, $bibl/@key),
+            translation:downloads($tei, $bibl/@key, 'all')
+        ),
+        
+        element title { 
+            tei-content:title($tei) 
+        },
+        
+        tei-content:titles($tei),
+        translation:publication($tei),
+        translation:contributors($tei, true()),
+        tei-content:status-updates($tei)
+        
+    }
+    
+let $translation-status :=
+    element { QName('http://read.84000.co/ns/1.0', 'translation-status') } {
+        translation-status:texts($text-id, true())
+    }
+
+let $text-statuses-selected := tei-content:text-statuses-selected(tei-content:translation-status($tei), 'translation')
+let $persons := contributors:persons(false(), false())
+let $teams := contributors:teams(true(), false(), false())
+let $caches := tei-content:cache($tei, false())/m:*
+let $submission-checklist := doc('../config/submission-checklist.xml')
 
 let $xml-response := 
     common:response(
         'operations/edit-text-header', 
         'operations', 
         (
-            element { QName('http://read.84000.co/ns/1.0', 'request') } {
-                attribute id { $text-id },
-                attribute delete-submission { $delete-submission-id },
-                attribute form-expand { request:get-parameter('form-expand', 'translation-status') }
-            },
-            element { QName('http://read.84000.co/ns/1.0', 'updates') } {
-                $updated
-            },
-            element { QName('http://read.84000.co/ns/1.0', 'translation') } {
-            
-                attribute id { $text-id },
-                attribute document-url { tei-content:document-url($tei) },
-                attribute locked-by-user { tei-content:locked-by-user($tei) },
-                attribute status { tei-content:translation-status($tei) },
-                attribute status-group { $translation-status-group },
-                attribute tei-version { $tei-version-str },
-                
-                for $bibl in $tei//tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl
-                return (
-                    translation:toh($tei, $bibl/@key),
-                    tei-content:source($tei, $bibl/@key),
-                    translation:downloads($tei, $bibl/@key, 'all')
-                ),
-                
-                element title { 
-                    tei-content:title($tei) 
-                },
-                
-                tei-content:titles($tei),
-                translation:publication($tei),
-                translation:contributors($tei, true()),
-                tei-content:status-updates($tei)
-                
-            },
-            element { QName('http://read.84000.co/ns/1.0', 'translation-status') } {
-                translation-status:texts($text-id, true())
-            },
-            tei-content:text-statuses-selected(tei-content:translation-status($tei), 'translation'),
-            contributors:persons(false(), false()),
-            contributors:teams(true(), false(), false()),
+            $request,
+            $updated,
+            $text,
+            $translation-status,
+            $text-statuses-selected,
+            $persons,
+            $teams,
             $entities,
+            $caches,
             $tei-content:title-types,
             $contributors:contributor-types,
-            doc('../config/submission-checklist.xml')
+            $submission-checklist
         )
     )
     

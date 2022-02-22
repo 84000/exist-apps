@@ -25,3 +25,28 @@ declare function local:get-status-parameter() as xs:string* {
         else
             $post-status
 };
+
+declare function local:async-script($script-name as xs:string, $parameters as element(parameters)?){
+    
+    (: Clear job if completed :)
+    let $clear-complete-job :=
+        if(scheduler:get-scheduled-jobs()//scheduler:job[@name eq $script-name][scheduler:trigger/state/text() eq 'COMPLETE']) then
+            scheduler:delete-scheduled-job($script-name)
+        else ()
+    
+    (: Only schedule if not already there :)
+    where not(scheduler:get-scheduled-jobs()//scheduler:job[@name eq $script-name])
+    return (
+        (: Log so we can monitor :)
+        util:log('info', concat('async-script:', $script-name)),
+        (: Schedule a one-off job :)
+        scheduler:schedule-xquery-periodic-job(
+            concat('/db/apps/84000-operations/scripts/', $script-name, '.xq'),
+            10000,
+            $script-name,
+            $parameters,
+            5000,
+            0
+        )
+    )
+};

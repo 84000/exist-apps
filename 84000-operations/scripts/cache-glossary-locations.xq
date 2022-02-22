@@ -1,6 +1,13 @@
+xquery version "3.0" encoding "UTF-8";
 
-(: Set job as running :)
+import module namespace tei-content="http://read.84000.co/tei-content" at "../../84000-reading-room/modules/tei-content.xql";
+import module namespace update-tei="http://operations.84000.co/update-tei" at "../modules/update-tei.xql";
 
-scheduler:get-scheduled-jobs(),
+declare variable $local:resource-id external;
+declare variable $local:resource-type external;
+declare variable $local:glossary-id external;
 
-util:log('info', system:get-module-load-path() (:|| '/' || request:get-parameter('param-name1', 'param-value-none'):))
+let $tei := tei-content:tei($local:resource-id, $local:resource-type)
+
+return
+    update-tei:cache-glossary($tei, $local:glossary-id)

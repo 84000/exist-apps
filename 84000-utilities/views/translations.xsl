@@ -100,6 +100,7 @@
                     
                     <xsl:when test="$page-filter eq 'new-version-placeholders' and m:texts[m:text]">
                         <form action="/translations.html" method="post" class="form-inline bottom-margin">
+                            <xsl:attribute name="data-loading" select="'Getting updated files...'"/>
                             <input type="hidden" name="page-filter" value="new-version-placeholders"/>
                             <xsl:for-each-group select="m:texts/m:text" group-by="@id">
                                 <input type="hidden" name="store[]" value="{ concat(@id, '.all') }"/>
@@ -242,11 +243,12 @@
                                                                     <xsl:when test="$environment/m:store-conf[@type eq 'master']">
                                                                         
                                                                         <!-- Versions don't match so offer create option -->
-                                                                        <xsl:if test="$group-tei-version gt '' and $file-format = ('pdf', 'epub', 'azw3', 'rdf') and not(compare($file-version, $group-tei-version) eq 0) and $text-marked-up">
+                                                                        <xsl:if test="$group-tei-version gt '' and $file-format = ('pdf', 'epub', 'azw3', 'rdf', 'cache') and not(compare($file-version, $group-tei-version) eq 0) and $text-marked-up">
+                                                                            <xsl:variable name="file-name" select="concat($toh/@key, '.', $file-format)"/>
                                                                             <a class="store-file">
-                                                                                <xsl:attribute name="href" select="m:store-link(concat($toh/@key, '.', $file-format), $page-filter, $toh-min, $toh-max, $text-id)"/>
-                                                                                <xsl:attribute name="title" select="'Update this file'"/>
-                                                                                <xsl:attribute name="data-loading" select="'Updating this file...'"/>
+                                                                                <xsl:attribute name="href" select="m:store-link($file-name, $page-filter, $toh-min, $toh-max, $text-id)"/>
+                                                                                <xsl:attribute name="title" select="concat('Update ', $file-name)"/>
+                                                                                <xsl:attribute name="data-loading" select="concat('Updating ', $file-name, ' ...')"/>
                                                                                 <span class="label label-primary">
                                                                                     <xsl:value-of select="concat('Update ', upper-case($file-format))"/>
                                                                                 </span>
@@ -533,7 +535,6 @@
                                                 </div>
                                             </xsl:if>
                                             
-                                            
                                             <!-- Status change -->
                                             <xsl:if test="$environment/m:store-conf[@type eq 'client'] and ($page-filter = ('new-version-translations', 'new-version-placeholders') or not(compare($group-status-id, $group-master-status-id) eq 0))">
                                                 <div class="row sml-margin bottom">
@@ -597,6 +598,7 @@
                                                     </xsl:choose>
                                                 </a>
                                             </div>
+                                        
                                         </td>
                                         
                                     </tr>

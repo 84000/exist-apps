@@ -213,12 +213,16 @@ declare function store:create($file-name as xs:string) as element() {
         return
             if($file-type eq 'cache') then
             
-                (: set the cache version number, assuming it's up to date :)
-                (:store:store-version-str(
-                    concat($common:data-path, '/cache'), 
-                    concat(tei-content:id($tei), '.cache'), 
-                    $tei-version
-                ):)()
+                (: Set the cache version number, assuming it's up to date as it's maintained by the trigger :)
+                let $file-name := concat(tei-content:id($tei), '.cache')
+                let $update-version-str := 
+                    store:store-version-str(
+                        concat($common:data-path, '/cache'), 
+                        $file-name, 
+                        $tei-version
+                    )
+                return
+                    <stored xmlns="http://read.84000.co/ns/1.0">{ concat('New version saved as ', concat($common:data-path, '/cache/', $file-name)) }</stored>
             
             else
                 (: Loop through one or more Toh keys :)
@@ -235,29 +239,13 @@ declare function store:create($file-name as xs:string) as element() {
                 
                 return
                     if(compare($store-version, $tei-version) ne 0)then
-                    
-                        (: generate and store the latest version :)
-                        (:if($file-type eq 'html') then
-                            (\:'Store new html':\)
-                            let $file-path := concat($common:data-path, '/html/', $toh-key, '.html')
-                            return 
-                                (\:element debug {
-                                    attribute tei-version { $tei-version },
-                                    attribute store-version { $store-version },
-                                    attribute toh-key { $toh-key },
-                                    attribute file-type { $file-type },
-                                    attribute file-path { $file-path },:\)
-                                    store:store-new-html($file-path, $tei-version)
-                                 (\:}:\)
-                        
-                        else :)
                         
                         if($file-type eq 'pdf') then
                             (:'Store new pdf':)
                             let $file-path := concat($common:data-path, '/pdf/', $toh-key, '.pdf')
                             return
                                 store:store-new-pdf($file-path, $tei-version)
-                                
+                        
                         else if($file-type eq 'epub') then
                             (:'Store new ebooks':)
                             let $epub-file-path := concat($common:data-path, '/epub/', $toh-key, '.epub')
@@ -268,7 +256,7 @@ declare function store:create($file-name as xs:string) as element() {
                                 $store-new-epub,
                                 $store-new-azw3
                             )
-                                
+                        
                         else if($file-type eq 'rdf') then
                             (:'Store new rdf':)
                             let $file-path := concat($common:data-path, '/rdf/', $toh-key, '.rdf')
@@ -276,7 +264,7 @@ declare function store:create($file-name as xs:string) as element() {
                                 store:store-new-rdf($file-path, $tei-version),
                                 deploy:push('data-rdf', (), concat('Sync ', $toh-key, '.rdf'), ())
                             )
-                            
+                        
                         else
                             <error xmlns="http://read.84000.co/ns/1.0">
                                 <message>{ 'Unknown file type' }</message>
@@ -284,7 +272,7 @@ declare function store:create($file-name as xs:string) as element() {
                     
                     else
                         <error xmlns="http://read.84000.co/ns/1.0">
-                            <message>{ concat('The version of ', $toh-key,'.', $file-extension, ' in the store is up-to-date') }</message>
+                            <message>{ concat('The version of ', $toh-key,'.', $file-type, ' in the store is up to date') }</message>
                         </error>
     
     return

@@ -6,6 +6,8 @@
     
     <xsl:template match="/m:response">
         
+        <xsl:variable name="text" select="m:text"/>
+        
         <xsl:variable name="content">
             
             <xsl:call-template name="operations-page">
@@ -16,20 +18,18 @@
                     
                     <xsl:call-template name="alert-translation-locked"/>
                     
-                    <xsl:variable name="text-id" select="m:translation/@id"/>
-                    
                     <!-- Title / status -->
                     <div class="center-vertical full-width sml-margin bottom">
 
                         <div class="h3">
                             <a target="_blank">
-                                <xsl:attribute name="href" select="concat($reading-room-path, '/translation/', $text-id, '.html')"/>
-                                <xsl:value-of select="concat(string-join(m:translation/m:toh/m:full, ' / '), ' : ', m:translation/m:title)"/>
+                                <xsl:attribute name="href" select="concat($reading-room-path, '/translation/', $text/@id, '.html')"/>
+                                <xsl:value-of select="concat(string-join($text/m:toh/m:full, ' / '), ' : ', $text/m:title)"/>
                             </a>
                         </div>
                         
                         <span class="text-right">
-                            <xsl:sequence select="ops:translation-status(m:translation/@status-group)"/>
+                            <xsl:sequence select="ops:translation-status($text/@status-group)"/>
                         </span>
                         
                     </div>
@@ -40,18 +40,18 @@
                         <!-- url -->
                         <div>
                             <a class="text-muted small">
-                                <xsl:attribute name="href" select="concat($reading-room-path, '/translation/', $text-id, '.tei')"/>
-                                <xsl:attribute name="target" select="concat($text-id, '.tei')"/>
-                                <xsl:value-of select="concat('TEI file: ', m:translation/@document-url)"/>
+                                <xsl:attribute name="href" select="concat($reading-room-path, '/translation/', $text/@id, '.tei')"/>
+                                <xsl:attribute name="target" select="concat($text/@id, '.tei')"/>
+                                <xsl:value-of select="concat('TEI file: ', $text/@document-url)"/>
                             </a>
                         </div>
                         
                         <!-- Version -->
                         <span class="text-right">
                             <a class="label label-info">
-                                <xsl:attribute name="href" select="concat($reading-room-path, '/translation/', $text-id, '.tei')"/>
-                                <xsl:attribute name="target" select="concat($text-id, '.tei')"/>
-                                <xsl:value-of select="concat('TEI VERSION: ', if(m:translation[@tei-version gt '']) then m:translation/@tei-version else '[none]')"/>
+                                <xsl:attribute name="href" select="concat($reading-room-path, '/translation/', $text/@id, '.tei')"/>
+                                <xsl:attribute name="target" select="concat($text/@id, '.tei')"/>
+                                <xsl:value-of select="concat('TEI VERSION: ', if($text[@tei-version gt '']) then $text/@tei-version else '[none]')"/>
                             </a>
                         </span>
                         
@@ -93,11 +93,11 @@
                     </xsl:if>
                     
                     <!-- Files -->
-                    <xsl:if test="m:translation/@status-group eq 'published'">
+                    <xsl:if test="$text/@status-group eq 'published'">
                         
                         <!-- Downloads -->
                         <div>
-                            <xsl:for-each select="m:translation/m:downloads">
+                            <xsl:for-each select="$text/m:downloads">
                                 
                                 <!-- Status flags -->
                                 <div class="center-vertical full-width sml-margin bottom">
@@ -107,7 +107,7 @@
                                     <xsl:variable name="tei-version" select="$downloads/@tei-version"/>
                                     
                                     <span class="small">
-                                        <xsl:value-of select="concat('Associated files for ', /m:response/m:translation/m:toh[@key eq $resource-id]/m:full, ': ')"/>
+                                        <xsl:value-of select="concat('Associated files for ', $text/m:toh[@key eq $resource-id]/m:full, ': ')"/>
                                     </span>
                                     
                                     <span class="text-right">
@@ -133,7 +133,7 @@
                                                             <xsl:value-of select="'label label-info'"/>
                                                         </xsl:when>
                                                         <xsl:otherwise>
-                                                            <xsl:value-of select="'label label-danger'"/>
+                                                            <xsl:value-of select="'label label-warning'"/>
                                                         </xsl:otherwise>
                                                     </xsl:choose>
                                                 </xsl:attribute>
@@ -161,24 +161,29 @@
                             </xsl:for-each>
                         </div>
                         
-                        <xsl:variable name="files-outdated" select="m:translation/m:downloads/m:download[not(@version = ../@tei-version)]"/>
-                        <xsl:variable name="cache-outdated" select="$files-outdated[@type eq 'cache']"/>
+                        <xsl:variable name="files-outdated" select="$text/m:downloads/m:download[not(@version = ../@tei-version)]"/>
+                        <xsl:variable name="cache-glosses-behind" select="m:glossary-cache/m:gloss[not(@tei-version eq $text/@tei-version)]"/>
                         <xsl:variable name="master-store" select="$environment/m:store-conf[@type eq 'master']"/>
-                        <xsl:if test="$cache-outdated or ($master-store and $files-outdated)">
+                        <xsl:if test="$cache-glosses-behind or ($master-store and $files-outdated)">
                             <div class="sml-margin bottom text-right">
                                 <ul class="list-inline inline-dots">
-                                    <xsl:if test="$cache-outdated">
+                                    <xsl:if test="$cache-glosses-behind">
                                         <li>
-                                            <a class="small">
-                                                <xsl:attribute name="href" select="concat('edit-glossary.html?resource-id=', $text-id)"/>
-                                                <xsl:value-of select="'Generate new cache (glossary tool)'"/>
-                                            </a>
+                                            <span class="label label-warning">
+                                                <xsl:value-of select="count($cache-glosses-behind) || ' glossary entries have not had locations re-cached for this version'"/>
+                                            </span>
                                         </li>
                                     </xsl:if>
+                                    <li>
+                                        <a class="small" data-loading="Loading...">
+                                            <xsl:attribute name="href" select="concat('edit-glossary.html?resource-id=', $text/@id)"/>
+                                            <xsl:value-of select="'Open glossary editor'"/>
+                                        </a>
+                                    </li>
                                     <xsl:if test="$master-store">
                                         <li>
                                             <a class="small">
-                                                <xsl:attribute name="href" select="concat('edit-text-header.html?id=', $text-id, '&amp;form-action=generate-files')"/>
+                                                <xsl:attribute name="href" select="concat('edit-text-header.html?id=', $text/@id, '&amp;form-action=generate-files')"/>
                                                 <xsl:attribute name="data-loading" select="'Generating files...'"/>
                                                 <xsl:value-of select="'Generate new associated files'"/>
                                             </a>
@@ -193,26 +198,32 @@
                     <div class="list-group accordion accordion-background" role="tablist" aria-multiselectable="true" id="forms-accordion">
                         
                         <xsl:call-template name="titles-form-panel">
+                            <xsl:with-param name="text" select="$text"/>
                             <xsl:with-param name="active" select="if(m:request/@form-expand eq 'titles') then true() else false()"/>
                         </xsl:call-template>
                         
                         <xsl:call-template name="source-form-panel">
+                            <xsl:with-param name="text" select="$text"/>
                             <xsl:with-param name="active" select="if(m:request/@form-expand eq 'source') then true() else false()"/>
                         </xsl:call-template>
                         
                         <xsl:call-template name="contributors-form-panel">
+                            <xsl:with-param name="text" select="$text"/>
                             <xsl:with-param name="active" select="if(m:request/@form-expand eq 'contributors') then true() else false()"/>
                         </xsl:call-template>
                         
                         <xsl:call-template name="submissions-form-panel">
+                            <xsl:with-param name="text" select="$text"/>
                             <xsl:with-param name="active" select="if(m:request/@form-expand eq 'submissions') then true() else false()"/>
                         </xsl:call-template>
                         
                         <xsl:call-template name="translation-status-form-panel">
+                            <xsl:with-param name="text" select="$text"/>
                             <xsl:with-param name="active" select="if(m:request/@form-expand eq 'translation-status') then true() else false()"/>
                         </xsl:call-template>
                         
                     </div>
+                
                 </xsl:with-param>
             </xsl:call-template>
             
@@ -221,8 +232,8 @@
         <xsl:call-template name="reading-room-page">
             <xsl:with-param name="page-url" select="''"/>
             <xsl:with-param name="page-class" select="'utilities'"/>
-            <xsl:with-param name="page-title" select="concat(string-join(m:translation/m:toh/m:full, ' / '), ' | Text header | 84000 Project Management')"/>
-            <xsl:with-param name="page-description" select="concat('Editing headers for text: ', string-join(m:translation/m:toh/m:full, ' / '))"/>
+            <xsl:with-param name="page-title" select="concat(string-join($text/m:toh/m:full, ' / '), ' | Text header | 84000 Project Management')"/>
+            <xsl:with-param name="page-description" select="concat('Editing headers for text: ', string-join($text/m:toh/m:full, ' / '))"/>
             <xsl:with-param name="content" select="$content"/>
         </xsl:call-template>
         
@@ -231,6 +242,7 @@
     <!-- Titles form -->
     <xsl:template name="titles-form-panel">
         
+        <xsl:param name="text" as="element(m:text)"/>
         <xsl:param name="active"/>
         
         <xsl:call-template name="expand-item">
@@ -253,15 +265,15 @@
                     
                     <input type="hidden" name="form-action" value="update-titles"/>
                     <input type="hidden" name="post-id">
-                        <xsl:attribute name="value" select="m:translation/@id"/>
+                        <xsl:attribute name="value" select="$text/@id"/>
                     </input>
                     <input type="hidden" name="form-expand" value="titles"/>
                     
                     <!-- Titles -->
                     <div class="add-nodes-container">
                         <xsl:choose>
-                            <xsl:when test="m:translation/m:titles/m:title">
-                                <xsl:for-each select="m:translation/m:titles/m:title">
+                            <xsl:when test="$text/m:titles/m:title">
+                                <xsl:for-each select="$text/m:titles/m:title">
                                     <xsl:call-template name="title-controls">
                                         <xsl:with-param name="title" select="."/>
                                         <xsl:with-param name="title-index" select="position()"/>
@@ -301,8 +313,8 @@
                     <div class="add-nodes-container">
                         
                         <xsl:choose>
-                            <xsl:when test="m:translation/m:titles/m:note">
-                                <xsl:for-each select="m:translation/m:titles/m:note">
+                            <xsl:when test="$text/m:titles/m:note">
+                                <xsl:for-each select="$text/m:titles/m:note">
                                     <xsl:call-template name="title-note">
                                         <xsl:with-param name="index" select="position()"/>
                                         <xsl:with-param name="note" select="."/>
@@ -378,6 +390,7 @@
     <!-- Contributors form -->
     <xsl:template name="contributors-form-panel">
         
+        <xsl:param name="text" as="element(m:text)"/>
         <xsl:param name="active"/>
         
         <xsl:call-template name="expand-item">
@@ -395,7 +408,7 @@
             
             <xsl:with-param name="content">
                 
-                <xsl:variable name="summary" select="/m:response/m:translation/m:publication/m:contributors/m:summary[1]"/>
+                <xsl:variable name="summary" select="$text/m:publication/m:contributors/m:summary[1]"/>
                 <xsl:variable name="translator-team-id" select="lower-case(replace($summary/@ref, '^(eft:|contributors\.xml#)', '', 'i'))"/>
                 
                 <form method="post" class="form-horizontal form-update labels-left top-margin" id="contributors-form" data-loading="Updating contributors...">
@@ -404,7 +417,7 @@
                     
                     <input type="hidden" name="form-action" value="update-contributors"/>
                     <input type="hidden" name="post-id">
-                        <xsl:attribute name="value" select="m:translation/@id"/>
+                        <xsl:attribute name="value" select="$text/@id"/>
                     </input>
                     <input type="hidden" name="form-expand" value="contributors"/>
                     
@@ -440,7 +453,7 @@
                                 <xsl:variable name="other-contributors" select="/m:response/m:contributor-persons/m:person[not(m:team[@id = $translator-team-id])]"/>
                                 
                                 <xsl:call-template name="contributors-controls">
-                                    <xsl:with-param name="text-contributors" select="m:translation/m:publication/m:contributors/m:*[self::m:author | self::m:editor | self::m:consultant]"/>
+                                    <xsl:with-param name="text-contributors" select="$text/m:publication/m:contributors/m:*[self::m:author | self::m:editor | self::m:consultant]"/>
                                     <xsl:with-param name="contributor-types" select="/m:response/m:contributor-types/m:contributor-type[@type eq 'translation']"/>
                                     <xsl:with-param name="team-contributors" select="$team-contributors"/>
                                     <xsl:with-param name="other-contributors" select="$other-contributors"/>
@@ -459,8 +472,8 @@
                                 <xsl:value-of select="'Attribution'"/>
                             </div>
                             <xsl:choose>
-                                <xsl:when test="m:translation/m:publication/m:contributors/m:summary">
-                                    <xsl:for-each select="m:translation/m:publication/m:contributors/m:summary">
+                                <xsl:when test="$text/m:publication/m:contributors/m:summary">
+                                    <xsl:for-each select="$text/m:publication/m:contributors/m:summary">
                                         <p>
                                             <xsl:apply-templates select="node()"/>
                                         </p>
@@ -479,8 +492,8 @@
                                 <xsl:value-of select="'Acknowledgments'"/>
                             </div>
                             <xsl:choose>
-                                <xsl:when test="m:translation/m:contributors/tei:div[@type eq 'acknowledgment']/tei:p">
-                                    <xsl:apply-templates select="m:translation/m:contributors/tei:div[@type eq 'acknowledgment']/tei:p"/>
+                                <xsl:when test="$text/m:contributors/tei:div[@type eq 'acknowledgment']/tei:p">
+                                    <xsl:apply-templates select="$text/m:contributors/tei:div[@type eq 'acknowledgment']/tei:p"/>
                                 </xsl:when>
                                 <xsl:otherwise>
                                     <p class="text-muted italic">
@@ -491,7 +504,7 @@
                             
                         </div>
                     </div>
-                    <xsl:if test="m:translation/m:contributors/tei:div[@type eq 'acknowledgment']/tei:p">
+                    <xsl:if test="$text/m:contributors/tei:div[@type eq 'acknowledgment']/tei:p">
                         <hr class="sml-margin"/>
                         <div>
                             <p class="small text-muted">
@@ -680,6 +693,7 @@
     <!-- Translation status form -->
     <xsl:template name="translation-status-form-panel">
         
+        <xsl:param name="text" as="element(m:text)"/>
         <xsl:param name="active"/>
         
         <xsl:call-template name="expand-item">
@@ -703,7 +717,7 @@
                     
                     <input type="hidden" name="form-action" value="update-publication-status"/>
                     <input type="hidden" name="post-id">
-                        <xsl:attribute name="value" select="m:translation/@id"/>
+                        <xsl:attribute name="value" select="$text/@id"/>
                     </input>
                     <input type="hidden" name="form-expand" value="translation-status"/>
                     
@@ -711,11 +725,11 @@
                         <p>
                             <xsl:value-of select="'Updating the version number will commit the new version to the '"/>
                             <a target="_blank" class="alert-link">
-                                <xsl:attribute name="href" select="concat('https://github.com/84000/data-tei/commits/master/', substring-after(m:translation/@document-url, concat(/m:response/@data-path, '/tei/')))"/>
+                                <xsl:attribute name="href" select="concat('https://github.com/84000/data-tei/commits/master/', substring-after($text/@document-url, concat(/m:response/@data-path, '/tei/')))"/>
                                 <xsl:value-of select="'Github repository'"/>
                             </a>
                             <xsl:value-of select="'. '"/>
-                            <xsl:if test="m:translation/@status eq '1'">
+                            <xsl:if test="$text/@status eq '1'">
                                 <xsl:value-of select="'Associated files (pdfs, ebooks) will be generated for published texts. This can take some time.'"/>
                             </xsl:if>
                         </p>
@@ -776,7 +790,7 @@
                                     </label>
                                     <div class="col-sm-3">
                                         <input type="date" name="publication-date" id="publication-date" class="form-control">
-                                            <xsl:attribute name="value" select="m:translation/m:publication/m:publication-date"/>
+                                            <xsl:attribute name="value" select="$text/m:publication/m:publication-date"/>
                                             <xsl:if test="m:text-statuses/m:status[@selected eq 'selected']/@value eq '1'">
                                                 <xsl:attribute name="required" select="'required'"/>
                                             </xsl:if>
@@ -794,8 +808,8 @@
                                             <!-- Force the addition of a version number if the form is used -->
                                             <xsl:attribute name="value">
                                                 <xsl:choose>
-                                                    <xsl:when test="m:translation/m:publication/m:edition/text()[1]/normalize-space()">
-                                                        <xsl:value-of select="m:translation/m:publication/m:edition/text()[1]/normalize-space()"/>
+                                                    <xsl:when test="$text/m:publication/m:edition/text()[1]/normalize-space()">
+                                                        <xsl:value-of select="$text/m:publication/m:edition/text()[1]/normalize-space()"/>
                                                     </xsl:when>
                                                     <xsl:otherwise>
                                                         <xsl:value-of select="'0.0.1'"/>
@@ -811,8 +825,8 @@
                                         <input type="text" name="text-version-date" id="text-version-date" class="form-control" placeholder="e.g. 2019">
                                             <xsl:attribute name="value">
                                                 <xsl:choose>
-                                                    <xsl:when test="m:translation/m:publication/m:edition/tei:date/text()/normalize-space()">
-                                                        <xsl:value-of select="m:translation/m:publication/m:edition/tei:date/text()/normalize-space()"/>
+                                                    <xsl:when test="$text/m:publication/m:edition/tei:date/text()/normalize-space()">
+                                                        <xsl:value-of select="$text/m:publication/m:edition/tei:date/text()/normalize-space()"/>
                                                     </xsl:when>
                                                     <xsl:otherwise>
                                                         <xsl:value-of select="format-dateTime(current-dateTime(), '[Y]')"/>
@@ -877,7 +891,7 @@
                                 
                                 <!-- Target dates -->
                                 <xsl:variable name="target-dates" select="m:translation-status/m:text/m:target-date"/>
-                                <xsl:variable name="actual-dates" select="m:translation/m:status-updates/m:status-update[@update eq 'translation-status']"/>
+                                <xsl:variable name="actual-dates" select="$text/m:status-updates/m:status-update[@update eq 'translation-status']"/>
                                 <div class="form-group">
                                     <label class="control-label col-sm-3 top-margin" for="text-note">
                                         <xsl:value-of select="'Target dates:'"/>
@@ -977,7 +991,7 @@
                         <div class="col-sm-4">
                             <div class="match-height-overflow" data-match-height="status-form">
                                 
-                                <xsl:apply-templates select="m:translation/m:status-updates"/>
+                                <xsl:apply-templates select="$text/m:status-updates"/>
                             
                             </div>
                         </div>
@@ -1002,6 +1016,7 @@
     <!-- Submissions form -->
     <xsl:template name="submissions-form-panel">
         
+        <xsl:param name="text" as="element(m:text)"/>
         <xsl:param name="active"/>
         
         <xsl:call-template name="expand-item">
@@ -1031,7 +1046,7 @@
                     <div class="row">
                         <div class="col-sm-8">
                             <a>
-                                <xsl:attribute name="href" select="concat('/edit-text-submission.html?text-id=', /m:response/m:translation/@id,'&amp;submission-id=', $submission/@id)"/>
+                                <xsl:attribute name="href" select="concat('/edit-text-submission.html?text-id=', $text/@id,'&amp;submission-id=', $submission/@id)"/>
                                 <xsl:value-of select="$submission/@file-name"/>
                             </a>
                         </div>
@@ -1112,7 +1127,7 @@
                     
                     <input type="hidden" name="form-action" value="process-upload"/>
                     <input type="hidden" name="post-id">
-                        <xsl:attribute name="value" select="m:translation/@id"/>
+                        <xsl:attribute name="value" select="$text/@id"/>
                     </input>
                     <input type="hidden" name="form-expand" value="submissions"/>
                     
@@ -1137,6 +1152,7 @@
     <!-- Source form -->
     <xsl:template name="source-form-panel">
         
+        <xsl:param name="text" as="element(m:text)"/>
         <xsl:param name="active"/>
         
         <xsl:call-template name="expand-item">
@@ -1160,11 +1176,11 @@
                     
                     <input type="hidden" name="form-action" value="update-source"/>
                     <input type="hidden" name="post-id">
-                        <xsl:attribute name="value" select="m:translation/@id"/>
+                        <xsl:attribute name="value" select="$text/@id"/>
                     </input>
                     <input type="hidden" name="form-expand" value="source"/>
                     
-                    <xsl:for-each select="m:translation/m:source">
+                    <xsl:for-each select="$text/m:source">
                         
                         <xsl:variable name="toh-key" select="@key"/>
                         <xsl:variable name="toh-location" select="m:location"/>

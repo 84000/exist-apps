@@ -846,15 +846,17 @@ declare function update-tei:cache-glossary($tei as element(tei:TEI), $glossary-i
         else
             $tei-glossary[@xml:id = $glossary-id]/@xml:id
     
+    let $log := util:log('info', concat('update-tei-cache-glossary-count:', count($refresh-locations)))
+    
     (: Process in chunks :)
     let $cache-glossary-chunks := local:cache-glossary-chunk($tei, $cache, $refresh-locations, 1)
     
     (: Set version - only if all are done :)
-    let $set-cache-version := 
+    (:let $set-cache-version := 
         if(count($glossary-cache/m:gloss[@tei-version eq $tei-version]) eq count($tei-glossary)) then
             store:store-version-str(concat($common:data-path, '/cache'), concat(tei-content:id($tei), '.cache'), $tei-version)
-        else ()
-        
+        else ():)
+    
     (: Record build time - only if it's the whole set :)
     let $end-time := util:system-dateTime()
     let $set-duration := 

@@ -19,6 +19,7 @@ import module namespace functx="http://www.functx.com";
 
 declare option exist:serialize "method=xml indent=no";
 
+
 let $default-max-records := 3
 let $default-filter := 'check-all'
 
@@ -63,31 +64,47 @@ let $updates :=
             
         else if($form-action eq 'cache-locations') then
             update-tei:cache-glossary($tei, $glossary-id)
-            
-        else if($form-action eq 'cache-locations-uncached') then
-            update-tei:cache-glossary($tei, 'uncached')
-            
-        else if($form-action eq 'cache-locations-all') then
-            update-tei:cache-glossary($tei, 'all')
         
-        else if($form-action eq 'cache-locations-version') then
-            update-tei:cache-glossary($tei, 'version')
+        else if($form-action = ('cache-locations-all', 'cache-locations-uncached', 'cache-locations-version')) then 
+            (:update-tei:cache-glossary($tei, 'all'):)
             
+            (: Run asynchronously :)
+            let $scope := 
+                if($form-action eq 'cache-locations-uncached') then 'uncached'
+                else if($form-action eq 'cache-locations-version') then 'version'
+                else 'all'
+            
+            return
+                local:async-script(
+                    'cache-glossary-locations',
+                    <parameters xmlns="">
+                        <param name="resource-id" value="{ $resource-id }"/>
+                        <param name="resource-type" value="{ $resource-type }"/>
+                        <param name="glossary-id" value="{ $scope }"/>
+                    </parameters>
+                )
+        
         else if($form-action eq 'update-entity') then
             update-entity:headers($entity-id)
-            
+        
         else if($form-action eq 'match-entity') then
             update-entity:match-instance($entity-id, $glossary-id, 'glossary-item')
-            
+        
         else if($form-action eq 'merge-entities') then
             update-entity:resolve($entity-id, $target-entity-id, $predicate)
-            
+        
         else if($form-action eq 'merge-all-entities') then
-            update-entity:merge-glossary($resource-id, true())
+            (:update-entity:merge-glossary($resource-id, true()):)
+            local:async-script(
+                'auto-assign-entities',
+                <parameters xmlns="">
+                    <param name="resource-id" value="{ $resource-id }"/>
+                </parameters>
+            )
         
         else if(not($remove-flag eq '') and not($entity-id eq '')) then
             update-entity:clear-flag($glossary-id, $remove-flag)
-            
+        
         else if(not($remove-instance eq '')) then 
             let $remove-instance-gloss := $glossary:tei//tei:back//id($remove-instance)[self::tei:gloss]
             where $remove-instance-gloss
@@ -101,25 +118,10 @@ let $updates :=
             where $unlink-glossary-gloss
             return 
                 update-entity:remove-instance($unlink-glossary)
-            
+        
         else ()
     
     }
-
-(:let $schedule := 
-    if(scheduler:get-scheduled-jobs()//scheduler:job[@name eq 'cache-glossary-locations'][scheduler:trigger/state/text() eq 'COMPLETE']) then
-        scheduler:delete-scheduled-job('cache-glossary-locations')
-    else
-        scheduler:schedule-xquery-periodic-job(
-            '/db/apps/84000-operations/scripts/cache-glossary-locations.xq',
-            10000,
-            'cache-glossary-locations',
-            <parameters>
-                <param name="param-name1" value="param-value1"/>
-            </parameters>,
-            10000,
-            0
-        ):)
 
 (: Force a filter value :)
 let $filter := 
@@ -168,7 +170,8 @@ let $request :=
         attribute show-tab { request:get-parameter('show-tab', '') },
         element similar-search { request:get-parameter('similar-search', '') },
         element search { $search },
-        $translation:view-modes/m:view-mode[@id eq 'glossary-editor']
+        $translation:view-modes/m:view-mode[@id eq 'glossary-editor'],
+        system:get-module-load-path()
     }
 
 let $text := 
@@ -177,6 +180,8 @@ let $text :=
         attribute tei-version { tei-content:version-str($tei) },
         attribute document-url { tei-content:document-url($tei) },
         attribute locked-by-user { tei-content:locked-by-user($tei) },
+        attribute status { tei-content:translation-status($tei) },
+        attribute status-group { tei-content:translation-status-group($tei) },
         tei-content:titles($tei),
         if($resource-type eq 'translation') then
             translation:toh($tei, '')
@@ -258,6 +263,8 @@ let $entities :=
 
 let $caches := tei-content:cache($tei, false())/m:*
 
+let $blocking-jobs := scheduler:get-scheduled-jobs()//scheduler:job[@name = ('cache-glossary-locations', 'auto-assign-entities')][not(scheduler:trigger/state/text() eq 'COMPLETE')]
+
 let $xml-response := 
     common:response(
         'operations/glossary',
@@ -268,8 +275,7 @@ let $xml-response :=
             $glossary,
             $entities,
             $caches,
-            (:scheduler:get-scheduled-jobs()//scheduler:job[@name eq 'cache-glossary-locations'],:)
-            (: Entities config :)
+            $blocking-jobs,
             $entities:predicates,
             $entities:types,
             $entities:flags

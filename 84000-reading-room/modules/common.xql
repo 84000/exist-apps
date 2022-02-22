@@ -59,7 +59,10 @@ function common:app-id() as xs:string {
 };
 
 declare function common:request-lang() as xs:string {
-    (request:get-parameter('lang', 'en')[. = ('en', 'zh')], 'en')[1]
+    if(request:exists()) then
+        (request:get-parameter('lang', 'en')[. = ('en', 'zh')], 'en')[1]
+    else
+        'en'
 };
 
 declare
