@@ -511,8 +511,7 @@
                                                                
                                                                <xsl:with-param name="id" select="concat('expand-', $term-group-index, '-', $text-type)"/>
                                                                <xsl:with-param name="accordion-selector" select="'no-accordion'"/>
-                                                               <!-- If this is the only item then expand by default -->
-                                                               <!--<xsl:with-param name="active" select="count($related-entries) eq count($term-group)"/>-->
+                                                               <xsl:with-param name="active" select="$tei-editor"/>
                                                                
                                                                <xsl:with-param name="title">
                                                                    
@@ -847,7 +846,6 @@
                 
             </h4>
             
-            
             <!-- Editor options -->
             <xsl:if test="$tei-editor">
                 
@@ -904,7 +902,10 @@
                                             
                                             <span class="small">
                                                 <xsl:value-of select="' '"/>
-                                                
+                                                <span class="alternative">
+                                                    <xsl:value-of select="common:date-user-string('Flag set', $entity-flag/@timestamp, $entity-flag/@user)"/>
+                                                </span>
+                                                <xsl:value-of select="' '"/>
                                                 <button type="submit" data-loading="Clearing flag..." class="btn-link editor">
                                                     <xsl:value-of select="'Clear flag'"/>
                                                 </button>
@@ -930,6 +931,7 @@
                         
                     </ul>
                 </div>
+                
             </xsl:if>
             
             <!-- Translators -->
@@ -983,7 +985,7 @@
                                                 
                                             </span>
                                             
-                                            <xsl:if test="$view-mode[@id eq 'editor'] and @status eq 'verified'">
+                                            <xsl:if test="$tei-editor and @status eq 'verified'">
                                                 <xsl:value-of select="' '"/>
                                                 <span class="text-warning small">
                                                     <xsl:value-of select="'[Verified]'"/>
@@ -1001,8 +1003,8 @@
             </xsl:for-each>
             
             <!-- Alternatives -->
-            <xsl:variable name="alternative-terms" select="m:alternative"/>
-            <xsl:if test="$view-mode[@id eq 'editor'] and $alternative-terms">
+            <xsl:variable name="alternative-terms" select="$entry/m:alternative"/>
+            <xsl:if test="$tei-editor and $alternative-terms">
                 <div>
                     <ul class="list-inline inline-dots inline-pad-first">
                         <xsl:for-each select="$alternative-terms">
@@ -1024,40 +1026,34 @@
             </xsl:if>
             
             <!-- Definition -->
-            <!-- Show if there's no entity definition -->
-            <xsl:variable name="use-definition" select="not($instance/parent::m:entity[m:content[@type eq 'glossary-definition']]) or $instance/@use-definition eq 'both'" as="xs:boolean"/>
+            <xsl:variable name="entry-definition" select="$entry/m:definition"/>
+            <xsl:for-each select="m:definition">
+                <p>
+                    <xsl:attribute name="class" select="'definition small'"/>
+                    <xsl:apply-templates select="."/>
+                </p>
+            </xsl:for-each>
             
-            <xsl:if test="$use-definition or $view-mode[@id eq 'editor']">
-                <xsl:for-each select="m:definition">
-                    <p>
-                        <xsl:choose>
-                            <xsl:when test="$view-mode[@id eq 'editor'] and not($use-definition)">
-                                <xsl:attribute name="class" select="'definition small alternative'"/>
-                            </xsl:when>
-                            <xsl:otherwise>
+            <!-- Entity definition -->
+            <xsl:variable name="entity-definition" select="$instance/parent::m:entity/m:content[@type eq 'glossary-definition']"/>
+            <xsl:if test="$tei-editor and $entity-definition and m:definition and $instance[@use-definition  eq 'both']">
+                <div class="well well-sm">
+                    
+                    <xsl:if test="$entity-definition and m:definition">
+                        <h6 class="sml-margin top bottom">
+                            <xsl:value-of select="'Text also includes entity definition:'"/>
+                        </h6>
+                        <xsl:for-each select="$entity-definition">
+                            <p>
                                 <xsl:attribute name="class" select="'definition small'"/>
-                            </xsl:otherwise>
-                        </xsl:choose>
-                        <xsl:apply-templates select="."/>
-                    </p>
-                </xsl:for-each>
+                                <xsl:apply-templates select="node()"/>
+                            </p>
+                        </xsl:for-each>
+                    </xsl:if>
+                    
+                </div>
             </xsl:if>
             
-            <xsl:variable name="instance-flags" select="/m:response/m:entity-flags/m:flag[@id = $instance/m:flag/@type]"/>
-            <xsl:if test="$tei-editor and $instance-flags">
-                
-                <hr class="sml-margin"/>
-                
-                <xsl:for-each select="$instance-flags">
-                    
-                    <xsl:variable name="config-flag" select="."/>
-                    <xsl:variable name="entity-flag" select="$instance/m:flag[@type eq $config-flag/@id][1]"/>
-                    <p class="italic text-warning small">
-                        <xsl:value-of select="concat('[', common:date-user-string(concat($config-flag/m:label[1], ' flag set'), $entity-flag/@timestamp, $entity-flag/@user), ']')"/>
-                    </p>
-                    
-                </xsl:for-each>
-            </xsl:if>
         </div>
     
     </xsl:template>

@@ -39,6 +39,7 @@ let $similar-search := request:get-parameter('similar-search', '')
 let $remove-instance := request:get-parameter('remove-instance', '')
 let $unlink-glossary := request:get-parameter('unlink-glossary', '')
 let $remove-flag := request:get-parameter('remove-flag', '')
+let $set-flag := request:get-parameter('set-flag', '')
 
 let $resource-id := 
     if($resource-id eq '' and $resource-type eq 'translation') then
@@ -47,6 +48,7 @@ let $resource-id :=
         $resource-id
 
 let $tei := tei-content:tei($resource-id, $resource-type)
+let $glossary-full := $tei//tei:back//tei:gloss
 
 (: Get the next xml:id :)
 let $glossary-id := 
@@ -102,11 +104,14 @@ let $updates :=
                 </parameters>
             )
         
-        else if(not($remove-flag eq '') and not($entity-id eq '')) then
+        else if(not($remove-flag eq '') and not($glossary-id eq '')) then
             update-entity:clear-flag($glossary-id, $remove-flag)
         
+        else if(not($set-flag eq '') and not($glossary-id eq '')) then
+            update-entity:set-flag($glossary-id, $set-flag)
+        
         else if(not($remove-instance eq '')) then 
-            let $remove-instance-gloss := $glossary:tei//tei:back//id($remove-instance)[self::tei:gloss]
+            let $remove-instance-gloss := $glossary-full/id($remove-instance)
             where $remove-instance-gloss
             return (
                 update-entity:remove-instance($remove-instance),
@@ -114,7 +119,7 @@ let $updates :=
             )
         
         else if(not($unlink-glossary eq '')) then 
-            let $unlink-glossary-gloss := $glossary:tei//tei:back//id($unlink-glossary)[self::tei:gloss]
+            let $unlink-glossary-gloss := $glossary-full/id($unlink-glossary)
             where $unlink-glossary-gloss
             return 
                 update-entity:remove-instance($unlink-glossary)
@@ -163,15 +168,13 @@ let $request :=
         attribute first-record { request:get-parameter('first-record', 1) },
         attribute max-records { $max-records },
         attribute filter { $filter },
-        attribute find-expressions { request:get-parameter('find-expressions', '') },
         attribute glossary-id { request:get-parameter('glossary-id', '') },
         attribute form-action { request:get-parameter('form-action', '') },
         attribute entity-id { request:get-parameter('entity-id', '') },
         attribute show-tab { request:get-parameter('show-tab', '') },
         element similar-search { request:get-parameter('similar-search', '') },
         element search { $search },
-        $translation:view-modes/m:view-mode[@id eq 'glossary-editor'],
-        system:get-module-load-path()
+        $translation:view-modes/m:view-mode[@id eq 'glossary-editor']
     }
 
 let $text := 
@@ -193,14 +196,16 @@ let $gloss-filtered-subsequence := subsequence($gloss-filtered, $first-record, $
 let $glossary :=
     element { QName('http://read.84000.co/ns/1.0', 'glossary') } {
         
+        attribute total-records { count($glossary-full) },
         attribute count-records { count($gloss-filtered) },
         attribute first-record { $first-record },
         attribute max-records { $max-records },
+        attribute records-assigned-entities { count($glossary-full/id($entities:entities//m:entity/m:instance/@id)) },
         attribute tei-version-cached { store:stored-version-str($resource-id, 'cache') },
         
         (: Get expressions for these entries :)
         let $glossary-locations := 
-            if($filter = ('check-expressions', 'check-all', 'no-cache', 'new-expressions', 'no-expressions') and $gloss-filtered-subsequence) then
+            if($filter = ('check-locations', 'check-all', 'new-locations', 'no-locations', 'cache-behind') and $gloss-filtered-subsequence) then
                 glossary:locations($tei, $resource-id, $resource-type, $gloss-filtered-subsequence/@xml:id)
             else ()
         

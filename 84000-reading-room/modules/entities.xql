@@ -71,10 +71,10 @@ declare function entities:similar($entity as element(m:entity)?, $search-terms a
     let $exclude-ids := distinct-values((
         $exclude-ids,
         (: Exclude matched instances :)
-        $entity/m:instance/@id/string(), 
+        $entity/m:instance/@id/string(),
         (: Exclude related instances :)
         $entities:entities//m:entity/id($entity/m:relation/@id)/m:instance/@id/string(),
-        $entities:entities//m:entity[m:relation[$entity/id(@id)]]/m:instance/@id/string()
+        $entities:entities//m:entity[m:relation/@id = $entity/@xml:id]/m:instance/@id/string()
     ))
     
     let $search-query :=

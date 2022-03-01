@@ -23,6 +23,7 @@
                 
                 <!-- Form to specify status -->
                 <form action="/translations.html" method="post" class="form-horizontal filter-form clearfix">
+                    <xsl:attribute name="data-loading" select="'Loading...'"/>
                     
                     <div class="center-vertical full-width align-left bottom-margin">
                         

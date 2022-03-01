@@ -269,6 +269,7 @@ declare function update-entity:resolve($entity-id as xs:string, $target-entity-i
                 $entities:entities/id($target-entity-id)[self::m:entity]/m:relation[@id eq $entity-id][1]
             else
                 $relation
+        
         return
             common:update('entity-resolve', $relation, (), (), ())
     
@@ -443,13 +444,18 @@ declare function local:set-flag($instance-id as xs:string, $type as xs:string, $
     
     for $existing-instance in $entities:entities/m:entity/m:instance[@id eq $instance-id]
     
+    let $remove-flag := 
+        if($remove) then
+            $existing-instance/m:flag[@type eq $type]
+        else ()
+        
     let $new-instance :=
         element { node-name($existing-instance) } {
             $existing-instance/@*,
-            for $other-element in $existing-instance/*[not(local-name(.) eq 'flag' and @type eq $type)]
+            for $element in $existing-instance/* except $remove-flag
             return (
                 common:ws(3),
-                $other-element,
+                $element,
                 common:ws(2)
             ),
             if(not($remove) and $flag) then (

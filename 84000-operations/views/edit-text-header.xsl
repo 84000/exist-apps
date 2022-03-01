@@ -48,7 +48,7 @@
                         
                         <!-- Version -->
                         <span class="text-right">
-                            <a class="label label-info">
+                            <a class="label label-success">
                                 <xsl:attribute name="href" select="concat($reading-room-path, '/translation/', $text/@id, '.tei')"/>
                                 <xsl:attribute name="target" select="concat($text/@id, '.tei')"/>
                                 <xsl:value-of select="concat('TEI VERSION: ', if($text[@tei-version gt '']) then $text/@tei-version else '[none]')"/>
@@ -130,10 +130,10 @@
                                                 <xsl:attribute name="class">
                                                     <xsl:choose>
                                                         <xsl:when test="$download/@version eq $tei-version">
-                                                            <xsl:value-of select="'label label-info'"/>
+                                                            <xsl:value-of select="'label label-success'"/>
                                                         </xsl:when>
                                                         <xsl:otherwise>
-                                                            <xsl:value-of select="'label label-warning'"/>
+                                                            <xsl:value-of select="'label label-danger'"/>
                                                         </xsl:otherwise>
                                                     </xsl:choose>
                                                 </xsl:attribute>
@@ -167,20 +167,19 @@
                         <xsl:if test="$cache-glosses-behind or ($master-store and $files-outdated)">
                             <div class="sml-margin bottom text-right">
                                 <ul class="list-inline inline-dots">
-                                    <xsl:if test="$cache-glosses-behind">
-                                        <li>
-                                            <span class="label label-warning">
-                                                <xsl:value-of select="count($cache-glosses-behind) || ' glossary entries have not had locations re-cached for this version'"/>
-                                            </span>
-                                        </li>
-                                    </xsl:if>
                                     <li>
                                         <a class="small" data-loading="Loading...">
                                             <xsl:attribute name="href" select="concat('edit-glossary.html?resource-id=', $text/@id)"/>
-                                            <xsl:value-of select="'Open glossary editor'"/>
+                                            <xsl:value-of select="'Glossary editor'"/>
                                         </a>
+                                        <xsl:if test="$cache-glosses-behind">
+                                            <xsl:value-of select="' '"/>
+                                            <span class="label label-warning">
+                                                <xsl:value-of select="'glossary locations may need re-caching'"/>
+                                            </span>
+                                        </xsl:if>
                                     </li>
-                                    <xsl:if test="$master-store">
+                                    <xsl:if test="$master-store and $files-outdated">
                                         <li>
                                             <a class="small">
                                                 <xsl:attribute name="href" select="concat('edit-text-header.html?id=', $text/@id, '&amp;form-action=generate-files')"/>

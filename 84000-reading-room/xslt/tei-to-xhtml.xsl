@@ -1299,6 +1299,13 @@
                         </xsl:for-each>
                         
                         <!-- Entity definition -->
+                        <xsl:if test="$view-mode[@id = ('editor', 'editor-passage')] and not($entity)">
+                            <div class="footer">
+                                <span class="label label-warning">
+                                    <xsl:value-of select="'No shared entity assigned'"/>
+                                </span>
+                            </div>
+                        </xsl:if>
                         <xsl:if test="$entity-definition and (not($entry-definition) or $entity-instance[@use-definition  eq 'both'])">
                             <div class="footer">
                                 <h4 class="heading">
@@ -1319,13 +1326,13 @@
                         <xsl:if test="$view-mode[not(@id eq 'pdf')]">
                             <div class="footer hidden-print" role="navigation" aria-label="Locations of this term in the text">
                                 
-                                <xsl:variable name="count-expressions" select="count($cached-locations)"/>
+                                <xsl:variable name="count-locations" select="count($cached-locations)"/>
                                 <h4 class="heading">
                                     <xsl:choose>
-                                        <xsl:when test="$count-expressions gt 1">
-                                            <xsl:value-of select="concat(format-number($count-expressions, '#,###'), ' passages contain this term:')"/>
+                                        <xsl:when test="$count-locations gt 1">
+                                            <xsl:value-of select="concat(format-number($count-locations, '#,###'), ' passages contain this term:')"/>
                                         </xsl:when>
-                                        <xsl:when test="$count-expressions eq 1">
+                                        <xsl:when test="$count-locations eq 1">
                                             <xsl:value-of select="'1 passage contains this term:'"/>
                                         </xsl:when>
                                         <xsl:otherwise>

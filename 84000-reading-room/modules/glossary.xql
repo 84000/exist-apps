@@ -588,8 +588,8 @@ declare function glossary:xml-response($tei as element(tei:TEI), $resource-id as
 
 declare function glossary:filter($tei as element(tei:TEI), $resource-type as xs:string, $filter as xs:string, $search as xs:string) as element(tei:gloss)* {
     
-    (: Glossary cache :)
-    let $glossary-cache := tei-content:cache($tei, false())/m:glossary-cache/m:gloss[m:location]
+    (: Glossary cache (on) :)
+    let $glossary-cache := tei-content:cache($tei, false())/m:glossary-cache/m:gloss
     
     (: Pre-defined filters :)
     let $tei-gloss :=
@@ -600,16 +600,7 @@ declare function glossary:filter($tei as element(tei:TEI), $resource-type as xs:
             return
                 $tei//tei:back//tei:div[@type eq 'glossary']//tei:gloss except $glosses-with-instances
         
-        (: Entries with no cache :)
-        else if($filter eq 'no-cache') then
-            let $glosses-with-cache := $tei//tei:back//tei:div[@type eq 'glossary']//tei:gloss/id($glossary-cache/@id)
-            return
-                $tei//tei:back//tei:div[@type eq 'glossary']//tei:gloss except $glosses-with-cache
-        
-        (: Return none :)
-        else if($filter eq 'blank-form') then
-            ()
-        
+        (: Filter by glossary type :)
         else if($filter = ('check-terms', 'check-people', 'check-places', 'check-texts')) then
             let $type :=
                 if($filter eq 'check-terms') then 'eft-term'
@@ -619,7 +610,34 @@ declare function glossary:filter($tei as element(tei:TEI), $resource-type as xs:
             let $entities-with-type := $entities:entities//m:type[@type = $type]/parent::m:entity
             return
                 $tei//tei:back//tei:div[@type eq 'glossary']//id($entities-with-type/m:instance/@id)/self::tei:gloss
-                
+        
+        (: No locations in the cache :)
+        else if($filter eq 'no-locations') then
+            let $cache-with-locations := $glossary-cache[m:location]
+            let $gloss-with-locations := $tei//tei:back//tei:div[@type eq 'glossary']//id($cache-with-locations/@id)/self::tei:gloss
+            return
+                $tei//tei:back//tei:div[@type eq 'glossary']//tei:gloss except $gloss-with-locations
+        
+        (: New locations in this version :)
+        else if($filter eq 'new-locations') then
+            let $tei-version := tei-content:version-str($tei)
+            let $glossary-cache-new-locations := $glossary-cache[m:location/@initial-version eq $tei-version]
+            return
+                $tei//tei:back//tei:div[@type eq 'glossary']//id($glossary-cache-new-locations/@id)/self::tei:gloss
+        
+        (: Locations from other version :)
+        else if($filter eq 'cache-behind') then
+            let $tei-version := tei-content:version-str($tei)
+            let $glossary-cache-current := $glossary-cache[@tei-version eq $tei-version]
+            let $glossary-cache-outdate := $glossary-cache[m:location] except $glossary-cache-current
+            return
+                $tei//tei:back//tei:div[@type eq 'glossary']//id($glossary-cache-outdate/@id)/self::tei:gloss
+        
+        
+        (: Blank form - no records required :)
+        else if($filter eq 'blank-form') then
+            ()
+        
         (: Default to all :)
         else
             $tei//tei:back//tei:div[@type eq 'glossary']//tei:gloss[@xml:id]
@@ -641,37 +659,12 @@ declare function glossary:filter($tei as element(tei:TEI), $resource-type as xs:
         else
             $tei-gloss
     
-    (: Expression filters :)
-    let $html := 
-        if($filter = ('new-expressions', 'no-expressions')) then
-            let $resource-id := tei-content:id($tei)
-            let $xml-response := glossary:xml-response($tei, $resource-id, $resource-type, 'all')
-            return
-                transform:transform(
-                    $xml-response,
-                    doc(concat($common:app-path, "/views/html/", $resource-type, ".xsl")), 
-                    <parameters/>
-                )
-        else ()
-    
     (: Return the filtered glossary-part :)
     for $gloss in $tei-gloss
     
         let $search-score := if(normalize-space($search) gt '') then ft:score($gloss) else 1
         let $sort-term := glossary:sort-term($gloss)
         
-        (: Expression locations :)
-        let $locations := 
-            if($html) then
-                glossary:locations(local:instance-locations($html, $gloss/@xml:id), $gloss/@xml:id)
-            else()
-        
-    where 
-        (: If filtering by new expressions, return where there are expression locations not in the cache :)
-        not($filter = ('new-expressions', 'no-expressions')) 
-        or ($filter eq 'new-expressions' and $locations[not(@id = $glossary-cache[@id eq $gloss/@xml:id]/m:location/@id)])
-        or ($filter eq 'no-expressions' and not($locations))
-    
     order by 
         $search-score descending,
         $sort-term
@@ -796,14 +789,21 @@ declare function glossary:cache($tei as element(tei:TEI), $refresh-locations as 
                     if ($gloss-refresh-locations) then
                     
                         let $gloss-locations := $glossary-locations/m:location[descendant::xhtml:*[@data-glossary-id eq $gloss/@xml:id]]
+                        
                         for $location in glossary:locations($gloss-locations, $gloss/@xml:id)
                         let $location-id := $location/@id
+                        let $existing-cache-location := $existing-cache/m:location[@id eq $location-id]
                         group by $location-id
                         order by $location[1]/@sort-index ! xs:integer(.)
                         return
-                            element { QName('http://read.84000.co/ns/1.0', 'location') } {
-                                attribute id { $location/@id }
-                            }
+                            if($existing-cache-location) then
+                                $existing-cache-location
+                            else
+                                element { QName('http://read.84000.co/ns/1.0', 'location') } {
+                                    attribute id { $location/@id },
+                                    (: Add initial-version so we can track what's new :)
+                                    attribute initial-version { $tei-version }
+                                }
                     
                     (: Otherwise copy the existing locations :)
                     else
