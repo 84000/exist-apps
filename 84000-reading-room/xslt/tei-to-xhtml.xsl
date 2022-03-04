@@ -1751,24 +1751,31 @@
                 <xsl:variable name="caption" select="tei:desc/text() ! normalize-space()"/>
                 <xsl:choose>
                     <xsl:when test="$caption">
-                        <div class="row sml-margin top bottom">
-                            <div class="col-sm-8 col-xs-6">
-                                <xsl:apply-templates select="$caption"/>
-                            </div>
-                            <div class="col-sm-4 col-xs-6">
-                                <img class="img-responsive pull-right">
-                                    <xsl:choose>
-                                        <xsl:when test="$view-mode[@client eq 'ebook']">
-                                            <xsl:attribute name="src" select="concat('image', @url)"/>
-                                        </xsl:when>
-                                        <xsl:otherwise>
+                        <xsl:choose>
+                            <xsl:when test="$view-mode[@client eq 'ebook']">
+                                <div class="row sml-margin top bottom">
+                                    <xsl:apply-templates select="$caption"/>
+                                    <img>
+                                        <xsl:attribute name="src" select="concat('image', @url)"/>
+                                        <xsl:attribute name="title" select="$caption"/>
+                                    </img>
+                                </div>
+                            </xsl:when>
+                            <xsl:otherwise>
+                                <div class="row sml-margin top bottom">
+                                    <div class="col-sm-8 col-xs-6">
+                                        <xsl:apply-templates select="$caption"/>
+                                    </div>
+                                    <div class="col-sm-4 col-xs-6">
+                                        <img class="img-responsive pull-right">
                                             <xsl:attribute name="src" select="concat($reading-room-path, @url)"/>
-                                        </xsl:otherwise>
-                                    </xsl:choose>
-                                    <xsl:attribute name="title" select="$caption"/>
-                                </img>
-                            </div>
-                        </div>
+                                            <xsl:attribute name="title" select="$caption"/>
+                                        </img>
+                                    </div>
+                                </div>
+                            </xsl:otherwise>
+                        </xsl:choose>
+                        
                     </xsl:when>
                     <xsl:otherwise>
                         <img class="img-responsive">
