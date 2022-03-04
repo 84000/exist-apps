@@ -30,7 +30,7 @@ declare function local:title($title as element(tei:title)?, $type as xs:string, 
     
 };
 
-declare function local:contributor($author as element(tei:author)) as element()* {
+declare function local:contributor($author as element()) as element()* {
 
     let $author-data := $author/data()
     
@@ -41,6 +41,8 @@ declare function local:contributor($author as element(tei:author)) as element()*
             'reviser'
         else if($author[@role eq 'translatorTib']) then
             'translator'
+        else if($author[@role eq 'reviser']) then
+            'reviser'
         else 
             local-name($author)
     
@@ -99,13 +101,15 @@ declare function local:contributor($author as element(tei:author)) as element()*
 declare function local:spreadsheet-data( $tengyur-data as element(m:tengyur-data) ) as element(m:tengyur-data) {
     element { QName('http://read.84000.co/ns/1.0', 'tengyur-data') } {
         for $text in $tengyur-data/m:text
+        for $toh in $text/m:toh
         return (
+            common:ws(1),
             for $element in $text/*
             return
                 if(local-name($element) eq 'title') then
-                    local:data-item($text/@text-id, $text/m:toh/@label, 'title', $element/@type, $element/@xml:lang, $element/text())
+                    local:data-item($text/@text-id, $toh/@label, 'title', $element/@type, $element/@xml:lang, $element/text())
                 else if(local-name($element) = ('author','translator','reviser')) then
-                    local:data-item($text/@text-id, $text/m:toh/@label, local-name($element), $element/@ref, $element/@xml:lang, $element/text())
+                    local:data-item($text/@text-id, $toh/@label, local-name($element), $element/@ref, $element/@xml:lang, $element/text())
                 else 
                     ()
             ,
@@ -125,8 +129,8 @@ element { QName('http://read.84000.co/ns/1.0', 'tengyur-data') } {
     },
     
     (:let $current-block := ("O1JC76301JC21614"):)
-    let $lowest-toh := 3981
-    let $highest-toh := 4085
+    let $lowest-toh := 1109
+    let $highest-toh := 1199
     
     return
     for $tei in $local:tengyur-tei(:[tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl[tei:idno[@parent-id = $current-block]]]:)
@@ -140,7 +144,7 @@ element { QName('http://read.84000.co/ns/1.0', 'tengyur-data') } {
                 local:title($titles[@type eq $type][@xml:lang eq $lang][1], $type, $lang)
                 
         let $bibls := $tei/tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl[tei:location[@work = 'UT23703']]
-        let $authors := $bibls/tei:author
+        let $authors := $bibls/tei:author | $bibls/tei:editor
         let $author-1 := $authors[1]
         let $tohs := 
             for $bibl in $bibls
@@ -148,9 +152,9 @@ element { QName('http://read.84000.co/ns/1.0', 'tengyur-data') } {
         let $tohs-1 := $tohs[1]
         let $toh-number := $tohs-1/@number[. gt ''] ! xs:integer(.)
     
-    where 
+    (:where 
         $toh-number ge $lowest-toh
-        and $toh-number le $highest-toh
+        and $toh-number le $highest-toh:)
         (:and count($bibls) gt 1:)
     
     order by 
@@ -159,7 +163,8 @@ element { QName('http://read.84000.co/ns/1.0', 'tengyur-data') } {
         $tohs-1/@chapter-number[. gt ''] ! xs:integer(.),
         $tohs-1/@chapter-letter
     
-    return 
+    return (
+        common:ws(1),
         element { QName('http://read.84000.co/ns/1.0', 'text') } {
             
             attribute text-id { tei-content:id($tei) },
@@ -189,6 +194,7 @@ element { QName('http://read.84000.co/ns/1.0', 'tengyur-data') } {
             return
                 local:contributor($author)
         }
+    )
 }
 
-return (:local:spreadsheet-data($tengyur-data):)$tengyur-data
+return local:spreadsheet-data($tengyur-data)(:$tengyur-data:)

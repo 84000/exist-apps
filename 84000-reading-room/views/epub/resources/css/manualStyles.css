@@ -348,7 +348,7 @@ br+.rw > p,
     font-size: .75em;
     line-height: 1.5;
     padding-top: .25em;
-    vertical-align: baseline;
+    /* vertical-align: baseline; */
     overflow-wrap: break-word;
 }
 
@@ -453,15 +453,16 @@ br+.rw > p,
 }
 
 /* Images */
-img.illustration {
+img {
     display: block;
-    page-break-before: always;
     max-width: 100%;
     max-height: 100%;
+}
+img.illustration {
+    page-break-before: always;
     margin: 0 auto;
 }
 img.divider {
-    display: block;
     margin: 30pt auto 30pt auto;
     page-break-after: always;
 }
@@ -601,7 +602,7 @@ img.logo-84000 {
     margin-bottom: .25em;
 }
 .glossary-item .footer .heading {
-    font-size: .75em;
+    font-size: .9em;
     text-align: left;
     font-weight: bold;
 }

@@ -1738,7 +1738,7 @@
                         <audio controls="controls">
                             <xsl:attribute name="title" select="tei:desc"/>
                             <source src="horse.mp3" type="audio/mpeg">
-                                <xsl:attribute name="src" select="@url"/>
+                                <xsl:attribute name="src" select="concat($reading-room-path, @url)"/>
                             </source>
                             Your browser does not support the <code>audio</code> element.
                         </audio>
@@ -1747,7 +1747,7 @@
                 </xsl:call-template>
             </xsl:when>
             
-            <xsl:when test="@mimeType eq 'image/png' and $view-mode[@client = ('browser', 'ajax', 'pdf')]">
+            <xsl:when test="@mimeType eq 'image/png' and $view-mode[@client = ('browser', 'ajax', 'pdf', 'ebook')]">
                 <xsl:variable name="caption" select="tei:desc/text() ! normalize-space()"/>
                 <xsl:choose>
                     <xsl:when test="$caption">
@@ -1757,7 +1757,14 @@
                             </div>
                             <div class="col-sm-4 col-xs-6">
                                 <img class="img-responsive pull-right">
-                                    <xsl:attribute name="src" select="@url"/>
+                                    <xsl:choose>
+                                        <xsl:when test="$view-mode[@client eq 'ebook']">
+                                            <xsl:attribute name="src" select="concat('image', @url)"/>
+                                        </xsl:when>
+                                        <xsl:otherwise>
+                                            <xsl:attribute name="src" select="concat($reading-room-path, @url)"/>
+                                        </xsl:otherwise>
+                                    </xsl:choose>
                                     <xsl:attribute name="title" select="$caption"/>
                                 </img>
                             </div>

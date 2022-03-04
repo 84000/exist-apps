@@ -94,245 +94,249 @@
                         
                     </div>
                     
-                    <hr class="sml-margin"/>
-                    
-                    <!-- Status row -->
-                    <div class="center-vertical full-width">
-                        
-                        <!-- Version / status -->
-                        <div>
-                            <ul class="list-inline">
-                                <xsl:if test="$text[@tei-version]">
-                                    
-                                    <li>
-                                        
-                                        <span class="small">
-                                            <xsl:value-of select="'Current TEI version: '"/>
-                                        </span>
-                                        
-                                        <span class="label label-default">
-                                            <xsl:value-of select="$text/@tei-version"/>
-                                        </span>
-                                        
-                                    </li>
-                                    
-                                    <xsl:variable name="glossary-status" select="/m:response/m:entities/m:related/m:text[@id = $request-resource-id]/@glossary-status"/>
-                                    <li>
-                                        
-                                        <span class="small">
-                                            <xsl:value-of select="'Glossary status: '"/>
-                                        </span>
-                                        
-                                        <span class="label label-default">
-                                            <xsl:if test="$glossary-status">
-                                                <xsl:attribute name="class" select="'label label-danger'"/>
-                                            </xsl:if>
-                                            <xsl:value-of select="concat(format-number($glossary/@total-records, '#,###'), if($glossary/@total-records ! xs:integer(.) eq 1) then ' entry' else ' entries')"/>
-                                        </span>
-                                        
-                                        <span class="label label-default">
-                                            <xsl:choose>
-                                                <xsl:when test="$glossary-status">
-                                                    <xsl:attribute name="class" select="'label label-danger'"/>
-                                                    <xsl:value-of select="$glossary-status"/>
-                                                </xsl:when>
-                                                <xsl:otherwise>
-                                                    <xsl:value-of select="'included'"/>
-                                                </xsl:otherwise>
-                                            </xsl:choose>
-                                        </span>
-                                        
-                                    </li>
-                                    
-                                    <li>
-                                        
-                                        <span class="small">
-                                            <xsl:value-of select="'Cache: '"/>
-                                        </span>
-                                        
-                                        <xsl:if test="$cache-glosses-new-locations">
-                                            <span class="label label-success">
-                                                <a>
-                                                    <xsl:attribute name="href">
-                                                        <xsl:call-template name="link-href">
-                                                            <xsl:with-param name="filter" select="'new-locations'"/>
-                                                        </xsl:call-template>
-                                                    </xsl:attribute>
-                                                    <xsl:value-of select="concat(count($cache-glosses-new-locations), ' changed')"/>
-                                                </a>
-                                            </span>
-                                        </xsl:if>
-                                        
-                                        <xsl:choose>
-                                            <xsl:when test="count($cache-glosses-behind) gt 0">
-                                                <span class="label label-warning">
-                                                    <a>
-                                                        <xsl:attribute name="href">
-                                                            <xsl:call-template name="link-href">
-                                                                <xsl:with-param name="filter" select="'cache-behind'"/>
-                                                            </xsl:call-template>
-                                                        </xsl:attribute>
-                                                        <xsl:value-of select="concat(count($cache-glosses-behind), ' behind'(:, $text/@tei-version:))"/>
-                                                    </a>
-                                                </span>
-                                            </xsl:when>
-                                            <xsl:when test="count($glossary-cache/m:gloss) eq 0">
-                                                <span class="label label-default">
-                                                    <xsl:value-of select="'No glossary cache'"/>
-                                                </span>
-                                            </xsl:when>
-                                            <xsl:otherwise>
-                                                <span class="label label-default">
-                                                    <xsl:value-of select="'All on the current version'"/>
-                                                </span>
-                                            </xsl:otherwise>
-                                        </xsl:choose>
-                                        
-                                        <xsl:if test="$glossary-cache/m:gloss[not(m:location)]">
-                                            <span class="label label-danger">
-                                                <a>
-                                                    <xsl:attribute name="href">
-                                                        <xsl:call-template name="link-href">
-                                                            <xsl:with-param name="filter" select="'no-locations'"/>
-                                                        </xsl:call-template>
-                                                    </xsl:attribute>
-                                                    <xsl:value-of select="concat(count($glossary-cache/m:gloss[not(m:location)]), ' missing')"/>
-                                                </a>
-                                            </span>
-                                        </xsl:if>
-                                        
-                                    </li>
-                                    
-                                    <!-- Auto-assign entities -->
-                                    <xsl:variable name="entries-without-entities" select="xs:integer($glossary/@total-records) - xs:integer($glossary/@records-assigned-entities)"/>
-                                    <xsl:if test="$entries-without-entities gt 0">
-                                        <li>
-                                            <span class="small">
-                                                <xsl:value-of select="'Entities: '"/>
-                                            </span>
-                                            <span class="label label-danger">
-                                                <a>
-                                                    <xsl:attribute name="href">
-                                                        <xsl:call-template name="link-href">
-                                                            <xsl:with-param name="filter" select="'missing-entities'"/>
-                                                        </xsl:call-template>
-                                                    </xsl:attribute>
-                                                    <xsl:value-of select="concat(format-number($entries-without-entities, '#,###'), if($entries-without-entities eq 1) then ' entry has no entity' else ' entries have no entity')"/>
-                                                </a>
-                                            </span>
-                                        </li>
-                                    </xsl:if>
-                                    
-                                </xsl:if>
-                            </ul>
-                        </div>
-                        
-                        <!-- Links to more functions -->
-                        <xsl:if test="not($request-filter eq 'blank-form')">
-                            <div>
-                                <ul class="list-inline inline-dots pull-right">
-                                    
-                                    <xsl:choose>
-                                        
-                                        <xsl:when test="not(scheduler:job)">
-                                            
-                                            <!-- Show batch update options -->
-                                            <li>
-                                                <a href="#batchUpdateOptions" role="button" data-toggle="collapse" aria-expanded="false" aria-controls="batchUpdateOptions" class="small underline">
-                                                    <xsl:value-of select="'Batch update options'"/>
-                                                </a>
-                                            </li>
-                                            
-                                            <!-- Add new entry -->
-                                            <li>
-                                                <xsl:call-template name="link">
-                                                    <xsl:with-param name="filter" select="'blank-form'"/>
-                                                    <xsl:with-param name="search" select="''"/>
-                                                    <xsl:with-param name="link-text" select="'Add a new entry'"/>
-                                                    <xsl:with-param name="link-class" select="'small underline'"/>
-                                                </xsl:call-template>
-                                            </li>
-                                            
-                                        </xsl:when>
-                                        
-                                        <!-- Disable if processing -->
-                                        <xsl:otherwise>
-                                            <li>
-                                                <span class="label label-danger">
-                                                    <xsl:value-of select="'Job running, please wait...'"/>
-                                                </span>
-                                            </li>
-                                        </xsl:otherwise>
-                                        
-                                    </xsl:choose>
-                                    
-                                </ul>
-                            </div>
-                        </xsl:if>
-                        
-                    </div>
-                    
-                    <!-- Batch update options -->
-                    <xsl:if test="not(scheduler:job)">
-                        <div id="batchUpdateOptions" class="collapse">
-                            
-                            <div class="well top-margin">
-                                <ul class="no-bottom-margin">
-                                    
-                                    <!-- Cache locations -->
-                                    <xsl:if test="count($cache-glosses-behind) gt 0 and count($cache-glosses-behind) lt count($glossary-cache/m:gloss)">
-                                        <li>
-                                            <a target="_self" class="underline small" data-loading="Caching locations...">
-                                                <xsl:attribute name="href" select="concat('edit-glossary.html?resource-id=', $request-resource-id, '&amp;resource-type=', $request-resource-type, '&amp;form-action=cache-locations-version&amp;filter=new-locations')"/>
-                                                <xsl:value-of select="concat('Cache locations of ', count($cache-glosses-behind),' entries that are behind the current version')"/>
-                                            </a>
-                                        </li>
-                                    </xsl:if>
-                                    
-                                    <li>
-                                        
-                                        <a target="_self" class="underline small" data-loading="Caching locations...">
-                                            <xsl:attribute name="href" select="concat('edit-glossary.html?resource-id=', $request-resource-id, '&amp;resource-type=', $request-resource-type, '&amp;form-action=cache-locations-all&amp;filter=new-locations')"/>
-                                            <xsl:value-of select="'Re-cache locations of all entries'"/>
-                                        </a>
-                                        
-                                        <xsl:if test="$glossary-cache[@seconds-to-build]">
-                                            <xsl:choose>
-                                                <xsl:when test="$cache-slow">
-                                                    <span class="label label-warning">
-                                                        <xsl:value-of select="concat('previously this took: ', format-number(($glossary-cache/@seconds-to-build ! xs:decimal(.) div 60), '#,##0.##'), ' minutes')"/>
-                                                    </span>
-                                                </xsl:when>
-                                                <xsl:otherwise>
-                                                    <span class="label label-info">
-                                                        <xsl:value-of select="concat('previously this took: ', format-number($glossary-cache/@seconds-to-build, '#,##0.##'), ' seconds')"/>
-                                                    </span>
-                                                </xsl:otherwise>
-                                            </xsl:choose>
-                                        </xsl:if>
-                                    </li>
-                                    
-                                    <!-- Auto-assign entities -->
-                                    <xsl:if test="$glossary/@total-records ! xs:integer(.) gt $glossary/@records-assigned-entities ! xs:integer(.)">
-                                        <li>
-                                            <a target="_self" class="underline small" data-loading="Auto-assigning entities...">
-                                                <xsl:attribute name="href" select="concat('edit-glossary.html?resource-id=', $request-resource-id, '&amp;resource-type=', $request-resource-type, '&amp;form-action=merge-all-entities&amp;filter=requires-attention')"/>
-                                                <xsl:value-of select="'Auto-assign entries without entities'"/>
-                                            </a>
-                                        </li>
-                                    </xsl:if>
-                                    
-                                </ul>
-                            </div>
-                            
-                        </div>
-                    </xsl:if>
-                    
-                    <!-- Filter / Pagination -->
                     <xsl:if test="not($request-filter eq 'blank-form')">
                         
                         <hr class="sml-margin"/>
                         
+                        <!-- Status row -->
+                        <div class="center-vertical full-width">
+                            
+                            <!-- Version / status -->
+                            <div>
+                                <ul class="list-inline">
+                                    <xsl:if test="$text[@tei-version]">
+                                        
+                                        <li>
+                                            
+                                            <span class="small">
+                                                <xsl:value-of select="'Current TEI version: '"/>
+                                            </span>
+                                            
+                                            <span class="label label-default">
+                                                <xsl:value-of select="$text/@tei-version"/>
+                                            </span>
+                                            
+                                        </li>
+                                        
+                                        <xsl:variable name="glossary-status" select="/m:response/m:entities/m:related/m:text[@id = $request-resource-id]/@glossary-status"/>
+                                        <li>
+                                            
+                                            <span class="small">
+                                                <xsl:value-of select="'Glossary status: '"/>
+                                            </span>
+                                            
+                                            <span class="label label-default">
+                                                <xsl:if test="$glossary-status">
+                                                    <xsl:attribute name="class" select="'label label-danger'"/>
+                                                </xsl:if>
+                                                <xsl:value-of select="concat(format-number($glossary/@total-records, '#,###'), if($glossary/@total-records ! xs:integer(.) eq 1) then ' entry' else ' entries')"/>
+                                            </span>
+                                            
+                                            <span class="label label-default">
+                                                <xsl:choose>
+                                                    <xsl:when test="$glossary-status">
+                                                        <xsl:attribute name="class" select="'label label-danger'"/>
+                                                        <xsl:value-of select="$glossary-status"/>
+                                                    </xsl:when>
+                                                    <xsl:otherwise>
+                                                        <xsl:value-of select="'included'"/>
+                                                    </xsl:otherwise>
+                                                </xsl:choose>
+                                            </span>
+                                            
+                                        </li>
+                                        
+                                        <li>
+                                            
+                                            <span class="small">
+                                                <xsl:value-of select="'Cache: '"/>
+                                            </span>
+                                            
+                                            <xsl:if test="$cache-glosses-new-locations">
+                                                <span class="label label-success">
+                                                    <a>
+                                                        <xsl:attribute name="href">
+                                                            <xsl:call-template name="link-href">
+                                                                <xsl:with-param name="filter" select="'new-locations'"/>
+                                                            </xsl:call-template>
+                                                        </xsl:attribute>
+                                                        <xsl:attribute name="data-loading" select="'Loading...'"/>
+                                                        <xsl:value-of select="concat(count($cache-glosses-new-locations), ' changed')"/>
+                                                    </a>
+                                                </span>
+                                            </xsl:if>
+                                            
+                                            <xsl:choose>
+                                                <xsl:when test="count($cache-glosses-behind) gt 0">
+                                                    <span class="label label-warning">
+                                                        <a>
+                                                            <xsl:attribute name="href">
+                                                                <xsl:call-template name="link-href">
+                                                                    <xsl:with-param name="filter" select="'cache-behind'"/>
+                                                                </xsl:call-template>
+                                                            </xsl:attribute>
+                                                            <xsl:attribute name="data-loading" select="'Loading...'"/>
+                                                            <xsl:value-of select="concat(count($cache-glosses-behind), ' behind'(:, $text/@tei-version:))"/>
+                                                        </a>
+                                                    </span>
+                                                </xsl:when>
+                                                <xsl:when test="count($glossary-cache/m:gloss) eq 0">
+                                                    <span class="label label-default">
+                                                        <xsl:value-of select="'No glossary cache'"/>
+                                                    </span>
+                                                </xsl:when>
+                                                <xsl:otherwise>
+                                                    <span class="label label-default">
+                                                        <xsl:value-of select="'0 behind'"/>
+                                                    </span>
+                                                </xsl:otherwise>
+                                            </xsl:choose>
+                                            
+                                            <xsl:if test="$glossary-cache/m:gloss[not(m:location)]">
+                                                <span class="label label-danger">
+                                                    <a>
+                                                        <xsl:attribute name="href">
+                                                            <xsl:call-template name="link-href">
+                                                                <xsl:with-param name="filter" select="'no-locations'"/>
+                                                            </xsl:call-template>
+                                                        </xsl:attribute>
+                                                        <xsl:attribute name="data-loading" select="'Loading...'"/>
+                                                        <xsl:value-of select="concat(count($glossary-cache/m:gloss[not(m:location)]), ' missing')"/>
+                                                    </a>
+                                                </span>
+                                            </xsl:if>
+                                            
+                                        </li>
+                                        
+                                        <!-- Auto-assign entities -->
+                                        <xsl:variable name="entries-without-entities" select="xs:integer($glossary/@total-records) - xs:integer($glossary/@records-assigned-entities)"/>
+                                        <xsl:if test="$entries-without-entities gt 0">
+                                            <li>
+                                                <span class="small">
+                                                    <xsl:value-of select="'Entities: '"/>
+                                                </span>
+                                                <span class="label label-danger">
+                                                    <a>
+                                                        <xsl:attribute name="href">
+                                                            <xsl:call-template name="link-href">
+                                                                <xsl:with-param name="filter" select="'missing-entities'"/>
+                                                            </xsl:call-template>
+                                                        </xsl:attribute>
+                                                        <xsl:attribute name="data-loading" select="'Loading...'"/>
+                                                        <xsl:value-of select="concat(format-number($entries-without-entities, '#,###'), ' no entity')"/>
+                                                    </a>
+                                                </span>
+                                            </li>
+                                        </xsl:if>
+                                        
+                                    </xsl:if>
+                                </ul>
+                            </div>
+                            
+                            <!-- Links to more functions -->
+                            <xsl:if test="not($request-filter eq 'blank-form')">
+                                <div>
+                                    <ul class="list-inline inline-dots pull-right">
+                                        
+                                        <xsl:choose>
+                                            
+                                            <xsl:when test="not(scheduler:job)">
+                                                
+                                                <!-- Show batch update options -->
+                                                <li>
+                                                    <a href="#batchUpdateOptions" role="button" data-toggle="collapse" aria-expanded="false" aria-controls="batchUpdateOptions" class="small underline">
+                                                        <xsl:value-of select="'Batch update options'"/>
+                                                    </a>
+                                                </li>
+                                                
+                                                <!-- Add new entry -->
+                                                <li>
+                                                    <xsl:call-template name="link">
+                                                        <xsl:with-param name="filter" select="'blank-form'"/>
+                                                        <xsl:with-param name="search" select="''"/>
+                                                        <xsl:with-param name="link-text" select="'Add a new entry'"/>
+                                                        <xsl:with-param name="link-class" select="'small underline'"/>
+                                                    </xsl:call-template>
+                                                </li>
+                                                
+                                            </xsl:when>
+                                            
+                                            <!-- Disable if processing -->
+                                            <xsl:otherwise>
+                                                <li>
+                                                    <span class="label label-danger">
+                                                        <xsl:value-of select="'Job running, please wait...'"/>
+                                                    </span>
+                                                </li>
+                                            </xsl:otherwise>
+                                            
+                                        </xsl:choose>
+                                        
+                                    </ul>
+                                </div>
+                            </xsl:if>
+                            
+                        </div>
+                        
+                        <!-- Batch update options -->
+                        <xsl:if test="not(scheduler:job)">
+                            <div id="batchUpdateOptions" class="collapse">
+                                
+                                <div class="well top-margin">
+                                    <ul class="no-bottom-margin">
+                                        
+                                        <!-- Cache locations -->
+                                        <xsl:if test="count($cache-glosses-behind) gt 0 and count($cache-glosses-behind) lt count($glossary-cache/m:gloss)">
+                                            <li>
+                                                <a target="_self" class="underline small" data-loading="Caching locations...">
+                                                    <xsl:attribute name="href" select="concat('edit-glossary.html?resource-id=', $request-resource-id, '&amp;resource-type=', $request-resource-type, '&amp;form-action=cache-locations-version&amp;filter=new-locations')"/>
+                                                    <xsl:value-of select="concat('Cache locations of ', count($cache-glosses-behind),' entries that are behind the current version')"/>
+                                                </a>
+                                            </li>
+                                        </xsl:if>
+                                        
+                                        <li>
+                                            
+                                            <a target="_self" class="underline small" data-loading="Caching locations...">
+                                                <xsl:attribute name="href" select="concat('edit-glossary.html?resource-id=', $request-resource-id, '&amp;resource-type=', $request-resource-type, '&amp;form-action=cache-locations-all&amp;filter=new-locations')"/>
+                                                <xsl:value-of select="'Re-cache locations of all entries'"/>
+                                            </a>
+                                            
+                                            <xsl:if test="$glossary-cache[@seconds-to-build]">
+                                                <xsl:choose>
+                                                    <xsl:when test="$cache-slow">
+                                                        <span class="label label-warning">
+                                                            <xsl:value-of select="concat('previously this took: ', format-number(($glossary-cache/@seconds-to-build ! xs:decimal(.) div 60), '#,##0.##'), ' minutes')"/>
+                                                        </span>
+                                                    </xsl:when>
+                                                    <xsl:otherwise>
+                                                        <span class="label label-info">
+                                                            <xsl:value-of select="concat('previously this took: ', format-number($glossary-cache/@seconds-to-build, '#,##0.##'), ' seconds')"/>
+                                                        </span>
+                                                    </xsl:otherwise>
+                                                </xsl:choose>
+                                            </xsl:if>
+                                        </li>
+                                        
+                                        <!-- Auto-assign entities -->
+                                        <xsl:if test="$glossary/@total-records ! xs:integer(.) gt $glossary/@records-assigned-entities ! xs:integer(.)">
+                                            <li>
+                                                <a target="_self" class="underline small" data-loading="Auto-assigning entities...">
+                                                    <xsl:attribute name="href" select="concat('edit-glossary.html?resource-id=', $request-resource-id, '&amp;resource-type=', $request-resource-type, '&amp;form-action=merge-all-entities&amp;filter=requires-attention')"/>
+                                                    <xsl:value-of select="'Auto-assign entries without entities'"/>
+                                                </a>
+                                            </li>
+                                        </xsl:if>
+                                        
+                                    </ul>
+                                </div>
+                                
+                            </div>
+                        </xsl:if>
+                        
+                        <hr class="sml-margin"/>
+                        
+                        <!-- Filter / Pagination -->
                         <div class="center-vertical full-width">
                             
                             <div>
@@ -1264,11 +1268,11 @@
                             
                             </xsl:for-each>
                         </xsl:when>
-                        <xsl:otherwise>
+                        <xsl:when test="not($request-filter eq 'blank-form')">
                             <p class="text-muted italic">
                                 <xsl:value-of select="'No matching glossary entries'"/>
                             </p>
-                        </xsl:otherwise>
+                        </xsl:when>
                     </xsl:choose>
                     
                 </xsl:with-param>

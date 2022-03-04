@@ -405,7 +405,7 @@ return
                 <forward url="{ concat($common:data-collection, $exist:path) }"/>
             </dispatch>
         
-        (: Audio :)
+        (: Audio / images :)
         else if ($collection-path = ("audio", "images")) then
             <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
                 <forward url="{ concat($common:data-collection, $exist:path) }"/>

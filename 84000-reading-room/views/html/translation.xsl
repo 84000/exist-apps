@@ -306,7 +306,7 @@
                                             </tr>
                                         </xsl:for-each>
                                         
-                                        <xsl:if test="$app-path">
+                                        <xsl:if test="m:translation[@status eq '1'] and $app-path">
                                             <xsl:variable name="app-href" select="concat($app-path, '/translation/', $toh-key, '.html')"/>
                                             <tr>
                                                 <td class="icon">
@@ -947,6 +947,21 @@
                                 </xsl:call-template>
                             </a>
                         </xsl:for-each>
+                        
+                        <xsl:if test="m:translation[@status eq '1'] and $app-path">
+                            <a target="_blank">
+                                <xsl:attribute name="title">
+                                    <xsl:call-template name="download-label">
+                                        <xsl:with-param name="type" select="'app'"/>
+                                    </xsl:call-template>
+                                </xsl:attribute>
+                                <xsl:attribute name="href" select="concat($app-path, '/translation/', $toh-key, '.html')"/>
+                                <xsl:attribute name="class" select="'btn-round log-click'"/>
+                                <xsl:call-template name="download-icon">
+                                    <xsl:with-param name="type" select="'app'"/>
+                                </xsl:call-template>
+                            </a>
+                        </xsl:if>
                         
                     </nav>
                     

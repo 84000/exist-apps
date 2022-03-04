@@ -43,11 +43,18 @@ let $entries := (
                 <item id="fontStyles" href="css/fontStyles.css" media-type="text/css"/>
                 <item id="logo" href="image/logo-stacked.png" media-type="image/png"/>
                 <item id="creative-commons-logo" href="image/CC_logo.png" media-type="image/png"/>
-                <item id="tibetan-font" href="fonts/Jomolhari.ttf" media-type="application/vnd.ms-opentype"/>
+                {
+                for $image-url at $index in distinct-values($data/m:response/m:translation/m:part//tei:media[@mimeType eq 'image/png']/@url)
+                return
+                    <item id="content-image-{$index}" href="image{$image-url}" media-type="image/png"/>
+                }
+                <item id="tibetan-font" href="fonts/Jomolhari-Regular.ttf" media-type="application/vnd.ms-opentype"/>
                 <item id="english-font-regular" href="fonts/IndUni-P-Regular.otf" media-type="application/vnd.ms-opentype"/>
                 <item id="english-font-bold" href="fonts/IndUni-P-Bold.otf" media-type="application/vnd.ms-opentype"/>
                 <item id="english-font-italic" href="fonts/IndUni-P-Italic.otf" media-type="application/vnd.ms-opentype"/>
                 <item id="english-font-bold-italic" href="fonts/IndUni-P-BoldItalic.otf" media-type="application/vnd.ms-opentype"/>
+                <item id="japanese-font" href="fonts/NotoSansJP-Regular.otf" media-type="application/vnd.ms-opentype"/>
+                <item id="chinese-font" href="fonts/NotoSansTC-Regular.otf" media-type="application/vnd.ms-opentype"/>
                 <item id="titles" href="titles.xhtml" media-type="application/xhtml+xml"/>
                 <item id="imprint" href="imprint.xhtml" media-type="application/xhtml+xml"/>
                 <item id="contents" href="contents.xhtml" media-type="application/xhtml+xml" properties="nav"/>
@@ -92,11 +99,17 @@ let $entries := (
     <entry name="OEBPS/css/fontStyles.css" type="binary">{ common:epub-resource('css/fontStyles.css') }</entry>,
     <entry name="OEBPS/image/logo-stacked.png" type="binary">{ common:epub-resource('image/logo-stacked.png') }</entry>,
     <entry name="OEBPS/image/CC_logo.png" type="binary">{ common:epub-resource('image/CC_logo.png') }</entry>,
+    for $image-url in distinct-values($data/m:response/m:translation/m:part//tei:media[@mimeType eq 'image/png']/@url)
+    return
+        <entry name="OEBPS/image{ $image-url }" type="binary">{ util:binary-doc(xs:anyURI(concat($common:data-path, $image-url))) }</entry>
+    ,
     <entry name="OEBPS/fonts/Jomolhari-Regular.ttf" type="binary">{ common:epub-resource('fonts/Jomolhari-Regular.ttf') }</entry>,
     <entry name="OEBPS/fonts/IndUni-P-Regular.otf" type="binary">{ common:epub-resource('fonts/IndUni-P-84000-Regular.otf') }</entry>,
     <entry name="OEBPS/fonts/IndUni-P-Bold.otf" type="binary">{ common:epub-resource('fonts/IndUni-P-Bold.otf') }</entry>,
     <entry name="OEBPS/fonts/IndUni-P-Italic.otf" type="binary">{ common:epub-resource('fonts/IndUni-P-Italic.otf') }</entry>,
     <entry name="OEBPS/fonts/IndUni-P-BoldItalic.otf" type="binary">{ common:epub-resource('fonts/IndUni-P-BoldItalic.otf') }</entry>,
+    <entry name="OEBPS/fonts/NotoSansJP-Regular.otf" type="binary">{ common:epub-resource('fonts/NotoSansJP-Regular.otf') }</entry>,
+    <entry name="OEBPS/fonts/NotoSansTC-Regular.otf" type="binary">{ common:epub-resource('fonts/NotoSansTC-Regular.otf') }</entry>,
     <entry name="OEBPS/titles.xhtml" type="xml">{ transform:transform($data, doc('xslt/titles.xsl'), ()) }</entry>,
     <entry name="OEBPS/imprint.xhtml" type="xml">{ transform:transform($data, doc('xslt/imprint.xsl'), ()) }</entry>,
     <entry name="OEBPS/contents.xhtml" type="xml">{ transform:transform($data, doc('xslt/contents.xsl'), ()) }</entry>,
