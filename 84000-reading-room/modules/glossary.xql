@@ -781,7 +781,7 @@ declare function glossary:cache($tei as element(tei:TEI), $refresh-locations as 
             let $cache-glosses := 
                 for $gloss at $index in $tei-glossary-sorted
                 let $sort-term := glossary:sort-term($gloss)
-                let $existing-cache := $glossary-cache/m:gloss[range:eq(@id, $gloss/@xml:id)]
+                let $existing-cache := $glossary-cache/m:gloss[range:eq(@id, $gloss/@xml:id)][1]
                 let $gloss-refresh-locations := $gloss[@xml:id = $refresh-locations]
                 let $cache-locations :=
                 

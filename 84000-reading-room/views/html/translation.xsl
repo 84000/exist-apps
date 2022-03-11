@@ -595,7 +595,7 @@
                             </xsl:when>
                             <xsl:otherwise>
                                 <!-- .show displays content expanded -->
-                                <xsl:value-of select="'show'"/>
+                                <xsl:value-of select="'show delay-render'"/>
                             </xsl:otherwise>
                         </xsl:choose>
                         

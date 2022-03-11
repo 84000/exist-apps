@@ -22,7 +22,7 @@ let $resource-id := request:get-parameter('resource-id', '')
 let $resource-suffix := request:get-parameter('resource-suffix', '')
 let $view-mode := request:get-parameter('view-mode', 'default')
 let $archive-path := request:get-parameter('archive-path', ())
-let $passage-id := request:get-parameter('part', 'none')
+let $passage-id := request:get-parameter('part', 'none') ! replace(., '^(end\-notes|end-note\-[a-zA-Z0-9\-]+)$', 'end-notes')
 
 (: Validate the resource-id :)
 let $tei := tei-content:tei($resource-id, 'translation', $archive-path)

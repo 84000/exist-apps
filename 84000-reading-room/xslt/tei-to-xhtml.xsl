@@ -532,7 +532,7 @@
                     </xsl:otherwise>
                 </xsl:choose>
             </xsl:with-param>
-            
+                        
         </xsl:call-template>
     
     </xsl:template>
@@ -1156,7 +1156,6 @@
                     </xsl:call-template>
                 </xsl:variable>
                 
-                <!-- Potential optimisation: only show glossaries with expressions in the text (Could be slower to filter them than to just parse them) -->
                 <div class="rw glossary-item">
                     
                     <xsl:attribute name="id" select="$glossary-item/@xml:id"/>
@@ -1811,13 +1810,16 @@
                         <xsl:value-of select="'rw'"/>
                         <xsl:value-of select="concat('rw-', $row-type)"/>
                         <!-- .rw-first specifies no preceding siblings -->
-                        <xsl:if test="count(preceding-sibling::tei:*) eq 0">
-                            <xsl:value-of select="'rw-first'"/>
-                            <!-- .rw-no-head specifies no preceding siblings -->
-                            <xsl:if test="parent::tei:div">
-                                <xsl:value-of select="'rw-first-in-section'"/>
-                            </xsl:if>
-                        </xsl:if>
+                        <xsl:variable name="count-previous-siblings" select="count(preceding-sibling::tei:*)"/>
+                        <xsl:choose>
+                            <xsl:when test="$count-previous-siblings eq 0">
+                                <xsl:value-of select="'rw-first'"/>
+                                <!-- .rw-no-head specifies no preceding siblings -->
+                                <xsl:if test="parent::tei:div">
+                                    <xsl:value-of select="'rw-first-in-section'"/>
+                                </xsl:if>
+                            </xsl:when>
+                        </xsl:choose>
                     </xsl:with-param>
                 </xsl:call-template>
                 

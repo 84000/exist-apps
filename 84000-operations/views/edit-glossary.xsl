@@ -385,7 +385,7 @@
                                                             <xsl:value-of select="'Newly cached'"/>
                                                         </option>
                                                     </optgroup>
-                                                    <optgroup label="Filter by type:">
+                                                    <optgroup label="Filter by entity:">
                                                         <option value="check-entities">
                                                             <xsl:if test="$request-filter eq 'check-entities'">
                                                                 <xsl:attribute name="selected" select="'selected'"/>
@@ -606,11 +606,11 @@
                                     </xsl:if>
                                     
                                     <!-- Entity definition setting -->
-                                    <xsl:if test="$loop-glossary-entity/m:content[@type eq 'glossary-definition'] and $loop-glossary-instance[@use-definition eq 'both']">
+                                    <xsl:if test="$loop-glossary-entity/m:content[@type eq 'glossary-definition'] and (not($loop-glossary/m:definition[node()]) or $loop-glossary-instance[@use-definition eq 'both'])">
                                         <div class="sml-margin bottom">
                                             <p>
                                                 <span class="label label-info">
-                                                    <xsl:value-of select="'Output will also include the entity definition'"/>
+                                                    <xsl:value-of select="'Output will include the entity definition'"/>
                                                 </span>
                                             </p>
                                         </div>
