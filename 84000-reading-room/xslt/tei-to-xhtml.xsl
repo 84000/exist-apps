@@ -3356,10 +3356,15 @@
                 </xsl:variable>
                 
                 <xsl:element name="term" namespace="http://read.84000.co/ns/1.0">
+                    <xsl:variable name="term-entry-id" select="parent::m:entry/@id"/>
+                    <xsl:attribute name="xml:lang" select="@xml:lang"/>
                     <xsl:attribute name="word-count" select="count(tokenize($match-text, '\s+'))"/>
                     <xsl:attribute name="letter-count" select="string-length($match-text)"/>
                     <xsl:if test="matches($match-text, $match-regex, 'i')">
                         <xsl:attribute name="matches" select="true()"/>
+                    </xsl:if>
+                    <xsl:if test="$entity/m:instance[@id eq $term-entry-id][m:flag]">
+                        <xsl:attribute name="flagged" select="true()"/>
                     </xsl:if>
                     <xsl:value-of select="data()"/>
                 </xsl:element>

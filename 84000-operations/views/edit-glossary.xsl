@@ -1948,7 +1948,7 @@
                 <xsl:when test="$cache-location-status eq 'behind'">
                     <div>
                         <span class="label label-warning">
-                            <xsl:value-of select="concat('Cached in ', $glossary-cache-gloss/@tei-version)"/>
+                            <xsl:value-of select="concat('Cached in ', ($glossary-cache-gloss/@tei-version, 'previous version')[1])"/>
                         </span>
                     </div>
                 </xsl:when>

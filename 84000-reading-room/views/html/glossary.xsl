@@ -733,20 +733,24 @@
                                                                 
                                                                 <ul class="list-unstyled">
                                                                     <xsl:for-each select="$entity-data/m:term">
-                                                                        <li class="small">
-                                                                            <xsl:choose>
-                                                                                <xsl:when test="@matches">
-                                                                                    <mark>
-                                                                                        <xsl:value-of select="text()"/>
-                                                                                    </mark>
-                                                                                </xsl:when>
-                                                                                <xsl:otherwise>
-                                                                                    <xsl:value-of select="text()"/>
-                                                                                </xsl:otherwise>
-                                                                            </xsl:choose>
+                                                                        <li>
+                                                                            <span>
+                                                                                <xsl:call-template name="class-attribute">
+                                                                                    <xsl:with-param name="base-classes" select="'small'"/>
+                                                                                    <xsl:with-param name="html-classes" as="xs:string*">
+                                                                                        <xsl:if test="@matches">
+                                                                                            <xsl:value-of select="'mark'"/>
+                                                                                        </xsl:if>
+                                                                                        <xsl:if test="@flagged">
+                                                                                            <xsl:value-of select="'interpolation'"/>
+                                                                                        </xsl:if>
+                                                                                    </xsl:with-param>
+                                                                                    <xsl:with-param name="lang" select="@xml:lang"/>
+                                                                                </xsl:call-template>
+                                                                                <xsl:value-of select="text()"/>
+                                                                            </span>
                                                                         </li>
                                                                     </xsl:for-each>
-                                                                    
                                                                 </ul>
                                                                 
                                                             </a>

@@ -573,7 +573,7 @@
                         
                     </xsl:with-param>
                     
-                    <xsl:with-param name="html-classes">
+                    <xsl:with-param name="html-classes" as="xs:string*">
                         
                         <xsl:choose>
                             <xsl:when test="$part[@render eq 'collapse'] and $view-mode[@layout = ('expanded', 'expanded-fixed')]">
@@ -595,7 +595,8 @@
                             </xsl:when>
                             <xsl:otherwise>
                                 <!-- .show displays content expanded -->
-                                <xsl:value-of select="'show delay-render'"/>
+                                <xsl:value-of select="'show'"/>
+                                <xsl:value-of select="'delay-render'"/>
                             </xsl:otherwise>
                         </xsl:choose>
                         
