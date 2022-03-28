@@ -8,7 +8,7 @@ declare variable $filename-new := 'entities-2-10-2.xml';
 
 declare function local:copy-element($element as element(), $exclude as xs:string*, $indent as xs:integer) {
     if(not(local-name($element) = $exclude)) then (
-        element { node-name($element) } {
+        element { QName(fn:namespace-uri($element), node-name($element)) } {
             $element/@*,
             let $element-has-content := if($element/*[not(local-name(.) = $exclude)] or $element/text()[normalize-space(.)]) then true() else false()
             where $element-has-content

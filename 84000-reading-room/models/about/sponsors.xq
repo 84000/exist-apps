@@ -14,12 +14,12 @@ let $request :=
     element { QName('http://read.84000.co/ns/1.0', 'request')} {
         attribute model { 'about/sponsors' },
         attribute resource-suffix { request:get-parameter('resource-suffix', '') },
-        attribute lang { common:request-lang() }(:,
-        attribute tab { request:get-parameter('tab', 'matching-funds-tab') }:)
+        attribute lang { common:request-lang() }
     }
 
-let $cache-timestamp := max(collection($common:tei-path)//tei:TEI//tei:notesStmt/tei:note[@type eq "lastUpdated"]/@date-time ! xs:dateTime(.))
-let $cached := common:cache-get($request, $cache-timestamp)
+(: Define the cache longevity in the cache-key :)
+let $cache-key := format-dateTime(current-dateTime(), "[Y0001]-[M01]-[D01]") || '-' || replace($common:app-version, '\.', '-')
+let $cached := common:cache-get($request, $cache-key)
 return if($cached) then $cached else
 
 let $sponsor-ids := $sponsors:sponsors/m:sponsors/m:sponsor[m:type/@id = ('founding', 'matching-funds')]/@xml:id
@@ -53,13 +53,10 @@ let $xml-response :=
 return 
     
     (: return html data :)
-    if($request/@resource-suffix = ('html')) then (
-        common:html($xml-response, concat($common:app-path, "/views/html/about/sponsors.xsl"), $cache-timestamp)
-    )
-    
+    if($request/@resource-suffix = ('html')) then 
+        common:html($xml-response, concat($common:app-path, "/views/html/about/sponsors.xsl"), $cache-key)
+   
     (: return xml data :)
-    else (
-        util:declare-option("exist:serialize", "method=xml indent=no"),
-        $xml-response
-    )
+    else 
+        common:serialize-xml($xml-response)
     

@@ -29,12 +29,9 @@ let $xml-response :=
 
 return
         (: return html :)
-    if($request/@resource-suffix = ('html')) then (
+    if($request/@resource-suffix = ('html')) then 
         common:html($xml-response, concat($common:app-path, "/views/html/widget/download-dana.xsl"))
-    )
     
     (: return xml data :)
-    else (
-        util:declare-option("exist:serialize", "method=xml indent=no"),
-        $xml-response
-    )
+    else 
+        common:serialize-xml($xml-response)

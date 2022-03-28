@@ -20,6 +20,8 @@ declare namespace tei = "http://www.tei-c.org/ns/1.0";
 declare namespace xhtml = "http://www.w3.org/1999/xhtml";
 declare namespace output="http://www.w3.org/2010/xslt-xquery-serialization";
 
+declare variable $update-tei:blocking-jobs := scheduler:get-scheduled-jobs()//scheduler:job[@name = ('cache-glossary-locations', 'auto-assign-entities')][not(scheduler:trigger/state/text() eq 'COMPLETE')];
+
 declare function update-tei:minor-version-increment($tei as element(tei:TEI), $form-action as xs:string) as element()* {
     
     (: Force a minor version increment:)
@@ -826,11 +828,8 @@ declare function update-tei:cache-glossary($tei as element(tei:TEI), $glossary-i
     let $tei-version := tei-content:version-str($tei)
     
     (: Don't allow if it's processing :)
-    where $glossary-cache[not(@processing)]
+    where not($update-tei:blocking-jobs)
     return
-    
-    (: Flag that it's processing :)
-    let $set-status := common:update('glossary-cache-status', $glossary-cache/@processing, attribute processing { string-join($glossary-id, ' ') }, $glossary-cache, ())
     
     (: TEI glossary items :)
     let $tei-glossary := $tei//tei:back//tei:list[@type eq 'glossary']/tei:item/tei:gloss[@xml:id]
@@ -863,9 +862,6 @@ declare function update-tei:cache-glossary($tei as element(tei:TEI), $glossary-i
         if(count($refresh-locations) eq count($tei-glossary/@xml:id)) then
             common:update('glossary-cache-duration', $glossary-cache/@seconds-to-build, attribute seconds-to-build { functx:total-seconds-from-duration($end-time - $start-time) }, $glossary-cache, ())
         else ()
-    
-    (: Un-flag that it's processing :)
-    let $set-status := common:update('glossary-cache-status', $glossary-cache/@processing, (), $glossary-cache, ())
     
     return
         (:element debug { $glossary-cache-new }:)

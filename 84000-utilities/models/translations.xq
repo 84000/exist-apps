@@ -16,7 +16,7 @@ let $store-conf := $common:environment/m:store-conf
 let $utilities-url := $common:environment/m:url[@id eq 'utilities']
 
 (: Get requested status :)
-let $request-page-filter :=  request:get-parameter('page-filter', '')
+let $request-page-filter :=  request:get-parameter('page-filter', 'recent')
 
 (: Get search parameters :)
 let $request-toh-min := request:get-parameter('toh-min', '')
@@ -24,10 +24,10 @@ let $request-toh-max := request:get-parameter('toh-max', '')
 
 (: Validate the status :)
 let $texts-status := 
-    if(not($request-page-filter = ('new-version-translations', 'new-version-placeholders', 'search'))) then 
+    if(not($request-page-filter = ('new-version-translations', 'new-version-placeholders', 'search', 'recent'))) then 
         $tei-content:text-statuses/m:status[@type eq 'translation'][@status-id/string() eq $request-page-filter][not(@status-id eq '0')]/@status-id
     else ()
-    
+
 (: Store a file if requested :)
 let $store-file := 
     for $store-file-name in request:get-parameter('store[]', '')[not(. eq '')]
@@ -70,6 +70,11 @@ let $translations-local :=
         
         (: Search Toh range :)
         translations:filtered-texts('all', (), '', '', '', '', $request-toh-min, $request-toh-max, 'toh', '', '')
+    
+    else if($request-page-filter = ('recent')) then
+    
+        (: Get recent activity :)
+        translations:recent-updates()
         
     else if($texts-status) then
     
@@ -80,7 +85,7 @@ let $translations-local :=
 
 (: If this is a client listing by status then get translation versions for these texts in MASTER database for comparison :)
 let $translations-master := 
-    if(not($request-page-filter = ('new-version-translations', 'new-version-placeholders')) and $store-conf[@type eq 'client'] and $translations-local[m:text]) then
+    if(not($request-page-filter = ('new-version-translations', 'new-version-placeholders', 'recent')) and $store-conf[@type eq 'client'] and $translations-local[m:text]) then
         store:master-downloads-data(xs:anyURI(concat($store-conf/m:translations-master-host, '/downloads.xml?resource-ids=', string-join($translations-local/m:text/m:toh/@key, ','))))
     else
         $translations-master

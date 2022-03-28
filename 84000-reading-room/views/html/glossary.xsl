@@ -7,8 +7,24 @@
     <xsl:variable name="environment" select="if(/m:response[m:environment]) then /m:response/m:environment else doc('/db/system/config/db/system/environment.xml')/m:environment"/>
     <xsl:variable name="selected-type" select="/m:response/m:request/m:entity-types/m:type[@selected eq 'selected']" as="element(m:type)*"/>
     <xsl:variable name="selected-term-lang" select="/m:response/m:request/m:term-langs/m:lang[@selected eq 'selected']" as="element(m:lang)?"/>
-    <xsl:variable name="search-text" select="/m:response/m:request/m:search" as="element(m:search)?"/>
+    <xsl:variable name="search-text" select="/m:response/m:request/@search" as="xs:string?"/>
     <xsl:variable name="flagged" select="/m:response/m:request/@flagged" as="xs:string?"/>
+    <xsl:variable name="active-tab" as="xs:string">
+        <xsl:choose>
+            <xsl:when test="$tei-editor and /m:response/m:entity-flags/m:flag[@id eq $flagged]">
+                <xsl:value-of select="$flagged"/>
+            </xsl:when>
+            <xsl:when test="$root/m:response/m:request[@downloads eq 'downloads']">
+                <xsl:value-of select="'downloads'"/>
+            </xsl:when>
+            <xsl:when test="string-length($search-text) eq 1">
+                <xsl:value-of select="upper-case(normalize-space($search-text))"/>
+            </xsl:when>
+            <xsl:otherwise>
+                <xsl:value-of select="'search'"/>
+            </xsl:otherwise>
+        </xsl:choose>
+    </xsl:variable>
     
     <xsl:variable name="entities-data" as="element(m:entity-data)*">
         <xsl:for-each select="$entities">
@@ -44,7 +60,7 @@
                 <xsl:value-of select="concat(normalize-space($entities-data[@ref eq $show-entity/@xml:id]/m:label[@type eq 'primary']/text()), ' - Glossary Entry')"/>
             </xsl:when>
             <xsl:otherwise>
-                <xsl:value-of select="concat('Glossary filtered for: ', string-join(($selected-type/m:label[@type eq 'plural']/text(), $selected-term-lang/text(), $search-text/text() ! concat('&#34;', ., '&#34;')), '; '))"/>
+                <xsl:value-of select="concat('Glossary filtered for: ', string-join(($selected-type/m:label[@type eq 'plural']/text(), $selected-term-lang/text(), $search-text ! concat('&#34;', ., '&#34;')), '; '))"/>
             </xsl:otherwise>
         </xsl:choose>
     </xsl:variable>
@@ -54,7 +70,7 @@
                 <xsl:value-of select="$reading-room-path || '/glossary.html?' || string-join((concat('entity-id=', $show-entity/@xml:id)), '&amp;')"/>
             </xsl:when>
             <xsl:otherwise>
-                <xsl:value-of select="$reading-room-path || '/glossary.html?' || string-join((concat('type[]=', string-join($selected-type/@id, ',')),concat('term-lang=', $selected-term-lang/@id), concat('search=', $search-text/text())), '&amp;')"/>
+                <xsl:value-of select="$reading-room-path || '/glossary.html?' || string-join((concat('type[]=', string-join($selected-type/@id, ',')),concat('term-lang=', $selected-term-lang/@id), concat('search=', $search-text)), '&amp;')"/>
             </xsl:otherwise>
         </xsl:choose>
     </xsl:variable>
@@ -82,11 +98,6 @@
                                         <xsl:value-of select="'Glossary'"/>
                                     </a>
                                 </li>
-                                <xsl:if test="m:search/m:request[text()]">
-                                    <li>
-                                        <xsl:value-of select="m:search/m:request/text()"/>
-                                    </li>
-                                </xsl:if>
                             </ul>
                         </nav>
                         
@@ -163,16 +174,31 @@
                             
                             <xsl:variable name="alphabet" select="'ABCDEFGHIJKLMNOPQRSTUVWXYZ'"/>
                             <xsl:variable name="internal-link-attrs" select="(concat('term-lang=', /m:response/m:request/@term-lang), concat('type[]=', ($selected-type[1]/@id, /m:response/m:request/m:entity-types/m:type[1]/@id)[1]), m:view-mode-parameter((),()))"/>
-                             
+                            
                             <!-- Search tab -->
-                            <li role="presentation">
-                                <xsl:if test="string-length(normalize-space($root/m:response/m:request/m:search)) ne 1 and not($flagged gt '')">
-                                    <xsl:attribute name="class" select="'active'"/>
+                            <li role="presentation" class="icon">
+                                <xsl:if test="$active-tab eq 'search'">
+                                    <xsl:attribute name="class" select="'icon active'"/>
                                 </xsl:if>
                                 <a>
                                     <xsl:attribute name="href" select="common:internal-link('/glossary.html?search=', $internal-link-attrs, '', $root/m:response/@lang)"/>
-                                    <xsl:value-of select="'Search '"/>
+                                    <xsl:attribute name="title" select="'Search'"/>
                                     <i class="fa fa-search"/>
+                                    <xsl:if test="$active-tab eq 'search'">
+                                        <xsl:value-of select="' Search'"/>
+                                    </xsl:if>
+                                </a>
+                            </li>
+                            
+                            <!-- Downloads tab -->
+                            <li role="presentation" class="icon">
+                                <xsl:if test="$active-tab eq 'downloads'">
+                                    <xsl:attribute name="class" select="'icon active'"/>
+                                </xsl:if>
+                                <a>
+                                    <xsl:attribute name="href" select="common:internal-link('/glossary.html?downloads=downloads', $internal-link-attrs, '', $root/m:response/@lang)"/>
+                                    <xsl:attribute name="title" select="'Downloads'"/>
+                                    <i class="fa fa-cloud-download"/>
                                 </a>
                             </li>
                             
@@ -180,7 +206,7 @@
                             <xsl:for-each select="1 to string-length($alphabet)">
                                 <xsl:variable name="letter" select="substring($alphabet, ., 1)"/>
                                 <li role="presentation" class="letter">
-                                    <xsl:if test="$letter eq upper-case(normalize-space($root/m:response/m:request/m:search)) and not($flagged gt '')">
+                                    <xsl:if test="$letter eq $active-tab">
                                         <xsl:attribute name="class" select="'active letter'"/>
                                     </xsl:if>
                                     <a>
@@ -192,11 +218,10 @@
                             
                             <!-- Flag tabs -->
                             <xsl:if test="$tei-editor">
-                                
                                 <xsl:for-each select="m:entity-flags/m:flag">
-                                    <li role="presentation">
-                                        <xsl:if test="$flagged eq @id">
-                                            <xsl:attribute name="class" select="'active'"/>
+                                    <li role="presentation" class="icon">
+                                        <xsl:if test="@id eq $active-tab">
+                                            <xsl:attribute name="class" select="'active icon'"/>
                                         </xsl:if>
                                         <a class="editor">
                                             <xsl:attribute name="href" select="common:internal-link(concat('/glossary.html?flagged=', @id), (m:view-mode-parameter((),())), '', $root/m:response/@lang)"/>
@@ -204,7 +229,6 @@
                                         </a>
                                     </li>
                                 </xsl:for-each>
-                                
                             </xsl:if>
                             
                         </ul>
@@ -213,7 +237,7 @@
                     <!-- Type/Lang controls -->
                     <xsl:choose>
                         
-                        <xsl:when test="$flagged gt ''">
+                        <xsl:when test="$tei-editor and m:entity-flags/m:flag[@id eq $flagged]">
                             
                             <p class="text-center text-muted small">
                                 <xsl:value-of select="'This view is only available to editors'"/>
@@ -246,7 +270,7 @@
                         </xsl:when>
                         
                         <!-- Search box -->
-                        <xsl:when test="string-length($search-text) ne 1">
+                        <xsl:when test="$active-tab eq 'search'">
                             <form action="/glossary.html" method="post" role="search" class="form-inline">
                                 
                                 <xsl:if test="$view-mode[@id eq 'editor']">
@@ -306,6 +330,22 @@
                                 </div>
                                 
                             </form>
+                        </xsl:when>
+                        
+                        <!-- Downloads -->
+                        <xsl:when test="$active-tab eq 'downloads'">
+                            
+                            <div class="text-center">
+                                <h2>
+                                    <xsl:value-of select="'Downloads'"/>
+                                </h2>
+                                <p class="text-muted small">
+                                    <xsl:value-of select="'The 84000 combined glossary is available for download in the following formats.'"/>
+                                    <br/>
+                                    <xsl:value-of select="'Note: the data is continuously revised and subject to change. Please check back regularly for updates.'"/>
+                                </p>
+                            </div>
+                            
                         </xsl:when>
                         
                         <!-- Type/Lang controls -->
@@ -768,6 +808,54 @@
                                 
                             </xsl:when>
                             
+                            <xsl:when test="$active-tab eq 'downloads'">
+                                
+                                <div class="row">
+                                    <div class="col-md-8 col-md-offset-2">
+                                        <table class="table no-border top-margin bottom-margin">
+                                            <!--<thead>
+                                                <tr>
+                                                    <th>
+                                                        <xsl:value-of select="'Description'"/>
+                                                    </th>
+                                                    <th>
+                                                        <xsl:value-of select="'Download'"/>
+                                                    </th>
+                                                    <th>
+                                                        <xsl:value-of select="'Generated'"/>
+                                                    </th>
+                                                </tr>
+                                            </thead>-->
+                                            <tbody>
+                                                <xsl:for-each select="$root/m:response/m:downloads/m:download">
+                                                    <tr>
+                                                        <td>
+                                                            <xsl:value-of select="text()"/>
+                                                        </td>
+                                                        <td>
+                                                            <a>
+                                                                <xsl:attribute name="href" select="@download-url"/>
+                                                                <xsl:attribute name="download" select="@filename"/>
+                                                                <xsl:attribute name="class" select="'log-click'"/>
+                                                                <xsl:value-of select="@filename"/>
+                                                            </a>
+                                                        </td>
+                                                        <td class="text-muted small">
+                                                            <xsl:if test="@last-modified gt ''">
+                                                                <xsl:value-of select="format-dateTime(@last-modified, '[FNn,*-3], [D1o] [MNn,*-3] [Y01]')"/>
+                                                            </xsl:if>
+                                                        </td>
+                                                    </tr>
+                                                </xsl:for-each>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                                
+                                <hr class="sml-margin"/>
+                                
+                            </xsl:when>
+                            
                             <!-- No result -->
                             <xsl:otherwise>
                                 <div class="top-margin">
@@ -776,7 +864,7 @@
                                     </p>
                                 </div>
                             </xsl:otherwise>
-                        
+                            
                         </xsl:choose>
                     </div>
                     

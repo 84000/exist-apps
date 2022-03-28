@@ -562,3 +562,55 @@ declare function translations:downloads($resource-ids as xs:string*) as element(
     </translations>
     
 };
+
+declare function translations:recent-updates() as element() {
+    
+    element { QName('http://read.84000.co/ns/1.0', 'recent-updates') } {
+    
+        for $tei in $tei-content:translations-collection//tei:TEI
+        (: get notes :)
+        let $fileDesc := $tei/tei:teiHeader/tei:fileDesc
+        let $notes := $fileDesc/tei:notesStmt/tei:note
+        let $translation-status := tei-content:translation-status($tei)
+        (: Get updates in given span :)
+        let $start-time := current-dateTime() - xs:yearMonthDuration('P1M')
+        let $end-time := current-dateTime()
+        let $notes-in-span := $notes[@type eq "updated"][xs:dateTime(@date-time) ge $start-time][xs:dateTime(@date-time) le $end-time]
+        
+        where 
+            $notes-in-span[@update eq 'translation-status'][@value = ('1', '1.a')]
+            or ($translation-status = ('1', '1.a') and $notes-in-span[@update eq 'text-version'])
+        
+        return
+            element { QName('http://read.84000.co/ns/1.0', 'text') }{
+                attribute id { tei-content:id($tei) }, 
+                attribute last-modified { tei-content:last-modified($tei) },
+                attribute locked-by-user { tei-content:locked-by-user($tei) },
+                attribute status { tei-content:translation-status($tei) },
+                attribute status-group { tei-content:translation-status-group($tei) },
+                attribute recent-update { if($notes-in-span[@update eq 'translation-status'][@value = ('1', '1.a')]) then 'new-publication' else 'new-version' },
+                translation:titles($tei),
+                for $bibl in $fileDesc/tei:sourceDesc/tei:bibl
+                return
+                    translation:toh($tei, $bibl/@key)
+                ,
+                
+                let $notes-in-span-sorted :=
+                    for $note in 
+                        if($notes-in-span[@update eq 'translation-status'][@value = ('1', '1.a')]) then
+                            $notes-in-span[@update eq 'translation-status'][@value = ('1', '1.a')]
+                        else
+                            $notes-in-span[@update eq 'text-version']
+                    order by $note/@date-time ! xs:dateTime(.)
+                    return $note
+                    
+                return
+                    $notes-in-span-sorted[last()]
+                    
+            }
+        
+        
+            
+    }
+    
+};

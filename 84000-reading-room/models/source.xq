@@ -34,8 +34,9 @@ let $request :=
     }
 
 (: Suppress cache if there's a highlight :)
-let $cache-timestamp := if($request[@highlight eq '']) then tei-content:last-modified($tei) else ()
-let $cached := common:cache-get($request, $cache-timestamp)
+(: Update the cache-key string to invalidate existing cache :)
+let $cache-key := if($request[@highlight eq '']) then 'source-cache-1' else ()
+let $cached := common:cache-get($request, $cache-key)
 return if($cached) then $cached else
 
 (: Prefer ref-index parameter :)
@@ -110,12 +111,9 @@ let $xml-response :=
 return
     
     (: return html data :)
-    if($request/@resource-suffix = ('html')) then (
-        common:html($xml-response, concat($common:app-path, "/views/html/source.xsl"), $cache-timestamp)
-    )
+    if($request/@resource-suffix = ('html')) then 
+        common:html($xml-response, concat($common:app-path, "/views/html/source.xsl"), $cache-key)
     
     (: return xml data :)
-    else (
-        util:declare-option("exist:serialize", "method=xml indent=no"),
-        $xml-response
-    )
+    else 
+        common:serialize-xml($xml-response)

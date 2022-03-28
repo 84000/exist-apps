@@ -31,12 +31,9 @@ let $xml-response :=
 
 return
     (: return html data :)
-    if($resource-suffix = ('html')) then (
+    if($resource-suffix = ('html')) then 
         common:html($xml-response, concat($common:app-path, "/views/html/search.xsl"))
-    )
     
     (: return xml data :)
-    else (
-        util:declare-option("exist:serialize", "method=xml indent=no"),
-        $xml-response
-    )
+    else 
+        common:serialize-xml($xml-response)

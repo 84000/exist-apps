@@ -48,7 +48,7 @@ declare variable $entities:flags :=
         </flag>
     </entity-flags>;
 
-declare variable $entities:instance-types := ('glossary-item');
+declare variable $entities:instance-types := ('glossary-item', 'knowledgebase-article');
 
 declare function entities:next-id() as xs:string {
     

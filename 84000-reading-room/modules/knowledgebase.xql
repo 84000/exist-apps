@@ -166,7 +166,7 @@ declare function knowledgebase:article($tei as element(tei:TEI)) as element(m:pa
                 attribute id { $section/@xml:id },
                 attribute nesting { 1 },
                 attribute prefix { $index },
-                attribute glossarize { 'true' },
+                attribute glossarize { 'mark' },
                 
                 $section/*
                 
@@ -209,7 +209,7 @@ declare function knowledgebase:end-notes($tei as element(tei:TEI)) as element() 
         attribute id { 'end-notes' },
         attribute nesting { 0 },
         attribute prefix { 'n' },
-        attribute glossarize { 'true' },
+        attribute glossarize { 'mark' },
             
         element {QName('http://www.tei-c.org/ns/1.0', 'head')} {
             attribute type { 'end-notes' },
@@ -265,7 +265,7 @@ declare function knowledgebase:glossary($tei as element(tei:TEI)) as element()? 
         attribute id { 'glossary' },
         attribute nesting { 0 },
         attribute prefix { 'g' },
-        attribute glossarize { 'true' },
+        attribute glossarize { 'mark' },
             
         element {QName('http://www.tei-c.org/ns/1.0', 'head')} {
             attribute type { 'glossary' },

@@ -66,12 +66,15 @@ let $request :=
     }
 
 (: Suppress cache for some view modes :)
-let $tei-timestamp := 
+let $cache-key := 
     if($request/m:view-mode[@cache eq 'use-cache']) then
-        tei-content:last-modified($tei)
+        let $tei-timestamp := tei-content:last-modified($tei)
+        where $tei-timestamp instance of xs:dateTime
+        return 
+            lower-case(format-dateTime($tei-timestamp, "[Y0001]-[M01]-[D01]-[H01]-[m01]-[s01]") || '-' || replace($common:app-version, '\.', '-'))
     else ()
 
-let $cached := common:cache-get($request, $tei-timestamp)
+let $cached := common:cache-get($request, $cache-key)
 
 return 
     (: Cached html :)
@@ -172,12 +175,9 @@ return
         return
             
             (: html :)
-            if($request/@resource-suffix = ('html')) then (
-                common:html($xml-response, concat($common:app-path, "/views/html/translation.xsl"), $tei-timestamp)
-            )
+            if($request/@resource-suffix = ('html')) then 
+                common:html($xml-response, concat($common:app-path, "/views/html/translation.xsl"), $cache-key)
             
             (: xml :)
-            else (
-                util:declare-option("exist:serialize", "method=xml indent=no"),
-                $xml-response
-            )
+            else 
+                common:serialize-xml($xml-response)

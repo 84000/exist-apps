@@ -54,6 +54,7 @@ declare function local:refresh-cache($doc) {
     let $cache := tei-content:cache($tei, true())
     let $text-id := tei-content:id($tei)
     let $log := util:log('info', concat('trigger-refresh-cache:', $text-id))
+    let $recache := false()
     
     return (
     
@@ -63,7 +64,7 @@ declare function local:refresh-cache($doc) {
         let $count-matches := count($tei-items/id($cache-items/@id))
         where count($tei-items) gt 0
         return
-        if(not($count-matches eq count($tei-items)) or not($count-matches eq count($cache-items))) then
+        if($recache or not($count-matches eq count($tei-items)) or not($count-matches eq count($cache-items))) then
             let $notes-cache := tei-content:notes-cache($tei, true(), true())
             return (
                 common:update('trigger-notes-cache', $cache/m:notes-cache, $notes-cache, $cache, $cache/m:notes-cache/preceding-sibling::*[1], false()),
@@ -77,7 +78,7 @@ declare function local:refresh-cache($doc) {
         let $count-matches := count($tei-items/id($cache-items/@id))
         where count($tei-items) gt 0
         return
-        if(not($count-matches eq count($tei-items)) or not($count-matches eq count($cache-items))) then
+        if($recache or not($count-matches eq count($tei-items)) or not($count-matches eq count($cache-items))) then
             let $milestones-cache := tei-content:milestones-cache($tei, true(), true())
             return (
                 common:update('trigger-milestones-cache', $cache/m:milestones-cache, $milestones-cache, $cache, $cache/m:milestones-cache/preceding-sibling::*[1], false()),
@@ -91,7 +92,7 @@ declare function local:refresh-cache($doc) {
         let $count-matches := count($tei-items/id($cache-items/@id))
         where count($tei-items) gt 0
         return
-        if(not($count-matches eq count($tei-items)) or not($count-matches eq count($cache-items))) then
+        if($recache or not($count-matches eq count($tei-items)) or not($count-matches eq count($cache-items))) then
             let $folios-cache := translation:folios-cache($tei, true(), true())
             return (
                 common:update('trigger-cache-folio-refs', $cache/m:folios-cache, $folios-cache, $cache, $cache/m:folios-cache/preceding-sibling::*[1], false()),
@@ -105,7 +106,7 @@ declare function local:refresh-cache($doc) {
         let $count-matches := count($tei-items/id($cache-items/@id))
         where count($tei-items) gt 0
         return
-        if(not($count-matches eq count($tei-items)) or not($count-matches eq count($cache-items))) then
+        if($recache or not($count-matches eq count($tei-items)) or not($count-matches eq count($cache-items))) then
             let $glossary-cache := glossary:cache($tei, 'removed', true())
             return (
                 common:update('trigger-cache-glossary', $cache/m:glossary-cache, $glossary-cache, $cache, $cache/m:glossary-cache/preceding-sibling::*[1], false()),

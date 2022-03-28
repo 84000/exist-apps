@@ -17,7 +17,7 @@ import module namespace functx="http://www.functx.com";
 
 declare option exist:serialize "method=xml indent=no";
 
-let $resource-suffix := request:get-parameter('resource-suffix', '')
+let $resource-suffix := request:get-parameter('resource-suffix', 'html')
 let $doc-type := 
     if($resource-suffix = ('navigation.atom', 'acquisition.atom')) then 
         'atom'
@@ -29,7 +29,7 @@ let $view-mode := request:get-parameter('view-mode', 'default')
 
 let $request := 
     element { QName('http://read.84000.co/ns/1.0', 'request')} {
-        attribute model { "section" }, 
+        attribute model { 'section' }, 
         attribute resource-id { upper-case(request:get-parameter('resource-id', 'lobby')) }, 
         attribute resource-suffix { $resource-suffix }, 
         attribute lang { common:request-lang() },
@@ -51,11 +51,14 @@ let $request :=
     }
 
 (: Suppress cache if there's user input, or a view-mode :)
-let $cache-timestamp := 
+let $cache-key := 
     if($view-mode eq 'default' and $request[@filter-section-ids eq ''][@filter-max-pages eq '']) then
-        max(collection($common:tei-path)//tei:TEI//tei:notesStmt/tei:note[@type eq "lastUpdated"]/@date-time ! xs:dateTime(.))
+        let $tei-timestamp := max(collection($common:tei-path)//tei:TEI//tei:notesStmt/tei:note[@type eq "lastUpdated"]/@date-time ! xs:dateTime(.))
+        where $tei-timestamp instance of xs:dateTime
+        return 
+            lower-case(format-dateTime($tei-timestamp, "[Y0001]-[M01]-[D01]-[H01]-[m01]-[s01]") || '-' || replace($common:app-version, '\.', '-'))
     else ()
-let $cached := common:cache-get($request, $cache-timestamp)
+let $cached := common:cache-get($request, $cache-key)
 return if($cached) then $cached else
 
 let $include-texts := 
@@ -131,19 +134,15 @@ let $xml-response :=
 return
     
     (: return html data :)
-    if($request/@resource-suffix = ('html')) then (
-        common:html($xml-response, concat($common:app-path, "/views/html/section.xsl"), $cache-timestamp)
-    )
+    if($request/@resource-suffix = ('html')) then 
+        common:html($xml-response, concat($common:app-path, "/views/html/section.xsl"), $cache-key)
     
     (: return tei data :)
-    else if($request/@resource-suffix = ('tei')) then (
-        util:declare-option("exist:serialize", "method=xml indent=no"),
-        $tei
-    )
+    else if($request/@resource-suffix = ('tei')) then 
+        common:serialize-xml($tei)
     
     (: return xml data :)
-    else (
-        util:declare-option("exist:serialize", "method=xml indent=no"),
-        $xml-response
-    )
+    else 
+        common:serialize-xml($xml-response)
+
         

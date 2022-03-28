@@ -16,8 +16,13 @@ let $request :=
         attribute lang { common:request-lang() }
     }
 
-let $cache-timestamp := max(collection($common:tei-path)//tei:TEI//tei:notesStmt/tei:note[@type eq "lastUpdated"]/@date-time ! xs:dateTime(.))
-let $cached := common:cache-get($request, $cache-timestamp)
+(: Define the cache longevity in the cache-key :)
+let $tei-timestamp := max(collection($common:tei-path)//tei:TEI//tei:notesStmt/tei:note[@type eq "lastUpdated"]/@date-time ! xs:dateTime(.))
+let $cache-key := 
+    if($tei-timestamp instance of xs:dateTime) then
+        lower-case(format-dateTime($tei-timestamp, "[Y0001]-[M01]-[D01]-[H01]-[m01]-[s01]") || '-' || replace($common:app-version, '\.', '-'))
+    else ()
+let $cached := common:cache-get($request, $cache-key)
 return if($cached) then $cached else
 
 let $section-tree := section:section-tree(tei-content:tei('lobby', 'section'), true(), 'descendants-published')
@@ -34,12 +39,9 @@ let $xml-response :=
 
 return
     (: return html :)
-    if($request/@resource-suffix = ('html')) then (
-        common:html($xml-response, concat($common:app-path, "/views/html/widget/section-checkbox.xsl"), $cache-timestamp)
-    )
+    if($request/@resource-suffix = ('html')) then 
+        common:html($xml-response, concat($common:app-path, "/views/html/widget/section-checkbox.xsl"), $cache-key)
     
     (: return xml data :)
-    else (
-        util:declare-option("exist:serialize", "method=xml indent=no"),
-        $xml-response
-    )
+    else 
+        common:serialize-xml($xml-response)

@@ -29,7 +29,7 @@ let $term-langs :=
 let $flagged := request:get-parameter('flagged', '')
 let $flag := $entities:flags//m:flag[@id eq  $flagged]
 
-let $view-mode := request:get-parameter('view-mode', '')
+let $view-mode := request:get-parameter('view-mode', 'default')
 let $view-mode := $glossary:view-modes/m:view-mode[@id eq $view-mode]
 let $exclude-flagged := if($view-mode[@id eq 'editor']) then () else 'requires-attention'
 
@@ -54,7 +54,7 @@ let $request-entity-terms-longest := $request-entity-terms-sorted[1]
 let $search-default := (
     if($flag) then '' else (),
     $request-entity-terms-longest/data(), 
-    'a'
+    ''
 )[1]
 let $search := request:get-parameter('search', $search-default) ! normalize-space(.)
 
@@ -78,24 +78,36 @@ let $term-langs := common:add-selected-children($term-langs, $term-lang/@id)
 let $request := 
     element { QName('http://read.84000.co/ns/1.0', 'request')} {
         attribute model { 'glossary' },
-        attribute resource-suffix { request:get-parameter('resource-suffix', '') },
+        attribute resource-suffix { request:get-parameter('resource-suffix', 'html') },
         attribute entity-id { $request-entity/@xml:id },
         attribute term-lang { $term-lang/@id },
         attribute type { $entity-type/@id },
         attribute view-mode { $view-mode/@id },
         attribute flagged { $flag/@id },
-        element search { $search },
+        attribute downloads { request:get-parameter('downloads', '') },
+        attribute search { $search },
         $entity-types,
         $term-langs,
         $view-mode
     }
 
+let $cache-key := 
+    if($request/m:view-mode[@cache eq 'use-cache'] and $request[@flagged eq ''] and (string-length($search) le 1 or $request-entity[@xml:id])) then
+        format-dateTime(current-dateTime(), "[Y0001]-[M01]-[D01]") || '-' || replace($common:app-version, '\.', '-')
+    else ()
+
+let $cached := common:cache-get($request, $cache-key)
+
+return  if($cached) then  $cached else
+    
 let $type-glossary-type := $entity-type/@glossary-type
 
 let $glossary-search := 
     (: Get flagged entries :)
     if($flag) then
         glossary:glossary-flagged($flag/@id, $type-glossary-type)
+    else if($request[@downloads eq 'downloads']) then
+        ()
     (: Get glossary entries based on criteria :)
     else
         glossary:glossary-search($type-glossary-type, $term-lang/@id, $search)
@@ -109,6 +121,11 @@ let $entity-list :=
 
 let $related := entities:related($request-entity | $entity-list, false(), $exclude-flagged, if(not($view-mode[@id eq 'editor'])) then 'excluded' else '')
 
+let $downloads := 
+    if($request[@downloads eq 'downloads']) then
+        glossary:downloads()
+    else ()
+        
 let $xml-response :=
     common:response(
         $request/@model, 
@@ -120,19 +137,17 @@ let $xml-response :=
                 { $request-entity | $entity-list }
                 <related>{ $related }</related>
             </entities>,
-            $entities:flags
+            $entities:flags,
+            $downloads
         )
     )
 
 return
 
     (: html :)
-    if($request/@resource-suffix = ('html')) then (
-        common:html($xml-response, concat($common:app-path, "/views/html/glossary.xsl"), ())
-    )
+    if($request/@resource-suffix = ('html')) then 
+        common:html($xml-response, concat($common:app-path, "/views/html/glossary.xsl"), $cache-key)
     
     (: xml :)
-    else (
-        util:declare-option("exist:serialize", "method=xml indent=no"),
-        $xml-response
-    )
+    else 
+        common:serialize-xml($xml-response)

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" version="3.0" exclude-result-prefixes="#all">
     
     <xsl:import href="../../84000-reading-room/views/html/website-page.xsl"/>
     <xsl:import href="common.xsl"/>
@@ -30,35 +30,50 @@
                         <!-- Select a status -->
                         <div>
                             <select name="page-filter" id="page-filter" class="form-control">
-                                <option value="search">
-                                    <xsl:if test="not($page-filter) or $page-filter eq 'search'">
+                                
+                                <option value="recent">
+                                    <xsl:if test="not($page-filter) or $page-filter eq 'recent'">
                                         <xsl:attribute name="selected" select="'selected'"/>
                                     </xsl:if>
-                                    <xsl:value-of select="'Search'"/>
+                                    <xsl:value-of select="'Recent updates to published texts'"/>
                                 </option>
+                                
+                                <option value="search">
+                                    <xsl:if test="$page-filter eq 'search'">
+                                        <xsl:attribute name="selected" select="'selected'"/>
+                                    </xsl:if>
+                                    <xsl:value-of select="'Search for a text'"/>
+                                </option>
+                                
                                 <xsl:if test="$environment/m:store-conf[@type eq 'client']">
-                                    <option value="new-version-translations">
-                                        <xsl:if test="$page-filter eq 'new-version-translations'">
-                                            <xsl:attribute name="selected" select="'selected'"/>
-                                        </xsl:if>
-                                        <xsl:value-of select="'New Versions - Publications'"/>
-                                    </option>
-                                    <option value="new-version-placeholders">
-                                        <xsl:if test="$page-filter eq 'new-version-placeholders'">
-                                            <xsl:attribute name="selected" select="'selected'"/>
-                                        </xsl:if>
-                                        <xsl:value-of select="'New Versions - Placeholders'"/>
-                                    </option>
+                                    <optgroup label="Available updates">
+                                        <option value="new-version-translations">
+                                            <xsl:if test="$page-filter eq 'new-version-translations'">
+                                                <xsl:attribute name="selected" select="'selected'"/>
+                                            </xsl:if>
+                                            <xsl:value-of select="'Publications'"/>
+                                        </option>
+                                        <option value="new-version-placeholders">
+                                            <xsl:if test="$page-filter eq 'new-version-placeholders'">
+                                                <xsl:attribute name="selected" select="'selected'"/>
+                                            </xsl:if>
+                                            <xsl:value-of select="'Placeholders'"/>
+                                        </option>
+                                    </optgroup>
                                 </xsl:if>
-                                <xsl:for-each select="m:text-statuses/m:status[not(@status-id eq '0')]">
-                                    <option>
-                                        <xsl:attribute name="value" select="@status-id"/>
-                                        <xsl:if test="@status-id eq $page-filter">
-                                            <xsl:attribute name="selected" select="'selected'"/>
-                                        </xsl:if>
-                                        <xsl:value-of select="concat(@status-id, ' / ', text())"/>
-                                    </option>
-                                </xsl:for-each>
+                                
+                                <optgroup label="Show texts by status">
+                                    <xsl:for-each select="m:text-statuses/m:status[not(@status-id eq '0')]">
+                                        <option>
+                                            <xsl:attribute name="value" select="@status-id"/>
+                                            <xsl:if test="@status-id eq $page-filter">
+                                                <xsl:attribute name="selected" select="'selected'"/>
+                                            </xsl:if>
+                                            <xsl:value-of select="concat(@status-id, ' / ', text())"/>
+                                        </option>
+                                    </xsl:for-each>
+                                </optgroup>
+                                
                             </select>
                         </div>
                         
@@ -83,7 +98,7 @@
                 <!-- Further forms to filter / update -->
                 <xsl:choose>
                     
-                    <xsl:when test="not($page-filter) or $page-filter eq 'search'">
+                    <xsl:when test="$page-filter eq 'search'">
                         <form action="/translations.html" method="post" class="form-inline bottom-margin">
                             <input type="hidden" name="page-filter" value="search"/>
                             <div class="form-group">
@@ -115,7 +130,7 @@
                 <!-- List of texts -->
                 <xsl:choose>
                     
-                    <xsl:when test="count(m:texts/m:text) gt 0">
+                    <xsl:when test="m:texts[m:text]">
                         <table class="table table-responsive">
                             <thead>
                                 <tr>
@@ -621,8 +636,81 @@
                         </table>
                     </xsl:when>
                     
+                    <xsl:when test="m:recent-updates[m:text]">
+                        
+                        <xsl:variable name="recent-updated-texts" select="m:recent-updates/m:text"/>
+                        <xsl:for-each select="('new-publication', 'new-version')">
+                            <xsl:variable name="recent-update-type" select="."/>
+                            <h3 class="no-top-margin">
+                                <xsl:choose>
+                                    <xsl:when test="$recent-update-type eq 'new-publication'">
+                                        <xsl:value-of select="'New Publications'"/>
+                                    </xsl:when>
+                                    <xsl:otherwise>
+                                        <xsl:value-of select="'New Versions'"/>
+                                    </xsl:otherwise>
+                                </xsl:choose>
+                            </h3>
+                            <xsl:choose>
+                                <xsl:when test="$recent-updated-texts[@recent-update eq $recent-update-type]">
+                                    <ul class="bottom-margin">
+                                        <xsl:for-each select="$recent-updated-texts[@recent-update eq $recent-update-type]">
+                                            <xsl:sort select="number(m:toh[1]/@number)"/>
+                                            <xsl:sort select="m:toh[1]/@letter"/>
+                                            <xsl:sort select="number(m:toh[1]/@chapter-number)"/>
+                                            <xsl:sort select="m:toh[1]/@chapter-letter"/>
+                                            <xsl:variable name="toh-key" select="(m:toh/@key)[1]"/>
+                                            <li>
+                                                <h4 class="no-bottom-margin">
+                                                    <a>
+                                                        <xsl:attribute name="href" select="concat($reading-room-path, '/translation/', $toh-key, '.html')"/>
+                                                        <xsl:attribute name="target" select="concat($toh-key, '.html')"/>
+                                                        <xsl:attribute name="title" select="concat('Open ', $toh-key, '.html in the Reading Room')"/>
+                                                        <xsl:value-of select="'Toh ' || string-join(m:toh/m:base, ' / ') || ' (' || @id || ') '"/>
+                                                    </a>
+                                                </h4>
+                                                <xsl:choose>
+                                                    <xsl:when test="$recent-update-type eq 'new-publication'">
+                                                        <xsl:for-each select="tei:note[@update eq 'translation-status'][@value = ('1', '1.a')]">
+                                                            <xsl:sort select="@date-time"/>
+                                                            <p class="small">
+                                                                <span class="text-muted">
+                                                                    <xsl:value-of select="common:date-user-string('Published', @date-time, @user)"/>
+                                                                </span>
+                                                            </p>
+                                                        </xsl:for-each>
+                                                    </xsl:when>
+                                                    <xsl:otherwise>
+                                                        <xsl:for-each select="tei:note">
+                                                            <xsl:sort select="@date-time"/>
+                                                            <p class="small">
+                                                                <span class="text-muted">
+                                                                    <xsl:value-of select="common:date-user-string(concat('Version ', @value, ' created'), @date-time, @user)"/>
+                                                                </span>
+                                                                <br/>
+                                                                <span class="text-danger">
+                                                                    <xsl:value-of select="string-join(('Note: ', descendant::text() ! normalize-space()), '')"/>
+                                                                </span>
+                                                            </p>
+                                                        </xsl:for-each>
+                                                    </xsl:otherwise>
+                                                </xsl:choose>
+                                                
+                                            </li>
+                                        </xsl:for-each>
+                                    </ul>
+                                </xsl:when>
+                                <xsl:otherwise>
+                                    <p class="text-muted italic">
+                                        <xsl:value-of select="'No matching texts'"/>
+                                    </p>
+                                </xsl:otherwise>
+                            </xsl:choose>
+                        </xsl:for-each>
+                        
+                    </xsl:when>
+                    
                     <xsl:otherwise>
-                        <hr/>
                         <p class="text-muted italic">
                             <xsl:value-of select="'No matching texts'"/>
                         </p>

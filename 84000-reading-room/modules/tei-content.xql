@@ -15,27 +15,27 @@ declare variable $tei-content:knowledgebase-collection := collection($common:kno
 declare variable $tei-content:text-statuses := 
     <text-statuses xmlns="http://read.84000.co/ns/1.0">
         <!-- Translation statuses -->
-        <status type="translation"  status-id="0"    group="not-started"                                        >Not started</status>
-        <status type="translation"  status-id="1"    group="published"      marked-up="true" target-date="true" >Published</status>
-        <status type="translation"  status-id="1.a"  group="published"      marked-up="true" target-date="true" >Ready to publish</status>
-        <status type="translation"  status-id="2"    group="translated"     marked-up="true" target-date="true" >Marked up, awaiting final proofing</status>
-        <status type="translation"  status-id="2.a"  group="translated"     marked-up="true"                    >Markup in process</status>
-        <status type="translation"  status-id="2.b"  group="translated"                      target-date="true" >Awaiting markup</status>
-        <status type="translation"  status-id="2.c"  group="translated"                                         >Awaiting editor's OK for markup</status>
-        <status type="translation"  status-id="2.d"  group="translated"                      target-date="true" >Copyediting complete. Preparation for markup</status>
-        <status type="translation"  status-id="2.e"  group="translated"                                         >Being copyedited</status>
-        <status type="translation"  status-id="2.f"  group="translated"                      target-date="true" >Review complete. Awaiting copyediting</status>
-        <status type="translation"  status-id="2.g"  group="translated"                                         >In editorial review</status>
-        <status type="translation"  status-id="2.h"  group="translated"                      target-date="true" >Awaiting review</status>
-        <status type="translation"  status-id="3"    group="in-translation"                                     >Current translation projects</status>
-        <status type="translation"  status-id="4"    group="in-application"                                     >Application pending</status>
+        <status type="translation"  status-id="0"    group="not-started"                                         >Not started</status>
+        <status type="translation"  status-id="1"    group="published"      marked-up="true"  target-date="true" >Published, and included in the app</status>
+        <status type="translation"  status-id="1.a"  group="published"      marked-up="true"  target-date="true" >Published</status>
+        <status type="translation"  status-id="2"    group="translated"     marked-up="true"  target-date="true" >Marked up, awaiting final proofing</status>
+        <status type="translation"  status-id="2.a"  group="translated"     marked-up="true"                     >Markup in process</status>
+        <status type="translation"  status-id="2.b"  group="translated"                       target-date="true" >Awaiting markup</status>
+        <status type="translation"  status-id="2.c"  group="translated"                                          >Awaiting editor's OK for markup</status>
+        <status type="translation"  status-id="2.d"  group="translated"                       target-date="true" >Copyediting complete. Preparation for markup</status>
+        <status type="translation"  status-id="2.e"  group="translated"                                          >Being copyedited</status>
+        <status type="translation"  status-id="2.f"  group="translated"                       target-date="true" >Review complete. Awaiting copyediting</status>
+        <status type="translation"  status-id="2.g"  group="translated"                                          >In editorial review</status>
+        <status type="translation"  status-id="2.h"  group="translated"                       target-date="true" >Awaiting review</status>
+        <status type="translation"  status-id="3"    group="in-translation"                                      >Current translation projects</status>
+        <status type="translation"  status-id="4"    group="in-application"                                      >Application pending</status>
         <!-- Article statuses -->
-        <status type="article"      status-id="1"    group="published"      marked-up="true"                    >Published</status>
-        <status type="article"      status-id="1.a"  group="published"      marked-up="true"                    >Published under revision</status>
-        <status type="article"      status-id="2"    group="in-progress"    marked-up="true"                    >Proofreading</status>
-        <status type="article"      status-id="2.a"  group="in-progress"    marked-up="true"                    >Final Review</status>
-        <status type="article"      status-id="2.b"  group="in-progress"    marked-up="true"                    >Copyediting</status>
-        <status type="article"      status-id="3"    group="not-started"    marked-up="true"                    >Stub</status>
+        <status type="article"      status-id="1"    group="published"      marked-up="true"                     >Published</status>
+        <status type="article"      status-id="1.a"  group="published"      marked-up="true"                     >Published under revision</status>
+        <status type="article"      status-id="2"    group="in-progress"    marked-up="true"                     >Proofreading</status>
+        <status type="article"      status-id="2.a"  group="in-progress"    marked-up="true"                     >Final Review</status>
+        <status type="article"      status-id="2.b"  group="in-progress"    marked-up="true"                     >Copyediting</status>
+        <status type="article"      status-id="3"    group="not-started"    marked-up="true"                     >Stub</status>
     </text-statuses>;
 
 declare variable $tei-content:title-types :=

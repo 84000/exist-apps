@@ -124,31 +124,55 @@ function common:response($model as xs:string, $app-id as xs:string, $data as ite
 };
 
 (: Return serialized as html :)
-declare function common:html($html){
+declare function common:serialize-html($html){
+    
+    (: Serialization :)
+    util:declare-option("exist:serialize", "method=html5 media-type=text/html"),
     
     (: Headers :)
-    util:declare-option("exist:serialize", "method=html5 media-type=text/html"),
-    response:set-header('Expires', xs:string(xs:dateTime(current-dateTime()))),
-    response:set-header('X-UA-Compatible', 'IE=edge,chrome=1'),
+    if(response:exists()) then response:set-header('Expires', xs:string(xs:dateTime(current-dateTime()))) else(),
+    if(response:exists()) then response:set-header('X-UA-Compatible', 'IE=edge,chrome=1') else(),
     
     (: Content :)
     $html
 
 };
 
+(: Return serialized as xml :)
+declare function common:serialize-xml($xml){
+    
+    (: Headers :)
+    util:declare-option("exist:serialize", "method=xml indent=no"),
+    
+    (: Content :)
+    $xml
+
+};
+
+(: Return serialized as txt :)
+declare function common:serialize-txt($txt){
+    
+    (: Headers :)
+    util:declare-option("exist:serialize", "media-type=text/plain"),
+    
+    (: Content :)
+    $txt
+
+};
+
 (: Transform xml to html, checking cache :)
-declare function common:html($xml as element(m:response), $view as xs:string, $timestamp as xs:dateTime?) {
+declare function common:html($xml as element(m:response), $view as xs:string, $cache-key as xs:string?) {
 
     try {
     
         let $html := transform:transform($xml, doc($view), <parameters/>)
         let $cache := 
-            if($xml//m:request and exists($timestamp)) then
-                common:cache-put($xml//m:request[1], $html, $timestamp)
+            if($xml//m:request and $cache-key gt '') then
+                common:cache-put($xml//m:request[1], $html, $cache-key)
             else ()
         
         return 
-            common:html($html)
+            common:serialize-html($html)
         
     }
     
@@ -159,7 +183,7 @@ declare function common:html($xml as element(m:response), $view as xs:string, $t
                 <message>{$err:description}</message>
             </exception>
         return 
-            common:html(
+            common:serialize-html(
                 transform:transform($error, doc(concat($common:app-path, "/views/html/error.xsl")), <parameters/>)
             )
     }
@@ -806,44 +830,93 @@ declare function common:cache-collection($request as element(m:request)) as xs:s
         
 };
 
-declare function common:cache-filename($request as element(m:request), $timestamp as xs:dateTime?) as xs:string {
-    string-join((
-        format-dateTime($timestamp, "[Y0001]-[M01]-[D01]-[H01]-[m01]-[s01]"), 
-        replace($common:app-version, '\.', '-')
-    ), '_') || '.xml' ! lower-case(.)
+(:declare function common:cache-filename($request as element(m:request), $timestamp as xs:dateTime?) as xs:string {
+    
+    let $suffix := if($request/@resource-suffix eq 'txt') then '.txt' else '.xml'
+    return
+        string-join((
+            format-dateTime($timestamp, "[Y0001]-[M01]-[D01]-[H01]-[m01]-[s01]"), 
+            replace($common:app-version, '\.', '-')
+        ), '_') || $suffix ! lower-case(.)
+};:)
+
+declare function common:cache-filename($request as element(m:request), $cache-key as xs:string?) as xs:string? {
+    
+    let $cache-key-normalized := replace(replace(normalize-space(lower-case($cache-key)), '\s+', '-'), '[^a-z0-9\-­]', '')
+    let $file-extension := 
+        if($request/@resource-suffix eq 'txt') then '.txt' 
+        else if($request/@resource-suffix eq 'xlsx') then '.xlsx' 
+        else if($request/@resource-suffix eq 'dict') then '.dict' 
+        else '.xml'
+    where $cache-key-normalized
+    return
+        concat($cache-key-normalized, $file-extension)
+    
 };
 
-declare function common:cache-get($request as element(m:request), $timestamp as xs:dateTime?) {
+declare function common:cache-key-latest($request as element(m:request)) as xs:string? {
 
     let $cache-collection := common:cache-collection($request)
-    let $cache-filename := common:cache-filename($request, $timestamp)
+    where $cache-collection and xmldb:collection-available($cache-collection)
+    let $resources := xmldb:get-child-resources($cache-collection)
+    let $resources-sorted :=
+        for $resource in $resources
+        order by xmldb:last-modified($cache-collection, $resource)
+        return
+            $resource
+    let $file-extension-regex := concat('\.', $request/@resource-suffix, '$')
+    return 
+        $resources-sorted[last()] ! replace(., $file-extension-regex, '')
+        
+};
+
+declare function common:cache-last-modified($request as element(m:request), $cache-key as xs:string?) as xs:dateTime? {
+
+    let $cache-collection := common:cache-collection($request)
+    let $cache-filename := common:cache-filename($request, $cache-key)
+    return 
+        xmldb:last-modified($cache-collection, $cache-filename)
+        
+};
+
+declare function common:cache-get($request as element(m:request), $cache-key as xs:string?) {
+
+    let $cache-collection := common:cache-collection($request)
+    let $cache-filename := common:cache-filename($request, $cache-key)
     
-    where $cache-collection and $cache-filename and exists($timestamp)
+    where $cache-collection and $cache-filename gt ''
     return
         
-        let $cached := doc(xs:anyURI(concat($cache-collection, '/', $cache-filename)))
-        where $cached
+        let $cached := 
+            if($request/@resource-suffix = ('html', 'xml')) then
+                doc(xs:anyURI(concat($cache-collection, '/', $cache-filename)))
+            else
+                util:binary-doc(concat($cache-collection, '/', $cache-filename))
+        
+        (:where $cached:)
         return (
         
-            response:set-header('X-EFT-Cache', 'from-cache'),
+            if(response:exists()) then response:set-header('X-EFT-Cache', 'from-cache') else (),
             
             if($request/@resource-suffix eq 'html') then
-                common:html($cached)
-            else (
-                util:declare-option("exist:serialize", "method=xml indent=no"),
+                common:serialize-html($cached)
+            
+            else if($request/@resource-suffix eq 'xml') then 
+                common:serialize-xml($cached)
+            
+            else 
                 $cached
-            )
             
        )
 };
 
-declare function common:cache-put($request as element(m:request), $data, $timestamp as xs:dateTime?) {
+declare function common:cache-put($request as element(m:request), $data, $cache-key as xs:string?) {
     
     let $cache-collection-parent := $common:environment/m:cache-conf/m:cache[@model eq $request/@model][@view eq $request/@resource-suffix]
     let $cache-collection := common:cache-collection($request)
-    let $cache-filename := common:cache-filename($request, $timestamp)
+    let $cache-filename := common:cache-filename($request, $cache-key)
     
-    where $cache-collection-parent and $cache-collection and $cache-filename and exists($timestamp)
+    where $cache-collection-parent and $cache-collection and $cache-filename gt ''
     return
         
         (: Clear existing cache :)
@@ -881,6 +954,16 @@ declare function common:cache-put($request as element(m:request), $data, $timest
             (: Store the file :)
             if($request/@resource-suffix eq 'html') then
                 xmldb:store($cache-collection, $cache-filename, $data, 'text/html')
+                
+            else if($request/@resource-suffix eq 'txt') then
+                xmldb:store($cache-collection, $cache-filename, $data, 'text/plain')
+            
+            else if($request/@resource-suffix eq 'xlsx') then
+                xmldb:store($cache-collection, $cache-filename, $data, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+            
+            else if($request/@resource-suffix = ('dict', 'zip')) then
+                xmldb:store($cache-collection, $cache-filename, $data, 'application/zip')
+                
             else
                 xmldb:store($cache-collection, $cache-filename, $data, 'application/xml')
             ,

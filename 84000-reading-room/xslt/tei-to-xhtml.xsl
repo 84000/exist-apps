@@ -3005,20 +3005,16 @@
                 <xsl:value-of select="false()"/>
             </xsl:when>
             
-            <xsl:when test="$node[ancestor-or-self::m:definition]">
+            <xsl:when test="$node[ancestor-or-self::*[@glossarize eq 'suppress']]">
+                <xsl:value-of select="false()"/>
+            </xsl:when>
+            
+            <xsl:when test="$node[ancestor-or-self::*[@glossarize eq 'mark']]">
                 <xsl:value-of select="true()"/>
-            </xsl:when>
-            
-            <xsl:when test="$node[not(ancestor-or-self::m:part[@glossarize])]">
-                <xsl:value-of select="false()"/>
-            </xsl:when>
-            
-            <xsl:when test="$node[ancestor-or-self::*[@rend eq 'ignoreGlossary']]">
-                <xsl:value-of select="false()"/>
             </xsl:when>
             
             <xsl:otherwise>
-                <xsl:value-of select="true()"/>
+                <xsl:value-of select="false()"/>
             </xsl:otherwise>
             
         </xsl:choose>

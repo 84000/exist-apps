@@ -111,7 +111,7 @@ let $updates :=
             update-entity:set-flag($glossary-id, $set-flag)
         
         else if(not($remove-instance eq '')) then 
-            let $remove-instance-gloss := $glossary-full/id($remove-instance)
+            let $remove-instance-gloss := $glossary:tei/id($remove-instance)[self::tei:gloss]
             where $remove-instance-gloss
             return (
                 update-entity:remove-instance($remove-instance),
@@ -268,8 +268,6 @@ let $entities :=
 
 let $caches := tei-content:cache($tei, false())/m:*
 
-let $blocking-jobs := scheduler:get-scheduled-jobs()//scheduler:job[@name = ('cache-glossary-locations', 'auto-assign-entities')][not(scheduler:trigger/state/text() eq 'COMPLETE')]
-
 let $xml-response := 
     common:response(
         'operations/glossary',
@@ -280,7 +278,7 @@ let $xml-response :=
             $glossary,
             $entities,
             $caches,
-            $blocking-jobs,
+            $update-tei:blocking-jobs,
             $entities:predicates,
             $entities:types,
             $entities:flags

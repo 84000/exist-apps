@@ -188,9 +188,10 @@ return
             
         (: Trap no path :) (: Trap index/home :)
         else if ($exist:path = ('', '/') or lower-case($collection-path) = ('old-app')) then
-            local:dispatch-html("/models/section.xq", "/views/html/section.xsl", 
-                <parameters>
-                    <add-parameter name="resource-id" value="lobby.html"/>
+            local:dispatch("/models/section.xq", "", 
+                <parameters xmlns="http://exist.sourceforge.net/NS/exist">
+                    <add-parameter name="resource-id" value="lobby"/>
+                    <add-parameter name="resource-suffix" value="html"/>
                 </parameters>
             )
             
@@ -391,7 +392,13 @@ return
                     <add-parameter name="resource-suffix" value="{ $resource-suffix }"/>
                 </parameters>
             )
-        
+        else if ($resource-id eq "glossary-download") then
+            local:dispatch("/models/glossary-download.xq", "",
+                <parameters xmlns="http://exist.sourceforge.net/NS/exist">
+                    <add-parameter name="resource-suffix" value="{ $resource-suffix }"/>
+                </parameters>
+            )
+    
         (: Downloads - used on Dist to get Collab files :)
         else if ($resource-id eq "downloads") then
             (: return the xml :)
@@ -423,14 +430,12 @@ return
         else
             (: It's data :)
             if($resource-suffix eq 'html') then
-                (:<response>{ download:file-path($exist:resource) }</response>:)
                 <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
                     <forward url="{ download:file-path($exist:resource) }">
                         <set-header name="Content-Type" value="text/html"/>
                     </forward>
                 </dispatch>
             else if($resource-suffix eq 'pdf') then
-                (:<response>{ download:file-path($exist:resource) }</response>:)
                 <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
                     <forward url="{ download:file-path($exist:resource) }">
                         <set-header name="Content-Type" value="application/pdf"/>

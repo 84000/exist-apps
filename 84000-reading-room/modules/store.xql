@@ -422,8 +422,7 @@ declare function store:store-new-azw3($file-path as xs:string, $version as xs:st
                         concat('/', $sync-path, '/epub'), 
                         ()
                     )
-                else
-                    ()
+                else ()
             
             (: Run script to generate azw3 :)
             let $options := 

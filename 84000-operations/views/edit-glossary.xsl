@@ -878,7 +878,7 @@
                                                                 </li>
                                                                 
                                                                 <li>
-                                                                    <a target="_self" class="small">
+                                                                    <a target="_self" class="small" data-loading="Loading...">
                                                                         <xsl:attribute name="href">
                                                                             <xsl:call-template name="link-href">
                                                                                 <xsl:with-param name="glossary-id" select="$loop-glossary-id"/>
@@ -904,7 +904,7 @@
                                                                                     <xsl:attribute name="class" select="'label label-danger'"/>
                                                                                     <xsl:value-of select="m:label"/>
                                                                                     <xsl:value-of select="' / '"/>
-                                                                                    <a target="_self">
+                                                                                    <a target="_self" data-loading="Loading...">
                                                                                         <xsl:attribute name="href">
                                                                                             <xsl:call-template name="link-href">
                                                                                                 <xsl:with-param name="glossary-id" select="$loop-glossary-id"/>
@@ -916,7 +916,7 @@
                                                                                 </span>
                                                                             </xsl:when>
                                                                             <xsl:otherwise>
-                                                                                <a target="_self" class="small">
+                                                                                <a target="_self" class="small" data-loading="Loading...">
                                                                                     <xsl:attribute name="href">
                                                                                         <xsl:call-template name="link-href">
                                                                                             <xsl:with-param name="glossary-id" select="$loop-glossary-id"/>
@@ -1926,33 +1926,27 @@
         
         <div class="item tei-parser editor-mode rw-full-width pad { $cache-location-status }">
             
-            <div class="small">
-                <xsl:apply-templates select="xhtml:*"/>
-            </div>
-            
             <xsl:choose>
                 <xsl:when test="$cache-location-status eq 'missing'">
-                    <div>
-                        <span class="label label-danger">
-                            <xsl:value-of select="'Location not cached'"/>
-                        </span>
+                    <div class="text-danger underline small sml-margin bottom">
+                        <xsl:value-of select="'Location not cached'"/>
                     </div>
                 </xsl:when>
                 <xsl:when test="$cache-location-status eq 'updated'">
-                    <div>
-                        <span class="label label-success">
-                            <xsl:value-of select="concat('Newly cached in ', $text/@tei-version)"/>
-                        </span>
+                    <div class="text-success underline small sml-margin bottom">
+                        <xsl:value-of select="concat('Newly cached in ', $text/@tei-version)"/>
                     </div>
                 </xsl:when>
                 <xsl:when test="$cache-location-status eq 'behind'">
-                    <div>
-                        <span class="label label-warning">
-                            <xsl:value-of select="concat('Cached in ', ($glossary-cache-gloss/@tei-version, 'previous version')[1])"/>
-                        </span>
+                    <div class="text-warning underline small sml-margin bottom">
+                        <xsl:value-of select="concat('Cached in ', ($glossary-cache-gloss/@tei-version, 'previous version')[1])"/>
                     </div>
                 </xsl:when>
             </xsl:choose>
+            
+            <div class="small">
+                <xsl:apply-templates select="xhtml:*"/>
+            </div>
             
         </div>
         

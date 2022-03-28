@@ -343,7 +343,7 @@ declare function translation:parts($tei as element(tei:TEI), $passage-id as xs:s
     let $glossary :=
         if($status-render) then 
             (: Derive relevant glossary ids from other content :)
-            let $glossary-ids := ($summary, $acknowledgment, $preface, $introduction, $body, $appendix, $abbreviations, $bibliography)[@glossarize eq 'true']//@xml:id
+            let $glossary-ids := ($summary, $acknowledgment, $preface, $introduction, $body, $appendix, $abbreviations, $bibliography)[@glossarize eq 'mark']//@xml:id
             return
                 translation:glossary($tei, $passage-id, $view-mode, $glossary-ids)
         else ()
@@ -386,8 +386,10 @@ declare function local:part($part as element(tei:div)?, $render as xs:string, $t
                 if($prefix) then
                     attribute prefix { $prefix }
                 else (),
-                if($type = ('summary', 'introduction', 'translation', 'appendix', 'end-notes', 'glossary')) then
-                    attribute glossarize { 'true' }
+                if($part/@rend eq 'ignoreGlossary') then 
+                    attribute glossarize { 'suppress' }
+                else if($type = ('summary', 'introduction', 'translation', 'appendix', 'end-notes', 'glossary')) then
+                    attribute glossarize { 'mark' }
                 else (),
                 
                 $titles,
@@ -662,7 +664,7 @@ declare function translation:body($tei as element(tei:TEI), $passage-id as xs:st
             attribute id { 'translation' },
             attribute nesting { 0 },
             attribute section-index { 1 },
-            attribute glossarize { 'true' },
+            attribute glossarize { 'mark' },
             attribute prefix { 'tr' },
             
             (: Title shown in the navigation :)
@@ -729,7 +731,7 @@ declare function translation:appendix($tei as element(tei:TEI), $passage-id as x
             attribute nesting { 0 },
             attribute section-index { 1 },
             attribute render { $render },
-            attribute glossarize { 'true' },
+            attribute glossarize { 'mark' },
             attribute prefix { 'ap' },
             element title-supp {
                 'Appendix'

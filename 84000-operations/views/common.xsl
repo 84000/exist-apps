@@ -1622,10 +1622,9 @@
                                     <xsl:if test="$remove-instance-href">
                                         <xsl:value-of select="' / '"/>
                                         <span class="small">
-                                            <a>
+                                            <a target="_self" data-loading="Loading...">
                                                 <xsl:attribute name="href" select="replace($remove-instance-href, '\{instance\-id\}', $entry/@id)"/>
-                                                <xsl:attribute name="target" select="'_self'"/>
-                                                <xsl:value-of select="'Un-link (create new)'"/>
+                                                <xsl:value-of select="'Un-link (+ create new)'"/>
                                             </a>
                                         </span>
                                     </xsl:if>
