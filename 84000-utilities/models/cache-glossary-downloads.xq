@@ -51,27 +51,7 @@ return
         
         let $spreadsheet-data := glossary:spreadsheet-data($glossary-combined)
 
-        let $spreadsheet-excel := 
-           transform:transform(
-               $spreadsheet-data,
-               doc("../../84000-reading-room/views/spreadsheet/excel.xsl"), 
-               <parameters/>
-           )
-        
-        let $entries := 
-            for $entry in $spreadsheet-excel
-            
-            let $params :=
-                element { QName('http://www.w3.org/2010/xslt-xquery-serialization','serialization-parameters') }{
-                    element omit-xml-declaration { 
-                        attribute value { ($entry/@omit-xml-declaration, 'no')[1] }
-                    }
-                }
-            
-            return
-                <entry name="{ $entry/@href }" type="{ if($entry/@media-type eq 'text/plain') then 'text' else 'xml' }">{fn:serialize(document{$entry/node()}, $params)}</entry>
-        
-        let $spreadsheet-zip := compression:zip($entries, true())
+        let $spreadsheet-zip := common:spreadsheet-zip($spreadsheet-data)
         
         let $cache-put := common:cache-put($request-xlsx, $spreadsheet-zip, $cache-key)
         
@@ -150,7 +130,7 @@ return
             )
             
             let $generate-dict := (
-                (: Clear the existing file :)
+                (: Clear the existing files :)
                 file:delete($sync-folder-txt),
                 (: Sync to file system :)
                 file:sync($cache-collection-txt, $sync-folder-txt, ()),
@@ -167,12 +147,12 @@ return
             )
             
             return ( 
-                $request-dict(:,
+                $request-dict,
                 element debug {
                     string-join($exec-pyglossary, ' '),
                     $exec-pyglossary-options,
                     string-join($exec-zip, ' '),
-                    $exec-zip-options
+                    $exec-zip-options(:,
                     for $resource in xmldb:get-child-resources($cache-collection-dict)
                     let $path-tokenized := tokenize($cache-collection-dict, '/')
                     where 
@@ -184,8 +164,8 @@ return
                             attribute path-tokenized-count { count($path-tokenized) },
                             attribute path-tokenized-last { $path-tokenized[last() -1] },
                             concat($cache-collection-dict, '/', $resource)
-                        }
-                }:)
+                        }:)
+                }
             )
         )
     }

@@ -811,7 +811,7 @@
                             <xsl:when test="$active-tab eq 'downloads'">
                                 
                                 <div class="row">
-                                    <div class="col-md-8 col-md-offset-2">
+                                    <div class="col-md-10 col-md-offset-1">
                                         <table class="table no-border top-margin bottom-margin">
                                             <!--<thead>
                                                 <tr>

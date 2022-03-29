@@ -74,21 +74,20 @@ let $xml-response :=
         'operations/search', 
         'operations', 
         (
-            <request 
-                xmlns="http://read.84000.co/ns/1.0" 
-                work="{ $work }" 
-                status="{ string-join($status, ',') }"
-                sort="{ $sort }"
-                pages-min="{ $pages-min }"
-                pages-max="{ $pages-max }"
-                filter="{ $filter }"
-                deduplicate="{ $deduplicate }"
-                toh-min="{ $toh-min }"
-                toh-max="{ $toh-max }"
-                target-date-type="{ $target-date-type }"
-                target-date-start="{ $target-date-start }"
-                target-date-end="{ $target-date-end }"/>
-            ,
+            element { QName('http://read.84000.co/ns/1.0', 'request') } {
+                attribute work { $work },
+                attribute status { string-join($status, ',') },
+                attribute sort { $sort },
+                attribute pages-min { $pages-min },
+                attribute pages-max { $pages-max },
+                attribute filter { $filter },
+                attribute deduplicate { $deduplicate },
+                attribute toh-min { $toh-min },
+                attribute toh-max { $toh-max },
+                attribute target-date-type { $target-date-type },
+                attribute target-date-start { $target-date-start },
+                attribute target-date-end { $target-date-end }
+            },
             $texts,
             element { QName('http://read.84000.co/ns/1.0', 'translation-status') } {
                 $translation-statuses
@@ -108,6 +107,17 @@ return
     (: return html data :)
     if($resource-suffix eq 'html') then (
         common:html($xml-response, concat(local:app-path(), '/views/search.xsl'))
+    )
+    
+    (: return spreadsheet :)
+    else if($resource-suffix eq 'xlsx') then (
+        let $spreadsheet-data := translations:texts-spreadsheet($texts)
+        (:return if(true()) then $spreadsheet-data else :)
+        let $spreadsheet-zip := common:spreadsheet-zip($spreadsheet-data)
+        return (
+            response:set-header("Content-Disposition", "attachment; filename=" || concat($spreadsheet-data/@key/string(), '.xlsx')),
+            response:stream-binary($spreadsheet-zip, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        )
     )
     
     (: return xml data :)

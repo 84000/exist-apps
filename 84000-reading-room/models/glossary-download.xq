@@ -33,7 +33,7 @@ return
         
         let $spreadsheet := common:cache-get($request, $cache-key) 
         return (
-            response:set-header("Content-Disposition", "attachment; filename=84000-glossary.xlsx"),
+            response:set-header("Content-Disposition", "attachment; filename=" || concat($cache-key, '.xlsx')),
             response:stream-binary($spreadsheet, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
         )
     
@@ -41,7 +41,7 @@ return
         
         let $txt := common:cache-get($request, $cache-key) 
         return (
-            response:set-header("Content-Disposition", "attachment; filename=" || concat('84000-glossary-', $request/@key,'.txt')),
+            response:set-header("Content-Disposition", "attachment; filename=" || concat($cache-key, '-', $request/@key,'.txt')),
             response:stream-binary($txt, 'text/plain')
         )
     
@@ -49,7 +49,7 @@ return
         
         let $dict := common:cache-get($request, $cache-key) 
         return (
-            response:set-header("Content-Disposition", "attachment; filename=" || concat('84000-glossary-', $request/@key,'.dict.zip')),
+            response:set-header("Content-Disposition", "attachment; filename=" || concat($cache-key, '-', $request/@key,'.dict.zip')),
             response:stream-binary($dict, 'application/zip')
         )
     
@@ -57,7 +57,7 @@ return
     else
         let $xml := common:cache-get($request, $cache-key) 
         return(
-            response:set-header("Content-Disposition", "attachment; filename=84000-glossary.xml"),
+            response:set-header("Content-Disposition", "attachment; filename=" || concat($cache-key, '.xml')),
             common:serialize-xml($xml)
         )
 

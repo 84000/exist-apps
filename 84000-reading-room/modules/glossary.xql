@@ -560,7 +560,6 @@ declare function glossary:combined() as element() {
                         
                     }
                 
-        
         return (
        
             (: Terms sorted :)
@@ -575,6 +574,9 @@ declare function glossary:combined() as element() {
 declare function glossary:spreadsheet-data($glossary-combined as element(m:glossary-combined)) as element(m:spreadsheet-data) {
     
     element { QName('http://read.84000.co/ns/1.0', 'spreadsheet-data') } {
+    
+        attribute key { concat('84000-glossary-', format-dateTime(current-dateTime(), '[Y0001]-[M01]-[D01]'))},
+        
         for $term in $glossary-combined/m:term
         return
             element row {
@@ -590,6 +592,7 @@ declare function glossary:spreadsheet-data($glossary-combined as element(m:gloss
                     element Link { $term/@href/string() }
                 else ()
             }
+            
     }
     
 };
@@ -1033,7 +1036,7 @@ declare function glossary:downloads(){
                     attribute type { $type },
                     attribute url { '/glossary.html' },
                     attribute download-url { concat('/glossary-download', '.', $type, $key[. gt ''] ! concat('?key=', $key)) },
-                    attribute filename { concat('84000-glossary', $key[. gt ''] ! concat('-', $key), '.', $type, $type[. eq 'dict'] ! '.zip') },
+                    attribute filename { concat($latest-key, $key[. gt ''] ! concat('-', $key), '.', $type, $type[. eq 'dict'] ! '.zip') },
                     attribute last-modified { common:cache-last-modified($request, $latest-key) },
                     (:$latest-key ! attribute latest-key { $latest-key }:)
                     if($type eq 'xml') then

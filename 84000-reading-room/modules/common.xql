@@ -978,3 +978,30 @@ declare function common:cache-put($request as element(m:request), $data, $cache-
     
 };
 
+declare function common:spreadsheet-zip($spreadsheet-data as element(m:spreadsheet-data)) {
+
+    let $spreadsheet-excel := 
+       transform:transform(
+           $spreadsheet-data,
+           doc(concat($common:app-path, "/views/spreadsheet/excel.xsl")), 
+           <parameters/>
+       )
+    
+    let $entries := 
+        for $entry in $spreadsheet-excel
+        
+        let $params :=
+            element { QName('http://www.w3.org/2010/xslt-xquery-serialization','serialization-parameters') }{
+                element omit-xml-declaration { 
+                    attribute value { ($entry/@omit-xml-declaration, 'no')[1] }
+                }
+            }
+        
+        return
+            <entry name="{ $entry/@href }" type="{ if($entry/@media-type eq 'text/plain') then 'text' else 'xml' }">{fn:serialize(document{$entry/node()}, $params)}</entry>
+    
+    return
+        compression:zip($entries, true())
+
+};
+

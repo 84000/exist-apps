@@ -394,25 +394,38 @@
                                 <!-- Results summary -->
                                 <xsl:if test="m:texts">
                                     <div class="well well-sm small">
-                                        <h4 class="no-top-margin">
+                                        
+                                        <h4 class="no-top-margin sml-margin bottom">
                                             <xsl:value-of select="'Summary'"/>
                                         </h4>
-                                        <strong>
-                                            <xsl:value-of select="format-number(count(m:texts/m:text), '#,###')"/>
-                                        </strong>
-                                        <xsl:value-of select="' texts / '"/>
-                                        <strong>
-                                            <xsl:value-of select="format-number(sum(m:texts/m:text/m:source/m:location/@count-pages ! xs:integer(.)), '#,###')"/>
-                                        </strong>
-                                        <xsl:value-of select="' pages / '"/>
-                                        <strong>
-                                            <xsl:value-of select="format-number(sum(/m:response/m:translation-status/m:text[@text-id = /m:response/m:texts/m:text/@id]/@word-count ! xs:integer(.)), '#,###')"/>
-                                        </strong>
-                                        <xsl:value-of select="' words / '"/>
-                                        <strong>
-                                            <xsl:value-of select="format-number(sum(/m:response/m:translation-status/m:text[@text-id = /m:response/m:texts/m:text/@id]/@glossary-count ! xs:integer(.)), '#,###')"/>
-                                        </strong>
-                                        <xsl:value-of select="' glossaries'"/>
+                                        
+                                        <div class="sml-margin bottom">
+                                            <strong>
+                                                <xsl:value-of select="format-number(count(m:texts/m:text), '#,###')"/>
+                                            </strong>
+                                            <xsl:value-of select="' texts / '"/>
+                                            <strong>
+                                                <xsl:value-of select="format-number(sum(m:texts/m:text/m:source/m:location/@count-pages ! xs:integer(.)), '#,###')"/>
+                                            </strong>
+                                            <xsl:value-of select="' pages / '"/>
+                                            <strong>
+                                                <xsl:value-of select="format-number(sum(/m:response/m:translation-status/m:text[@text-id = /m:response/m:texts/m:text/@id]/@word-count ! xs:integer(.)), '#,###')"/>
+                                            </strong>
+                                            <xsl:value-of select="' words / '"/>
+                                            <strong>
+                                                <xsl:value-of select="format-number(sum(/m:response/m:translation-status/m:text[@text-id = /m:response/m:texts/m:text/@id]/@glossary-count ! xs:integer(.)), '#,###')"/>
+                                            </strong>
+                                            <xsl:value-of select="' glossaries'"/>
+                                        </div>
+                                        
+                                        <!-- Download spreadsheet -->
+                                        <div>
+                                            <a>
+                                                <xsl:attribute name="href" select="concat('/search.xlsx?', string-join(/m:response/m:request/@* ! concat(local-name(.), '=', string()), '&amp;'))"/>
+                                                <xsl:value-of select="'Download spreadsheet'"/>
+                                            </a>
+                                        </div>
+                                        
                                     </div>
                                 </xsl:if>
                                 

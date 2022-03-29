@@ -826,11 +826,7 @@ declare function update-tei:cache-glossary($tei as element(tei:TEI), $glossary-i
     let $cache := tei-content:cache($tei, true())
     let $glossary-cache := $cache/m:glossary-cache
     let $tei-version := tei-content:version-str($tei)
-    
-    (: Don't allow if it's processing :)
-    where not($update-tei:blocking-jobs)
-    return
-    
+
     (: TEI glossary items :)
     let $tei-glossary := $tei//tei:back//tei:list[@type eq 'glossary']/tei:item/tei:gloss[@xml:id]
     
@@ -849,12 +845,6 @@ declare function update-tei:cache-glossary($tei as element(tei:TEI), $glossary-i
     
     (: Process in chunks :)
     let $cache-glossary-chunks := local:cache-glossary-chunk($tei, $cache, $refresh-locations, 1)
-    
-    (: Set version - only if all are done :)
-    (:let $set-cache-version := 
-        if(count($glossary-cache/m:gloss[@tei-version eq $tei-version]) eq count($tei-glossary)) then
-            store:store-version-str(concat($common:data-path, '/cache'), concat(tei-content:id($tei), '.cache'), $tei-version)
-        else ():)
     
     (: Record build time - only if it's the whole set :)
     let $end-time := util:system-dateTime()

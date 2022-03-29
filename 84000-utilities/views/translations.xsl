@@ -25,74 +25,98 @@
                 <form action="/translations.html" method="post" class="form-horizontal filter-form clearfix">
                     <xsl:attribute name="data-loading" select="'Loading...'"/>
                     
-                    <div class="center-vertical full-width align-left bottom-margin">
+                    <div class="row bottom-margin">
                         
                         <!-- Select a status -->
-                        <div>
-                            <select name="page-filter" id="page-filter" class="form-control">
-                                
-                                <option value="recent">
-                                    <xsl:if test="not($page-filter) or $page-filter eq 'recent'">
-                                        <xsl:attribute name="selected" select="'selected'"/>
+                        <div class="col-sm-9">
+                            <div class="input-group">
+                                <select name="page-filter" id="page-filter" class="form-control">
+                                    
+                                    <option value="recent-updates">
+                                        <xsl:if test="not($page-filter) or $page-filter eq 'recent-updates'">
+                                            <xsl:attribute name="selected" select="'selected'"/>
+                                        </xsl:if>
+                                        <xsl:value-of select="'Recent updates to published texts'"/>
+                                    </option>
+                                    
+                                    <option value="search">
+                                        <xsl:if test="$page-filter eq 'search'">
+                                            <xsl:attribute name="selected" select="'selected'"/>
+                                        </xsl:if>
+                                        <xsl:value-of select="'Search for a text'"/>
+                                    </option>
+                                    
+                                    <xsl:if test="$environment/m:store-conf[@type eq 'client']">
+                                        <optgroup label="Available updates">
+                                            <option value="new-version-translations">
+                                                <xsl:if test="$page-filter eq 'new-version-translations'">
+                                                    <xsl:attribute name="selected" select="'selected'"/>
+                                                </xsl:if>
+                                                <xsl:value-of select="'Get new publications'"/>
+                                            </option>
+                                            <option value="new-version-placeholders">
+                                                <xsl:if test="$page-filter eq 'new-version-placeholders'">
+                                                    <xsl:attribute name="selected" select="'selected'"/>
+                                                </xsl:if>
+                                                <xsl:value-of select="'Get new placeholders'"/>
+                                            </option>
+                                        </optgroup>
                                     </xsl:if>
-                                    <xsl:value-of select="'Recent updates to published texts'"/>
-                                </option>
-                                
-                                <option value="search">
-                                    <xsl:if test="$page-filter eq 'search'">
-                                        <xsl:attribute name="selected" select="'selected'"/>
-                                    </xsl:if>
-                                    <xsl:value-of select="'Search for a text'"/>
-                                </option>
-                                
-                                <xsl:if test="$environment/m:store-conf[@type eq 'client']">
-                                    <optgroup label="Available updates">
-                                        <option value="new-version-translations">
-                                            <xsl:if test="$page-filter eq 'new-version-translations'">
-                                                <xsl:attribute name="selected" select="'selected'"/>
-                                            </xsl:if>
-                                            <xsl:value-of select="'Publications'"/>
-                                        </option>
-                                        <option value="new-version-placeholders">
-                                            <xsl:if test="$page-filter eq 'new-version-placeholders'">
-                                                <xsl:attribute name="selected" select="'selected'"/>
-                                            </xsl:if>
-                                            <xsl:value-of select="'Placeholders'"/>
-                                        </option>
+                                    
+                                    <optgroup label="Show texts by status">
+                                        <xsl:for-each select="m:text-statuses/m:status[not(@status-id eq '0')]">
+                                            <option>
+                                                <xsl:attribute name="value" select="@status-id"/>
+                                                <xsl:if test="@status-id eq $page-filter">
+                                                    <xsl:attribute name="selected" select="'selected'"/>
+                                                </xsl:if>
+                                                <xsl:value-of select="concat(@status-id, ' / ', text())"/>
+                                            </option>
+                                        </xsl:for-each>
                                     </optgroup>
+                                    
+                                </select>
+                                <div class="input-group-btn">
+                                    <button class="btn btn-default" type="submit">
+                                        <xsl:attribute name="title" select="'reload'"/>
+                                        <i class="fa fa-refresh"/>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-sm-3">
+                            <div class="center-vertical full-width">
+                                
+                                <!-- Show count of texts -->
+                                <div>
+                                    <div class="sml-margin top">
+                                        <span class="badge badge-notification">
+                                            <xsl:value-of select="fn:format-number(count(distinct-values(m:texts/m:text/@id | m:recent-updates/m:text/@id)),'#,##0')"/>
+                                        </span>
+                                        <xsl:value-of select="' results'"/>
+                                    </div>
+                                </div>
+                                
+                                <!-- Download button -->
+                                <xsl:if test="m:recent-updates[m:text]">
+                                    <div>
+                                        <a>
+                                            <xsl:attribute name="href" select="'translations.xlsx?page-filter=recent-updates'"/>
+                                            <xsl:attribute name="title" select="'Download as spreadsheet'"/>
+                                            <xsl:attribute name="class" select="'btn btn-default'"/>
+                                            <i class="fa fa-cloud-download"/>
+                                            <xsl:value-of select="' download'"/>
+                                        </a>
+                                    </div>
                                 </xsl:if>
                                 
-                                <optgroup label="Show texts by status">
-                                    <xsl:for-each select="m:text-statuses/m:status[not(@status-id eq '0')]">
-                                        <option>
-                                            <xsl:attribute name="value" select="@status-id"/>
-                                            <xsl:if test="@status-id eq $page-filter">
-                                                <xsl:attribute name="selected" select="'selected'"/>
-                                            </xsl:if>
-                                            <xsl:value-of select="concat(@status-id, ' / ', text())"/>
-                                        </option>
-                                    </xsl:for-each>
-                                </optgroup>
-                                
-                            </select>
-                        </div>
-                        
-                        <!-- Refresh button -->
-                        <div>
-                            <button class="btn btn-default" type="submit">
-                                <i class="fa fa-refresh"/>
-                            </button>
-                        </div>
-                        
-                        <!-- Show count of texts -->
-                        <div class="text-right">
-                            <span class="badge badge-notification">
-                                <xsl:value-of select="fn:format-number(count(distinct-values(m:texts/m:text/@id)),'#,##0')"/>
-                            </span>
-                            <xsl:value-of select="' matching texts'"/>
+                            </div>
+                            
                         </div>
                         
                     </div>
+                
                 </form>
                 
                 <!-- Further forms to filter / update -->
@@ -707,6 +731,7 @@
                                 </xsl:otherwise>
                             </xsl:choose>
                         </xsl:for-each>
+                        
                         
                     </xsl:when>
                     

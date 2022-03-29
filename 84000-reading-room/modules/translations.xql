@@ -134,7 +134,7 @@ declare function translations:summary($work as xs:string) as element() {
         </outline-summary>
 };
 
-declare function translations:texts($status as xs:string*, $resource-ids as xs:string*, $sort as xs:string, $deduplicate as xs:string, $include-downloads as xs:string, $include-folios as xs:boolean) as element() {
+declare function translations:texts($status as xs:string*, $resource-ids as xs:string*, $sort as xs:string, $deduplicate as xs:string, $include-downloads as xs:string, $include-folios as xs:boolean) as element(m:texts) {
     
     let $teis := $tei-content:translations-collection//tei:TEI
     
@@ -378,6 +378,8 @@ declare function translations:filtered-texts(
                 attribute toh-min { $toh-min },
                 attribute toh-max { $toh-max },
                 attribute deduplicate { $deduplicate },
+                attribute status-date-start { $status-date-start },
+                attribute status-date-end { $status-date-end },
                 
                 (: Sort the result, the sort may be based on the text detail :)
                 translations:sorted-texts($texts, $sort)
@@ -563,54 +565,125 @@ declare function translations:downloads($resource-ids as xs:string*) as element(
     
 };
 
-declare function translations:recent-updates() as element() {
+declare function translations:recent-updates() as element(m:recent-updates) {
     
     element { QName('http://read.84000.co/ns/1.0', 'recent-updates') } {
-    
-        for $tei in $tei-content:translations-collection//tei:TEI
-        (: get notes :)
-        let $fileDesc := $tei/tei:teiHeader/tei:fileDesc
-        let $notes := $fileDesc/tei:notesStmt/tei:note
-        let $translation-status := tei-content:translation-status($tei)
+        
         (: Get updates in given span :)
         let $start-time := current-dateTime() - xs:yearMonthDuration('P1M')
         let $end-time := current-dateTime()
-        let $notes-in-span := $notes[@type eq "updated"][xs:dateTime(@date-time) ge $start-time][xs:dateTime(@date-time) le $end-time]
-        
-        where 
-            $notes-in-span[@update eq 'translation-status'][@value = ('1', '1.a')]
-            or ($translation-status = ('1', '1.a') and $notes-in-span[@update eq 'text-version'])
-        
-        return
-            element { QName('http://read.84000.co/ns/1.0', 'text') }{
-                attribute id { tei-content:id($tei) }, 
-                attribute last-modified { tei-content:last-modified($tei) },
-                attribute locked-by-user { tei-content:locked-by-user($tei) },
-                attribute status { tei-content:translation-status($tei) },
-                attribute status-group { tei-content:translation-status-group($tei) },
-                attribute recent-update { if($notes-in-span[@update eq 'translation-status'][@value = ('1', '1.a')]) then 'new-publication' else 'new-version' },
-                translation:titles($tei),
-                for $bibl in $fileDesc/tei:sourceDesc/tei:bibl
-                return
-                    translation:toh($tei, $bibl/@key)
-                ,
-                
-                let $notes-in-span-sorted :=
-                    for $note in 
-                        if($notes-in-span[@update eq 'translation-status'][@value = ('1', '1.a')]) then
-                            $notes-in-span[@update eq 'translation-status'][@value = ('1', '1.a')]
-                        else
-                            $notes-in-span[@update eq 'text-version']
-                    order by $note/@date-time ! xs:dateTime(.)
-                    return $note
-                    
-                return
-                    $notes-in-span-sorted[last()]
-                    
-            }
-        
-        
+        return (
             
+            attribute start {$start-time},
+            attribute end {$end-time},
+        
+            for $tei in $tei-content:translations-collection//tei:TEI
+            (: get notes :)
+            let $fileDesc := $tei/tei:teiHeader/tei:fileDesc
+            let $notes := $fileDesc/tei:notesStmt/tei:note
+            let $translation-status := tei-content:translation-status($tei)
+            
+            let $notes-in-span := $notes[@type eq "updated"][xs:dateTime(@date-time) ge $start-time][xs:dateTime(@date-time) le $end-time]
+            
+            where 
+                $notes-in-span[@update eq 'translation-status'][@value = ('1', '1.a')]
+                or ($translation-status = ('1', '1.a') and $notes-in-span[@update eq 'text-version'])
+            
+            return 
+                element { QName('http://read.84000.co/ns/1.0', 'text') }{
+                    attribute id { tei-content:id($tei) }, 
+                    attribute last-modified { tei-content:last-modified($tei) },
+                    attribute status { tei-content:translation-status($tei) },
+                    attribute status-group { tei-content:translation-status-group($tei) },
+                    attribute recent-update { if($notes-in-span[@update eq 'translation-status'][@value = ('1', '1.a')]) then 'new-publication' else 'new-version' },
+                    translation:titles($tei),
+                    for $bibl in $fileDesc/tei:sourceDesc/tei:bibl
+                    return
+                        translation:toh($tei, $bibl/@key)
+                    ,
+                    
+                    let $notes-in-span-sorted :=
+                        for $note in 
+                            if($notes-in-span[@update eq 'translation-status'][@value = ('1', '1.a')]) then
+                                $notes-in-span[@update eq 'translation-status'][@value = ('1', '1.a')]
+                            else
+                                $notes-in-span[@update eq 'text-version']
+                        order by $note/@date-time ! xs:dateTime(.)
+                        return $note
+                        
+                    return
+                        $notes-in-span-sorted[last()]
+                        
+                }
+        )
+    }
+    
+};
+
+declare function translations:texts-spreadsheet($texts as element(m:texts)?) as element(m:spreadsheet-data) {
+
+    element { QName('http://read.84000.co/ns/1.0', 'spreadsheet-data') } {
+    
+        attribute key { concat('84000-report-', format-dateTime(current-dateTime(), '[H01]-[m01]-[D01]-[M01]-[Y0001]'))},
+        
+        for $text in $texts/m:text
+        order by
+            $text/m:toh[1]/@number[. gt ''] ! xs:integer(.),
+            $text/m:toh[1]/@chapter-number[. gt ''] ! xs:integer(.)
+        return 
+            element row {
+                element ID { $text/@id/string() },
+                element Toh { string-join($text/m:toh/m:base, ' ') },
+                element Title { $text/m:titles/m:title[1]/text() },
+                element Status { $text/@status/string() },
+                element Pages { format-number($text/m:source/m:location/@count-pages, '#,###')},
+                element Team { $text/m:contributors/m:team[1]/m:label/text() }
+            }
+        ,
+        element row {
+            element empty { '' }
+        },
+        for $attribute in $texts/@*[string() gt '']
+        return
+            element row {
+                element parameter { local-name($attribute) },
+                element value { $attribute/string() }
+            }
+    }
+};
+
+declare function translations:recent-updates-spreadsheet($recent-updates as element(m:recent-updates)) as element(m:spreadsheet-data) {
+
+    element { QName('http://read.84000.co/ns/1.0', 'spreadsheet-data') } {
+    
+        attribute key { concat('84000-recent-updates-', format-dateTime($recent-updates/@start, '[D01]-[M01]-[Y0001]'), '-', format-dateTime($recent-updates/@end, '[D01]-[M01]-[Y0001]'))},
+        
+        for $text in $recent-updates//m:text
+        order by 
+            if($text/@recent-update eq 'new-publication') then '0' else '1',
+            $text/m:toh[1]/@number[. gt ''] ! xs:integer(.),
+            $text/m:toh[1]/@chapter-number[. gt ''] ! xs:integer(.)
+        return
+            element row {
+                element Update { $text/@recent-update/string() },
+                element ID { $text/@id/string() },
+                element Toh { string-join($text/m:toh/m:base, ' ') },
+                element Title { $text/m:titles/m:title[1]/text() },
+                element Updated { $text/@last-modified ! format-dateTime(., '[D1o] [MNn] [Y0001]') },
+                element Version {
+                    string-join($text/tei:note[@update="text-version"]/@value, ' ') 
+                },
+                element Note {
+                    string-join($text/tei:note[@update="text-version"]/descendant::text(), ' ') 
+                }
+            }
+        ,
+        element row {
+            element Empty { '' }
+        },
+        element row {
+            element Note { 'Report period: ' || format-dateTime($recent-updates/@start, '[D1o] [MNn] [Y0001]') || ' - ' || format-dateTime($recent-updates/@end, '[D1o] [MNn] [Y0001]') }
+        }
     }
     
 };

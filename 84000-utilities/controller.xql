@@ -30,7 +30,17 @@ else if (ends-with($exist:resource, ".xml")) then
     <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
         <forward url="{concat($exist:controller, '/models/', substring-before($exist:resource, '.'), '.xq')}"/>
     </dispatch>
-    
+
+else if (ends-with($exist:resource, ".xlsx")) then
+    <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+        <forward url="{concat($exist:controller, '/models/', substring-before($exist:resource, '.'), '.xq')}">
+            <add-parameter name="resource-suffix" value="xlsx"/>
+        </forward>
+        <view>
+            <forward url="/84000-reading-room/views/spreadsheet/excel.xq"/>
+        </view>
+    </dispatch>
+
 else if (ends-with($exist:resource, ".html")) then
     <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
         <forward url="{concat($exist:controller, '/models/', substring-before($exist:resource, '.'), '.xq')}"/>
@@ -39,15 +49,8 @@ else if (ends-with($exist:resource, ".html")) then
                 <set-attribute name="xslt.stylesheet" value="{concat($exist:root, $exist:controller, '/views/', substring-before($exist:resource, '.'), '.xsl')}"/>
             </forward>
         </view>
-        <!--
-        <error-handler>
-            <forward servlet="XSLTServlet">
-                <set-attribute name="xslt.stylesheet" value="{concat($exist:root, "/84000-reading-room", "/views/html/error.xsl")}"/>
-            </forward>
-        </error-handler>
-        -->
     </dispatch>
-    
+
 else
     (: everything else is passed through :)
     <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
