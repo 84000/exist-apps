@@ -391,7 +391,7 @@
                                     </xsl:choose>
                                 </div>
                                 
-                                <!-- Results summary -->
+                                <!-- Results summary / download -->
                                 <xsl:if test="m:texts">
                                     <div class="well well-sm small">
                                         
@@ -420,9 +420,9 @@
                                         
                                         <!-- Download spreadsheet -->
                                         <div>
-                                            <a>
-                                                <xsl:attribute name="href" select="concat('/search.xlsx?', string-join(/m:response/m:request/@* ! concat(local-name(.), '=', string()), '&amp;'))"/>
-                                                <xsl:value-of select="'Download spreadsheet'"/>
+                                            <a class="underline">
+                                                <xsl:attribute name="href" select="concat('/search.xlsx?', string-join(/m:response/m:request/@*[string() gt ''] ! concat(local-name(.), '=', string()), '&amp;'))"/>
+                                                <xsl:value-of select="'Download as a spreadsheet'"/>
                                             </a>
                                         </div>
                                         
