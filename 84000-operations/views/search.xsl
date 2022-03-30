@@ -25,7 +25,7 @@
                                 <table class="table table-condensed no-border no-padding hidden-print">
                                     <xsl:for-each select="m:text-statuses/m:status">
                                         <xsl:sort select="xs:integer(@index)"/>
-                                        <tr>
+                                        <tr class="vertical-middle">
                                             <td>
                                                 <xsl:value-of select="@status-id"/>
                                             </td>

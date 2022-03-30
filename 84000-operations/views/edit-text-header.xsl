@@ -921,7 +921,7 @@
                                                     <xsl:variable name="target-date-hit" select="($target-date[@date-time] and $actual-date[@date-time] and xs:dateTime($target-date/@date-time) ge xs:dateTime($actual-date/@date-time))"/>
                                                     <xsl:variable name="target-date-miss" select="($target-date[@date-time] and (xs:dateTime($target-date/@date-time) lt current-dateTime()) or ($actual-date[@date-time] and xs:dateTime($target-date/@date-time) lt xs:dateTime($actual-date/@date-time)))"/>
                                                     
-                                                    <tr>
+                                                    <tr class="vertical-middle">
                                                         <td class="small">
                                                             <xsl:if test="$status-surpassed">
                                                                 <xsl:attribute name="class" select="'text-muted'"/>

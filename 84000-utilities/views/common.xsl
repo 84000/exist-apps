@@ -127,9 +127,9 @@
                     <table class="table table-hover no-border">
                         <tbody>
                             <xsl:for-each select="$tabs//m:tab[@page]">
-                                <tr>
+                                <tr class="vertical-middle">
                                     <xsl:if test="@model eq $response-model">
-                                        <xsl:attribute name="class" select="'active'"/>
+                                        <xsl:attribute name="class" select="'vertical-middle active'"/>
                                     </xsl:if>
                                     <td>
                                         <a href="translations.html">

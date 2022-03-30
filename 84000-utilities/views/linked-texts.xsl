@@ -64,7 +64,7 @@
                         <div>
                             <table class="table no-border width-auto">
                                 <xsl:for-each select="m:link">
-                                    <tr>
+                                    <tr class="vertical-middle">
                                         <td>
                                             <xsl:value-of select="' ↳ '"/>
                                         </td>

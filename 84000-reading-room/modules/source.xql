@@ -10,7 +10,6 @@ declare namespace tei="http://www.tei-c.org/ns/1.0";
 
 import module namespace common="http://read.84000.co/common" at "common.xql";
 import module namespace translation="http://read.84000.co/translation" at "translation.xql";
-import module namespace converter="http://tbrc.org/xquery/ewts2unicode" at "java:org.tbrc.xquery.extensions.EwtsToUniModule";
 import module namespace functx="http://www.functx.com";
 
 declare variable $source:source-data-path := '/db/apps/tibetan-source/data/';

@@ -677,52 +677,66 @@
                             </h3>
                             <xsl:choose>
                                 <xsl:when test="$recent-updated-texts[@recent-update eq $recent-update-type]">
-                                    <ul class="bottom-margin">
+                                    <table class="table no-border width-auto">
                                         <xsl:for-each select="$recent-updated-texts[@recent-update eq $recent-update-type]">
                                             <xsl:sort select="number(m:toh[1]/@number)"/>
                                             <xsl:sort select="m:toh[1]/@letter"/>
                                             <xsl:sort select="number(m:toh[1]/@chapter-number)"/>
                                             <xsl:sort select="m:toh[1]/@chapter-letter"/>
                                             <xsl:variable name="toh-key" select="(m:toh/@key)[1]"/>
-                                            <li>
-                                                <h4 class="no-bottom-margin">
-                                                    <a>
-                                                        <xsl:attribute name="href" select="concat($reading-room-path, '/translation/', $toh-key, '.html')"/>
-                                                        <xsl:attribute name="target" select="concat($toh-key, '.html')"/>
-                                                        <xsl:attribute name="title" select="concat('Open ', $toh-key, '.html in the Reading Room')"/>
-                                                        <xsl:value-of select="'Toh ' || string-join(m:toh/m:base, ' / ') || ' (' || @id || ') '"/>
-                                                    </a>
-                                                </h4>
-                                                <xsl:choose>
-                                                    <xsl:when test="$recent-update-type eq 'new-publication'">
-                                                        <xsl:for-each select="tei:note[@update eq 'translation-status'][@value = ('1', '1.a')]">
-                                                            <xsl:sort select="@date-time"/>
-                                                            <p class="small">
-                                                                <span class="text-muted">
-                                                                    <xsl:value-of select="common:date-user-string('Published', @date-time, @user)"/>
-                                                                </span>
-                                                            </p>
-                                                        </xsl:for-each>
-                                                    </xsl:when>
-                                                    <xsl:otherwise>
-                                                        <xsl:for-each select="tei:note">
-                                                            <xsl:sort select="@date-time"/>
-                                                            <p class="small">
-                                                                <span class="text-muted">
-                                                                    <xsl:value-of select="common:date-user-string(concat('Version ', @value, ' created'), @date-time, @user)"/>
-                                                                </span>
-                                                                <br/>
-                                                                <span class="text-danger">
-                                                                    <xsl:value-of select="string-join(('Note: ', descendant::text() ! normalize-space()), '')"/>
-                                                                </span>
-                                                            </p>
-                                                        </xsl:for-each>
-                                                    </xsl:otherwise>
-                                                </xsl:choose>
-                                                
-                                            </li>
+                                            <tr class="vertical-top">
+                                                <td>
+                                                    <span>
+                                                        <xsl:attribute name="class">
+                                                            <xsl:choose>
+                                                                <xsl:when test="@status-group eq 'published'">
+                                                                    <xsl:value-of select="'label label-success'"/>
+                                                                </xsl:when>
+                                                                <xsl:otherwise>
+                                                                    <xsl:value-of select="'label label-warning'"/>
+                                                                </xsl:otherwise>
+                                                            </xsl:choose>
+                                                        </xsl:attribute>
+                                                        <xsl:value-of select="@status"/>
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    <h4 class="no-top-margin no-bottom-margin">
+                                                        <a>
+                                                            <xsl:attribute name="href" select="concat($reading-room-path, '/translation/', $toh-key, '.html')"/>
+                                                            <xsl:attribute name="target" select="concat($toh-key, '.html')"/>
+                                                            <xsl:attribute name="title" select="concat('Open ', $toh-key, '.html in the Reading Room')"/>
+                                                            <xsl:value-of select="'Toh ' || string-join(m:toh/m:base, ' / ') || ' (' || @id || ') '"/>
+                                                        </a>
+                                                    </h4>
+                                                    <div class="small">
+                                                        <xsl:choose>
+                                                            <xsl:when test="$recent-update-type eq 'new-publication'">
+                                                                <xsl:for-each select="tei:note[@update eq 'translation-status'][@value = ('1', '1.a')]">
+                                                                    <xsl:sort select="@date-time"/>
+                                                                    <span class="text-muted">
+                                                                        <xsl:value-of select="common:date-user-string('Published', @date-time, @user)"/>
+                                                                    </span>
+                                                                </xsl:for-each>
+                                                            </xsl:when>
+                                                            <xsl:otherwise>
+                                                                <xsl:for-each select="tei:note">
+                                                                    <xsl:sort select="@date-time"/>
+                                                                    <span class="text-muted">
+                                                                        <xsl:value-of select="common:date-user-string(concat('Version ', @value, ' created'), @date-time, @user)"/>
+                                                                    </span>
+                                                                    <br/>
+                                                                    <span class="text-danger">
+                                                                        <xsl:value-of select="string-join(('Note: ', descendant::text() ! normalize-space()), '')"/>
+                                                                    </span>
+                                                                </xsl:for-each>
+                                                            </xsl:otherwise>
+                                                        </xsl:choose>
+                                                    </div>
+                                                </td>
+                                            </tr>
                                         </xsl:for-each>
-                                    </ul>
+                                    </table>
                                 </xsl:when>
                                 <xsl:otherwise>
                                     <p class="text-muted italic">
