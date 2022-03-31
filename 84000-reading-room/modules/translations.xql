@@ -168,13 +168,15 @@ declare function translations:texts($status as xs:string*, $resource-ids as xs:s
     return
     
         element { QName('http://read.84000.co/ns/1.0', 'texts') } {
-            attribute resource-ids { string-join($resource-ids, ',') },
+            
             attribute status { string-join($status, ',') },
+            attribute resource-ids { string-join($resource-ids, ',') },
             attribute sort { $sort },
             attribute deduplicate { $deduplicate },
             
             (: Sort the result, the sort may be based on the text detail :)
             translations:sorted-texts($texts, $sort)
+            
         }
 
 };
@@ -369,6 +371,7 @@ declare function translations:filtered-texts(
         
         return 
             element { QName('http://read.84000.co/ns/1.0', 'texts') } {
+            
                 attribute work { $work },
                 attribute status { string-join($status, ',') },
                 attribute sort { $sort },
@@ -620,30 +623,56 @@ declare function translations:recent-updates() as element(m:recent-updates) {
     
 };
 
-declare function translations:texts-spreadsheet($texts as element(m:texts)?) as element(m:spreadsheet-data) {
+declare function translations:texts-spreadsheet($response as element(m:response)) as element(m:spreadsheet-data) {
 
     element { QName('http://read.84000.co/ns/1.0', 'spreadsheet-data') } {
     
         attribute key { concat('84000-report-', format-dateTime(current-dateTime(), '[H01]-[m01]-[D01]-[M01]-[Y0001]'))},
         
-        for $text in $texts/m:text
+        for $text in $response/m:texts/m:text
+        let $next-target := $response/m:translation-status/m:text[@text-id eq $text/@id]/m:target-date[@next eq 'true']
         order by
             $text/m:toh[1]/@number[. gt ''] ! xs:integer(.),
             $text/m:toh[1]/@chapter-number[. gt ''] ! xs:integer(.)
         return 
             element row {
-                element ID { $text/@id/string() },
-                element Toh { string-join($text/m:toh/m:base, ' ') },
-                element Title { $text/m:titles/m:title[1]/text() },
-                element Status { $text/@status/string() },
-                element Pages { format-number($text/m:source/m:location/@count-pages, '#,###')},
-                element Team { $text/m:contributors/m:team[1]/m:label/text() }
+                element ID { 
+                    $text/@id/string() 
+                },
+                element Toh { 
+                    attribute width { '10' },
+                    string-join($text/m:toh/m:base, ' ') 
+                },
+                element Status { 
+                    attribute width { '10' },
+                    $text/@status/string() 
+                },
+                element Pages { 
+                    attribute width { '10' },
+                    format-number($text/m:source/m:location/@count-pages, '#,###')
+                },
+                element Title { 
+                    attribute width { '80' },
+                    $text/m:titles/m:title[1]/text() 
+                },
+                element Team { 
+                    attribute width { '60' },
+                    $text/m:contributors/m:team[1]/m:label/text()
+                },
+                element Target { 
+                    attribute width { '10' },
+                    $next-target/@status-id/string() 
+                },
+                element Date { $next-target/@date-time ! format-dateTime(., '[D01]-[M01]-[Y0001]') }
             }
         ,
         element row {
             element empty { '' }
         },
-        for $attribute in $texts/@*[string() gt '']
+        element row {
+            element parameters { 'Parameters' }
+        },
+        for $attribute in $response/m:request/@*[string() gt '']
         return
             element row {
                 element parameter { local-name($attribute) },
@@ -667,22 +696,35 @@ declare function translations:recent-updates-spreadsheet($recent-updates as elem
             element row {
                 element Update { $text/@recent-update/string() },
                 element ID { $text/@id/string() },
-                element Toh { string-join($text/m:toh/m:base, ' ') },
-                element Title { $text/m:titles/m:title[1]/text() },
-                element Updated { $text/@last-modified ! format-dateTime(., '[D1o] [MNn] [Y0001]') },
-                element Version {
-                    string-join($text/tei:note[@update="text-version"]/@value, ' ') 
+                element Toh { 
+                    attribute width { '10' },
+                    string-join($text/m:toh/m:base, ' ') 
                 },
+                element Title { 
+                    attribute width { '80' },
+                    $text/m:titles/m:title[1]/text() 
+                },
+                element Updated { $text/@last-modified ! format-dateTime(., '[D01]-[M01]-[Y0001]') },
+                element Version { string-join($text/tei:note[@update="text-version"]/@value, ' ') },
                 element Note {
+                    attribute width { '80' }, 
                     string-join($text/tei:note[@update="text-version"]/descendant::text(), ' ') 
                 }
             }
         ,
         element row {
-            element Empty { '' }
+            element empty { '' }
         },
         element row {
-            element Note { 'Report period: ' || format-dateTime($recent-updates/@start, '[D1o] [MNn] [Y0001]') || ' - ' || format-dateTime($recent-updates/@end, '[D1o] [MNn] [Y0001]') }
+            element parameters { 'Parameters' }
+        },
+        element row {
+            element parameter { 'Start date' },
+            element value { format-dateTime($recent-updates/@start, '[D1o] [MNn] [Y0001]') }
+        },
+        element row {
+            element parameter { 'End date' },
+            element value { format-dateTime($recent-updates/@end, '[D1o] [MNn] [Y0001]') }
         }
     }
     

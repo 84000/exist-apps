@@ -586,10 +586,16 @@ declare function glossary:spreadsheet-data($glossary-combined as element(m:gloss
                 element Translation { string-join($term/m:translation, '; ') },
                 element Sanskrit { string-join($term/m:sanskrit, '; ') },
                 element Chinese { string-join($term/m:chinese, '; ') },
-                element Definition { string-join($term/m:definition, '; ')},
+                element Definition { 
+                    attribute width { '80' }, 
+                    string-join($term/m:definition, '; ')
+                },
                 element Tohs { string-join($term/m:ref/m:toh , '; ') },
                 if($term[@href]) then
-                    element Link { $term/@href/string() }
+                    element Link { 
+                        attribute width { '40' }, 
+                        $term/@href/string() 
+                    }
                 else ()
             }
             

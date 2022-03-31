@@ -29,8 +29,20 @@
                     </sheetViews>
                     <sheetFormatPr defaultColWidth="10" defaultRowHeight="12.8" zeroHeight="false" outlineLevelRow="0" outlineLevelCol="0"/>
                     <cols>
-                        <col collapsed="false" customWidth="true" hidden="false" outlineLevel="0" min="1" max="8" style="0" width="20"/>
-                        <col collapsed="false" customWidth="true" hidden="false" outlineLevel="0" min="9" max="9" style="0" width="40"/>
+                        <xsl:for-each select="$row1cols">
+                            <xsl:variable name="colNum" select="position()"/>
+                            <xsl:variable name="width">
+                                <xsl:choose>
+                                    <xsl:when test="@width">
+                                        <xsl:value-of select="@width"/>
+                                    </xsl:when>
+                                    <xsl:otherwise>
+                                        <xsl:value-of select="'20'"/>
+                                    </xsl:otherwise>
+                                </xsl:choose>
+                            </xsl:variable>
+                            <col min="{ $colNum }" max="{ $colNum }" collapsed="false" customWidth="true" hidden="false" outlineLevel="0" style="0" width="{ $width }"/>
+                        </xsl:for-each>
                     </cols>
                     <sheetData>
                         <row r="1" hidden="false" customHeight="false" outlineLevel="0" collapsed="false">

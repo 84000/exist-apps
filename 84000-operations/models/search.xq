@@ -50,18 +50,20 @@ let $texts :=
         translations:filtered-texts($work, $status, $sort, $pages-min, $pages-max, $filter, $toh-min, $toh-max, $deduplicate, $target-date-start, $target-date-end)
 
 (: If not a date query then get the translation-statuses retrospectively :)
-let $translation-statuses := 
-    if(not($target-date-search)) then 
-        translation-status:texts($texts/m:text/@id)
-    else
-        $translation-statuses
-
+let $translation-status := 
+    element { QName('http://read.84000.co/ns/1.0', 'translation-status') } {
+        if(not($target-date-search)) then 
+            translation-status:texts($texts/m:text/@id)
+        else
+            $translation-statuses
+    }
+    
 let $texts := 
     if($sort eq 'due-date') then
         element { node-name($texts) } {
             $texts/@*,
             for $text in $texts/m:text
-                let $target-date-next := $translation-statuses[@text-id eq $text/@id]/m:target-date[@next eq 'true'][1]
+                let $target-date-next := $translation-status/m:text[@text-id eq $text/@id]/m:target-date[@next eq 'true'][1]
                 order by ($target-date-next/@due-days ! xs:integer(.), 0)[1]
             return 
                 $text
@@ -69,29 +71,30 @@ let $texts :=
     else
         $texts
 
+let $request := 
+    element { QName('http://read.84000.co/ns/1.0', 'request') } {
+            attribute work { $work },
+            attribute status { string-join($status, ',') },
+            attribute sort { $sort },
+            attribute pages-min { $pages-min },
+            attribute pages-max { $pages-max },
+            attribute filter { $filter },
+            attribute deduplicate { $deduplicate },
+            attribute toh-min { $toh-min },
+            attribute toh-max { $toh-max },
+            attribute target-date-type { $target-date-type },
+            attribute target-date-start { $target-date-start },
+            attribute target-date-end { $target-date-end }
+        }
+
 let $xml-response :=
     common:response(
         'operations/search', 
         'operations', 
         (
-            element { QName('http://read.84000.co/ns/1.0', 'request') } {
-                attribute work { $work },
-                attribute status { string-join($status, ',') },
-                attribute sort { $sort },
-                attribute pages-min { $pages-min },
-                attribute pages-max { $pages-max },
-                attribute filter { $filter },
-                attribute deduplicate { $deduplicate },
-                attribute toh-min { $toh-min },
-                attribute toh-max { $toh-max },
-                attribute target-date-type { $target-date-type },
-                attribute target-date-start { $target-date-start },
-                attribute target-date-end { $target-date-end }
-            },
+            $request,
             $texts,
-            element { QName('http://read.84000.co/ns/1.0', 'translation-status') } {
-                $translation-statuses
-            },
+            $translation-status,
             $text-statuses-selected,
             $sponsorship:sponsorship-groups,
             if(common:user-in-group('utilities')) then
@@ -111,7 +114,7 @@ return
     
     (: return spreadsheet :)
     else if($resource-suffix eq 'xlsx') then (
-        let $spreadsheet-data := translations:texts-spreadsheet($texts)
+        let $spreadsheet-data := translations:texts-spreadsheet($xml-response)
         (:return if(true()) then $spreadsheet-data else :)
         let $spreadsheet-zip := common:spreadsheet-zip($spreadsheet-data)
         return (
