@@ -9,11 +9,12 @@
             
             <analyzer class="org.apache.lucene.analysis.standard.StandardAnalyzer" id="en"/>
             
-            <!-- <analyzer class="org.tbrc.lucene.analysis.TibWhitespaceAnalyzer" id="bo"/> -->
-            <analyzer class="io.bdrc.lucene.bo.TibetanAnalyzer" id="bo">
-                <param name="segmentInWords" type="boolean" value="false"/>
+            <analyzer id="bo" class="io.bdrc.lucene.bo.TibetanAnalyzer">
+                <param name="segmentInWords" type="boolean" value="true"/>
                 <param name="lemmatize" type="boolean" value="true"/>
                 <param name="filterChars" type="boolean" value="true"/>
+                <param name="inputMethod" type="java.lang.String" value="unicode"/>
+                <param name="stopFilename" type="java.lang.String" value=""/>
             </analyzer>
             
             <!-- *.tmx -->

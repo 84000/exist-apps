@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
     
     <xsl:import href="../../84000-reading-room/views/html/website-page.xsl"/>
     <xsl:import href="common.xsl"/>
@@ -36,34 +36,34 @@
                         
                         <ul>
                             <li>
-                                <a href="?collection=tests">Test data</a>
+                                <a href="?collection=tests" data-loading="Loading...">Test data</a>
                             </li>
                             <li>
-                                <a href="?collection=linked-data">Linked Data references</a>
+                                <a href="?collection=linked-data" data-loading="Loading...">Linked Data references</a>
                             </li>
                             <li>
-                                <a href="?collection=operations">Operations data</a>
+                                <a href="?collection=operations" data-loading="Loading...">Operations data</a>
                             </li>
                             <li>
-                                <a href="?collection=local">Local data</a>
+                                <a href="?collection=local" data-loading="Loading...">Local data</a>
                             </li>
                             <li>
-                                <a href="?collection=tei">TEI data</a>
+                                <a href="?collection=tei" data-loading="Loading...">TEI data</a>
                             </li>
                             <li>
-                                <a href="?collection=translation-memory">Translation memory data</a>
+                                <a href="?collection=translation-memory" data-loading="Loading...">Translation memory data</a>
                             </li>
                             <li>
-                                <a href="?collection=translation-memory-generator">Translation memory generator data</a>
+                                <a href="?collection=translation-memory-generator" data-loading="Loading...">Translation memory generator data</a>
                             </li>
                             <li>
-                                <a href="?collection=source">Tibetan source data</a>
+                                <a href="?collection=source" data-loading="Loading...">Tibetan source data</a>
                             </li>
                             <li>
-                                <a href="?collection=reading-room-config">Reading Room config</a>
+                                <a href="?collection=reading-room-config" data-loading="Loading...">Reading Room config</a>
                             </li>
                             <li>
-                                <a href="?collection=related-files">Related files</a>
+                                <a href="?collection=related-files" data-loading="Loading...">Related files</a>
                             </li>
                         </ul>
                         

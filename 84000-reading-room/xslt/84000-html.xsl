@@ -501,18 +501,18 @@
             </div>
             <ul class="list-group">
                 <xsl:for-each select="eft:item/eft:item">
-                    <li>
-                        <a class="list-group-item">
+                    <li class="list-group-item">
+                        <xsl:if test="@url = $active-url">
+                            <xsl:attribute name="class">
+                                <xsl:value-of select="'list-group-item active'"/>
+                            </xsl:attribute>
+                        </xsl:if>
+                        <a>
                             <xsl:attribute name="href">
                                 <xsl:call-template name="local-url">
                                     <xsl:with-param name="url" select="@url"/>
                                 </xsl:call-template>
                             </xsl:attribute>
-                            <xsl:if test="@url = $active-url">
-                                <xsl:attribute name="class">
-                                    <xsl:value-of select="'list-group-item active'"/>
-                                </xsl:attribute>
-                            </xsl:if>
                             <xsl:value-of select="eft:label"/>
                         </a>
                     </li>

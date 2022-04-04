@@ -12,7 +12,6 @@
                 <param name="inputEncoding" type="java.lang.String" value="roman"/>
                 <param name="mergePrepositions" type="boolean" value="false"/>
                 <param name="filterGeminates" type="boolean" value="true"/>
-                <param name="lenient" type="java.lang.String" value="no"/>
             </analyzer>
             
             <analyzer id="en" class="org.apache.lucene.analysis.standard.StandardAnalyzer"/>
@@ -21,6 +20,8 @@
                 <param name="segmentInWords" type="boolean" value="true"/>
                 <param name="lemmatize" type="boolean" value="true"/>
                 <param name="filterChars" type="boolean" value="true"/>
+                <param name="inputMethod" type="java.lang.String" value="unicode"/>
+                <param name="stopFilename" type="java.lang.String" value=""/>
             </analyzer>
             
             <!-- lucene-tests.xml -->

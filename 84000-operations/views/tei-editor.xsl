@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:output="http://www.w3.org/2010/xslt-xquery-serialization" xmlns:ops="http://operations.84000.co" xmlns:common="http://read.84000.co/common" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:markdown="http://read.84000.co/markdown" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:output="http://www.w3.org/2010/xslt-xquery-serialization" xmlns:common="http://read.84000.co/common" xmlns:markdown="http://read.84000.co/markdown" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:ops="http://operations.84000.co" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
     
     <xsl:import href="../../84000-reading-room/views/html/website-page.xsl"/>
     <xsl:import href="common.xsl"/>
@@ -251,6 +251,9 @@
                                                     </div>
                                                     <div>
                                                         <button type="submit" class="btn btn-primary pull-right" data-loading="Updating content...">
+                                                            <xsl:if test="(m:translation, m:knowledgebase/m:page)[1][@locked-by-user gt '']">
+                                                                <xsl:attribute name="disabled" select="'disabled'"/>
+                                                            </xsl:if>
                                                             <xsl:value-of select="'Update Content'"/>
                                                         </button>
                                                     </div>
@@ -309,6 +312,9 @@
                                                                 </div>
                                                                 <div>
                                                                     <button type="submit" class="btn btn-primary pull-right" data-loading="Adding element...">
+                                                                        <xsl:if test="(m:translation, m:knowledgebase/m:page)[1][@locked-by-user gt '']">
+                                                                            <xsl:attribute name="disabled" select="'disabled'"/>
+                                                                        </xsl:if>
                                                                         <xsl:value-of select="'Add element'"/>
                                                                     </button>
                                                                 </div>
@@ -366,6 +372,9 @@
                                                     </div>
                                                     <div>
                                                         <button type="submit" class="btn btn-primary pull-right" data-loading="Submitting comment...">
+                                                            <xsl:if test="(m:translation, m:knowledgebase/m:page)[1][@locked-by-user gt '']">
+                                                                <xsl:attribute name="disabled" select="'disabled'"/>
+                                                            </xsl:if>
                                                             <xsl:value-of select="'Submit Comment'"/>
                                                         </button>
                                                     </div>
@@ -441,16 +450,22 @@
                                             <input type="hidden" name="form-action" value="unlock-tei"/>
                                             
                                             <div class="form-group center-vertical full-width">
-                                                <div class="text-danger">
-                                                    <xsl:value-of select="'Currently locked by you'"/>
-                                                    <br/>
-                                                    <xsl:value-of select="'Locking the file alerts other users that changes are being made'"/>
-                                                </div>
                                                 <div>
+                                                    <p class="text-danger">
+                                                        <xsl:value-of select="'Currently locked by you'"/>
+                                                    </p>
+                                                    <p>
+                                                        <xsl:value-of select="'Locking the file alerts other users that changes are being made'"/>
+                                                    </p>
+                                                    <p>
+                                                        <xsl:value-of select="'To unlock the file close it in the Oxygen XML editor '"/>
+                                                    </p>
+                                                </div>
+                                                <!--<div>
                                                     <button type="submit" class="btn btn-danger pull-right" data-loading="Updating lock...">
                                                         <xsl:value-of select="'Un-lock the file'"/>
                                                     </button>
-                                                </div>
+                                                </div>-->
                                             </div>
                                             
                                         </xsl:when>

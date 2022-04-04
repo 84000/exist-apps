@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
     
     <xsl:import href="../../xslt/tei-to-xhtml.xsl"/>
 
@@ -227,9 +227,10 @@
                             <xsl:if test="m:translation/@status = $render-status">
                                 
                                 <h4>
-                                    <xsl:value-of select="'Contents'"/>
+                                    <xsl:value-of select="'Table of Contents'"/>
                                 </h4>
                                 <div class="data-container bottom-margin"/>
+                                <hr/>
                                 
                                 <h4>
                                     <xsl:value-of select="'Search this text'"/>
@@ -245,9 +246,25 @@
                                         </span>
                                     </div>
                                 </form>
-                            
+                                <hr/>
+                                
+                                <xsl:if test="$communications-site-path">
+                                    <h4>
+                                        <xsl:value-of select="'Spotted a mistake?'"/>
+                                    </h4>
+                                    <p class="small text-muted">
+                                        <xsl:value-of select="'Please use the contact form provided to '"/>
+                                        <a target="84000-comms">
+                                            <xsl:attribute name="href" select="concat($communications-site-path, '/about/contact/?toh=', m:translation/m:source/m:toh[1] ,'#contact-forms-suggest-a-correction')"/>
+                                            <xsl:value-of select="'suggest a correction'"/>
+                                        </a>
+                                        <xsl:value-of select="'.'"/>
+                                    </p>
+                                    <hr/>
+                                </xsl:if>
+                                
                                 <h4>
-                                    <xsl:value-of select="'Download Options'"/>
+                                    <xsl:value-of select="'Other ways to read'"/>
                                 </h4>
                                 <table class="contents-table bottom-margin">
                                     <tbody>
@@ -344,27 +361,13 @@
                                         
                                     </tbody>
                                 </table>
-                                
-                                <xsl:if test="$communications-site-path">
-                                    <h4>
-                                        <xsl:value-of select="'Spotted a mistake?'"/>
-                                    </h4>
-                                    <p class="small text-muted">
-                                        <xsl:value-of select="'Please use the contact form provided to '"/>
-                                        <a target="84000-comms">
-                                            <xsl:attribute name="href" select="concat($communications-site-path, '/about/contact/?toh=', m:translation/m:source/m:toh[1] ,'#contact-forms-suggest-a-correction')"/>
-                                            <xsl:value-of select="'suggest a correction'"/>
-                                        </a>
-                                        <xsl:value-of select="'.'"/>
-                                    </p>
-                                </xsl:if>
+                                <hr/>
                                 
                             </xsl:if>
                             
                             <h4>
-                                <xsl:value-of select="'Other Links'"/>
+                                <xsl:value-of select="'Other links'"/>
                             </h4>
-                            
                             <table class="contents-table bottom-margin">
                                 <tbody>
                                     

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:common="http://read.84000.co/common" xmlns:epub="http://www.idpf.org/2007/ops" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:functx="http://www.functx.com" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:epub="http://www.idpf.org/2007/ops" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:functx="http://www.functx.com" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
     
     <!-- Transforms tei to xhtml -->
     
@@ -3269,105 +3269,109 @@
         <xsl:param name="search-text" as="xs:string"/>
         <xsl:param name="selected-term-lang" as="xs:string"/>
         
-        <xsl:element name="entity-data" namespace="http://read.84000.co/ns/1.0">
+        <xsl:variable name="related-entries" select="key('related-entries', $entity/m:instance/@id, $root)" as="element(m:entry)*"/>
+        
+        <xsl:if test="$related-entries">
             
-            <xsl:attribute name="ref" select="$entity/@xml:id"/>
-            
-            <xsl:variable name="related-entries" select="key('related-entries', $entity/m:instance/@id, $root)" as="element(m:entry)*"/>
-            
-            <xsl:attribute name="related-entries" select="count($related-entries)"/>
-            
-            <xsl:variable name="term-empty-bo">
-                <xsl:call-template name="text">
-                    <xsl:with-param name="global-key" select="'glossary.term-empty-bo'"/>
-                </xsl:call-template>
-            </xsl:variable>
-            
-            <xsl:variable name="term-empty-sa-ltn">
-                <xsl:call-template name="text">
-                    <xsl:with-param name="global-key" select="'glossary.term-empty-sa-ltn'"/>
-                </xsl:call-template>
-            </xsl:variable>
-            
-            <xsl:variable name="primary-terms" as="element(m:term)*">
-                <xsl:choose>
-                    <xsl:when test="$related-entries/m:term[@xml:lang eq 'bo'][text()][not(text() = ('', $term-empty-bo))]">
-                        <xsl:sequence select="$related-entries/m:term[@xml:lang eq 'bo']"/>
-                    </xsl:when>
-                    <xsl:otherwise>
-                        <xsl:sequence select="$related-entries/m:term[@xml:lang eq 'Sa-Ltn'][text()][not(text() = ('', $term-empty-sa-ltn))]"/>
-                    </xsl:otherwise>
-                </xsl:choose>
-            </xsl:variable>
-            
-            <xsl:variable name="sorted-terms" as="element(m:term)*">
-                <xsl:perform-sort select="$primary-terms">
-                    <xsl:sort select="string-length(lower-case(data()))" order="descending"/>
-                </xsl:perform-sort>
-            </xsl:variable>
-            
-            <xsl:variable name="longest-term" select="if($sorted-terms) then $sorted-terms[1] else ($entity/m:label[@xml:lang eq 'en'], $entity/m:label[@xml:lang eq 'Sa-Ltn'], $entity/m:label[@xml:lang eq 'Bo-Ltn'])[1]"/>
-            
-            <xsl:element name="label" namespace="http://read.84000.co/ns/1.0">
-                <xsl:attribute name="type" select="'primary'"/>
-                <xsl:attribute name="xml:lang" select="$longest-term/@xml:lang"/>
-                <xsl:value-of select="$longest-term"/>
-            </xsl:element>
-            
-            <xsl:if test="$longest-term[@xml:lang eq 'bo']">
+            <xsl:element name="entity-data" namespace="http://read.84000.co/ns/1.0">
                 
-                <xsl:variable name="sorted-secondary-terms" as="element(m:term)*">
-                    <xsl:perform-sort select="$related-entries/m:term[@xml:lang eq 'Bo-Ltn']">
-                        <xsl:sort select="string-length(lower-case(data()))" order="descending"/>
-                    </xsl:perform-sort>
+                <xsl:attribute name="ref" select="$entity/@xml:id"/>
+                
+                <xsl:attribute name="related-entries" select="count($related-entries)"/>
+                
+                <xsl:variable name="term-empty-bo">
+                    <xsl:call-template name="text">
+                        <xsl:with-param name="global-key" select="'glossary.term-empty-bo'"/>
+                    </xsl:call-template>
                 </xsl:variable>
                 
-                <xsl:if test="$sorted-secondary-terms">
-                    <xsl:element name="label" namespace="http://read.84000.co/ns/1.0">
-                        <xsl:attribute name="type" select="'secondary'"/>
-                        <xsl:attribute name="xml:lang" select="$sorted-secondary-terms[1]/@xml:lang"/>
-                        <xsl:value-of select="$sorted-secondary-terms[1]"/>
-                    </xsl:element>
-                </xsl:if>
+                <xsl:variable name="term-empty-sa-ltn">
+                    <xsl:call-template name="text">
+                        <xsl:with-param name="global-key" select="'glossary.term-empty-sa-ltn'"/>
+                    </xsl:call-template>
+                </xsl:variable>
                 
-            </xsl:if>
-            
-            <xsl:for-each-group select="$related-entries/m:term[@xml:lang eq $selected-term-lang]" group-by="string-join(tokenize(data(), '\s+') ! lower-case(data()) ! common:standardized-sa(.) ! common:alphanumeric(.), ' ')">
-                
-                <xsl:sort select="string-join(tokenize(data(), '\s+') ! lower-case(data()) ! common:standardized-sa(.) ! common:alphanumeric(.), ' ')"/>
-                
-                <xsl:variable name="match-text" select="string-join(tokenize(data(), '\s+') ! lower-case(.) ! common:standardized-sa(.) ! common:alphanumeric(.), ' ')" as="xs:string"/>
-                <xsl:variable name="match-regex" as="xs:string">
+                <xsl:variable name="primary-terms" as="element(m:term)*">
                     <xsl:choose>
-                        <xsl:when test="@xml:lang eq 'en'">
-                            <xsl:value-of select="concat(if(string-length($search-text) ne 1) then '(?:^|\s+)' else '^(The\s+|A\s+|An\s+)?', string-join(tokenize($search-text, '\s+') ! common:standardized-sa(.) ! common:alphanumeric(.), '.*\s+'))"/>
-                        </xsl:when>
-                        <xsl:when test="@xml:lang eq 'Bo-Ltn'">
-                            <xsl:value-of select="concat(if(string-length($search-text) ne 1) then '' else '^', string-join(tokenize($search-text, '\s+') ! common:standardized-sa(.) ! common:alphanumeric(.), '.*\s+'))"/>
+                        <xsl:when test="$related-entries/m:term[@xml:lang eq 'bo'][text()][not(text() = ('', $term-empty-bo))]">
+                            <xsl:sequence select="$related-entries/m:term[@xml:lang eq 'bo']"/>
                         </xsl:when>
                         <xsl:otherwise>
-                            <xsl:value-of select="concat(if(string-length($search-text) ne 1) then '(?:^|\s+)' else '^', string-join(tokenize($search-text, '\s+') ! common:standardized-sa(.) ! common:alphanumeric(.), '.*\s+'))"/>
+                            <xsl:sequence select="$related-entries/m:term[@xml:lang eq 'Sa-Ltn'][text()][not(text() = ('', $term-empty-sa-ltn))]"/>
                         </xsl:otherwise>
                     </xsl:choose>
                 </xsl:variable>
                 
-                <xsl:element name="term" namespace="http://read.84000.co/ns/1.0">
-                    <xsl:variable name="term-entry-id" select="parent::m:entry/@id"/>
-                    <xsl:attribute name="xml:lang" select="@xml:lang"/>
-                    <xsl:attribute name="word-count" select="count(tokenize($match-text, '\s+'))"/>
-                    <xsl:attribute name="letter-count" select="string-length($match-text)"/>
-                    <xsl:if test="matches($match-text, $match-regex, 'i')">
-                        <xsl:attribute name="matches" select="true()"/>
-                    </xsl:if>
-                    <xsl:if test="$entity/m:instance[@id eq $term-entry-id][m:flag]">
-                        <xsl:attribute name="flagged" select="true()"/>
-                    </xsl:if>
-                    <xsl:value-of select="data()"/>
+                <xsl:variable name="sorted-terms" as="element(m:term)*">
+                    <xsl:perform-sort select="$primary-terms">
+                        <xsl:sort select="string-length(lower-case(data()))" order="descending"/>
+                    </xsl:perform-sort>
+                </xsl:variable>
+                
+                <xsl:variable name="longest-term" select="if($sorted-terms) then $sorted-terms[1] else ($entity/m:label[@xml:lang eq 'en'], $entity/m:label[@xml:lang eq 'Sa-Ltn'], $entity/m:label[@xml:lang eq 'Bo-Ltn'])[1]"/>
+                
+                <xsl:element name="label" namespace="http://read.84000.co/ns/1.0">
+                    <xsl:attribute name="type" select="'primary'"/>
+                    <xsl:attribute name="xml:lang" select="$longest-term/@xml:lang"/>
+                    <xsl:value-of select="$longest-term"/>
                 </xsl:element>
                 
-            </xsl:for-each-group>
+                <xsl:if test="$longest-term[@xml:lang eq 'bo']">
+                    
+                    <xsl:variable name="sorted-secondary-terms" as="element(m:term)*">
+                        <xsl:perform-sort select="$related-entries/m:term[@xml:lang eq 'Bo-Ltn']">
+                            <xsl:sort select="string-length(lower-case(data()))" order="descending"/>
+                        </xsl:perform-sort>
+                    </xsl:variable>
+                    
+                    <xsl:if test="$sorted-secondary-terms">
+                        <xsl:element name="label" namespace="http://read.84000.co/ns/1.0">
+                            <xsl:attribute name="type" select="'secondary'"/>
+                            <xsl:attribute name="xml:lang" select="$sorted-secondary-terms[1]/@xml:lang"/>
+                            <xsl:value-of select="$sorted-secondary-terms[1]"/>
+                        </xsl:element>
+                    </xsl:if>
+                    
+                </xsl:if>
+                
+                <xsl:for-each-group select="$related-entries/m:term[@xml:lang eq $selected-term-lang]" group-by="string-join(tokenize(data(), '\s+') ! lower-case(data()) ! common:standardized-sa(.) ! common:alphanumeric(.), ' ')">
+                    
+                    <xsl:sort select="string-join(tokenize(data(), '\s+') ! lower-case(data()) ! common:standardized-sa(.) ! common:alphanumeric(.), ' ')"/>
+                    
+                    <xsl:variable name="match-text" select="string-join(tokenize(data(), '\s+') ! lower-case(.) ! common:standardized-sa(.) ! common:alphanumeric(.), ' ')" as="xs:string"/>
+                    <xsl:variable name="match-regex" as="xs:string">
+                        <xsl:choose>
+                            <xsl:when test="@xml:lang eq 'en'">
+                                <xsl:value-of select="concat(if(string-length($search-text) ne 1) then '(?:^|\s+)' else '^(The\s+|A\s+|An\s+)?', string-join(tokenize($search-text, '\s+') ! common:standardized-sa(.) ! common:alphanumeric(.), '.*\s+'))"/>
+                            </xsl:when>
+                            <xsl:when test="@xml:lang eq 'Bo-Ltn'">
+                                <xsl:value-of select="concat(if(string-length($search-text) ne 1) then '' else '^', string-join(tokenize($search-text, '\s+') ! common:standardized-sa(.) ! common:alphanumeric(.), '.*\s+'))"/>
+                            </xsl:when>
+                            <xsl:otherwise>
+                                <xsl:value-of select="concat(if(string-length($search-text) ne 1) then '(?:^|\s+)' else '^', string-join(tokenize($search-text, '\s+') ! common:standardized-sa(.) ! common:alphanumeric(.), '.*\s+'))"/>
+                            </xsl:otherwise>
+                        </xsl:choose>
+                    </xsl:variable>
+                    
+                    <xsl:element name="term" namespace="http://read.84000.co/ns/1.0">
+                        <xsl:variable name="term-entry-id" select="parent::m:entry/@id"/>
+                        <xsl:attribute name="xml:lang" select="@xml:lang"/>
+                        <xsl:attribute name="word-count" select="count(tokenize($match-text, '\s+'))"/>
+                        <xsl:attribute name="letter-count" select="string-length($match-text)"/>
+                        <xsl:if test="matches($match-text, $match-regex, 'i')">
+                            <xsl:attribute name="matches" select="true()"/>
+                        </xsl:if>
+                        <xsl:if test="$entity/m:instance[@id eq $term-entry-id][m:flag]">
+                            <xsl:attribute name="flagged" select="true()"/>
+                        </xsl:if>
+                        <xsl:value-of select="data()"/>
+                    </xsl:element>
+                    
+                </xsl:for-each-group>
+                
+            </xsl:element>
             
-        </xsl:element>
+        </xsl:if>
         
     </xsl:template>
     

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:ops="http://operations.84000.co" xmlns:common="http://read.84000.co/common" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:m="http://read.84000.co/ns/1.0" xmlns:ops="http://operations.84000.co" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
     
     <xsl:import href="../../84000-reading-room/xslt/tei-to-xhtml.xsl"/>
     <xsl:import href="common.xsl"/>
@@ -341,6 +341,9 @@
                     <div class="form-group">
                         <div class="col-sm-12">
                             <button type="submit" class="btn btn-primary pull-right">
+                                <xsl:if test="/m:response/m:text[@locked-by-user gt '']">
+                                    <xsl:attribute name="disabled" select="'disabled'"/>
+                                </xsl:if>
                                 <xsl:value-of select="'Save'"/>
                             </button>
                         </div>
@@ -527,7 +530,12 @@
                                     </span>
                                     <span>|</span>
                                     <span>
-                                        <button type="submit" class="btn btn-primary">Save</button>
+                                        <button type="submit" class="btn btn-primary">
+                                            <xsl:if test="/m:response/m:text[@locked-by-user gt '']">
+                                                <xsl:attribute name="disabled" select="'disabled'"/>
+                                            </xsl:if>
+                                            <xsl:value-of select="'Save'"/>
+                                        </button>
                                     </span>
                                 </div>
                             </div>
@@ -1000,6 +1008,9 @@
                     <div class="center-vertical full-width">
                         <span>
                             <button type="submit" class="btn btn-primary pull-right">
+                                <xsl:if test="/m:response/m:text[@locked-by-user gt '']">
+                                    <xsl:attribute name="disabled" select="'disabled'"/>
+                                </xsl:if>
                                 <xsl:value-of select="'Update'"/>
                             </button>
                         </span>
@@ -1285,6 +1296,9 @@
                     
                     <div class="pull-right">
                         <button type="submit" class="btn btn-primary">
+                            <xsl:if test="/m:response/m:text[@locked-by-user gt '']">
+                                <xsl:attribute name="disabled" select="'disabled'"/>
+                            </xsl:if>
                             <xsl:value-of select="'Save'"/>
                         </button>
                     </div>

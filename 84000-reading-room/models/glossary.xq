@@ -98,7 +98,7 @@ let $cache-key :=
 
 let $cached := common:cache-get($request, $cache-key)
 
-return  if($cached) then  $cached else
+return  if($cached) then $cached else
     
 let $type-glossary-type := $entity-type/@glossary-type
 
@@ -119,6 +119,8 @@ let $entity-list :=
     return
         $instances/parent::m:entity
 
+(: Needs optimising 
+    - we only need the related entities of the displayed entity, but we get them all if we don't know which is that is  :)
 let $related := entities:related($request-entity | $entity-list, false(), $exclude-flagged, if(not($view-mode[@id eq 'editor'])) then 'excluded' else '')
 
 let $downloads := 

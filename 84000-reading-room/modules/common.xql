@@ -58,7 +58,9 @@ function common:app-id() as xs:string {
     
 };
 
-declare function common:request-lang() as xs:string {
+declare 
+    %test:assertEquals("en")
+function common:request-lang() as xs:string {
     if(request:exists()) then
         (request:get-parameter('lang', 'en')[. = ('en', 'zh')], 'en')[1]
     else
@@ -66,8 +68,10 @@ declare function common:request-lang() as xs:string {
 };
 
 declare
-    %test:args('dummy', 'dummy', '<data xmlns="http://read.84000.co/ns/1.0" />') 
-    %test:assertXPath("$result//m:data")
+    %test:args('dummy', 'dummy', "()") 
+    %test:assertXPath("$result[@model eq 'dummy'][@app-id eq 'dummy']/*:environment")
+    %test:args('dummy', 'dummy', "()") 
+    %test:assertXPath("$result/*:lang-items")
 function common:response($model as xs:string, $app-id as xs:string, $data as item()*) as element() {
     (:
         A response node
@@ -196,8 +200,8 @@ declare function common:html($xml as element(m:response), $view as xs:string) {
 
 declare
     %test:args('<data lang="tibetan" encoding="native"/>') 
-    %test:assertEquals('bo-ltn')
-    %test:args('<data lang="other"/>') 
+    %test:assertEquals('Bo-Ltn')
+    %test:args('<data lang="other"/>')
     %test:assertEquals('other')
 function common:xml-lang($node as element()) as xs:string {
 
@@ -238,7 +242,10 @@ declare function common:normalize-space($nodes as node()*) as node()*{
 };
 
 (: Create xml whitespace to prettify updates :)
-declare function common:ws($indent as xs:integer) as xs:string {
+declare 
+    %test:args(3)
+    %test:assertEquals('&#10;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;')
+function common:ws($indent as xs:integer) as xs:string {
     concat($common:chr-nl, functx:repeat-string($common:chr-tab, $indent))
 };
 
@@ -268,11 +275,17 @@ declare function common:strip-ids($nodes as node()*) as node()*{
         else ()
 };
 
-declare function common:integer($node as xs:anyAtomicType?) as xs:integer {
+declare 
+    %test:args('   033!')
+    %test:assertEquals(33) 
+function common:integer($node as xs:anyAtomicType?) as xs:integer {
     replace(concat('0',$node), '\D', '')
 };
 
-declare function common:format-number($number as numeric) as xs:string {
+declare
+    %test:args(35800)
+    %test:assertEquals('35,800') 
+function common:format-number($number as numeric) as xs:string {
 
     let $input := tokenize(string(abs($number)),'\.')[1]
     let $dec := substring(tokenize(string($number),'\.')[2],1,2)
@@ -297,7 +310,10 @@ declare function common:format-number($number as numeric) as xs:string {
         )
 };
 
-declare function common:small-caps($string as xs:string) as xs:string {
+declare
+    %test:args('dom')
+    %test:assertEquals('ᴅᴏᴍ') 
+function common:small-caps($string as xs:string) as xs:string {
     translate($string, 'abcdefghijklmnopqrstuvwxyz', 'ᴀʙᴄᴅᴇꜰɢʜɪᴊᴋʟᴍɴᴏᴘǫʀsᴛᴜᴠᴡxʏᴢ')
 };
 
@@ -590,11 +606,16 @@ function common:user-name() as xs:string* {
         $user//sm:real/sm:username
 };
 
-declare function common:tei-editor() as xs:boolean {
+declare
+    %test:assertTrue
+function common:tei-editor() as xs:boolean {
     if($common:environment/m:url[@id eq 'operations'] and common:user-in-group('operations')) then true() else false()
 };
 
-declare function common:user-in-group($group as xs:string*) as xs:boolean {
+declare
+    %test:args('utilities')
+    %test:assertTrue
+function common:user-in-group($group as xs:string*) as xs:boolean {
     
     let $smid := sm:id()
     return
@@ -613,7 +634,16 @@ declare function common:auth-path($path as xs:string) as xs:boolean {
         false()
 };
 
-declare function common:valid-lang($lang as xs:string) as xs:string {
+declare
+    %test:args('')
+    %test:assertEquals('') 
+    %test:args('EN')
+    %test:assertEquals('en') 
+    %test:args('bo-latn')
+    %test:assertEquals('Bo-Ltn') 
+    %test:args('unknown')
+    %test:assertEquals('') 
+function common:valid-lang($lang as xs:string) as xs:string {
     if(lower-case($lang) = ('bo-ltn', 'bo-latn')) then
         'Bo-Ltn'
     else if(lower-case($lang) = ('sa-ltn', 'sa-latn')) then
@@ -690,6 +720,7 @@ function common:contains-class($string as xs:string?, $class as xs:string*) as x
 declare function common:update($request-parameter as xs:string, $existing-value as item()?, $new-value as item()?, $insert-into as element()?, $insert-following as node()?) as element()? {
     common:update($request-parameter, $existing-value, $new-value, $insert-into, $insert-following, true())
 };
+
 declare function common:update($request-parameter as xs:string, $existing-value as item()?, $new-value as item()?, $insert-into as element()?, $insert-following as node()?, $compare as xs:boolean) as element()? {
     
     (:<debug>
@@ -807,11 +838,16 @@ declare function common:item-from-index($items as item()*, $index) as item()? {
 };
 
 (: Set a default for a request parameter in an request attribute with the same name, then call this to get it :)
-declare function common:get-parameter($parameter-name as xs:string) {
-    if(normalize-space(request:get-parameter($parameter-name, '')) gt '') then 
-        normalize-space(request:get-parameter($parameter-name, '')) 
-    else 
-        request:get-attribute($parameter-name)
+declare
+    %test:args('no-request')
+    %test:assertEmpty
+function common:get-parameter($parameter-name as xs:string) {
+    if(request:exists()) then
+        if(normalize-space(request:get-parameter($parameter-name, '')) gt '') then 
+            normalize-space(request:get-parameter($parameter-name, '')) 
+        else 
+            request:get-attribute($parameter-name)
+    else ()
 };
 
 declare function common:cache-collection($request as element(m:request)) as xs:string? {
@@ -840,7 +876,10 @@ declare function common:cache-collection($request as element(m:request)) as xs:s
         ), '_') || $suffix ! lower-case(.)
 };:)
 
-declare function common:cache-filename($request as element(m:request), $cache-key as xs:string?) as xs:string? {
+declare
+    %test:args("<request xmlns='http://read.84000.co/ns/1.0'/>", 'test key')
+    %test:assertEquals('test-key.xml')
+function common:cache-filename($request as element(m:request), $cache-key as xs:string?) as xs:string? {
     
     let $cache-key-normalized := replace(replace(normalize-space(lower-case($cache-key)), '\s+', '-'), '[^a-z0-9\-­]', '')
     let $file-extension := 
