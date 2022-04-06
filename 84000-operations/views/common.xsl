@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:output="http://www.w3.org/2010/xslt-xquery-serialization" xmlns:common="http://read.84000.co/common" xmlns:markdown="http://read.84000.co/markdown" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:m="http://read.84000.co/ns/1.0" xmlns:ops="http://operations.84000.co" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:output="http://www.w3.org/2010/xslt-xquery-serialization" xmlns:ops="http://operations.84000.co" xmlns:common="http://read.84000.co/common" xmlns:markdown="http://read.84000.co/markdown" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" version="3.0" exclude-result-prefixes="#all">
     
     <xsl:variable name="environment" select="/m:response/m:environment"/>
     <xsl:variable name="reading-room-path" select="$environment/m:url[@id eq 'reading-room']/text()" as="xs:string"/>
@@ -823,7 +823,7 @@
                                 <strong>
                                     <xsl:value-of select="'shared entity'"/>
                                 </strong>
-                                <xsl:value-of select="' must apply for all matching elements listed below!'"/>
+                                <xsl:value-of select="' must apply for all grouped entries listed below!'"/>
                             </p>
                         </div>
                         
@@ -1570,6 +1570,7 @@
         <xsl:param name="entity" as="element(m:entity)?"/>
         <xsl:param name="active-glossary-id" as="xs:string"/>
         <xsl:param name="remove-instance-href" as="xs:string?"/>
+        <xsl:param name="set-flags-href" as="xs:string?"/>
         
         <fieldset>
             
@@ -1629,6 +1630,16 @@
                                         </span>
                                     </xsl:if>
                                     
+                                    <!-- Links to set flags -->
+                                    <xsl:if test="$set-flags-href">
+                                        <xsl:value-of select="' / '"/>
+                                        <xsl:call-template name="flag-options">
+                                            <xsl:with-param name="glossary-id" select="$entry/@id"/>
+                                            <xsl:with-param name="glossary-instance" select="$entity/m:instance[@id eq $entry/@id]"/>
+                                            <xsl:with-param name="flag-options-href" select="replace($set-flags-href, '\{instance\-id\}', $entry/@id)"/>
+                                        </xsl:call-template>
+                                    </xsl:if>
+                                    
                                 </xsl:when>
                                 <xsl:otherwise>
                                     
@@ -1675,6 +1686,38 @@
             </div>
             
         </fieldset>
+        
+    </xsl:template>
+    
+    <!-- Set flags -->
+    <xsl:template name="flag-options">
+        
+        <xsl:param name="glossary-id" as="xs:string" required="true"/>
+        <xsl:param name="glossary-instance" as="element(m:instance)"/>
+        <xsl:param name="flag-options-href" as="xs:string" required="true"/>
+        
+        <xsl:for-each select="/m:response/m:entity-flags/m:flag">
+            <xsl:choose>
+                <xsl:when test="@id = $glossary-instance/m:flag/@type">
+                    <span>
+                        <xsl:attribute name="class" select="'label label-danger'"/>
+                        <xsl:value-of select="m:label"/>
+                        <xsl:value-of select="' / '"/>
+                        <a target="_self" data-loading="Loading...">
+                            <xsl:attribute name="href" select="replace(replace($flag-options-href, '\{flag-action\}', 'remove-flag'), '\{flag-id\}', @id)"/>
+                            <xsl:value-of select="'un-flag'"/>
+                        </a>
+                    </span>
+                </xsl:when>
+                <xsl:otherwise>
+                    <a target="_self" class="small" data-loading="Loading...">
+                        <xsl:attribute name="href" select="replace(replace($flag-options-href, '\{flag-action\}', 'set-flag'), '\{flag-id\}', @id)"/>
+                        <xsl:value-of select="'Set flag: '"/>
+                        <xsl:value-of select="m:label"/>
+                    </a>
+                </xsl:otherwise>
+            </xsl:choose>
+        </xsl:for-each>
         
     </xsl:template>
     

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:output="http://www.w3.org/2010/xslt-xquery-serialization" xmlns:scheduler="http://exist-db.org/xquery/scheduler" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:ops="http://operations.84000.co" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:output="http://www.w3.org/2010/xslt-xquery-serialization" xmlns:scheduler="http://exist-db.org/xquery/scheduler" xmlns:ops="http://operations.84000.co" xmlns:common="http://read.84000.co/common" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" version="3.0" exclude-result-prefixes="#all">
     
     <xsl:import href="../../84000-reading-room/xslt/tei-to-xhtml.xsl"/>
     <xsl:import href="common.xsl"/>
@@ -896,40 +896,18 @@
                                                                     </a>
                                                                 </li>
                                                                 
-                                                                <xsl:for-each select="/m:response/m:entity-flags/m:flag">
-                                                                    <li>
-                                                                        <xsl:choose>
-                                                                            <xsl:when test="@id = $loop-glossary-instance/m:flag/@type">
-                                                                                <span>
-                                                                                    <xsl:attribute name="class" select="'label label-danger'"/>
-                                                                                    <xsl:value-of select="m:label"/>
-                                                                                    <xsl:value-of select="' / '"/>
-                                                                                    <a target="_self" data-loading="Loading...">
-                                                                                        <xsl:attribute name="href">
-                                                                                            <xsl:call-template name="link-href">
-                                                                                                <xsl:with-param name="glossary-id" select="$loop-glossary-id"/>
-                                                                                                <xsl:with-param name="add-parameters" select="'remove-flag=' || @id"/>
-                                                                                            </xsl:call-template>
-                                                                                        </xsl:attribute>
-                                                                                        <xsl:value-of select="'un-flag'"/>
-                                                                                    </a>
-                                                                                </span>
-                                                                            </xsl:when>
-                                                                            <xsl:otherwise>
-                                                                                <a target="_self" class="small" data-loading="Loading...">
-                                                                                    <xsl:attribute name="href">
-                                                                                        <xsl:call-template name="link-href">
-                                                                                            <xsl:with-param name="glossary-id" select="$loop-glossary-id"/>
-                                                                                            <xsl:with-param name="add-parameters" select="'set-flag=' || @id"/>
-                                                                                        </xsl:call-template>
-                                                                                    </xsl:attribute>
-                                                                                    <xsl:value-of select="'Set flag: '"/>
-                                                                                    <xsl:value-of select="m:label"/>
-                                                                                </a>
-                                                                            </xsl:otherwise>
-                                                                        </xsl:choose>
-                                                                    </li>
-                                                                </xsl:for-each>
+                                                                <li>
+                                                                    <xsl:call-template name="flag-options">
+                                                                        <xsl:with-param name="glossary-id" select="$loop-glossary-id"/>
+                                                                        <xsl:with-param name="glossary-instance" select="$loop-glossary-instance"/>
+                                                                        <xsl:with-param name="flag-options-href">
+                                                                            <xsl:call-template name="link-href">
+                                                                                <xsl:with-param name="glossary-id" select="$loop-glossary-id"/>
+                                                                                <xsl:with-param name="add-parameters" select="'{flag-action}={flag-id}'"/>
+                                                                            </xsl:call-template>
+                                                                        </xsl:with-param>
+                                                                    </xsl:call-template>
+                                                                </li>
                                                                 
                                                             </xsl:when>
                                                             <xsl:otherwise>
@@ -981,7 +959,7 @@
                                                             <xsl:value-of select="$count-entity-instances"/>
                                                         </span>
                                                         <span class="badge-text">
-                                                            <xsl:value-of select="if($count-entity-instances eq 1) then 'matching element' else 'matching elements'"/>
+                                                            <xsl:value-of select="if($count-entity-instances eq 1) then 'grouped glossary entry' else 'grouped glossary entries'"/>
                                                         </span>
                                                     </xsl:with-param>
                                                     
@@ -1002,6 +980,12 @@
                                                                     <xsl:call-template name="link-href">
                                                                         <xsl:with-param name="glossary-id" select="$loop-glossary/@id"/>
                                                                         <xsl:with-param name="add-parameters" select="'remove-instance={instance-id}'"/>
+                                                                    </xsl:call-template>
+                                                                </xsl:with-param>
+                                                                <xsl:with-param name="set-flags-href">
+                                                                    <xsl:call-template name="link-href">
+                                                                        <xsl:with-param name="glossary-id" select="'{instance-id}'"/>
+                                                                        <xsl:with-param name="add-parameters" select="'{flag-action}={flag-id}'"/>
                                                                     </xsl:call-template>
                                                                 </xsl:with-param>
                                                             </xsl:call-template>
@@ -1147,6 +1131,8 @@
                                                                                                 </xsl:call-template>
                                                                                             </li>
                                                                                             
+                                                                                            <!-- Flags -->
+                                                                                            
                                                                                         </ul>
                                                                                     </div>
                                                                                     
@@ -1212,25 +1198,11 @@
                                                     
                                                     <span class="badge-text">
                                                         <xsl:choose>
-                                                            <xsl:when test="$loop-glossary-entity">
-                                                                <xsl:choose>
-                                                                    <xsl:when test="$count-similar-entities eq 1">
-                                                                        <xsl:value-of select="'similar entity'"/>
-                                                                    </xsl:when>
-                                                                    <xsl:otherwise>
-                                                                        <xsl:value-of select="'similar entities'"/>
-                                                                    </xsl:otherwise>
-                                                                </xsl:choose>
+                                                            <xsl:when test="$count-similar-entities eq 1">
+                                                                <xsl:value-of select="'suggested match'"/>
                                                             </xsl:when>
                                                             <xsl:otherwise>
-                                                                <xsl:choose>
-                                                                    <xsl:when test="$count-similar-entities eq 1">
-                                                                        <xsl:value-of select="'possible match'"/>
-                                                                    </xsl:when>
-                                                                    <xsl:otherwise>
-                                                                        <xsl:value-of select="'possible matches'"/>
-                                                                    </xsl:otherwise>
-                                                                </xsl:choose>
+                                                                <xsl:value-of select="'suggested matches'"/>
                                                             </xsl:otherwise>
                                                         </xsl:choose>
                                                     </span>
