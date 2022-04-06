@@ -1703,15 +1703,15 @@
                         <xsl:attribute name="class" select="'label label-danger'"/>
                         <xsl:value-of select="m:label"/>
                         <xsl:value-of select="' / '"/>
-                        <a target="_self" data-loading="Loading...">
-                            <xsl:attribute name="href" select="replace(replace($flag-options-href, '\{flag-action\}', 'remove-flag'), '\{flag-id\}', @id)"/>
+                        <a target="_self" data-loading="Removing flag...">
+                            <xsl:attribute name="href" select="replace(replace($flag-options-href, '\{flag\-action\}', 'remove-flag'), '\{flag\-id\}', @id)"/>
                             <xsl:value-of select="'un-flag'"/>
                         </a>
                     </span>
                 </xsl:when>
                 <xsl:otherwise>
-                    <a target="_self" class="small" data-loading="Loading...">
-                        <xsl:attribute name="href" select="replace(replace($flag-options-href, '\{flag-action\}', 'set-flag'), '\{flag-id\}', @id)"/>
+                    <a target="_self" class="small" data-loading="Setting flag...">
+                        <xsl:attribute name="href" select="replace(replace($flag-options-href, '\{flag\-action\}', 'set-flag'), '\{flag\-id\}', @id)"/>
                         <xsl:value-of select="'Set flag: '"/>
                         <xsl:value-of select="m:label"/>
                     </a>
