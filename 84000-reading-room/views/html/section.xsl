@@ -992,18 +992,18 @@
             </xsl:choose>
             
             <!-- loop through the texts -->
-            <xsl:for-each select="$texts | $texts-groups">
+            <xsl:for-each-group select="$texts | $texts-groups" group-by="@id">
                 
                 <!-- Sort options - only in all-translated -->
-                <xsl:sort select="if(/m:response/m:request/@translations-order eq 'latest' and m:publication/m:publication-date) then xs:date(m:publication/m:publication-date) else ''" order="descending"/>
-                <xsl:sort select="if(/m:response/m:request/@translations-order eq 'shortest' and m:source/m:location/@count-pages) then xs:integer(m:source/m:location/@count-pages) else ''" order="ascending"/>
-                <xsl:sort select="if(/m:response/m:request/@translations-order eq 'longest' and m:source/m:location/@count-pages) then xs:integer(m:source/m:location/@count-pages) else ''" order="descending"/>
+                <xsl:sort select="if(/m:response/m:request/@translations-order eq 'latest' and m:publication/m:publication-date[1]) then xs:date(m:publication/m:publication-date[1]) else ''" order="descending"/>
+                <xsl:sort select="if(/m:response/m:request/@translations-order eq 'shortest' and m:source/m:location/@count-pages[1]) then xs:integer(m:source/m:location/@count-pages[1]) else ''" order="ascending"/>
+                <xsl:sort select="if(/m:response/m:request/@translations-order eq 'longest' and m:source/m:location/@count-pages[1]) then xs:integer(m:source/m:location/@count-pages[1]) else ''" order="descending"/>
                 
                 <!-- Default to toh -->
-                <xsl:sort select="number(m:toh/@number | @toh-number-first)"/>
-                <xsl:sort select="m:toh/@letter"/>
-                <xsl:sort select="number(m:toh/@chapter-number)"/>
-                <xsl:sort select="m:toh/@chapter-letter"/>
+                <xsl:sort select="number(m:toh/@number[1] | @toh-number-first[1])"/>
+                <xsl:sort select="m:toh/@letter[1]"/>
+                <xsl:sort select="number(m:toh/@chapter-number[1])"/>
+                <xsl:sort select="m:toh/@chapter-letter[1]"/>
                 
                 <xsl:choose>
                     <xsl:when test="self::m:section">
@@ -1015,19 +1015,19 @@
                     </xsl:when>
                     <xsl:otherwise>
                         
-                        <xsl:variable name="text" select="."/>
-                        <xsl:variable name="toh-key" select="$text/m:toh/@key"/>
+                        <xsl:variable name="text-group" select="current-group()"/>
+                        <xsl:variable name="text-1" select="$text-group[1]"/>
                         
                         <div class="row list-item">
                             
-                            <xsl:attribute name="id" select="$text/@resource-id"/>
+                            <xsl:attribute name="id" select="$text-1/@resource-id"/>
                             
                             <!-- Toh number -->
                             <div class="col-md-1">
                                 
-                                <xsl:value-of select="$text/m:toh/m:full"/>
+                                <xsl:value-of select="$text-1/m:toh/m:full"/>
                                 
-                                <xsl:for-each select="$text/m:toh/m:duplicates/m:duplicate">
+                                <xsl:for-each select="$text-1/m:toh/m:duplicates/m:duplicate">
                                     <br class="hidden-xs hidden-sm"/>
                                     <xsl:value-of select="concat(' / ', m:base)"/>
                                 </xsl:for-each>
@@ -1036,20 +1036,20 @@
                                 
                                 <span class="visible-xs-inline visible-sm-inline col-sm-pull-right italic small">
                                     <xsl:choose>
-                                        <xsl:when test="$text/@status-group eq 'published'">
+                                        <xsl:when test="$text-1/@status-group eq 'published'">
                                             <xsl:choose>
-                                                <xsl:when test="$text/m:publication/m:publication-date/text()">
-                                                    <xsl:value-of select="concat(' Published ', format-date($text/m:publication/m:publication-date, '[FNn,*-3], [D1o] [MNn,*-3] [Y]'))"/>
+                                                <xsl:when test="$text-1/m:publication/m:publication-date/text()">
+                                                    <xsl:value-of select="concat(' Published ', format-date($text-1/m:publication/m:publication-date, '[FNn,*-3], [D1o] [MNn,*-3] [Y]'))"/>
                                                 </xsl:when>
                                                 <xsl:otherwise>
                                                     <xsl:value-of select="'Published'"/>
                                                 </xsl:otherwise>
                                             </xsl:choose>
                                         </xsl:when>
-                                        <xsl:when test="$text/@status-group = ('translated', 'in-translation')">
+                                        <xsl:when test="$text-1/@status-group = ('translated', 'in-translation')">
                                             <xsl:value-of select="'Translation in progress'"/>
                                         </xsl:when>
-                                        <xsl:when test="$text/@status-group eq 'in-application'">
+                                        <xsl:when test="$text-1/@status-group eq 'in-application'">
                                             <xsl:value-of select="'Application pending'"/>
                                         </xsl:when>
                                         <xsl:otherwise>
@@ -1067,17 +1067,17 @@
                                 <!-- English title -->
                                 <h3 class="item-title">
                                     <xsl:choose>
-                                        <xsl:when test="$text/m:titles/m:title[@xml:lang eq 'en'][not(@type)]/text()">
+                                        <xsl:when test="$text-1/m:titles/m:title[@xml:lang eq 'en'][not(@type)]/text()">
                                             <xsl:choose>
                                                 <xsl:when test="@status-group = 'published'">
                                                     <a>
-                                                        <xsl:attribute name="href" select="common:internal-link(concat('/translation/', $text/m:source/@key, '.html'), (m:view-mode-parameter((), ())), '', /m:response/@lang)"/>
-                                                        <xsl:attribute name="target" select="concat($text/@id, '.html')"/>
-                                                        <xsl:value-of select="normalize-space($text/m:titles/m:title[@xml:lang eq 'en'][not(@type)][1])"/> 
+                                                        <xsl:attribute name="href" select="common:internal-link(concat('/translation/', $text-1/m:source/@key, '.html'), (m:view-mode-parameter((), ())), '', /m:response/@lang)"/>
+                                                        <xsl:attribute name="target" select="concat($text-1/@id, '.html')"/>
+                                                        <xsl:value-of select="normalize-space($text-1/m:titles/m:title[@xml:lang eq 'en'][not(@type)][1])"/> 
                                                     </a>
                                                 </xsl:when>
                                                 <xsl:otherwise>
-                                                    <xsl:value-of select="normalize-space($text/m:titles/m:title[@xml:lang eq 'en'][not(@type)][1])"/> 
+                                                    <xsl:value-of select="normalize-space($text-1/m:titles/m:title[@xml:lang eq 'en'][not(@type)][1])"/> 
                                                 </xsl:otherwise>
                                             </xsl:choose>
                                         </xsl:when>
@@ -1089,34 +1089,49 @@
                                     </xsl:choose>
                                 </h3>
                                 
+                                <!-- Location breadcrumbs -->
                                 <xsl:if test="lower-case($section/@id) = 'all-translated'">
                                     
-                                    <!-- Location breadcrumbs -->
                                     <hr/>
-                                    <div role="navigation" aria-label="The location of this text in The Collection" class="text-muted small">
-                                        <xsl:value-of select="'in '"/>
-                                        <ul class="breadcrumb">
-                                            <xsl:sequence select="common:breadcrumb-items($text/m:parent/descendant-or-self::m:parent, /m:response/@lang)"/>
-                                        </ul>
-                                    </div>
+                                    <xsl:for-each select="$text-group">
+                                        <div role="navigation" aria-label="The location of this text in The Collection" class="text-muted small">
+                                            <ul class="breadcrumb">
+                                                <xsl:sequence select="common:breadcrumb-items(m:parent/descendant-or-self::m:parent, /m:response/@lang)"/>
+                                                <li>
+                                                    <xsl:choose>
+                                                        <xsl:when test="@status-group = 'published'">
+                                                            <a>
+                                                                <xsl:attribute name="href" select="common:internal-link(concat('/translation/', m:source/@key, '.html'), (m:view-mode-parameter((), ())), '', /m:response/@lang)"/>
+                                                                <xsl:attribute name="target" select="concat(@id, '.html')"/>
+                                                                <xsl:value-of select="normalize-space(m:source/m:toh)"/> 
+                                                            </a>
+                                                        </xsl:when>
+                                                        <xsl:otherwise>
+                                                            <xsl:value-of select="normalize-space(m:source/m:toh)"/> 
+                                                        </xsl:otherwise>
+                                                    </xsl:choose>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </xsl:for-each>
                                     
                                 </xsl:if>
                                 
                                 <!-- Tibetan title -->
-                                <xsl:if test="$text/m:titles/m:title[@xml:lang = 'bo']/text()">
+                                <xsl:if test="$text-1/m:titles/m:title[@xml:lang = 'bo']/text()">
                                     <hr/>
                                     <span>
                                         <xsl:call-template name="class-attribute">
                                             <xsl:with-param name="lang" select="'bo'"/>
                                         </xsl:call-template>
-                                        <xsl:value-of select="normalize-space($text/m:titles/m:title[@xml:lang = 'bo'])"/>
+                                        <xsl:value-of select="normalize-space($text-1/m:titles/m:title[@xml:lang = 'bo'])"/>
                                     </span>
                                 </xsl:if>
                                 
                                 <!-- Wylie title -->
-                                <xsl:if test="$text/m:titles/m:title[@xml:lang = 'Bo-Ltn'][text()]">
+                                <xsl:if test="$text-1/m:titles/m:title[@xml:lang = 'Bo-Ltn'][text()]">
                                     <xsl:choose>
-                                        <xsl:when test="normalize-space($text/m:titles/m:title[@xml:lang = 'bo'])">
+                                        <xsl:when test="normalize-space($text-1/m:titles/m:title[@xml:lang = 'bo'])">
                                             <xsl:value-of select="' · '"/>
                                         </xsl:when>
                                         <xsl:otherwise>
@@ -1127,43 +1142,43 @@
                                         <xsl:call-template name="class-attribute">
                                             <xsl:with-param name="lang" select="'Bo-Ltn'"/>
                                         </xsl:call-template>
-                                        <xsl:value-of select="normalize-space($text/m:titles/m:title[@xml:lang = 'Bo-Ltn'])"/>
+                                        <xsl:value-of select="normalize-space($text-1/m:titles/m:title[@xml:lang = 'Bo-Ltn'])"/>
                                     </span>
                                 </xsl:if>
                                 
                                 <!-- Sanskrit title -->
-                                <xsl:if test="$text/m:titles/m:title[@xml:lang = 'Sa-Ltn'][text()]">
+                                <xsl:if test="$text-1/m:titles/m:title[@xml:lang = 'Sa-Ltn'][text()]">
                                     <hr/>
                                     <span>
                                         <xsl:call-template name="class-attribute">
                                             <xsl:with-param name="lang" select="'Sa-Ltn'"/>
                                         </xsl:call-template>
-                                        <xsl:value-of select="normalize-space($text/m:titles/m:title[@xml:lang = 'Sa-Ltn'])"/> 
+                                        <xsl:value-of select="normalize-space($text-1/m:titles/m:title[@xml:lang = 'Sa-Ltn'])"/> 
                                     </span>
                                 </xsl:if>
                                 
                                 <!-- Authors -->
                                 <xsl:call-template name="source-authors">
-                                    <xsl:with-param name="text" select="$text"/>
+                                    <xsl:with-param name="text" select="$text-1"/>
                                 </xsl:call-template>
                                 
                                 <!-- Tantric warning -->
-                                <xsl:if test="lower-case($section/@id) = 'all-translated' and $text/m:publication/m:tantric-restriction/tei:p">
+                                <xsl:if test="lower-case($section/@id) = 'all-translated' and $text-1/m:publication/m:tantric-restriction/tei:p">
                                     <hr/>
                                     <xsl:call-template name="tantra-warning">
                                         <xsl:with-param name="id" select="@resource-id"/>
-                                        <xsl:with-param name="node" select="$text/m:publication/m:tantric-restriction/tei:p"/>
+                                        <xsl:with-param name="node" select="$text-1/m:publication/m:tantric-restriction/tei:p"/>
                                     </xsl:call-template>
                                 </xsl:if>
                                 
                                 <!-- Summary and title variants -->
                                 <xsl:call-template name="expandable-summary">
-                                    <xsl:with-param name="text" select="$text"/>
-                                    <xsl:with-param name="expand-id" select="concat('summary-detail-', $toh-key)"/>
+                                    <xsl:with-param name="text" select="$text-1"/>
+                                    <xsl:with-param name="expand-id" select="concat('summary-detail-', $text-1/@resource-id)"/>
                                 </xsl:call-template>
                                 
                                 <!-- Editor notes -->
-                                <xsl:variable name="editor-notes" select="($text//m:note[@type = ('title-internal', 'author', 'translator', 'reviser')] | $text//m:note[@update = ('title', 'author', 'translator', 'reviser')])[normalize-space(string-join(text(), ''))]"/>
+                                <xsl:variable name="editor-notes" select="($text-1//m:note[@type = ('title-internal', 'author', 'translator', 'reviser')] | $text-1//m:note[@update = ('title', 'author', 'translator', 'reviser')])[normalize-space(string-join(text(), ''))]"/>
                                 <xsl:if test="$view-mode[@id eq 'editor'] and $environment[m:url/@id = 'operations'] and $editor-notes">
                                     <hr/>
                                     <h5 class="no-bottom-margin">
@@ -1199,19 +1214,19 @@
                                 </div>
                                 
                                 <xsl:choose>
-                                    <xsl:when test="$text/@status-group eq 'published'">
+                                    <xsl:when test="$text-1/@status-group eq 'published'">
                                         
-                                        <xsl:if test="$text/m:publication/m:publication-date[text()]">
+                                        <xsl:if test="$text-1/m:publication/m:publication-date[text()]">
                                             <div class="hidden-xs hidden-sm text-success small italic sml-margin bottom">
-                                                <xsl:value-of select="concat('Published ', format-date($text/m:publication/m:publication-date, '[FNn,*-3], [D1o] [MNn,*-3] [Y]'))"/>
+                                                <xsl:value-of select="concat('Published ', format-date($text-1/m:publication/m:publication-date, '[FNn,*-3], [D1o] [MNn,*-3] [Y]'))"/>
                                             </div>
                                         </xsl:if>
                                         
                                         <hr class="visible-xs visible-sm sml-margin"/>
                                         
                                         <ul class="translation-links">
-                                            <xsl:variable name="title-en" select="$text/m:titles/m:title[@xml:lang='en'][not(@type)]/text()" as="xs:string"/>
-                                            <xsl:for-each select="$text/m:downloads/m:download[@type = ('html', 'pdf', 'epub', 'azw3')]">
+                                            <xsl:variable name="title-en" select="$text-1/m:titles/m:title[@xml:lang='en'][not(@type)]/text()" as="xs:string"/>
+                                            <xsl:for-each select="$text-1/m:downloads/m:download[@type = ('html', 'pdf', 'epub', 'azw3')]">
                                                 <li>
                                                     <a>
                                                         <xsl:attribute name="title">
@@ -1222,14 +1237,14 @@
                                                         <xsl:choose>
                                                             <xsl:when test="@type eq 'html'">
                                                                 <xsl:attribute name="href" select="common:internal-link(@url, (m:view-mode-parameter((), ())), '', /m:response/@lang)"/>
-                                                                <xsl:attribute name="target" select="concat($text/@id, '.html')"/>
+                                                                <xsl:attribute name="target" select="concat($text-1/@id, '.html')"/>
                                                             </xsl:when>
                                                             <xsl:otherwise>
                                                                 <xsl:attribute name="href" select="@download-url"/>
                                                                 <xsl:attribute name="target" select="'_blank'"/>
                                                                 <xsl:attribute name="download" select="@filename"/>
                                                                 <xsl:attribute name="class" select="'log-click'"/>
-                                                                <xsl:attribute name="data-page-alert" select="common:internal-link('/widget/download-dana.html', concat('resource-id=', $toh-key), '#dana-description', /m:response/@lang)"/>
+                                                                <xsl:attribute name="data-page-alert" select="common:internal-link('/widget/download-dana.html', concat('resource-id=', $text-1/@resource-id), '#dana-description', /m:response/@lang)"/>
                                                             </xsl:otherwise>
                                                         </xsl:choose>
                                                         <xsl:call-template name="download-icon">
@@ -1242,7 +1257,7 @@
                                                 </li>
                                             </xsl:for-each>
                                             <xsl:if test="$app-path">
-                                                <xsl:variable name="app-href" select="concat($app-path, '/translation/', $toh-key, '.html')"/>
+                                                <xsl:variable name="app-href" select="concat($app-path, '/translation/', $text-1/@resource-id, '.html')"/>
                                                 <li>
                                                     <a>
                                                         <xsl:attribute name="href" select="$app-href"/>
@@ -1257,7 +1272,7 @@
                                                     </a>
                                                 </li>
                                             </xsl:if>
-                                            <xsl:if test="$text/m:downloads/m:download[@type = ('epub', 'azw3')]">
+                                            <xsl:if test="$text-1/m:downloads/m:download[@type = ('epub', 'azw3')]">
                                                 <li class="hidden-print">
                                                     <a data-toggle="modal" href="#ebook-help" data-target="#ebook-help" class="visible-scripts text-muted">
                                                         <i class="fa fa-info-circle" aria-hidden="true"/>
@@ -1272,17 +1287,17 @@
                                         </ul>
                                         
                                     </xsl:when>
-                                    <xsl:when test="$text/@status-group eq 'translated'">
+                                    <xsl:when test="$text-1/@status-group eq 'translated'">
                                         <div class="small italic sml-margin bottom text-warning visible-md visible-lg">
                                             <xsl:value-of select="'Translation in progress'"/>
                                         </div>
                                     </xsl:when>
-                                    <xsl:when test="$text/@status-group eq 'in-translation'">
+                                    <xsl:when test="$text-1/@status-group eq 'in-translation'">
                                         <div class="small italic sml-margin bottom text-warning visible-md visible-lg">
                                             <xsl:value-of select="'Translation in progress'"/>
                                         </div>
                                     </xsl:when>
-                                    <xsl:when test="$text/@status-group eq 'in-application'">
+                                    <xsl:when test="$text-1/@status-group eq 'in-application'">
                                         <div class="small italic sml-margin bottom text-warning visible-md visible-lg">
                                             <xsl:value-of select="'Application pending'"/>
                                         </div>
@@ -1296,7 +1311,7 @@
                                 
                                 <xsl:if test="$view-mode[@id eq 'editor'] and $environment[m:url/@id = 'operations']">
                                     <a>
-                                        <xsl:attribute name="href" select="concat($environment/m:url[@id eq 'operations'], '/edit-text-header.html?id=', $text/@id, '&amp;form-expand=titles')"/>
+                                        <xsl:attribute name="href" select="concat($environment/m:url[@id eq 'operations'], '/edit-text-header.html?id=', $text-1/@id, '&amp;form-expand=titles')"/>
                                         <xsl:attribute name="target" select="'84000-operations'"/>
                                         <xsl:attribute name="class" select="'editor'"/>
                                         <xsl:value-of select="'Edit headers'"/>
@@ -1310,7 +1325,7 @@
                     </xsl:otherwise>
                 </xsl:choose>
                 
-            </xsl:for-each>
+            </xsl:for-each-group>
             
         </section>
         
