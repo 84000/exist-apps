@@ -654,8 +654,9 @@ declare function translation:body($tei as element(tei:TEI)) as element()? {
 declare function translation:body($tei as element(tei:TEI), $passage-id as xs:string?, $view-mode as element(m:view-mode)?) as element()? {
     
     let $translation := $tei/tei:text/tei:body/tei:div[@type eq 'translation']
-    let $head := ($translation/tei:head[@type eq 'titleMain'][text()], $translation/tei:head[@type eq 'titleHon'][text()])[1]
+    let $translation-head := $translation/tei:head[@type eq 'translation']
     let $count-chapters := count($translation/tei:div[@type = ('section', 'chapter')])
+    let $text-title := tei-content:title($tei)
     
     where $translation
     return
@@ -667,12 +668,7 @@ declare function translation:body($tei as element(tei:TEI), $passage-id as xs:st
             attribute glossarize { 'mark' },
             attribute prefix { 'tr' },
             
-            (: Title shown in the navigation :)
-            element {QName('http://www.tei-c.org/ns/1.0', 'head')} {
-                attribute type {'translation'},
-                attribute tid {$head/@tid},
-                $head/text()
-            },
+            $translation-head,
             
             element honoration {
                 data($translation/tei:head[@type eq 'titleHon'])
@@ -689,7 +685,7 @@ declare function translation:body($tei as element(tei:TEI), $passage-id as xs:st
                 let $chapter-title := $chapter/tei:head[@type = $chapter/@type][text()][1]
                 let $chapter-title :=
                     if (not($chapter-title) and $count-chapters eq 1) then
-                        text {'The Translation'}
+                        text { $text-title }
                     else ()
                 
                 (: If there's an @prefix then let it override the chapter index :)
@@ -958,7 +954,8 @@ declare function translation:refs($tei as element(tei:TEI), $resource-id as xs:s
     (: Get the relevant refs :)
     let $toh-key := translation:toh-key($tei, $resource-id)
     return
-        $tei/tei:text/tei:body//tei:ref[@type = $types][not(@rend) or not(@rend = ('hidden'))][not(@key) or @key eq $toh-key][not(ancestor::tei:note)]
+        $tei/tei:text/tei:body//tei:ref[@type = $types][not(@key) or @key eq $toh-key][not(ancestor::tei:note)]
+        (:$tei/tei:text/tei:body//tei:ref[@type = $types][not(@rend) or not(@rend = ('hidden'))][not(@key) or @key eq $toh-key][not(ancestor::tei:note)]:)
 
 };
 

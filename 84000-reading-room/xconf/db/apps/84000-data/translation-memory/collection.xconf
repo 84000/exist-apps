@@ -9,7 +9,7 @@
             
             <analyzer class="org.apache.lucene.analysis.standard.StandardAnalyzer" id="en"/>
             
-            <analyzer id="bo" class="io.bdrc.lucene.bo.TibetanAnalyzer">
+            <analyzer class="io.bdrc.lucene.bo.TibetanAnalyzer" id="bo">
                 <param name="segmentInWords" type="boolean" value="true"/>
                 <param name="lemmatize" type="boolean" value="true"/>
                 <param name="filterChars" type="boolean" value="true"/>

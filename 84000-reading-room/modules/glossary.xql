@@ -87,11 +87,18 @@ declare function local:lang-field($valid-lang as xs:string) as xs:string {
         'full-term'
 };
 
-declare function glossary:glossary-search($type as xs:string*, $lang as xs:string, $search as xs:string) as element(tei:gloss)* {
+declare function glossary:glossary-search($type as xs:string*, $lang as xs:string, $search as xs:string, $exclude-status as xs:string*) as element(tei:gloss)* {
     
     (: Search for terms :)
     let $valid-lang := common:valid-lang($lang)
     let $valid-type := local:valid-type($type)
+    let $search := 
+        if($valid-lang eq 'Bo-Ltn' and common:string-is-bo($search)) then
+            common:wylie-from-bo($search)
+        else if($valid-lang eq 'bo' and not(common:string-is-bo($search))) then
+            common:bo-from-wylie($search)
+        else
+            $search
     let $normalized-search := 
         if($valid-lang = ('en', '')) then
             replace(common:normalized-chars(lower-case($search)), '\-', ' ')
@@ -105,7 +112,7 @@ declare function glossary:glossary-search($type as xs:string*, $lang as xs:strin
     let $query :=
         <query>
         {
-            if($valid-lang eq 'Bo-Ltn') then
+            if($valid-lang = ('Bo-Ltn', 'bo')) then
                 <phrase>{ $normalized-search }</phrase>
             else
                 <bool>
@@ -118,14 +125,16 @@ declare function glossary:glossary-search($type as xs:string*, $lang as xs:strin
         }
         </query>
     
+    let $glossaries := $glossary:tei//tei:back/tei:div[@type eq 'glossary'][not(@status = $exclude-status)]
+    
     let $terms :=
     
         (: Longer strings - do a search :)
-        if(string-length($normalized-search) gt 1) then
+        if(string-length($normalized-search) gt 1 or $valid-lang eq 'bo') then
             if($valid-lang = ('en', '')) then
-                $glossary:tei//tei:back//tei:gloss/tei:term[ft:query(., $query)][not(@type = ('definition', 'alternative'))][not(@xml:lang)]
+                $glossaries//tei:gloss/tei:term[ft:query(., $query)][not(@type = ('definition', 'alternative'))][not(@xml:lang)]
             else
-                $glossary:tei//tei:back//tei:gloss/tei:term[ft:query(., $query)][not(@type = ('definition', 'alternative'))][@xml:lang eq $valid-lang]
+                $glossaries//tei:gloss/tei:term[ft:query(., $query)][not(@type = ('definition', 'alternative'))][@xml:lang eq $valid-lang]
                 
         (: Single character strings - do a regex :)
         else
@@ -135,12 +144,12 @@ declare function glossary:glossary-search($type as xs:string*, $lang as xs:strin
                 else if($valid-lang eq 'Sa-Ltn') then
                     concat('^\s*(', string-join(common:letter-variations($normalized-search), '|'), ')')
                 else
-                    concat('^\s*', $normalized-search, '')
+                    concat('^\s*', $normalized-search)
             return
                 if($valid-lang = ('en', '')) then
-                    $glossary:tei//tei:back//tei:gloss/tei:term[matches(., $match-regex, 'i')][not(@type = ('definition', 'alternative'))][not(@xml:lang)]
+                    $glossaries//tei:gloss/tei:term[matches(., $match-regex, 'i')][not(@type = ('definition', 'alternative'))][not(@xml:lang)]
                 else
-                    $glossary:tei//tei:back//tei:gloss/tei:term[matches(., $match-regex, 'i')][not(@type = ('definition', 'alternative'))][@xml:lang eq $valid-lang]
+                    $glossaries//tei:gloss/tei:term[matches(., $match-regex, 'i')][not(@type = ('definition', 'alternative'))][@xml:lang eq $valid-lang]
     
     return
         if(count($valid-type) gt 0) then
@@ -506,12 +515,12 @@ declare function glossary:combined() as element() {
             where $glossary-entries
             (: Get unique terms :)
             return 
-                for $term in $glossary-entries/tei:term[@xml:lang eq 'Bo-Ltn']
-                let $term-text := normalize-space(string-join($term/text(),''))
-                where $term-text
-                group by $term-text
-                order by $term-text
-                let $term-gloss := $term/parent::tei:gloss
+                for $term-wy in $glossary-entries/tei:term[@xml:lang eq 'Bo-Ltn']
+                let $term-wy-text := normalize-space(string-join($term-wy/text(),''))
+                where $term-wy-text
+                group by $term-wy-text
+                order by $term-wy-text
+                let $term-glosses := $term-wy/parent::tei:gloss
                 return
                     element term {
                         
@@ -524,19 +533,22 @@ declare function glossary:combined() as element() {
                         else ()
                         ,
                         
-                        attribute sort-key { replace(common:normalized-chars(lower-case($term-text)), '[^a-z0-9\s]', '') },
+                        attribute sort-key { replace(common:normalized-chars(lower-case($term-wy-text)), '[^a-z0-9\s]', '') },
                         
-                        element tibetan { common:bo-term(common:bo-from-wylie($term-text)) },
-                        element wylie { $term-text },
+                        (: Re-generate the tibetan from wylie as we can't be sure which terms match :)
+                        element tibetan { common:bo-term($term-wy-text) },
+                        element wylie { $term-wy-text },
                         
-                        distinct-values($term-gloss/@type) ! element type { concat('eft:', .) },
-                        local:distinct-terms($term-gloss/tei:term[not(@xml:lang)][not(@type)][normalize-space(text())]) ! element translation { . },
-                        local:distinct-terms($term-gloss/tei:term[@xml:lang eq 'Sa-Ltn'][normalize-space(text())]) ! element sanskrit { . },
-                        local:distinct-terms($term-gloss/tei:term[@xml:lang eq 'zh'][normalize-space(text())]) ! element chinese { . },
+                        (: Merge entries :)
+                        distinct-values($term-glosses/@type) ! element type { concat('eft:', .) },
+                        local:distinct-terms($term-glosses/tei:term[not(@xml:lang)][not(@type)][normalize-space(text())]) ! element translation { . },
+                        local:distinct-terms($term-glosses/tei:term[@xml:lang eq 'Sa-Ltn'][normalize-space(text())]) ! element sanskrit { . },
+                        local:distinct-terms($term-glosses/tei:term[@xml:lang eq 'zh'][normalize-space(text())]) ! element chinese { . },
                         
                         $entity/m:content[@type eq 'glossary-definition'][descendant::text()[normalize-space()]] ! element definition { string-join(descendant::text() ! normalize-space(.), '') },
                         
-                        for $gloss in $term-gloss
+                        (: Details of individual entries :)
+                        for $gloss in $term-glosses
                         let $tei := $gloss/ancestor::tei:TEI
                         let $text-id := tei-content:id($tei)
                         let $bibls := $tei[1]/tei:teiHeader//tei:bibl

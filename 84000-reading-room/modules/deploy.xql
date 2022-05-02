@@ -113,12 +113,12 @@ declare function deploy:push($repo-id as xs:string, $admin-password as xs:string
                     else
                         ''
                 
-                (: Do the sync :)
+                (: Sync files in the collection with the filesystem :)
                 let $do-sync := 
                     file:sync(
                         $sync/@collection, 
                         concat($repo/@path, $sub-dir), 
-                        ()
+                        ()(:map{ "prune": true(), "excludes": ("zip","xar",".git") }:)
                     )
                 
                 return (

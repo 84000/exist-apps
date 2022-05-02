@@ -173,13 +173,26 @@ declare function entities:related($entities as element(m:entity)*, $include-unre
                 $tei//tei:div[@type eq 'glossary']/@status ! attribute glossary-status { . },
                 
                 tei-content:titles($tei[1]),
-                if($text-type eq 'translation') then (
-                    translation:toh($tei[1], ''),
+                
+                if($text-type eq 'translation') then 
                     translation:publication($tei[1])
-                )
                 else (),
                 
-                $gloss ! glossary:glossary-entry(., false())
+                (: Add Toh :)
+                for $toh-key in $tei[1]//tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl/@key
+                return
+                    (: Must group these in m:bibl to keep track of @key group :)
+                    element bibl {
+                        translation:toh($tei, $toh-key),
+                        tei-content:ancestors($tei, $toh-key, 1)
+                    }
+                ,
+                
+                $gloss ! glossary:glossary-entry(., false()),
+                
+                element glossary-cache {
+                    glossary:cache($tei, (), false())//m:gloss[@id = $gloss/@xml:id]
+                }
                 
             },
         

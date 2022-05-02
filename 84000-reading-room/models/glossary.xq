@@ -1,7 +1,6 @@
 xquery version "3.0" encoding "UTF-8";
 (:
     Accepts the entity-id, or filter (type|term-lang|search) parameters
-    Returns glossary content xml
     -------------------------------------------------------------------
     For SEO purposes we allow for single page presentation of the 
     entities e.g. entity-id=entity-123. 
@@ -21,9 +20,10 @@ declare option exist:serialize "method=xml indent=no";
 
 let $term-langs := 
     <term-langs xmlns="http://read.84000.co/ns/1.0">
-        <lang id="Bo-Ltn" short-code="Wyl">Tibetan (Wylie)</lang>
-        <lang id="Sa-Ltn" short-code="Skt">Sanskrit</lang>
-        <lang id="en" short-code="Eng">Our translation</lang>
+        <!--<lang id="bo" short-code="Tib" filter="false">Tibetan (Unicode)</lang>-->
+        <lang id="Bo-Ltn" short-code="Wyl" filter="true">Tibetan</lang>
+        <lang id="Sa-Ltn" short-code="Skt" filter="true">Sanskrit</lang>
+        <lang id="en" short-code="Eng" filter="true">Our translation</lang>
     </term-langs>
 
 let $flagged := request:get-parameter('flagged', '')
@@ -35,45 +35,29 @@ let $exclude-flagged := if($view-mode[@id eq 'editor']) then () else 'requires-a
 
 (: The requested entity :)
 let $entity-id := request:get-parameter('entity-id', '')
-let $request-entity := $entities:entities//m:entity/id($entity-id)
-let $request-entity-instances-exclude := $request-entity/m:instance[m:flag[@type eq $exclude-flagged]]
-let $request-entity-instances := $request-entity/m:instance[@type eq 'glossary-item'] except $request-entity-instances-exclude
-let $request-entity-entries := glossary:entries($request-entity-instances/@id, false())
-let $request-entity-terms-sorted := 
-    for $term in $request-entity-entries/m:term[@xml:lang = ('Bo-Ltn', 'Sa-Ltn')]
-    where not($term/data() = $glossary:empty-term-placeholders)
-    order by 
-        if($term[@xml:lang eq 'Bo-Ltn']) then 1 else 2,
-        string-length($term) descending
-    return
-        $term
-let $request-entity-terms-longest := $request-entity-terms-sorted[1]
+let $request-entity := $entities:entities//m:entity/id($entity-id)[1]
 
-(: Search parameters :)
-(: Default to find similar matches to selected entity :)
-let $search-default := (
-    if($flag) then '' else (),
-    $request-entity-terms-longest/data(), 
-    ''
-)[1]
-let $search := request:get-parameter('search', $search-default) ! normalize-space(.)
-
-let $type-default := (
-    $entities:types/m:type[@id eq $request-entity/m:type[1]/@type]/@id, 
-    $entities:types/m:type[1]/@id
-)[1]
-let $type := request:get-parameter('type[]', $type-default)
-let $entity-type := $entities:types/m:type[@id = $type]
-let $entity-types := common:add-selected-children($entities:types, $entity-type/@id)
-
-let $term-lang-default := (
-    if($flag) then 'en' else (),
-    $request-entity-terms-longest/@xml:lang, 
-    'Bo-Ltn'
-)[1]
+let $term-lang-default := (if($flag) then 'en' else (), 'Bo-Ltn')[1]
 let $term-lang := request:get-parameter('term-lang', $term-lang-default) ! common:valid-lang(.)
-let $term-lang := $term-langs/m:lang[@id eq  $term-lang]
+let $term-lang := ($term-langs/m:lang[@id eq  $term-lang], $term-langs/m:lang[@id eq  $term-lang-default])[1]
 let $term-langs := common:add-selected-children($term-langs, $term-lang/@id)
+
+let $downloads := request:get-parameter('downloads', '')
+
+let $search := request:get-parameter('search', '') ! normalize-space(.) ! common:normalize-unicode(.)
+let $request-is-search := (not($request-entity) and not($flag) and not($downloads eq 'downloads') and string-length($search) gt 1 and $term-lang[not(@id eq 'bo')])
+
+let $term-type-defaults := 
+    if($request-is-search) then 
+        $entities:types/m:type/@id
+    else if($flag) then 
+        $entities:types/m:type[1]/@id
+    else if($request-entity[m:type]) then
+        $entities:types/m:type[@id eq $request-entity/m:type[1]/@type]/@id
+    else 
+        $entities:types/m:type[1]/@id
+let $term-types := request:get-parameter('term-type[]', $term-type-defaults)
+let $entity-types := common:add-selected-children($entities:types, $entities:types/m:type[@id = $term-types]/@id)
 
 let $request := 
     element { QName('http://read.84000.co/ns/1.0', 'request')} {
@@ -81,64 +65,64 @@ let $request :=
         attribute resource-suffix { request:get-parameter('resource-suffix', 'html') },
         attribute entity-id { $request-entity/@xml:id },
         attribute term-lang { $term-lang/@id },
-        attribute type { $entity-type/@id },
+        attribute term-type { string-join($entity-types/m:type[@selected]/@id, ',')},
         attribute view-mode { $view-mode/@id },
         attribute flagged { $flag/@id },
-        attribute downloads { request:get-parameter('downloads', '') },
+        attribute downloads { $downloads },
         attribute search { $search },
+        attribute request-is-search { $request-is-search },
         $entity-types,
         $term-langs,
         $view-mode
     }
 
+(: Cache for a day :)
 let $cache-key := 
-    if($request/m:view-mode[@cache eq 'use-cache'] and $request[@flagged eq ''] and (string-length($search) le 1 or $request-entity[@xml:id])) then
+    if($request/m:view-mode[@cache eq 'use-cache'] and not($request-is-search)) then
         format-dateTime(current-dateTime(), "[Y0001]-[M01]-[D01]") || '-' || replace($common:app-version, '\.', '-')
     else ()
 
 let $cached := common:cache-get($request, $cache-key)
 
-return  if($cached) then $cached else
-    
-let $type-glossary-type := $entity-type/@glossary-type
+return if($cached) then $cached else
 
+let $type-glossary-type := $entity-types/m:type[@selected]/@glossary-type
+
+(: Do search :)
 let $glossary-search := 
-    (: Get flagged entries :)
     if($flag) then
         glossary:glossary-flagged($flag/@id, $type-glossary-type)
-    else if($request[@downloads eq 'downloads']) then
-        ()
-    (: Get glossary entries based on criteria :)
-    else
-        glossary:glossary-search($type-glossary-type, $term-lang/@id, $search)
+    else if(not($request-entity) and not($flag) and not($downloads eq 'downloads')) then
+        glossary:glossary-search($type-glossary-type, $term-lang/@id, $search, if(not($view-mode[@id eq 'editor'])) then 'excluded' else '')
+    else ()
 
-let $entity-list := 
+(: Convert glossary search to entities :)
+let $glossary-search-entities := 
     for $gloss-id in distinct-values($glossary-search/@xml:id)
     let $instances-exclude := $entities:entities//m:instance[@id = $gloss-id][m:flag[@type eq $exclude-flagged]]
     let $instances := $entities:entities//m:instance[@id = $gloss-id] except $instances-exclude
     return
         $instances/parent::m:entity
 
-(: Needs optimising 
-    - we only need the related entities of the displayed entity, but we get them all if we don't know which is that is  :)
-let $related := entities:related($request-entity | $entity-list, false(), $exclude-flagged, if(not($view-mode[@id eq 'editor'])) then 'excluded' else '')
+let $entities-related := entities:related($request-entity | $glossary-search-entities, false(), $exclude-flagged, if(not($view-mode[@id eq 'editor'])) then 'excluded' else '')
 
 let $downloads := 
     if($request[@downloads eq 'downloads']) then
         glossary:downloads()
     else ()
-        
+
 let $xml-response :=
     common:response(
         $request/@model, 
         $common:app-id, 
         (
             $request,
-            <show-entity xmlns="http://read.84000.co/ns/1.0">{ $request-entity }</show-entity>,
-            <entities xmlns="http://read.84000.co/ns/1.0">
-                { $request-entity | $entity-list }
-                <related>{ $related }</related>
-            </entities>,
+            element { QName('http://read.84000.co/ns/1.0', 'entities')} {
+                $request-entity | $glossary-search-entities ,
+                element related {
+                    $entities-related
+                }
+            },
             $entities:flags,
             $downloads
         )

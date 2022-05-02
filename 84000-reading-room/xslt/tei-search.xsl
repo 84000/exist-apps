@@ -5,7 +5,7 @@
         Converts expanded search result to xhtml
     -->
     
-    <xsl:import href="../views/html/website-page.xsl"/>
+    <xsl:import href="webpage.xsl"/>
     
     <!-- Look up environment variables -->
     <xsl:variable name="environment" select="/m:response/m:environment"/>

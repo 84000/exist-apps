@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" version="3.0" exclude-result-prefixes="#all">
     
-    <xsl:import href="website-page.xsl"/>
+    <xsl:import href="../../xslt/webpage.xsl"/>
     
     <xsl:template match="/m:response">
         
@@ -51,12 +51,10 @@
                         <xsl:for-each select="m:source/m:page">
                             <div>
                                 
-                                <xsl:variable name="first-folio" select="(/m:response/m:translation/m:folio-content/tei:ref[@xml:id][@cRef][@type eq 'folio'][@key eq /m:response/m:translation/m:toh/@key], /m:response/m:translation/m:folio-content/tei:ref[@xml:id][@cRef][@type eq 'folio'][not(@key)])[1]" as="element(tei:ref)?"/>
-                                
                                 <xsl:variable name="folio-string" as="xs:string">
                                     <xsl:choose>
-                                        <xsl:when test="$first-folio">
-                                            <xsl:value-of select="$first-folio/@cRef"/>
+                                        <xsl:when test="/m:response/m:translation/m:folio-content[@start-ref gt '']">
+                                            <xsl:value-of select="/m:response/m:translation/m:folio-content/@start-ref"/>
                                         </xsl:when>
                                         <xsl:otherwise>
                                             <xsl:value-of select="concat('folio ', @folio-in-etext)"/>

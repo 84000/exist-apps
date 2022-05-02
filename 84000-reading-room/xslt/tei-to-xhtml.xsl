@@ -3,8 +3,8 @@
     
     <!-- Transforms tei to xhtml -->
     
-    <!-- Output as website page -->
-    <xsl:import href="../views/html/website-page.xsl"/>
+    <!-- Output as webpage -->
+    <xsl:import href="webpage.xsl"/>
     
     <!-- Global variables -->
     <xsl:variable name="translation" select="/m:response/m:translation" as="element(m:translation)?"/>
@@ -32,7 +32,7 @@
     
     <!-- Pre-sort the glossaries by priority -->
     <xsl:variable name="glossary-prioritised" as="element(tei:gloss)*">
-        <xsl:perform-sort select="($translation | $knowledgebase)/m:part[@type eq 'glossary']//tei:gloss[@xml:id][tei:term[not(@xml:lang)][not(@type = ('definition','alternative'))][normalize-space(text())]]">
+        <xsl:perform-sort select="($translation | $knowledgebase)/m:part[@type eq 'glossary']//tei:gloss[@xml:id][tei:term[not(@xml:lang)][not(@type = ('definition','alternative'))][string-join(text(), '') ! normalize-space(.)]]">
             <xsl:sort select="key('glossary-cache-gloss', @xml:id, $root)[1]/@word-count ! common:enforce-integer(.)" order="descending"/>
             <xsl:sort select="key('glossary-cache-gloss', @xml:id, $root)[1]/@letter-count[not(. eq '')] ! common:enforce-integer(.)" order="descending"/>
         </xsl:perform-sort>
@@ -3263,6 +3263,7 @@
         
     </xsl:template>
     
+    <!-- Entities -->
     <xsl:template name="entity-data">
         
         <xsl:param name="entity" as="element(m:entity)"/>

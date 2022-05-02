@@ -426,13 +426,13 @@
         
         <div class="alert alert-info small text-center">
             <p>
-                <xsl:value-of select="'This page searches translation memories created from published 84000 translations. It will additionally return any results from the 84000 cumulative glossary. Search for a term or phrase by entering Tibetan, Wylie or English into the search fields, or search larger passages of Tibetan in the select tab.'"/>
+                <xsl:value-of select="'This page searches translation memories created from published 84000 translations. It will additionally return any results from the 84000 cumulative glossary. Search for a term or phrase by entering Tibetan, Wylie or English into the search fields, or search larger passages of Tibetan in the Select a Passage tab.'"/>
             </p>
         </div>
        
         <div id="search-container">
             
-            <div class="tabs-container">
+            <div class="tabs-container-center">
                 <ul class="nav nav-tabs" role="tablist">
                     
                     <!-- Folio tab -->
@@ -472,70 +472,80 @@
             </div>
             
             <div class="tab-content">
+                
                 <div role="tabpanel" id="folio-search" class="tab-pane fade">
+                    
                     <xsl:if test="$request/@type = ('folio')">
                         <xsl:attribute name="class" select="'tab-pane fade in active'"/>
                     </xsl:if>
-                    <div class="bottom-margin">
-                        <p class="text-muted small">
-                            <xsl:value-of select="'Use your mouse to select any passage from the text below and search for any relevant translations.'"/>
-                        </p>
+                    
+                    <div class="row">
+                        <div class="col-sm-8 col-sm-offset-2">
+                            
+                            <div class="bottom-margin">
+                                <p class="text-muted small text-center">
+                                    <xsl:value-of select="'Use your mouse to select any passage from the text below and search for any relevant translations.'"/>
+                                </p>
+                            </div>
+                            
+                            <form action="index.html" method="post" class="form-inline filter-form bottom-margin">
+                                
+                                <input type="hidden" name="tab" value="tm-search"/>
+                                <input type="hidden" name="type" value="folio"/>
+                                <input type="hidden" name="lang" value="bo"/>
+                                
+                                <input type="hidden" name="search" id="search-text-folio" data-onload-mark="#folio-text">
+                                    <xsl:attribute name="value">
+                                        <xsl:apply-templates select="/m:response/m:request[@type eq 'folio']/m:search"/>
+                                    </xsl:attribute>
+                                </input>
+                                
+                                <div class="form-group">
+                                    <label for="volume">
+                                        <xsl:value-of select="'Volume:'"/>
+                                    </label>
+                                    <select name="volume" class="form-control" id="volume">
+                                        <xsl:for-each select="/m:response/m:volumes/m:volume">
+                                            <xsl:sort select="xs:integer(@number)"/>
+                                            <option>
+                                                <xsl:attribute name="value" select="@number"/>
+                                                <xsl:if test="xs:integer(@number) eq xs:integer(/m:response/m:request/@volume)">
+                                                    <xsl:attribute name="selected" select="'selected'"/>
+                                                </xsl:if>
+                                                <xsl:value-of select="concat('eKangyur volume ', @number, ' (', @id, ')')"/>
+                                            </option>
+                                        </xsl:for-each>
+                                    </select>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="page">
+                                        <xsl:value-of select="' Folio:'"/>
+                                    </label>
+                                    <select name="page" class="form-control" id="page">
+                                        <xsl:variable name="requested-page" select="/m:response/m:request/@page" as="xs:integer"/>
+                                        <xsl:for-each select="/m:response/m:volumes/m:volume[xs:integer(@number) eq xs:integer(/m:response/m:request/@volume)]/m:page">
+                                            <option>
+                                                <xsl:attribute name="value" select="@index"/>
+                                                <xsl:if test="xs:integer(@index) eq $requested-page">
+                                                    <xsl:attribute name="selected" select="'selected'"/>
+                                                </xsl:if>
+                                                <xsl:value-of select="@folio"/>
+                                            </option>
+                                        </xsl:for-each>
+                                    </select>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <button class="btn btn-primary" type="submit">
+                                        <xsl:value-of select="'Search for selection'"/>
+                                    </button>
+                                </div>
+                                
+                            </form>
+                            
+                        </div>
                     </div>
-                    <form action="index.html" method="post" class="form-inline filter-form bottom-margin">
-                        
-                        <input type="hidden" name="tab" value="tm-search"/>
-                        <input type="hidden" name="type" value="folio"/>
-                        <input type="hidden" name="lang" value="bo"/>
-                        
-                        <input type="hidden" name="search" id="search-text-folio" data-onload-mark="#folio-text">
-                            <xsl:attribute name="value">
-                                <xsl:apply-templates select="/m:response/m:request[@type eq 'folio']/m:search"/>
-                            </xsl:attribute>
-                        </input>
-                        
-                        <div class="form-group">
-                            <label for="volume">
-                                <xsl:value-of select="'Volume'"/>
-                            </label>
-                            <select name="volume" class="form-control" id="volume">
-                                <xsl:for-each select="/m:response/m:volumes/m:volume">
-                                    <xsl:sort select="xs:integer(@number)"/>
-                                    <option>
-                                        <xsl:attribute name="value" select="@number"/>
-                                        <xsl:if test="xs:integer(@number) eq xs:integer(/m:response/m:request/@volume)">
-                                            <xsl:attribute name="selected" select="'selected'"/>
-                                        </xsl:if>
-                                        <xsl:value-of select="concat('eKangyur volume ', @number, ' (', @id, ')')"/>
-                                    </option>
-                                </xsl:for-each>
-                            </select>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="page">
-                                <xsl:value-of select="'Page'"/>
-                            </label>
-                            <select name="page" class="form-control" id="page">
-                                <xsl:variable name="requested-page" select="/m:response/m:request/@page" as="xs:integer"/>
-                                <xsl:for-each select="/m:response/m:volumes/m:volume[xs:integer(@number) eq xs:integer(/m:response/m:request/@volume)]/m:page">
-                                    <option>
-                                        <xsl:attribute name="value" select="@index"/>
-                                        <xsl:if test="xs:integer(@index) eq $requested-page">
-                                            <xsl:attribute name="selected" select="'selected'"/>
-                                        </xsl:if>
-                                        <xsl:value-of select="@folio"/>
-                                    </option>
-                                </xsl:for-each>
-                            </select>
-                        </div>
-                        
-                        <div class="form-group">
-                            <button class="btn btn-primary" type="submit">
-                                <xsl:value-of select="'Search for selection'"/>
-                            </button>
-                        </div>
-                        
-                    </form>
                     
                     <div class="source text-overlay text-left">
                         <div class="text divided text-bo">
@@ -550,152 +560,66 @@
                         </div>
                     </div>
                     
+                    <xsl:call-template name="tm-search-results">
+                        <xsl:with-param name="results" select="if($request/@type eq 'folio') then /m:response/m:tm-search/m:results else ()"/>
+                    </xsl:call-template>
+                    
                 </div>
                 
                 <div role="tabpanel" id="tibetan-search" class="tab-pane fade">
+                    
                     <xsl:if test="$request/@type eq 'bo'">
                         <xsl:attribute name="class" select="'tab-pane fade in active'"/>
                     </xsl:if>
-                    <xsl:call-template name="search-form">
+                    
+                    <xsl:call-template name="tm-search-form">
                         <xsl:with-param name="type" select="'bo'"/>
                     </xsl:call-template>
+                    
+                    <xsl:call-template name="tm-search-results">
+                        <xsl:with-param name="results" select="if($request/@type eq 'bo') then /m:response/m:tm-search/m:results else ()"/>
+                    </xsl:call-template>
+                    
                 </div>
                 
                 <div role="tabpanel" id="wylie-search" class="tab-pane fade">
+                    
                     <xsl:if test="lower-case($request/@type) eq 'bo-ltn'">
                         <xsl:attribute name="class" select="'tab-pane fade in active'"/>
                     </xsl:if>
-                    <xsl:call-template name="search-form">
+                    
+                    <xsl:call-template name="tm-search-form">
                         <xsl:with-param name="type" select="'Bo-Ltn'"/>
                     </xsl:call-template>
+                    
+                    <xsl:call-template name="tm-search-results">
+                        <xsl:with-param name="results" select="if(lower-case($request/@type) eq 'bo-ltn') then /m:response/m:tm-search/m:results else ()"/>
+                    </xsl:call-template>
+                    
                 </div>
                 
                 <div role="tabpanel" id="english-search" class="tab-pane fade">
+                    
                     <xsl:if test="$request/@type eq 'en'">
                         <xsl:attribute name="class" select="'tab-pane fade in active'"/>
                     </xsl:if>
-                    <xsl:call-template name="search-form">
+                    
+                    <xsl:call-template name="tm-search-form">
                         <xsl:with-param name="type" select="'en'"/>
                     </xsl:call-template>
+                    
+                    <xsl:call-template name="tm-search-results">
+                        <xsl:with-param name="results" select="if($request/@type eq 'en') then /m:response/m:tm-search/m:results else ()"/>
+                    </xsl:call-template>
+                    
                 </div>
                 
             </div>
             
-            <xsl:variable name="results" select="/m:response/m:tm-search/m:results"/>
-            <xsl:choose>
-                <xsl:when test="$results[m:item]">
-                    
-                    <hr/>
-                    
-                    <!-- Results list -->
-                    <div class="search-results">
-                        
-                        <xsl:for-each select="$results/m:item">
-                            <div class="search-result row">
-                                <div class="col-sm-6">
-                                    <div class="row">
-                                        <div class="col-sm-1 small text-muted sml-margin top">
-                                            <xsl:value-of select="concat(position() + $results/@first-record - 1, '.')"/>
-                                        </div>
-                                        <div class="col-sm-11">
-                                            <xsl:if test="string(m:match/m:tibetan)">
-                                                <p class="text-bo">
-                                                    <xsl:apply-templates select="m:match/m:tibetan"/>
-                                                </p>
-                                            </xsl:if>
-                                            <xsl:if test="string(m:match/m:translation)">
-                                                <p class="translation">
-                                                    <xsl:apply-templates select="m:match/m:translation"/>
-                                                </p>
-                                            </xsl:if>
-                                            <xsl:if test="string(m:match/m:sanskrit)">
-                                                <p class="text-sa">
-                                                    <xsl:apply-templates select="m:match/m:sanskrit"/>
-                                                </p>
-                                            </xsl:if>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div>
-                                    <div class="col-sm-6">
-                                        
-                                        <div>
-                                            <a target="reading-room">
-                                                <xsl:choose>
-                                                    <xsl:when test="m:match/@type eq 'glossary-term'">
-                                                        <xsl:attribute name="href" select="concat($reading-room-path, m:match/@location)"/>
-                                                    </xsl:when>
-                                                    <xsl:when test="m:match/@type eq 'tm-unit'">
-                                                        <xsl:attribute name="href" select="concat($reading-room-path, m:match/@location)"/>
-                                                    </xsl:when>
-                                                </xsl:choose>
-                                                <xsl:apply-templates select="m:tei/m:titles/m:title[@xml:lang eq 'en']"/>
-                                            </a>
-                                        </div>
-                                        
-                                        <div class="translators text-muted small">
-                                            <xsl:value-of select="'Translated by '"/>
-                                            <xsl:variable name="author-ids" select="m:tei/m:publication/m:contributors/m:author[@role eq 'translatorEng']/@ref ! replace(., '^(eft:|contributors\.xml#)', '', 'i')"/>
-                                            <xsl:value-of select="string-join(/m:response/m:contributor-persons/m:person[@xml:id = $author-ids]/m:label, ' · ')"/>
-                                        </div>
-                                        
-                                        <xsl:for-each select="m:tei/m:bibl">
-                                            <div class="ancestors text-muted small">
-                                                <xsl:value-of select="'in '"/>
-                                                <ul class="breadcrumb">
-                                                    <xsl:for-each select="m:parent | m:parent//m:parent">
-                                                        <xsl:sort select="@nesting" order="descending"/>
-                                                        <li>
-                                                            <xsl:value-of select="m:titles/m:title[@xml:lang='en']"/>
-                                                        </li>
-                                                    </xsl:for-each>
-                                                    <xsl:if test="m:toh/m:full">
-                                                        <li>
-                                                            <xsl:value-of select="m:toh/m:full"/>
-                                                        </li>
-                                                        
-                                                    </xsl:if>
-                                                </ul>
-                                                
-                                            </div>
-                                        </xsl:for-each>
-                                        
-                                    </div>
-                                </div>
-                                
-                            </div>
-                        </xsl:for-each>
-                    </div>
-                    
-                    <!-- Pagination -->
-                    <!-- To do: change this to a re-post of the form maybe? -->
-                    <xsl:variable name="base-url" select="concat('index.html?tab=tm-search&amp;type=', $request/@type, '&amp;search=', $request/m:search/text()/normalize-space(), '&amp;lang=', $request/@lang, '&amp;volume=', $request/@volume, '&amp;page=', $request/@page)"/>
-                    <xsl:sequence select="common:pagination($results/@first-record, $results/@max-records, $results/@count-records, $base-url)"/>
-                    
-                </xsl:when>
-                <xsl:otherwise>
-                    <hr class="sml-margin"/>
-                    <p>
-                        <xsl:value-of select="'No search results'"/>
-                    </p>
-                </xsl:otherwise>
-            </xsl:choose>
-            
-            <!-- 
-            <xsl:for-each select="distinct-values($results/m:item/m:match/m:tibetan//exist:match)">
-                <xsl:sort select="string-length(.)" order="descending"/>
-                <xsl:variable name="match" select="."/>
-                <xsl:if test="not($results/m:item/m:match/m:tibetan//exist:match[not(text() eq $match)][contains(text(), $match)])">
-                    <input type="hidden" data-onload-mark="#folio-text">
-                        <xsl:attribute name="value" select="."/>
-                    </input>
-                </xsl:if>
-            </xsl:for-each>
-             -->
         </div>
     </xsl:template>
     
-    <xsl:template name="search-form">
+    <xsl:template name="tm-search-form">
         
         <xsl:param name="type" as="xs:string"/>
         
@@ -710,59 +634,169 @@
             </xsl:choose>
         </xsl:variable>
         
-        <form action="index.html" method="post" accept-charset="UTF-8" class="form-inline">
-            <input type="hidden" name="tab" value="tm-search"/>
-            <input type="hidden" name="type">
-                <xsl:attribute name="value" select="$type"/>
-            </input>
-            <input type="hidden" name="lang">
-                <xsl:attribute name="value" select="$lang"/>
-            </input>
-            <input type="hidden" name="volume">
-                <xsl:attribute name="value" select="$request/@volume"/>
-            </input>
-            <input type="hidden" name="page">
-                <xsl:attribute name="value" select="$request/@page ! xs:integer(.)"/>
-            </input>
-            <label class="form-label">
-                <xsl:attribute name="for" select="concat('tm-search-', $type)"/>
-                <xsl:choose>
-                    <xsl:when test="$lang eq 'bo'">
-                        <xsl:value-of select="'Search Tibetan'"/>
-                    </xsl:when>
-                    <xsl:when test="lower-case($lang) eq 'bo-ltn'">
-                        <xsl:value-of select="'Search Wylie'"/>
-                    </xsl:when>
-                    <xsl:otherwise>
-                        <xsl:value-of select="'Search English'"/>
-                    </xsl:otherwise>
-                </xsl:choose>
-            </label>
-            <div class="input-group">
-                <input type="text" name="search">
-                    <xsl:attribute name="id" select="concat('tm-search-', $type)"/>
-                    <xsl:choose>
-                        <xsl:when test="$lang eq 'bo'">
-                            <xsl:attribute name="class" select="'form-control text-bo'"/>
-                        </xsl:when>
-                        <xsl:when test="lower-case($lang) eq 'bo-ltn'">
-                            <xsl:attribute name="class" select="'form-control text-wy'"/>
-                        </xsl:when>
-                        <xsl:otherwise>
-                            <xsl:attribute name="class" select="'form-control'"/>
-                        </xsl:otherwise>
-                    </xsl:choose>
-                    <xsl:attribute name="value">
-                        <xsl:apply-templates select="$request[@type eq $type]/m:search"/>
-                    </xsl:attribute>
-                </input>
-                <div class="input-group-btn">
-                    <button type="submit" class="btn btn-primary">
-                        <i class="fa fa-search"/>
-                    </button>
-                </div>
+        <div class="row">
+            <div class="col-sm-8 col-sm-offset-2">
+                <form action="index.html" method="post" accept-charset="UTF-8" class="form-horizontal">
+                    <input type="hidden" name="tab" value="tm-search"/>
+                    <input type="hidden" name="type">
+                        <xsl:attribute name="value" select="$type"/>
+                    </input>
+                    <input type="hidden" name="lang">
+                        <xsl:attribute name="value" select="$lang"/>
+                    </input>
+                    <input type="hidden" name="volume">
+                        <xsl:attribute name="value" select="$request/@volume"/>
+                    </input>
+                    <input type="hidden" name="page">
+                        <xsl:attribute name="value" select="$request/@page ! xs:integer(.)"/>
+                    </input>
+                    <div class="input-group">
+                        <input type="text" name="search">
+                            <xsl:attribute name="id" select="concat('tm-search-', $type)"/>
+                            <xsl:choose>
+                                <xsl:when test="$lang eq 'bo'">
+                                    <xsl:attribute name="class" select="'form-control text-bo'"/>
+                                </xsl:when>
+                                <xsl:when test="lower-case($lang) eq 'bo-ltn'">
+                                    <xsl:attribute name="class" select="'form-control text-wy'"/>
+                                </xsl:when>
+                                <xsl:otherwise>
+                                    <xsl:attribute name="class" select="'form-control'"/>
+                                </xsl:otherwise>
+                            </xsl:choose>
+                            <xsl:attribute name="value">
+                                <xsl:apply-templates select="$request[@type eq $type]/m:search"/>
+                            </xsl:attribute>
+                        </input>
+                        <div class="input-group-btn">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fa fa-search"/>
+                                
+                                <xsl:choose>
+                                    <xsl:when test="$lang eq 'bo'">
+                                        <xsl:value-of select="' Search Tibetan'"/>
+                                    </xsl:when>
+                                    <xsl:when test="lower-case($lang) eq 'bo-ltn'">
+                                        <xsl:value-of select="' Search Wylie'"/>
+                                    </xsl:when>
+                                    <xsl:otherwise>
+                                        <xsl:value-of select="' Search English'"/>
+                                    </xsl:otherwise>
+                                </xsl:choose>
+                            </button>
+                        </div>
+                    </div>
+                </form>
             </div>
-        </form>
+        </div>
+        
+    </xsl:template>
+    
+    <xsl:template name="tm-search-results">
+        
+        <xsl:param name="results" as="element(m:results)?"/>
+        
+        <xsl:choose>
+            <xsl:when test="$results[m:item]">
+                
+                <hr/>
+                
+                <!-- Results list -->
+                <div class="search-results">
+                    
+                    <xsl:for-each select="$results/m:item">
+                        <div class="search-result row">
+                            <div class="col-sm-6">
+                                <div class="row">
+                                    <div class="col-sm-1 small text-muted sml-margin top">
+                                        <xsl:value-of select="concat(position() + $results/@first-record - 1, '.')"/>
+                                    </div>
+                                    <div class="col-sm-11">
+                                        <xsl:if test="string(m:match/m:tibetan)">
+                                            <p class="text-bo">
+                                                <xsl:apply-templates select="m:match/m:tibetan"/>
+                                            </p>
+                                        </xsl:if>
+                                        <xsl:if test="string(m:match/m:translation)">
+                                            <p class="translation">
+                                                <xsl:apply-templates select="m:match/m:translation"/>
+                                            </p>
+                                        </xsl:if>
+                                        <xsl:if test="string(m:match/m:sanskrit)">
+                                            <p class="text-sa">
+                                                <xsl:apply-templates select="m:match/m:sanskrit"/>
+                                            </p>
+                                        </xsl:if>
+                                    </div>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="col-sm-6">
+                                    
+                                    <div>
+                                        <a target="reading-room">
+                                            <xsl:choose>
+                                                <xsl:when test="m:match/@type eq 'glossary-term'">
+                                                    <xsl:attribute name="href" select="concat($reading-room-path, m:match/@location)"/>
+                                                </xsl:when>
+                                                <xsl:when test="m:match/@type eq 'tm-unit'">
+                                                    <xsl:attribute name="href" select="concat($reading-room-path, m:match/@location)"/>
+                                                </xsl:when>
+                                            </xsl:choose>
+                                            <xsl:apply-templates select="m:tei/m:titles/m:title[@xml:lang eq 'en']"/>
+                                        </a>
+                                    </div>
+                                    
+                                    <div class="translators text-muted small">
+                                        <xsl:value-of select="'Translated by '"/>
+                                        <xsl:variable name="author-ids" select="m:tei/m:publication/m:contributors/m:author[@role eq 'translatorEng']/@ref ! replace(., '^(eft:|contributors\.xml#)', '', 'i')"/>
+                                        <xsl:value-of select="string-join(/m:response/m:contributor-persons/m:person[@xml:id = $author-ids]/m:label, ' · ')"/>
+                                    </div>
+                                    
+                                    <xsl:for-each select="m:tei/m:bibl">
+                                        <div class="ancestors text-muted small">
+                                            <xsl:value-of select="'in '"/>
+                                            <ul class="breadcrumb">
+                                                <xsl:for-each select="m:parent | m:parent//m:parent">
+                                                    <xsl:sort select="@nesting" order="descending"/>
+                                                    <li>
+                                                        <xsl:value-of select="m:titles/m:title[@xml:lang='en']"/>
+                                                    </li>
+                                                </xsl:for-each>
+                                                <xsl:if test="m:toh/m:full">
+                                                    <li>
+                                                        <xsl:value-of select="m:toh/m:full"/>
+                                                    </li>
+                                                    
+                                                </xsl:if>
+                                            </ul>
+                                            
+                                        </div>
+                                    </xsl:for-each>
+                                    
+                                </div>
+                            </div>
+                            
+                        </div>
+                    </xsl:for-each>
+                </div>
+                
+                <hr class="sml-margin"/>
+                
+                <!-- Pagination -->
+                <!-- To do: change this to a re-post of the form maybe? -->
+                <xsl:variable name="base-url" select="concat('index.html?tab=tm-search&amp;type=', $request/@type, '&amp;search=', $request/m:search/text()/normalize-space(), '&amp;lang=', $request/@lang, '&amp;volume=', $request/@volume, '&amp;page=', $request/@page)"/>
+                <xsl:sequence select="common:pagination($results/@first-record, $results/@max-records, $results/@count-records, $base-url)"/>
+                
+            </xsl:when>
+            <xsl:otherwise>
+                <hr/>
+                <p class="text-muted italic text-center">
+                    <xsl:value-of select="'~ No search results ~'"/>
+                </p>
+            </xsl:otherwise>
+        </xsl:choose>
+    
     </xsl:template>
     
     <xsl:template name="translations">

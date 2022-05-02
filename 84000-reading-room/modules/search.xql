@@ -180,21 +180,21 @@ declare function search:tm-search($request as xs:string, $lang as xs:string, $fi
         else
             ''
     
-    let $search :=
-        if(lower-case($lang) = ('bo', 'bo-ltn')) then
-            $request-bo
-        else
-            $request
-    
     let $search-lang := 
         if(lower-case($lang) = ('bo', 'bo-ltn')) then
             'bo'
         else
             'en'
     
+    let $search :=
+        if($search-lang eq 'bo') then
+            $request-bo
+        else
+            $request
+    
     let $options :=
         <options>
-            <default-operator>or</default-operator>
+            <default-operator>and</default-operator>
             <phrase-slop>200</phrase-slop>
             <leading-wildcard>no</leading-wildcard>
             <filter-rewrite>yes</filter-rewrite>
@@ -243,7 +243,7 @@ declare function search:tm-search($request as xs:string, $lang as xs:string, $fi
         return 
             $result
             
-    return 
+    return (:if(true()) then element debug { $results } else:)
         element { QName('http://read.84000.co/ns/1.0', 'tm-search') } {
             element request {
                 attribute lang { $lang },
@@ -275,11 +275,11 @@ declare function search:tm-search($request as xs:string, $lang as xs:string, $fi
                         else
                             $result/ancestor::tei:TEI
                     
-                    let $expanded := util:expand($result, "expand-xincludes=no")
+                    let $expanded := $result(:util:expand($result, "expand-xincludes=no"):)
                     
                     let $expanded :=
                         if(not($expanded//exist:match)) then
-                            if($lang eq 'bo') then
+                            if($search-lang eq 'bo') then
                                 common:mark-nodes($result, $search, 'tibetan')
                             else
                                 common:mark-nodes($result, $search, 'words')

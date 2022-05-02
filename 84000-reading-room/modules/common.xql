@@ -13,7 +13,7 @@ declare namespace xpath="http://www.w3.org/2005/xpath-functions";
 declare namespace test="http://exist-db.org/xquery/xqsuite";
 
 import module namespace functx="http://www.functx.com";
-import module namespace converter="http://tbrc.org/xquery/ewts2unicode" at "java:org.tbrc.xquery.extensions.EwtsToUniModule";
+import module namespace ewts = "http://tbrc.org/xquery/ewts2unicode";
 
 declare variable $common:app-id := common:app-id();
 declare variable $common:root-path := concat('/db/apps/', $common:app-id);
@@ -345,7 +345,7 @@ function common:bo-from-wylie($bo-ltn as xs:string) as xs:string {
     (: convert to Tibetan unicode :)
     return 
         if ($bo-ltn-underscores gt "") then
-            converter:toUnicode($bo-ltn-underscores)
+            ewts:toUnicode($bo-ltn-underscores)
         else
             ""
 };
@@ -355,7 +355,7 @@ declare
     %test:assertEquals("ar mo nig lta bu'i rdo leb/")
 function common:wylie-from-bo($bo as xs:string) as xs:string {
     if ($bo gt "") then
-        converter:toWylie($bo)
+        ewts:toWylie($bo)
     else
         ""
 };
@@ -409,7 +409,7 @@ function common:bo-term($bo-ltn as xs:string) as xs:string {
     (: convert to Tibetan unicode :)
     let $bo :=
         if ($bo-ltn-shad ne "") then
-            converter:toUnicode($bo-ltn-shad)
+            ewts:toUnicode($bo-ltn-shad)
         else
             ""
     
@@ -425,6 +425,15 @@ function common:bo-ltn($string as xs:string) as xs:string {
         replace(normalize-space($string), '__', ' ')
     else
         ""
+};
+
+declare 
+    %test:args('ངག་བཀྱལ་བ།')
+    %test:assertTrue
+    %test:args('Some English')
+    %test:assertFalse
+function common:string-is-bo ($string as xs:string) as xs:boolean {
+    functx:between-inclusive(min(string-to-codepoints(replace($string, '\W', ''))), 3840, 4095)
 };
 
 declare function common:unescape($text as xs:string*) as node()* {

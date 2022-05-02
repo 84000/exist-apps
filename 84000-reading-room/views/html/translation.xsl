@@ -224,6 +224,10 @@
                     <div class="fix-width">
                         <div class="sidebar-content">
                             
+                            <!--<h3>
+                                <xsl:value-of select="m:translation/m:titles/m:title[text()][@xml:lang eq 'en'][1]"/>
+                            </h3>-->
+                            
                             <xsl:if test="m:translation/@status = $render-status">
                                 
                                 <h4>
@@ -1006,10 +1010,10 @@
                     
                     <div class="rw-heading heading-section chapter">
                         
-                        <xsl:if test="count(m:translation/m:part[@type eq 'translation']/m:part[@type = ('section', 'chapter')]) gt 1">
-                            <div class="h3">
-                                <xsl:value-of select="'The Translation'"/>
-                            </div>
+                        <xsl:if test="m:translation/m:part[@type eq 'translation']/tei:head[@type eq 'translation'][text()]">
+                           <div class="h3">
+                               <xsl:value-of select="m:translation/m:part[@type eq 'translation']/tei:head[@type eq 'translation'][text()][1]"/>
+                           </div>
                         </xsl:if>
                         
                         <xsl:if test="m:translation/m:part[@type eq 'translation']/m:honoration[text()]">

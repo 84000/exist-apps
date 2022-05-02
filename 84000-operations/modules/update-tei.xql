@@ -1073,7 +1073,7 @@ declare function update-tei:markup($tei as element(tei:TEI), $markdown as xs:str
             <output:omit-xml-declaration value="yes"/>
         </output:serialization-parameters>
     
-    let $markup := transform:transform($markdown-element, doc('/db/apps/84000-operations/views/common.xsl'), (), (), $serialization-options)
+    let $markup := transform:transform($markdown-element, doc('/db/apps/84000-operations/views/functions.xsl'), (), (), $serialization-options)
     
     let $new-tei := 
         (: Update with new content :)

@@ -6,7 +6,7 @@
     
     <xsl:variable name="tei-id" select="/m:response/m:knowledgebase/m:page/@xml:id" as="xs:string"/>
     <xsl:variable name="title" select="/m:response/m:knowledgebase/m:page/m:titles/m:title[@type eq 'mainTitle'][1]" as="element(m:title)?"/>
-    <xsl:variable name="entity" select="$entities[m:instance/@id = $tei-id][1]" as="element(m:entity)?"/>
+    <xsl:variable name="entity" select="/m:response/m:entities/m:entity[m:instance/@id = $tei-id][1]" as="element(m:entity)?"/>
     <xsl:variable name="entity-label" select="($entity/m:label[@xml:lang eq 'en'], $entity/m:label[@xml:lang eq 'Sa-Ltn'], $entity/m:label)[1]" as="element(m:label)?"/>
     <xsl:variable name="request-show-tab" select="/m:response/m:request/@show-tab" as="xs:string?"/>
     <xsl:variable name="request-similar-search" select="/m:response/m:request/m:similar-search[1]/text()" as="xs:string?"/>

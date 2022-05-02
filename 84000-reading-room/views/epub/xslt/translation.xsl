@@ -13,9 +13,9 @@
             <xsl:with-param name="content">
                 <section epub:type="halftitle" id="body-title" class="new-page heading-section">
                     
-                    <xsl:if test="count(m:translation/m:part[@type eq 'translation']/m:part[@type = ('section', 'chapter')]) gt 1">
+                    <xsl:if test="m:translation/m:part[@type eq 'translation']/tei:head[@type eq 'translation'][text()]">
                         <div class="h3">
-                            <xsl:value-of select="'The Translation'"/>
+                            <xsl:value-of select="m:translation/m:part[@type eq 'translation']/tei:head[@type eq 'translation'][text()][1]"/>
                         </div>
                     </xsl:if>
                     

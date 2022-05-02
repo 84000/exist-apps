@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" version="3.0" exclude-result-prefixes="#all">
     
-    <xsl:import href="../../84000-reading-room/views/html/website-page.xsl"/>
+    <xsl:import href="../../84000-reading-room/xslt/webpage.xsl"/>
     <xsl:import href="common.xsl"/>
     
     <xsl:key name="master-texts" match="/m:response/m:translations-master//m:text" use="@id"/>
@@ -175,6 +175,7 @@
                                     
                                     <xsl:variable name="text-id" select="@id"/>
                                     <xsl:variable name="group-status-id" select="@status[1]"/>
+                                    <xsl:variable name="group-status-group" select="@status-group[1]"/>
                                     <xsl:variable name="group-toh" select="m:toh[1]"/>
                                     <xsl:variable name="group-titles" select="m:titles[1]"/>
                                     <xsl:variable name="group-tei-version" select="m:downloads[1]/@tei-version"/>
@@ -182,6 +183,7 @@
                                     <xsl:variable name="group-master-tei-version" select="$group-master-first-text/m:downloads[1]/@tei-version"/>
                                     <xsl:variable name="group-master-status-updates" select="$group-master-first-text/m:status-updates[1]"/>
                                     <xsl:variable name="group-master-status-id" select="$group-master-first-text/@translation-status"/>
+                                    <xsl:variable name="group-master-status-group" select="/m:response/m:text-statuses/m:status[@status-id eq $group-master-status-id]/@group"/>
                                     <xsl:variable name="text-marked-up" select="/m:response/m:text-statuses/m:status[@status-id eq $group-status-id][@marked-up eq 'true']"/>
                                     
                                     <!-- Tei options -->
@@ -576,35 +578,33 @@
                                             </xsl:if>
                                             
                                             <!-- Status change -->
-                                            <xsl:if test="$environment/m:store-conf[@type eq 'client'] and ($page-filter = ('new-version-translations', 'new-version-placeholders') or not(compare($group-status-id, $group-master-status-id) eq 0))">
-                                                <div class="row sml-margin bottom">
-                                                    <div class="col-sm-12">
-                                                        <div class="center-vertical align-left">
+                                            <div class="row sml-margin bottom">
+                                                <div class="col-sm-12">
+                                                    <div class="center-vertical align-left">
+                                                        <span>
+                                                            <span class="label label-warning">
+                                                                <xsl:if test="$group-status-group eq 'published'">
+                                                                    <xsl:attribute name="class" select="'label label-success'"/>
+                                                                </xsl:if>
+                                                                <xsl:value-of select="$group-status-id"/>
+                                                            </span>
+                                                        </span>
+                                                        <xsl:if test="$environment/m:store-conf[@type eq 'client'] and not(compare($group-status-id, $group-master-status-id) eq 0)">
+                                                            <span>
+                                                                <i class="fa fa-angle-right"/>
+                                                            </span>
                                                             <span>
                                                                 <span class="label label-warning">
-                                                                    <xsl:if test="$group-status-id eq '1'">
+                                                                    <xsl:if test="$group-master-status-group eq 'published'">
                                                                         <xsl:attribute name="class" select="'label label-success'"/>
                                                                     </xsl:if>
-                                                                    <xsl:value-of select="$group-status-id"/>
+                                                                    <xsl:value-of select="$group-master-status-id"/>
                                                                 </span>
                                                             </span>
-                                                            <xsl:if test="not(compare($group-status-id, $group-master-status-id) eq 0)">
-                                                                <span>
-                                                                    <i class="fa fa-angle-right"/>
-                                                                </span>
-                                                                <span>
-                                                                    <span class="label label-warning">
-                                                                        <xsl:if test="$group-master-status-id eq '1'">
-                                                                            <xsl:attribute name="class" select="'label label-success'"/>
-                                                                        </xsl:if>
-                                                                        <xsl:value-of select="$group-master-status-id"/>
-                                                                    </span>
-                                                                </span>
-                                                            </xsl:if>
-                                                        </div>
+                                                        </xsl:if>
                                                     </div>
                                                 </div>
-                                            </xsl:if>
+                                            </div>
                                             
                                             <!-- Get TEI -->
                                             <div class="sml-margin bottom">
