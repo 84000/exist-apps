@@ -805,7 +805,7 @@
                                             <xsl:attribute name="id" select="$item-id"/>
                                             
                                             <!-- Entity title -->
-                                            <a class="block-link">
+                                            <a class="block-link log-click">
                                                 
                                                 <xsl:attribute name="href" select="common:internal-link(concat('/glossary.html?entity-id=', $entity/@xml:id), (if($tei-editor and $flagged gt '') then concat('flagged=', $flagged) else (), m:view-mode-parameter((),())), concat('#', $entity/@xml:id, '-body'), $root/m:response/@lang)"/>
                                                 <xsl:attribute name="data-ajax-target" select="concat('#', $item-id, '-detail', ' .ajax-target')"/>

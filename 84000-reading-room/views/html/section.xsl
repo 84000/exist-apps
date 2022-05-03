@@ -130,7 +130,7 @@
                                             <xsl:attribute name="class" select="'col-filter active'"/>
                                         </xsl:if>
                                         
-                                        <a class="filter-panel" data-match-height="carousel-filters">
+                                        <a class="filter-panel log-click" data-match-height="carousel-filters">
                                             <xsl:attribute name="href" select="common:internal-link(concat('/section/', lower-case(m:section/@id), '.html'), (m:view-mode-parameter((), ())), '#section-content', /m:response/@lang)"/>
                                             <xsl:attribute name="data-ajax-target" select="'#section-content'"/>
                                             <div class="h3">
@@ -156,7 +156,7 @@
                                                 <xsl:attribute name="class" select="'col-filter active'"/>
                                             </xsl:if>
                                             
-                                            <a class="filter-panel" data-match-height="carousel-filters">
+                                            <a class="filter-panel log-click" data-match-height="carousel-filters">
                                                 <xsl:attribute name="href" select="common:internal-link(concat('/section/', lower-case(/m:response/m:section/@id), '.html'), (concat('filter-id=', @xml:id), m:view-mode-parameter((), ())), '#section-content', /m:response/@lang)"/>
                                                 <xsl:attribute name="data-ajax-target" select="'#section-content'"/>
                                                 <div class="h3">
@@ -516,7 +516,7 @@
                                         
                                         <div class="center-vertical full-width">
                                             
-                                            <a>
+                                            <a class="log-click">
                                                 <xsl:attribute name="href" select="common:internal-link(concat('/section/', lower-case(m:section/@id), '.html'), (m:view-mode-parameter((), ())), '#section-content', /m:response/@lang)"/>
                                                 <xsl:attribute name="data-ajax-target" select="'#section-content'"/>
                                                 <xsl:attribute name="id" select="concat(m:section/@id, '-filter-label')"/>
@@ -537,7 +537,7 @@
                                             
                                             <div class="center-vertical full-width">
                                                 
-                                                <a>
+                                                <a class="log-click">
                                                     <xsl:attribute name="href" select="common:internal-link(concat('/section/', lower-case(/m:response/m:section/@id), '.html'), (concat('filter-id=', $filter/@xml:id), m:view-mode-parameter((), ())), '#section-content', /m:response/@lang)"/>
                                                     <xsl:attribute name="data-ajax-target" select="'#section-content'"/>
                                                     <xsl:attribute name="id" select="concat($filter/@xml:id, '-filter-label')"/>
