@@ -280,7 +280,7 @@
                             <xsl:if test="$tei-editor-off">
                                 <div class="bottom-margin">
                                     <a>
-                                        <xsl:attribute name="href" select="concat('?view-mode=editor&amp;timestamp=', current-dateTime())"/>
+                                        <xsl:attribute name="href" select="'?view-mode=editor'"/>
                                         <xsl:attribute name="class" select="'btn btn-danger uppercase'"/>
                                         <xsl:value-of select="'Show Editor'"/>
                                     </a>
@@ -315,7 +315,7 @@
                                             <li>
                                                 <a class="editor" target="tei-editor">
                                                     
-                                                    <xsl:attribute name="href" select="concat('/tei-editor.html?type=knowledgebase&amp;resource-id=', $article-id,'&amp;timestamp=', current-dateTime(), '#ajax-source')"/>
+                                                    <xsl:attribute name="href" select="concat('/tei-editor.html?resource-type=knowledgebase&amp;resource-id=', $article-id,'&amp;passage-id=locking#ajax-source')"/>
                                                     <xsl:attribute name="data-ajax-target" select="'#popup-footer-editor .data-container'"/>
                                                     
                                                     <xsl:value-of select="'Lock / unlock file'"/>

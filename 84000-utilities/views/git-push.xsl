@@ -125,8 +125,7 @@
                 </div>
                 
             </div>
-                    
-            
+        
         </xsl:variable>
         
         <xsl:call-template name="reading-room-page">

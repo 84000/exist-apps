@@ -63,7 +63,7 @@ declare function search:search($request as xs:string, $resource-id as xs:string,
         | $published/tei:text//tei:ab[ft:query(., $query, $options)][@tid]
         | $published/tei:text//tei:trailer[ft:query(., $query, $options)][@tid]
         | $published/tei:text/tei:back//tei:bibl[ft:query(., $query, $options)][@xml:id]
-        | $published/tei:text/tei:back//tei:gloss[ft:query(tei:term, $query, $options)][@xml:id]
+        | $published/tei:text/tei:back//tei:gloss[ft:query(tei:term, $query, $options)][@xml:id][not(@mode eq 'surfeit')]
         (:$published/tei:text//tei:p[ft:query(., concat("content: ", $request), map { "fields": "content" })]:)
     
     let $result-groups := 
@@ -330,7 +330,9 @@ declare function search:tm-search($request as xs:string, $lang as xs:string, $fi
                                 
                                 element match {
                                     attribute type { 'glossary-term' },
-                                    attribute location { concat('/translation/', $toh-key, '.html#', $result/@xml:id) },
+                                    if($result[not(@mode eq 'surfeit')]) then
+                                        attribute location { concat('/translation/', $toh-key, '.html#', $result/@xml:id) }
+                                    else (),
                                     element tibetan { ($expanded/tei:term[not(@type = ('definition','alternative'))][@xml:lang eq "bo"][exist:match], $expanded/tei:term[not(@type = ('definition','alternative'))][@xml:lang eq "bo"])[1] }, 
                                     element translation { ($expanded/tei:term[not(@type = ('definition','alternative'))][not(@xml:lang) or @xml:lang eq "en"][not(@type = ('definition','alternative'))][exist:match], $expanded/tei:term[not(@type = ('definition','alternative'))][not(@xml:lang) or @xml:lang eq "en"][not(@type = ('definition','alternative'))])[1] },
                                     element wylie { ($expanded/tei:term[not(@type = ('definition','alternative'))][@xml:lang eq "Bo-Ltn"][exist:match], $expanded/tei:term[not(@type = ('definition','alternative'))][@xml:lang eq "Bo-Ltn"])[1] },

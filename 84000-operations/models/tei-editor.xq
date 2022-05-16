@@ -11,7 +11,7 @@ import module namespace knowledgebase="http://read.84000.co/knowledgebase" at ".
 
 let $resource-id := request:get-parameter('resource-id', '')
 let $resource-suffix := request:get-parameter('resource-suffix', '')
-let $type := request:get-parameter('type', '')
+let $resource-type := request:get-parameter('resource-type', '')
 let $passage-id := request:get-parameter('passage-id', '')
 let $form-action := request:get-parameter('form-action', '')
 let $markdown := request:get-parameter('markdown', '')
@@ -19,23 +19,23 @@ let $new-element-name := request:get-parameter('new-element-name', '')
 let $comment := request:get-parameter('comment', '')
 let $callback-url := request:get-parameter('callback-url', '')
 
-let $tei := tei-content:tei($resource-id, $type)
+let $tei := tei-content:tei($resource-id, $resource-type)
 
 let $update-tei :=
-    if($type = ('knowledgebase') and $tei and $form-action eq 'update-tei') then 
+    if($resource-type = ('knowledgebase') and $tei and $form-action eq 'update-tei') then 
         update-tei:markup($tei, $markdown, $passage-id, '')
-    else if($type = ('knowledgebase') and $tei and $form-action eq 'add-element') then 
+    else if($resource-type = ('knowledgebase') and $tei and $form-action eq 'add-element') then 
         update-tei:add-element($tei, $passage-id, $new-element-name)
-    else if($type = ('knowledgebase') and $tei and $form-action eq 'comment-tei') then 
+    else if($resource-type = ('knowledgebase') and $tei and $form-action eq 'comment-tei') then 
         update-tei:comment($tei, $passage-id, $comment)
-    (:else if($type = ('knowledgebase') and $tei and $form-action eq 'lock-tei') then 
+    (:else if($resource-type = ('knowledgebase') and $tei and $form-action eq 'lock-tei') then 
         xmldb:lock-document()
-    else if($type = ('knowledgebase') and $tei and $form-action eq 'unlock-tei') then 
+    else if($resource-type = ('knowledgebase') and $tei and $form-action eq 'unlock-tei') then 
         xmldb:clear-lock():)
     else ()
 
 let $schema := 
-    if($type eq 'knowledgebase') then
+    if($resource-type eq 'knowledgebase') then
         doc(concat($common:tei-path, '/schema/current/knowledgebase.rng'))
     else
         doc(concat($common:tei-path, '/schema/current/translation.rng'))
@@ -44,7 +44,7 @@ let $validation-report := validation:jing-report($tei, $schema)
 
 let $response-data :=
     (: Restrict to knowledgebase only for now :)
-    if($tei and $type eq 'knowledgebase') then 
+    if($tei and $resource-type eq 'knowledgebase') then 
         
         element { QName('http://read.84000.co/ns/1.0', 'knowledgebase') } {
             
@@ -62,7 +62,7 @@ let $xml-response :=
         (
             (: Include request parameters :)
             element { QName('http://read.84000.co/ns/1.0', 'request') } {
-                attribute type { $type },
+                attribute resource-type { $resource-type },
                 attribute resource-id { $resource-id },
                 attribute passage-id { $passage-id }
             },

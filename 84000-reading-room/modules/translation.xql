@@ -33,7 +33,7 @@ declare variable $translation:view-modes :=
       <view-mode id="glossary-check"    client="browser"  cache="suppress"   layout="expanded-fixed"  glossary="no-cache"        parts="all"/>,
       <view-mode id="ajax-part"         client="ajax"     cache="use-cache"  layout="part-only"       glossary="use-cache"       parts="part"/>,
       <view-mode id="passage"           client="ajax"     cache="suppress"   layout="part-only"       glossary="use-cache"       parts="passage"/>,
-      <view-mode id="editor-passage"    client="ajax"     cache="suppress"   layout="part-only"       glossary="no-cache"        parts="passage"/>
+      <view-mode id="editor-passage"    client="ajax"     cache="suppress"   layout="part-only"       glossary="no-cache"        parts="passage"/>,
     </view-modes>;
 
 declare variable $translation:status-statuses := $tei-content:text-statuses/m:status[@type eq 'translation'];
@@ -832,7 +832,7 @@ declare function translation:glossary($tei as element(tei:TEI), $passage-id as x
     let $glossary := 
         element { QName('http://www.tei-c.org/ns/1.0', 'div') } {
             attribute type { 'glossary' },
-            $tei/tei:text/tei:back//tei:list[@type eq 'glossary']/tei:item/tei:gloss[@xml:id]
+            $tei/tei:text/tei:back//tei:list[@type eq 'glossary']/tei:item/tei:gloss[@xml:id][not(@mode eq 'surfeit')]
         }
     
     let $render := local:render($glossary, ('glossary', 'back'), $passage-id, $view-mode, 'preview')
@@ -922,7 +922,7 @@ declare function translation:word-count($tei as element(tei:TEI)) as xs:integer 
 };
 
 declare function translation:glossary-count($tei as element(tei:TEI)) as xs:integer {
-    count($tei/tei:text/tei:back/tei:div[@type eq 'glossary']//tei:gloss[@xml:id])
+    count($tei/tei:text/tei:back/tei:div[@type eq 'glossary']//tei:gloss[@xml:id][not(@mode eq 'surfeit')])
 };
 
 declare function translation:title-listing($translation-title as xs:string*) as xs:string* {

@@ -1,6 +1,8 @@
 module namespace update-tei = "http://operations.84000.co/update-tei";
 
 import module namespace update-entity = "http://operations.84000.co/update-entity" at "update-entity.xql";
+import module namespace translation-status = "http://operations.84000.co/translation-status" at "translation-status.xql";
+
 import module namespace common = "http://read.84000.co/common" at "../../84000-reading-room/modules/common.xql";
 import module namespace tei-content = "http://read.84000.co/tei-content" at "../../84000-reading-room/modules/tei-content.xql";
 import module namespace sponsors = "http://read.84000.co/sponsors" at "../../84000-reading-room/modules/sponsors.xql";
@@ -9,8 +11,6 @@ import module namespace translation = "http://read.84000.co/translation" at "../
 import module namespace glossary = "http://read.84000.co/glossary" at "../../84000-reading-room/modules/glossary.xql";
 import module namespace knowledgebase = "http://read.84000.co/knowledgebase" at "../../84000-reading-room/modules/knowledgebase.xql";
 import module namespace entities = "http://read.84000.co/entities" at "../../84000-reading-room/modules/entities.xql";
-
-import module namespace translation-status = "http://read.84000.co/translation-status" at "translation-status.xql";
 import module namespace store = "http://read.84000.co/store" at "../../84000-reading-room/modules/store.xql";
 
 import module namespace functx = "http://www.functx.com";
@@ -828,7 +828,7 @@ declare function update-tei:cache-glossary($tei as element(tei:TEI), $glossary-i
     let $tei-version := tei-content:version-str($tei)
 
     (: TEI glossary items :)
-    let $tei-glossary := $tei//tei:back//tei:list[@type eq 'glossary']/tei:item/tei:gloss[@xml:id]
+    let $tei-glossary := $tei//tei:back//tei:list[@type eq 'glossary']/tei:item/tei:gloss[@xml:id][not(@mode eq 'surfeit')]
     
     (: Which glossary entries to refresh :)
     let $refresh-locations :=

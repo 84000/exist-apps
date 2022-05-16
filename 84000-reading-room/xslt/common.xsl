@@ -4,8 +4,6 @@
     <xsl:import href="lang.xsl"/>
     <xsl:import href="layout.xsl"/>
     
-    
-    
     <xsl:function name="common:lang-class" as="xs:string">
         <!-- Standardise wayward lang ids -->
         <xsl:param name="lang" as="xs:string?"/>

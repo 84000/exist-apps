@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:output="http://www.w3.org/2010/xslt-xquery-serialization" xmlns:ops="http://operations.84000.co" xmlns:common="http://read.84000.co/common" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:markdown="http://read.84000.co/markdown" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:output="http://www.w3.org/2010/xslt-xquery-serialization" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:ops="http://operations.84000.co" xmlns:common="http://read.84000.co/common" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:markdown="http://read.84000.co/markdown" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" version="3.0" exclude-result-prefixes="#all">
     
     <xsl:import href="../../84000-reading-room/xslt/webpage.xsl"/>
     <xsl:import href="common.xsl"/>
@@ -89,11 +89,11 @@
             <xsl:if test="$passage[not(tei:div | m:part) and not(self::tei:div | self::m:part)]">
                 <tab target-id="edit-form">Edit content</tab>
             </xsl:if>
-            <xsl:if test="$passage-config/m:passage-config[m:sibling-option]">
-                <tab target-id="add-form">Add an element</tab>
-            </xsl:if>
             <xsl:if test="$passage[text()] and $passage[@tid]">
                 <tab target-id="comment-form">Comment</tab>
+            </xsl:if>
+            <xsl:if test="$passage-config/m:passage-config[m:sibling-option]">
+                <tab target-id="add-form">Add an element</tab>
             </xsl:if>
         </tabs-config>
     </xsl:variable>
@@ -133,9 +133,9 @@
             <h2 class="sml-margin bottom">
                 
                 <xsl:choose>
-                    <xsl:when test="m:request/@type eq 'knowledgebase' and m:knowledgebase[m:page]">
+                    <xsl:when test="m:request/@resource-type eq 'knowledgebase' and m:knowledgebase[m:page]">
                         
-                        <xsl:value-of select="m:knowledgebase/m:page/m:titles/m:title[@type eq 'mainTitle'][@xml:lang eq 'en']"/>
+                        <xsl:value-of select="m:knowledgebase/m:page/m:titles/m:title[@resource-type eq 'mainTitle'][@xml:lang eq 'en']"/>
                         
                         <small>
                         
@@ -174,263 +174,284 @@
                     <!-- Edit content -->
                     <xsl:when test="$tabs-config/m:tabs-config[m:tab]">
                         
-                        <div class="row">
+                        <!-- Tabs -->
+                        <ul class="nav nav-tabs top-margin" role="tabslist">
                             
-                            <div class="col-sm-8">
-                                
-                                <!-- Tabs -->
-                                <ul class="nav nav-tabs top-margin" role="tabslist">
+                            <xsl:for-each select="$tabs-config/m:tabs-config/m:tab">
+                                <li role="presentation">
                                     
-                                    <xsl:for-each select="$tabs-config/m:tabs-config/m:tab">
-                                        <li role="presentation">
-                                            
-                                            <xsl:if test="position() eq 1">
-                                                <xsl:attribute name="class" select="'active'"/>
-                                            </xsl:if>
-                                            
-                                            <a role="tab" data-toggle="tab">
-                                                <xsl:attribute name="href" select="'#' || @target-id"/>
-                                                <xsl:attribute name="aria-controls" select="@target-id"/>
-                                                <xsl:if test="@target-id eq 'comment-form' and $passage[comment()]">
-                                                    <xsl:attribute name="class" select="'sticky-note'"/>
-                                                </xsl:if>
-                                                <xsl:value-of select="data()"/>
-                                            </a>
-                                            
-                                        </li>
-                                    </xsl:for-each>
+                                    <xsl:if test="@target-id eq 'edit-form'">
+                                        <xsl:attribute name="class" select="'active'"/>
+                                    </xsl:if>
                                     
-                                </ul>
-                                
-                                <div class="tab-content">
-                                    
-                                    <!-- Edit content -->
-                                    <div id="edit-form" role="tabpanel" class="tab-pane fade">
-                                        
-                                        <xsl:if test="$tabs-config/m:tabs-config/m:tab[1]/@target-id eq 'edit-form'">
-                                            <xsl:attribute name="class" select="'tab-pane fade in active'"/>
+                                    <a role="tab" data-toggle="tab">
+                                        <xsl:attribute name="href" select="'#' || @target-id"/>
+                                        <xsl:attribute name="aria-controls" select="@target-id"/>
+                                        <xsl:if test="@target-id eq 'comment-form' and $passage[comment()]">
+                                            <xsl:attribute name="class" select="'sticky-note'"/>
                                         </xsl:if>
+                                        <xsl:value-of select="data()"/>
+                                    </a>
+                                    
+                                </li>
+                            </xsl:for-each>
+                            
+                        </ul>
+                        
+                        <div class="tab-content">
+                            
+                            <!-- Callback url -->
+                            <xsl:variable name="callbackurl">
+                                <xsl:if test="m:request/@resource-type eq 'knowledgebase' and m:knowledgebase[m:page]">
+                                    <xsl:value-of select="concat($reading-room-path, '/knowledgebase/', m:knowledgebase/m:page/@kb-id, '.html?view-mode=editor#article')"/>
+                                </xsl:if>
+                            </xsl:variable>
+                            
+                            <!-- Edit content -->
+                            <div id="edit-form" role="tabpanel" class="tab-pane fade">
+                                
+                                <xsl:if test="$tabs-config/m:tabs-config/m:tab[@target-id eq 'edit-form']">
+                                    <xsl:attribute name="class" select="'tab-pane fade in active'"/>
+                                </xsl:if>
+                                
+                                <xsl:call-template name="form">
+                                    
+                                    <xsl:with-param name="content">
                                         
-                                        <xsl:call-template name="form">
-                                            <xsl:with-param name="content">
+                                        <!-- Form action -->
+                                        <input type="hidden" name="form-action" value="update-tei"/>
+                                        
+                                        <!-- Text area -->
+                                        <div class="form-group">
+                                            <textarea name="markdown" class="form-control monospace">
                                                 
-                                                <!-- Form action -->
-                                                <input type="hidden" name="form-action" value="update-tei"/>
-                                                
-                                                <!-- Text area -->
-                                                <div class="form-group">
-                                                    <textarea name="markdown" class="form-control monospace">
-                                                        
-                                                        <xsl:variable name="passage-tei">
-                                                            <!--<unescaped xmlns="http://read.84000.co/ns/1.0">
+                                                <xsl:variable name="passage-tei">
+                                                    <!--<unescaped xmlns="http://read.84000.co/ns/1.0">
                                                             <xsl:sequence select="$passage/node()"/>
                                                         </unescaped>-->
-                                                            <div xmlns="http://www.tei-c.org/ns/1.0" type="markup" newline-element="p">
-                                                                <xsl:sequence select="$passage/node()"/>
-                                                            </div>
-                                                        </xsl:variable>
-                                                        
-                                                        <xsl:variable name="passage-editable">
-                                                            <xsl:apply-templates select="$passage-tei"/>
-                                                        </xsl:variable>
-                                                        
-                                                        <xsl:attribute name="rows" select="common:textarea-rows($passage-editable, 7, 80)"/>
-                                                        
-                                                        <!--<xsl:sequence select="$passage-editable/m:escaped/data()"/>-->
-                                                        <xsl:sequence select="$passage-editable/m:markdown/data()"/>
-                                                        
-                                                    </textarea>
-                                                </div>
-                                                
-                                                <!-- Submit button -->
-                                                <div class="form-group center-vertical full-width">
-                                                    <div class="text-danger small">
-                                                        <xsl:value-of select="'To delete the element remove all content and update.'"/>
-                                                        <br/>
-                                                        <xsl:value-of select="'This will also delete associated comments!'"/>
+                                                    <div xmlns="http://www.tei-c.org/ns/1.0" type="markup" newline-element="p">
+                                                        <xsl:sequence select="$passage/node()"/>
                                                     </div>
-                                                    <div>
-                                                        <button type="submit" class="btn btn-primary pull-right" data-loading="Updating content...">
-                                                            <xsl:if test="(m:translation, m:knowledgebase/m:page)[1][@locked-by-user gt '']">
-                                                                <xsl:attribute name="disabled" select="'disabled'"/>
-                                                            </xsl:if>
-                                                            <xsl:value-of select="'Update Content'"/>
-                                                        </button>
-                                                    </div>
-                                                </div>
+                                                </xsl:variable>
                                                 
-                                            </xsl:with-param>
-                                        </xsl:call-template>
-                                    
-                                    </div>
-                                    
-                                    <!-- Add an element -->
-                                    <div id="add-form" role="tabpanel" class="tab-pane fade">
+                                                <xsl:variable name="passage-editable">
+                                                    <xsl:apply-templates select="$passage-tei"/>
+                                                </xsl:variable>
+                                                
+                                                <xsl:attribute name="rows" select="common:textarea-rows($passage-editable, 5, 80)"/>
+                                                
+                                                <!--<xsl:sequence select="$passage-editable/m:escaped/data()"/>-->
+                                                <xsl:sequence select="$passage-editable/m:markdown/data()"/>
+                                                
+                                            </textarea>
+                                        </div>
                                         
-                                        <xsl:if test="$tabs-config/m:tabs-config/m:tab[1]/@target-id eq 'add-form'">
-                                            <xsl:attribute name="class" select="'tab-pane fade in active'"/>
-                                        </xsl:if>
+                                        <!-- Submit button -->
+                                        <div class="form-group center-vertical full-width">
+                                            <div class="text-danger small">
+                                                <xsl:value-of select="'To delete the element remove all content and update.'"/>
+                                                <br/>
+                                                <xsl:value-of select="'This will also delete associated comments!'"/>
+                                            </div>
+                                            <div>
+                                                <button type="submit" class="btn btn-primary pull-right" data-loading="Updating content...">
+                                                    <xsl:if test="(m:translation, m:knowledgebase/m:page)[1][@locked-by-user gt '']">
+                                                        <xsl:attribute name="disabled" select="'disabled'"/>
+                                                    </xsl:if>
+                                                    <xsl:value-of select="'Update Content'"/>
+                                                </button>
+                                            </div>
+                                        </div>
                                         
-                                        <xsl:call-template name="form">
-                                            <xsl:with-param name="content">
-                                                
-                                                <!-- Form action -->
-                                                <input type="hidden" name="form-action" value="add-element"/>
-                                                
-                                                <!-- New element options -->
-                                                <div class="form-group">
-                                                    
-                                                    <xsl:choose>
-                                                        <xsl:when test="$passage-config/m:passage-config[m:sibling-option]">
-                                                            
-                                                            <label>
-                                                                <xsl:value-of select="'Elements you can add here:'"/>
-                                                            </label>
-                                                            
-                                                            
-                                                            <hr class="sml-margin"/>
-                                                            
-                                                            <xsl:for-each select="$passage-config/m:passage-config/m:sibling-option">
-                                                                
-                                                                <div class="radio">
-                                                                    <label>
-                                                                        <input type="radio" name="new-element-name">
-                                                                            <xsl:attribute name="value" select="@element-name"/>
-                                                                        </input>
-                                                                        <xsl:value-of select="text()"/>
-                                                                    </label>
-                                                                </div>
-                                                                
-                                                            </xsl:for-each>
-                                                            
-                                                            <hr class="sml-margin"/>
-                                                            
-                                                            <!-- Submit button -->
-                                                            <div class="form-group center-vertical full-width">
-                                                                <div class="text-muted small">
-                                                                    <xsl:value-of select="'Add an element, it will be added with default text, then select to edit it.'"/>
-                                                                </div>
-                                                                <div>
-                                                                    <button type="submit" class="btn btn-primary pull-right" data-loading="Adding element...">
-                                                                        <xsl:if test="(m:translation, m:knowledgebase/m:page)[1][@locked-by-user gt '']">
-                                                                            <xsl:attribute name="disabled" select="'disabled'"/>
-                                                                        </xsl:if>
-                                                                        <xsl:value-of select="'Add element'"/>
-                                                                    </button>
-                                                                </div>
-                                                            </div>
-                                                            
-                                                        </xsl:when>
-                                                        <xsl:otherwise>
-                                                            
-                                                            <p class="italic">
-                                                                <xsl:value-of select="'Sorry, no options to add nodes here'"/>
-                                                            </p>
-                                                            
-                                                        </xsl:otherwise>
-                                                    </xsl:choose>
-                                                    
-                                                </div>
-                                                
-                                            </xsl:with-param>
-                                        </xsl:call-template>
+                                    </xsl:with-param>
                                     
-                                    </div>
+                                    <xsl:with-param name="callbackurl" select="$callbackurl"/>
                                     
-                                    <!-- Add a comment -->
-                                    <div id="comment-form" role="tabpanel" class="tab-pane fade">
-                                        
-                                        <xsl:if test="$tabs-config/m:tabs-config/m:tab[1]/@target-id eq 'comment-form'">
-                                            <xsl:attribute name="class" select="'tab-pane fade in active'"/>
-                                        </xsl:if>
-                                        
-                                        <xsl:call-template name="form">
-                                            <xsl:with-param name="content">
-                                                
-                                                <!-- Form action -->
-                                                <input type="hidden" name="form-action" value="comment-tei"/>
-                                                
-                                                <!-- Text area -->
-                                                <div class="form-group">
-                                                    <textarea name="comment" class="form-control sticky-note">
-                                                        
-                                                        <xsl:variable name="passage-comment">
-                                                            <xsl:sequence select="$passage/comment()[1]/data() ! normalize-space()"/>
-                                                        </xsl:variable>
-                                                        
-                                                        <xsl:attribute name="rows" select="common:textarea-rows($passage-comment, 7, 105)"/>
-                                                        
-                                                        <xsl:value-of select="$passage-comment"/>
-                                                        
-                                                    </textarea>
-                                                </div>
-                                                
-                                                <!-- Submit button -->
-                                                <div class="form-group center-vertical full-width">
-                                                    <div class="text-danger small">
-                                                        <xsl:value-of select="'Note: although hidden in the Reading Room, comments are visible in the public source file!'"/>
-                                                    </div>
-                                                    <div>
-                                                        <button type="submit" class="btn btn-primary pull-right" data-loading="Submitting comment...">
-                                                            <xsl:if test="(m:translation, m:knowledgebase/m:page)[1][@locked-by-user gt '']">
-                                                                <xsl:attribute name="disabled" select="'disabled'"/>
-                                                            </xsl:if>
-                                                            <xsl:value-of select="'Submit Comment'"/>
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                                
-                                            </xsl:with-param>
-                                        </xsl:call-template>
-                                    
-                                    </div>
-                                    
-                                </div>
+                                </xsl:call-template>
                                 
                             </div>
                             
-                            <!-- Help text -->
-                            <div class="col-sm-4">
+                            <!-- Add an element -->
+                            <div id="add-form" role="tabpanel" class="tab-pane fade">
                                 
-                                <h3>
-                                    <xsl:value-of select="'Using 84000 Markdown'"/>
-                                </h3>
+                                <xsl:if test="$tabs-config/m:tabs-config/m:tab[1][@target-id eq 'add-form']">
+                                    <xsl:attribute name="class" select="'tab-pane fade in active'"/>
+                                </xsl:if>
                                 
-                                <p class="small">
-                                    <xsl:value-of select="'All TEI tags are supported by specifying the text in square brackets [text] followed by the tag definition in round brackets (tag).'"/>
-                                </p>
+                                <xsl:call-template name="form">
+                                    
+                                    <xsl:with-param name="content">
+                                        
+                                        <!-- Form action -->
+                                        <input type="hidden" name="form-action" value="add-element"/>
+                                        
+                                        <!-- New element options -->
+                                        <div class="form-group">
+                                            
+                                            <xsl:choose>
+                                                <xsl:when test="$passage-config/m:passage-config[m:sibling-option]">
+                                                    
+                                                    <label>
+                                                        <xsl:value-of select="'Elements you can add here:'"/>
+                                                    </label>
+                                                    
+                                                    
+                                                    <hr class="sml-margin"/>
+                                                    
+                                                    <xsl:for-each select="$passage-config/m:passage-config/m:sibling-option">
+                                                        
+                                                        <div class="radio">
+                                                            <label>
+                                                                <input type="radio" name="new-element-name">
+                                                                    <xsl:attribute name="value" select="@element-name"/>
+                                                                </input>
+                                                                <xsl:value-of select="text()"/>
+                                                            </label>
+                                                        </div>
+                                                        
+                                                    </xsl:for-each>
+                                                    
+                                                    <hr class="sml-margin"/>
+                                                    
+                                                    <!-- Submit button -->
+                                                    <div class="form-group center-vertical full-width">
+                                                        <div class="text-muted small">
+                                                            <xsl:value-of select="'Add an element, it will be added with default text, then select to edit it.'"/>
+                                                        </div>
+                                                        <div>
+                                                            <button type="submit" class="btn btn-primary pull-right" data-loading="Adding element...">
+                                                                <xsl:if test="(m:translation, m:knowledgebase/m:page)[1][@locked-by-user gt '']">
+                                                                    <xsl:attribute name="disabled" select="'disabled'"/>
+                                                                </xsl:if>
+                                                                <xsl:value-of select="'Add element'"/>
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                    
+                                                </xsl:when>
+                                                <xsl:otherwise>
+                                                    
+                                                    <p class="italic">
+                                                        <xsl:value-of select="'Sorry, no options to add nodes here'"/>
+                                                    </p>
+                                                    
+                                                </xsl:otherwise>
+                                            </xsl:choose>
+                                            
+                                        </div>
+                                        
+                                    </xsl:with-param>
+                                    
+                                    <xsl:with-param name="callbackurl" select="$callbackurl"/>
+                                    
+                                </xsl:call-template>
                                 
-                                <pre class="wrap small">
-                            <xsl:value-of select="'The language of a term can be specified [Maitrāyanī](Sa-Ltn), '"/>
-                            <xsl:value-of select="'and links can be added [84000.co](https://84000.co).'"/>
-                                    <br/>
-                            <xsl:value-of select="'Specific tags with multiple attributes [Karmaśataka](title lang:Sa-Ltn ref:entity-123) can also be defined.'"/>
-                                    <br/>
-                        </pre>
+                            </div>
+                            
+                            <!-- Add a comment -->
+                            <div id="comment-form" role="tabpanel" class="tab-pane fade">
                                 
-                                <pre class="wrap small">
-                            <xsl:value-of select="'You can add a notes using the syntax [1](note) and another [2](note).'"/>
-                                    <br/>
-                            <br/>
-                            <xsl:value-of select="'n.1 Specify the content of the 1st note like this.'"/>
-                                    <br/>
-                            <xsl:value-of select="'n.2 And the content for the 2nd on another new line.'"/>
-                                    <br/>
-                        </pre>
+                                <xsl:if test="$tabs-config/m:tabs-config/m:tab[1][@target-id eq 'comment-form']">
+                                    <xsl:attribute name="class" select="'tab-pane fade in active'"/>
+                                </xsl:if>
                                 
-                                <pre class="wrap small">
-                            <xsl:value-of select="'You may encounter complex nesting of elements, like [[[The Teaching of [[[Vimalakīrti]]](term ref:entity-123)]](http://read.84000.co/translation/toh176.html)](title lang:en) (Toh 176). '"/>
-                            <xsl:value-of select="'If in doubt leave brackets alone and ask a TEI editor to help. '"/>
-                        </pre>
+                                <xsl:call-template name="form">
+                                    
+                                    <xsl:with-param name="content">
+                                        
+                                        <!-- Form action -->
+                                        <input type="hidden" name="form-action" value="comment-tei"/>
+                                        
+                                        <!-- Text area -->
+                                        <div class="form-group">
+                                            <textarea name="comment" class="form-control sticky-note">
+                                                
+                                                <xsl:variable name="passage-comment">
+                                                    <xsl:sequence select="$passage/comment()[1]/data() ! normalize-space()"/>
+                                                </xsl:variable>
+                                                
+                                                <xsl:attribute name="rows" select="common:textarea-rows($passage-comment, 5, 105)"/>
+                                                
+                                                <xsl:value-of select="$passage-comment"/>
+                                                
+                                            </textarea>
+                                        </div>
+                                        
+                                        <!-- Submit button -->
+                                        <div class="form-group center-vertical full-width">
+                                            <div class="text-danger small">
+                                                <xsl:value-of select="'Note: although hidden in the Reading Room, comments are visible in the public source file!'"/>
+                                            </div>
+                                            <div>
+                                                <button type="submit" class="btn btn-primary pull-right" data-loading="Submitting comment...">
+                                                    <xsl:if test="(m:translation, m:knowledgebase/m:page)[1][@locked-by-user gt '']">
+                                                        <xsl:attribute name="disabled" select="'disabled'"/>
+                                                    </xsl:if>
+                                                    <xsl:value-of select="'Submit Comment'"/>
+                                                </button>
+                                            </div>
+                                        </div>
+                                        
+                                    </xsl:with-param>
+                                    
+                                    <xsl:with-param name="callbackurl" select="$callbackurl"/>
+                                    
+                                </xsl:call-template>
                                 
                             </div>
                             
                         </div>
                         
+                        <section>
+                            
+                            <xsl:variable name="section-id" select="'markdown-help'"/>
+                            
+                            <xsl:attribute name="id" select="$section-id"/>
+                            <xsl:attribute name="class" select="'preview-list preview'"/>
+                            
+                            <xsl:call-template name="preview-controls">
+                                
+                                <xsl:with-param name="section-id" select="$section-id"/>
+                                
+                            </xsl:call-template>
+                            
+                            <h3>
+                                <xsl:value-of select="'Using 84000 Markdown'"/>
+                            </h3>
+                            
+                            <p class="small">
+                                <xsl:value-of select="'All TEI tags are supported by specifying the text in square brackets [text] followed by the tag definition in round brackets (tag).'"/>
+                            </p>
+                            
+                            <pre class="wrap small">
+                                <xsl:value-of select="'The language of a term can be specified [Maitrāyanī](Sa-Ltn), '"/>
+                                <xsl:value-of select="'and links can be added [84000.co](https://84000.co).'"/>
+                                <br/>
+                                <xsl:value-of select="'Specific tags with multiple attributes [Karmaśataka](title lang:Sa-Ltn ref:entity-123) can also be defined.'"/>
+                                <br/>
+                            </pre>
+                            
+                            <pre class="wrap small">
+                                <xsl:value-of select="'You can add a notes using the syntax [1](note) and another [2](note).'"/>
+                                <br/>
+                                <br/>
+                                <xsl:value-of select="'n.1 Specify the content of the 1st note like this.'"/>
+                                <br/>
+                                <xsl:value-of select="'n.2 And the content for the 2nd on another new line.'"/>
+                                <br/>
+                            </pre>
+                            
+                            <pre class="wrap small">
+                                <xsl:value-of select="'You may encounter complex nesting of elements, like [[[The Teaching of [[[Vimalakīrti]]](term ref:entity-123)]](http://read.84000.co/translation/toh176.html)](title lang:en) (Toh 176). '"/>
+                                <xsl:value-of select="'If in doubt leave brackets alone and ask a TEI editor to help. '"/>
+                            </pre>
+                            
+                        </section>
+                        
                     </xsl:when>
                     
                     <!-- Lock / unlock file -->
-                    <xsl:otherwise>
+                    <xsl:when test="$passage-id eq 'locking'">
                         <xsl:call-template name="form">
                             <xsl:with-param name="content">
                                 
@@ -507,10 +528,24 @@
                                 
                             </xsl:with-param>
                         </xsl:call-template>
+                    </xsl:when>
+                    
+                    <xsl:otherwise>
+                        <xsl:call-template name="form">
+                            <xsl:with-param name="content">
+                                <div class="top-margin bottom-margin">
+                                    
+                                    <p class="text-muted">
+                                        <xsl:value-of select="'Passage not found / removed'"/>
+                                    </p>
+                                    
+                                </div>
+                            </xsl:with-param>
+                        </xsl:call-template>
                     </xsl:otherwise>
                     
                 </xsl:choose>
-                    
+                
             </div>
             
         </xsl:variable>
@@ -553,71 +588,22 @@
     <xsl:template name="form">
         
         <xsl:param name="content" as="node()*"/>
+        <xsl:param name="callbackurl" as="xs:string?"/>
         
-        <form action="/tei-editor.html" method="post" data-ajax-target="#ajax-source">
+        <form action="/tei-editor.html" method="post" data-ajax-target="#ajax-source" class="bottom-margin">
             
-            <xsl:choose>
-                <xsl:when test="m:request/@type eq 'knowledgebase' and m:knowledgebase[m:page]">
-                    <xsl:attribute name="data-ajax-target-callbackurl" select="concat($reading-room-path, '/knowledgebase/', m:knowledgebase/m:page/@kb-id, '.html?view-mode=editor&amp;timestamp=', current-dateTime(), '#', $passage-id)"/>
-                </xsl:when>
-            </xsl:choose>
+            <xsl:if test="$callbackurl gt ''">
+                <xsl:attribute name="data-ajax-target-callbackurl" select="$callbackurl"/>
+            </xsl:if>
             
             <input type="hidden" name="resource-id" value="{ m:request/@resource-id }"/>
-            <input type="hidden" name="type" value="{ m:request/@type }"/>
+            <input type="hidden" name="resource-type" value="{ m:request/@resource-type }"/>
             <input type="hidden" name="passage-id" value="{ $passage-id }"/>
             
             <xsl:sequence select="$content"/>
-        
+            
         </form>
         
     </xsl:template>
-    
-    <!-- <xsl:template name="tag-reference">
-        
-        <aside>
-            
-            <h3>
-                <xsl:value-of select="'Tag Reference'"/>
-            </h3>
-            
-            <p class="small text-muted">
-                <xsl:value-of select="'For more details refer to the 84000 TEI guidelines.'"/>
-            </p>
-            
-            <p>
-                
-                <xsl:variable name="serialization-parameters" as="element(output:serialization-parameters)">
-                    <output:serialization-parameters>
-                        <output:method value="xml"/>
-                        <output:version value="1.1"/>
-                        <output:indent value="no"/>
-                        <output:omit-xml-declaration value="yes"/>
-                    </output:serialization-parameters>
-                </xsl:variable>
-                
-                <xsl:variable name="samples">
-                    <term type="ignore">affliction</term>
-                    <distinct>dhāraṇī</distinct>
-                    <emph>Reality</emph>
-                    <foreign xml:lang="Sa-Ltn">āyatana</foreign>
-                    <hi rend="small-caps">bce</hi>
-                    <mantra xml:lang="Sa-Ltn">oṃ</mantra>
-                    <ptr target="#UT22084-001-001"/>
-                    <ref target="http://tripitaka.cbeta.org/T15n0599 ">cbeta.org</ref>
-                    <title xml:lang="en">The Rice Seedling</title>
-                </xsl:variable>
-                
-                <xsl:for-each select="$samples/*">
-                    <p>
-                        <code>
-                            <xsl:value-of select="replace(normalize-space(serialize(., $serialization-parameters)), '\s*xmlns="\S*"', '')"/>
-                        </code>
-                    </p>
-                </xsl:for-each>
-            </p>
-            
-        </aside>
-        
-    </xsl:template>-->
     
 </xsl:stylesheet>

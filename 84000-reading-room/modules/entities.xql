@@ -157,7 +157,7 @@ declare function entities:related($entities as element(m:entity)*, $include-unre
     
         (: Related glossaries - grouped by text :)
         
-        for $gloss in $glossary:tei//id($lookup-instances[@type eq 'glossary-item']/@id)/self::tei:gloss
+        for $gloss in $glossary:tei//id($lookup-instances[@type eq 'glossary-item']/@id)/self::tei:gloss[not(@mode eq 'surfeit')]
         
         let $tei := $gloss/ancestor::tei:TEI
         let $text-id := tei-content:id($tei)

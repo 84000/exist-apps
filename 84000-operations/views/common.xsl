@@ -316,6 +316,16 @@
                     </a>
                 </li>
             </xsl:if>
+            <xsl:if test="$active-tab eq 'operations/edit-tm'">
+                <li role="presentation">
+                    <xsl:attribute name="class" select="'active'"/>
+                    <a>
+                        <xsl:attribute name="href" select="concat('/edit-tm.html?text-id=', /m:response/m:request/@text-id)"/>
+                        <xsl:attribute name="data-loading" select="'Loading...'"/>
+                        <xsl:value-of select="'Edit TM'"/>
+                    </a>
+                </li>
+            </xsl:if>
         </ul>
     </xsl:template>
     
@@ -1243,6 +1253,17 @@
                     </xsl:choose>
                 </span>
             </li>
+            
+            <xsl:if test="$entry[@mode ne 'match']">
+                <li>
+                    <span class="label label-info">
+                        <xsl:if test="$entry/@mode eq 'surfeit'">
+                            <xsl:attribute name="class" select="'label label-warning'"/>
+                        </xsl:if>
+                        <xsl:value-of select="$entry/@mode"/>
+                    </span>
+                </li>
+            </xsl:if>
             
         </ul>
         

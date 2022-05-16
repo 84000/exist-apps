@@ -559,10 +559,10 @@ declare function tests:translation-tantra-warning($tei as element(tei:TEI)*, $ht
 
 declare function tests:glossary($tei as element(tei:TEI)*, $html as document-node()*) as element(m:test) {
     
-    let $glossary-count-tei := count($tei//tei:back/tei:div[@type='glossary']//tei:gloss)
+    let $glossary-count-tei := count($tei//tei:back/tei:div[@type='glossary']//tei:gloss[not(@mode eq 'surfeit')])
     let $glossary-count-html := count($html//*[@id eq 'glossary']/*[common:contains-class(@class, 'glossary-item')])
     
-    let $tei-terms-raw := $tei//tei:back/tei:div[@type='glossary']//tei:gloss[@xml:id]/tei:term[not(@type = 'definition')][not(@xml:lang) or @xml:lang = ('Sa-Ltn', 'bo', 'Bo-Ltn', 'en')][normalize-space(string-join(data(), ''))](:[not(tei:ptr)]:)
+    let $tei-terms-raw := $tei//tei:back/tei:div[@type='glossary']//tei:gloss[@xml:id][not(@mode eq 'surfeit')]/tei:term[not(@type = 'definition')][not(@xml:lang) or @xml:lang = ('Sa-Ltn', 'bo', 'Bo-Ltn', 'en')][normalize-space(string-join(data(), ''))](:[not(tei:ptr)]:)
     let $empty-term-placeholders := (common:local-text('glossary.term-empty-sa-ltn', 'en'), common:local-text('glossary.term-empty-bo-ltn', 'en'))
     
     let $tei-terms := (

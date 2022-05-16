@@ -36,7 +36,7 @@ let $knowledgebase-content :=
 
 let $glossary-ids := 
     if($common:environment/m:enable[@type eq 'glossary-of-terms']) then 
-        $knowledgebase-content/m:part[@type eq 'glossary']//tei:gloss/@xml:id
+        $knowledgebase-content/m:part[@type eq 'glossary']/tei:gloss/@xml:id
     else ()
 
 let $entities := 

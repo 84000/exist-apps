@@ -91,7 +91,7 @@
                     </span>
                     <span>
                         <h1 class="title">
-                            <xsl:value-of select="concat('Utilities / ', $tabs//m:tab[@model eq $response-model]/m:label)"/>
+                            <xsl:value-of select="concat('Publishing Utilities / ', $tabs//m:tab[@model eq $response-model]/m:label)"/>
                         </h1>
                     </span>
                     <span>

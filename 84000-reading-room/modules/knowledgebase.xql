@@ -272,7 +272,7 @@ declare function knowledgebase:glossary($tei as element(tei:TEI)) as element()? 
             text { 'Glossary' }
         },
         
-        $tei/tei:text/tei:back//tei:list[@type eq 'glossary']/tei:item
+        $tei/tei:text/tei:back//tei:list[@type eq 'glossary']/tei:item/tei:gloss[@xml:id][not(@mode eq 'surfeit')]
         
     }
     

@@ -45,7 +45,13 @@ let $term-langs := common:add-selected-children($term-langs, $term-lang/@id)
 let $downloads := request:get-parameter('downloads', '')
 
 let $search := request:get-parameter('search', '') ! normalize-space(.) ! common:normalize-unicode(.)
-let $request-is-search := (not($request-entity) and not($flag) and not($downloads eq 'downloads') and string-length($search) gt 1 and $term-lang[not(@id eq 'bo')])
+let $request-is-search := (
+    not($request-entity) 
+    and not($flag) 
+    and not($downloads eq 'downloads') 
+    and (string-length($search) eq 0 or string-length($search) gt 1) 
+    and $term-lang[not(@id eq 'bo')]
+)
 
 let $term-type-defaults := 
     if($request-is-search) then 
@@ -56,6 +62,7 @@ let $term-type-defaults :=
         $entities:types/m:type[@id eq $request-entity/m:type[1]/@type]/@id
     else 
         $entities:types/m:type[1]/@id
+        
 let $term-types := request:get-parameter('term-type[]', $term-type-defaults)
 let $entity-types := common:add-selected-children($entities:types, $entities:types/m:type[@id = $term-types]/@id)
 

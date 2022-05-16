@@ -153,9 +153,9 @@ declare function glossary:glossary-search($type as xs:string*, $lang as xs:strin
     
     return
         if(count($valid-type) gt 0) then
-            $terms/parent::tei:gloss[@xml:id][@type = $valid-type]
+            $terms/parent::tei:gloss[@xml:id][@type = $valid-type][not(@mode eq 'surfeit')]
         else
-            $terms/parent::tei:gloss[@xml:id]
+            $terms/parent::tei:gloss[@xml:id][not(@mode eq 'surfeit')]
     
         
 };
@@ -166,7 +166,7 @@ declare function glossary:glossary-flagged($flag-type as xs:string*, $glossary-t
     let $flagged-instances := $entities:entities//m:flag[@type eq $flag/@id]/parent::m:instance
     let $valid-glossary-type := local:valid-type($glossary-type)
     return
-        subsequence($glossary:tei//tei:gloss/id($flagged-instances/@id)[@type = $valid-glossary-type], 1, 1000)
+        subsequence($glossary:tei//tei:gloss[not(@mode eq 'surfeit')]/id($flagged-instances/@id)[@type = $valid-glossary-type], 1, 1000)
         
 };
 
@@ -511,7 +511,7 @@ declare function glossary:combined() as element() {
         let $terms :=
             for $entity at $index in $entities:entities/m:entity
             (:where $index le 10:)
-            let $glossary-entries := $glossary:tei//id($entity/m:instance[not(m:flag)]/@id)
+            let $glossary-entries := $glossary:tei//id($entity/m:instance[not(m:flag)]/@id)[not(@mode eq 'surfeit')]
             where $glossary-entries
             (: Get unique terms :)
             return 
@@ -937,7 +937,7 @@ declare function glossary:cache($tei as element(tei:TEI), $refresh-locations as 
             let $tei-version := tei-content:version-str($tei)
             
             (: TEI glossary items :)
-            let $tei-glossary := $tei//tei:back//tei:list[@type eq 'glossary']/tei:item/tei:gloss[@xml:id]
+            let $tei-glossary := $tei//tei:back//tei:list[@type eq 'glossary']/tei:item/tei:gloss[@xml:id][not(@mode eq 'surfeit')]
             
             (: Get glossary instances, if valid ids have been requested :)
             let $glossary-locations := 

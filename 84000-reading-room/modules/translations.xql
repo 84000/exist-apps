@@ -319,7 +319,7 @@ declare function translations:filtered-texts(
                 let $instance-ids := $entities:entities//m:entity/m:instance/@id
                 let $glosses-with-entities := $teis/id($instance-ids)
                 return 
-                    $teis[tei:text/tei:back//tei:gloss except $glosses-with-entities]
+                    $teis[tei:text/tei:back//tei:gloss[not(@mode eq 'surfeit')] except $glosses-with-entities]
                 
             (: Has glossaries requiring attention :)
             else if($selected-entities-group eq 'entities-flagged-attention') then
@@ -663,7 +663,14 @@ declare function translations:texts-spreadsheet($response as element(m:response)
                     attribute width { '10' },
                     $next-target/@status-id/string() 
                 },
-                element Date { $next-target/@date-time ! format-dateTime(., '[D01]-[M01]-[Y0001]') }
+                element Target_Date { 
+                    $next-target/@date-time ! format-dateTime(., '[D01]-[M01]-[Y0001]') 
+                },
+                element Published {
+                    if($text/@status/string() = $translation:published-status-ids) then
+                        $text/m:publication/m:publication-date[. gt ''] ! format-date(., '[D01]-[M01]-[Y0001]')
+                    else ()
+                }
             }
         ,
         element row {

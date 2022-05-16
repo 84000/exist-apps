@@ -1981,7 +1981,7 @@
                         <xsl:attribute name="title" select="concat('Comment: ', $node/comment() ! normalize-space(.))"/>
                     </xsl:if>
                     
-                    <xsl:attribute name="href" select="concat('/tei-editor.html?type=', $resource-type, '&amp;resource-id=', $resource-id,'&amp;passage-id=', $id,'&amp;timestamp=', current-dateTime(), '#ajax-source')"/>
+                    <xsl:attribute name="href" select="concat('/tei-editor.html?resource-type=', $resource-type, '&amp;resource-id=', $resource-id,'&amp;passage-id=', $id, '#ajax-source')"/>
                     <xsl:attribute name="data-ajax-target" select="'#popup-footer-editor .data-container'"/>
                     
                     <xsl:choose>
@@ -3034,7 +3034,7 @@
         
         <div class="hidden-print">
             
-            <a data-toggle="modal" class="warning">
+            <a data-toggle="modal" class="block-link warning">
                 <xsl:attribute name="href" select="concat('#tantra-warning-', $id)"/>
                 <xsl:attribute name="data-target" select="concat('#tantra-warning-', $id)"/>
                 <i class="fa fa-exclamation-circle" aria-hidden="true"/>
@@ -3314,22 +3314,49 @@
                 <xsl:element name="label" namespace="http://read.84000.co/ns/1.0">
                     <xsl:attribute name="type" select="'primary'"/>
                     <xsl:attribute name="xml:lang" select="$longest-term/@xml:lang"/>
+                    <xsl:if test="m:search-match($longest-term, $search-text, $longest-term/@xml:lang)">
+                        <xsl:attribute name="matches" select="true()"/>
+                    </xsl:if>
                     <xsl:value-of select="$longest-term"/>
                 </xsl:element>
                 
                 <xsl:if test="$longest-term[@xml:lang eq 'bo']">
                     
-                    <xsl:variable name="sorted-secondary-terms" as="element(m:term)*">
-                        <xsl:perform-sort select="$related-entries/m:term[@xml:lang eq 'Bo-Ltn']">
+                    <xsl:variable name="sorted-wylie-terms" as="element(m:term)*">
+                        <xsl:perform-sort select="$longest-term/parent::m:entry/m:term[@xml:lang eq 'Bo-Ltn']">
                             <xsl:sort select="string-length(lower-case(data()))" order="descending"/>
                         </xsl:perform-sort>
                     </xsl:variable>
                     
-                    <xsl:if test="$sorted-secondary-terms">
+                    <xsl:variable name="wylie-term" select="$sorted-wylie-terms[1]"/>
+                    
+                    <xsl:if test="$wylie-term">
                         <xsl:element name="label" namespace="http://read.84000.co/ns/1.0">
                             <xsl:attribute name="type" select="'secondary'"/>
-                            <xsl:attribute name="xml:lang" select="$sorted-secondary-terms[1]/@xml:lang"/>
-                            <xsl:value-of select="$sorted-secondary-terms[1]"/>
+                            <xsl:attribute name="xml:lang" select="$wylie-term/@xml:lang"/>
+                            <xsl:if test="m:search-match($wylie-term, $search-text, $wylie-term/@xml:lang)">
+                                <xsl:attribute name="matches" select="true()"/>
+                            </xsl:if>
+                            <xsl:value-of select="$wylie-term"/>
+                        </xsl:element>
+                    </xsl:if>
+                    
+                    <xsl:variable name="sorted-sanskrit-terms" as="element(m:term)*">
+                        <xsl:perform-sort select="$longest-term/parent::m:entry/m:term[@xml:lang eq 'Sa-Ltn']">
+                            <xsl:sort select="string-length(lower-case(data()))" order="descending"/>
+                        </xsl:perform-sort>
+                    </xsl:variable>
+                    
+                    <xsl:variable name="sanskrit-term" select="$sorted-sanskrit-terms[1]"/>
+                    
+                    <xsl:if test="$sanskrit-term">
+                        <xsl:element name="label" namespace="http://read.84000.co/ns/1.0">
+                            <xsl:attribute name="type" select="'tertiary'"/>
+                            <xsl:attribute name="xml:lang" select="$sanskrit-term/@xml:lang"/>
+                            <xsl:if test="m:search-match($sanskrit-term, $search-text, $sanskrit-term/@xml:lang)">
+                                <xsl:attribute name="matches" select="true()"/>
+                            </xsl:if>
+                            <xsl:value-of select="$sanskrit-term"/>
                         </xsl:element>
                     </xsl:if>
                     
@@ -3339,27 +3366,12 @@
                     
                     <xsl:sort select="string-join(tokenize(data(), '\s+') ! lower-case(data()) ! common:standardized-sa(.) ! common:alphanumeric(.), ' ')"/>
                     
-                    <xsl:variable name="match-text" select="string-join(tokenize(data(), '\s+') ! lower-case(.) ! common:standardized-sa(.) ! common:alphanumeric(.), ' ')" as="xs:string"/>
-                    <xsl:variable name="match-regex" as="xs:string">
-                        <xsl:choose>
-                            <xsl:when test="@xml:lang eq 'en'">
-                                <xsl:value-of select="concat(if(string-length($search-text) ne 1) then '(?:^|\s+)' else '^(The\s+|A\s+|An\s+)?', string-join(tokenize($search-text, '\s+') ! common:standardized-sa(.) ! common:alphanumeric(.), '.*\s+'))"/>
-                            </xsl:when>
-                            <xsl:when test="@xml:lang eq 'Bo-Ltn'">
-                                <xsl:value-of select="concat(if(string-length($search-text) ne 1) then '' else '^', string-join(tokenize($search-text, '\s+') ! common:standardized-sa(.) ! common:alphanumeric(.), '.*\s+'))"/>
-                            </xsl:when>
-                            <xsl:otherwise>
-                                <xsl:value-of select="concat(if(string-length($search-text) ne 1) then '(?:^|\s+)' else '^', string-join(tokenize($search-text, '\s+') ! common:standardized-sa(.) ! common:alphanumeric(.), '.*\s+'))"/>
-                            </xsl:otherwise>
-                        </xsl:choose>
-                    </xsl:variable>
-                    
                     <xsl:element name="term" namespace="http://read.84000.co/ns/1.0">
                         <xsl:variable name="term-entry-id" select="parent::m:entry/@id"/>
                         <xsl:attribute name="xml:lang" select="@xml:lang"/>
-                        <xsl:attribute name="word-count" select="count(tokenize($match-text, '\s+'))"/>
-                        <xsl:attribute name="letter-count" select="string-length($match-text)"/>
-                        <xsl:if test="matches($match-text, $match-regex, 'i')">
+                        <xsl:attribute name="word-count" select="count(tokenize(string-join(normalize-space(data()), ' '), '\s+'))"/>
+                        <xsl:attribute name="letter-count" select="string-length(string-join(normalize-space(data()), ' '))"/>
+                        <xsl:if test="m:search-match(data(), $search-text, @xml:lang)">
                             <xsl:attribute name="matches" select="true()"/>
                         </xsl:if>
                         <xsl:if test="$entity/m:instance[@id eq $term-entry-id][m:flag]">
@@ -3375,5 +3387,30 @@
         </xsl:if>
         
     </xsl:template>
+    
+    <xsl:function name="m:search-match" as="xs:boolean">
+        
+        <xsl:param name="term" as="xs:string*"/>
+        <xsl:param name="search" as="xs:string?"/>
+        <xsl:param name="lang" as="xs:string?"/>
+        
+        <xsl:variable name="match-text" select="string-join(tokenize($term, '\s+') ! lower-case(.) ! common:standardized-sa(.) ! common:alphanumeric(.), ' ')" as="xs:string"/>
+        <xsl:variable name="match-regex" as="xs:string">
+            <xsl:choose>
+                <xsl:when test="$lang eq 'en'">
+                    <xsl:value-of select="concat(if(string-length($search) ne 1) then '(?:^|\s+)' else '^(The\s+|A\s+|An\s+)?', string-join(tokenize($search, '\s+') ! common:standardized-sa(.) ! common:alphanumeric(.), '.*\s+'))"/>
+                </xsl:when>
+                <xsl:when test="$lang eq 'Bo-Ltn'">
+                    <xsl:value-of select="concat(if(string-length($search) ne 1) then '' else '^', string-join(tokenize($search, '\s+') ! common:standardized-sa(.) ! common:alphanumeric(.), '.*\s+'))"/>
+                </xsl:when>
+                <xsl:otherwise>
+                    <xsl:value-of select="concat(if(string-length($search) ne 1) then '(?:^|\s+)' else '^', string-join(tokenize($search, '\s+') ! common:standardized-sa(.) ! common:alphanumeric(.), '.*\s+'))"/>
+                </xsl:otherwise>
+            </xsl:choose>
+        </xsl:variable>
+        
+        <xsl:value-of select="matches($match-text, $match-regex, 'i')"/>
+        
+    </xsl:function>
     
 </xsl:stylesheet>

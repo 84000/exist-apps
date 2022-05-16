@@ -630,6 +630,15 @@
                                                     
                                                     <xsl:if test="$status/@marked-up eq 'true'">
                                                         <li>
+                                                            <a class="small" data-loading="Loading TM editor...">
+                                                                <xsl:attribute name="href" select="concat('/edit-tm.html?text-id=', $text-id)"/>
+                                                                <xsl:value-of select="'Edit TM'"/>
+                                                            </a>
+                                                        </li>
+                                                    </xsl:if>
+                                                    
+                                                    <xsl:if test="$status/@marked-up eq 'true'">
+                                                        <li>
                                                             <a class="small">
                                                                 <xsl:attribute name="href" select="concat('/annotation-tei.html?text-id=', $text-id)"/>
                                                                 <xsl:value-of select="'Archived copies'"/>

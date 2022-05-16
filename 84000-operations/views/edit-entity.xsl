@@ -21,7 +21,7 @@
                 <!-- Forms -->
                 <form action="/edit-entity.html" method="post" data-ajax-target="#ajax-source" class="form-horizontal">
                     
-                    <xsl:attribute name="data-ajax-target-callbackurl" select="concat($reading-room-path, '/glossary.html?entity-id=', m:entity/@xml:id, '&amp;view-mode=editor&amp;timestamp=', current-dateTime())"/>
+                    <xsl:attribute name="data-ajax-target-callbackurl" select="concat($reading-room-path, '/glossary.html?entity-id=', m:entity/@xml:id, '&amp;view-mode=editor', '#', m:entity/@xml:id, '-body')"/>
                     
                     <input type="hidden" name="form-action" value="update-entity"/>
                     

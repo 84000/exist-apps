@@ -632,7 +632,16 @@
                                             <xsl:with-param name="title">
                                                 
                                                 <span class="h4">
-                                                    <xsl:value-of select="'Glossary entry: '"/>
+                                                    
+                                                    <span>
+                                                        <xsl:if test="@mode eq 'surfeit'">
+                                                            <xsl:attribute name="class" select="'line-through'"/>
+                                                        </xsl:if>
+                                                        <xsl:value-of select="'Glossary entry:'"/>
+                                                    </span>
+                                                    
+                                                    <xsl:value-of select="' '"/>
+                                                    
                                                 </span>
                                                 
                                                 <xsl:call-template name="glossary-terms">
@@ -1573,7 +1582,7 @@
                 <div class="radio">
                     <label>
                         <input type="radio" name="glossary-mode" value="match" id="{ concat('glossary-mode-', $entry/@id) }">
-                            <xsl:if test="not($entry) or $entry[not(@mode eq 'marked')]">
+                            <xsl:if test="not($entry) or $entry[not(@mode = ('marked', 'surfeit'))]">
                                 <xsl:attribute name="checked" select="'checked'"/>
                             </xsl:if>
                         </input>
@@ -1591,6 +1600,19 @@
                             </xsl:if>
                         </input>
                         <xsl:value-of select="' Marked'"/>
+                    </label>
+                </div>
+            </div>
+            
+            <div class="col-sm-2">
+                <div class="radio">
+                    <label>
+                        <input type="radio" name="glossary-mode" value="surfeit">
+                            <xsl:if test="$entry[@mode eq 'surfeit']">
+                                <xsl:attribute name="checked" select="'checked'"/>
+                            </xsl:if>
+                        </input>
+                        <xsl:value-of select="' Surfeit'"/>
                     </label>
                 </div>
             </div>
@@ -1883,14 +1905,14 @@
         <xsl:variable name="location-id" select="@id"/>
         <xsl:variable name="glossary" select="parent::m:locations/parent::m:entry"/>
         <xsl:variable name="glossary-cache-gloss" select="key('glossary-cache-gloss', $glossary/@id, $root)"/>
-        <xsl:variable name="cache-location" select="$glossary-cache-gloss/m:location[@id eq $location-id]"/>
+        <xsl:variable name="cache-location" select="$glossary-cache-gloss/m:location[@id eq $location-id][1]"/>
         
         <xsl:variable name="cache-location-status" as="xs:string?">
             <xsl:choose>
                 <xsl:when test="not($cache-location)">
                     <xsl:value-of select="'missing'"/>
                 </xsl:when>
-                <xsl:when test="$cache-location/@initial-version eq $text/@tei-version">
+                <xsl:when test="$cache-location[@initial-version eq $text/@tei-version]">
                     <xsl:value-of select="'updated'"/>
                 </xsl:when>
                 <xsl:when test="$cache-glosses-behind[@id eq $glossary/@id]">

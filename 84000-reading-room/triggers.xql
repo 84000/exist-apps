@@ -101,7 +101,7 @@ declare function local:refresh-cache($doc) {
         else (),
         
         (: Cache glossary :)
-        let $tei-items := $tei//tei:back//tei:list[@type eq 'glossary']/tei:item/tei:gloss
+        let $tei-items := $tei//tei:back//tei:list[@type eq 'glossary']/tei:item/tei:gloss[not(@mode eq 'surfeit')]
         let $cache-items := $cache/m:glossary-cache/m:gloss
         let $count-matches := count($tei-items/id($cache-items/@id))
         where count($tei-items) gt 0

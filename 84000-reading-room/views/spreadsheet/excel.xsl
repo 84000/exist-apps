@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:m="http://read.84000.co/ns/1.0" version="1.0">
+<xsl:stylesheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:m="http://read.84000.co/ns/1.0" version="2.0">
     
     <xsl:include href="engine/2012.engine.xsl"/>
     
@@ -51,7 +51,7 @@
                                 <c r="{substring($alphabet, $colNum, 1)}1" t="inlineStr">
                                     <is>
                                         <t>
-                                            <xsl:value-of select="local-name(.)"/>
+                                            <xsl:value-of select="local-name(.) ! replace(., '_', ' ')"/>
                                         </t>
                                     </is>
                                 </c>

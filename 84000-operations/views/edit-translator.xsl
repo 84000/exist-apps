@@ -166,6 +166,7 @@
                                     <xsl:attribute name="id" select="$section-id"/>
                                     
                                     <xsl:if test="count(m:person/m:acknowledgement) gt 1">
+                                        
                                         <xsl:attribute name="class" select="'preview-list preview'"/>
                                         
                                         <xsl:call-template name="preview-controls">
@@ -173,6 +174,7 @@
                                             <xsl:with-param name="section-id" select="$section-id"/>
                                             
                                         </xsl:call-template>
+                                        
                                     </xsl:if>
                                     
                                     <h4>

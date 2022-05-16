@@ -734,17 +734,27 @@
                                 <div class="col-sm-6">
                                     
                                     <div>
-                                        <a target="reading-room">
-                                            <xsl:choose>
-                                                <xsl:when test="m:match/@type eq 'glossary-term'">
-                                                    <xsl:attribute name="href" select="concat($reading-room-path, m:match/@location)"/>
-                                                </xsl:when>
-                                                <xsl:when test="m:match/@type eq 'tm-unit'">
-                                                    <xsl:attribute name="href" select="concat($reading-room-path, m:match/@location)"/>
-                                                </xsl:when>
-                                            </xsl:choose>
-                                            <xsl:apply-templates select="m:tei/m:titles/m:title[@xml:lang eq 'en']"/>
-                                        </a>
+                                        <!-- 
+                                            Link to text
+                                            - allow for surfeit glossary entries that shouldn't be linked -->
+                                        <xsl:choose>
+                                            <xsl:when test="m:match/@location gt ''">
+                                                <a target="reading-room">
+                                                    <xsl:choose>
+                                                        <xsl:when test="m:match/@type eq 'glossary-term'">
+                                                            <xsl:attribute name="href" select="concat($reading-room-path, m:match/@location)"/>
+                                                        </xsl:when>
+                                                        <xsl:when test="m:match/@type eq 'tm-unit'">
+                                                            <xsl:attribute name="href" select="concat($reading-room-path, m:match/@location)"/>
+                                                        </xsl:when>
+                                                    </xsl:choose>
+                                                    <xsl:apply-templates select="m:tei/m:titles/m:title[@xml:lang eq 'en']"/>
+                                                </a>
+                                            </xsl:when>
+                                            <xsl:otherwise>
+                                                <xsl:apply-templates select="m:tei/m:titles/m:title[@xml:lang eq 'en']"/>
+                                            </xsl:otherwise>
+                                        </xsl:choose>
                                     </div>
                                     
                                     <div class="translators text-muted small">

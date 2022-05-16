@@ -12,7 +12,7 @@ xquery version "3.1";
     DO NOT use it to store transferrable information, only information specific to this server.
 :)
 
-module namespace translation-status="http://read.84000.co/translation-status";
+module namespace translation-status="http://operations.84000.co/translation-status";
 
 import module namespace common="http://read.84000.co/common" at "../../84000-reading-room/modules/common.xql";
 import module namespace tei-content="http://read.84000.co/tei-content" at "../../84000-reading-room/modules/tei-content.xql";
