@@ -76,12 +76,22 @@
         <row r="{ $rowNum }" hidden="false" customHeight="false" outlineLevel="0" collapsed="false">
             <xsl:for-each select="*">
                 <xsl:variable name="colNum" select="position()"/>
-                <c r="{substring($alphabet, $colNum, 1)}{$rowNum}" t="inlineStr">
-                    <is>
-                        <t>
-                            <xsl:value-of select="."/>
-                        </t>
-                    </is>
+                <c r="{substring($alphabet, $colNum, 1)}{$rowNum}">
+                    <xsl:choose>
+                        <xsl:when test="@type eq 'number'">
+                            <v>
+                                <xsl:value-of select="."/>
+                            </v>
+                        </xsl:when>
+                        <xsl:otherwise>
+                            <xsl:attribute name="t" select="'inlineStr'"/>
+                            <is>
+                                <t>
+                                    <xsl:value-of select="."/>
+                                </t>
+                            </is>
+                        </xsl:otherwise>
+                    </xsl:choose>
                 </c>
             </xsl:for-each>
         </row>

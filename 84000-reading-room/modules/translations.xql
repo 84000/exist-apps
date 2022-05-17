@@ -649,7 +649,8 @@ declare function translations:texts-spreadsheet($response as element(m:response)
                 },
                 element Pages { 
                     attribute width { '10' },
-                    format-number($text/m:source/m:location/@count-pages, '#,###')
+                    attribute type { 'number' },
+                    $text/m:source/m:location/@count-pages/string() 
                 },
                 element Title { 
                     attribute width { '80' },
