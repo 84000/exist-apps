@@ -167,6 +167,7 @@
             
             <xsl:when test="count($texts)">
                 <div class="text-list">
+                    
                     <div class="row table-headers">
                         
                         <!-- <div class="col-sm-8 hidden-xs"> -->
@@ -203,6 +204,7 @@
                             </div>
                         </xsl:if>
                     </div>
+                    
                     <div class="list-section">
                         <xsl:for-each-group select="$texts" group-by="if($grouping eq 'sponsorship' and not(m:sponsorship-status/@project-id eq '')) then m:sponsorship-status/@project-id else if($grouping eq 'text') then @id else m:toh/@key">
                             

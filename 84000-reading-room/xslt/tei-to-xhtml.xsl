@@ -3078,6 +3078,7 @@
         
         <xsl:param name="text"/>
         <xsl:param name="expand-id" as="xs:string"/>
+        <xsl:param name="prepend-hr" as="xs:boolean" select="true()"/>
         
         <xsl:variable name="toh-key" select="$text/m:toh/@key"/>
         
@@ -3088,9 +3089,11 @@
         
         <xsl:if test="$summary or $titleVariants or $supplementaryAttributions">
             
-            <hr class="hidden-print"/>
-                
-            <a class="summary-link collapsed hidden-print" role="button" data-toggle="collapse" aria-expanded="false">
+            <xsl:if test="$prepend-hr">
+                <hr class="hidden-print"/>
+            </xsl:if>
+            
+            <a class="summary-link collapsed hidden-print small" role="button" data-toggle="collapse" aria-expanded="false">
                 <xsl:attribute name="href" select="concat('#', $expand-id)"/>
                 <xsl:attribute name="aria-controls" select="concat('#', $expand-id)"/>
                 <i class="fa fa-chevron-down"/>
@@ -3102,7 +3105,7 @@
                 
                 <div class="well well-sm small">
                     
-                    <h4>
+                    <h4 class="no-top-margin">
                         <xsl:value-of select="'Summary'"/>
                     </h4>
                     <div class="summary">

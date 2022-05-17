@@ -1174,7 +1174,7 @@
             <!-- Entity definition -->
             <xsl:if test="$tei-editor">
                 <xsl:variable name="entity-definition" select="$instance/parent::m:entity/m:content[@type eq 'glossary-definition']"/>
-                <xsl:if test="($entity-definition and $entry-definition and $instance[@use-definition  eq 'both']) or (not($entry-definition))">
+                <xsl:if test="($entity-definition and $entry-definition and $instance[@use-definition  eq 'both']) or ($entity-definition and not($entry-definition))">
                     <div class="well well-sm">
                         
                         <h6 class="sml-margin top bottom">
