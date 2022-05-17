@@ -130,12 +130,25 @@
                                                         
                                                         <xsl:if test="$tm-unit-aligned[not(@aligned eq 'true')][@index ! xs:integer(.) eq $first-mismatch-index]">
                                                             <div class="form-group">
-                                                                <button type="submit" class="btn btn-default btn-sm">
-                                                                    <xsl:if test="$tm-unit-aligned[not(@aligned eq 'true')]">
-                                                                        <xsl:attribute name="class" select="'btn btn-warning btn-sm'"/>
-                                                                    </xsl:if>
-                                                                    <xsl:value-of select="'Update'"/>
-                                                                </button>
+                                                                
+                                                                <xsl:choose>
+                                                                    <xsl:when test="$tm-unit-aligned/@id gt ''">
+                                                                        
+                                                                        <button type="submit" class="btn btn-warning btn-sm">
+                                                                            <xsl:value-of select="'Update'"/>
+                                                                        </button>
+                                                                        
+                                                                    </xsl:when>
+                                                                    <xsl:otherwise>
+                                                                        
+                                                                        <span class="small text-danger">
+                                                                            <i class="fa fa-exclamation-circle" aria-hidden="true"/>
+                                                                            <xsl:value-of select="' This unit has no unique id value and therefore cannot be updated'"/>
+                                                                        </span>
+                                                                        
+                                                                    </xsl:otherwise>
+                                                                </xsl:choose>
+                                                                
                                                             </div>
                                                         </xsl:if>
                                                         

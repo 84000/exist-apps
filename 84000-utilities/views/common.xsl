@@ -135,8 +135,9 @@
                                         <xsl:attribute name="class" select="'vertical-middle active'"/>
                                     </xsl:if>
                                     <td>
-                                        <a href="translations.html">
+                                        <a>
                                             <xsl:attribute name="href" select="@page"/>
+                                            <xsl:attribute name="data-loading" select="'Loading ' || m:label/data() || '...'"/>
                                             <xsl:value-of select="m:label"/>
                                         </a>
                                     </td>

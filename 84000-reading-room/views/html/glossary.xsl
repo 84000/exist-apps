@@ -566,11 +566,12 @@
                             <div id="entity-requested">
                                 
                                 <xsl:variable name="related-entries" select="key('related-entries', $request-entity/m:instance/@id, $root)"/>
-                                <xsl:variable name="related-entity-pages" select="key('related-pages', $request-entity/m:instance/@id | /m:response/m:entities/m:related/m:entity[@xml:id = $request-entity/m:relation/@id]/m:instance/@id, $root)" as="element(m:page)*"/>
-                                <xsl:variable name="related-entity-entries" select="key('related-entries', /m:response/m:entities/m:related/m:entity[@xml:id = $request-entity/m:relation/@id]/m:instance/@id, $root)" as="element(m:entry)*"/>
+                                <xsl:variable name="related-instances" select="/m:response/m:entities/m:related/m:entity[@xml:id = $request-entity/m:relation/@id or m:relation/@id = $request-entity/@xml:id]/m:instance"/>
+                                <xsl:variable name="related-entity-pages" select="key('related-pages', $request-entity/m:instance/@id | $related-instances/@id, $root)" as="element(m:page)*"/>
+                                <xsl:variable name="related-entity-entries" select="key('related-entries', $related-instances/@id, $root)" as="element(m:entry)*"/>
                                 <xsl:variable name="item-id" select="$request-entity/@xml:id"/>
                                 
-                                <div>
+                                <div id="{ $item-id }">
                                     
                                     <!-- Header -->
                                     <div class="entity-title">
@@ -749,9 +750,11 @@
                                                         
                                                         <li>
                                                             
-                                                            <a class="no-underline">
+                                                            <a class="scroll-to-anchor no-underline">
                                                                 
-                                                                <xsl:attribute name="href" select="common:internal-link(concat('/glossary.html?entity-id=', $related-entity/@xml:id), (m:view-mode-parameter((),())), '', $root/m:response/@lang)"/>
+                                                                <!-- Link to the glossary, checking if it's already included in this page -->
+                                                                <!--<xsl:attribute name="href" select="common:internal-link(concat('/glossary.html?entity-id=', $related-entity/@xml:id), (m:view-mode-parameter((),())), '', $root/m:response/@lang)"/>-->
+                                                                <xsl:attribute name="href" select="concat('#', $related-entity/@xml:id)"/>
                                                                 
                                                                 <span>
                                                                     <xsl:attribute name="class">
@@ -800,14 +803,14 @@
                                         
                                         <xsl:variable name="item-id" select="$entity/@xml:id"/>
                                         
-                                        <div class="list-item" id="{ concat($item-id, '-list-item') }">
+                                        <div class="list-item" id="{ $item-id }">
                                             
                                             <!-- Entity title -->
                                             <a class="block-link opener-link log-click">
                                                 
                                                 <xsl:attribute name="href" select="common:internal-link(concat('/glossary.html?entity-id=', $entity/@xml:id), (if($tei-editor and $flagged gt '') then concat('flagged=', $flagged) else (), m:view-mode-parameter((),())), concat('#', $item-id, '-detail'), $root/m:response/@lang)"/>
                                                 <xsl:attribute name="data-ajax-target" select="concat('#', $item-id, '-detail')"/>
-                                                <xsl:attribute name="data-toggle-active" select="concat('#', $item-id, '-list-item')"/>
+                                                <xsl:attribute name="data-toggle-active" select="concat('#', $item-id)"/>
                                                 <xsl:attribute name="data-ajax-loading" select="'Loading detail...'"/>
                                                 
                                                 <xsl:call-template name="entity-header">

@@ -13,16 +13,21 @@ declare function local:add-tu-ids() {
     
         for $tmx in collection($collection-uri)/tmx:tmx
         let $text-id:= $tmx/tmx:header/@eft:text-id/string()
-        where $text-id = ('UT22084-059-006')
-        for $tu at $tu-index in $tmx/tmx:body/tmx:tu
-        let $index-attribute := attribute id { string-join(($text-id, 'TU', $tu-index),'-') }
-        (:where $tu-index eq 1:)
-        return 
-            if($tu[@id]) then
-                update replace $tu/@id with $index-attribute
-            else
-                update insert $index-attribute into $tu 
-    
+        where $text-id gt '' and $tmx/tmx:body/tmx:tu[not(@id)] and $text-id = ('UT22084-040-003')
+        return (
+        
+            $text-id,
+            
+            for $tu at $tu-index in $tmx/tmx:body/tmx:tu
+            let $index-attribute := attribute id { string-join(($text-id, 'TU', $tu-index),'-') }
+            (:where $tu-index eq 1:)
+            return 
+                if($tu[@id]) then
+                    update replace $tu/@id with $index-attribute
+                else
+                    update insert $index-attribute into $tu
+                    
+        )
     }
 
 };

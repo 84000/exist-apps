@@ -21,19 +21,19 @@ import module namespace functx = "http://www.functx.com";
 :)
 declare variable $translation:view-modes := 
     <view-modes xmlns="http://read.84000.co/ns/1.0">
-      <view-mode id="default"           client="browser"  cache="use-cache"  layout="full"            glossary="use-cache"       parts="count-sections"/>,
-      <view-mode id="editor"            client="browser"  cache="suppress"   layout="expanded"        glossary="editor-defer"    parts="all"/>,
-      <view-mode id="annotation"        client="browser"  cache="use-cache"  layout="expanded-fixed"  glossary="use-cache"       parts="all"/>,
-      <view-mode id="txt"               client="none"     cache="use-cache"  layout="expanded-fixed"  glossary="suppress"        parts="all"/>,
-      <view-mode id="ebook"             client="ebook"    cache="use-cache"  layout="expanded-fixed"  glossary="use-cache"       parts="all"/>,
-      <view-mode id="pdf"               client="pdf"      cache="use-cache"  layout="expanded-fixed"  glossary="suppress"        parts="all"/>,
-      <view-mode id="app"               client="app"      cache="use-cache"  layout="expanded-fixed"  glossary="use-cache"       parts="all"/>,
-      <view-mode id="tests"             client="none"     cache="suppress"   layout="expanded-fixed"  glossary="suppress"        parts="all"/>,
-      <view-mode id="glossary-editor"   client="browser"  cache="suppress"   layout="full"            glossary="use-cache"       parts="glossary"/>,
-      <view-mode id="glossary-check"    client="browser"  cache="suppress"   layout="expanded-fixed"  glossary="no-cache"        parts="all"/>,
-      <view-mode id="ajax-part"         client="ajax"     cache="use-cache"  layout="part-only"       glossary="use-cache"       parts="part"/>,
-      <view-mode id="passage"           client="ajax"     cache="suppress"   layout="part-only"       glossary="use-cache"       parts="passage"/>,
-      <view-mode id="editor-passage"    client="ajax"     cache="suppress"   layout="part-only"       glossary="no-cache"        parts="passage"/>,
+      <view-mode id="default"           client="browser"  cache="use-cache"  layout="full"            glossary="use-cache"       parts="count-sections"/>
+      <view-mode id="editor"            client="browser"  cache="suppress"   layout="expanded"        glossary="editor-defer"    parts="all"/>
+      <view-mode id="annotation"        client="browser"  cache="use-cache"  layout="expanded-fixed"  glossary="use-cache"       parts="all"/>
+      <view-mode id="txt"               client="none"     cache="use-cache"  layout="expanded-fixed"  glossary="suppress"        parts="all"/>
+      <view-mode id="ebook"             client="ebook"    cache="use-cache"  layout="expanded-fixed"  glossary="use-cache"       parts="all"/>
+      <view-mode id="pdf"               client="pdf"      cache="use-cache"  layout="expanded-fixed"  glossary="suppress"        parts="all"/>
+      <view-mode id="app"               client="app"      cache="use-cache"  layout="expanded-fixed"  glossary="use-cache"       parts="all"/>
+      <view-mode id="tests"             client="none"     cache="suppress"   layout="expanded-fixed"  glossary="suppress"        parts="all"/>
+      <view-mode id="glossary-editor"   client="browser"  cache="suppress"   layout="full"            glossary="use-cache"       parts="glossary"/>
+      <view-mode id="glossary-check"    client="browser"  cache="suppress"   layout="expanded-fixed"  glossary="no-cache"        parts="all"/>
+      <view-mode id="ajax-part"         client="ajax"     cache="use-cache"  layout="part-only"       glossary="use-cache"       parts="part"/>
+      <view-mode id="passage"           client="ajax"     cache="suppress"   layout="part-only"       glossary="use-cache"       parts="passage"/>
+      <view-mode id="editor-passage"    client="ajax"     cache="suppress"   layout="part-only"       glossary="no-cache"        parts="passage"/>
     </view-modes>;
 
 declare variable $translation:status-statuses := $tei-content:text-statuses/m:status[@type eq 'translation'];

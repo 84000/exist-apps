@@ -36,7 +36,7 @@ declare variable $glossary:modes := ('match', 'marked');
 
 declare variable $glossary:view-modes := 
     <view-modes xmlns="http://read.84000.co/ns/1.0">
-        <view-mode id="default" client="browser" layout="full" glossary="no-cache" parts="all" cache="use-cache"/>,
+        <view-mode id="default" client="browser" layout="full" glossary="no-cache" parts="all" cache="use-cache"/>
         <view-mode id="editor"  client="browser" layout="full" glossary="no-cache" parts="all" cache="no-cache"/>
     </view-modes>;
 
