@@ -610,7 +610,7 @@ declare function tests:glossary($tei as element(tei:TEI)*, $html as document-nod
 
 declare function tests:refs($tei as element(tei:TEI)*, $html as document-node()*, $toh-key as xs:string) as element(m:test) {
     
-    let $tei-folios := translation:folios($tei, $toh-key)//m:folio[not(@rend eq 'blank')]
+    let $tei-folios := translation:folios($tei, $toh-key)//m:folio[not(@rend = ('blank', 'hidden'))]
     let $html-refs := $html//xhtml:a[common:contains-class(@class, 'ref')]
     
     let $folio-count-tei := count($tei-folios)
@@ -623,7 +623,7 @@ declare function tests:refs($tei as element(tei:TEI)*, $html as document-node()*
             let $tei-folio-equivalent := concat('[', lower-case($tei-folio/@tei-folio), ']')
             where not($tei-folio-equivalent = $html-folio-equivalents)
         return 
-            concat('Volume ', $tei-folio/@volume, ' page ', $tei-folio/@page-in-volume, ' not found.' )
+            concat('Volume ', $tei-folio/@volume, ' page ', $tei-folio/@page-in-volume, ' ', $tei-folio-equivalent, ' not found.' )
     
     let $pass := if($ref-count-html gt 0 and $ref-count-html eq $folio-count-tei and count($anomalies) eq 0) then 1 else 0
     
@@ -638,8 +638,7 @@ declare function tests:refs($tei as element(tei:TEI)*, $html as document-node()*
                     for $anomaly in $anomalies
                     return
                         <detail>{ $anomaly }</detail>
-                }
-                {
+                    ,
                     if($pass eq 0) then
                         <detail>For more information visit the "Folios" utility.</detail>
                     else

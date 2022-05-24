@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <eft-header xmlns="http://read.84000.co/ns/1.0">
-    <!-- Updated 17.12.2021 -->
+    <!-- Updated 19.05.2022 -->
     <translation id="tag-line">
         <text xml:lang="en">Translating the words of the Buddha</text>
         <text xml:lang="zh">八萬四千 • 佛典傳譯</text>
@@ -16,6 +16,14 @@
     <translation id="button-search-comms">
         <text xml:lang="en">Search the website</text>
         <text xml:lang="zh">網站檢索</text>
+    </translation>
+    <translation id="button-donate-text">
+        <text xml:lang="en">Donate</text>
+        <text xml:lang="zh">線上捐款</text>
+    </translation>
+    <translation id="button-donate-link">
+        <text xml:lang="en">https://84000.co/how-you-can-help/sponsor-a-page</text>
+        <text xml:lang="zh">https://84000.co/ch-how-you-can-help/ch-sponsor-a-page</text>
     </translation>
     <translation id="label-bookmarks">
         <text xml:lang="en">Bookmarks</text>

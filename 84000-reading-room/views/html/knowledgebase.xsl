@@ -142,6 +142,9 @@
                                             <div class="row">
                                                 
                                                 <h3 class="sml-margin top bottom">
+                                                    <!--<span class="small text-muted">
+                                                        <xsl:value-of select="'From '"/>
+                                                    </span>-->
                                                     <a>
                                                         <xsl:attribute name="href" select="common:internal-link(concat('/section/', m:parent[1]/@id, '.html'), (), '', /m:response/@lang)"/>
                                                         <xsl:value-of select="m:parent[1]/m:titles/m:title[@xml:lang eq 'en'][1]"/>
@@ -149,7 +152,7 @@
                                                 </h3>
                                                 
                                                 <div role="navigation" title="The location of this section" class="text-muted small sml-margin bottom">
-                                                    <xsl:value-of select="'in '"/>
+                                                    <xsl:value-of select="'In '"/>
                                                     <ul class="breadcrumb">
                                                         <xsl:sequence select="common:breadcrumb-items(m:parent[1]/descendant::m:parent, /m:response/@lang)"/>
                                                     </ul>
@@ -166,32 +169,34 @@
                                                     
                                                     <div class="bottom-margin">
                                                         
-                                                        <h4 class="item-title">
+                                                        <h4>
                                                             
-                                                            <xsl:variable name="title" as="xs:string*">
-                                                                <xsl:if test="$text/m:titles/m:parent">
-                                                                    <xsl:value-of select="concat($text/m:titles/m:parent/m:titles/m:title[@xml:lang eq 'en'], ', ')"/>
-                                                                </xsl:if>
-                                                                <xsl:value-of select="$text/m:titles/m:title[@xml:lang eq 'en']"/>
-                                                            </xsl:variable>
-                                                            
-                                                            <xsl:choose>
-                                                                <xsl:when test="$text/@status eq '1'">
-                                                                    <a>
-                                                                        <xsl:attribute name="href" select="concat($reading-room-path, '/translation/', $text/m:toh/@key, '.html')"/>
-                                                                        <xsl:attribute name="target" select="concat($text/@id, '.html')"/>
+                                                            <span class="item-title">
+                                                                <xsl:variable name="title" as="xs:string*">
+                                                                    <xsl:if test="$text/m:titles/m:parent">
+                                                                        <xsl:value-of select="concat($text/m:titles/m:parent/m:titles/m:title[@xml:lang eq 'en'], ', ')"/>
+                                                                    </xsl:if>
+                                                                    <xsl:value-of select="$text/m:titles/m:title[@xml:lang eq 'en']"/>
+                                                                </xsl:variable>
+                                                                
+                                                                <xsl:choose>
+                                                                    <xsl:when test="$text/@status eq '1'">
+                                                                        <a>
+                                                                            <xsl:attribute name="href" select="concat($reading-room-path, '/translation/', $text/m:toh/@key, '.html')"/>
+                                                                            <xsl:attribute name="target" select="concat($text/@id, '.html')"/>
+                                                                            <xsl:value-of select="$title"/>
+                                                                        </a>
+                                                                    </xsl:when>
+                                                                    <xsl:otherwise>
                                                                         <xsl:value-of select="$title"/>
-                                                                    </a>
-                                                                </xsl:when>
-                                                                <xsl:otherwise>
-                                                                    <xsl:value-of select="$title"/>
-                                                                </xsl:otherwise>
-                                                            </xsl:choose>
+                                                                    </xsl:otherwise>
+                                                                </xsl:choose>
+                                                            </span>
                                                             
-                                                            <small>
+                                                            <span class="small">
                                                                 <xsl:value-of select="' / '"/>
                                                                 <xsl:value-of select="$text/m:toh/m:full"/>
-                                                            </small>
+                                                            </span>
                                                             
                                                         </h4>
                                                         
@@ -398,7 +403,6 @@
                                                     <xsl:variable name="entity-data" as="element(m:entity-data)?">
                                                         <xsl:call-template name="entity-data">
                                                             <xsl:with-param name="entity" select="$related-entity"/>
-                                                            <xsl:with-param name="search-text" select="''"/>
                                                             <xsl:with-param name="selected-term-lang" select="''"/>
                                                         </xsl:call-template>
                                                     </xsl:variable>

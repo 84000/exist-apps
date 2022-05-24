@@ -156,7 +156,6 @@ declare function entities:related($entities as element(m:entity)*, $include-unre
         $related-entities,
     
         (: Related glossaries - grouped by text :)
-        
         for $gloss in $glossary:tei//id($lookup-instances[@type eq 'glossary-item']/@id)/self::tei:gloss[not(@mode eq 'surfeit')]
         
         let $tei := $gloss/ancestor::tei:TEI
@@ -191,7 +190,9 @@ declare function entities:related($entities as element(m:entity)*, $include-unre
                 $gloss ! glossary:glossary-entry(., false()),
                 
                 element glossary-cache {
-                    glossary:cache($tei, (), false())//m:gloss[@id = $gloss/@xml:id]
+                    let $glossary-cache := glossary:cache($tei, (), false())
+                    return
+                        $glossary-cache//m:gloss[@id = $gloss/@xml:id]
                 }
                 
             },

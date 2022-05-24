@@ -1068,7 +1068,7 @@ declare function translation:folios($tei as element(tei:TEI), $resource-id as xs
                 for $page-in-volume at $page-index in xs:integer($volume/@start-page) to xs:integer($volume/@end-page)
                 
                 let $page-in-text := $pages-in-preceding-volumes + $page-index
-                let $folio-ref := $folio-refs[xs:integer(@index-in-sort) eq $page-in-text]
+                let $folio-ref := $folio-refs[@index-in-sort ! xs:integer(.) eq $page-in-text]
                 (:let $folio-ref := $folio-refs[$page-in-text]:)
                 
                 return

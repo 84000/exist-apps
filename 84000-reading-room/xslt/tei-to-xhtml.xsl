@@ -3270,7 +3270,6 @@
     <xsl:template name="entity-data">
         
         <xsl:param name="entity" as="element(m:entity)"/>
-        <xsl:param name="search-text" as="xs:string"/>
         <xsl:param name="selected-term-lang" as="xs:string"/>
         
         <xsl:variable name="related-entries" select="key('related-entries', $entity/m:instance/@id, $root)" as="element(m:entry)*"/>
@@ -3317,9 +3316,6 @@
                 <xsl:element name="label" namespace="http://read.84000.co/ns/1.0">
                     <xsl:attribute name="type" select="'primary'"/>
                     <xsl:attribute name="xml:lang" select="$longest-term/@xml:lang"/>
-                    <xsl:if test="m:search-match($longest-term, $search-text, $longest-term/@xml:lang)">
-                        <xsl:attribute name="matches" select="true()"/>
-                    </xsl:if>
                     <xsl:value-of select="$longest-term"/>
                 </xsl:element>
                 
@@ -3337,9 +3333,6 @@
                         <xsl:element name="label" namespace="http://read.84000.co/ns/1.0">
                             <xsl:attribute name="type" select="'secondary'"/>
                             <xsl:attribute name="xml:lang" select="$wylie-term/@xml:lang"/>
-                            <xsl:if test="m:search-match($wylie-term, $search-text, $wylie-term/@xml:lang)">
-                                <xsl:attribute name="matches" select="true()"/>
-                            </xsl:if>
                             <xsl:value-of select="$wylie-term"/>
                         </xsl:element>
                     </xsl:if>
@@ -3356,27 +3349,21 @@
                         <xsl:element name="label" namespace="http://read.84000.co/ns/1.0">
                             <xsl:attribute name="type" select="'tertiary'"/>
                             <xsl:attribute name="xml:lang" select="$sanskrit-term/@xml:lang"/>
-                            <xsl:if test="m:search-match($sanskrit-term, $search-text, $sanskrit-term/@xml:lang)">
-                                <xsl:attribute name="matches" select="true()"/>
-                            </xsl:if>
                             <xsl:value-of select="$sanskrit-term"/>
                         </xsl:element>
                     </xsl:if>
                     
                 </xsl:if>
                 
-                <xsl:for-each-group select="$related-entries/m:term[@xml:lang eq $selected-term-lang]" group-by="string-join(tokenize(data(), '\s+') ! lower-case(data()) ! common:standardized-sa(.) ! common:alphanumeric(.), ' ')">
+                <xsl:for-each-group select="$related-entries/m:term[@xml:lang eq $selected-term-lang]" group-by="string-join(tokenize(data(), '\s+') ! lower-case(data()) ! normalize-space(.) ! normalize-unicode(.), ' ')">
                     
-                    <xsl:sort select="string-join(tokenize(data(), '\s+') ! lower-case(data()) ! common:standardized-sa(.) ! common:alphanumeric(.), ' ')"/>
+                    <xsl:variable name="normalized-string" select="string-join(tokenize(data(), '\s+') ! lower-case(data()) ! normalize-space(.) ! normalize-unicode(.), ' ')"/>
                     
                     <xsl:element name="term" namespace="http://read.84000.co/ns/1.0">
                         <xsl:variable name="term-entry-id" select="parent::m:entry/@id"/>
                         <xsl:attribute name="xml:lang" select="@xml:lang"/>
-                        <xsl:attribute name="word-count" select="count(tokenize(string-join(normalize-space(data()), ' '), '\s+'))"/>
-                        <xsl:attribute name="letter-count" select="string-length(string-join(normalize-space(data()), ' '))"/>
-                        <xsl:if test="m:search-match(data(), $search-text, @xml:lang)">
-                            <xsl:attribute name="matches" select="true()"/>
-                        </xsl:if>
+                        <xsl:attribute name="word-count" select="count(tokenize($normalized-string, '\s+'))"/>
+                        <xsl:attribute name="letter-count" select="string-length($normalized-string)"/>
                         <xsl:if test="$entity/m:instance[@id eq $term-entry-id][m:flag]">
                             <xsl:attribute name="flagged" select="true()"/>
                         </xsl:if>
@@ -3390,30 +3377,5 @@
         </xsl:if>
         
     </xsl:template>
-    
-    <xsl:function name="m:search-match" as="xs:boolean">
-        
-        <xsl:param name="term" as="xs:string*"/>
-        <xsl:param name="search" as="xs:string?"/>
-        <xsl:param name="lang" as="xs:string?"/>
-        
-        <xsl:variable name="match-text" select="string-join(tokenize($term, '\s+') ! lower-case(.) ! common:standardized-sa(.) ! common:alphanumeric(.), ' ')" as="xs:string"/>
-        <xsl:variable name="match-regex" as="xs:string">
-            <xsl:choose>
-                <xsl:when test="$lang eq 'en'">
-                    <xsl:value-of select="concat(if(string-length($search) ne 1) then '(?:^|\s+)' else '^(The\s+|A\s+|An\s+)?', string-join(tokenize($search, '\s+') ! common:standardized-sa(.) ! common:alphanumeric(.), '.*\s+'))"/>
-                </xsl:when>
-                <xsl:when test="$lang eq 'Bo-Ltn'">
-                    <xsl:value-of select="concat(if(string-length($search) ne 1) then '' else '^', string-join(tokenize($search, '\s+') ! common:standardized-sa(.) ! common:alphanumeric(.), '.*\s+'))"/>
-                </xsl:when>
-                <xsl:otherwise>
-                    <xsl:value-of select="concat(if(string-length($search) ne 1) then '(?:^|\s+)' else '^', string-join(tokenize($search, '\s+') ! common:standardized-sa(.) ! common:alphanumeric(.), '.*\s+'))"/>
-                </xsl:otherwise>
-            </xsl:choose>
-        </xsl:variable>
-        
-        <xsl:value-of select="matches($match-text, $match-regex, 'i')"/>
-        
-    </xsl:function>
     
 </xsl:stylesheet>

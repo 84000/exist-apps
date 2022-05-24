@@ -87,11 +87,13 @@ declare function local:lang-field($valid-lang as xs:string) as xs:string {
         'full-term'
 };
 
-declare function glossary:glossary-search($type as xs:string*, $lang as xs:string, $search as xs:string, $exclude-status as xs:string*) as element(tei:gloss)* {
+declare function glossary:glossary-search($type as xs:string*, $lang as xs:string, $search as xs:string, $exclude-status as xs:string*) as element(tei:term)* {
     
     (: Search for terms :)
-    let $valid-lang := common:valid-lang($lang)
     let $valid-type := local:valid-type($type)
+    let $valid-lang := common:valid-lang($lang)
+    
+    (: Transliterate :)
     let $search := 
         if($valid-lang eq 'Bo-Ltn' and common:string-is-bo($search)) then
             common:wylie-from-bo($search)
@@ -99,16 +101,19 @@ declare function glossary:glossary-search($type as xs:string*, $lang as xs:strin
             common:bo-from-wylie($search)
         else
             $search
+    
     let $normalized-search := 
         if($valid-lang = ('en', '')) then
             replace(common:normalized-chars(lower-case($search)), '\-', ' ')
         else if($valid-lang eq 'Sa-Ltn') then
             common:alphanumeric(common:normalized-chars(lower-case($search)))
-        else
+        else if($valid-lang eq 'Bo-Ltn') then
             common:normalized-chars(lower-case($search))
+        else
+            common:normalized-chars($search)
     
     where $normalized-search gt ''
-    return
+    
     let $query :=
         <query>
         {
@@ -128,36 +133,45 @@ declare function glossary:glossary-search($type as xs:string*, $lang as xs:strin
     let $glossaries := $glossary:tei//tei:back/tei:div[@type eq 'glossary'][not(@status = $exclude-status)]
     
     let $terms :=
-    
-        (: Longer strings - do a search :)
-        if(string-length($normalized-search) gt 1 or $valid-lang eq 'bo') then
-            if($valid-lang = ('en', '')) then
-                $glossaries//tei:gloss/tei:term[ft:query(., $query)][not(@type = ('definition', 'alternative'))][not(@xml:lang)]
-            else
-                $glossaries//tei:gloss/tei:term[ft:query(., $query)][not(@type = ('definition', 'alternative'))][@xml:lang eq $valid-lang]
-                
-        (: Single character strings - do a regex :)
+        if($valid-lang = ('en', '')) then
+            $glossaries//tei:gloss/tei:term[ft:query(., $query)][not(@type = ('definition', 'alternative'))][not(@xml:lang)]
         else
-            let $match-regex :=
-                if($valid-lang eq 'en') then
-                    concat('^(The\s+|A\s+|An\s+)?(', string-join(common:letter-variations($normalized-search), '|'), ')')
-                else if($valid-lang eq 'Sa-Ltn') then
-                    concat('^\s*(', string-join(common:letter-variations($normalized-search), '|'), ')')
-                else
-                    concat('^\s*', $normalized-search)
-            return
-                if($valid-lang = ('en', '')) then
-                    $glossaries//tei:gloss/tei:term[matches(., $match-regex, 'i')][not(@type = ('definition', 'alternative'))][not(@xml:lang)]
-                else
-                    $glossaries//tei:gloss/tei:term[matches(., $match-regex, 'i')][not(@type = ('definition', 'alternative'))][@xml:lang eq $valid-lang]
+            $glossaries//tei:gloss/tei:term[ft:query(., $query)][not(@type = ('definition', 'alternative'))][@xml:lang eq $valid-lang]
     
-    return
+    for $term in $terms
+    let $parent := 
         if(count($valid-type) gt 0) then
-            $terms/parent::tei:gloss[@xml:id][@type = $valid-type][not(@mode eq 'surfeit')]
+            $term/parent::tei:gloss[@xml:id][not(@mode eq 'surfeit')][@type = $valid-type]
         else
-            $terms/parent::tei:gloss[@xml:id][not(@mode eq 'surfeit')]
+            $term/parent::tei:gloss[@xml:id][not(@mode eq 'surfeit')]
+    where $parent
+    return
+        $term
+};
+
+declare function glossary:glossary-startletter($type as xs:string*, $lang as xs:string, $match-regex as xs:string, $exclude-status as xs:string*) as element(tei:term)* {
     
-        
+    (: Lookup terms by start letter :)
+    let $valid-type := local:valid-type($type)
+    let $valid-lang := common:valid-lang($lang)
+    
+    let $glossaries := $glossary:tei//tei:back/tei:div[@type eq 'glossary'][not(@status = $exclude-status)]
+    
+    let $terms :=
+        if($valid-lang = ('en', '')) then
+            $glossaries//tei:gloss/tei:term[matches(., $match-regex, 'i')][not(@type = ('definition', 'alternative'))][not(@xml:lang)]
+        else
+            $glossaries//tei:gloss/tei:term[matches(., $match-regex, 'i')][not(@type = ('definition', 'alternative'))][@xml:lang eq $valid-lang]
+    
+    for $term in $terms
+    let $parent := 
+        if(count($valid-type) gt 0) then
+            $term/parent::tei:gloss[@xml:id][not(@mode eq 'surfeit')][@type = $valid-type]
+        else
+            $term/parent::tei:gloss[@xml:id][not(@mode eq 'surfeit')]
+    where $parent
+    return
+        $term
 };
 
 declare function glossary:glossary-flagged($flag-type as xs:string*, $glossary-type as xs:string*) as element(tei:gloss)* {
@@ -166,7 +180,7 @@ declare function glossary:glossary-flagged($flag-type as xs:string*, $glossary-t
     let $flagged-instances := $entities:entities//m:flag[@type eq $flag/@id]/parent::m:instance
     let $valid-glossary-type := local:valid-type($glossary-type)
     return
-        subsequence($glossary:tei//tei:gloss[not(@mode eq 'surfeit')]/id($flagged-instances/@id)[@type = $valid-glossary-type], 1, 1000)
+        $glossary:tei//tei:gloss[not(@mode eq 'surfeit')]/id($flagged-instances/@id)[@type = $valid-glossary-type]
         
 };
 

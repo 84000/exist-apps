@@ -17,8 +17,7 @@ let $resource-suffix := request:get-parameter('resource-suffix', '')
 let $first-record := 
     if(functx:is-a-number(request:get-parameter('first-record', 1))) then
         request:get-parameter('first-record', 1)
-    else
-        1
+    else 1
 
 let $xml-response :=
     common:response(

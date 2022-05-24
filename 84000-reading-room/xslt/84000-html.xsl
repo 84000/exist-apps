@@ -66,6 +66,25 @@
                                             <xsl:call-template name="language-links"/>
                                         </span>
                                         <xsl:call-template name="search-form"/>
+                                        <span>
+                                            <a class="btn btn-sm btn-warning">
+                                                <xsl:attribute name="href">
+                                                    <xsl:call-template name="local-url">
+                                                        <xsl:with-param name="url">
+                                                            <xsl:call-template name="translation">
+                                                                <xsl:with-param name="translation-id" select="'button-donate-link'"/>
+                                                                <xsl:with-param name="lang" select="$lang"/>
+                                                            </xsl:call-template>
+                                                        </xsl:with-param>
+                                                    </xsl:call-template>
+                                                </xsl:attribute>
+                                                <xsl:call-template name="translation">
+                                                    <xsl:with-param name="translation-id" select="'button-donate-text'"/>
+                                                    <xsl:with-param name="lang" select="$lang"/>
+                                                    <xsl:with-param name="text-node" select="true()"/>
+                                                </xsl:call-template>
+                                            </a>
+                                        </span>
                                     </div>
                                 </div>
                             </div>
@@ -234,8 +253,31 @@
                         
                         <!-- language links -->
                         <li class="languages visible-mobile">
-                            <div class="center-vertical">
-                                <xsl:call-template name="language-links"/>
+                            <div class="center-vertical full-width">
+                                <div>
+                                    <div class="center-vertical align-left">
+                                        <xsl:call-template name="language-links"/>
+                                    </div>
+                                </div>
+                                <div>
+                                    <a class="btn btn-sm btn-warning pull-right">
+                                        <xsl:attribute name="href">
+                                            <xsl:call-template name="local-url">
+                                                <xsl:with-param name="url">
+                                                    <xsl:call-template name="translation">
+                                                        <xsl:with-param name="translation-id" select="'button-donate-link'"/>
+                                                        <xsl:with-param name="lang" select="$lang"/>
+                                                    </xsl:call-template>
+                                                </xsl:with-param>
+                                            </xsl:call-template>
+                                        </xsl:attribute>
+                                        <xsl:call-template name="translation">
+                                            <xsl:with-param name="translation-id" select="'button-donate-text'"/>
+                                            <xsl:with-param name="lang" select="$lang"/>
+                                            <xsl:with-param name="text-node" select="true()"/>
+                                        </xsl:call-template>
+                                    </a>
+                                </div>
                             </div>
                         </li>
                         
