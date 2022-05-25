@@ -140,12 +140,28 @@ let $glossary-matches :=
         (: Sort logic :)
         let $term-matches-sorted :=
             for $term in $term-matches
+            
             let $sort-term := 
-                if($term/@xml:lang eq 'bo') then
+                if(not($term/@xml:lang)) then
+                    $term/text() ! normalize-space(.) ! lower-case(.) ! common:normalized-chars(.) ! replace(., '^\s*(The\s+|A\s+|An\s+)', '', 'i')
+                else if($term/@xml:lang eq 'bo') then
                     $term/text() ! normalize-space(.) ! common:wylie-from-bo(.) ! common:alphanumeric(.)
                 else
                     $term/text() ! normalize-space(.) ! lower-case(.) ! common:normalized-chars(.) ! common:alphanumeric(.)
-            order by $sort-term
+            
+            let $sort-regex := 
+                if($alphabet/m:letter[@selected]) then 
+                    $alphabet/m:letter[@selected]/@regex
+                else if(not($term/@xml:lang)) then
+                    $request/m:search ! lower-case(.) ! common:normalized-chars(.) ! replace(., '^\s*(The\s+|A\s+|An\s+)', '', 'i') ! functx:escape-for-regex(.)
+                else if($term/@xml:lang eq 'bo') then 
+                    $request/m:search ! common:wylie-from-bo(.) ! common:alphanumeric(.) ! functx:escape-for-regex(.)
+                else 
+                    $request/m:search ! lower-case(.) ! common:normalized-chars(.) ! common:alphanumeric(.) ! functx:escape-for-regex(.)
+            
+            let $sort-index := functx:index-of-match-first($sort-term, $sort-regex)
+            
+            order by if($sort-index eq 1) then 0 else 1, $sort-term
             return $term
         
         for $term at $index in $term-matches-sorted
@@ -191,6 +207,7 @@ let $xml-response :=
         $request/@model, 
         $common:app-id, 
         (
+            element debug { $term-matches },
             $request,
             element { QName('http://read.84000.co/ns/1.0', 'entities')} {
                 attribute count-entities { count($matched-entities) },

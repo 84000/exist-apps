@@ -122,7 +122,8 @@ declare function glossary:glossary-search($type as xs:string*, $lang as xs:strin
             else
                 <bool>
                 {
-                    for $term in tokenize($normalized-search, '\s+')
+                    (: wildcard is not ignoring stopwords :)
+                    for $term in tokenize($normalized-search, '\s+')[not(. = ("a", "an", "and", "are", "as", "at", "be", "but", "by","for", "if", "in", "into", "is", "it","no", "not", "of", "on", "or", "such","that", "the", "their", "then", "there", "these","they", "this", "to", "was", "will", "with"))]
                     return
                         <wildcard occur="must">{ $term }*</wildcard>
                 }
