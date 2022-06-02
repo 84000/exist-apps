@@ -86,7 +86,7 @@
                                                     <a>
                                                         <xsl:attribute name="target" select="concat($tei/@resource-id, '.html')"/>
                                                         <!-- If the match is in the main title then use the match, otherwise output the title -->
-                                                        <xsl:variable name="title-match" select="$matches[@node-name eq 'title' and @node-type eq 'mainTitle' and @node-lang eq 'en']"/>
+                                                        <xsl:variable name="title-match" select="$matches[@node-name eq 'title' and @node-type eq 'mainTitle' and @node-lang eq 'en'][1]"/>
                                                         <xsl:choose>
                                                             
                                                             <xsl:when test="$title-match">
@@ -141,7 +141,7 @@
                                                             <a>
                                                                 <xsl:attribute name="target" select="concat($tei/@resource-id, '.html')"/>
                                                                 <!-- If the match is a Toh number then output the match -->
-                                                                <xsl:variable name="key-match" select="$matches[@key eq $toh-key and @node-name eq 'bibl']"/>
+                                                                <xsl:variable name="key-match" select="$matches[@key eq $toh-key and @node-name eq 'bibl'][1]"/>
                                                                 <xsl:choose>
                                                                     <xsl:when test="$key-match">
                                                                         <xsl:attribute name="href" select="common:internal-link(concat($reading-room-path, $key-match/@link), (), '', /m:response/@lang)"/>

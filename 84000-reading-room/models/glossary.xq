@@ -52,7 +52,7 @@ let $alphabet :=
             if($term-lang/@id eq 'bo') then
                 ('ཀ','ཁ','ག','ང','ཅ','ཆ','ཇ','ཉ','ཏ','ཐ','ད','ན','པ','ཕ','བ','མ','ཙ','ཚ','ཛ','ཝ','ཞ','ཟ','འ','ཡ','ར','ལ','ཤ','ས','ཧ','ཨ')
             else if ($term-lang/@id eq 'Sa-Ltn') then
-                ('a','ā','i','ī','u','ū','ṛ','ṝ','ḷ','ḹ','e','ai','o','au', 'k[^h]','kh','g[^h]','gh','ṅ','c[^h]','ch','j[^h]','jh','ñ','ṭ[^h]','th','ḍ[^h]','ḍh','ṇ','t[^h]','th','d[^h]','dh','n','p[^h]','ph','b[^h]','bh','m','y','r','l','v','ś','ṣ','s','h')
+                ('a','ā','i','ī','u','ū','ṛ','ṝ','ḷ','ḹ','e','ai','o','au', 'k[^h]','kh','g[^h]','gh','ṅ','c[^h]','ch','j[^h]','jh','ñ','ṭ[^h]','ṭh','ḍ[^h]','ḍh','ṇ','t[^h]','th','d[^h]','dh','n','p[^h]','ph','b[^h]','bh','m','y','r','l','v','ś','ṣ','s','h')
             else
                 ('a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z')
         
@@ -207,7 +207,6 @@ let $xml-response :=
         $request/@model, 
         $common:app-id, 
         (
-            element debug { $term-matches },
             $request,
             element { QName('http://read.84000.co/ns/1.0', 'entities')} {
                 attribute count-entities { count($matched-entities) },
