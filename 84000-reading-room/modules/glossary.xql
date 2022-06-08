@@ -542,11 +542,7 @@ declare function glossary:combined() as element() {
                         (: TO DO: Create endpoints for these uris :)
                         attribute entity { concat('http://purl.84000.co/resource/core/', $entity/@xml:id) },
                         
-                        (: Add a link to the combined glossary if enabled :)
-                        if($common:environment/m:enable[@type eq 'glossary-of-terms']) then
-                            attribute href { concat($common:environment/m:url[@id eq 'reading-room'],'/glossary.html?entity-id=', $entity/@xml:id) }
-                        else ()
-                        ,
+                        attribute href { concat($common:environment/m:url[@id eq 'reading-room'],'/glossary/', $entity/@xml:id, '.html') },
                         
                         attribute sort-key { replace(common:normalized-chars(lower-case($term-wy-text)), '[^a-z0-9\s]', '') },
                         
@@ -1067,7 +1063,7 @@ declare function glossary:downloads(){
             return
                 element download {
                     attribute type { $type },
-                    attribute url { '/glossary.html' },
+                    attribute url { '/glossary/search.html' },
                     attribute download-url { concat('/glossary-download', '.', $type, $key[. gt ''] ! concat('?key=', $key)) },
                     attribute filename { concat($latest-key, $key[. gt ''] ! concat('-', $key), '.', $type, $type[. eq 'dict'] ! '.zip') },
                     attribute last-modified { common:cache-last-modified($request, $latest-key) },

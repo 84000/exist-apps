@@ -345,21 +345,6 @@ return
                     </parameters>
                 )(::)
         
-        (: Search :)
-        else if ($resource-id eq "search") then
-             if ($resource-suffix eq 'json') then
-                local:dispatch("/models/search.xq", "/views/json/search.xq", 
-                    <parameters xmlns="http://exist.sourceforge.net/NS/exist">
-                        <add-parameter name="resource-suffix" value="json"/>
-                    </parameters>
-                )
-            else
-                local:dispatch("/models/search.xq", "",
-                    <parameters xmlns="http://exist.sourceforge.net/NS/exist">
-                        <add-parameter name="resource-suffix" value="{$resource-suffix}"/>
-                    </parameters>
-                )
-        
         (: About :)
         else if ($collection-path eq "about") then
             local:dispatch(concat("/models/about/",  $resource-id, ".xq"), "", 
@@ -386,24 +371,27 @@ return
             )
         
         (: Glossary :)
-        else if ($resource-id eq "glossary") then
-            local:dispatch("/models/glossary.xq", "",
-                <parameters xmlns="http://exist.sourceforge.net/NS/exist">
-                    <add-parameter name="resource-suffix" value="{ $resource-suffix }"/>
-                </parameters>
-            )
+        else if ($collection-path eq "glossary") then
+            if($resource-id = ("search", "downloads")) then
+                local:dispatch("/models/glossary.xq", "",
+                    <parameters xmlns="http://exist.sourceforge.net/NS/exist">
+                        <add-parameter name="resource-id" value="{ $resource-id }"/>
+                        <add-parameter name="resource-suffix" value="{ $resource-suffix }"/>
+                    </parameters>
+                )
+            else
+                local:dispatch("/models/glossary-entry.xq", "",
+                    <parameters xmlns="http://exist.sourceforge.net/NS/exist">
+                        <add-parameter name="resource-id" value="{ $resource-id }"/>
+                        <add-parameter name="resource-suffix" value="{ $resource-suffix }"/>
+                    </parameters>
+                )
+                
         else if ($resource-id eq "glossary-download") then
             local:dispatch("/models/glossary-download.xq", "",
                 <parameters xmlns="http://exist.sourceforge.net/NS/exist">
                     <add-parameter name="resource-suffix" value="{ $resource-suffix }"/>
                 </parameters>
-            )
-    
-        (: Downloads - used on Dist to get Collab files :)
-        else if ($resource-id eq "downloads") then
-            (: return the xml :)
-            local:dispatch("/models/downloads.xq", "", 
-                <parameters xmlns="http://exist.sourceforge.net/NS/exist"/>
             )
         
         (: Schema :)
@@ -417,6 +405,28 @@ return
             <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
                 <forward url="{ concat($common:data-collection, $exist:path) }"/>
             </dispatch>
+        
+        (: Search :)
+        else if ($resource-id eq "search") then
+             if ($resource-suffix eq 'json') then
+                local:dispatch("/models/search.xq", "/views/json/search.xq", 
+                    <parameters xmlns="http://exist.sourceforge.net/NS/exist">
+                        <add-parameter name="resource-suffix" value="json"/>
+                    </parameters>
+                )
+            else
+                local:dispatch("/models/search.xq", "",
+                    <parameters xmlns="http://exist.sourceforge.net/NS/exist">
+                        <add-parameter name="resource-suffix" value="{$resource-suffix}"/>
+                    </parameters>
+                )
+                
+        (: Downloads - used on Dist to get Collab files :)
+        else if ($resource-id eq "downloads") then
+            (: return the xml :)
+            local:dispatch("/models/downloads.xq", "", 
+                <parameters xmlns="http://exist.sourceforge.net/NS/exist"/>
+            )
         
         (: Editor :)
         (: Module located in operations app :)

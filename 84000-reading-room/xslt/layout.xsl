@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" version="3.0" exclude-result-prefixes="#all">
     
     <!-- Indent nested sections -->
     <xsl:template name="indent">
@@ -124,30 +124,64 @@
                 
                 <xsl:attribute name="id" select="concat('expand-item-', $id, '-heading')"/>
                 
-                <div class="center-vertical full-width">
-                    
-                    <div>
-                        <xsl:copy-of select="$title"/>
-                    </div>
-                    
-                    <a class="text-right collapsed" role="button" data-toggle="collapse" aria-expanded="false">
-                        
-                        <xsl:attribute name="href" select="concat('#expand-item-', $id, '-detail')"/>
-                        <xsl:attribute name="aria-controls" select="concat('expand-item-',$id, '-detail')"/>
-                        <xsl:attribute name="data-parent" select="$accordion-selector"/>
-                        
-                        <xsl:if test="$active">
-                            <xsl:attribute name="class" select="'text-right'"/>
-                            <xsl:attribute name="aria-expanded" select="'true'"/>
-                        </xsl:if>
-                        
-                        <span>
-                            <i class="fa fa-plus collapsed-show"/>
-                            <i class="fa fa-minus collapsed-hide"/>
-                        </span>
-                    </a>
-                    
-                </div>
+                <!-- don't allow links in links -->
+                <xsl:choose>
+                    <xsl:when test="$title/descendant-or-self::xhtml:a">
+                        <div class="center-vertical full-width">
+                            
+                            <div>
+                                <xsl:sequence select="$title"/>
+                            </div>
+                            
+                            <div class="text-right">
+                                <a class="collapsed" role="button" data-toggle="collapse" aria-expanded="false">
+                                    
+                                    <xsl:attribute name="href" select="concat('#expand-item-', $id, '-detail')"/>
+                                    <xsl:attribute name="aria-controls" select="concat('expand-item-',$id, '-detail')"/>
+                                    <xsl:attribute name="data-parent" select="$accordion-selector"/>
+                                    
+                                    <xsl:if test="$active">
+                                        <xsl:attribute name="class" select="''"/>
+                                        <xsl:attribute name="aria-expanded" select="'true'"/>
+                                    </xsl:if>
+                                    
+                                    <i class="fa fa-plus collapsed-show"/>
+                                    <i class="fa fa-minus collapsed-hide"/>
+                                    
+                                </a>
+                            </div>
+                            
+                        </div>
+                    </xsl:when>
+                    <xsl:otherwise>
+                        <a class="collapsed block-link" role="button" data-toggle="collapse" aria-expanded="false">
+                            
+                            <xsl:attribute name="href" select="concat('#expand-item-', $id, '-detail')"/>
+                            <xsl:attribute name="aria-controls" select="concat('expand-item-',$id, '-detail')"/>
+                            <xsl:attribute name="data-parent" select="$accordion-selector"/>
+                            
+                            <xsl:if test="$active">
+                                <xsl:attribute name="class" select="'block-link'"/>
+                                <xsl:attribute name="aria-expanded" select="'true'"/>
+                            </xsl:if>
+                            
+                            <div class="center-vertical full-width">
+                                
+                                <div>
+                                    <xsl:sequence select="$title"/>
+                                </div>
+                                
+                                <div class="text-right">
+                                    <i class="fa fa-plus collapsed-show"/>
+                                    <i class="fa fa-minus collapsed-hide"/>
+                                </div>
+                                
+                            </div>
+                            
+                        </a>
+                    </xsl:otherwise>
+                </xsl:choose>
+                
             </div>
             
             <div role="tabpanel" aria-expanded="false">

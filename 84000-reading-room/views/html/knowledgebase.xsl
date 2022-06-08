@@ -410,7 +410,7 @@
                                                     <li>
                                                         <a class="block-link">
                                                             
-                                                            <xsl:attribute name="href" select="concat('/glossary.html?entity-id=', $related-entity/@xml:id)"/>
+                                                            <xsl:attribute name="href" select="concat('/glossary/', $related-entity/@xml:id, '.html')"/>
                                                             
                                                             <h4>
                                                                 <xsl:attribute name="class">

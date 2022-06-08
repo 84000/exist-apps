@@ -314,7 +314,7 @@
                                             <xsl:if test="$entity-entry">
                                                 <li>
                                                     <a target="84000-glossary" class="small">
-                                                        <xsl:attribute name="href" select="concat($reading-room-path, '/glossary.html?entity-id=', $entity/@xml:id)"/>
+                                                        <xsl:attribute name="href" select="concat($reading-room-path, '/glossary/', $entity/@xml:id, '.html?view-mode=editor')"/>
                                                         <xsl:value-of select="'84000 Glossary'"/>
                                                     </a>
                                                 </li>
@@ -527,7 +527,7 @@
                                                                         <xsl:if test="/m:response/m:entity-types/m:type[@glossary-type = $relation-entity/m:type/@type]">
                                                                             <li>
                                                                                 <a target="84000-glossary" class="small">
-                                                                                    <xsl:attribute name="href" select="concat($reading-room-path, '/glossary.html?entity-id=', $relation/@id, '&amp;view-mode=editor')"/>
+                                                                                    <xsl:attribute name="href" select="concat($reading-room-path, '/glossary/', $relation/@id, '.html?view-mode=editor')"/>
                                                                                     <xsl:value-of select="'84000 Glossary'"/>
                                                                                 </a>
                                                                             </li>

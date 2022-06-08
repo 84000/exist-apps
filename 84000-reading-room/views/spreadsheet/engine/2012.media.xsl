@@ -68,7 +68,7 @@
             </Relationships>
         </m:entry>
 
-        <!-- Generate the drawing & rels -->
+        <!-- Generate the drawing &amp; rels -->
         <xsl:if test="$images">
             <!-- Generate the drawingX.xml file -->
             <m:entry href="xl/drawings/drawing{$sheetNr}.xml">

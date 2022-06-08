@@ -1393,7 +1393,7 @@
                         <xsl:if test="$related-entries">
                             <li>
                                 <a>
-                                    <xsl:attribute name="href" select="concat($reading-room-path, '/glossary.html?entity-id=', $entity/@xml:id)"/>
+                                    <xsl:attribute name="href" select="concat($reading-room-path, '/glossary/', $entity/@xml:id, '.html?view-mode=editor')"/>
                                     <xsl:attribute name="target" select="'84000-glossary'"/>
                                     <xsl:value-of select="'Glossary'"/>
                                 </a>

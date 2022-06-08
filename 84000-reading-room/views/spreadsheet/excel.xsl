@@ -51,7 +51,7 @@
                                 <c r="{substring($alphabet, $colNum, 1)}1" t="inlineStr">
                                     <is>
                                         <t>
-                                            <xsl:value-of select="local-name(.) ! replace(., '_', ' ')"/>
+                                            <xsl:value-of select="replace(local-name(.), '_', ' ')"/>
                                         </t>
                                     </is>
                                 </c>

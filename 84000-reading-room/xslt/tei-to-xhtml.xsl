@@ -1285,7 +1285,7 @@
                         <!-- Entity -->
                         <xsl:variable name="entity" select="key('entity-instance', $glossary-item/@xml:id, $root)[1]/parent::m:entity"/>
                         <xsl:variable name="entity-instance" select="$entity/m:instance[@id eq $glossary-item/@xml:id]"/>
-                        <xsl:variable name="entity-definition" select="$entity/m:content[@type eq 'glossary-definition']"/>
+                        <xsl:variable name="entity-definition" select="$entity/m:content[@type eq 'glossary-definition'][node()]"/>
                         
                         <!-- Definition -->
                         <xsl:for-each select="$entry-definition">
@@ -1369,7 +1369,7 @@
                                     <xsl:if test="$glossary-instances">
                                         <li>
                                             <a target="84000-glossary">
-                                                <xsl:attribute name=" href" select="concat('/glossary.html?entity-id=', $entity/@xml:id, if($view-mode[@id = ('editor', 'editor-passage')]) then '&amp;view-mode=editor' else '')"/>
+                                                <xsl:attribute name=" href" select="concat('/glossary/', $entity/@xml:id, '.html', if($view-mode[@id = ('editor', 'editor-passage')]) then '&amp;view-mode=editor' else '')"/>
                                                 <xsl:value-of select="concat(format-number(count($glossary-instances), '#,###'), ' related glossary ', if(count($glossary-instances) eq 1) then 'entry' else 'entries')"/>
                                             </a>
                                         </li>

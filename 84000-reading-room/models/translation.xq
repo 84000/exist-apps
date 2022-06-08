@@ -100,19 +100,17 @@ return
         (: Get entities for glossaries :)
         let $glossary-entities := 
             element { QName('http://read.84000.co/ns/1.0', 'entities') }{
-                if($common:environment/m:enable[@type eq 'glossary-of-terms']) then
-                    (: Get entities for the glossary entries
-                        - If the request is for a passage this can be optimised, only get entities if the passage is the glossary :)
-                    for $gloss in
-                        if($request/m:view-mode[@parts eq 'passage']) then
-                            $parts[@id eq 'glossary']//tei:gloss/id($passage-id)
-                        else
-                            $parts[@id eq 'glossary']//tei:gloss
-                            
-                    let $instance := $entities:entities//m:instance[@id = $gloss/@xml:id]
-                    return
-                        $instance[1]/parent::m:entity
-                else ()
+                (: Get entities for the glossary entries
+                    - If the request is for a passage this can be optimised, only get entities if the passage is the glossary :)
+                for $gloss in
+                    if($request/m:view-mode[@parts eq 'passage']) then
+                        $parts[@id eq 'glossary']//tei:gloss/id($passage-id)
+                    else
+                        $parts[@id eq 'glossary']//tei:gloss
+                        
+                let $instance := $entities:entities//m:instance[@id = $gloss/@xml:id]
+                return
+                    $instance[1]/parent::m:entity
             }
         
         (: Compile all the translation data :)

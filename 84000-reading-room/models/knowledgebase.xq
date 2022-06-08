@@ -34,10 +34,7 @@ let $knowledgebase-content :=
         knowledgebase:glossary($tei)
     }
 
-let $glossary-ids := 
-    if($common:environment/m:enable[@type eq 'glossary-of-terms']) then 
-        $knowledgebase-content/m:part[@type eq 'glossary']/tei:gloss/@xml:id
-    else ()
+let $glossary-ids := $knowledgebase-content/m:part[@type eq 'glossary']/tei:gloss/@xml:id
 
 let $entities := 
     element { QName('http://read.84000.co/ns/1.0', 'entities') }{

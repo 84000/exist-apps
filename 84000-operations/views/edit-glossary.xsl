@@ -576,7 +576,7 @@
                                             <span class="small">
                                                 <xsl:value-of select="' / '"/>
                                                 <a target="84000-glossary">
-                                                    <xsl:attribute name="href" select="concat($reading-room-path, '/glossary.html?entity-id=', $loop-glossary-entity/@xml:id, '&amp;view-mode=editor')"/>
+                                                    <xsl:attribute name="href" select="concat($reading-room-path, '/glossary/', $loop-glossary-entity/@xml:id, '.html?view-mode=editor')"/>
                                                     <xsl:value-of select="'84000 glossary'"/>
                                                 </a>
                                             </span>
@@ -606,7 +606,7 @@
                                     </xsl:if>
                                     
                                     <!-- Entity definition setting -->
-                                    <xsl:if test="$loop-glossary-entity/m:content[@type eq 'glossary-definition'] and (not($loop-glossary/m:definition[node()]) or $loop-glossary-instance[@use-definition eq 'both'])">
+                                    <xsl:if test="$loop-glossary-entity/m:content[@type eq 'glossary-definition'][node()] and (not($loop-glossary/m:definition[node()]) or $loop-glossary-instance[@use-definition eq 'both'])">
                                         <div class="sml-margin bottom">
                                             <p>
                                                 <span class="label label-info">
@@ -900,7 +900,7 @@
                                                                 
                                                                 <li>
                                                                     <a target="84000-glossary" class="small">
-                                                                        <xsl:attribute name="href" select="concat($reading-room-path, '/glossary.html?entity-id=', $loop-glossary-entity/@xml:id, '&amp;view-mode=editor')"/>
+                                                                        <xsl:attribute name="href" select="concat($reading-room-path, '/glossary/', $loop-glossary-entity/@xml:id, '.html?view-mode=editor')"/>
                                                                         <xsl:value-of select="'84000 Glossary'"/>
                                                                     </a>
                                                                 </li>
@@ -1125,7 +1125,7 @@
                                                                                             <xsl:if test="/m:response/m:entity-types/m:type[@glossary-type = $relation-entity/m:type/@type]">
                                                                                                 <li>
                                                                                                     <a target="84000-glossary" class="small">
-                                                                                                        <xsl:attribute name="href" select="concat($reading-room-path, '/glossary.html?entity-id=', $relation/@id, '&amp;view-mode=editor')"/>
+                                                                                                        <xsl:attribute name="href" select="concat($reading-room-path, '/glossary/', $relation/@id, '.html?view-mode=editor')"/>
                                                                                                         <xsl:value-of select="'84000 Glossary'"/>
                                                                                                     </a>
                                                                                                 </li>
@@ -1621,7 +1621,7 @@
         
         <!-- Definition -->
         <xsl:variable name="definitions" select="$entry/m:definition[node()]"/>
-        <xsl:variable name="entity-definitions" select="$entity/m:content[@type eq 'glossary-definition']"/>
+        <xsl:variable name="entity-definitions" select="$entity/m:content[@type eq 'glossary-definition'][node()]"/>
         <div class="form-group">
             
             <label for="{ concat('term-definition-text-', $entry/@id, '-1') }" class="col-sm-2 control-label">

@@ -61,7 +61,7 @@
                 <xsl:value-of select="common:internal-link('https://read.84000.co/search.html', (), '', $lang)"/>
             </xsl:when>
             <xsl:when test="/m:response/@model eq 'glossary'">
-                <xsl:value-of select="common:internal-link('https://read.84000.co/glossary.html', (), '', $lang)"/>
+                <xsl:value-of select="common:internal-link('https://read.84000.co/glossary/search.html', (), '', $lang)"/>
             </xsl:when>
             <xsl:when test="/m:response/@model eq 'about/sponsors'">
                 <xsl:value-of select="common:internal-link('https://read.84000.co/about/sponsors.html', (), '', $lang)"/>

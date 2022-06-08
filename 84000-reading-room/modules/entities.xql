@@ -23,15 +23,15 @@ declare variable $entities:types :=
             <label type="singular">Term</label>
             <label type="plural">Terms</label>
         </type>
-        <type id="eft-person" glossary-type="person">
+        <type id="eft-person" glossary-type="person" provisional="true">
             <label type="singular">Person</label>
             <label type="plural">People</label>
         </type>
-        <type id="eft-place" glossary-type="place">
+        <type id="eft-place" glossary-type="place" provisional="true">
             <label type="singular">Place</label>
             <label type="plural">Places</label>
         </type>
-        <type id="eft-text" glossary-type="text">
+        <type id="eft-text" glossary-type="text" provisional="true">
             <label type="singular">Text</label>
             <label type="plural">Texts</label>
         </type>
