@@ -3361,20 +3361,21 @@
                     
                 </xsl:if>
                 
-                <xsl:for-each-group select="$terms-bo | $terms-sa | $terms-wy | $terms-en" group-by="string-join((@xml:lang, tokenize(data(), '\s+') ! lower-case(.) ! normalize-space(.) ! normalize-unicode(.), ' '))">
+                <xsl:for-each-group select="$terms-bo | $terms-sa | $terms-wy | $terms-en" group-by="string-join((@xml:lang, tokenize(data(), '\s+') ! normalize-space(.) ! lower-case(.) ! normalize-unicode(.) ! replace(., '[­| ]','')(: strip soft-hyphens :)), ' ')">
                     
-                    <xsl:variable name="normalized-string" select="string-join(tokenize(data(), '\s+') ! lower-case(.) ! normalize-space(.) ! normalize-unicode(.), ' ')"/>
+                    <xsl:variable name="term-group" select="."/>
+                    <xsl:variable name="normalized-string" select="string-join((tokenize($term-group[1]/text(), '\s+') ! normalize-space(.) ! lower-case(.) ! normalize-unicode(.) ! replace(., '[­| ]','')(: strip soft-hyphens :)), ' ')"/>
                     
                     <xsl:element name="term" namespace="http://read.84000.co/ns/1.0">
-                        <xsl:variable name="term-entry-id" select="parent::m:entry/@id"/>
+                        <xsl:variable name="term-entry-id" select="parent::m:entry/@id[1]"/>
                         <xsl:attribute name="xml:lang" select="@xml:lang"/>
-                        <xsl:attribute name="sort-str" select="$normalized-string"/>
+                        <xsl:attribute name="normalized-string" select="$normalized-string"/>
                         <xsl:attribute name="word-count" select="count(tokenize($normalized-string, '\s+'))"/>
                         <xsl:attribute name="letter-count" select="string-length($normalized-string)"/>
                         <xsl:if test="$entity/m:instance[@id eq $term-entry-id][m:flag]">
                             <xsl:attribute name="flagged" select="true()"/>
                         </xsl:if>
-                        <xsl:value-of select="data() ! normalize-space(.) ! normalize-unicode(.)"/>
+                        <xsl:value-of select="$term-group[1]/text() ! normalize-unicode(.) ! normalize-space(.)"/>
                     </xsl:element>
                     
                 </xsl:for-each-group>

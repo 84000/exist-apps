@@ -401,30 +401,8 @@
                                                         <xsl:attribute name="data-toggle-active" select="concat('#', $item-id)"/>
                                                         <xsl:attribute name="data-ajax-loading" select="'Loading detail...'"/>
                                                         
-                                                        <xsl:variable name="search-matches" as="element()*">
-                                                            
-                                                            <xsl:variable name="search-matches-labels" as="element()*">
-                                                                <xsl:for-each select="$entity-data/m:label[@xml:lang eq $selected-term-lang/@id]">
-                                                                    <xsl:if test="m:search-match(text())">
-                                                                        <xsl:sequence select="."/>
-                                                                    </xsl:if>
-                                                                </xsl:for-each>
-                                                            </xsl:variable>
-                                                            
-                                                            <!-- Labels are already matched -->
-                                                            <xsl:sequence select="$search-matches-labels"/>
-                                                            
-                                                            <xsl:for-each select="$entity-data/m:term[@xml:lang eq $selected-term-lang/@id][not(text() = $search-matches-labels/text())]">
-                                                                <xsl:if test="m:search-match(text())">
-                                                                    <xsl:sequence select="."/>
-                                                                </xsl:if>
-                                                            </xsl:for-each>
-                                                            
-                                                        </xsl:variable>
-                                                        
                                                         <div class="search-matches sml-margin bottom top-vertical full-width">
                                                             <div>
-                                                                
                                                                 
                                                                 <div>
                                                                     
@@ -433,7 +411,8 @@
                                                                     </label>
                                                                     
                                                                     <ul class="list-inline inline-dots">
-                                                                        <xsl:for-each select="$search-matches">
+                                                                        <xsl:for-each select="$entity-data/m:term[@xml:lang eq $selected-term-lang/@id][m:search-match(text())]">
+                                                                            
                                                                             <xsl:sort>
                                                                                 <xsl:choose>
                                                                                     <xsl:when test="@xml:lang eq 'en'">
@@ -450,6 +429,7 @@
                                                                                     </xsl:otherwise>
                                                                                 </xsl:choose>
                                                                             </xsl:sort>
+                                                                            
                                                                             <li>
                                                                                 <span class="h2">
                                                                                     <span>
@@ -472,6 +452,7 @@
                                                                                     </span>
                                                                                 </span>
                                                                             </li>
+                                                                            
                                                                         </xsl:for-each>
                                                                     </ul>
                                                                     
@@ -519,7 +500,7 @@
                                                                 <!-- Publication count -->
                                                                 <div>
                                                                     <span class="nowrap">
-                                                                        <span class="badge-text text-muted">
+                                                                        <span class="badge-text">
                                                                             <xsl:value-of select="'Publications: '"/>
                                                                         </span>
                                                                         <span class="badge badge-notification">
@@ -694,6 +675,12 @@
                 </xsl:when>
                 <xsl:when test="$selected-term-lang/@id eq 'bo' and $search-text-bo">
                     <xsl:value-of select="concat('(^|\s*)(', string-join(tokenize($search-text-bo, '\s+') ! common:escape-for-regex(.), '|'), ')')"/>
+                </xsl:when>
+                <xsl:when test="$selected-term-lang/@id eq 'en'">
+                    <xsl:value-of select="concat('(^|\s*)(', string-join(tokenize($search-text, '\s+') ! lower-case(.) ! normalize-unicode(.) ! common:standardized-sa(.) ! common:escape-for-regex(.), '|'), ')')"/>
+                </xsl:when>
+                <xsl:when test="$selected-term-lang/@id eq 'Sa-Ltn'">
+                    <xsl:value-of select="concat('(^|\s*)(', string-join(tokenize($search-text, '\s+') ! lower-case(.) ! normalize-unicode(.) ! common:standardized-sa(.) ! common:escape-for-regex(.), '|'), ')')"/>
                 </xsl:when>
                 <xsl:otherwise>
                     <xsl:value-of select="concat('(^|\s*)(', string-join(tokenize($search-text, '\s+') ! common:escape-for-regex(.), '|'), ')')"/>
