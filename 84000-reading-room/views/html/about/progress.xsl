@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
     
     <xsl:import href="about.xsl"/>
     <xsl:import href="../widget/charts.xsl"/>
@@ -43,6 +43,7 @@
                     <xsl:call-template name="expand-item">
                         <xsl:with-param name="id" select="'translations-published'"/>
                         <xsl:with-param name="accordion-selector" select="'#accordion'"/>
+                        <xsl:with-param name="title-opener" select="true()"/>
                         <xsl:with-param name="title">
                             <div class="center-vertical align-left">
                                 <div>
@@ -73,6 +74,7 @@
                     <xsl:call-template name="expand-item">
                         <xsl:with-param name="id" select="'translations-translated'"/>
                         <xsl:with-param name="accordion-selector" select="'#accordion'"/>
+                        <xsl:with-param name="title-opener" select="true()"/>
                         <xsl:with-param name="title">
                             <div class="center-vertical align-left">
                                 <div>
@@ -103,6 +105,7 @@
                     <xsl:call-template name="expand-item">
                         <xsl:with-param name="id" select="'translations-in-translation'"/>
                         <xsl:with-param name="accordion-selector" select="'#accordion'"/>
+                        <xsl:with-param name="title-opener" select="true()"/>
                         <xsl:with-param name="title">
                             <div class="center-vertical align-left">
                                 <div>

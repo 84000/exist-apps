@@ -97,6 +97,10 @@ let $request :=
         attribute first-record { $first-record },
         attribute records-per-page { 50 },
         element search { if(not($flag) and not($resource-id eq 'downloads') and $search gt '') then $search else '' },
+        if($term-lang/@id eq 'bo' and not(common:string-is-bo($search))) then
+            element search-bo { common:bo-from-wylie($search) ! replace(., '་$', '') }
+        else ()
+        ,
         $entity-types,
         $term-langs,
         $view-mode,

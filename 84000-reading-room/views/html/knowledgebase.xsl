@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:common="http://read.84000.co/common" xmlns:epub="http://www.idpf.org/2007/ops" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:functx="http://www.functx.com" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" exclude-result-prefixes="#all" version="3.0">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:epub="http://www.idpf.org/2007/ops" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:m="http://read.84000.co/ns/1.0" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:functx="http://www.functx.com" xmlns:xs="http://www.w3.org/2001/XMLSchema" exclude-result-prefixes="#all" version="3.0">
     
     <xsl:import href="about/about.xsl"/>
     
@@ -360,7 +360,6 @@
                                             <xsl:value-of select="'Related content'"/>
                                         </h3>
                                         
-                                        
                                         <xsl:if test="$related-entity-pages">
                                             
                                             <p>
@@ -396,14 +395,13 @@
                                                 <xsl:value-of select="'From the 84000 Glossary of Terms'"/>
                                             </p>
                                             
-                                            <ul class="list-unstyled">
+                                            <ul>
                                                 <xsl:for-each select="($article-entity[m:instance/@type = 'glossary-item'], /m:response/m:entities/m:related/m:entity[not(@xml:id eq $article-entity/@xml:id)][m:instance/@id = $related-entity-entries/@id])">
                                                     
                                                     <xsl:variable name="related-entity" select="."/>
                                                     <xsl:variable name="entity-data" as="element(m:entity-data)?">
                                                         <xsl:call-template name="entity-data">
                                                             <xsl:with-param name="entity" select="$related-entity"/>
-                                                            <xsl:with-param name="selected-term-lang" select="''"/>
                                                         </xsl:call-template>
                                                     </xsl:variable>
                                                     
@@ -412,21 +410,15 @@
                                                             
                                                             <xsl:attribute name="href" select="concat('/glossary/', $related-entity/@xml:id, '.html')"/>
                                                             
-                                                            <h4>
-                                                                <xsl:attribute name="class">
-                                                                    <xsl:value-of select="string-join(('no-bottom-margin', common:lang-class($entity-data/m:label[@type eq 'primary']/@xml:lang)),' ')"/>
-                                                                </xsl:attribute>
+                                                            <h4 class="sml-margin bottom { common:lang-class($entity-data/m:label[@type eq 'primary']/@xml:lang) }">
                                                                 <xsl:value-of select="normalize-space($entity-data/m:label[@type eq 'primary']/text())"/>
                                                             </h4>
                                                             
-                                                            <xsl:if test="$entity-data[m:label[@type eq 'secondary']]">
-                                                                <p>
-                                                                    <xsl:attribute name="class">
-                                                                        <xsl:value-of select="string-join(('text-muted',common:lang-class($entity-data/m:label[@type eq 'secondary']/@xml:lang)),' ')"/>
-                                                                    </xsl:attribute>
-                                                                    <xsl:value-of select="normalize-space($entity-data/m:label[@type eq 'secondary']/text())"/>
+                                                            <xsl:for-each select="$entity-data/m:label[not(@type eq 'primary')]">
+                                                                <p class="sml-margin bottom { common:lang-class(@xml:lang) }">
+                                                                    <xsl:value-of select="text() ! normalize-space(.)"/>
                                                                 </p>
-                                                            </xsl:if>
+                                                            </xsl:for-each>
                                                             
                                                         </a>
                                                     </li>

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
     
     <xsl:import href="about.xsl"/>
     
@@ -30,6 +30,7 @@
                     <xsl:call-template name="expand-item">
                         <xsl:with-param name="id" select="'matching-funds-sponsors'"/>
                         <xsl:with-param name="accordion-selector" select="'#matching-funds'"/>
+                        <xsl:with-param name="title-opener" select="true()"/>
                         <xsl:with-param name="title">
                             <h3 class="list-group-item-heading">
                                 <xsl:call-template name="local-text">
@@ -63,6 +64,7 @@
                     <xsl:call-template name="expand-item">
                         <xsl:with-param name="id" select="'sutra-sponsors'"/>
                         <xsl:with-param name="accordion-selector" select="'#sutra'"/>
+                        <xsl:with-param name="title-opener" select="true()"/>
                         <xsl:with-param name="title">
                             <h3 class="list-group-item-heading">
                                 <xsl:call-template name="local-text">
@@ -97,6 +99,7 @@
                     <xsl:call-template name="expand-item">
                         <xsl:with-param name="id" select="'founding-sponsors'"/>
                         <xsl:with-param name="accordion-selector" select="'#founding'"/>
+                        <xsl:with-param name="title-opener" select="true()"/>
                         <xsl:with-param name="title">
                             <h3 class="list-group-item-heading">
                                 <xsl:call-template name="local-text">

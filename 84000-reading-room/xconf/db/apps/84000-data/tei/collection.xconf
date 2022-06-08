@@ -9,7 +9,7 @@
         </trigger>
     </triggers>
     
-    <index xmlns:eft="http://read.84000.co/ns/1.0" xmlns:tei="http://www.tei-c.org/ns/1.0">
+    <index xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:eft="http://read.84000.co/ns/1.0">
         
         <lucene diacritics="no">
             <!-- 
