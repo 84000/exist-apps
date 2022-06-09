@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:util="http://exist-db.org/xquery/util" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:functx="http://www.functx.com" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:util="http://exist-db.org/xquery/util" xmlns:functx="http://www.functx.com" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
     
     <xsl:import href="tei-to-xhtml.xsl"/>
     
@@ -115,87 +115,100 @@
             <xsl:variable name="related-entries" select="key('related-entries', $entity/m:instance/@id, $root)"/>
             <xsl:variable name="related-entries-excluded" select="$related-entries[parent::m:text/@glossary-status eq 'excluded']"/>
             
-            <xsl:choose>
-                <xsl:when test="$entity/m:content[@type eq 'glossary-notes'] or $instances-flagged or $related-entries-excluded">
+            <!-- Summary -->
+            <xsl:variable name="summary">
+                
+                <div class="center-vertical align-left">
                     
-                    <div class="well well-sm">
-                        
-                        <!-- Summary -->
-                        <div class="clearfix sml-margin bottom">
-                            <div class="center-vertical align-left">
-                                
-                                <xsl:if test="$entity/m:content[@type eq 'glossary-notes']">
-                                    <span>
-                                        <span class="badge">
-                                            <xsl:value-of select="count($entity/m:content[@type eq 'glossary-notes'])"/>
-                                        </span>
-                                        <span class="badge-text">
-                                            <xsl:value-of select="' notes'"/>
-                                        </span>
-                                    </span>
-                                </xsl:if>
-                                
-                                <xsl:if test="$related-entries-excluded">
-                                    <span>
-                                        <span class="badge">
-                                            <xsl:value-of select="count($related-entries-excluded)"/>
-                                        </span>
-                                        <span class="badge-text">
-                                            <xsl:value-of select="if (count($related-entries-excluded) eq 1) then 'entry in an excluded text' else 'entries in excluded texts'"/>
-                                        </span>
-                                    </span>
-                                </xsl:if>
-                                
-                                <xsl:if test="$instances-flagged">
-                                    <span>
-                                        <span class="badge">
-                                            <xsl:value-of select="count($instances-flagged)"/>
-                                        </span>
-                                        <span class="badge-text">
-                                            <xsl:choose>
-                                                <xsl:when test="count($entity/m:instance[@type eq 'glossary-item']) eq count($entity/m:instance[@type eq 'glossary-item'][m:flag])">
-                                                    <xsl:value-of select="'all entries are flagged, this entity is EXCLUDED from the public Glossary of Terms'"/>
-                                                </xsl:when>
-                                                <xsl:otherwise>
-                                                    <xsl:value-of select="if (count($instances-flagged) eq 1) then 'entry flagged' else 'entries flagged'"/>
-                                                </xsl:otherwise>
-                                            </xsl:choose>
-                                        </span>
-                                    </span>
-                                </xsl:if>
-                                
-                            </div>
-                        </div>
-                        
-                        <!-- Notes -->
-                        <xsl:for-each select="$entity/m:content[@type eq 'glossary-notes']">
-                            <p class="sml-margin bottom small">
-                                <xsl:value-of select="."/>
-                            </p>
-                        </xsl:for-each>
-                        
-                        <!-- Editor link -->
-                        <p>
-                            <a target="84000-operations" class="editor">
-                                <xsl:attribute name="href" select="concat('/edit-entity.html?entity-id=', $entity/@xml:id, '#ajax-source')"/>
-                                <xsl:attribute name="data-ajax-target" select="'#popup-footer-editor .data-container'"/>
-                                <xsl:value-of select="'Entity editor'"/>
-                            </a>
-                        </p>
-                        
-                    </div>
+                    <xsl:if test="$entity/m:content[@type eq 'glossary-notes']">
+                        <span>
+                            <span class="label label-warning">
+                                <xsl:value-of select="count($entity/m:content[@type eq 'glossary-notes'])"/>
+                                <xsl:value-of select="if (count($entity/m:content[@type eq 'glossary-notes']) eq 1) then ' note' else ' notes'"/>
+                            </span>
+                        </span>
+                    </xsl:if>
                     
-                </xsl:when>
-                <xsl:otherwise>
+                    <xsl:if test="$related-entries-excluded">
+                        <span>
+                            <span class="label label-danger">
+                                <xsl:value-of select="count($related-entries-excluded)"/>
+                                <xsl:value-of select="if (count($related-entries-excluded) eq 1) then ' entry in an excluded text' else ' entries in excluded texts'"/>
+                            </span>
+                        </span>
+                    </xsl:if>
+                    
+                    <xsl:if test="$instances-flagged">
+                        <span>
+                            <span class="label label-danger">
+                                <xsl:choose>
+                                    <xsl:when test="count($entity/m:instance[@type eq 'glossary-item']) eq count($entity/m:instance[@type eq 'glossary-item'][m:flag])">
+                                        <xsl:value-of select="'All entries are flagged, this entity is EXCLUDED from the public glossary'"/>
+                                    </xsl:when>
+                                    <xsl:otherwise>
+                                        <xsl:value-of select="count($instances-flagged)"/>
+                                        <xsl:value-of select="if (count($instances-flagged) eq 1) then ' entry flagged' else ' entries flagged'"/>
+                                    </xsl:otherwise>
+                                </xsl:choose>
+                            </span>
+                        </span>
+                    </xsl:if>
+                    
                     <!-- Editor link -->
-                    <p>
+                    <span>
                         <a target="84000-operations" class="editor">
                             <xsl:attribute name="href" select="concat('/edit-entity.html?entity-id=', $entity/@xml:id, '#ajax-source')"/>
                             <xsl:attribute name="data-ajax-target" select="'#popup-footer-editor .data-container'"/>
                             <xsl:value-of select="'Entity editor'"/>
                         </a>
-                    </p>
+                    </span>
+                    
+                </div>
+                
+            </xsl:variable>
+            
+            <xsl:choose>
+                
+                <!-- Show expandable with notes -->
+                <xsl:when test="$entity/m:content[@type eq 'glossary-notes']">
+                    
+                    <div id="editor-summary-accordion-{ $entity/@xml:id }" class="bottom-margin">
+                        
+                        <xsl:call-template name="expand-item">
+                            
+                            <xsl:with-param name="id" select="'editor-summary-' || $entity/@xml:id"/>
+                            <xsl:with-param name="accordion-selector" select="'#editor-summary-accordion-' || $entity/@xml:id"/>
+                            
+                            <xsl:with-param name="title">
+                                <xsl:sequence select="$summary"/>
+                            </xsl:with-param>
+                            
+                            <xsl:with-param name="content">
+                                
+                                <hr class="sml-margin"/>
+                                <div>
+                                    <xsl:for-each select="$entity/m:content[@type eq 'glossary-notes']">
+                                        <p class="sml-margin bottom small">
+                                            <xsl:value-of select="."/>
+                                        </p>
+                                    </xsl:for-each>
+                                </div>
+                                
+                            </xsl:with-param>
+                            
+                        </xsl:call-template>
+                        
+                    </div>
+                    
+                </xsl:when>
+                
+                <!-- Just an editor link -->
+                <xsl:otherwise>
+                    <div class="clearfix bottom-margin">
+                        <xsl:sequence select="$summary"/>
+                    </div>
                 </xsl:otherwise>
+                
             </xsl:choose>
             
         </xsl:if>
@@ -211,7 +224,7 @@
             <xsl:if test="/m:response/m:request/m:entity-types/m:type[@id = $entity/m:type/@type][@provisional]">
                 <li>
                     <span class="label label-default">
-                        <xsl:value-of select="'This data has not yet been tidied'"/>
+                        <xsl:value-of select="'Note: this data is still being sorted'"/>
                     </span>
                 </li>
             </xsl:if>
