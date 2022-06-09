@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <eft-header xmlns="http://read.84000.co/ns/1.0">
-    <!-- Updated 19.05.2022 -->
+    <!-- Updated 09.06.2022 -->
     <translation id="tag-line">
         <text xml:lang="en">Translating the words of the Buddha</text>
         <text xml:lang="zh">八萬四千 • 佛典傳譯</text>
@@ -168,7 +168,7 @@
         <item class="how-to-help" url="#how-to-help">
             <label key="label-how-to-help">Support Us</label>
             <item url="https://84000.co/how-you-can-help/sponsor-a-page">
-                <label key="label-sponsor-a-page">Sponsor a Page</label>
+                <label key="label-sponsor-a-page">Give Monthly</label>
             </item>
             <item url="https://read.84000.co/about/sponsor-a-sutra.html">
                 <label key="label-sponsor-a-sutra">Sponsor a Sūtra</label>
@@ -317,7 +317,7 @@
         <item class="how-to-help" url="#how-to-help">
             <label key="label-how-to-help">如何參與</label>
             <item url="https://84000.co/ch-how-you-can-help/ch-sponsor-a-page">
-                <label key="label-sponsor-a-page">贊助一頁佛經</label>
+                <label key="label-sponsor-a-page">每月定捐</label>
             </item>
             <item url="https://read.84000.co/about/sponsor-a-sutra.html?lang=zh">
                 <label key="label-sponsor-a-sutra">贊助一部佛典</label>

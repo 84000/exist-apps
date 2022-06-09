@@ -357,14 +357,14 @@ declare function glossary:glossary-entry($gloss as element(tei:gloss), $include-
                     if (not($term[text()])) then
                         common:local-text(concat('glossary.term-empty-', lower-case($term/@xml:lang)), 'en')
                     else if ($term[@xml:lang eq 'Bo-Ltn']) then 
-                        common:bo-ltn($term/text())
+                        $term/text() ! common:bo-ltn(.)
                     else 
-                        normalize-space($term/text())
+                        $term/text() ! normalize-unicode(.) ! normalize-space(.) ! replace(.,'&#160;+$','')
                 }
             else if ($term[@type eq 'alternative']) then
                 element { QName('http://read.84000.co/ns/1.0', 'alternative') } {
                     $term/@xml:lang,
-                    normalize-space(data($term)) 
+                    normalize-space(data($term))
                 }
             else if($term[@type eq 'definition']) then
                 element { QName('http://read.84000.co/ns/1.0', 'definition') } {

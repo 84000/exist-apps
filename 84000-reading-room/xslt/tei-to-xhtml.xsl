@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:epub="http://www.idpf.org/2007/ops" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:functx="http://www.functx.com" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:common="http://read.84000.co/common" xmlns:epub="http://www.idpf.org/2007/ops" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:functx="http://www.functx.com" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" version="3.0" exclude-result-prefixes="#all">
     
     <!-- Transforms tei to xhtml -->
     
@@ -3293,10 +3293,10 @@
                     </xsl:call-template>
                 </xsl:variable>
                 
-                <xsl:variable name="terms-bo" select="$related-entries/m:term[@xml:lang eq 'bo'][not(data() ! normalize-space(.) = ('', $term-empty-bo))]"/>
-                <xsl:variable name="terms-sa" select="$related-entries/m:term[@xml:lang eq 'Sa-Ltn'][not(replace(data(), '[^a-zA-Z0-9]', '') eq '')]"/>
-                <xsl:variable name="terms-wy" select="$related-entries/m:term[@xml:lang eq 'Bo-Ltn'][not(replace(data(), '[^a-zA-Z0-9]', '') eq '')]"/>
-                <xsl:variable name="terms-en" select="$related-entries/m:term[@xml:lang eq 'en'][not(replace(data(), '[^a-zA-Z0-9]', '') eq '')]"/>
+                <xsl:variable name="terms-bo" select="$related-entries/m:term[@xml:lang eq 'bo'][text()][not(text() ! normalize-space(.) = ('', $term-empty-bo))]"/>
+                <xsl:variable name="terms-sa" select="$related-entries/m:term[@xml:lang eq 'Sa-Ltn'][text()][not(text() ! normalize-space(.) = ('', $term-empty-sa-ltn))]"/>
+                <xsl:variable name="terms-wy" select="$related-entries/m:term[@xml:lang eq 'Bo-Ltn'][text()]"/>
+                <xsl:variable name="terms-en" select="$related-entries/m:term[@xml:lang eq 'en'][text()]"/>
                 
                 <xsl:variable name="primary-terms" as="element(m:term)*">
                     <xsl:choose>
@@ -3312,7 +3312,7 @@
                 <xsl:variable name="sorted-terms" as="element(m:term)*">
                     <xsl:perform-sort select="$primary-terms">
                         <!--<xsl:sort select="string-length(lower-case(data()))" order="descending"/>-->
-                        <xsl:sort select="count($related-entries/m:term/data() ! normalize-space(.) ! lower-case(.) = data() ! normalize-space(.) ! lower-case(.))" order="descending"/>
+                        <xsl:sort select="count($related-entries/m:term/data() ! lower-case(.) = data() ! lower-case(.))" order="descending"/>
                     </xsl:perform-sort>
                 </xsl:variable>
                 
@@ -3361,10 +3361,10 @@
                     
                 </xsl:if>
                 
-                <xsl:for-each-group select="$terms-bo | $terms-sa | $terms-wy | $terms-en" group-by="string-join((@xml:lang, tokenize(data(), '\s+') ! normalize-space(.) ! lower-case(.) ! normalize-unicode(.) ! replace(., '[­| ]','')(: strip soft-hyphens :)), ' ')">
+                <xsl:for-each-group select="$terms-bo | $terms-sa | $terms-wy | $terms-en" group-by="string-join((@xml:lang, tokenize(data(), '\s+') ! lower-case(.) ! replace(., '­','')(: strip soft-hyphens :)), ' ')">
                     
                     <xsl:variable name="term-group" select="."/>
-                    <xsl:variable name="normalized-string" select="string-join((tokenize($term-group[1]/text(), '\s+') ! normalize-space(.) ! lower-case(.) ! normalize-unicode(.) ! replace(., '[­| ]','')(: strip soft-hyphens :)), ' ')"/>
+                    <xsl:variable name="normalized-string" select="string-join((tokenize($term-group[1]/text(), '\s+') ! lower-case(.) ! replace(., '­','')(: strip soft-hyphens :)), ' ')"/>
                     
                     <xsl:element name="term" namespace="http://read.84000.co/ns/1.0">
                         <xsl:variable name="term-entry-id" select="parent::m:entry/@id[1]"/>
@@ -3375,7 +3375,7 @@
                         <xsl:if test="$entity/m:instance[@id eq $term-entry-id][m:flag]">
                             <xsl:attribute name="flagged" select="true()"/>
                         </xsl:if>
-                        <xsl:value-of select="$term-group[1]/text() ! normalize-unicode(.) ! normalize-space(.)"/>
+                        <xsl:value-of select="$term-group[1]/text()"/>
                     </xsl:element>
                     
                 </xsl:for-each-group>
