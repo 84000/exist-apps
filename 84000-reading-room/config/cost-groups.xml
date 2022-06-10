@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<cost-groups xmlns="http://read.84000.co/ns/1.0" cost-per-page="250" currency="USD">
+<cost-groups xmlns="http://read.84000.co/ns/1.0" cost-per-page="400" currency="USD">
+    <cost-group page-upper="50" parts="1"/>
     <cost-group page-upper="100" parts="1"/>
     <cost-group page-upper="150" parts="1"/>
     <cost-group page-upper="200" parts="1"/>

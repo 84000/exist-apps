@@ -221,30 +221,27 @@
     
     <!-- Sponsor a Sutra -->
     <item key="about.sponsor-a-sutra.header-img-src">#feSiteUrl/imgs/about-headers/sponsor-a-sutra.jpg</item>
-    <item key="about.sponsor-a-sutra.page-quote">佛經，教導我們佛法。佛經比佛像要珍貴得多，重要得多。</item>
-    <item key="about.sponsor-a-sutra.page-quote-author">噶千仁波切</item>
+    <item key="about.sponsor-a-sutra.page-quote">「佛經傳述了佛陀言教，因此佛經無比的珍貴，遠比佛像更為珍貴。」</item>
+    <item key="about.sponsor-a-sutra.page-quote-author">嘎千仁波切</item>
     <item key="about.sponsor-a-sutra.page-intro">
-        <p>某些長篇重要經典需要較多經費才能完成，「贊助一部佛典」計劃， 提供個人/家族或團體（機構、僧團、寺院等）一個共同集資供養一部長篇佛典翻譯的機會，也確保我們有足夠的經費來完成這些佛陀言教的翻譯。我們需要您的鼎力支持。</p>
-        <h2>如何贊助一部佛典？</h2>
-        <p>可供選擇贊助的頁數:</p>
+        <p>「贊助一部佛典」計劃提供您一個贊助翻譯長篇經典的機會。您的慷慨護持，將為佛法的延續和佛教的未来點上永不止息的無盡燈。</p>
+        <h2>如何贊助一部佛典</h2>
+        <p>贊助一部佛典的金額取決於經文的長度差異，以下經文頁數供贊助考量：</p>
         <ul>
-            <li>100頁 (贊助金額: $25,000美元)</li>
-            <li>150頁 (贊助金額: $37,500美元)</li>
-            <li>200頁 (贊助金額: $50,000美元)或以上</li>
+            <li>50 頁  （贊助金額：$20,000美元）</li>
+            <li>100 頁 （贊助金額：$40,000美元）</li>
+            <li>150 頁 （贊助金額：$60,000美元）</li>
+            <li>200 頁 （贊助金額：$80,000美元）</li>
+            <li>其他</li>
         </ul>
-        <h2>贊助金將用於何處？</h2>
-        <p>您的贊助將涵蓋研究、諮詢、翻譯與編輯，使翻譯這部經典的團隊工作能如期順利進行。每部經典所籌募之經費如有結餘，將用以資助後續的出版工作。</p>
-        <h2>如何贊助？</h2>
-        <p>有意贊助者可以個人、家族、公司或組織/團體、僧團、寺院等名義參加。若有多位贊助人時，需指定一位為主要聯絡人，以接收84000的感謝函或贈禮。</p>
+        <p>您的贊助將為主要的翻譯工作提供所需资金，然而為提供行政方便所有捐贈都被視為無限制捐款，在必要時可用於其他計劃相關的工作領域，包括編輯研究、數字標記、翻譯工具開發和項目管理等等，以促使翻譯這部經典的團隊工作能如期如質的順利進行。</p>
         <h2>贊助者如何列名？</h2>
-        <p>在佛典譯經完成後，將於「致謝」章節中，刊登護持譯經贊助人姓名以為感謝</p>
-        <p>每年的捐助者芳名錄都會於宗薩寺的印度祈願法會呈報給仁波切並作功德迴向。</p>
-        <p>
-            <a href="#readingRoomSiteUrl/about/sponsors.html?lang=zh">請點擊此處瀏覽目前已獲贊助的長篇經典</a>
-        </p>
+        <p>所有護持贊助者的姓名，都將列於宗薩寺僧眾在印度聖地所舉辦的祈願大法會之功德迴向名單中。</p>
+        <h2>如何成為贊助者</h2>
+        <p>「贊助一部佛典」計劃，提供給個人、家族或團體（機構、僧團、寺院等）一個共同集資供養一部長篇佛典翻譯的機會。</p>
     </item>
     <item key="about.sponsor-a-sutra.donate-label">線上捐款</item>
-    <item key="about.sponsor-a-sutra.text-list-title">今年可供贊助的佛典：</item>
+    <item key="about.sponsor-a-sutra.text-list-title">可供贊助的佛典</item>
     <item key="about.sponsor-a-sutra.priority-title">精選佛典</item>
     <item key="about.sponsor-a-sutra.priority-description">下列為84000希望優先翻譯和出版之經文，您若有意願護持佛典傳譯，請考慮贊助以下其中一部。</item>
     <item key="about.sponsor-a-sutra.text-list-section-title">贊助佛典頁數: #pageUpper頁 (贊助金額: $#groupCost美元)</item>
@@ -256,7 +253,7 @@
     <item key="about.sponsor-a-sutra.sponsor-whole-label">贊助整部經典</item>
     <item key="about.sponsor-a-sutra.no-texts-of-type">此類型經文目前不供贊助</item>
     <item key="about.sponsor-a-sutra.footer">
-        <p>想了解更多詳情，請與<span class="underline">84000</span>執行長黃淨蕊聯繫: <a href="mailto:jingrui@84000.co">jingrui@84000.co</a>
+        <p>欲了解更多詳情，請與84000執行長黃淨蕊聯繫: <a href="mailto:sutrasponsors@84000.co">sutrasponsors@84000.co</a>
         </p>
     </item>
     

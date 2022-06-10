@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <eft-header xmlns="http://read.84000.co/ns/1.0">
-    <!-- Updated 09.06.2022 -->
+    <!-- Updated 10.06.2022 -->
     <translation id="tag-line">
         <text xml:lang="en">Translating the words of the Buddha</text>
         <text xml:lang="zh">八萬四千 • 佛典傳譯</text>
@@ -218,7 +218,7 @@
                 <label key="label-search">雲端藏經閣檢索</label>
             </item>
             <item url="https://read.84000.co/glossary/search.html?lang=zh">
-                <label key="label-glossary">Glossary of Terms</label>
+                <label key="label-glossary">術語表</label>
             </item>
         </item>
         <item class="resources" url="#resources">

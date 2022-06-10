@@ -243,38 +243,25 @@
 
     <!-- Sponsor a Sutra -->
     <item key="about.sponsor-a-sutra.header-img-src">#feSiteUrl/imgs/about-headers/sponsor-a-sutra.jpg</item>
-    <item key="about.sponsor-a-sutra.page-quote">“Sūtras teach us the Dharma. The sūtras are much more precious, much more important than
-        the image of the Buddha.”</item>
-    <item key="about.sponsor-a-sutra.page-quote-author">H.E. Garchen Rinpoche</item>
+    <item key="about.sponsor-a-sutra.page-quote">“Sūtras teach us the Dharma. The sūtras are much more precious, much more important than the image of the Buddha.”</item>
+    <item key="about.sponsor-a-sutra.page-quote-author">Garchen Rinpoche</item>
     <item key="about.sponsor-a-sutra.page-intro">
-        <p class="intro">84000: Translating the Words of the Buddha aims to <strong>translate</strong> all of the Buddha’s words into modern languages,
-            and <strong>make them available</strong> to everyone.</p>
         <p class="page-description">
-            <strong>Sponsor A Sūtra</strong> is an opportunity to support the translation of a major text. Some of the long, important
-            sūtras require a sizeable amount of funding to ensure the translation continues through to completion. Your support is needed
-            for the successful translation of these texts.</p>
+            <strong>Sponsor a Sūtra</strong> is an opportunity to support the <strong>complete translation</strong> of a major text into a modern language. Through your generous patronage, you are making an important <strong>investment</strong> in the <strong>future of the Buddhadharma</strong>.</p>
         <h2>How much does it cost to sponsor?</h2>
-        <p>Sponsorship opportunities are now available in sections of:</p>
+        <p>The length of the sūtras varies considerably, and sponsorship opportunities are available for texts of:</p>
         <ul>
-            <li>100 pages (US$25,000)</li>
-            <li>150 pages (US$37,500)</li>
-            <li>200 pages (US$50,000) or more.</li>
+            <li>50 pages  (US$ 20,000)</li>
+            <li>100 pages (US$ 40,000)</li>
+            <li>150 pages (US$ 60,000)</li>
+            <li>200 pages (US$ 80,000)</li>
+            <li>Or more</li>
         </ul>
-        <p>All donations are considered unrestricted contributions, enabling 84000 to carry out their goals of translation and global
-            access efficiently and effectively. Please note that per sūtra suggested donation amounts are approximations only, and the
-            actual cost may be greater or lesser when the overall costs of translation, editorial work, publication, and project management
-            are taken into account.</p>
-        <h2>How will the funds be used?</h2>
-        <p>The funds will be used to cover the costs of translation, editorial work, publication, and project management. Please see <a href="#commsSiteUrl/about/work-flow">"What It Takes To Produce A Page of Translation"</a> to learn more about the many
-            stages required for high quality translation.</p>
+        <p class="italic">Your sponsorship will provide the funding required for translation work, however, for administrative purposes all donations are considered unrestricted contributions, and where necessary some funds may be used in other areas of programmatic work including editorial research, digital markup, translation tool development, and project management. </p>
+        <h2>How are donors acknowledged?</h2>
+        <p>Sūtra sponsors are recognized in the “Acknowledgements” section of their sponsored publication, which is made freely available in the 84000 Reading Room. In appreciation of your generous support, all the names and dedication messages are also offered for prayers during the Dzongsar Mönlam prayer festivals held biennially in Bodhgaya, India.</p>
         <h2>Who can sponsor?</h2>
-        <p>Anyone can make a sponsorship as an individual or family. Sponsorships can also be made in the name of a group (such as a
-            company, sangha or temple), with the requirement that the group assigns a single contact person, and that one person will be
-            designated as the sole recipient of any acknowledgement letters or gifts from 84000.</p>
-        <h2>How will donors be acknowledged?</h2>
-        <p>Donors will be recognized in the acknowledgements section of the text.</p>
-        <p>In appreciation of your generous support, all the names and the dedication messages will be offered for prayers during the
-            Dzongsar Monlam prayer festivals held biennially in Bodhgaya, India.</p>
+        <p>A sūtra can be sponsored by an individual, a family, or in the name of a group, such as a company, a sangha, or a temple.</p>
     </item>
     <item key="about.sponsor-a-sutra.donate-label">Donate online</item>
     <item key="about.sponsor-a-sutra.text-list-title">Texts Available for Sponsorship</item>
@@ -289,7 +276,7 @@
     <item key="about.sponsor-a-sutra.sponsor-whole-label">Sponsor the whole</item>
     <item key="about.sponsor-a-sutra.no-texts-of-type">There are currently no texts of this type proposed for sponsorship. </item>
     <item key="about.sponsor-a-sutra.footer">
-        <p>For more information, please contact Huang Jing Rui, executive director, at: <a href="mailto:jingrui@84000.co">jingrui@84000.co</a>
+        <p>For more information, please contact Huang Jing Rui, executive director, at: <a href="mailto:sutrasponsors@84000.co">sutrasponsors@84000.co</a>
         </p>
     </item>
     
