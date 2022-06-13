@@ -226,9 +226,9 @@
     <item key="about.sponsor-a-sutra.page-intro">
         <p>「贊助一部佛典」計劃提供您一個贊助翻譯長篇經典的機會。您的慷慨護持，將為佛法的延續和佛教的未来點上永不止息的無盡燈。</p>
         <h2>如何贊助一部佛典</h2>
-        <p>贊助一部佛典的金額取決於經文的長度差異，以下經文頁數供贊助考量：</p>
+        <p>因每一部佛典經文長度不同，權以經文頁數為贊助護持參考：</p>
         <ul>
-            <li>50 頁  （贊助金額：$20,000美元）</li>
+            <li>50 頁 （贊助金額：$20,000美元）</li>
             <li>100 頁 （贊助金額：$40,000美元）</li>
             <li>150 頁 （贊助金額：$60,000美元）</li>
             <li>200 頁 （贊助金額：$80,000美元）</li>
@@ -236,7 +236,7 @@
         </ul>
         <p>您的贊助將為主要的翻譯工作提供所需资金，然而為提供行政方便所有捐贈都被視為無限制捐款，在必要時可用於其他計劃相關的工作領域，包括編輯研究、數字標記、翻譯工具開發和項目管理等等，以促使翻譯這部經典的團隊工作能如期如質的順利進行。</p>
         <h2>贊助者如何列名？</h2>
-        <p>所有護持贊助者的姓名，都將列於宗薩寺僧眾在印度聖地所舉辦的祈願大法會之功德迴向名單中。</p>
+        <p>所有護持贊助者的姓名，都將刊登於雲端藏經閣出版的經文「致謝」章節中作為感謝，並且也將列於宗薩寺僧眾在印度聖地所舉辦的祈願大法會之功德迴向名單中。</p>
         <h2>如何成為贊助者</h2>
         <p>「贊助一部佛典」計劃，提供給個人、家族或團體（機構、僧團、寺院等）一個共同集資供養一部長篇佛典翻譯的機會。</p>
     </item>
@@ -246,8 +246,8 @@
     <item key="about.sponsor-a-sutra.priority-description">下列為84000希望優先翻譯和出版之經文，您若有意願護持佛典傳譯，請考慮贊助以下其中一部。</item>
     <item key="about.sponsor-a-sutra.text-list-section-title">贊助佛典頁數: #pageUpper頁 (贊助金額: $#groupCost美元)</item>
     <item key="about.sponsor-a-sutra.text-list-remainder-title">贊助佛典頁數: #pageLower頁以上</item>
-    <item key="about.sponsor-a-sutra.part-icon-label-available">代表已被贊助</item>
-    <item key="about.sponsor-a-sutra.part-icon-label-sponsored">代表仍有贊助名額</item>
+    <item key="about.sponsor-a-sutra.part-icon-label-available">代表仍有贊助名額</item>
+    <item key="about.sponsor-a-sutra.part-icon-label-sponsored">代表已被贊助</item>
     <item key="about.sponsor-a-sutra.reserved-label">已預留</item>
     <item key="about.sponsor-a-sutra.sponsor-part-label">贊助一部分</item>
     <item key="about.sponsor-a-sutra.sponsor-whole-label">贊助整部經典</item>

@@ -384,7 +384,7 @@
                 <label key="label-planned-giving">遺產捐贈</label>
             </item>
             <item url="https://84000.co/ch-how-you-can-help/ch-matching-funds">
-                <label key="label-matching-funds">「對等基金」</label>
+                <label key="label-matching-funds">對等基金</label>
             </item>
         </item>
     </navigation>
