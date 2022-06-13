@@ -294,7 +294,7 @@ declare function translations:filtered-texts(
                 else
                     $teis[
                         tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl
-                            [tei:location/@count-pages gt '0']/tei:location[@count-pages >= $pages-min][@count-pages <= $pages-max]
+                            [tei:location/@count-pages gt '0']/tei:location[@count-pages ! xs:integer(.) ge $pages-min][@count-pages ! xs:integer(.) le $pages-max]
                     ]
             else
                 $teis

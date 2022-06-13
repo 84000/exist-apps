@@ -18,12 +18,11 @@ let $part-id := request:get-parameter('part-id', '')
 
 let $tei := tei-content:tei($text-id, 'translation')
 let $tei-translation := $tei//tei:text/tei:body/tei:div[@type eq 'translation']
-let $tmx := collection(concat($common:data-path, '/translation-memory'))//tmx:tmx[tmx:header/@eft:text-id eq $text-id]
-
-return
+let $tmx := collection($update-tm:tm-path)//tmx:tmx[tmx:header/@eft:text-id eq $text-id]
 
 (: Process update :)
 let $update-tm :=
+    (: Update an existing segment :)
     if(
         $tmx
         and request:get-parameter('form-action', '') eq 'update-tm'
@@ -31,10 +30,23 @@ let $update-tm :=
         and request:get-parameter-names()[. = 'tm-en']
     ) then
         update-tm:update-segment($tmx, request:get-parameter('tu-id', ''), 'en', request:get-parameter('tm-en', ''))
+    
+    (: Create a new TM file :)
     else if(not($tmx) and request:get-parameter('form-action', '') eq 'create-file') then
-        (: TO DO: Create a new TM file :)
+        update-tm:add-tm($tei)
+        
+    (: TO DO: add ids where missing :)
+    else if( $tmx and request:get-parameter('form-action', '') eq 'fix-ids') then
         ()
+    
     else ()
+
+(: If it was created then load again :)
+let $tmx := 
+    if(not($tmx)) then 
+        collection($update-tm:tm-path)//tmx:tmx[tmx:header/@eft:text-id eq $text-id]
+    else
+        $tmx
 
 (: Check we got a part, if not default to first :)
 let $part-id :=
@@ -63,7 +75,8 @@ let $translation :=
         $tei-translation
     }
 
-(:let $source := source:etext-full(translation:location($tei, '')):)
+(:let $location := translation:location($tei, ''):)
+(:let $source := source:etext-full($location):)
 
 let $xml-response := 
     common:response(

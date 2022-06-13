@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <eft-header xmlns="http://read.84000.co/ns/1.0">
-    <!-- Updated 10.06.2022 -->
+    <!-- Updated 13.06.2022 -->
     <translation id="tag-line">
         <text xml:lang="en">Translating the words of the Buddha</text>
         <text xml:lang="zh">八萬四千 • 佛典傳譯</text>
@@ -28,6 +28,52 @@
     <translation id="label-bookmarks">
         <text xml:lang="en">Bookmarks</text>
         <text xml:lang="zh">書籤</text>
+    </translation>
+    <translation id="title-donation-footer">
+        <text xml:lang="en">More ways to give</text>
+        <text xml:lang="zh">其他捐贈形式</text>
+    </translation>
+    <translation id="modal-wire-transfer-label">
+        <text xml:lang="en">Wire Transfer</text>
+        <text xml:lang="zh">電匯/轉帳</text>
+    </translation>
+    <translation id="modal-wire-transfer-content">
+        <html xml:lang="en">
+            <p>
+                For information about sending wire transfers please email <a href="mailto:donate@84000.co" target="_blank">donate@84000.co</a>.
+            </p>
+        </html>
+        <html xml:lang="zh">
+            <p>
+                For information about sending wire transfers please email <a href="mailto:donate@84000.co" target="_blank">donate@84000.co</a>.
+            </p>
+        </html>
+    </translation>
+    <translation id="modal-check-by-mail-label">
+        <text xml:lang="en">Check by Mail</text>
+        <text xml:lang="zh">郵寄支票</text>
+    </translation>
+    <translation id="modal-check-by-mail-content">
+        <html xml:lang="en">
+            <h3 class="no-top-margin">Please send checks to the following postal address:</h3>
+            <ul class="list-unstyled">
+                <li>84000: Translating the Words of the Buddha</li>
+                <li>43456 Ellsworth St. #3332</li>
+                <li>Fremont</li>
+                <li>CA</li>
+                <li>94539-9991</li>
+            </ul>
+        </html>
+        <html xml:lang="zh">
+            <h3 class="no-top-margin">Please send checks to the following postal address:</h3>
+            <ul class="list-unstyled">
+                <li>84000: Translating the Words of the Buddha</li>
+                <li>43456 Ellsworth St. #3332</li>
+                <li>Fremont</li>
+                <li>CA</li>
+                <li>94539-9991</li>
+            </ul>
+        </html>
     </translation>
     <navigation xml:lang="en">
         <item class="home" url="https://84000.co/">
@@ -164,20 +210,26 @@
             <item url="https://84000.co/about/contact">
                 <label key="label-contact">Contact</label>
             </item>
-        </item>        
+        </item>
         <item class="how-to-help" url="#how-to-help">
-            <label key="label-how-to-help">Support Us</label>
+            <label key="label-how-to-help">Donate</label>
             <item url="https://84000.co/how-you-can-help/sponsor-a-page">
                 <label key="label-sponsor-a-page">Give Monthly</label>
             </item>
             <item url="https://read.84000.co/about/sponsor-a-sutra.html">
                 <label key="label-sponsor-a-sutra">Sponsor a Sūtra</label>
             </item>
-            <item url="https://84000.co/how-you-can-help/download-dana">
+            <!--<item url="https://84000.co/how-you-can-help/download-dana">
                 <label key="label-download-dana">Download Dāna</label>
-            </item>
-            <item url="https://84000.co/how-you-can-help/spread-the-word">
+            </item>-->
+            <!--<item url="https://84000.co/how-you-can-help/spread-the-word">
                 <label key="label-subscribe">Subscribe to our Newsletter</label>
+            </item>-->
+            <item url="https://84000.co/how-you-can-help/planned-giving">
+                <label key="label-planned-giving">Planned Giving</label>
+            </item>
+            <item url="https://84000.co/how-you-can-help/matching-funds">
+                <label key="label-matching-funds">Matching Funds</label>
             </item>
         </item>
     </navigation>
@@ -315,18 +367,24 @@
             </item>
         </item>
         <item class="how-to-help" url="#how-to-help">
-            <label key="label-how-to-help">如何參與</label>
+            <label key="label-how-to-help">線上捐款</label>
             <item url="https://84000.co/ch-how-you-can-help/ch-sponsor-a-page">
                 <label key="label-sponsor-a-page">每月定捐</label>
             </item>
             <item url="https://read.84000.co/about/sponsor-a-sutra.html?lang=zh">
                 <label key="label-sponsor-a-sutra">贊助一部佛典</label>
             </item>
-            <item url="https://84000.co/ch-how-you-can-help/ch-download-dana">
+            <!--<item url="https://84000.co/ch-how-you-can-help/ch-download-dana">
                 <label key="label-download-dana">隨喜贊助</label>
-            </item>
-            <item url="https://84000.co/ch-how-you-can-help/ch-howhelp-subscribe">
+            </item>-->
+            <!--<item url="https://84000.co/ch-how-you-can-help/ch-howhelp-subscribe">
                 <label key="label-subscribe">訂閱電子通訊</label>
+            </item>-->
+            <item url="https://84000.co/ch-how-you-can-help/ch-planned-giving">
+                <label key="label-planned-giving">遺產捐贈</label>
+            </item>
+            <item url="https://84000.co/ch-how-you-can-help/ch-matching-funds">
+                <label key="label-matching-funds">「對等基金」</label>
             </item>
         </item>
     </navigation>

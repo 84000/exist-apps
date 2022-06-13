@@ -916,6 +916,7 @@ declare function update-tei:add-knowledgebase($id as xs:string, $titles as eleme
         sm:chgrp(xs:anyURI(concat($common:knowledgebase-path, '/', $filename)), 'tei'),
         sm:chmod(xs:anyURI(concat($common:knowledgebase-path, '/', $filename)), 'rw-rw-r--')
     )
+    
 };
 
 declare function update-tei:knowledgebase-header($tei as element(tei:TEI)) as element()* {

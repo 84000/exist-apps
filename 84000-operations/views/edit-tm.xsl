@@ -85,22 +85,14 @@
                                     <tr>
                                         
                                         <xsl:if test="$tm-unit-aligned/@index ! xs:integer(.) eq $first-mismatch-index">
-                                            <xsl:attribute name="class" select="'vertical-middle onload-scroll-target'"/>
+                                            <xsl:attribute name="class" select="'onload-scroll-target'"/>
                                         </xsl:if>
                                         
                                         <xsl:attribute name="id" select="$row-id"/>
                                         
-                                        <td class="text-bo text-muted">
+                                        <td class="text-muted">
                                             <xsl:value-of select="$tm-unit-aligned/@index"/>
                                         </td>
-                                        <td class="text-bo">
-                                            <xsl:value-of select="$tm-unit-aligned/m:tm-bo"/>
-                                        </td>
-                                        
-                                    </tr>
-                                    
-                                    <tr class="sub">
-                                        <td/>
                                         <td>
                                             <xsl:choose>
                                                 <xsl:when test="$tm-unit-aligned[not(@aligned eq 'true')]">
@@ -113,9 +105,20 @@
                                                         <input type="hidden" name="tu-id" value="{ $tm-unit-aligned/@id }"/>
                                                         
                                                         <div class="form-group">
+                                                            <xsl:variable name="tm-bo" select="$tm-unit-aligned/m:tm-bo"/>
+                                                            <!--<textarea name="tm-bo" class="form-control text-bo">
+                                                                <xsl:attribute name="rows" select="(ops:textarea-rows($tm-bo, 1, 170) + 1)"/>
+                                                                <xsl:value-of select="$tm-bo"/>
+                                                            </textarea>-->
+                                                            <span class="text-muted text-bo">
+                                                                <xsl:value-of select="$tm-bo"/>
+                                                            </span>
+                                                        </div>
+                                                        
+                                                        <div class="form-group">
                                                             <xsl:variable name="tm-en" select="($tm-unit-aligned/m:tm-en, $tm-unit-aligned/m:tei-en)[normalize-space(.) gt ''][1]"/>
                                                             <textarea name="tm-en" class="form-control monospace">
-                                                                <xsl:attribute name="rows" select="ops:textarea-rows($tm-en, 1, 116)"/>
+                                                                <xsl:attribute name="rows" select="(ops:textarea-rows($tm-en, 1, 116))"/>
                                                                 <xsl:value-of select="$tm-en"/>
                                                             </textarea>
                                                         </div>
@@ -156,6 +159,10 @@
                                                 </xsl:when>
                                                 <xsl:otherwise>
                                                     
+                                                    <span class="text-muted text-bo">
+                                                        <xsl:value-of select="$tm-unit-aligned/m:tm-bo"/>
+                                                    </span>
+                                                    <hr class="sml-margin dashed"/>
                                                     <span class="text-muted">
                                                         <xsl:value-of select="$tm-unit-aligned/m:tm-en"/>
                                                     </span>
@@ -164,6 +171,7 @@
                                             </xsl:choose>
                                             
                                         </td>
+                                        
                                     </tr>
                                     
                                 </xsl:for-each>

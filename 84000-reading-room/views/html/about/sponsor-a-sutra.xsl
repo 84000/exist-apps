@@ -190,6 +190,16 @@
                     <xsl:with-param name="local-key" select="'footer'"/>
                 </xsl:call-template>
                 
+                <xsl:variable name="donate-footer">
+                    <m:donate-footer>
+                        <xsl:copy-of select="$eft-header/m:navigation[@xml:lang eq $lang]/m:item | $eft-header/m:translation"/>
+                    </m:donate-footer>
+                </xsl:variable>
+                
+                <div id="donation-footer">
+                    <xsl:apply-templates select="$donate-footer"/>
+                </div>
+                
             </xsl:with-param>
             
             <xsl:with-param name="side-content">

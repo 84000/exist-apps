@@ -704,6 +704,110 @@
         
     </xsl:template>
     
+    <xsl:template match="eft:donate-footer">
+        <nav>
+            <div class="top-margin">
+                <h2>
+                    <xsl:call-template name="translation">
+                        <xsl:with-param name="translation-id" select="'title-donation-footer'"/>
+                        <xsl:with-param name="lang" select="$lang"/>
+                        <xsl:with-param name="text-node" select="false()"/>
+                    </xsl:call-template>
+                </h2>
+                <ul class="list-inline inline-dots">
+                    <xsl:for-each select="eft:item[@url = '#how-to-help']/eft:item">
+                        <xsl:if test="not($active-url = @url)">
+                            <li>
+                                <a class="underline text-muted">
+                                    <xsl:attribute name="href">
+                                        <xsl:call-template name="local-url">
+                                            <xsl:with-param name="url" select="@url"/>
+                                        </xsl:call-template>
+                                    </xsl:attribute>
+                                    <xsl:call-template name="translation-lang-class">
+                                        <xsl:with-param name="lang" select="$lang"/>
+                                        <xsl:with-param name="persist-class-str" select="'underline text-muted'"/>
+                                    </xsl:call-template>
+                                    <xsl:value-of select="eft:label"/>
+                                </a>
+                            </li>
+                        </xsl:if>
+                    </xsl:for-each>
+                    <li>
+                        <a href="#wire-transfer-modal" class="underline text-muted" data-toggle="modal" data-target="#wire-transfer-modal">
+                            <xsl:call-template name="translation">
+                                <xsl:with-param name="translation-id" select="'modal-wire-transfer-label'"/>
+                                <xsl:with-param name="lang" select="$lang"/>
+                                <xsl:with-param name="text-node" select="false()"/>
+                            </xsl:call-template>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#check-by-mail-modal" class="underline text-muted" data-toggle="modal" data-target="#check-by-mail-modal">
+                            <xsl:call-template name="translation">
+                                <xsl:with-param name="translation-id" select="'modal-check-by-mail-label'"/>
+                                <xsl:with-param name="lang" select="$lang"/>
+                                <xsl:with-param name="text-node" select="false()"/>
+                            </xsl:call-template>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+        <div id="wire-transfer-modal" class="profile modal fade" tabindex="-1" role="dialog" aria-labelledby="wire-transfer-modal-title" aria-hidden="true">
+            <div class="modal-dialog modal-lg" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button class="close" type="button" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">
+                                <i class="fa fa-times"/>
+                            </span>
+                        </button>
+                        <h4 id="wire-transfer-modal-title" class="modal-title">
+                            <xsl:call-template name="translation">
+                                <xsl:with-param name="translation-id" select="'modal-wire-transfer-label'"/>
+                                <xsl:with-param name="lang" select="$lang"/>
+                                <xsl:with-param name="text-node" select="false()"/>
+                            </xsl:call-template>
+                        </h4>
+                    </div>
+                    <div class="modal-body">
+                        <xsl:call-template name="translation">
+                            <xsl:with-param name="translation-id" select="'modal-wire-transfer-content'"/>
+                            <xsl:with-param name="lang" select="$lang"/>
+                        </xsl:call-template>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="check-by-mail-modal" class="profile modal fade" tabindex="-1" role="dialog" aria-labelledby="check-by-mail-modal-title" aria-hidden="true">
+            <div class="modal-dialog modal-lg" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button class="close" type="button" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">
+                                <i class="fa fa-times"/>
+                            </span>
+                        </button>
+                        <h4 id="check-by-mail-modal-title" class="modal-title">
+                            <xsl:call-template name="translation">
+                                <xsl:with-param name="translation-id" select="'modal-check-by-mail-label'"/>
+                                <xsl:with-param name="lang" select="$lang"/>
+                                <xsl:with-param name="text-node" select="false()"/>
+                            </xsl:call-template>
+                        </h4>
+                    </div>
+                    <div class="modal-body">
+                        <xsl:call-template name="translation">
+                            <xsl:with-param name="translation-id" select="'modal-check-by-mail-content'"/>
+                            <xsl:with-param name="lang" select="$lang"/>
+                        </xsl:call-template>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </xsl:template>
+    
     <xsl:template name="local-url">
         <xsl:param name="url"/>
         <xsl:variable name="standard-comms-url" select="'https://84000.co'"/>
@@ -726,31 +830,26 @@
         <xsl:param name="lang" select="'en'"/>
         <xsl:param name="text-node" select="true()"/>
         <xsl:variable name="translation" select="eft:translation[@id = $translation-id]"/>
-        <xsl:variable name="text">
-            <xsl:choose>
-                <xsl:when test="$translation/eft:text[@xml:lang = $lang]">
-                    <xsl:value-of select="$translation/eft:text[@xml:lang = $lang]/text()"/>
-                </xsl:when>
-                <xsl:otherwise>
-                    <xsl:value-of select="$translation/eft:text[@xml:lang = 'en']/text()"/>
-                </xsl:otherwise>
-            </xsl:choose>
-        </xsl:variable>
-        <xsl:if test="$text">
-            <xsl:choose>
-                <xsl:when test="$text-node">
-                    <xsl:value-of select="$text"/>
-                </xsl:when>
-                <xsl:otherwise>
-                    <span>
-                        <xsl:call-template name="translation-lang-class">
-                            <xsl:with-param name="lang" select="$lang"/>
-                        </xsl:call-template>
-                        <xsl:value-of select="$text"/>
-                    </span>
-                </xsl:otherwise>
-            </xsl:choose>
-        </xsl:if>
+        <xsl:choose>
+            <xsl:when test="$translation/eft:html[@xml:lang = $lang]/*">
+                <xsl:copy-of select="$translation/eft:html[@xml:lang = $lang]"/>
+            </xsl:when>
+            <xsl:when test="$translation/eft:text[@xml:lang = $lang]">
+                <xsl:choose>
+                    <xsl:when test="$text-node">
+                        <xsl:value-of select="$translation/eft:text[@xml:lang = $lang]"/>
+                    </xsl:when>
+                    <xsl:otherwise>
+                        <span>
+                            <xsl:call-template name="translation-lang-class">
+                                <xsl:with-param name="lang" select="$lang"/>
+                            </xsl:call-template>
+                            <xsl:value-of select="$translation/eft:text[@xml:lang = $lang]"/>
+                        </span>
+                    </xsl:otherwise>
+                </xsl:choose>
+            </xsl:when>
+        </xsl:choose>
     </xsl:template>
     
     <xsl:template name="translation-lang-class">
