@@ -22,12 +22,13 @@ declare namespace output="http://www.w3.org/2010/xslt-xquery-serialization";
 
 declare variable $update-tei:blocking-jobs := scheduler:get-scheduled-jobs()//scheduler:job[@name = ('cache-glossary-locations', 'auto-assign-entities')][not(scheduler:trigger/state/text() eq 'COMPLETE')];
 
-declare function update-tei:minor-version-increment($tei as element(tei:TEI), $form-action as xs:string) as element()* {
+declare function update-tei:minor-version-increment($tei as element(tei:TEI), $form-action as xs:string) as node()* {
     
     (: Force a minor version increment:)
     
     let $version-number-str-increment := tei-content:version-number-str-increment($tei, 'revision')
     let $version-date := tei-content:version-date($tei)
+    let $text-id := tei-content:id($tei)
     
     let $new-editionStmt :=
         element {QName("http://www.tei-c.org/ns/1.0", "editionStmt")} {
@@ -50,7 +51,9 @@ declare function update-tei:minor-version-increment($tei as element(tei:TEI), $f
         common:update('text-version', $existing-editionStmt, $new-editionStmt, $fileDesc, $fileDesc/tei:titleStmt),
         
         (: Add a note :)
-        local:add-note($tei, 'text-version', $version-number-str-increment, concat('Auto (', $form-action, ')'))
+        local:add-note($tei, 'text-version', $version-number-str-increment, concat('Auto (', $form-action, ')')),
+        
+        util:log('info', concat('update-tei-minor-version-increment:', $text-id))
         
     )
 
@@ -74,7 +77,7 @@ declare function local:add-note($tei as element(tei:TEI), $update as xs:string, 
         }
         
     where not(tei-content:locked-by-user($tei) gt '')
-    return
+    return 
         common:update('add-note', (), $note, $tei//tei:fileDesc/tei:notesStmt, ())
 
 };
@@ -267,19 +270,19 @@ declare function update-tei:title-statement($tei as element(tei:TEI)) as element
 declare function update-tei:title-statement($tei as element(tei:TEI), $titles as element(tei:title)*) as element()* {
     
     let $parent := $tei/tei:teiHeader/tei:fileDesc
-    let $existing-value := $parent/tei:titleStmt
+    let $title-statement-existing := $parent/tei:titleStmt
     
-    let $container-ws := $existing-value/preceding-sibling::text()[1]
-    let $node-ws := $existing-value/tei:*[1]/preceding-sibling::text()
+    let $container-ws := $title-statement-existing/preceding-sibling::text()[1]
+    let $node-ws := $title-statement-existing/tei:*[1]/preceding-sibling::text()
     
     let $form-action := request:get-parameter('form-action', 'update-titles', false())
     
-    let $new-value :=
+    let $title-statement-new :=
         (: titleStmt :)
-        element { node-name($existing-value) } {
+        element { node-name($title-statement-existing) } {
             
             (: titleStmt attributes :)
-            $existing-value/@*,
+            $title-statement-existing/@*,
             
             (: Add titles - don't allow duplicates :)
             for $title in $titles
@@ -300,7 +303,7 @@ declare function update-tei:title-statement($tei as element(tei:TEI), $titles as
                 
                 (: Translator main :)
                 let $translator-team-id := request:get-parameter('translator-team-id', '') ! lower-case(.)
-                let $existing-translator-team := $existing-value/tei:author[@role eq 'translatorMain']
+                let $existing-translator-team := $title-statement-existing/tei:author[@role eq 'translatorMain']
                     
                 where $translator-team-id gt ''
                 return (
@@ -352,7 +355,7 @@ declare function update-tei:title-statement($tei as element(tei:TEI), $titles as
             
         else
             (: Just copy them :)
-            for $existing-node in $existing-value/*[self::tei:author | self::tei:editor | self::tei:consultant]
+            for $existing-node in $title-statement-existing/*[self::tei:author | self::tei:editor | self::tei:consultant]
             return (
                 $node-ws,
                 $existing-node
@@ -384,7 +387,7 @@ declare function update-tei:title-statement($tei as element(tei:TEI), $titles as
         )
         else
             (: Just copy them :)
-            for $existing-node in $existing-value/*[self::tei:sponsor]
+            for $existing-node in $title-statement-existing/*[self::tei:sponsor]
             return (
                 $node-ws,
                 $existing-node
@@ -393,7 +396,7 @@ declare function update-tei:title-statement($tei as element(tei:TEI), $titles as
         
         
         (: Copy anything else in case there are comments or something :)
-        for $existing-node in $existing-value/*[not(. instance of text())][not(self::tei:title | self::tei:author | self::tei:editor | self::tei:consultant | self::tei:sponsor)]
+        for $existing-node in $title-statement-existing/*[not(. instance of text())][not(self::tei:title | self::tei:author | self::tei:editor | self::tei:consultant | self::tei:sponsor)]
         return (
             $node-ws,
             $existing-node
@@ -402,11 +405,15 @@ declare function update-tei:title-statement($tei as element(tei:TEI), $titles as
         $container-ws
     }
     
-    let $notes-statement := 
+    let $title-statement-change := not(deep-equal($title-statement-existing, $title-statement-new))
+    
+    let $notes-statement-existing := $parent/tei:notesStmt
+    
+    let $notes-statement-new := 
         element { QName("http://www.tei-c.org/ns/1.0", "notesStmt") } {
-            $parent/tei:notesStmt/@*,
+            $notes-statement-existing/@*,
             
-            for $note in $parent/tei:notesStmt/*[not(local-name(.) eq 'note' and @type = ('title', 'title-internal'))]
+            for $note in $notes-statement-existing/*[not(local-name(.) eq 'note' and @type = ('title', 'title-internal'))]
             return (
                 $node-ws,
                 $note
@@ -428,32 +435,40 @@ declare function update-tei:title-statement($tei as element(tei:TEI), $titles as
             ),
             $container-ws
         }
+        
+    let $notes-statement-change := not(deep-equal($notes-statement-existing, $notes-statement-new))
     
-    where 
-        not(tei-content:locked-by-user($tei) gt '')
-        and $parent and ($existing-value or $new-value)
+    where not(tei-content:locked-by-user($tei) gt '')
     return 
         (# exist:batch-transaction #) {
             
-            (: Increment the version number - do first so it can evaluate the change :)
-            if (not(deep-equal($existing-value, $new-value))) then
-                update-tei:minor-version-increment($tei, $form-action)
+            (: Update titles :)
+            if($title-statement-change) then
+                common:update($form-action, $title-statement-existing, $title-statement-new, $parent, ())
+            else (),
+            
+            (: Update notes :)
+            if ($notes-statement-change) then
+                common:update('titles-notes', $notes-statement-existing, $notes-statement-new, $parent, ())
             else ()
             ,
             
-            (: Update titles :)
-            common:update($form-action, $existing-value, $new-value, $parent, ()),
-            
-            (: Update notes :)
-            if (request:get-parameter('form-action', '') eq 'update-titles') then
-                common:update('titles-notes', $parent/tei:notesStmt, $notes-statement, $parent, ())
+            (: Increment the version number - do first so it can evaluate the change :)
+            if ($title-statement-change or $notes-statement-change) then
+                update-tei:minor-version-increment($tei, $form-action)
             else ()
             
             (:(
                 element update-debug {
-                    element existing-value { $existing-value }, 
-                    element new-value { $new-value }, 
-                    element parent { $parent }
+                    element parent { $parent },
+                    element title-statement {
+                       element existing-value { $title-statement-existing }, 
+                       element new-value { $title-statement-new }, 
+                    },
+                    element notes-statement {
+                       element existing-value { $notes-statement-existing }, 
+                       element new-value { $notes-statement-new }, 
+                    }
                 }
             ):)
             

@@ -43,6 +43,7 @@ let $request :=
         attribute model { 'glossary-entry' },
         attribute resource-id { $request-entity/@xml:id },
         attribute resource-suffix { request:get-parameter('resource-suffix', 'html') },
+        attribute lang { common:request-lang() },
         attribute view-mode { $view-mode/@id },
         $term-langs,
         $entities:types,

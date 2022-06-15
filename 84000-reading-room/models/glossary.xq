@@ -89,6 +89,7 @@ let $request :=
         attribute model { 'glossary' },
         attribute resource-id { $resource-id },
         attribute resource-suffix { $resource-suffix },
+        attribute lang { common:request-lang() },
         attribute term-lang { $term-lang/@id },
         attribute term-type { string-join($term-types, ',')},
         attribute view-mode { $view-mode/@id },

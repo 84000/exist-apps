@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:util="http://exist-db.org/xquery/util" xmlns:functx="http://www.functx.com" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:util="http://exist-db.org/xquery/util" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:functx="http://www.functx.com" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" version="3.0" exclude-result-prefixes="#all">
     
     <xsl:import href="tei-to-xhtml.xsl"/>
     
@@ -221,14 +221,6 @@
         
         <ul class="list-inline">
             
-            <xsl:if test="/m:response/m:request/m:entity-types/m:type[@id = $entity/m:type/@type][@provisional]">
-                <li>
-                    <span class="label label-default">
-                        <xsl:value-of select="'Note: this data is still being sorted'"/>
-                    </span>
-                </li>
-            </xsl:if>
-            
             <xsl:for-each select="/m:response/m:request/m:entity-types/m:type[@id = $entity/m:type/@type]">
                 <li>
                     <span class="label label-info">
@@ -236,6 +228,14 @@
                     </span>
                 </li>
             </xsl:for-each>
+            
+            <xsl:if test="/m:response/m:request/m:entity-types/m:type[@id = $entity/m:type/@type][@provisional]">
+                <li>
+                    <span class="label label-default">
+                        <xsl:value-of select="'Note: this data is still being sorted'"/>
+                    </span>
+                </li>
+            </xsl:if>
             
         </ul>
     </xsl:template>

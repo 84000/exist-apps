@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:util="http://exist-db.org/xquery/util" xmlns:functx="http://www.functx.com" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:util="http://exist-db.org/xquery/util" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:functx="http://www.functx.com" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" version="3.0" exclude-result-prefixes="#all">
     
     <xsl:import href="../../xslt/glossary.xsl"/>
     
@@ -286,7 +286,7 @@
                                 </xsl:if>
                                 
                                 <!-- Type checkboxes -->
-                                <div class="center-vertical align-center bottom-margin">
+                                <div class="center-vertical-sm align-center bottom-margin">
                                     
                                     <div class="form-group">
                                         
@@ -308,28 +308,31 @@
                                     
                                     <!-- Results summary -->
                                     <div>
-                                        <span class="badge">
-                                            <xsl:value-of select="m:entities/@count-entities ! format-number(xs:integer(.), '#,###')"/>
-                                        </span>
-                                        <span class="badge-text">
-                                            <xsl:choose>
-                                                <xsl:when test="m:entities/@count-entities ! xs:integer(.) eq 1">
-                                                    <xsl:value-of select="'match'"/>
-                                                </xsl:when>
-                                                <xsl:otherwise>
-                                                    <xsl:value-of select="'matches'"/>
-                                                </xsl:otherwise>
-                                            </xsl:choose>
-                                        </span>
-                                    </div>
-                                    
-                                    <xsl:if test="$selected-term-lang/@id eq 'bo'">
-                                        <div>
-                                            <a data-toggle="modal" href="#tibetan-search-info" data-target="#tibetan-search-info" class="visible-scripts help-icon" title="'Information about the Tibetan search'">
-                                                <i class="fa fa-info-circle" aria-hidden="true"/>
-                                            </a>
+                                        <div class="center-vertical align-center">
+                                            <span>
+                                                <span class="badge">
+                                                    <xsl:value-of select="m:entities/@count-entities ! format-number(xs:integer(.), '#,###')"/>
+                                                </span>
+                                                <span class="badge-text">
+                                                    <xsl:choose>
+                                                        <xsl:when test="m:entities/@count-entities ! xs:integer(.) eq 1">
+                                                            <xsl:value-of select="'match'"/>
+                                                        </xsl:when>
+                                                        <xsl:otherwise>
+                                                            <xsl:value-of select="'matches'"/>
+                                                        </xsl:otherwise>
+                                                    </xsl:choose>
+                                                </span>
+                                            </span>
+                                            <xsl:if test="$selected-term-lang/@id eq 'bo'">
+                                                <span>
+                                                    <a data-toggle="modal" href="#tibetan-search-info" data-target="#tibetan-search-info" class="visible-scripts help-icon" title="'Information about the Tibetan search'">
+                                                        <i class="fa fa-info-circle" aria-hidden="true"/>
+                                                    </a>
+                                                </span>
+                                            </xsl:if>
                                         </div>
-                                    </xsl:if>
+                                    </div>
                                     
                                 </div>
                                 
@@ -360,16 +363,18 @@
                                 <!-- Search box -->
                                 <div class="align-center bottom-margin">
                                     
-                                    <div class="form-input">
+                                    <div class="input-group">
                                         
                                         <input type="text" name="search" class="form-control" placeholder="Search..." size="60">
                                             <xsl:attribute name="value" select="$search-text"/>
                                         </input>
                                         
-                                        <button type="submit" class="btn btn-primary" title="Search">
-                                            <i class="fa fa-search"/>
-                                            <xsl:value-of select="' Search'"/>
-                                        </button>
+                                        <div class="input-group-btn">
+                                            <button type="submit" class="btn btn-primary" title="Search">
+                                                <i class="fa fa-search"/>
+                                                <xsl:value-of select="' Search'"/>
+                                            </button>
+                                        </div>
                                         
                                     </div>
                                     
@@ -401,7 +406,7 @@
                                                         <xsl:attribute name="data-toggle-active" select="concat('#', $item-id)"/>
                                                         <xsl:attribute name="data-ajax-loading" select="'Loading detail...'"/>
                                                         
-                                                        <div class="search-matches sml-margin bottom top-vertical full-width">
+                                                        <div class="search-matches sml-margin bottom top-vertical-sm full-width">
                                                             <div>
                                                                 
                                                                 <div>
@@ -488,7 +493,7 @@
                                                             </div>
                                                             
                                                             
-                                                            <div class="text-right">
+                                                            <div class="text-right-sm">
                                                                 
                                                                 <!-- Types -->
                                                                 <div class="sml-margin bottom">
