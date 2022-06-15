@@ -3270,118 +3270,122 @@
     <!-- Entities derived metadata -->
     <xsl:template name="entity-data">
         
-        <xsl:param name="entity" as="element(m:entity)"/>
+        <xsl:param name="entity" as="element(m:entity)?"/>
         
-        <xsl:variable name="related-entries" select="key('related-entries', $entity/m:instance/@id, $root)" as="element(m:entry)*"/>
-        
-        <xsl:if test="$related-entries">
+        <xsl:if test="$entity">
             
-            <xsl:element name="entity-data" namespace="http://read.84000.co/ns/1.0">
+            <xsl:variable name="related-entries" select="key('related-entries', $entity/m:instance/@id, $root)" as="element(m:entry)*"/>
+            
+            <xsl:if test="$related-entries">
                 
-                <xsl:attribute name="ref" select="$entity/@xml:id"/>
-                
-                <xsl:attribute name="related-entries" select="count($related-entries)"/>
-                
-                <xsl:variable name="term-empty-bo">
-                    <xsl:call-template name="text">
-                        <xsl:with-param name="global-key" select="'glossary.term-empty-bo'"/>
-                    </xsl:call-template>
-                </xsl:variable>
-                
-                <xsl:variable name="term-empty-sa-ltn">
-                    <xsl:call-template name="text">
-                        <xsl:with-param name="global-key" select="'glossary.term-empty-sa-ltn'"/>
-                    </xsl:call-template>
-                </xsl:variable>
-                
-                <xsl:variable name="terms-bo" select="$related-entries/m:term[@xml:lang eq 'bo'][text()][not(text() ! normalize-space(.) = ('', $term-empty-bo))]"/>
-                <xsl:variable name="terms-sa" select="$related-entries/m:term[@xml:lang eq 'Sa-Ltn'][text()][not(text() ! normalize-space(.) = ('', $term-empty-sa-ltn))]"/>
-                <xsl:variable name="terms-wy" select="$related-entries/m:term[@xml:lang eq 'Bo-Ltn'][text()]"/>
-                <xsl:variable name="terms-en" select="$related-entries/m:term[@xml:lang eq 'en'][text()]"/>
-                
-                <xsl:variable name="primary-terms" as="element(m:term)*">
-                    <xsl:choose>
-                        <xsl:when test="$terms-bo">
-                            <xsl:sequence select="$terms-bo"/>
-                        </xsl:when>
-                        <xsl:otherwise>
-                            <xsl:sequence select="$terms-sa"/>
-                        </xsl:otherwise>
-                    </xsl:choose>
-                </xsl:variable>
-                
-                <xsl:variable name="sorted-terms" as="element(m:term)*">
-                    <xsl:perform-sort select="$primary-terms">
-                        <!--<xsl:sort select="string-length(lower-case(data()))" order="descending"/>-->
-                        <xsl:sort select="count($related-entries/m:term/data() ! lower-case(.) = data() ! lower-case(.))" order="descending"/>
-                    </xsl:perform-sort>
-                </xsl:variable>
-                
-                <xsl:variable name="primary-term" select="if($sorted-terms) then $sorted-terms[1] else ($entity/m:label[@xml:lang eq 'en'], $entity/m:label[@xml:lang eq 'Sa-Ltn'], $entity/m:label[@xml:lang eq 'Bo-Ltn'])[1]"/>
-                <xsl:variable name="primary-term-entry" select="$primary-term/parent::m:entry"/>
-                
-                <xsl:element name="label" namespace="http://read.84000.co/ns/1.0">
-                    <xsl:attribute name="type" select="'primary'"/>
-                    <xsl:attribute name="xml:lang" select="$primary-term/@xml:lang"/>
-                    <xsl:value-of select="$primary-term"/>
-                </xsl:element>
-                
-                <xsl:if test="$primary-term[@xml:lang eq 'bo']">
+                <xsl:element name="entity-data" namespace="http://read.84000.co/ns/1.0">
                     
-                    <xsl:variable name="sorted-wylie-terms" as="element(m:term)*">
-                        <xsl:perform-sort select="$primary-term-entry/m:term[@xml:lang eq 'Bo-Ltn']">
-                            <xsl:sort select="string-length(lower-case(data()))" order="descending"/>
+                    <xsl:attribute name="ref" select="$entity/@xml:id"/>
+                    
+                    <xsl:attribute name="related-entries" select="count($related-entries)"/>
+                    
+                    <xsl:variable name="term-empty-bo">
+                        <xsl:call-template name="text">
+                            <xsl:with-param name="global-key" select="'glossary.term-empty-bo'"/>
+                        </xsl:call-template>
+                    </xsl:variable>
+                    
+                    <xsl:variable name="term-empty-sa-ltn">
+                        <xsl:call-template name="text">
+                            <xsl:with-param name="global-key" select="'glossary.term-empty-sa-ltn'"/>
+                        </xsl:call-template>
+                    </xsl:variable>
+                    
+                    <xsl:variable name="terms-bo" select="$related-entries/m:term[@xml:lang eq 'bo'][text()][not(text() ! normalize-space(.) = ('', $term-empty-bo))]"/>
+                    <xsl:variable name="terms-sa" select="$related-entries/m:term[@xml:lang eq 'Sa-Ltn'][text()][not(text() ! normalize-space(.) = ('', $term-empty-sa-ltn))]"/>
+                    <xsl:variable name="terms-wy" select="$related-entries/m:term[@xml:lang eq 'Bo-Ltn'][text()]"/>
+                    <xsl:variable name="terms-en" select="$related-entries/m:term[@xml:lang eq 'en'][text()]"/>
+                    
+                    <xsl:variable name="primary-terms" as="element(m:term)*">
+                        <xsl:choose>
+                            <xsl:when test="$terms-bo">
+                                <xsl:sequence select="$terms-bo"/>
+                            </xsl:when>
+                            <xsl:otherwise>
+                                <xsl:sequence select="$terms-sa"/>
+                            </xsl:otherwise>
+                        </xsl:choose>
+                    </xsl:variable>
+                    
+                    <xsl:variable name="sorted-terms" as="element(m:term)*">
+                        <xsl:perform-sort select="$primary-terms">
+                            <!--<xsl:sort select="string-length(lower-case(data()))" order="descending"/>-->
+                            <xsl:sort select="count($related-entries/m:term/data() ! lower-case(.) = data() ! lower-case(.))" order="descending"/>
                         </xsl:perform-sort>
                     </xsl:variable>
                     
-                    <xsl:variable name="wylie-term" select="$sorted-wylie-terms[1]"/>
+                    <xsl:variable name="primary-term" select="if($sorted-terms) then $sorted-terms[1] else ($entity/m:label[@xml:lang eq 'en'], $entity/m:label[@xml:lang eq 'Sa-Ltn'], $entity/m:label[@xml:lang eq 'Bo-Ltn'])[1]"/>
+                    <xsl:variable name="primary-term-entry" select="$primary-term/parent::m:entry"/>
                     
-                    <xsl:if test="$wylie-term">
-                        <xsl:element name="label" namespace="http://read.84000.co/ns/1.0">
-                            <xsl:attribute name="type" select="'secondary'"/>
-                            <xsl:attribute name="xml:lang" select="$wylie-term/@xml:lang"/>
-                            <xsl:value-of select="$wylie-term"/>
-                        </xsl:element>
-                    </xsl:if>
-                    
-                    <xsl:variable name="sorted-sanskrit-terms" as="element(m:term)*">
-                        <xsl:perform-sort select="$primary-term-entry/m:term[@xml:lang eq 'Sa-Ltn']">
-                            <xsl:sort select="string-length(lower-case(data()))" order="descending"/>
-                        </xsl:perform-sort>
-                    </xsl:variable>
-                    
-                    <xsl:variable name="sanskrit-term" select="$sorted-sanskrit-terms[1]"/>
-                    
-                    <xsl:if test="$sanskrit-term">
-                        <xsl:element name="label" namespace="http://read.84000.co/ns/1.0">
-                            <xsl:attribute name="type" select="'secondary'"/>
-                            <xsl:attribute name="xml:lang" select="$sanskrit-term/@xml:lang"/>
-                            <xsl:value-of select="$sanskrit-term"/>
-                        </xsl:element>
-                    </xsl:if>
-                    
-                </xsl:if>
-                
-                <xsl:for-each-group select="$terms-bo | $terms-sa | $terms-wy | $terms-en" group-by="string-join((@xml:lang, tokenize(data(), '\s+') ! lower-case(.) ! replace(., '­','')(: strip soft-hyphens :)), ' ')">
-                    
-                    <xsl:variable name="term-group" select="."/>
-                    <xsl:variable name="normalized-string" select="string-join((tokenize($term-group[1]/text(), '\s+') ! lower-case(.) ! replace(., '­','')(: strip soft-hyphens :)), ' ')"/>
-                    
-                    <xsl:element name="term" namespace="http://read.84000.co/ns/1.0">
-                        <xsl:variable name="term-entry-id" select="parent::m:entry/@id[1]"/>
-                        <xsl:attribute name="xml:lang" select="@xml:lang"/>
-                        <xsl:attribute name="normalized-string" select="$normalized-string"/>
-                        <xsl:attribute name="word-count" select="count(tokenize($normalized-string, '\s+'))"/>
-                        <xsl:attribute name="letter-count" select="string-length($normalized-string)"/>
-                        <xsl:if test="$entity/m:instance[@id eq $term-entry-id][m:flag]">
-                            <xsl:attribute name="flagged" select="true()"/>
-                        </xsl:if>
-                        <xsl:value-of select="$term-group[1]/text()"/>
+                    <xsl:element name="label" namespace="http://read.84000.co/ns/1.0">
+                        <xsl:attribute name="type" select="'primary'"/>
+                        <xsl:attribute name="xml:lang" select="$primary-term/@xml:lang"/>
+                        <xsl:value-of select="$primary-term"/>
                     </xsl:element>
                     
-                </xsl:for-each-group>
+                    <xsl:if test="$primary-term[@xml:lang eq 'bo']">
+                        
+                        <xsl:variable name="sorted-wylie-terms" as="element(m:term)*">
+                            <xsl:perform-sort select="$primary-term-entry/m:term[@xml:lang eq 'Bo-Ltn']">
+                                <xsl:sort select="string-length(lower-case(data()))" order="descending"/>
+                            </xsl:perform-sort>
+                        </xsl:variable>
+                        
+                        <xsl:variable name="wylie-term" select="$sorted-wylie-terms[1]"/>
+                        
+                        <xsl:if test="$wylie-term">
+                            <xsl:element name="label" namespace="http://read.84000.co/ns/1.0">
+                                <xsl:attribute name="type" select="'secondary'"/>
+                                <xsl:attribute name="xml:lang" select="$wylie-term/@xml:lang"/>
+                                <xsl:value-of select="$wylie-term"/>
+                            </xsl:element>
+                        </xsl:if>
+                        
+                        <xsl:variable name="sorted-sanskrit-terms" as="element(m:term)*">
+                            <xsl:perform-sort select="$primary-term-entry/m:term[@xml:lang eq 'Sa-Ltn']">
+                                <xsl:sort select="string-length(lower-case(data()))" order="descending"/>
+                            </xsl:perform-sort>
+                        </xsl:variable>
+                        
+                        <xsl:variable name="sanskrit-term" select="$sorted-sanskrit-terms[1]"/>
+                        
+                        <xsl:if test="$sanskrit-term">
+                            <xsl:element name="label" namespace="http://read.84000.co/ns/1.0">
+                                <xsl:attribute name="type" select="'secondary'"/>
+                                <xsl:attribute name="xml:lang" select="$sanskrit-term/@xml:lang"/>
+                                <xsl:value-of select="$sanskrit-term"/>
+                            </xsl:element>
+                        </xsl:if>
+                        
+                    </xsl:if>
+                    
+                    <xsl:for-each-group select="$terms-bo | $terms-sa | $terms-wy | $terms-en" group-by="string-join((@xml:lang, tokenize(data(), '\s+') ! lower-case(.) ! replace(., '­','')(: strip soft-hyphens :)), ' ')">
+                        
+                        <xsl:variable name="term-group" select="."/>
+                        <xsl:variable name="normalized-string" select="string-join((tokenize($term-group[1]/text(), '\s+') ! lower-case(.) ! replace(., '­','')(: strip soft-hyphens :)), ' ')"/>
+                        
+                        <xsl:element name="term" namespace="http://read.84000.co/ns/1.0">
+                            <xsl:variable name="term-entry-id" select="parent::m:entry/@id[1]"/>
+                            <xsl:attribute name="xml:lang" select="@xml:lang"/>
+                            <xsl:attribute name="normalized-string" select="$normalized-string"/>
+                            <xsl:attribute name="word-count" select="count(tokenize($normalized-string, '\s+'))"/>
+                            <xsl:attribute name="letter-count" select="string-length($normalized-string)"/>
+                            <xsl:if test="$entity/m:instance[@id eq $term-entry-id][m:flag]">
+                                <xsl:attribute name="flagged" select="true()"/>
+                            </xsl:if>
+                            <xsl:value-of select="$term-group[1]/text()"/>
+                        </xsl:element>
+                        
+                    </xsl:for-each-group>
+                    
+                </xsl:element>
                 
-            </xsl:element>
+            </xsl:if>
             
         </xsl:if>
         

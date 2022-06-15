@@ -63,6 +63,8 @@ declare function local:dispatch($model as xs:string?, $view as xs:string?, $para
                 if(ends-with($view, '.xsl')) then
                     <forward servlet="XSLTServlet">
                         <set-attribute name="xslt.stylesheet" value="{concat($exist:root, $exist:controller, $view)}"/>
+                        <set-header name="Expires" value="{xs:dateTime(current-dateTime()) + xs:dayTimeDuration('P7D')}"/>
+                        <set-header name="X-UA-Compatible" value="IE=edge,chrome=1"/>
                         { 
                             $parameters//set-header
                         }
@@ -76,41 +78,21 @@ declare function local:dispatch($model as xs:string?, $view as xs:string?, $para
             }
             </view>
         else ()
+        ,
+        if($resource-suffix eq 'html') then
+            <error-handler>
+                <forward servlet="XSLTServlet">
+                    <set-attribute name="xslt.stylesheet" value="{concat($exist:root, $exist:controller, "/views/html/error.xsl")}"/>
+                </forward>
+            </error-handler>
+        else ()
+        
     }
     </dispatch>
 };
 
 declare function local:dispatch-html($model as xs:string, $view as xs:string, $parameters as node()) as element() {
-    
-    <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-        
-        <!-- Model -->
-        <forward url="{concat($exist:controller, $model)}">
-        {
-            $parameters//add-parameter 
-        }
-        </forward>
-        
-        <!-- View -->
-        <view>
-            <forward servlet="XSLTServlet">
-                <set-attribute name="xslt.stylesheet" value="{concat($exist:root, $exist:controller, $view)}"/>
-                <set-header name="Expires" value="{xs:dateTime(current-dateTime()) + xs:dayTimeDuration('P7D')}"/>
-                <set-header name="X-UA-Compatible" value="IE=edge,chrome=1"/>
-                { 
-                    $parameters//set-header
-                }
-            </forward>
-        </view>
-        
-        <!-- Error -->
-        <error-handler>
-            <forward servlet="XSLTServlet">
-                <set-attribute name="xslt.stylesheet" value="{concat($exist:root, $exist:controller, "/views/html/error.xsl")}"/>
-            </forward>
-        </error-handler>
-        
-    </dispatch>
+    local:dispatch($model, $view, $parameters)
 };
 
 declare function local:redirect($url as xs:string){
@@ -387,6 +369,7 @@ return
                     </parameters>
                 )
                 
+        (: Glossary downloads :)
         else if ($resource-id eq "glossary-download") then
             local:dispatch("/models/glossary-download.xq", "",
                 <parameters xmlns="http://exist.sourceforge.net/NS/exist">
@@ -427,6 +410,13 @@ return
             local:dispatch("/models/downloads.xq", "", 
                 <parameters xmlns="http://exist.sourceforge.net/NS/exist"/>
             )
+        
+        (: Redirect legacy glossary :)
+        else if ($resource-id eq "glossary") then
+            if(request:get-parameter('entity-id', '') gt '') then
+                local:redirect(concat($common:environment/m:url[@id eq 'reading-room'], '/glossary/', request:get-parameter('entity-id', ''),'.html'))
+            else
+                local:redirect(concat($common:environment/m:url[@id eq 'reading-room'], '/glossary/search.html'))
         
         (: Editor :)
         (: Module located in operations app :)

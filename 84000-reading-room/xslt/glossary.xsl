@@ -217,27 +217,30 @@
     
     <xsl:template name="entity-types-list">
         
-        <xsl:param name="entity" as="element(m:entity)"/>
+        <xsl:param name="entity" as="element(m:entity)?"/>
         
-        <ul class="list-inline">
-            
-            <xsl:for-each select="/m:response/m:request/m:entity-types/m:type[@id = $entity/m:type/@type]">
-                <li>
-                    <span class="label label-info">
-                        <xsl:value-of select="m:label[@type eq 'singular']"/>
-                    </span>
-                </li>
-            </xsl:for-each>
-            
-            <xsl:if test="/m:response/m:request/m:entity-types/m:type[@id = $entity/m:type/@type][@provisional]">
-                <li>
-                    <span class="label label-default">
-                        <xsl:value-of select="'Note: this data is still being sorted'"/>
-                    </span>
-                </li>
-            </xsl:if>
-            
-        </ul>
+        <xsl:if test="$entity">
+            <ul class="list-inline">
+                
+                <xsl:for-each select="/m:response/m:request/m:entity-types/m:type[@id = $entity/m:type/@type]">
+                    <li>
+                        <span class="label label-info">
+                            <xsl:value-of select="m:label[@type eq 'singular']"/>
+                        </span>
+                    </li>
+                </xsl:for-each>
+                
+                <xsl:if test="/m:response/m:request/m:entity-types/m:type[@id = $entity/m:type/@type][@provisional]">
+                    <li>
+                        <span class="label label-default">
+                            <xsl:value-of select="'Note: this data is still being sorted'"/>
+                        </span>
+                    </li>
+                </xsl:if>
+                
+            </ul>
+        </xsl:if>
+        
     </xsl:template>
     
 </xsl:stylesheet>
