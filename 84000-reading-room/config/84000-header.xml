@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <eft-header xmlns="http://read.84000.co/ns/1.0">
-    <!-- Updated 13.06.2022 -->
+    <!-- Updated 20.06.2022 -->
     <translation id="tag-line">
         <text xml:lang="en">Translating the words of the Buddha</text>
         <text xml:lang="zh">八萬四千 • 佛典傳譯</text>
@@ -79,7 +79,7 @@
         <item class="home" url="https://84000.co/">
             <label key="label-home">Home</label>
         </item>
-        <item class="news" url="#news">
+        <!--<item class="news" url="#news">
             <label key="label-news">News</label>
             <item url="https://84000.co/news">
                 <label key="label-news-all">All News</label>
@@ -99,7 +99,7 @@
             <item url="https://84000.co/category/newsletters">
                 <label key="label-newsletters">Newsletters</label>
             </item>
-        </item>
+        </item>-->
         <item class="reading-room" url="#reading-room">
             <label key="label-reading-room">Reading Room</label>
             <item url="https://read.84000.co/section/lobby.html">
@@ -211,6 +211,12 @@
                 <label key="label-contact">Contact</label>
             </item>
         </item>
+        <item class="join-us" url="#join-us">
+            <label key="label-join-us">Join Us</label>
+            <item url="https://84000.co/opportunities">
+                <label key="label-opportunities">Opportunities</label>
+            </item>
+        </item>
         <item class="how-to-help" url="#how-to-help">
             <label key="label-how-to-help">Donate</label>
             <item url="https://84000.co/how-you-can-help/sponsor-a-page">
@@ -237,7 +243,7 @@
         <item class="home" url="https://84000.co/ch">
             <label key="label-home">首頁</label>
         </item>
-        <item class="news" url="#news">
+        <!--<item class="news" url="#news">
             <label key="label-news">最新訊息</label>
             <item url="https://84000.co/ch-news">
                 <label key="label-news-all">最新訊息</label>
@@ -254,10 +260,7 @@
             <item url="https://84000.co/category/ch-in-depth">
                 <label key="label-news-in-depth">話題</label>
             </item>
-            <!--<item url="https://84000.co/category/ch-newsletter">
-                <label key="label-newsletters">電子通訊</label>
-            </item>-->
-        </item>
+        </item>-->
         <item class="reading-room" url="#reading-room">
             <label key="label-reading-room">雲端藏經閣</label>
             <item url="https://read.84000.co/section/lobby.html?lang=zh">
@@ -364,6 +367,12 @@
             </item>
             <item url="https://84000.co/ch-about/ch-about-contact">
                 <label key="label-contact">聯繫方式</label>
+            </item>
+        </item>
+        <item class="join-us" url="#join-us">
+            <label key="label-join-us">關注並參與</label>
+            <item url="https://84000.co/ch-opportunities">
+                <label key="label-opportunities">工作机会</label>
             </item>
         </item>
         <item class="how-to-help" url="#how-to-help">

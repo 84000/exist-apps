@@ -19,6 +19,9 @@
     <xsl:template match="text()[parent::eft:text]">
         <!-- Don't output text nodes unless explicit -->
     </xsl:template>
+    <xsl:template match="text()[ancestor::eft:html]">
+        <!-- Don't output text nodes unless explicit -->
+    </xsl:template>
     
     <xsl:template match="eft:eft-header">
         <div class="navbar navbar-default">
@@ -67,7 +70,7 @@
                                         </span>
                                         <xsl:call-template name="search-form"/>
                                         <span>
-                                            <a class="btn btn-sm btn-warning">
+                                            <a class="btn btn-sm btn-danger">
                                                 <xsl:attribute name="href">
                                                     <xsl:call-template name="local-url">
                                                         <xsl:with-param name="url">

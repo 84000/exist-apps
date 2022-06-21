@@ -3,6 +3,7 @@ xquery version "3.0" encoding "UTF-8";
 declare namespace eft="http://read.84000.co/ns/1.0";
 declare namespace tei="http://www.tei-c.org/ns/1.0";
 declare namespace tmx="http://www.lisa.org/tmx14";
+declare namespace bcrdb="http://www.bcrdb.org/ns/1.0";
 
 import module namespace local="http://operations.84000.co/local" at "../modules/local.xql";
 import module namespace update-tm="http://operations.84000.co/update-tm" at "../modules/update-tm.xql";
@@ -25,19 +26,43 @@ let $update-tm :=
     (: Update an existing segment :)
     if(
         $tmx
-        and request:get-parameter('form-action', '') eq 'update-tm'
+        and request:get-parameter('form-action', '') eq 'update-segment'
         and request:get-parameter('tu-id', '') gt ''
+        and request:get-parameter-names()[. = 'tm-bo']
         and request:get-parameter-names()[. = 'tm-en']
     ) then
-        update-tm:update-segment($tmx, request:get-parameter('tu-id', ''), 'en', request:get-parameter('tm-en', ''))
+        update-tm:update-unit($tmx, request:get-parameter('tu-id', ''), request:get-parameter('tm-bo', ''), request:get-parameter('tm-en', ''))
+    
+    (: Add a new segment :)
+    else if(
+        $tmx
+        and request:get-parameter('form-action', '') eq 'add-unit'
+        and request:get-parameter-names()[. = 'tm-bo']
+        and request:get-parameter-names()[. = 'tm-en']
+    ) then
+        update-tm:add-unit($tmx, request:get-parameter('tm-bo', ''), request:get-parameter('tm-en', ''), ())
+    
+    (: Delete a unit
+    else if(
+        $tmx
+        and request:get-parameter('remove-tu', '') gt ''
+    ) then
+        update-tm:remove-unit($tmx, request:get-parameter('remove-tu', '')) :)
     
     (: Create a new TM file :)
-    else if(not($tmx) and request:get-parameter('form-action', '') eq 'create-file') then
-        update-tm:add-tm($tei)
-        
-    (: TO DO: add ids where missing :)
+    else if(
+        not($tmx) 
+        and request:get-parameter('form-action', '') eq 'new-tmx'
+        and request:get-parameter('bcrd-resource', '') gt ''
+    ) then
+        let $bcrd-resource := doc(concat($common:data-path, '/BCRDCORPUS/', request:get-parameter('bcrd-resource', '')))//bcrdb:bcrdCorpus
+        where $bcrd-resource
+        return
+            update-tm:new-tmx-from-bcrdCorpus($tei, $bcrd-resource)
+    
+    (: Fix ids where missing :)
     else if( $tmx and request:get-parameter('form-action', '') eq 'fix-ids') then
-        ()
+        update-tm:set-tu-ids($tmx)
     
     else ()
 
@@ -75,8 +100,18 @@ let $translation :=
         $tei-translation
     }
 
-(:let $location := translation:location($tei, ''):)
-(:let $source := source:etext-full($location):)
+(: If it was created then load again :)
+let $bcrdb-source-files := 
+    if(not($tmx)) then 
+        element { QName('http://read.84000.co/ns/1.0', 'bcrd-resources') } {
+            for $bcrd-resource in collection(concat($common:data-path, '/BCRDCORPUS'))//bcrdb:bcrdCorpus
+            return 
+                element bcrd-resource {
+                    attribute document-name { util:document-name($bcrd-resource) },
+                    $bcrd-resource/bcrdb:head
+                }
+        }
+    else ()
 
 let $xml-response := 
     common:response(
@@ -85,7 +120,8 @@ let $xml-response :=
             $request,
             $update-tm,
             $translation,
-            $tmx
+            $tmx,
+            $bcrdb-source-files
         )
     )
 

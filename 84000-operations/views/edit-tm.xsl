@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:ops="http://operations.84000.co" xmlns:common="http://read.84000.co/common" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" xmlns:tmx="http://www.lisa.org/tmx14" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:bcrdb="http://www.bcrdb.org/ns/1.0" xmlns:tmx="http://www.lisa.org/tmx14" xmlns:m="http://read.84000.co/ns/1.0" xmlns:ops="http://operations.84000.co" xmlns:functx="http://www.functx.com" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
     
     <xsl:import href="../../84000-reading-room/xslt/webpage.xsl"/>
     <xsl:import href="common.xsl"/>
@@ -22,7 +22,7 @@
             <xsl:with-param name="tei-text-substr" select="$tei-text"/>
         </xsl:call-template>
     </xsl:variable>
-    <xsl:variable name="first-mismatch-index" select="min($tm-units-aligned[not(@aligned eq 'true')]/@index ! xs:integer(.))"/>
+    <xsl:variable name="first-mismatch-index" select="min($tm-units-aligned[m:unmatched]/@index ! xs:integer(.))"/>
     
     <xsl:template match="/m:response">
         
@@ -53,6 +53,17 @@
                             <xsl:value-of select="' / '"/>
                         </small>
                         
+                        <a class="small underline" data-loading="Loading...">
+                            <xsl:attribute name="target" select="'check-folios'"/>
+                            <xsl:attribute name="href" select="concat($reading-room-path, '/source/', $translation/m:toh[1]/@key, '.html?page=1#ajax-source')"/>
+                            <xsl:attribute name="data-ajax-target" select="'#popup-footer-source .ajax-target'"/>
+                            <xsl:value-of select="'Tibetan source'"/>
+                        </a>
+                        
+                        <small>
+                            <xsl:value-of select="' / '"/>
+                        </small>
+                        
                         <a target="_self" class="small underline" data-loading="Loading...">
                             <xsl:attribute name="href" select="concat('edit-text-header.html?id=', $translation/@id)"/>
                             <xsl:value-of select="'Edit headers'"/>
@@ -72,129 +83,292 @@
                         </div>
                     </xsl:if>
                     
+                    <xsl:if test="$tm-units[not(@id)]">
+                        <div class="alert alert-danger" id="alert-ids-missing">
+                            <p>
+                                <xsl:value-of select="'Some IDs are missing from this TMX | '"/>
+                                <a href="{concat('/edit-tm.html?text-id=', $text-id, '&amp;part-id=', $part-id, '&amp;form-action=fix-ids')}" class="alert-link">
+                                    <xsl:value-of select="'Fix missing IDs'"/>
+                                </a>
+                            </p>
+                        </div>
+                    </xsl:if>
+                    
                     <xsl:choose>
                         
                         <xsl:when test="$tm-units">
                             
-                            <table class="table">
+                            <div class="div-list">
                                 <xsl:for-each select="$tm-units-aligned">
                                     
                                     <xsl:variable name="tm-unit-aligned" select="."/>
-                                    <xsl:variable name="row-id" select="concat('row-', $tm-unit-aligned/@index)"/>
+                                    <xsl:variable name="row-id" select="concat('row-', ($tm-unit-aligned/@index, 'new')[1])"/>
+                                    <xsl:variable name="active-record" select="if($tm-unit-aligned[@index ! xs:integer(.) eq $first-mismatch-index]) then true() else false()" as="xs:boolean"/>
                                     
-                                    <tr>
-                                        
-                                        <xsl:if test="$tm-unit-aligned/@index ! xs:integer(.) eq $first-mismatch-index">
-                                            <xsl:attribute name="class" select="'onload-scroll-target'"/>
-                                        </xsl:if>
+                                    <div class="row item">
                                         
                                         <xsl:attribute name="id" select="$row-id"/>
                                         
-                                        <td class="text-muted">
+                                        <div class="col-sm-1 text-muted">
                                             <xsl:value-of select="$tm-unit-aligned/@index"/>
-                                        </td>
-                                        <td>
-                                            <xsl:choose>
-                                                <xsl:when test="$tm-unit-aligned[not(@aligned eq 'true')]">
-                                                    <form method="post" class="form">
+                                        </div>
+                                        
+                                        <div class="col-sm-11">
+                                            
+                                            <xsl:variable name="update-form-id" select="concat('form-update-segment-', $row-id)"/>
+                                            
+                                            <form method="post" class="form form-update stealth" id="{ $update-form-id }">
+                                                
+                                                <xsl:attribute name="action" select="concat('/edit-tm.html?text-id=', $text-id, '&amp;part-id=', $part-id)"/>
+                                                <xsl:attribute name="data-loading" select="'Updating translation memory...'"/>
+                                                
+                                                <xsl:if test="$active-record">
+                                                    <xsl:attribute name="class" select="'form form-update onload-scroll-target'"/>
+                                                </xsl:if>
+                                                
+                                                <xsl:choose>
+                                                    
+                                                    <!-- Existing unit -->
+                                                    <xsl:when test="$tm-unit-aligned/m:tm-bo gt '' and $tm-unit-aligned/@id">
                                                         
-                                                        <xsl:attribute name="action" select="concat('edit-tm.html?text-id=', $text-id, '&amp;part-id=', $part-id)"/>
-                                                        <xsl:attribute name="data-loading" select="'Loading...'"/>
-                                                        
-                                                        <input type="hidden" name="form-action" value="update-tm"/>
+                                                        <!-- Action -->
+                                                        <input type="hidden" name="form-action" value="update-segment"/>
                                                         <input type="hidden" name="tu-id" value="{ $tm-unit-aligned/@id }"/>
                                                         
+                                                        <!-- Tibetan -->
                                                         <div class="form-group">
+                                                            
+                                                            <label for="tm-en-{ $tm-unit-aligned/@id }" class="text-muted small sml-margin bottom">
+                                                                <xsl:value-of select="'Add a line break to split a segment'"/>
+                                                            </label>
+                                                            
                                                             <xsl:variable name="tm-bo" select="$tm-unit-aligned/m:tm-bo"/>
-                                                            <!--<textarea name="tm-bo" class="form-control text-bo">
-                                                                <xsl:attribute name="rows" select="(ops:textarea-rows($tm-bo, 1, 170) + 1)"/>
+                                                            <textarea name="tm-bo" id="tm-bo-new" class="form-control text-bo onkeypress-ctrlreturn-submit" placeholder="Tibetan segment" rows="1">
                                                                 <xsl:value-of select="$tm-bo"/>
-                                                            </textarea>-->
-                                                            <span class="text-muted text-bo">
-                                                                <xsl:value-of select="$tm-bo"/>
-                                                            </span>
-                                                        </div>
-                                                        
-                                                        <div class="form-group">
-                                                            <xsl:variable name="tm-en" select="($tm-unit-aligned/m:tm-en, $tm-unit-aligned/m:tei-en)[normalize-space(.) gt ''][1]"/>
-                                                            <textarea name="tm-en" class="form-control monospace">
-                                                                <xsl:attribute name="rows" select="(ops:textarea-rows($tm-en, 1, 116))"/>
-                                                                <xsl:value-of select="$tm-en"/>
                                                             </textarea>
+                                                            
                                                         </div>
                                                         
-                                                        <xsl:if test="$tm-unit-aligned[not(@aligned eq 'true')][m:tei-en/normalize-space(.) gt ''][m:tm-en/normalize-space(.) gt '']">
-                                                            <p class="form-control monospace">
-                                                                <span class="text-warning">
-                                                                    <xsl:value-of select="$tm-unit-aligned/m:tei-en"/>
-                                                                </span>
-                                                            </p>
-                                                        </xsl:if>
-                                                        
-                                                        <xsl:if test="$tm-unit-aligned[not(@aligned eq 'true')][@index ! xs:integer(.) eq $first-mismatch-index]">
-                                                            <div class="form-group">
+                                                        <!-- Translation -->
+                                                        <div class="form-group">
+                                                            
+                                                            <xsl:choose>
                                                                 
-                                                                <xsl:choose>
-                                                                    <xsl:when test="$tm-unit-aligned/@id gt ''">
+                                                                <!-- Existing text, needs editing to match the TEI -->
+                                                                <xsl:when test="$tm-unit-aligned/m:tm-en gt ''">
+                                                                    
+                                                                    <label for="tm-en-{ $tm-unit-aligned/@id }" class="text-muted small sml-margin bottom">
+                                                                        <xsl:value-of select="'Edit to match the TEI'"/>
+                                                                    </label>
+                                                                    
+                                                                    <xsl:variable name="tm-en" select="$tm-unit-aligned/m:tm-en"/>
+                                                                    <textarea name="tm-en" id="tm-en-{ $tm-unit-aligned/@id }" class="form-control monospace onkeypress-ctrlreturn-submit" data-onload-get-focus="20">
+                                                                        <xsl:attribute name="rows" select="ops:textarea-rows($tm-en, 1, 116)"/>
+                                                                        <xsl:if test="$active-record">
+                                                                            <xsl:attribute name="data-onload-get-focus" select="string-length(tokenize($tm-en, '[\.!\?]\s+')[1]) + 1"/>
+                                                                        </xsl:if>
+                                                                        <xsl:value-of select="$tm-en"/>
+                                                                    </textarea>
+                                                                    
+                                                                    <!-- Include un-matched text for reference -->
+                                                                    <xsl:if test="$tm-unit-aligned[m:unmatched]">
                                                                         
-                                                                        <button type="submit" class="btn btn-warning btn-sm">
-                                                                            <xsl:value-of select="'Update'"/>
-                                                                        </button>
+                                                                        <xsl:variable name="section-id" select="concat('unmatched-', $tm-unit-aligned/@id)"/>
                                                                         
-                                                                    </xsl:when>
-                                                                    <xsl:otherwise>
-                                                                        
-                                                                        <span class="small text-danger">
-                                                                            <i class="fa fa-exclamation-circle" aria-hidden="true"/>
-                                                                            <xsl:value-of select="' This unit has no unique id value and therefore cannot be updated'"/>
-                                                                        </span>
-                                                                        
-                                                                    </xsl:otherwise>
-                                                                </xsl:choose>
+                                                                        <aside class="preview" id="{ $section-id }">
+                                                                            
+                                                                            <label for="unmatched-{ $tm-unit-aligned/@id }" class="text-muted small sml-margin bottom top">
+                                                                                <xsl:value-of select="'Next/unmatched text from the TEI'"/>
+                                                                            </label>
+                                                                            
+                                                                            <p for="unmatched-{ $tm-unit-aligned/@id }" class="form-control monospace">
+                                                                                <span class="text-warning">
+                                                                                    <xsl:value-of select="$tm-unit-aligned/m:unmatched"/>
+                                                                                </span>
+                                                                            </p>
+                                                                            
+                                                                            <xsl:call-template name="preview-controls">
+                                                                                <xsl:with-param name="section-id" select="$section-id"/>
+                                                                            </xsl:call-template>
+                                                                            
+                                                                        </aside>
+                                                                    </xsl:if>
+                                                                    
+                                                                </xsl:when>
                                                                 
-                                                            </div>
-                                                        </xsl:if>
+                                                                <!-- No existing text, insert break in existing TEI -->
+                                                                <xsl:otherwise>
+                                                                    
+                                                                    <label for="tm-en-{ $tm-unit-aligned/@id }" class="text-muted small sml-margin bottom">
+                                                                        <xsl:value-of select="'Add a line break to segment the passage to match the Tibetan'"/>
+                                                                    </label>
+                                                                    
+                                                                    <xsl:choose>
+                                                                        <xsl:when test="$active-record">
+                                                                            
+                                                                            <xsl:variable name="tm-en" select="$tm-unit-aligned/m:unmatched"/>
+                                                                            <textarea name="tm-en" id="tm-en-{ $tm-unit-aligned/@id }" class="form-control monospace onkeypress-ctrlreturn-submit" data-onload-get-focus="20">
+                                                                                <xsl:attribute name="rows" select="ops:textarea-rows($tm-en, 1, 116)"/>
+                                                                                <xsl:attribute name="data-onload-get-focus" select="string-length(tokenize($tm-en, '[\.!\?]”?\s+')[1]) + 1"/>
+                                                                                <xsl:value-of select="$tm-en"/>
+                                                                            </textarea>
+                                                                            
+                                                                        </xsl:when>
+                                                                        <xsl:otherwise>
+                                                                            
+                                                                            <textarea name="tm-en" id="tm-en-{ $tm-unit-aligned/@id }" class="form-control monospace onkeypress-ctrlreturn-submit">
+                                                                                <xsl:attribute name="rows" select="'1'"/>
+                                                                            </textarea>
+                                                                            
+                                                                        </xsl:otherwise>
+                                                                    </xsl:choose>
+                                                                    
+                                                                    
+                                                                </xsl:otherwise>
+                                                            </xsl:choose>
+                                                            
+                                                        </div>
                                                         
-                                                    </form>
-                                                </xsl:when>
-                                                <xsl:otherwise>
+                                                        <!-- Button -->
+                                                        <div class="form-group">
+                                                            
+                                                            <xsl:choose>
+                                                                <xsl:when test="$tm-unit-aligned/@id gt ''">
+                                                                    
+                                                                    <!--<a role="button" class="btn btn-danger btn-sm">
+                                                                                <xsl:attribute name="href" select="concat('/edit-tm.html?text-id=', $text-id, '&amp;part-id=', $part-id, '&amp;remove-tu=', $tm-unit-aligned/@id)"/>
+                                                                                <xsl:value-of select="'Delete'"/>
+                                                                            </a>-->
+                                                                    
+                                                                    <button type="submit" class="btn btn-warning btn-sm pull-right">
+                                                                        <xsl:value-of select="'Update'"/>
+                                                                    </button>
+                                                                    
+                                                                </xsl:when>
+                                                                <xsl:otherwise>
+                                                                    
+                                                                    <a href="#alert-ids-missing" class="scroll-to-anchor small text-danger">
+                                                                        <i class="fa fa-exclamation-circle" aria-hidden="true"/>
+                                                                        <xsl:value-of select="' This unit has no unique id value and therefore cannot be updated'"/>
+                                                                    </a>
+                                                                    
+                                                                </xsl:otherwise>
+                                                            </xsl:choose>
+                                                            
+                                                        </div>
+                                                        
+                                                    </xsl:when>
                                                     
-                                                    <span class="text-muted text-bo">
-                                                        <xsl:value-of select="$tm-unit-aligned/m:tm-bo"/>
-                                                    </span>
-                                                    <hr class="sml-margin dashed"/>
-                                                    <span class="text-muted">
-                                                        <xsl:value-of select="$tm-unit-aligned/m:tm-en"/>
-                                                    </span>
+                                                    <!-- New unit -->
+                                                    <xsl:otherwise>
+                                                        
+                                                        <!-- Action -->
+                                                        <input type="hidden" name="form-action" value="add-unit"/>
+                                                        
+                                                        <!-- Tibetan -->
+                                                        <div class="form-group">
+                                                            
+                                                            <label for="tm-bo-new" class="text-muted small sml-margin bottom">
+                                                                <xsl:value-of select="'Add a Tibetan segment:'"/>
+                                                            </label>
+                                                            
+                                                            <textarea name="tm-bo" id="tm-bo-new" class="form-control text-bo" placeholder="Tibetan segment">
+                                                                <xsl:attribute name="rows" select="1"/>
+                                                            </textarea>
+                                                            
+                                                        </div>
+                                                        
+                                                        <!-- Translation -->
+                                                        <div class="form-group">
+                                                            
+                                                            <label for="tm-en-new" class="text-muted small sml-margin bottom">
+                                                                <xsl:value-of select="'Insert a line break to segment the passage:'"/>
+                                                            </label>
+                                                            
+                                                            <xsl:variable name="tm-en" select="$tm-unit-aligned/m:unmatched"/>
+                                                            <textarea name="tm-en" id="tm-en-new" class="form-control monospace onkeypress-ctrlreturn-submit" data-onload-get-focus="20">
+                                                                <xsl:attribute name="rows" select="(ops:textarea-rows($tm-en, 1, 116))"/>
+                                                                <xsl:attribute name="data-onload-get-focus" select="string-length(tokenize($tm-en, '[\.!\?]\s+')[1]) + 1"/>
+                                                                <xsl:value-of select="common:limit-str($tm-en, 1000)"/>
+                                                            </textarea>
+                                                            
+                                                        </div>
+                                                        
+                                                        
+                                                        <!-- Button -->
+                                                        <div class="form-group">
+                                                            
+                                                            <button type="submit" class="btn btn-warning btn-sm pull-right">
+                                                                <xsl:value-of select="'Update'"/>
+                                                            </button>
+                                                            
+                                                        </div>
+                                                        
+                                                    </xsl:otherwise>
                                                     
-                                                </xsl:otherwise>
-                                            </xsl:choose>
+                                                </xsl:choose>
+                                                
+                                            </form>
                                             
-                                        </td>
+                                        </div>
                                         
-                                    </tr>
+                                    </div>
                                     
                                 </xsl:for-each>
-                            </table>
+                                
+                            </div>
                             
                         </xsl:when>
                         
                         <xsl:otherwise>
                             
-                            <div class="text-center">
+                            <hr/>
+                            
+                            <form method="post" class="form text-center">
+                                    
+                                <xsl:attribute name="action" select="concat('/edit-tm.html?text-id=', $text-id)"/>
+                                <xsl:attribute name="data-loading" select="'Creating new TMX file...'"/>
                                 
-                                <hr/>
+                                <div class="form-group">
+                                    <p class="text-muted">
+                                        <xsl:value-of select="'~ No Translation Memory for this text ~'"/>
+                                    </p>
+                                </div>
                                 
-                                <p class="text-muted">
-                                    <xsl:value-of select="'~ No Translation Memory for this text ~'"/>
-                                </p>
+                                <input type="hidden" name="form-action" value="new-tmx"/>
                                 
-                                <a class="btn btn-danger">
-                                    <xsl:attribute name="href" select="concat('/edit-tm.html?text-id=', $text-id, '&amp;form-action=create-file')"/>
-                                    <xsl:value-of select="'Create a TM file for this translation'"/>
-                                </a>
+                                <div class="row">
+                                    <div class="col-sm-8 col-sm-offset-2">
+                                        
+                                        <div class="form-group">
+                                            
+                                            <label for="bcrd-resource">
+                                                <xsl:value-of select="'Create a TMX file for this translation based on the selected BCRD resource'"/>
+                                            </label>
+                                            
+                                            <select name="bcrd-resource" id="bcrd-resource" class="form-control">
+                                                <xsl:for-each select="m:bcrd-resources/m:bcrd-resource[@document-name gt '']">
+                                                    <option value="{ @document-name }">
+                                                        <xsl:value-of select="bcrdb:head/bcrdb:sourceDesc/bcrdb:bibl/bcrdb:biblScope[@unit eq 'catNo']/text()"/>
+                                                        <xsl:value-of select="' / '"/>
+                                                        <xsl:value-of select="(bcrdb:head/bcrdb:sourceDesc/bcrdb:bibl/bcrdb:title)[1]/text()"/>
+                                                    </option>
+                                                </xsl:for-each>
+                                            </select>
+                                            
+                                        </div>
+                                        
+                                        <div class="form-group">
+                                            <button type="submit" class="btn btn-danger">
+                                                <xsl:attribute name="href" select="concat('/edit-tm.html?text-id=', $text-id, '&amp;form-action=create-file')"/>
+                                                <xsl:value-of select="'Create TMX file'"/>
+                                            </button>
+                                        </div>
+                                        
+                                    </div>    
+                                </div>
                                 
-                            </div>
+                            </form>
                             
                         </xsl:otherwise>
                         
@@ -230,12 +404,12 @@
                 </xsl:when>
                 
                 <xsl:when test="$element/self::tei:head and @type = ('titleMain')">
-                    <xsl:value-of select="string-join(($elements[self::tei:head][@type eq 'titleHon'], $element)/descendant::text()[not(ancestor::tei:note)], ' ') ! normalize-space(.)"/>
+                    <xsl:value-of select="string-join(($elements[self::tei:head][@type eq 'titleHon'], $element)/descendant::text()[not(ancestor::tei:note)], ' ') ! normalize-space(.) ! normalize-unicode(.)"/>
                 </xsl:when>
                 
                 <!-- Return text content -->
                 <xsl:when test="$element/@tid">
-                    <xsl:value-of select="string-join($element/descendant::text()[not(ancestor::tei:note)], '') ! normalize-space(.)"/>
+                    <xsl:value-of select="string-join($element/descendant::text()[not(ancestor::tei:note)], '') ! normalize-space(.) ! normalize-unicode(.)"/>
                 </xsl:when>
                 
                 <!-- Recurse -->
@@ -256,35 +430,56 @@
         <xsl:param name="tm-unit-index" as="xs:integer"/>
         <xsl:param name="tei-text-substr" as="xs:string?"/>
         
-        <xsl:variable name="tm-unit" select="$tm-units[$tm-unit-index]" as="element(tmx:tu)?"/>
+        <xsl:variable name="tm-unit" select="if($tm-unit-index le count($tm-units)) then $tm-units[$tm-unit-index] else ()" as="element(tmx:tu)?"/>
+        <xsl:variable name="tm-bo" select="($tm-unit/tmx:tuv[@xml:lang eq 'bo']/tmx:seg ! normalize-space(.), '')[1]" as="xs:string"/>
         <xsl:variable name="tm-en" select="($tm-unit/tmx:tuv[@xml:lang eq 'en']/tmx:seg ! normalize-space(.), '')[1]" as="xs:string"/>
-        <xsl:variable name="tm-en-edited" select="replace($tm-en, '\[.+\]', '')" as="xs:string"/>
-        <xsl:variable name="tei-segment-match" select="if($tm-en-edited gt '') then replace($tei-text-substr, concat('^\s*(', common:escape-for-regex($tm-en-edited), ')'), '$1↳', 'i') else $tei-text-substr ! normalize-space(.)" as="xs:string"/>
-        <xsl:variable name="tei-segment-split" select="tokenize($tei-segment-match, '↳')" as="xs:string*"/>
+        
+        <!-- Look for the next instance of the string in the text -->
+        <xsl:variable name="tm-en-notes-removed" select="replace($tm-en, '\[{2}.+\]{2}\s*', '')" as="xs:string"/>
+        <!-- Only check if there is a value -->
+        <xsl:variable name="tei-text-substr-removed" select="if($tm-en-notes-removed gt '') then functx:replace-first($tei-text-substr, concat('(^|\s+)[“|‘]?', common:escape-for-regex($tm-en-notes-removed)), ' ') else $tei-text-substr" as="xs:string"/>
+        
+        <xsl:variable name="matched" select="if(string-length($tei-text-substr-removed) ne string-length($tei-text-substr)) then true() else false()" as="xs:boolean"/>
         
         <xsl:element name="tm-unit-aligned" namespace="http://read.84000.co/ns/1.0">
+            
             <xsl:attribute name="id" select="$tm-unit/@id"/>
             <xsl:attribute name="index" select="$tm-unit-index"/>
-            <xsl:attribute name="aligned" select="count($tei-segment-split) gt 1"/>
+            
+            <!-- Return the TM data -->
             <xsl:element name="tm-bo" namespace="http://read.84000.co/ns/1.0">
-                <xsl:value-of select="$tm-unit/tmx:tuv[@xml:lang eq 'bo']/tmx:seg ! normalize-space(.)"/>
+                <xsl:value-of select="$tm-bo"/>
             </xsl:element>
             <xsl:element name="tm-en" namespace="http://read.84000.co/ns/1.0">
                 <xsl:value-of select="$tm-en"/>
             </xsl:element>
-            <xsl:element name="tei-en" namespace="http://read.84000.co/ns/1.0">
-                <xsl:value-of select="common:limit-str($tei-segment-split[1], 600)"/>
-            </xsl:element>
+            
+            <!-- If there was no change then it was unmatched -->
+            <xsl:if test="not($matched)">
+                <xsl:element name="unmatched" namespace="http://read.84000.co/ns/1.0">
+                    <xsl:choose>
+                        <xsl:when test="$tm-bo gt '' and not($tm-en gt '')">
+                            <xsl:value-of select="common:limit-str($tei-text-substr, 1000)"/>
+                        </xsl:when>
+                        <xsl:otherwise>
+                            <xsl:value-of select="$tei-text-substr"/>
+                        </xsl:otherwise>
+                    </xsl:choose>
+                </xsl:element>
+            </xsl:if>
+            
         </xsl:element>
         
-        <xsl:if test="$tm-unit-index lt count($tm-units)">
+        <xsl:if test="$tm-unit-index lt count($tm-units) or ($tm-unit-index eq count($tm-units) and $matched and $tei-text-substr-removed gt '')">
+            
+            <!-- Recurr with the next tm unit and the remaining tei string -->
             <xsl:call-template name="tm-unit-aligned">
                 <xsl:with-param name="tm-unit-index" select="$tm-unit-index + 1"/>
-                <xsl:with-param name="tei-text-substr" select="string-join($tei-segment-split[2 to last()])"/>
+                <xsl:with-param name="tei-text-substr" select="normalize-space($tei-text-substr-removed)"/>
             </xsl:call-template>
+            
         </xsl:if>
         
     </xsl:template>
-    
     
 </xsl:stylesheet>
