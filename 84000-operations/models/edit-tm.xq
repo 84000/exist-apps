@@ -31,23 +31,23 @@ let $update-tm :=
         and request:get-parameter-names()[. = 'tm-bo']
         and request:get-parameter-names()[. = 'tm-en']
     ) then
-        update-tm:update-unit($tmx, request:get-parameter('tu-id', ''), request:get-parameter('tm-bo', ''), request:get-parameter('tm-en', ''))
+        update-tm:update-unit($tmx, request:get-parameter('tu-id', ''), request:get-parameter('tm-bo', ''), request:get-parameter('tm-en', ''), request:get-parameter('tei-location-id', ''))
     
     (: Add a new segment :)
     else if(
         $tmx
         and request:get-parameter('form-action', '') eq 'add-unit'
-        and request:get-parameter-names()[. = 'tm-bo']
+        and request:get-parameter('tm-bo', '') gt ''
         and request:get-parameter-names()[. = 'tm-en']
     ) then
-        update-tm:add-unit($tmx, request:get-parameter('tm-bo', ''), request:get-parameter('tm-en', ''), ())
+        update-tm:add-unit($tmx, request:get-parameter('tm-bo', ''), request:get-parameter('tm-en', ''), request:get-parameter('tei-location-id', ''), ())
     
-    (: Delete a unit
+    (: Delete a unit :)
     else if(
         $tmx
         and request:get-parameter('remove-tu', '') gt ''
     ) then
-        update-tm:remove-unit($tmx, request:get-parameter('remove-tu', '')) :)
+        update-tm:remove-unit($tmx, request:get-parameter('remove-tu', '')) 
     
     (: Create a new TM file :)
     else if(
@@ -61,9 +61,11 @@ let $update-tm :=
             update-tm:new-tmx-from-bcrdCorpus($tei, $bcrd-resource)
     
     (: Fix ids where missing :)
-    else if( $tmx and request:get-parameter('form-action', '') eq 'fix-ids') then
-        update-tm:set-tu-ids($tmx)
-    
+    else if( $tmx and request:get-parameter('form-action', '') eq 'fix-ids') then 
+        if($tmx/tmx:body/tmx:tu[not(@id)]) then
+            update-tm:set-tu-ids($tmx)
+        else ()
+        
     else ()
 
 (: If it was created then load again :)

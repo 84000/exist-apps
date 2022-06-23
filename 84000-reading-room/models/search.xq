@@ -19,16 +19,35 @@ let $first-record :=
         request:get-parameter('first-record', 1)
     else 1
 
+let $request := 
+    element { QName('http://read.84000.co/ns/1.0', 'request')} {
+        attribute model { 'glossary' },
+        attribute resource-id { $resource-id },
+        attribute resource-suffix { $resource-suffix },
+        attribute lang { common:request-lang() },
+        attribute search-type { request:get-parameter('search-type', '') ! lower-case(.) },
+        attribute search-lang { request:get-parameter('search-lang', 'en') ! lower-case(.) }
+    }
+
+let $results := 
+    if($request/@search-type eq 'tm' and compare($search, '') gt 0) then
+        search:tm-search($search, $request/@search-lang, $first-record, 15)
+    else if(compare($search, '') gt 0) then 
+        search:search($search, $resource-id, $first-record, 15)
+    else ()
+
 let $xml-response :=
     common:response(
         'search',
         $common:app-id,
-        if(compare($search, '') gt 0) then 
-            search:search($search, $resource-id, $first-record, 15)
-        else ()
+        (
+            $request,
+            $results
+        )
     )
 
 return
+
     (: return html data :)
     if($resource-suffix = ('html')) then 
         common:html($xml-response, concat($common:app-path, "/views/html/search.xsl"))

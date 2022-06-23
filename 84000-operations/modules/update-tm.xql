@@ -40,12 +40,15 @@ declare function update-tm:update-segment($tmx as element(tmx:tmx), $unit-id as 
                     update insert ($padding-before, $new-tuv) into $tm-unit
                     
         else (
+        
             update delete $tm-unit,
+            
+            (: If removed then re-set ids :)
             update-tm:set-tu-ids($tmx)
         )
 };
 
-declare function update-tm:update-unit($tmx as element(tmx:tmx), $unit-id as xs:string, $value-bo as xs:string?, $value-en as xs:string?) as element()? {
+declare function update-tm:update-unit($tmx as element(tmx:tmx), $unit-id as xs:string, $value-bo as xs:string?, $value-en as xs:string?, $location-id as xs:string) as element()? {
     
     let $tm-unit := $tmx/tmx:body/tmx:tu[@id eq $unit-id]
     let $value-bo-tokenized := tokenize($value-bo, '\n')
@@ -53,23 +56,36 @@ declare function update-tm:update-unit($tmx as element(tmx:tmx), $unit-id as xs:
     
     let $new-unit := 
         element { QName('http://www.lisa.org/tmx14', 'tu') }{
+        
             attribute id { $unit-id },
+            
+            $tm-unit/tmx:prop[not(@name = ('location-id'))],
+            
+            element { QName('http://www.lisa.org/tmx14', 'prop') }{
+                attribute name { 'location-id' },
+                text { $location-id }
+            },
+            
             element { QName('http://www.lisa.org/tmx14', 'tuv') }{
                 attribute xml:lang { 'bo' },
                 element seg { $value-bo-tokenized[1] }
             },
+            
             element { QName('http://www.lisa.org/tmx14', 'tuv') }{
                 attribute xml:lang { 'en' },
                 element seg { $value-en-tokenized[1] }
             }
+            
         }
     
     return (
-    
-        update replace $tm-unit with $new-unit,
+        
+        if(normalize-space($value-bo-tokenized[1]) gt '') then 
+            update replace $tm-unit with $new-unit
+        else (),
         
         if(count($value-bo-tokenized) gt 1) then (
-            update-tm:add-unit($tmx, string-join(subsequence($value-bo-tokenized, 2), ''), (), $tmx/tmx:body/tmx:tu[@id eq $unit-id])
+            update-tm:add-unit($tmx, string-join(subsequence($value-bo-tokenized, 2), ''), string-join(subsequence($value-en-tokenized, 2), ''), $location-id, $tmx/tmx:body/tmx:tu[@id eq $unit-id])
         )
         else ()
         
@@ -77,31 +93,45 @@ declare function update-tm:update-unit($tmx as element(tmx:tmx), $unit-id as xs:
     
 };
 
-declare function update-tm:add-unit($tmx as element(tmx:tmx), $value-bo as xs:string?, $value-en as xs:string?, $add-following as element(tmx:tu)?) as element()? {
+declare function update-tm:add-unit($tmx as element(tmx:tmx), $value-bo as xs:string?, $value-en as xs:string?, $location-id as xs:string, $add-following as element(tmx:tu)?) as element()? {
     
     let $new-unit := 
         element { QName('http://www.lisa.org/tmx14', 'tu') }{
+            
+            if($location-id gt '') then
+                element { QName('http://www.lisa.org/tmx14', 'prop') }{
+                    attribute name { 'location-id' },
+                    text { $location-id }
+                }
+            else ()
+            ,
+            
             element { QName('http://www.lisa.org/tmx14', 'tuv') }{
                 attribute xml:lang { 'bo' },
                 element seg { tokenize($value-bo, '\n')[1] }
             },
+            
             if($value-en) then
                 element { QName('http://www.lisa.org/tmx14', 'tuv') }{
                     attribute xml:lang { 'en' },
                     element seg { tokenize($value-en, '\n')[1] }
                 }
             else ()
+            
         }
     
     (: Add whitespace for readability :)
     let $padding-after := text { $tmx/tmx:body/tmx:tu[last()]/preceding-sibling::text()[1] }
     
     return (
+    
         if($add-following) then
             update insert ($new-unit, $padding-after) following $add-following
         else
             update insert ($new-unit, $padding-after) into $tmx/tmx:body
         ,
+        
+        (: If added then re-set ids :)
         update-tm:set-tu-ids($tmx)
     )
     
@@ -111,6 +141,25 @@ declare function update-tm:remove-unit($tmx as element(tmx:tmx), $unit-id as xs:
     
     update-tm:update-segment($tmx, $unit-id, 'bo', '')
     
+};
+
+declare function update-tm:set-tu-ids($tmx) {
+    
+    (# exist:batch-transaction #) {
+    
+        let $text-id:= $tmx/tmx:header/@eft:text-id/string()
+        where $text-id gt '' and $tmx/tmx:body/tmx:tu[not(@id)]
+        
+        for $tu at $tu-index in $tmx/tmx:body/tmx:tu
+        let $id-attribute := attribute id { string-join(($text-id, 'TU', $tu-index),'-') }
+        return 
+            if($tu[@id]) then
+                update replace $tu/@id with $id-attribute
+            else
+                update insert $id-attribute into $tu
+                
+    }
+
 };
 
 declare function update-tm:new-tm($text-id as xs:string, $text-version as xs:string, $segments-bo as xs:string*) as document-node()? {
@@ -184,23 +233,4 @@ declare function update-tm:new-tmx($tei as element(tei:TEI)) as xs:string? {
         sm:chmod(xs:anyURI(concat($update-tm:tm-path, '/', $filename)), 'rw-rw-r--')
     )
     
-};
-
-declare function update-tm:set-tu-ids($tmx) {
-    
-    (# exist:batch-transaction #) {
-    
-        let $text-id:= $tmx/tmx:header/@eft:text-id/string()
-        where $text-id gt '' and $tmx/tmx:body/tmx:tu[not(@id)]
-        
-        for $tu at $tu-index in $tmx/tmx:body/tmx:tu
-        let $id-attribute := attribute id { string-join(($text-id, 'TU', $tu-index),'-') }
-        return 
-            if($tu[@id]) then
-                update replace $tu/@id with $id-attribute
-            else
-                update insert $id-attribute into $tu
-                
-    }
-
 };

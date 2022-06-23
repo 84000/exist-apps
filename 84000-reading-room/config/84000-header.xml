@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <eft-header xmlns="http://read.84000.co/ns/1.0">
-    <!-- Updated 20.06.2022 -->
+    <!-- Updated 23.06.2022 -->
     <translation id="tag-line">
         <text xml:lang="en">Translating the words of the Buddha</text>
         <text xml:lang="zh">八萬四千 • 佛典傳譯</text>
@@ -109,7 +109,7 @@
                 <label key="label-all-translated">Published Translations</label>
             </item>
             <item url="https://read.84000.co/search.html">
-                <label key="label-search">Search the Reading Room</label>
+                <label key="label-search">Search</label>
             </item>
             <item url="https://read.84000.co/glossary/search.html">
                 <label key="label-glossary">Glossary of Terms</label>
@@ -152,9 +152,6 @@
                 </item>
                 <item url="https://84000.co/about/how-we-began">
                     <label key="label-origin">How We Began</label>
-                </item>
-                <item url="https://84000.co/about/grants">
-                    <label key="label-grants">Grants</label>
                 </item>
                 <item url="https://84000.co/about/work-flow">
                     <label key="label-workflow">Workflow</label>
@@ -216,6 +213,12 @@
             <item url="https://84000.co/opportunities">
                 <label key="label-opportunities">Opportunities</label>
             </item>
+            <item url="https://84000.co/grants">
+                <label key="label-grants">Grants</label>
+            </item>
+            <item url="https://84000.co/subscribe">
+                <label key="label-subscribe">Subscribe</label>
+            </item>
         </item>
         <item class="how-to-help" url="#how-to-help">
             <label key="label-how-to-help">Donate</label>
@@ -227,9 +230,6 @@
             </item>
             <!--<item url="https://84000.co/how-you-can-help/download-dana">
                 <label key="label-download-dana">Download Dāna</label>
-            </item>-->
-            <!--<item url="https://84000.co/how-you-can-help/spread-the-word">
-                <label key="label-subscribe">Subscribe to our Newsletter</label>
             </item>-->
             <item url="https://84000.co/how-you-can-help/planned-giving">
                 <label key="label-planned-giving">Planned Giving</label>
@@ -314,9 +314,6 @@
                 <item url="https://84000.co/ch-about/ch-about-origin">
                     <label key="label-origin">成立緣起</label>
                 </item>
-                <item url="https://84000.co/ch-about/ch-grants">
-                    <label key="label-grants">翻譯資助金</label>
-                </item>
                 <item url="https://84000.co/ch-about/ch-about-workflow">
                     <label key="label-workflow">工作流程</label>
                 </item>
@@ -372,7 +369,13 @@
         <item class="join-us" url="#join-us">
             <label key="label-join-us">關注並參與</label>
             <item url="https://84000.co/ch-opportunities">
-                <label key="label-opportunities">工作机会</label>
+                <label key="label-opportunities">工作機會</label>
+            </item>
+            <item url="https://84000.co/ch-grants">
+                <label key="label-grants">翻譯資助金</label>
+            </item>
+            <item url="https://84000.co/ch-subscribe">
+                <label key="label-subscribe">訂閱電子通訊</label>
             </item>
         </item>
         <item class="how-to-help" url="#how-to-help">
@@ -385,9 +388,6 @@
             </item>
             <!--<item url="https://84000.co/ch-how-you-can-help/ch-download-dana">
                 <label key="label-download-dana">隨喜贊助</label>
-            </item>-->
-            <!--<item url="https://84000.co/ch-how-you-can-help/ch-howhelp-subscribe">
-                <label key="label-subscribe">訂閱電子通訊</label>
             </item>-->
             <item url="https://84000.co/ch-how-you-can-help/ch-planned-giving">
                 <label key="label-planned-giving">遺產捐贈</label>

@@ -242,7 +242,7 @@ declare function search:tm-search($request as xs:string, $lang as xs:string, $fi
             (:where $score ge 5:)
         return 
             $result
-            
+    
     return (:if(true()) then element debug { $results } else:)
         element { QName('http://read.84000.co/ns/1.0', 'tm-search') } {
             element request {
@@ -270,8 +270,7 @@ declare function search:tm-search($request as xs:string, $lang as xs:string, $fi
                             return
                                 if($translation-id) then
                                     tei-content:tei($translation-id, 'translation')
-                                else
-                                    ()
+                                else ()
                         else
                             $result/ancestor::tei:TEI
                     

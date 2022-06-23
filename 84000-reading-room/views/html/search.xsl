@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" version="3.0" exclude-result-prefixes="#all">
     
     <xsl:import href="../../xslt/tei-search.xsl"/>
     
@@ -23,7 +23,7 @@
                                 <li>
                                     <a>
                                         <xsl:attribute name="href" select="common:internal-link('search.html', (), '', /m:response/@lang)"/>
-                                        <xsl:value-of select="'Search the Reading Room'"/>
+                                        <xsl:value-of select="'Search Our Translations'"/>
                                     </a>
                                 </li>
                                 <xsl:if test="m:search/m:request[text()]">
@@ -86,19 +86,70 @@
                     <div class="section-title row">
                         <div class="col-sm-offset-2 col-sm-8">
                             <h1 class="title main-title">
-                                <xsl:value-of select="'Search the Reading Room'"/>
+                                <xsl:value-of select="'Search Our Translations'"/>
                             </h1>
-                            <hr/>
-                            <p>
-                                <xsl:value-of select="'Our database contains both the translated texts and titles and summaries for other works within the Kangyur and Tengyur where available.'"/>
-                            </p>
                         </div>
                     </div>
                     
-                    <xsl:call-template name="search">
-                        <xsl:with-param name="action" select="'search.html'"/>
-                        <xsl:with-param name="lang" select="/m:response/@lang"/>
-                    </xsl:call-template>
+                    <div class="tabs-container-center">
+                        <ul class="nav nav-tabs" role="tablist">
+                            
+                            <!-- TEI search tab -->
+                            <li role="presentation">
+                                <xsl:if test="not(m:request/@search-type eq 'tm')">
+                                    <xsl:attribute name="class" select="'active'"/>
+                                </xsl:if>
+                                <a>
+                                    <xsl:attribute name="href" select="common:internal-link('/search.html', (), '', $root/m:response/@lang)"/>
+                                    <xsl:attribute name="title" select="'Search the 84000 published translations'"/>
+                                    <xsl:attribute name="data-loading" select="'Searching...'"/>
+                                    <xsl:value-of select="'The Publications'"/>
+                                </a>
+                            </li>
+                            
+                            <!-- TM search tab -->
+                            <li role="presentation" class="icon">
+                                <xsl:if test="m:request/@search-type eq 'tm'">
+                                    <xsl:attribute name="class" select="'active'"/>
+                                </xsl:if>
+                                <a>
+                                    <xsl:attribute name="href" select="common:internal-link('/search.html?search-type=tm', (), '', $root/m:response/@lang)"/>
+                                    <xsl:attribute name="title" select="'Search the 84000 Translation Memory'"/>
+                                    <xsl:attribute name="data-loading" select="'Searching...'"/>
+                                    <xsl:value-of select="'Translation Memory'"/>
+                                </a>
+                            </li>
+                            
+                        </ul>
+                    </div>
+                    
+                    <xsl:choose>
+                        
+                        <!-- TM search -->
+                        <xsl:when test="m:request/@search-type eq 'tm'">
+                            
+                            <p class="text-center text-muted small bottom-margin">
+                                <xsl:value-of select="'Search our Translation Memory files to find translations aligned with the Tibetan source.'"/>
+                            </p>
+                            
+                        </xsl:when>
+                        
+                        <!-- TEI search -->
+                        <xsl:otherwise>
+                            
+                            <p class="text-center text-muted small bottom-margin">
+                                <xsl:value-of select="'The 84000 database contains both the translated texts and titles and summaries for other works within the Kangyur and Tengyur where available.'"/>
+                            </p>
+                            
+                            <xsl:call-template name="search">
+                                <xsl:with-param name="action" select="'search.html'"/>
+                                <xsl:with-param name="lang" select="/m:response/@lang"/>
+                            </xsl:call-template>
+                            
+                        </xsl:otherwise>
+                        
+                    </xsl:choose>
+                    
                     
                 </div>
             </main>
