@@ -25,9 +25,9 @@ declare function local:update-tei-locations(){
             let $toh-key := string($bibl/@key)
             let $work := 
                 if($bibl/tei:idno[@source-id]/@work eq 'W22084') then
-                    $source:ekangyur-work
+                    $source:kangyur-work
                 else
-                    $source:etengyur-work
+                    $source:tengyur-work
             
             let $volumes := 
                 for $volume-number in xs:integer($bibl/tei:location/tei:start/@volume) to xs:integer($bibl/tei:location/tei:end/@volume)

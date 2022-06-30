@@ -240,7 +240,7 @@
                                     <xsl:value-of select="'Search this text'"/>
                                 </h4>
                                 <form action="/search.html" method="post" role="search" class="form-horizontal bottom-margin">
-                                    <input type="hidden" name="resource-id" value="{ m:translation/@id }"/>
+                                    <input type="hidden" name="specified-text" value="{ m:translation/@id }"/>
                                     <div class="input-group">
                                         <input type="search" name="search" id="search" class="form-control" placeholder="Search" required="required" aria-label="Search text" value=""/>
                                         <span class="input-group-btn">
@@ -460,7 +460,7 @@
                                             </a>
                                         </td>
                                         <td>
-                                            <a href="/search.html">
+                                            <a>
                                                 <xsl:attribute name="href" select="common:internal-link('/search.html', (), '', /m:response/@lang)"/>
                                                 <xsl:value-of select="'Search the Reading Room'"/>
                                             </a>
@@ -475,7 +475,7 @@
                                             </a>
                                         </td>
                                         <td>
-                                            <a href="/search.html" target="84000-comms">
+                                            <a target="84000-comms">
                                                 <xsl:attribute name="href" select="common:homepage-link('sponsors',/m:response/@lang)"/>
                                                 <xsl:value-of select="'Our Sponsors'"/>
                                             </a>
@@ -603,7 +603,9 @@
                             <xsl:otherwise>
                                 <!-- .show displays content expanded -->
                                 <xsl:value-of select="'show'"/>
-                                <xsl:value-of select="'delay-render'"/>
+                                <xsl:if test="$view-mode[@client eq 'browser']">
+                                    <xsl:value-of select="'delay-render'"/>
+                                </xsl:if>
                             </xsl:otherwise>
                         </xsl:choose>
                         

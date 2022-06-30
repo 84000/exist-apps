@@ -21,8 +21,8 @@ let $cache-key := format-dateTime(current-dateTime(), "[Y0001]-[M01]-[D01]") || 
 let $cached := common:cache-get($request, $cache-key)
 return if($cached) then $cached else
 
-let $summary-kangyur := translations:summary($source:ekangyur-work)
-let $summary-tengyur := translations:summary($source:etengyur-work)
+let $summary-kangyur := translations:summary($source:kangyur-work)
+let $summary-tengyur := translations:summary($source:tengyur-work)
 
 let $xml-response :=
     common:response(

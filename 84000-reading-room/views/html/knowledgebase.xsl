@@ -121,7 +121,7 @@
                             </xsl:if>
                             
                             <xsl:if test="m:has-user-content(m:knowledgebase/m:part[@type eq 'article'])">
-                                <section id="article" class="tei-parser gtr-right">
+                                <section id="body" class="tei-parser gtr-right">
                                     <xsl:apply-templates select="m:knowledgebase/m:part[@type eq 'article']"/>
                                 </section>
                             </xsl:if>
@@ -299,7 +299,7 @@
                                             <xsl:if test="m:has-user-content(.)">
                                                 <li>
                                                     <a class="scroll-to-anchor">
-                                                        <xsl:attribute name="href" select="'#article'"/>
+                                                        <xsl:attribute name="href" select="'#' || @id"/>
                                                         <xsl:apply-templates select="tei:head/node()"/>
                                                     </a>
                                                 </li>

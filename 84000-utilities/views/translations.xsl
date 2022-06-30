@@ -52,13 +52,13 @@
                                                 <xsl:if test="$page-filter eq 'new-version-translations'">
                                                     <xsl:attribute name="selected" select="'selected'"/>
                                                 </xsl:if>
-                                                <xsl:value-of select="'Get new publications'"/>
+                                                <xsl:value-of select="'Get updated publications'"/>
                                             </option>
                                             <option value="new-version-placeholders">
                                                 <xsl:if test="$page-filter eq 'new-version-placeholders'">
                                                     <xsl:attribute name="selected" select="'selected'"/>
                                                 </xsl:if>
-                                                <xsl:value-of select="'Get new placeholders'"/>
+                                                <xsl:value-of select="'Get updated placeholders'"/>
                                             </option>
                                         </optgroup>
                                     </xsl:if>

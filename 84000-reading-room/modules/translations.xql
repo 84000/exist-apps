@@ -21,7 +21,7 @@ declare variable $translations:total-kangyur-pages as xs:integer := 70000;
 declare function translations:work-tei($work as xs:string) as element()* {
     if($work eq 'all') then
         $tei-content:translations-collection//tei:TEI
-    else if($work = ($source:ekangyur-work, $source:etengyur-work)) then
+    else if($work = ($source:kangyur-work, $source:tengyur-work)) then
         $tei-content:translations-collection//tei:TEI[tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl/tei:location[@work = $work]]
     else ()
 };
@@ -77,19 +77,19 @@ declare function translations:summary($work as xs:string) as element() {
     
     (: Current the ekangyur doesn't represent the entire scope of Kangur pages we intend to translate, so we need to increase the totals :)
     let $additional-pages := 
-        if($work eq $source:ekangyur-work) then
+        if($work eq $source:kangyur-work) then
             $translations:total-kangyur-pages - $all-toh-page-count
         else
             0
     
     let $all-text-page-count := 
-        if($work eq $source:ekangyur-work) then
+        if($work eq $source:kangyur-work) then
             $all-text-page-count + $additional-pages
         else
             $all-text-page-count
             
     let $all-toh-page-count := 
-        if($work eq $source:ekangyur-work) then
+        if($work eq $source:kangyur-work) then
             $translations:total-kangyur-pages
         else
             $all-toh-page-count

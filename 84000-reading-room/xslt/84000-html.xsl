@@ -520,7 +520,7 @@
                     <xsl:attribute name="id">
                         <xsl:value-of select="concat($id, '-heading')"/>
                     </xsl:attribute>
-                    <span class="panel-title" id="nav-sidebar-title">
+                    <span class="panel-title">
                         <xsl:call-template name="translation-lang-class">
                             <xsl:with-param name="lang" select="$lang"/>
                             <xsl:with-param name="persist-class-str" select="'panel-title'"/>

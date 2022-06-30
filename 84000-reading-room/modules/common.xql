@@ -109,6 +109,7 @@ function common:response($model as xs:string, $app-id as xs:string, $data as ite
                 $common:environment/m:google-analytics,
                 $common:environment/m:html-head,
                 $common:environment/m:render,
+                $common:environment/m:enable,
                 if($app-id eq 'utilities') then (
                     $common:environment/m:store-conf,
                     $common:environment/m:git-config
@@ -451,11 +452,13 @@ declare function common:mark-nodes($nodes as node()*, $strings as xs:string*, $m
     return
         if ($node instance of text() and $node[normalize-space()]) then
             common:mark-text($node, $strings, $mode)
+            
         else if ($node instance of element()) then
             element { node-name($node) }{
                 $node/@*,
                 common:mark-nodes($node/node(), $strings, $mode)
             }
+            
         else
             $node
 };
@@ -469,8 +472,10 @@ declare function common:mark-text($text as xs:string, $find as xs:string*, $mode
     let $find-tokenized :=
         if($mode = ('words')) then
              $find ! tokenize(., '\s+')
+             
         else if($mode = ('tibetan')) then
-             $find ! tokenize(., '\s+') ! replace(., '།', '')
+             $find ! tokenize(., '\s+') ! replace(., '(་|།)$', '')
+             
         else
             $find
     
@@ -494,24 +499,26 @@ declare function common:mark-text($text as xs:string, $find as xs:string*, $mode
         if($mode = ('tibetan')) then
             concat('(', string-join($find-tokenized[not(. = ('།'))] ! functx:escape-for-regex(.), '|'),')')
         else
-            concat('(?:^|\W*)(', string-join(($find-tokenized, $find-diacritics) ! functx:escape-for-regex(.), '|'),')(?:$|\W*)')
+            concat('(?:^|\W)(', string-join(($find-tokenized, $find-diacritics) ! functx:escape-for-regex(.), '|'),')(?:\W|$)')
     
     (: shrink multiple spaces to single :)
-    let $text := replace($text, '\s+', ' ')
+    let $text := replace($text, '\s+', '  ')
     
     (: Look for matches :)
     let $analyze-result := analyze-string($text, $regex, 'i')
     
     (: Output result :)
     return (
+        (:element regex {$regex},
+        $analyze-result,:)
         for $analyze-result-text in $analyze-result//text()
         return 
             if($analyze-result-text[parent::xpath:group]) then
                 element exist:match {
-                    $analyze-result-text
+                    text { $analyze-result-text ! replace(., '\s+', ' ') }
                 }
             else
-                $analyze-result-text
+                text { $analyze-result-text ! replace(., '\s+', ' ') }
     )
         
 };

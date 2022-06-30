@@ -14,18 +14,18 @@ import module namespace functx="http://www.functx.com";
 
 declare variable $source:source-data-path := '/db/apps/tibetan-source/data/';
 
-declare variable $source:ekangyur-work := 'UT4CZ5369';
-declare variable $source:ekangyur-path := concat($source:source-data-path, $source:ekangyur-work);
+declare variable $source:kangyur-work := 'UT4CZ5369';
+declare variable $source:ekangyur-path := concat($source:source-data-path, $source:kangyur-work);
 declare variable $source:ekangyur-volume-offset := 126;
 
-declare variable $source:etengyur-work := 'UT23703';
-declare variable $source:etengyur-path := concat($source:source-data-path, $source:etengyur-work);
+declare variable $source:tengyur-work := 'UT23703';
+declare variable $source:etengyur-path := concat($source:source-data-path, $source:tengyur-work);
 declare variable $source:etengyur-volume-offset := 316;
 
 declare function source:etext-path($work as xs:string) as xs:string {
-    if($work eq $source:ekangyur-work) then
+    if($work eq $source:kangyur-work) then
         $source:ekangyur-path
-    else if($work eq $source:etengyur-work) then
+    else if($work eq $source:tengyur-work) then
         $source:etengyur-path
     else
         ''
@@ -36,9 +36,9 @@ declare function source:etext-path($work as xs:string) as xs:string {
     e.g. Kangyur Volume 1 = eKangyur volume 127
 :)
 declare function source:etext-volume-number($work as xs:string, $volume as xs:integer) as xs:integer {
-    if($work eq $source:ekangyur-work) then
+    if($work eq $source:kangyur-work) then
         $volume + xs:integer($source:ekangyur-volume-offset)
-    else if($work eq $source:etengyur-work) then
+    else if($work eq $source:tengyur-work) then
         $volume + xs:integer($source:etengyur-volume-offset)
     else
         $volume
@@ -77,10 +77,10 @@ declare function source:page-to-folio($page as xs:integer) as xs:string {
 };
 
 declare function source:etext-id($work as xs:string, $etext-volume-number as xs:string) as xs:string {
-    if($work eq $source:ekangyur-work) then
-        concat($source:ekangyur-work, '-I1KG9', xs:string($etext-volume-number), '-0000')
-    else if($work eq $source:etengyur-work) then
-        concat($source:etengyur-work, '-1', xs:string($etext-volume-number), '-0000')
+    if($work eq $source:kangyur-work) then
+        concat($source:kangyur-work, '-I1KG9', xs:string($etext-volume-number), '-0000')
+    else if($work eq $source:tengyur-work) then
+        concat($source:tengyur-work, '-1', xs:string($etext-volume-number), '-0000')
     else
         ''
 };

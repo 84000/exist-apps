@@ -487,7 +487,7 @@ declare function local:part-content($content as element(tei:div)?, $render as xs
             (: Passage only - return only specified node  :)
             else if ($render eq 'passage') then 
                 for $output-id in $output-ids
-                let $output-id-int := substring-after($output-id, 'node-')
+                let $output-id-int := replace($output-id, '^node\-', '')
                 let $passage := $node/descendant-or-self::tei:*[@tid eq $output-id-int]
                 return
                     if($passage) then (
@@ -498,7 +498,16 @@ declare function local:part-content($content as element(tei:div)?, $render as xs
                         (: And the passage :)
                         $passage
                     )
-                    else ()
+                    else 
+                        let $passage := $node/descendant-or-self::tei:*[@xml:id eq $output-id-int]
+                        return
+                            if ($passage[self::tei:milestone]) then (
+                                (: Return the milestone and following siblings :)
+                                $passage,
+                                $passage/following-sibling::tei:*[count(preceding-sibling::tei:milestone[@unit eq 'chunk'][@xml:id][1] | $passage) eq 1][not(self::tei:milestone)]
+                            )
+                            else 
+                                $passage
             
             (: Partial rendering - return some nodes (except the above) :)
             else if ($render eq 'preview' and ($nesting eq 0 or $section-index eq 1)) then 

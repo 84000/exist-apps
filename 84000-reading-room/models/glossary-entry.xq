@@ -18,8 +18,8 @@ import module namespace functx="http://www.functx.com";
 
 declare option exist:serialize "method=xml indent=no";
 
-let $resource-id := request:get-parameter('resource-id', 'search')
-let $resource-suffix := request:get-parameter('resource-suffix', 'html')
+let $resource-id := request:get-parameter('resource-id', '')
+let $resource-suffix := (request:get-parameter('resource-suffix', '')[. = ('xml', 'html')], 'html')[1]
 
 let $term-langs := 
     <term-langs xmlns="http://read.84000.co/ns/1.0">
@@ -34,9 +34,15 @@ let $flag := $entities:flags//m:flag[@id eq  $flagged]
 let $view-mode := request:get-parameter('view-mode', 'default')
 let $view-mode := $glossary:view-modes/m:view-mode[@id eq $view-mode]
 let $exclude-flagged := if($view-mode[@id eq 'editor']) then () else 'requires-attention'
+let $exclude-status := if(not($view-mode/@id eq 'editor')) then 'excluded' else ''
 
 (: The requested entity :)
 let $request-entity := $entities:entities//m:entity/id($resource-id)[1]
+(: Perhaps this is a legacy link :)
+let $request-entity := 
+    if(not($request-entity/m:instance) and $request-entity[m:relation[@predicate eq 'sameAs']]) then
+        $entities:entities//m:entity/id($request-entity/m:relation[@predicate eq 'sameAs']/@id)[1]
+    else ()
 
 let $request := 
     element { QName('http://read.84000.co/ns/1.0', 'request')} {
@@ -61,7 +67,7 @@ let $cached := common:cache-get($request, $cache-key)
 return if($cached) then $cached else
 
 (: Get related entities :)
-let $entities-related := entities:related($request-entity, false(), $exclude-flagged, if(not($view-mode/@id eq 'editor')) then 'excluded' else '')
+let $entities-related := entities:related($request-entity, false(), $exclude-flagged, $exclude-status)
 
 let $xml-response :=
     common:response(

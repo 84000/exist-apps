@@ -19,7 +19,7 @@ import module namespace functx="http://www.functx.com";
 declare option exist:serialize "method=xml indent=no";
 
 let $resource-id := request:get-parameter('resource-id', 'search')
-let $resource-suffix := request:get-parameter('resource-suffix', 'html')
+let $resource-suffix := (request:get-parameter('resource-suffix', '')[. = ('xml', 'html')], 'html')[1]
 
 let $term-langs := 
     <term-langs xmlns="http://read.84000.co/ns/1.0">
@@ -34,6 +34,7 @@ let $flag := $entities:flags//m:flag[@id eq  $flagged]
 let $view-mode := request:get-parameter('view-mode', 'default')
 let $view-mode := $glossary:view-modes/m:view-mode[@id eq $view-mode]
 let $exclude-flagged := if($view-mode[@id eq 'editor']) then () else 'requires-attention'
+let $exclude-status := if(not($view-mode[@id eq 'editor'])) then 'excluded' else ''
 
 let $term-lang-default := (if($flag) then 'en' else (), 'bo')[1]
 let $term-lang := request:get-parameter('term-lang', '') ! common:valid-lang(.)
@@ -125,9 +126,9 @@ let $term-matches :=
     if($flag) then
         ()
     else if($request/m:search/text() gt '') then
-        glossary:glossary-search($glossary-types, $term-lang/@id, $request/m:search, if(not($view-mode[@id eq 'editor'])) then 'excluded' else '')
+        glossary:glossary-search($glossary-types, $term-lang/@id, $request/m:search, $exclude-status)
     else if($alphabet/m:letter[@selected]) then
-        glossary:glossary-startletter($glossary-types, $term-lang/@id, $alphabet/m:letter[@selected]/@regex, if(not($view-mode[@id eq 'editor'])) then 'excluded' else '')
+        glossary:glossary-startletter($glossary-types, $term-lang/@id, $alphabet/m:letter[@selected]/@regex, $exclude-status)
     else ()
 
 (: Convert terms to entries :)
@@ -191,7 +192,7 @@ let $matched-entities :=
 let $matched-entities-subset := subsequence($matched-entities, $first-record, $request/@records-per-page)
 
 (: Get related entities :)
-let $entities-related := entities:related($matched-entities-subset, false(), $exclude-flagged, if(not($view-mode/@id eq 'editor')) then 'excluded' else '')
+let $entities-related := entities:related($matched-entities-subset, false(), $exclude-flagged, $exclude-status)
 
 let $downloads := 
     if($request[@resource-id eq 'downloads']) then

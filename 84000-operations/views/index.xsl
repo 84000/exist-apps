@@ -57,7 +57,7 @@
                     
                     <h4>Preview data on the public site</h4>
                     <div class="row">
-                        <div class="col-sm-4">
+                        <div class="col-sm-3">
                             <h5 class="text-bold">Pages:</h5>
                             <ul class="list-unstyled">
                                 <li>
@@ -77,7 +77,7 @@
                                 </li>
                             </ul>
                         </div>
-                        <div class="col-sm-4">
+                        <div class="col-sm-9">
                             <h5 class="text-bold">Widgets:</h5>
                             <ul class="list-unstyled">
                                 <li>
@@ -85,6 +85,9 @@
                                 </li>
                                 <li>
                                     Progress chart <a href="{ $reading-room-path }/widget/progress-chart.html" target="progress-chart">en</a> | <a href="{ $reading-room-path }/widget/progress-chart.html?lang=zh" target="progress-chart">zh</a>
+                                </li>
+                                <li>
+                                    Progress chart single <a href="{ $reading-room-path }/widget/progress-chart-single.html?work=UT4CZ5369" target="progress-chart-single">Kangyur en</a> | <a href="{ $reading-room-path }/widget/progress-chart-single.html?work=UT4CZ5369&amp;lang=zh" target="progress-chart-single">Kangyur zh</a> | <a href="{ $reading-room-path }/widget/progress-chart-single.html?work=UT23703" target="progress-chart-single">Tengyur en</a> | <a href="{ $reading-room-path }/widget/progress-chart-single.html?work=UT23703&amp;lang=zh" target="progress-chart-single">Tengyur zh</a>
                                 </li>
                                 <li>
                                     Download dāna <a href="{ $reading-room-path }/widget/download-dana.html?resource-id=UT22084-001-001" target="download-dana">en</a> | <a href="{ $reading-room-path }/widget/download-dana.html?resource-id=UT22084-001-001&amp;lang=zh" target="download-dana">zh</a>

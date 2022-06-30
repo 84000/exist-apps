@@ -12,7 +12,7 @@ declare option output:method "json";
 declare option output:media-type "application/json";
 declare option output:json-ignore-whitespace-text-nodes "yes";
 
-declare variable $xhtml-xsl := doc(concat($common:app-path, "/xslt/tei-search.xsl"));
+declare variable $xhtml-xsl := doc(concat($common:app-path, "/views/html/search.xsl"));
 
 declare function local:results($results as element()*) as element()* {
     element results {

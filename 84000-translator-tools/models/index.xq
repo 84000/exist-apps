@@ -30,7 +30,7 @@ let $tab :=
 let $type := request:get-parameter('type', if($tab eq 'tm-search') then 'folio' else 'term')
 let $search := request:get-parameter('search', if($tab eq 'glossary') then 'a' else '')
 let $lang := request:get-parameter('lang', if($tab eq 'tm-search') then 'bo' else 'en')
-let $work := request:get-parameter('work', $source:ekangyur-work)
+let $work := request:get-parameter('work', $source:kangyur-work)
 let $volume := request:get-parameter('volume', 1)
 let $page := request:get-parameter('page', 1)
 let $resource-id := request:get-parameter('resource-id', '')
@@ -48,13 +48,9 @@ let $etext-page :=
     else ()
 
 let $content :=
-    if($tab eq 'search' and compare($search, '') gt 0) then 
-        search:search($search, $resource-id, $first-record, 15)
-    else if($tab eq 'glossary') then 
-        glossary:glossary-terms($type, $lang, $search, true())
-    else if($tab eq 'tm-search') then (
+    if($tab eq 'tm-search') then (
         $etext-page,
-        search:tm-search($search, $lang, $first-record, 10),
+        search:tm-search($search, $lang, $first-record, 10, true()),
         source:etext-volumes($work, xs:integer($volume)),
         contributors:persons(false(), false())
     )

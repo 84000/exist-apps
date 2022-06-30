@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:common="http://read.84000.co/common" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" version="3.0" exclude-result-prefixes="#all">
     
-    <xsl:import href="../../84000-reading-room/xslt/tei-search.xsl"/>
+    <xsl:import href="../../84000-reading-room/xslt/webpage.xsl"/>
     <xsl:import href="../../84000-reading-room/xslt/text-overlay.xsl"/>
     
     <xsl:variable name="environment" select="/m:response/m:environment"/>
@@ -49,43 +49,7 @@
                 <div class="container">
                     <div class="tab-content">
                         
-                        <xsl:choose>
-                            
-                            <!-- Search results -->
-                            <xsl:when test="$request/@tab eq 'search'">
-                                
-                                <div class="alert alert-info small text-center">
-                                    <p>
-                                        <xsl:value-of select="'Use the form below to search for terms, phrases, titles, and so forth in published and nearly-published 84000 translations. Search results link directly to passages in the Reading Room.'"/>
-                                    </p>
-                                </div>
-                                
-                                <xsl:call-template name="search">
-                                    <xsl:with-param name="action" select="'index.html?tab=search'"/>
-                                </xsl:call-template>
-                                
-                            </xsl:when>
-                            
-                            <!-- Cumulative Glossary -->
-                            <xsl:when test="$request/@tab eq 'glossary'">
-                                <xsl:call-template name="glossary"/>
-                            </xsl:when>
-                            
-                            <!-- Tibetan Search -->
-                            <xsl:when test="$request/@tab eq 'tm-search'">
-                                <xsl:call-template name="tm-search"/>
-                            </xsl:when>
-                            
-                            <!-- Translations list -->
-                            <xsl:when test="$request/@tab eq 'translations'">
-                                <xsl:call-template name="translations"/>
-                            </xsl:when>
-                            
-                            <xsl:otherwise>
-                                <xsl:copy-of select="xhtml:article/*"/>
-                            </xsl:otherwise>
-                            
-                        </xsl:choose>
+                        <xsl:copy-of select="xhtml:article/*"/>
                         
                     </div>
                 </div>

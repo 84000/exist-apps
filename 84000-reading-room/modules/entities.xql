@@ -116,7 +116,7 @@ declare function entities:similar($entity as element(m:entity)?, $search-terms a
                 $entities:entities//m:entity
                     [m:instance/@id = $matching-instance-ids]
                     [m:type/@type = $entity/m:type/@type]
-            else
+            else 
                 $entities:entities//m:entity
                     [m:instance/@id = $matching-instance-ids]
             | $entities:entities//m:entity/id($matching-entity-ids)
@@ -141,8 +141,8 @@ declare function entities:related($entities as element(m:entity)*, $include-unre
             | $entities:entities//m:entity[m:relation[@id = $entities/@xml:id]]
         )
         else (
-            $entities:entities//m:entity/id($entities/m:relation[not(@predicate eq 'isUnrelated')]/@id)
-            | $entities:entities//m:entity[m:relation[not(@predicate eq 'isUnrelated')][@id = $entities/@xml:id]]
+            $entities:entities//m:entity/id($entities/m:relation[not(@predicate = ('sameAs', 'isUnrelated'))]/@id)
+            | $entities:entities//m:entity[m:relation[not(@predicate = ('sameAs', 'isUnrelated'))][@id = $entities/@xml:id]]
         )
     )
     

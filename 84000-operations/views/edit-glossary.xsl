@@ -1056,7 +1056,7 @@
                                                                     
                                                                     <xsl:for-each select="$loop-glossary-entity-relations">
                                                                         
-                                                                        <xsl:sort select="if(@predicate = 'isUnrelated') then 1 else 0"/>
+                                                                        <xsl:sort select="if(@predicate = ('isUnrelated', 'sameAs')) then 1 else 0"/>
                                                                         
                                                                         <xsl:variable name="relation" select="."/>
                                                                         <xsl:variable name="relation-entity" as="element(m:entity)?">
@@ -1073,7 +1073,7 @@
                                                                         <xsl:call-template name="expand-item">
                                                                             
                                                                             <xsl:with-param name="accordion-selector" select="concat('#accordion-glossary-', $loop-glossary-id, '-relations')"/>
-                                                                            <xsl:with-param name="id" select="concat('glossary-', $loop-glossary-id, '-relation-', $relation-entity/@xml:id)"/>
+                                                                            <xsl:with-param name="id" select="concat('glossary-', $loop-glossary-id, '-relation-', $relation/@id)"/>
                                                                             <xsl:with-param name="persist" select="true()"/>
                                                                             
                                                                             <xsl:with-param name="title">
@@ -1090,7 +1090,7 @@
                                                                                             <li>
                                                                                                 <span>
                                                                                                     <xsl:choose>
-                                                                                                        <xsl:when test="$relation/@predicate eq 'isUnrelated'">
+                                                                                                        <xsl:when test="$relation/@predicate = ('isUnrelated', 'sameAs')">
                                                                                                             <xsl:attribute name="class" select="'label label-default'"/>
                                                                                                         </xsl:when>
                                                                                                         <xsl:otherwise>
@@ -1102,7 +1102,7 @@
                                                                                                 </span>
                                                                                             </li>
                                                                                             
-                                                                                            <xsl:variable name="relation-entity-label" select="($relation-entity/m:label[@xml:lang eq 'en'], $relation-entity/m:label[@xml:lang eq 'Sa-Ltn'], $relation-entity/m:label)[1]"/>
+                                                                                            <xsl:variable name="relation-entity-label" select="($relation-entity/m:label[@xml:lang eq 'en'], $relation-entity/m:label[@xml:lang eq 'Sa-Ltn'], $relation-entity/m:label, $relation/m:label)[1]"/>
                                                                                             
                                                                                             <xsl:if test="$relation-entity-label">
                                                                                                 <li>
@@ -1115,32 +1115,34 @@
                                                                                                 </li>
                                                                                             </xsl:if>
                                                                                             
-                                                                                            <li>
-                                                                                                <xsl:call-template name="entity-type-labels">
-                                                                                                    <xsl:with-param name="entity" select="$relation-entity"/>
-                                                                                                    <xsl:with-param name="entity-types" select="/m:response/m:entity-types/m:type"/>
-                                                                                                </xsl:call-template>
-                                                                                            </li>
-                                                                                            
-                                                                                            <xsl:if test="/m:response/m:entity-types/m:type[@glossary-type = $relation-entity/m:type/@type]">
+                                                                                            <xsl:if test="$relation-entity">
+                                                                                                
                                                                                                 <li>
-                                                                                                    <a target="84000-glossary" class="small">
-                                                                                                        <xsl:attribute name="href" select="concat($reading-room-path, '/glossary/', $relation/@id, '.html?view-mode=editor')"/>
-                                                                                                        <xsl:value-of select="'84000 Glossary'"/>
-                                                                                                    </a>
+                                                                                                    <xsl:call-template name="entity-type-labels">
+                                                                                                        <xsl:with-param name="entity" select="$relation-entity"/>
+                                                                                                        <xsl:with-param name="entity-types" select="/m:response/m:entity-types/m:type"/>
+                                                                                                    </xsl:call-template>
                                                                                                 </li>
+                                                                                                
+                                                                                                <xsl:if test="/m:response/m:entity-types/m:type[@glossary-type = $relation-entity/m:type/@type]">
+                                                                                                    <li>
+                                                                                                        <a target="84000-glossary" class="small">
+                                                                                                            <xsl:attribute name="href" select="concat($reading-room-path, '/glossary/', $relation/@id, '.html?view-mode=editor')"/>
+                                                                                                            <xsl:value-of select="'84000 Glossary'"/>
+                                                                                                        </a>
+                                                                                                    </li>
+                                                                                                </xsl:if>
+                                                                                                
+                                                                                                <li>
+                                                                                                    <xsl:call-template name="link">
+                                                                                                        <xsl:with-param name="link-text" select="'remove relation'"/>
+                                                                                                        <xsl:with-param name="link-class" select="'small'"/>
+                                                                                                        <xsl:with-param name="glossary-id" select="$loop-glossary-id"/>
+                                                                                                        <xsl:with-param name="add-parameters" select="('form-action=merge-entities', 'predicate=removeRelation', 'entity-id=' || $relation-entity/@xml:id, 'target-entity-id=' || $loop-glossary-entity/@xml:id)"/>
+                                                                                                    </xsl:call-template>
+                                                                                                </li>
+                                                                                                
                                                                                             </xsl:if>
-                                                                                            
-                                                                                            <li>
-                                                                                                <xsl:call-template name="link">
-                                                                                                    <xsl:with-param name="link-text" select="'remove relation'"/>
-                                                                                                    <xsl:with-param name="link-class" select="'small'"/>
-                                                                                                    <xsl:with-param name="glossary-id" select="$loop-glossary-id"/>
-                                                                                                    <xsl:with-param name="add-parameters" select="('form-action=merge-entities', 'predicate=removeRelation', 'entity-id=' || $relation-entity/@xml:id, 'target-entity-id=' || $loop-glossary-entity/@xml:id)"/>
-                                                                                                </xsl:call-template>
-                                                                                            </li>
-                                                                                            
-                                                                                            <!-- Flags -->
                                                                                             
                                                                                         </ul>
                                                                                     </div>
@@ -1153,11 +1155,20 @@
                                                                                 
                                                                                 <hr class="sml-margin"/>
                                                                                 
-                                                                                <xsl:call-template name="entity-option-content">
-                                                                                    <xsl:with-param name="entity" select="$relation-entity"/>
-                                                                                    <xsl:with-param name="active-glossary-id" select="$loop-glossary-id"/>
-                                                                                    <xsl:with-param name="active-kb-id" select="''"/>
-                                                                                </xsl:call-template>
+                                                                                <xsl:choose>
+                                                                                    <xsl:when test="$relation-entity">
+                                                                                        <xsl:call-template name="entity-option-content">
+                                                                                            <xsl:with-param name="entity" select="$relation-entity"/>
+                                                                                            <xsl:with-param name="active-glossary-id" select="$loop-glossary-id"/>
+                                                                                            <xsl:with-param name="active-kb-id" select="''"/>
+                                                                                        </xsl:call-template>
+                                                                                    </xsl:when>
+                                                                                    <xsl:when test="$relation[@predicate eq 'sameAs']">
+                                                                                        <p class="text-muted italic">
+                                                                                            <xsl:value-of select="'Requests for ' || $relation/@id || ' will be directed to the merged entity ' || $loop-glossary-entity/@xml:id"/>
+                                                                                        </p>
+                                                                                    </xsl:when>
+                                                                                </xsl:choose>
                                                                                 
                                                                             </xsl:with-param>
                                                                             

@@ -23,8 +23,8 @@ let $cache-key := format-dateTime(current-dateTime(), "[Y0001]-[M01]-[D01]") || 
 let $cached := common:cache-get($request, $cache-key)
 return if($cached) then $cached else
 
-let $summary-kangyur := translations:summary($source:ekangyur-work)
-let $summary-tengyur := translations:summary($source:etengyur-work)
+let $summary-kangyur := translations:summary($source:kangyur-work)
+let $summary-tengyur := translations:summary($source:tengyur-work)
 let $translations-published := translations:translation-status-texts($tei-content:text-statuses/m:status[@type eq 'translation'][@group = ('published')]/@status-id)
 let $translations-translated := translations:translation-status-texts($tei-content:text-statuses/m:status[@type eq 'translation'][@group = ('translated')]/@status-id)
 let $translations-in-translation := translations:translation-status-texts($tei-content:text-statuses/m:status[@type eq 'translation'][@group = ('in-translation')]/@status-id)

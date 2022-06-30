@@ -36,13 +36,16 @@ let $knowledgebase-content :=
 
 let $glossary-ids := $knowledgebase-content/m:part[@type eq 'glossary']/tei:gloss/@xml:id
 
+let $exclude-flagged := if($view-mode[@id eq 'editor']) then () else 'requires-attention'
+let $exclude-status := if(not($view-mode/@id eq 'editor')) then 'excluded' else ''
+
 let $entities := 
     element { QName('http://read.84000.co/ns/1.0', 'entities') }{
     
         let $attribution-ids := $knowledgebase-content/m:part[@type eq 'related-texts']//m:attribution/@ref ! replace(., '^eft:', '')
         let $article-entity := $entities:entities//m:entity[m:instance/@id = $knowledgebase-id]
         let $entity-list := $entities:entities//m:entity/id($attribution-ids)
-        let $related := entities:related($article-entity | $entity-list)
+        let $related := entities:related($article-entity | $entity-list, false(), $exclude-flagged, $exclude-status)
         return (
             $entity-list,
             element related { $related }

@@ -35,7 +35,7 @@ declare function update-tei:minor-version-increment($tei as element(tei:TEI), $f
             element edition {
                 text {'v ' || $version-number-str-increment || ' '},
                 element date {
-                    text {$version-date}
+                    text { $version-date }
                 }
             }
         }

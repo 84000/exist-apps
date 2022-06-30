@@ -1,5 +1,7 @@
 xquery version "3.0";
 
+declare namespace m = "http://read.84000.co/ns/1.0";
+
 declare variable $exist:path external;
 declare variable $exist:resource external;
 declare variable $exist:controller external;
@@ -10,8 +12,11 @@ declare variable $resource-suffix := lower-case(substring-after($exist:resource,
 declare variable $collection-path := lower-case(substring-before(substring-after($exist:path, "/"), "/"));
 declare variable $controller-root := lower-case(substring-after($exist:controller, "/"));
 
+import module namespace common="http://read.84000.co/common" at "../84000-reading-room/modules/common.xql";
+
 (: Log the request :)
 import module namespace log = "http://read.84000.co/log" at "../84000-reading-room/modules/log.xql";
+
 log:log-request(concat($exist:controller, $exist:path), $controller-root, $collection-path, $resource-id, $resource-suffix),
 
 (: Accept the client error without 404. It is logged above. :)
@@ -24,6 +29,30 @@ else if ($exist:path = ('', '/') or $exist:resource = ('index.htm')) then
     (: forward root path to translations.html :)
     <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
         <redirect url="index.html"/>
+    </dispatch>
+
+(: Legacy tab :)
+else if(request:get-parameter('tab','') ! lower-case(.) eq 'search') then
+    <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+        <redirect url="{ $common:environment/m:url[@id eq 'reading-room'] }/search.html"/>
+    </dispatch>
+
+(: Legacy tab :)
+else if(request:get-parameter('tab','') ! lower-case(.) eq 'tm-search') then
+    <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+        <redirect url="{ $common:environment/m:url[@id eq 'reading-room'] }/search.html?search-type=tm"/>
+    </dispatch>
+
+(: Legacy tab :)
+else if(request:get-parameter('tab','') ! lower-case(.) eq 'glossary') then
+    <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+        <redirect url="{ $common:environment/m:url[@id eq 'reading-room'] }/glossary/search.html"/>
+    </dispatch>
+
+(: Legacy tab :)
+else if(request:get-parameter('tab','') ! lower-case(.) eq 'translations') then
+    <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+        <redirect url="{ $common:environment/m:url[@id eq 'reading-room'] }/section/all-translated.html"/>
     </dispatch>
 
 else if (ends-with($exist:resource, ".xml")) then
@@ -50,17 +79,10 @@ else if (ends-with($exist:resource, ".html")) then
 
 (: Cumulative glossary download :)
 else if (lower-case($resource-id) eq 'cumulative-glossary') then
-    if (lower-case($resource-suffix) eq 'zip') then
-        <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-            <forward url="{concat($exist:controller, '/models/cumulative-glossary.xq')}">
-                <add-parameter name="resource-suffix" value="zip"/>
-            </forward>
-        </dispatch>
-    else
-        (: return xml :)
-        <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-            <forward url="{concat($exist:controller, '/models/cumulative-glossary.xq')}"/>
-        </dispatch>
+    <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+        <redirect url="{ $common:environment/m:url[@id eq 'reading-room'] }/glossary/downloads.html"/>
+    </dispatch>
+    
 else
     (: pass to data :)
     <dispatch xmlns="http://exist.sourceforge.net/NS/exist">

@@ -308,9 +308,12 @@ declare function update-entity:merge($entity-id as xs:string, $target-entity-id 
         let $entity := $parent/id($entity-id)[self::m:entity]
         let $target-entity := $parent/id($target-entity-id)[self::m:entity]
         
+        (: Merge all details into the new entity :)
         let $entity-new := 
             element { node-name($entity) } {
+            
                 $entity/@*,
+                
                 for $entity-node in functx:distinct-deep(($entity/* | $target-entity/*))
                 let $element-name := local-name($entity-node)
                 order by if($element-name eq 'label') then 1 else if($element-name eq 'type') then 2 else if($element-name eq 'instance') then 3 else 4
@@ -318,7 +321,31 @@ declare function update-entity:merge($entity-id as xs:string, $target-entity-id 
                     common:ws(2),
                     $entity-node
                 ),
+                
                 common:ws(1)
+            }
+        
+        (: Record that the other entity has merged (to avoid dead links) :)
+        let $target-entity-new := 
+            element { node-name($target-entity) } {
+            
+                $target-entity/@*,
+                
+                common:ws(2),
+                (
+                    $target-entity/m:label[@xml:lang eq 'en'],
+                    $target-entity/m:label[@xml:lang eq 'Bo-Ltn'],
+                    $target-entity/m:label[not(@xml:lang = ('en','Bo-Ltn'))]
+                )[1],
+                
+                common:ws(2),
+                element { QName('http://read.84000.co/ns/1.0', 'relation') } {
+                    attribute predicate { 'sameAs' },
+                    attribute id { $entity-id }
+                },
+                
+                common:ws(1)
+                
             }
         
         where $entity and $target-entity
@@ -327,14 +354,16 @@ declare function update-entity:merge($entity-id as xs:string, $target-entity-id 
             (: Update entity :)
             common:update('entity-merge', $entity, $entity-new, (), ()),
             
-            (: Update target references :)
+            (: Update target entity :)
+            common:update('entity-merge-target', $target-entity, $target-entity-new, (), ()),
+            
+            (: Update relations to the target to point to the new :)
             for $relation in $entities:entities//m:relation[@id eq $target-entity-id]
             return 
                 common:update('entity-merge-relation', $relation/@id, attribute id { $entity-id }, (), ())
             ,
             
             (: Update attributions :)
-            (: TO DO: this could get very slow if it triggers TEI file :)
             for $tei in collection($common:tei-path)//tei:TEI[descendant::tei:*/@ref[. eq concat('eft:', $target-entity-id)]]
             return (
                 for $attribution-ref in $tei/descendant::tei:*/@ref[. eq concat('eft:', $target-entity-id)]
@@ -342,10 +371,7 @@ declare function update-entity:merge($entity-id as xs:string, $target-entity-id 
                     common:update('entity-merge-attribution', $attribution-ref, concat('eft:', $entity-id), (), ())
                 ,
                 update-tei:minor-version-increment($tei, 'entity-merge-attribution')
-            ),
-            
-            (: Delete target :)
-            common:update('entity-remove', $target-entity, (), (), ())
+            )
             
             (:element update-debug {
                 attribute entity-id { $entity-id },
@@ -354,6 +380,7 @@ declare function update-entity:merge($entity-id as xs:string, $target-entity-id 
                 element parent { $parent }, 
                 element insert-following { () }:\)
             }:)
+            
         )
         
     }

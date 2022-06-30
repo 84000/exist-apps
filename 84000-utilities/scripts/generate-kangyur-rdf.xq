@@ -16,7 +16,7 @@ import module namespace store="http://read.84000.co/store" at "../../84000-readi
       OR comment out where clause to do all
 :)
 
-let $work := $source:ekangyur-work
+let $work := $source:kangyur-work
 let $teis := translations:work-tei($work)
 let $kangyur-toh-keys := $teis//tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl[tei:location/@work eq 'UT4CZ5369']/@key
 let $text-refs := doc(concat($common:data-path, '/operations/text-refs.xml'))
