@@ -13,8 +13,8 @@ let $work := (request:get-parameter('work', '')[. = ($source:kangyur-work, $sour
 
 let $request := 
     element { QName('http://read.84000.co/ns/1.0', 'request')} {
-        attribute model { 'widget/progress-chart' },
-        attribute resource-suffix { (request:get-parameter('resource-suffix', '')[. = ('xml', 'html')], 'html')[1] },
+        attribute model { 'widget/progress-chart-single' },
+        attribute resource-suffix { request:get-parameter('resource-suffix', '') },
         attribute lang { common:request-lang() },
         attribute work { $work },
         element work-name {

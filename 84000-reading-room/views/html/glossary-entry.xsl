@@ -619,7 +619,8 @@
             
             <!-- Glossary definition -->
             <xsl:variable name="entry-definition" select="$entry/m:definition[node()]"/>
-            <xsl:if test="$entry-definition">
+            <xsl:variable name="entity-definition" select="$instance/parent::m:entity/m:content[@type eq 'glossary-definition'][node()]"/>
+            <xsl:if test="($entry-definition and not($entity-definition)) or ($entry-definition and not($instance[@use-definition eq 'override']))">
                 <blockquote>
                     <xsl:for-each select="$entry-definition">
                         <p>
@@ -631,12 +632,19 @@
             
             <!-- Entity definition -->
             <xsl:if test="$tei-editor">
-                <xsl:variable name="entity-definition" select="$instance/parent::m:entity/m:content[@type eq 'glossary-definition'][node()]"/>
-                <xsl:if test="($entity-definition and $entry-definition and $instance[@use-definition  eq 'both']) or ($entity-definition and not($entry-definition))">
+                <xsl:if test="($entity-definition and not($entry-definition)) or ($entity-definition and $instance[@use-definition = ('both','override')])">
                     <div class="well well-sm">
                         
                         <h6 class="sml-margin top bottom">
-                            <xsl:value-of select="'Text also includes entity definition:'"/>
+                            
+                            <xsl:value-of select="'Text also includes entity definition: '"/>
+                            
+                            <xsl:if test="$entry-definition and $instance[@use-definition eq 'override']">
+                                <span class="label label-warning">
+                                    <xsl:value-of select="'Entity definition overrides glossary definition'"/>
+                                </span>  
+                            </xsl:if>
+                            
                         </h6>
                         
                         <blockquote>

@@ -17,7 +17,7 @@ import module namespace functx="http://www.functx.com";
 
 declare option exist:serialize "method=xml indent=no";
 
-let $resource-suffix := request:get-parameter('resource-suffix', 'html')
+let $resource-suffix := request:get-parameter('resource-suffix', '')
 let $doc-type := 
     if($resource-suffix = ('navigation.atom', 'acquisition.atom')) then 
         'atom'

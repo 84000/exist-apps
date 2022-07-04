@@ -46,7 +46,7 @@ declare function local:results($results as element()*) as element()* {
     }
 };
 
-let $search := request:get-data()/m:response/m:search
+let $search := request:get-data()/m:response/m:tei-search
 let $api-version := '0.1.0'
 
 return

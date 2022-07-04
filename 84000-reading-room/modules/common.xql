@@ -499,9 +499,11 @@ declare function common:mark-text($text as xs:string, $find as xs:string*, $mode
         if($mode = ('tibetan')) then
             concat('(', string-join($find-tokenized[not(. = ('།'))] ! functx:escape-for-regex(.), '|'),')')
         else
-            concat('(?:^|\W)(', string-join(($find-tokenized, $find-diacritics) ! functx:escape-for-regex(.), '|'),')(?:\W|$)')
+            let $escaped := ($find-tokenized, $find-diacritics)[. gt ' '] ! functx:escape-for-regex(.) ! replace(., '\s+', '\\s+')
+            return
+                concat('(?:^|\W)(', string-join($escaped, '|'),')(?:\W|$)')
     
-    (: shrink multiple spaces to single :)
+    (: double spaces to support the regex :)
     let $text := replace($text, '\s+', '  ')
     
     (: Look for matches :)
@@ -510,6 +512,7 @@ declare function common:mark-text($text as xs:string, $find as xs:string*, $mode
     (: Output result :)
     return (
         (:element regex {$regex},
+        element search-text {$text},
         $analyze-result,:)
         for $analyze-result-text in $analyze-result//text()
         return 

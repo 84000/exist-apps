@@ -72,7 +72,7 @@
     <item key="about.common.column-status-label">Status</item>
     <item key="about.common.column-pages-label">Pages</item>
     <item key="about.common.page-total-label">Total pages:</item>
-    <item key="about.common.pages-label">pages</item>
+    <item key="about.common.pages-label">頁</item>
     <item key="about.common.texts-label">texts</item>
     
     <!-- Progress -->

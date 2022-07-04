@@ -1291,14 +1291,16 @@
                         <xsl:variable name="entity-definition" select="$entity/m:content[@type eq 'glossary-definition'][node()]"/>
                         
                         <!-- Definition -->
-                        <xsl:for-each select="$entry-definition">
-                            <p>
-                                <xsl:call-template name="class-attribute">
-                                    <xsl:with-param name="base-classes" select="'definition'"/>
-                                </xsl:call-template>
-                                <xsl:apply-templates select="node()"/>
-                            </p>
-                        </xsl:for-each>
+                        <xsl:if test="($entry-definition and not($entity-definition)) or ($entry-definition and not($entity-instance[@use-definition eq 'override']))">
+                            <xsl:for-each select="$entry-definition">
+                                <p>
+                                    <xsl:call-template name="class-attribute">
+                                        <xsl:with-param name="base-classes" select="'definition'"/>
+                                    </xsl:call-template>
+                                    <xsl:apply-templates select="node()"/>
+                                </p>
+                            </xsl:for-each>
+                        </xsl:if>
                         
                         <!-- Entity definition -->
                         <xsl:if test="$view-mode[@id = ('editor', 'editor-passage')] and not($entity)">
@@ -1308,7 +1310,7 @@
                                 </span>
                             </div>
                         </xsl:if>
-                        <xsl:if test="$entity-definition and (not($entry-definition) or $entity-instance[@use-definition  eq 'both'])">
+                        <xsl:if test="($entity-definition and not($entry-definition)) or ($entity-definition and $entity-instance[@use-definition = ('both','override')])">
                             <div class="footer">
                                 <h4 class="heading">
                                     <xsl:value-of select="'Definition from the 84000 Glossary of Terms:'"/>

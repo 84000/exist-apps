@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <eft-header xmlns="http://read.84000.co/ns/1.0">
-    <!-- Updated 23.06.2022 -->
+    <!-- Updated 04.07.2022 -->
     <translation id="tag-line">
         <text xml:lang="en">Translating the words of the Buddha</text>
         <text xml:lang="zh">八萬四千 • 佛典傳譯</text>
@@ -108,11 +108,11 @@
             <item url="https://read.84000.co/section/all-translated.html">
                 <label key="label-all-translated">Published Translations</label>
             </item>
-            <item url="https://read.84000.co/search.html">
-                <label key="label-search">Search</label>
-            </item>
             <item url="https://read.84000.co/glossary/search.html">
                 <label key="label-glossary">Glossary of Terms</label>
+            </item>
+            <item url="https://read.84000.co/search.html">
+                <label key="label-search">Search</label>
             </item>
         </item>
         <item class="resources" url="#resources">
@@ -144,7 +144,28 @@
         </item>
         <item class="about" url="#about">
             <label key="label-about">About</label>
-            <item url="#work">
+            <item url="https://84000.co/about/about-us">
+                <label key="label-about-us">About Us</label>
+            </item>
+            <item url="https://84000.co/about/core-values">
+                <label key="label-core-values">Core Values</label>
+            </item>
+            <item url="https://84000.co/about/translation-progress-impact">
+                <label key="label-progress-impact">Progress and Impact</label>
+            </item>
+            <item url="https://84000.co/about/partnerships">
+                <label key="label-partnerships">Partnerships</label>
+            </item>
+            <item url="https://84000.co/about/media">
+                <label key="label-press">Press</label>
+            </item>
+            <item url="https://84000.co/about/reports">
+                <label key="label-reports">Annual Reports</label>
+            </item>
+            <item url="https://84000.co/about/contact">
+                <label key="label-contact">Contact</label>
+            </item>
+            <!--<item url="#work">
                 <label key="label-our-work">Our Work</label>
                 <description key="description-our-work">With a strong editorial team, we award text-specific grants to translation teams around the world, working collaboratively to ensure accurate and credible translations of Classical Tibetan Buddhist texts that will form a cohesive Canon upon completion. We integrate new publication technologies in order to deliver these 231,800 pages of the wisdom to you, in English, online, for free.</description>
                 <item url="https://84000.co/about/what-we-do">
@@ -159,8 +180,8 @@
                 <item url="https://84000.co/about/copyright">
                     <label key="label-copyright">Copyright</label>
                 </item>
-            </item>
-            <item url="#impact">
+            </item>-->
+            <!--<item url="#impact">
                 <label key="label-impact-group">Our Impact</label>
                 <description key="description-impact">As of 2010, only 5% of the Tibetan Buddhist Canon had been translated out of Classical Tibetan—a language facing a serious threat to its survival. In ten years, we have published or have in-translation over 36,000 pages of the Kangyur, not only making deeper international academic inquiry possible, but as our readership grows around the world, we put the wisdom that the Canon contains at the fingertips of readers like you.</description>
                 <item url="https://read.84000.co/about/progress.html">
@@ -175,8 +196,8 @@
                 <item url="https://84000.co/about/media">
                     <label key="label-achievements">Press</label>
                 </item>
-            </item>
-            <item url="#people">
+            </item>-->
+            <!--<item url="#people">
                 <label key="label-people">Our People</label>
                 <description key="description-people">Our work relies upon the dedicated and collaborative effort of scholars, professionals, volunteers, advisors, and sponsors around the world. We work remotely and online, across timezones and continents, and we greatly value each and every member of our team. This virtual teamwork has been a major source of both pride and humility as we produce accurate and credible translations and make them available to you online, for free.</description>
                 <item url="https://84000.co/about/team">
@@ -197,16 +218,10 @@
                 <item url="https://84000.co/about/endorsements">
                     <label key="label-endorsements">Endorsements</label>
                 </item>
-            </item>
-            <item url="https://84000.co/about/faq">
+            </item>-->
+            <!--<item url="https://84000.co/about/faq">
                 <label key="label-faq">FAQ</label>
-            </item>
-            <item url="https://84000.co/about/reports">
-                <label key="label-reports">Annual Reports</label>
-            </item>
-            <item url="https://84000.co/about/contact">
-                <label key="label-contact">Contact</label>
-            </item>
+            </item>-->
         </item>
         <item class="join-us" url="#join-us">
             <label key="label-join-us">Join Us</label>
@@ -269,11 +284,11 @@
             <item url="https://read.84000.co/section/all-translated.html?lang=zh">
                 <label key="label-all-translated">已翻譯經典</label>
             </item>
-            <item url="https://read.84000.co/search.html?lang=zh">
-                <label key="label-search">雲端藏經閣檢索</label>
-            </item>
             <item url="https://read.84000.co/glossary/search.html?lang=zh">
                 <label key="label-glossary">術語表</label>
+            </item>
+            <item url="https://read.84000.co/search.html?lang=zh">
+                <label key="label-search">雲端藏經閣檢索</label>
             </item>
         </item>
         <item class="resources" url="#resources">
@@ -305,7 +320,28 @@
         </item>
         <item class="about" url="#about">
             <label key="label-about">關於我們</label>
-            <item url="#work">
+            <item url="https://84000.co/ch-about/ch-about-us">
+                <label key="label-about-us">關於我們</label>
+            </item>
+            <item url="https://84000.co/ch-about/ch-core-values">
+                <label key="label-core-values">的組織核心價值</label>
+            </item>
+            <item url="https://84000.co/ch-about/ch-translation-progress-impact">
+                <label key="label-progress-impact">翻譯進度和影響力</label>
+            </item>
+            <item url="https://84000.co/ch-about/ch-partnerships">
+                <label key="label-partnerships">合作夥伴</label>
+            </item>
+            <item url="https://84000.co/about/media">
+                <label key="label-achievements">媒體報導</label>
+            </item>
+            <item url="https://84000.co/ch-about/ch-reports">
+                <label key="label-reports">進度報告</label>
+            </item>
+            <item url="https://84000.co/ch-about/ch-about-contact">
+                <label key="label-contact">聯繫方式</label>
+            </item>
+            <!--<item url="#work">
                 <label key="label-our-work">傳譯事業</label>
                 <description key="description-our-work">在專業編輯團隊的帶領下，84000致力於將藏文大藏經的廿三萬一千八百多頁經文翻譯成英文，並結合最新技術於線上出版免費供眾閱覽下載。我們不僅在財務上資助全球各地的佛典翻譯團隊，同時也與各翻譯團隊保持密切的合作關係，以確保這些由古典藏文翻譯成英文的佛典兼具準確度和權威性。</description>
                 <item url="https://84000.co/ch-about/ch-what-we-do">
@@ -352,19 +388,13 @@
                 <item url="https://84000.co/ch-about/ch-partnerships">
                     <label key="label-partnerships">合作夥伴</label>
                 </item>
-                <!--<item url="https://84000.co/ch-about/ch-endorsements">
+                <!-\-<item url="https://84000.co/ch-about/ch-endorsements">
                     <label key="label-endorsements">權威認可</label>
-                </item>-->
+                </item>-\->
             </item>
             <item url="https://84000.co/ch-about/ch-faq">
                 <label key="label-faq">常見問題</label>
-            </item>
-            <item url="https://84000.co/ch-about/ch-reports">
-                <label key="label-reports">進度報告</label>
-            </item>
-            <item url="https://84000.co/ch-about/ch-about-contact">
-                <label key="label-contact">聯繫方式</label>
-            </item>
+            </item>-->
         </item>
         <item class="join-us" url="#join-us">
             <label key="label-join-us">關注並參與</label>

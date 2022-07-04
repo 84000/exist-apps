@@ -19,7 +19,7 @@ import module namespace functx="http://www.functx.com";
 declare option exist:serialize "method=xml indent=no";
 
 let $resource-id := request:get-parameter('resource-id', '')
-let $resource-suffix := (request:get-parameter('resource-suffix', '')[. = ('xml', 'html')], 'html')[1]
+let $resource-suffix := request:get-parameter('resource-suffix', '')
 
 let $term-langs := 
     <term-langs xmlns="http://read.84000.co/ns/1.0">
@@ -42,7 +42,7 @@ let $request-entity := $entities:entities//m:entity/id($resource-id)[1]
 let $request-entity := 
     if(not($request-entity/m:instance) and $request-entity[m:relation[@predicate eq 'sameAs']]) then
         $entities:entities//m:entity/id($request-entity/m:relation[@predicate eq 'sameAs']/@id)[1]
-    else ()
+    else $request-entity
 
 let $request := 
     element { QName('http://read.84000.co/ns/1.0', 'request')} {

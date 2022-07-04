@@ -597,7 +597,9 @@
                                     </h4>
                                     
                                     <!-- Definition -->
-                                    <xsl:if test="$loop-glossary/m:definition[node()]">
+                                    <xsl:variable name="loop-glossary-definition" select="$loop-glossary/m:definition[node()]"/>
+                                    <xsl:variable name="loop-glossary-entity-definition" select="$loop-glossary-entity/m:content[@type eq 'glossary-definition'][node()]"/>
+                                    <xsl:if test="($loop-glossary-definition and not($loop-glossary-entity-definition)) or ($loop-glossary-definition and not($loop-glossary-instance[@use-definition eq 'override']))">
                                         <div class="sml-margin bottom collapse-one-line">
                                             <xsl:call-template name="glossary-definition">
                                                 <xsl:with-param name="item" select="$loop-glossary"/>
@@ -606,13 +608,17 @@
                                     </xsl:if>
                                     
                                     <!-- Entity definition setting -->
-                                    <xsl:if test="$loop-glossary-entity/m:content[@type eq 'glossary-definition'][node()] and (not($loop-glossary/m:definition[node()]) or $loop-glossary-instance[@use-definition eq 'both'])">
+                                    <xsl:if test="($loop-glossary-entity-definition and not($loop-glossary-definition)) or ($loop-glossary-entity-definition and $loop-glossary-instance[@use-definition = ('both', 'override')])">
                                         <div class="sml-margin bottom">
-                                            <p>
-                                                <span class="label label-info">
-                                                    <xsl:value-of select="'Output will include the entity definition'"/>
+                                            <span class="label label-info">
+                                                <xsl:value-of select="'Output will include the entity definition'"/>
+                                            </span>
+                                            <xsl:if test=" $loop-glossary-instance[@use-definition eq 'override']">
+                                                <xsl:value-of select="' '"/>
+                                                <span class="label label-warning">
+                                                    <xsl:value-of select="'Entity definition overrides glossary definition!'"/>
                                                 </span>
-                                            </p>
+                                            </xsl:if>
                                         </div>
                                     </xsl:if>
                                     
@@ -1707,6 +1713,12 @@
                                 <xsl:attribute name="selected" select="'selected'"/>
                             </xsl:if>
                             <xsl:value-of select="'COMPATIBLE: show both glossary definition and entity definition'"/>
+                        </option>
+                        <option value="override">
+                            <xsl:if test="$entity-instance[@use-definition eq 'override']">
+                                <xsl:attribute name="selected" select="'selected'"/>
+                            </xsl:if>
+                            <xsl:value-of select="'OVERRIDE: use the entity definition instead of the glossary definition'"/>
                         </option>
                     </xsl:if>
                 </select>

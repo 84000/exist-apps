@@ -11,13 +11,13 @@ import module namespace common="http://read.84000.co/common" at "../modules/comm
 
 declare option exist:serialize "method=xml indent=no";
 
-let $resource-suffix := request:get-parameter('resource-suffix', 'xml')
+let $resource-suffix := request:get-parameter('resource-suffix', '')
 
 let $request := 
     element { QName('http://read.84000.co/ns/1.0', 'request')} {
         attribute model { 'glossary-download' },
         (: Validate suffix :)
-        attribute resource-suffix { ($resource-suffix[. = ('xml', 'xlsx', 'txt', 'dict')], 'xml')[1] },
+        attribute resource-suffix { $resource-suffix },
         (: Add key for txt and dict :)
         if($resource-suffix = ('txt', 'dict')) then
             attribute key { (request:get-parameter('key', 'bo')[. = ('bo', 'wy')], 'bo')[1] }

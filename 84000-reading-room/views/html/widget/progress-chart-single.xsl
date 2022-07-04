@@ -116,8 +116,8 @@
                     <xsl:value-of select="format-number($pages-value, '#,###')"/>
                 </span> 
                 <xsl:value-of select="' '"/>
-                <xsl:call-template name="local-text">
-                    <xsl:with-param name="local-key" select="'pages-label'"/>
+                <xsl:call-template name="text">
+                    <xsl:with-param name="global-key" select="'about.common.pages-label'"/>
                 </xsl:call-template>
                 <xsl:value-of select="' '"/>
                 <span>
@@ -126,8 +126,8 @@
                     <xsl:value-of select="'%)'"/>
                 </span>
                 <xsl:value-of select="' '"/>
-                <xsl:call-template name="local-text">
-                    <xsl:with-param name="local-key" select="'context-label'"/>
+                <xsl:call-template name="text">
+                    <xsl:with-param name="global-key" select="'about.progress.context-label'"/>
                 </xsl:call-template>
             </div>
         </div>

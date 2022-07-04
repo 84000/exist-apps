@@ -1256,7 +1256,7 @@ declare function translation:sponsors($tei as element(tei:TEI), $include-acknowl
 
 declare function translation:contributors($tei as element(tei:TEI), $include-acknowledgements as xs:boolean) as element() {
     
-    let $translation-contributors := $tei/tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:*[self::tei:author | self::tei:editor | self::tei:consultant]
+    let $translation-contributors := $tei/tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:*[local-name(.) = ('author','editor','consultant')](:[not(@role eq 'translatorMain')]:)
     
     let $contributor-ids := $translation-contributors/@ref ! contributors:contributor-id(.)
     
@@ -1274,16 +1274,13 @@ declare function translation:contributors($tei as element(tei:TEI), $include-ack
                 (: Use the label from the entities file unless it's specified in the tei :)
                 let $contributor-strings :=
                     for $translation-contributor in $translation-contributors
-                    let $contributor-id := 
-                        if($translation-contributor[@ref]) then
-                            contributors:contributor-id($translation-contributor/@ref)
-                        else ''
-                    
-                return
-                    if ($translation-contributor/text()) then
-                        $translation-contributor
-                    else 
-                        $contributors[@xml:id eq $contributor-id]/m:label
+                    return
+                        if ($translation-contributor[text()]) then
+                            $translation-contributor/text()
+                        else 
+                            let $contributor-id := $translation-contributor/@ref[. gt ''] ! contributors:contributor-id(.)
+                            return
+                                $contributors[@xml:id eq $contributor-id]/m:label/text()
                 
                 let $marked-paragraphs :=
                     if ($acknowledgment/tei:p and $contributor-strings) then

@@ -587,7 +587,7 @@
                             <xsl:with-param name="id" select="$entity/@xml:id"/>
                             <xsl:with-param name="index" select="position()"/>
                             <xsl:with-param name="input-name" select="'entity-label'"/>
-                            <xsl:with-param name="label" select="'Entity label(s):'"/>
+                            <xsl:with-param name="label" select="'Label (internal use):'"/>
                             <xsl:with-param name="term" select="text()"/>
                             <xsl:with-param name="lang" select="@xml:lang"/>
                             <xsl:with-param name="language-options" select="('mixed', 'bo', 'Bo-Ltn', 'Sa-Ltn')"/>
@@ -599,7 +599,7 @@
                         <xsl:with-param name="id" select="$context-id"/>
                         <xsl:with-param name="index" select="1"/>
                         <xsl:with-param name="input-name" select="'entity-label'"/>
-                        <xsl:with-param name="label" select="'Entity label(s):'"/>
+                        <xsl:with-param name="label" select="'Label (internal use):'"/>
                         <xsl:with-param name="term" select="$default-label-text"/>
                         <xsl:with-param name="lang" select="$default-label-lang"/>
                         <xsl:with-param name="language-options" select="('mixed', 'bo', 'Bo-Ltn', 'Sa-Ltn')"/>
@@ -1400,11 +1400,17 @@
                             </xsl:call-template>
                             
                             <!-- Use entity definition -->
-                            <xsl:if test="$entity/m:content[@type eq 'glossary-definition'] and $entity/m:instance[@id eq $entry/@id][@use-definition eq 'both']">
+                            <xsl:if test="$entity/m:content[@type eq 'glossary-definition'] and $entity/m:instance[@id eq $entry/@id][@use-definition = ('both','override')]">
                                 <div class="sml-margin bottom">
                                     <span class="label label-default">
                                         <xsl:value-of select="'Entity definition included'"/>
                                     </span>
+                                    <xsl:if test="$entity/m:instance[@id eq $entry/@id][@use-definition eq 'override']">
+                                        <xsl:value-of select="' '"/>
+                                        <span class="label label-warning">
+                                            <xsl:value-of select="'Entity definition overrides glossary definition!'"/>
+                                        </span>
+                                    </xsl:if>
                                 </div>
                             </xsl:if>
                             

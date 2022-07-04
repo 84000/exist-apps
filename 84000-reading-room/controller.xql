@@ -17,7 +17,7 @@ declare variable $exist:prefix external;
 declare variable $exist:root external;
 declare variable $path := lower-case(substring-before($exist:path, $exist:resource));
 declare variable $resource-id := lower-case(replace($exist:resource, '\..*', ''));
-declare variable $resource-suffix := lower-case(replace($exist:resource, '.*\.', ''));
+declare variable $resource-suffix := string-join(subsequence(tokenize($exist:resource, '\.') ! lower-case(.), 2), '.');
 declare variable $collection-path := lower-case(tokenize($exist:path, '/')[2]);
 declare variable $redirects := doc('/db/system/config/db/system/redirects.xml')/m:redirects;
 declare variable $user-name := common:user-name();
@@ -181,14 +181,6 @@ return
         else if (lower-case($exist:resource) eq "exist-debug.xml" and $common:environment/m:enable[@type eq 'debug']) then
             $var-debug
         
-        (: Spreadsheet test :)
-        (:else if (lower-case($exist:resource) eq 'spreadsheet.xlsx') then
-            local:dispatch("/views/spreadsheet/spreadsheet.xq", "", <parameters/>):)
-        
-        (: Test :)
-        (:else if ($collection-path eq "test") then
-            local:dispatch($exist:path, "", <parameters/>):)
-        
         (: iOS universal links :)
         else if ($collection-path eq ".well-known" and $resource-id = ('apple-app-site-association')) then
             local:dispatch("/models/apple-app-site-association.xq", "", 
@@ -225,27 +217,31 @@ return
         
         (: Translation :)
         else if ($collection-path eq "translation") then
+            (: xml model -> json view :)
             if ($resource-suffix eq 'json') then (: placeholder - this is incomplete :)
                 local:dispatch("/models/translation.xq", "/views/json/translation.xq",
                     <parameters xmlns="http://exist.sourceforge.net/NS/exist">
-                        <add-parameter name="resource-id" value="{$resource-id}"/>
+                        <add-parameter name="resource-id" value="{ $resource-id }"/>
                         <add-parameter name="resource-suffix" value="json"/>
                     </parameters>
                 )
+            (: xml model -> pdf view :)
             else if ($resource-suffix eq 'pdf') then (: placeholder - this is incomplete :)
                 local:dispatch("/models/translation.xq", "/views/pdf/translation-fo.xq",
                     <parameters xmlns="http://exist.sourceforge.net/NS/exist">
-                        <add-parameter name="resource-id" value="{$resource-id}"/>
+                        <add-parameter name="resource-id" value="{ $resource-id }"/>
                         <add-parameter name="resource-suffix" value="pdf"/>
                     </parameters>
                 )
+            (: xml model -> epub view :)
             else if ($resource-suffix eq 'epub') then
                 local:dispatch("/models/translation.xq", "/views/epub/translation.xq",
                     <parameters xmlns="http://exist.sourceforge.net/NS/exist">
-                        <add-parameter name="resource-id" value="{$resource-id}"/>
+                        <add-parameter name="resource-id" value="{ $resource-id }"/>
                         <add-parameter name="resource-suffix" value="epub"/>
                     </parameters>
                 )
+            (: xml model -> txt view :)
             else if ($resource-suffix eq 'txt') then
                 local:dispatch("/models/translation.xq", "/views/txt/translation.xq",
                     <parameters xmlns="http://exist.sourceforge.net/NS/exist">
@@ -255,23 +251,34 @@ return
                         <set-header name="Content-Disposition" value="attachment"/>
                     </parameters>
                 )
+            (: xml model -> txt view :)
             else if ($resource-suffix eq 'rdf') then
                 local:dispatch("/models/translation.xq", "/views/rdf/translation.xsl",
                     <parameters xmlns="http://exist.sourceforge.net/NS/exist">
-                        <add-parameter name="resource-id" value="{$resource-id}"/>
+                        <add-parameter name="resource-id" value="{ $resource-id }"/>
                         <add-parameter name="resource-suffix" value="rdf"/>
                     </parameters>
                 )
+            (: xml model -> model sets view :)
+            else if ($resource-suffix = ('tei', 'xml', 'cache', 'html')) then
+                local:dispatch("/models/translation.xq", "",
+                    <parameters xmlns="http://exist.sourceforge.net/NS/exist">
+                        <add-parameter name="resource-id" value="{ $resource-id }"/>
+                        <add-parameter name="resource-suffix" value="{ $resource-suffix }"/>
+                    </parameters>
+                )
+            (: default to html view :)
             else
                 local:dispatch("/models/translation.xq", "",
                     <parameters xmlns="http://exist.sourceforge.net/NS/exist">
-                        <add-parameter name="resource-id" value="{$resource-id}"/>
-                        <add-parameter name="resource-suffix" value="{ $resource-suffix }"/>
+                        <add-parameter name="resource-id" value="{ $resource-id }"/>
+                        <add-parameter name="resource-suffix" value="html"/>
                     </parameters>
                 )
         
         (: Section :)
         else if ($collection-path eq "section") then
+            (: xml model -> json view :)
             if ($resource-suffix eq 'json') then
                 let $view-path := 
                     if(request:get-parameter('api-version', '') eq '0.2.0') then
@@ -281,10 +288,11 @@ return
                 return
                     local:dispatch("/models/section.xq", $view-path, 
                         <parameters xmlns="http://exist.sourceforge.net/NS/exist">
-                            <add-parameter name="resource-id" value="{$resource-id}"/>
+                            <add-parameter name="resource-id" value="{ $resource-id }"/>
                             <add-parameter name="resource-suffix" value="json"/>
                         </parameters>
                     )
+            (: xml model -> atom view :)
             else if ($resource-suffix = ('navigation.atom', 'acquisition.atom')) then
                 local:dispatch("/models/section.xq", "/views/atom/section.xsl", 
                     <parameters xmlns="http://exist.sourceforge.net/NS/exist">
@@ -292,24 +300,34 @@ return
                         <add-parameter name="resource-suffix" value="{ $resource-suffix }"/>
                     </parameters>
                 )
-            else
-                (: return the xml :)
+            (: xml model -> model sets view :)
+            else if ($resource-suffix = ('tei', 'xml', 'html')) then
                 local:dispatch("/models/section.xq", "", 
                     <parameters xmlns="http://exist.sourceforge.net/NS/exist">
-                        <add-parameter name="resource-id" value="{$resource-id}"/>
-                        <add-parameter name="resource-suffix" value="{$resource-suffix}"/>
+                        <add-parameter name="resource-id" value="{ $resource-id }"/>
+                        <add-parameter name="resource-suffix" value="{ $resource-suffix }"/>
+                    </parameters>
+                )
+            (: default to html :)
+            else
+                local:dispatch("/models/section.xq", "", 
+                    <parameters xmlns="http://exist.sourceforge.net/NS/exist">
+                        <add-parameter name="resource-id" value="{ $resource-id }"/>
+                        <add-parameter name="resource-suffix" value="html"/>
                     </parameters>
                 )
         
         (: Source texts :)
         else if ($collection-path eq "source") then
+            (: xml model -> json view :)
             if ($resource-suffix eq 'json') then
                 local:dispatch("/models/source.xq", "/views/json/source.xq", 
                     <parameters xmlns="http://exist.sourceforge.net/NS/exist">
-                        <add-parameter name="resource-id" value="{$resource-id}"/>
+                        <add-parameter name="resource-id" value="{ $resource-id }"/>
                         <add-parameter name="resource-suffix" value="json"/>
                     </parameters>
                 )
+            (: xml model -> txt view :)
             else if ($resource-suffix eq'txt') then
                 local:dispatch("/models/source.xq", "/views/txt/source.xq",
                     <parameters xmlns="http://exist.sourceforge.net/NS/exist">
@@ -319,19 +337,28 @@ return
                         <set-header name="Content-Disposition" value="attachment"/>
                     </parameters>
                 )
+            (: xml model -> model sets view :)
+            else if ($resource-suffix = ('xml', 'html')) then
+                local:dispatch("/models/source.xq", "", 
+                    <parameters xmlns="http://exist.sourceforge.net/NS/exist">
+                        <add-parameter name="resource-id" value="{ $resource-id }"/>
+                        <add-parameter name="resource-suffix" value="{ $resource-suffix }"/>
+                    </parameters>
+                )(::)
+            (: default to html :)
             else
                 local:dispatch("/models/source.xq", "", 
                     <parameters xmlns="http://exist.sourceforge.net/NS/exist">
-                        <add-parameter name="resource-id" value="{$resource-id}"/>
-                        <add-parameter name="resource-suffix" value="{$resource-suffix}"/>
+                        <add-parameter name="resource-id" value="{ $resource-id }"/>
+                        <add-parameter name="resource-suffix" value="html"/>
                     </parameters>
-                )(::)
-        
+                )
+            
         (: About :)
         else if ($collection-path eq "about") then
             local:dispatch(concat("/models/about/",  $resource-id, ".xq"), "", 
                 <parameters xmlns="http://exist.sourceforge.net/NS/exist">
-                    <add-parameter name="resource-suffix" value="{ $resource-suffix }"/>
+                    <add-parameter name="resource-suffix" value="{ ($resource-suffix[. = ('xml', 'html')], 'html')[1] }"/>
                 </parameters>
             )
         
@@ -339,7 +366,7 @@ return
         else if ($collection-path eq "widget") then
             local:dispatch(concat("/models/widget/",  $resource-id, ".xq"), "", 
                 <parameters xmlns="http://exist.sourceforge.net/NS/exist">
-                    <add-parameter name="resource-suffix" value="{ $resource-suffix }"/>
+                    <add-parameter name="resource-suffix" value="{ ($resource-suffix[. = ('xml', 'html')], 'html')[1] }"/>
                 </parameters>
             )
         
@@ -347,8 +374,8 @@ return
         else if ($collection-path eq "knowledgebase") then
             local:dispatch("/models/knowledgebase.xq", "",
                 <parameters xmlns="http://exist.sourceforge.net/NS/exist">
-                    <add-parameter name="resource-id" value="{$resource-id}"/>
-                    <add-parameter name="resource-suffix" value="{$resource-suffix}"/>
+                    <add-parameter name="resource-id" value="{ $resource-id }"/>
+                    <add-parameter name="resource-suffix" value="{ ($resource-suffix[. = ('tei', 'xml', 'html')], 'html')[1] }"/>
                 </parameters>
             )
         
@@ -358,14 +385,14 @@ return
                 local:dispatch("/models/glossary.xq", "",
                     <parameters xmlns="http://exist.sourceforge.net/NS/exist">
                         <add-parameter name="resource-id" value="{ $resource-id }"/>
-                        <add-parameter name="resource-suffix" value="{ $resource-suffix }"/>
+                        <add-parameter name="resource-suffix" value="{ ($resource-suffix[. = ('xml', 'html')], 'html')[1] }"/>
                     </parameters>
                 )
             else
                 local:dispatch("/models/glossary-entry.xq", "",
                     <parameters xmlns="http://exist.sourceforge.net/NS/exist">
                         <add-parameter name="resource-id" value="{ $resource-id }"/>
-                        <add-parameter name="resource-suffix" value="{ $resource-suffix }"/>
+                        <add-parameter name="resource-suffix" value="{ ($resource-suffix[. = ('xml', 'html')], 'html')[1] }"/>
                     </parameters>
                 )
                 
@@ -373,7 +400,7 @@ return
         else if ($resource-id eq "glossary-download") then
             local:dispatch("/models/glossary-download.xq", "",
                 <parameters xmlns="http://exist.sourceforge.net/NS/exist">
-                    <add-parameter name="resource-suffix" value="{ $resource-suffix }"/>
+                    <add-parameter name="resource-suffix" value="{ ($resource-suffix[. = ('xml', 'xlsx', 'txt', 'dict')], 'xml')[1] }"/>
                 </parameters>
             )
         
@@ -391,16 +418,25 @@ return
         
         (: Search :)
         else if ($resource-id eq "search") then
-             if ($resource-suffix eq 'json') then
+            (: xml model -> json view :)
+            if ($resource-suffix eq 'json') then
                 local:dispatch("/models/search.xq", "/views/json/search.xq", 
                     <parameters xmlns="http://exist.sourceforge.net/NS/exist">
                         <add-parameter name="resource-suffix" value="json"/>
                     </parameters>
                 )
+            (: xml model -> model sets view :)
+            else if ($resource-suffix = ('xml', 'html')) then
+                local:dispatch("/models/search.xq", "",
+                    <parameters xmlns="http://exist.sourceforge.net/NS/exist">
+                        <add-parameter name="resource-suffix" value="{ $resource-suffix }"/>
+                    </parameters>
+                )
+            (: default to html :)
             else
                 local:dispatch("/models/search.xq", "",
                     <parameters xmlns="http://exist.sourceforge.net/NS/exist">
-                        <add-parameter name="resource-suffix" value="{$resource-suffix}"/>
+                        <add-parameter name="resource-suffix" value="html"/>
                     </parameters>
                 )
                 
@@ -423,7 +459,7 @@ return
         else if ($resource-id = ("tei-editor", "edit-entity") and $common:environment/m:url[@id eq 'operations'](: and common:user-in-group('operations'):)) then
             <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
                 <forward url="/84000-operations/models/{ $resource-id }.xq">
-                    <add-parameter name="resource-suffix" value="{$resource-suffix}"/>
+                    <add-parameter name="resource-suffix" value="{ $resource-suffix }"/>
                 </forward>
             </dispatch>
         

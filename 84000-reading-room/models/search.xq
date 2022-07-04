@@ -12,7 +12,7 @@ import module namespace functx = "http://www.functx.com";
 (: TO DO: deprecate 's' search parameter :)
 let $search := request:get-parameter('search', request:get-parameter('s', ''))
 let $resource-id := request:get-parameter('resource-id', '')
-let $resource-suffix := (request:get-parameter('resource-suffix', '')[. = ('xml', 'html')], 'html')[1]
+let $resource-suffix := request:get-parameter('resource-suffix', '')
 
 let $search-langs := 
     <search-langs xmlns="http://read.84000.co/ns/1.0">
