@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <eft-header xmlns="http://read.84000.co/ns/1.0">
-    <!-- Updated 04.07.2022 -->
+    <!-- Updated 05.07.2022 -->
     <translation id="tag-line">
         <text xml:lang="en">Translating the words of the Buddha</text>
         <text xml:lang="zh">八萬四千 • 佛典傳譯</text>
@@ -146,6 +146,15 @@
             <label key="label-about">About</label>
             <item url="https://84000.co/about/about-us">
                 <label key="label-about-us">About Us</label>
+                <anchor id="about-us-section-1">
+                    <label key="label-what-we-do">What We Do</label>
+                </anchor>
+                <anchor id="about-us-section-2">
+                    <label key="label-who-we-are">Who We Are</label>
+                </anchor>
+                <anchor id="about-us-section-3">
+                    <label key="label-our-history">Our History</label>
+                </anchor>
             </item>
             <item url="https://84000.co/about/core-values">
                 <label key="label-core-values">Core Values</label>

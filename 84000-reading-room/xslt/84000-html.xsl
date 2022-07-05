@@ -579,6 +579,25 @@
                                         <xsl:with-param name="lang" select="$lang"/>
                                     </xsl:call-template>
                                     <xsl:value-of select="eft:label"/>
+                                    <xsl:if test="eft:anchor[@id]">
+                                        <xsl:value-of select="': '"/>
+                                        <ul class="list-inline inline-dots">
+                                            <xsl:for-each select="eft:anchor[@id]">
+                                                <li>
+                                                    <a>
+                                                        <xsl:call-template name="translation-lang-class">
+                                                            <xsl:with-param name="lang" select="$lang"/>
+                                                            <xsl:with-param name="persist-class-str" select="'scroll-to-anchor'"/>
+                                                        </xsl:call-template>
+                                                        <xsl:attribute name="href">
+                                                            <xsl:value-of select="concat('#', @id)"/>
+                                                        </xsl:attribute>
+                                                        <xsl:value-of select="eft:label"/>
+                                                    </a>
+                                                </li>
+                                            </xsl:for-each>
+                                        </ul>
+                                    </xsl:if>
                                 </li>
                             </xsl:for-each>
                         </ul>

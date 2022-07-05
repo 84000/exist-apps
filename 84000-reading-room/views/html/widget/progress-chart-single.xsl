@@ -120,15 +120,9 @@
                     <xsl:with-param name="global-key" select="'about.common.pages-label'"/>
                 </xsl:call-template>
                 <xsl:value-of select="' '"/>
-                <span>
-                    <xsl:value-of select="'('"/>
-                    <xsl:value-of select="format-number($percentage-value, '###,##0')"/>
-                    <xsl:value-of select="'%)'"/>
-                </span>
-                <xsl:value-of select="' '"/>
-                <xsl:call-template name="text">
-                    <xsl:with-param name="global-key" select="'about.progress.context-label'"/>
-                </xsl:call-template>
+                <xsl:value-of select="'('"/>
+                <xsl:value-of select="format-number($percentage-value, '###,##0')"/>
+                <xsl:value-of select="'%)'"/>
             </div>
         </div>
     </xsl:template>
