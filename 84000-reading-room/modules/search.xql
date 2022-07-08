@@ -64,27 +64,26 @@ declare function search:search($request as xs:string, $resource-id as xs:string,
         | $published/tei:text//tei:trailer[ft:query(., $query, $options)][@tid]
         | $published/tei:text/tei:back//tei:bibl[ft:query(., $query, $options)][@xml:id]
         | $published/tei:text/tei:back//tei:gloss[ft:query(tei:term, $query, $options)][@xml:id][not(@mode eq 'surfeit')]
-        (:$published/tei:text//tei:p[ft:query(., concat("content: ", $request), map { "fields": "content" })]:)
     
     let $result-groups := 
-        for $result-group in $results
-            let $score := ft:score($result-group)
-            let $document-uri := base-uri($result-group)
-            group by $document-uri
+        for $result in $results
+            let $score := ft:score($result)
+            let $text-id := tei-content:id($result/ancestor::tei:TEI)
+            group by $text-id
             let $sum-scores := sum($score)
             order by $sum-scores descending
         return
             element { QName('http://read.84000.co/ns/1.0', 'result-group') } { 
-            
-                attribute document-uri { $document-uri },
+                
+                attribute text-id { $text-id },
+                attribute document-uri { base-uri($result[1]) },
                 attribute score { $sum-scores },
                 
-                for $result in $result-group
+                for $single in $result
                 return
                     element result {
-                        attribute score { ft:score($result) },
-                        $result
-                        (:ft:highlight-field-matches($result, 'content'):)
+                        attribute score { ft:score($single) },
+                        $single
                     }
                 
             }
@@ -140,13 +139,8 @@ declare function search:search($request as xs:string, $resource-id as xs:string,
                                 attribute node-name { local-name($result/node()) },
                                 attribute node-type { $result/node()/@type },
                                 attribute node-lang { $result/node()/@xml:lang },
-                                (:$result/@*,:)
                                 attribute link { local:match-link($result/node(), $tei-header) },
                                 common:mark-nodes($result/node(), $request-no-quotes, 'words')
-                                (:util:expand($result/node()):)
-                                (:kwic:expand($result):)
-                                (:kwic:summarize($result/node(), <config xmlns="" width="40"/>):)
-                                (:$result/node():)
                             }
                         ,
                         

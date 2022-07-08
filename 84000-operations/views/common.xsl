@@ -1447,7 +1447,7 @@
                 <xsl:otherwise>
                     <a target="_self" class="small" data-loading="Setting flag...">
                         <xsl:attribute name="href" select="replace(replace($flag-options-href, '\{flag\-action\}', 'set-flag'), '\{flag\-id\}', @id)"/>
-                        <xsl:value-of select="'Set flag: '"/>
+                        <xsl:value-of select="'Flag this entry: '"/>
                         <xsl:value-of select="m:label"/>
                     </a>
                 </xsl:otherwise>

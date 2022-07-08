@@ -166,7 +166,7 @@
                                                                     <textarea name="tm-en" id="tm-en-{ $tm-unit-aligned/@id }" class="form-control monospace onkeypress-ctrlreturn-submit">
                                                                         <xsl:attribute name="rows" select="ops:textarea-rows($tm-en, 1, 116)"/>
                                                                         <xsl:if test="$active-record">
-                                                                            <xsl:attribute name="data-onload-get-focus" select="string-length(tokenize($tm-en, '[\.!\?]”?\s+')[1]) + 2"/>
+                                                                            <xsl:attribute name="data-onload-get-focus" select="string-length($tm-en)"/>
                                                                         </xsl:if>
                                                                         <xsl:value-of select="$tm-en"/>
                                                                     </textarea>
@@ -545,9 +545,11 @@
             <xsl:if test="not($tei-text-substr-match)">
                 <xsl:element name="unmatched" namespace="http://read.84000.co/ns/1.0">
                     <xsl:choose>
+                        <!-- If there's no existing English then offer the next chunk (1,000 chars) -->
                         <xsl:when test="$tm-bo gt '' and not($tm-en gt '')">
                             <xsl:value-of select="common:limit-str($tei-text-substr, 1000)"/>
                         </xsl:when>
+                        <!-- If there is English then try to estimate the match -->
                         <xsl:otherwise>
                             <xsl:value-of select="$tei-text-substr"/>
                         </xsl:otherwise>

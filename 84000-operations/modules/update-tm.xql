@@ -162,10 +162,10 @@ declare function update-tm:set-tu-ids($tmx) {
 
 };
 
-declare function update-tm:new-tm($text-id as xs:string, $text-version as xs:string, $segments-bo as xs:string*) as document-node()? {
+declare function update-tm:new-tm($text-id as xs:string, $text-version as xs:string, $source-ref as xs:string, $segments-bo as xs:string*) as document-node()? {
 document {
 <tmx xmlns="http://www.lisa.org/tmx14" xmlns:eft="http://read.84000.co/ns/1.0" xmlns:tei="http://www.tei-c.org/ns/1.0" version="1.4b">
-    <header creationtool="84000-tm-editor" creationtoolversion="{ $common:app-version }" datatype="PlainText" segtype="block" adminlang="en-us" srclang="bo" eft:text-id="{ $text-id }" eft:text-version="{ $text-version }"/>
+    <header creationtool="84000-tm-editor" creationtoolversion="{ $common:app-version }" datatype="PlainText" segtype="block" adminlang="en-us" srclang="bo" eft:text-id="{ $text-id }" eft:text-version="{ $text-version }" eft:source-ref="{ $source-ref }"/>
     <body>
     {
         for $segment-bo at $index in $segments-bo
@@ -195,33 +195,8 @@ declare function update-tm:new-tmx-from-bcrdCorpus($tei as element(tei:TEI), $bc
         for $sentence in $bcrd-resource//bcrdb:sentence
         return
             string-join($sentence//bcrdb:phrase/text(), '/ ') ! concat(., '/ ') ! common:bo-from-wylie(.)
-            
-    let $new-tm := update-tm:new-tm($text-id, $text-version, $segments-bo)
-    let $existing-tm := collection($update-tm:tm-path)//tmx:tmx[tmx:header/@eft:text-id eq $text-id]
     
-    where $text-id and $text-version and $filename and $new-tm and not($existing-tm)
-    let $log := util:log('info', concat('update-tm-add-tm:', $filename))
-    return (
-        (: Create the file :)
-        xmldb:store($update-tm:tm-path, $filename, $new-tm, 'application/xml'),
-        sm:chgrp(xs:anyURI(concat($update-tm:tm-path, '/', $filename)), 'translation-memory'),
-        sm:chmod(xs:anyURI(concat($update-tm:tm-path, '/', $filename)), 'rw-rw-r--')
-    )
-    
-};
-
-declare function update-tm:new-tmx($tei as element(tei:TEI)) as xs:string? {
-    
-    let $text-id := tei-content:id($tei)
-    let $text-version := tei-content:version-str($tei)
-    let $location := translation:location($tei, '')
-    let $source-page := source:etext-page($location, 1, false(), ())
-    let $source-page-text := string-join($source-page//eft:language[@xml:lang eq 'bo']/tei:p//text(), ' ')
-    let $first-line-bo := (tokenize($source-page-text, '།།\s+།།')[2], $source-page-text)[1]
-    let $first-line-bo := (tokenize($first-line-bo, '།\s+')[1] ! concat(., '།'), $first-line-bo)[1]
-    
-    let $filename := concat(translation:filename($tei, ''), '.tmx')
-    let $new-tm := update-tm:new-tm($text-id, $text-version, $first-line-bo)
+    let $new-tm := update-tm:new-tm($text-id, $text-version, util:document-name($bcrd-resource), $segments-bo)
     let $existing-tm := collection($update-tm:tm-path)//tmx:tmx[tmx:header/@eft:text-id eq $text-id]
     
     where $text-id and $text-version and $filename and $new-tm and not($existing-tm)

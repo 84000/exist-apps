@@ -551,7 +551,7 @@ declare function update-entity:merge-glossary($text-id as xs:string, $create as 
                     'create'
             
             (: If there is some match then it requires some attention :)
-            let $flag := if(count($matches-sa[@type eq $gloss/@type] | $matches-bo[@type eq $gloss/@type]) gt 0) then 'requires-attention' else ''
+            let $flag := '' (:if(count($matches-sa[@type eq $gloss/@type] | $matches-bo[@type eq $gloss/@type]) gt 0) then 'requires-attention' else '':)
             
             (: Do the update :)
             let $do-update := 

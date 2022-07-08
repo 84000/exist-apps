@@ -107,9 +107,12 @@ let $bcrdb-source-files :=
     if(not($tmx)) then 
         element { QName('http://read.84000.co/ns/1.0', 'bcrd-resources') } {
             for $bcrd-resource in collection(concat($common:data-path, '/BCRDCORPUS'))//bcrdb:bcrdCorpus
+            let $document-name := util:document-name($bcrd-resource)
+            (: Exclude source files that already have a tmx created :)
+            where not(collection($update-tm:tm-path)//tmx:tmx/tmx:header/@eft:source-ref eq $document-name)
             return 
                 element bcrd-resource {
-                    attribute document-name { util:document-name($bcrd-resource) },
+                    attribute document-name { $document-name },
                     $bcrd-resource/bcrdb:head
                 }
         }
