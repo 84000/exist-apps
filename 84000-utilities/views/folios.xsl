@@ -227,7 +227,7 @@
                                                         <a>
                                                             <xsl:attribute name="target" select="'check-folios'"/>
                                                             <xsl:attribute name="href" select="concat(m:url[@format eq 'html'][@xml:lang eq 'bo'], '#ajax-source')"/>
-                                                            <xsl:attribute name="data-ajax-target" select="'#popup-footer-source .ajax-target'"/>
+                                                            <xsl:attribute name="data-dualview-scroll" select="'any-text#ajax-source'"/>
                                                             <xsl:value-of select="'Tibetan (pop-up)'"/>
                                                         </a>
                                                         <xsl:value-of select="' | '"/>

@@ -863,7 +863,7 @@ declare function glossary:locations($locations as element(m:location)*, $glossar
     (: Filter out locations containing this glossary match but have a higher nested location :)
     for $location in $locations[descendant::xhtml:*[@data-glossary-id eq $glossary-id]]
     let $glossary-matches := $location/descendant::xhtml:*[@data-glossary-id eq $glossary-id]
-    where not($glossary-matches/ancestor::xhtml:*[@data-passage-id][1][not(@data-passage-id eq $location/@id)])
+    where not($glossary-matches/ancestor::xhtml:*[@data-location-id][1][not(@data-location-id eq $location/@id)])
     return
         $location
 };
@@ -894,8 +894,8 @@ declare function local:instance-locations($translation-html as element(xhtml:htm
     (: Select any node with a data-glossary-id :)
     for $expression at $sort-index in $translation-html/descendant::xhtml:*[@data-glossary-id = $glossary-ids]
     
-    (: Select the nearest parent with a data-passage-id :)
-    let $expression-container := $expression/ancestor-or-self::xhtml:*[@data-passage-id][1]
+    (: Select the nearest parent with a data-location-id :)
+    let $expression-container := $expression/ancestor-or-self::xhtml:*[@data-location-id][1]
     
     let $expression-container := 
         if(not($expression-container)) then
@@ -903,7 +903,7 @@ declare function local:instance-locations($translation-html as element(xhtml:htm
         else
             $expression-container
     
-    let $location-id := ($expression-container/@data-passage-id, $expression-container/@id)[1]
+    let $location-id := ($expression-container/@data-location-id, $expression-container/@id)[1]
     
     group by $location-id
     order by $sort-index[1]

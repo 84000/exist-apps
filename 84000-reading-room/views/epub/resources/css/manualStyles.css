@@ -273,6 +273,7 @@ ul.list-inline.inline-dots>li:first-child:before {
 /* Add a space */
 br+*,
 .rw-section-head+.rw,
+.rw-section-head+.nested-section > .rw:first-child,
 .rw-list-section+.rw,
 .rw-label,
 .rw-list-bullet+.rw,
@@ -295,13 +296,14 @@ br+*,
     margin-top: 0;
 }
 
+/*
 .rw-line-group.rw-first ,
 .rw-blockquote.rw-first , 
 .rw-table.rw-first ,
 .rw-mantra.rw-first ,
 .rw-trailer.rw-first {
     margin-top: 0px;
-}
+} */
 
 /* Add a double space */
 .rw-section-head {
@@ -313,6 +315,7 @@ br+*,
 br+.rw > p,
 .rw-section-head+.rw > p,
 .section-label+.rw > p,
+.rw-section-head+.nested-section > .rw:first-child > p,
 .rw-list-section+.rw > p,
 .rw-list-bullet+.rw > p,
 .rw-line-group > p,
@@ -326,8 +329,7 @@ br+.rw > p,
 .rw-trailer > p,
 .rw.rw-label+.rw > p,
 .rw.rw-list-head+.rw > p,
-.rw:first-child > p,
-.rw.rw-first > p {
+blockquote > .rw-paragraph:first-child {
     text-indent: 0;
 }
 

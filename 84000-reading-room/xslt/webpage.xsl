@@ -41,8 +41,8 @@
     </xsl:function>
     
     <!-- Tei Editor -->
-    <xsl:variable name="tei-editor" select="/m:response[@tei-editor eq 'true'] and $view-mode[@id = ('editor')]"/>
-    <xsl:variable name="tei-editor-off" select="/m:response[@tei-editor eq 'true'] and not($view-mode[@id = ('editor')])"/>
+    <xsl:variable name="tei-editor" select="/m:response[@tei-editor eq 'true'] and $view-mode[@id = ('editor', 'editor-passage')]"/>
+    <xsl:variable name="tei-editor-off" select="/m:response[@tei-editor eq 'true'] and not($view-mode[@id = ('editor', 'editor-passage')])"/>
     
     <!-- doc-type [html|epub|ncx] -->
     <xsl:variable name="doc-type" select="/m:response/m:request/@doc-type"/>

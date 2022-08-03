@@ -178,7 +178,7 @@
         </div>
         
         <!-- Pop-up footer  -->
-        <div id="popup-footer" class="fixed-footer collapse persist hidden-print">
+        <div id="popup-footer-text" class="fixed-footer collapse persist hidden-print">
             <div class="fix-height">
                 <div class="container">
                     <div class="data-container">
@@ -196,7 +196,7 @@
         </div>
         
         <!-- Source pop-up -->
-        <div id="popup-footer-source" class="fixed-footer collapse hidden-print">
+        <div id="popup-footer-dualview" class="fixed-footer collapse hidden-print">
             <div class="fix-height">
                 <div class="data-container">
                     <!-- Ajax data here -->

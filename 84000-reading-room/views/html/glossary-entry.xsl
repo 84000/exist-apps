@@ -322,7 +322,7 @@
                                                         
                                                         <xsl:variable name="main-title" select="m:titles/m:title[@type eq 'mainTitle'][1]"/>
                                                         
-                                                        <a class="entity-list-item block-link scroll-to-anchor">
+                                                        <a class="entity-list-item block-link">
                                                             <xsl:attribute name="href" select="concat('/knowledgebase/', @kb-id, '.html')"/>
                                                             <span>
                                                                 <xsl:attribute name="class">
@@ -366,7 +366,7 @@
                                                         <a class="entity-list-item block-link scroll-to-anchor">
                                                             
                                                             <!-- Link to the glossary, checking if it's already included in this page -->
-                                                            <xsl:attribute name="href" select="concat('#', $related-entity/@xml:id)"/>
+                                                            <xsl:attribute name="href" select="concat('/glossary/', $related-entity/@xml:id, '.html#', $related-entity/@xml:id)"/>
                                                             
                                                             <h4 class="{ common:lang-class($entity-data/m:label[@type eq 'primary']/@xml:lang) }">
                                                                 <xsl:value-of select="normalize-space($entity-data/m:label[@type eq 'primary']/text())"/>

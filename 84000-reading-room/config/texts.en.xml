@@ -74,6 +74,7 @@
     <item key="about.common.texts-label">texts</item>
 
     <!-- Progress -->
+    <item key="about.progress.page-title">Translation Progress</item>
     <item key="about.progress.header-img-src">#feSiteUrl/imgs/about-headers/progress.jpg</item>
     <item key="about.progress.page-quote">"You should know first hand how Dharma helps you… With this mind if you extend your intention to
         reach out with your translation…it’ll really make a difference in the world, and it already does."</item>
@@ -103,6 +104,7 @@
     </item>
 
     <!-- Impact -->
+    <item key="about.impact.page-title">Reader Engagement</item>
     <item key="about.impact.header-img-src">#feSiteUrl/imgs/about-headers/impact.jpg</item>
     <item key="about.impact.page-quote">“It’s not just the heritage of one tradition, one civilization or one nation – it’s the heritage of
         the world. The Kangyur and Tengyur will really contribute to the happiness, peace and freedom of all mankind.”</item>
@@ -169,6 +171,7 @@
     <item key="about.impact.countries-timestamp">Information updated on: Aug 5, 2018</item>-->
 
     <!-- Sponsors -->
+    <item key="about.sponsors.page-title">Sponsors</item>
     <item key="about.sponsors.header-img-src">#feSiteUrl/imgs/about-headers/sponsors.jpg</item>
     <item key="about.sponsors.page-quote">“Both the very generous benefactors and also the very knowledgeable and experienced translators
         will be able to perfect their two accumulations of virtue through their interdependent connection.”</item>
@@ -218,6 +221,7 @@
     <item key="about.sponsors.text-sponsorship-link-label">There are further sponsorship opportunities for this translation</item>
 
     <!-- Translators -->
+    <item key="about.translators.page-title">Translation Teams</item>
     <item key="about.translators.header-img-src">#feSiteUrl/imgs/about-headers/translators.jpg</item>
     <item key="about.translators.page-quote">“It’s very important that translators really come together as one harmonious unit to do the
         work for the present time and also for future generations.”</item>
@@ -242,6 +246,7 @@
     <item key="about.translators.region-label">of contributors</item>
 
     <!-- Sponsor a Sutra -->
+    <item key="about.sponsor-a-sutra.page-title">Sponsor a Sūtra</item>
     <item key="about.sponsor-a-sutra.header-img-src">#feSiteUrl/imgs/about-headers/sponsor-a-sutra.jpg</item>
     <item key="about.sponsor-a-sutra.page-quote">“Sūtras teach us the Dharma. The sūtras are much more precious, much more important than the image of the Buddha.”</item>
     <item key="about.sponsor-a-sutra.page-quote-author">Garchen Rinpoche</item>

@@ -56,7 +56,7 @@
                         <a class="small underline" data-loading="Loading...">
                             <xsl:attribute name="target" select="'check-folios'"/>
                             <xsl:attribute name="href" select="concat($reading-room-path, '/source/', $translation/m:toh[1]/@key, '.html?page=1#ajax-source')"/>
-                            <xsl:attribute name="data-ajax-target" select="'#popup-footer-source .ajax-target'"/>
+                            <xsl:attribute name="data-dualview-scroll" select="'any-text#ajax-source'"/>
                             <xsl:value-of select="'Tibetan source'"/>
                         </a>
                         

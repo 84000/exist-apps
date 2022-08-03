@@ -12,8 +12,9 @@
     <xsl:variable name="knowledgebase" select="/m:response/m:knowledgebase" as="element(m:knowledgebase)?"/>
     <xsl:variable name="entities" select="/m:response/m:entities/m:entity" as="element(m:entity)*"/>
     <xsl:variable name="requested-part" select="/m:response/m:request/@part" as="xs:string?"/>
-    <xsl:variable name="requested-passage" select="/m:response/m:request/m:passage/@id" as="xs:string?"/>
-    <xsl:variable name="toh-key" select="$translation/m:toh/@key" as="xs:string?"/>
+    <xsl:variable name="requested-passage" select="/m:response/m:request/@passage-id" as="xs:string?"/>
+    <xsl:variable name="requested-highlight" select="/m:response/m:request/m:highlight" as="xs:string?"/>
+    <xsl:variable name="toh-key" select="$translation/m:source/@key" as="xs:string?"/>
     <xsl:variable name="kb-id" select="$knowledgebase/m:page/@xml:id" as="xs:string?"/>
     <xsl:variable name="part-status" select="if(not($translation//m:part[@render = ('preview', 'empty')])) then 'complete' else if($translation//m:part[@render eq 'show']) then 'part' else 'empty'" as="xs:string"/>
     
@@ -29,6 +30,8 @@
     <xsl:key name="related-entries" match="m:entities/m:related/m:text/m:entry" use="@id"/>
     <xsl:key name="related-pages" match="m:entities/m:related/m:page" use="@xml:id"/>
     <xsl:key name="related-entities" match="m:entities/m:related/m:entity" use="@xml:id"/>
+    <xsl:key name="quotes" match="m:quotes/m:quote" use="@location-id"/>
+    <xsl:key name="quote-sources" match="m:quotes/m:quote/m:source" use="@location-id"/>
     
     <!-- Pre-sort the glossaries by priority -->
     <xsl:variable name="glossary-prioritised" as="element(tei:gloss)*">
@@ -87,6 +90,10 @@
         <!-- Evaluate if it's one we want to parse -->
         <xsl:variable name="glossarize" as="xs:boolean">
             <xsl:choose>
+                
+                <xsl:when test="$requested-highlight gt ''">
+                    <xsl:value-of select="false()"/>
+                </xsl:when>
                 
                 <!-- Check the context -->
                 <xsl:when test="not(m:glossarize-context(.))">
@@ -160,6 +167,15 @@
             <xsl:when test="$glossarize">
                 
                 <xsl:call-template name="glossarize-text">
+                    <xsl:with-param name="text-node" select="."/>
+                    <xsl:with-param name="text-normalized" select="$text-normalized"/>
+                </xsl:call-template>
+                
+            </xsl:when>
+            
+            <xsl:when test="$requested-highlight gt ''">
+                
+                <xsl:call-template name="highlight-text">
                     <xsl:with-param name="text-node" select="."/>
                     <xsl:with-param name="text-normalized" select="$text-normalized"/>
                 </xsl:call-template>
@@ -309,9 +325,10 @@
                                 <a class="ref log-click">
                                     <!-- define an anchor so we can link back to this point -->
                                     <xsl:attribute name="id" select="$ref/@xml:id"/>
-                                    <xsl:attribute name="href" select="concat('/source/', $toh-key, '.html?ref-index=', $index, '#ajax-source')"/>
+                                    <xsl:attribute name="href" select="concat('/source/', $toh-key, '.html?ref-index=', $index, '#dualview-content-', $toh-key, '-source')"/>
                                     <xsl:attribute name="data-ref" select="$ref/@cRef"/>
-                                    <xsl:attribute name="data-ajax-target" select="'#popup-footer-source .ajax-target'"/>
+                                    <xsl:attribute name="data-dualview-tab" select="concat('dualview-tab-', $toh-key, '-source')"/>
+                                    <xsl:attribute name="data-dualview-target" select="'#top'"/>
                                     <xsl:value-of select="concat('[', $ref/@cRef, ']')"/>
                                 </a>
                                 
@@ -320,7 +337,7 @@
                             <xsl:otherwise>
                                 
                                 <span class="ref">
-                                    <xsl:attribute name="data-href" select="concat('/source/', $toh-key, '.html?ref-index=', $index, '#ajax-source')"/>
+                                    <xsl:attribute name="data-href" select="concat('/source/', $toh-key, '.html?ref-index=', $index)"/>
                                     <xsl:value-of select="concat('[', $ref/@cRef, ']')"/>
                                 </span>
                                 
@@ -454,10 +471,62 @@
         </a>
     </xsl:template>
     
+    <!-- Inline quote-->
+    <xsl:template match="tei:q[parent::tei:p | parent::tei:l]">
+        
+        <xsl:variable name="element" select="."/>
+        
+        <span>
+            
+            <!-- Outbound quote link -->
+            <xsl:variable name="quote-link" as="element(xhtml:a)?">
+                <xsl:if test="$element/@ref gt ''">
+                    
+                    <xsl:variable name="location-id" as="xs:string">
+                        <xsl:call-template name="persistent-location">
+                            <xsl:with-param name="node" select="$element"/>
+                        </xsl:call-template>
+                    </xsl:variable>
+                    
+                    <xsl:variable name="quote" select="key('quotes', $location-id, $root)[@resource-id eq $toh-key][m:source/@location-id eq $element/@ref]"/>
+                    
+                    <xsl:if test="$quote">
+                        <xsl:call-template name="quote-link">
+                            <xsl:with-param name="quote" select="$quote[1]"/>
+                        </xsl:call-template>
+                    </xsl:if>
+                    
+                </xsl:if>
+            </xsl:variable>
+            
+            <xsl:call-template name="class-attribute">
+                <xsl:with-param name="base-classes">
+                    <xsl:value-of select="'quote'"/>
+                </xsl:with-param>
+                <xsl:with-param name="html-classes">
+                    <xsl:if test="$quote-link">
+                        <xsl:value-of select="'quote-linked'"/>
+                    </xsl:if>
+                </xsl:with-param>
+            </xsl:call-template>
+            
+            <!-- Output the content, filtering out the ref prologue -->
+            <xsl:call-template name="filter-ref-prologue">
+                <xsl:with-param name="node" select="$element"/>
+            </xsl:call-template>
+            
+            <xsl:sequence select="$quote-link"/>
+            
+        </span>
+    </xsl:template>
+    
+    <!-- Elements that may have a milestone -->
     <xsl:template match="tei:p | tei:ab | tei:trailer | tei:bibl | tei:lg | tei:q">
         
+        <xsl:variable name="element" select="."/>
+        
         <!-- Output the ref prologue -->
-        <xsl:if test="$ref-prologue-container and count(. | $ref-prologue-container) eq count(.)">
+        <xsl:if test="$ref-prologue-container and count($element | $ref-prologue-container) eq count($element)">
             <div class="rw rw-first rw-paragraph">
                 <p class="ref-prologue">
                     <xsl:apply-templates select="$ref-prologue"/>
@@ -466,51 +535,84 @@
             <br/>
         </xsl:if>
         
+        <!-- Output the milestone -->
         <xsl:call-template name="milestone">
             
             <xsl:with-param name="content">
-                <xsl:element name="{ if(self::tei:lg) then 'div' else if(self::tei:q) then 'blockquote' else 'p' }" namespace="http://www.w3.org/1999/xhtml">
+                <xsl:element name="{ if($element/self::tei:lg) then 'div' else if($element/self::tei:q) then 'blockquote' else 'p' }" namespace="http://www.w3.org/1999/xhtml">
                     
                     <!-- id -->
                     <xsl:call-template name="tid">
-                        <xsl:with-param name="node" select="."/>
+                        <xsl:with-param name="node" select="$element"/>
                     </xsl:call-template>
+                    
+                    <!-- Outbound quote link -->
+                    <xsl:variable name="quote-link" as="element(xhtml:a)?">
+                        <xsl:if test="$element/self::tei:q[@ref gt '']">
+                            
+                            <xsl:variable name="location-id" as="xs:string">
+                                <xsl:call-template name="persistent-location">
+                                    <xsl:with-param name="node" select="$element"/>
+                                </xsl:call-template>
+                            </xsl:variable>
+                            
+                            <xsl:variable name="quote" select="key('quotes', $location-id, $root)[@resource-id eq $toh-key][m:source/@location-id eq $element/@ref]"/>
+                            
+                            <xsl:if test="$quote">
+                                <xsl:call-template name="quote-link">
+                                    <xsl:with-param name="quote" select="$quote[1]"/>
+                                </xsl:call-template>
+                            </xsl:if>
+                            
+                        </xsl:if>
+                    </xsl:variable>
                     
                     <!-- class -->
                     <xsl:call-template name="class-attribute">
+                        
                         <xsl:with-param name="base-classes" as="xs:string*">
                             
-                            <xsl:if test="(@rend, @type) = 'mantra'">
+                            <xsl:if test="($element/@rend, $element/@type) = 'mantra'">
                                 <xsl:value-of select="'mantra'"/>
                             </xsl:if>
                             
-                            <xsl:if test="@type = ('sdom', 'bar_sdom', 'spyi_sdom')">
+                            <xsl:if test="$element/@type = ('sdom', 'bar_sdom', 'spyi_sdom')">
                                 <xsl:value-of select="'italic'"/>
                             </xsl:if>
                             
                             <xsl:choose>
-                                <xsl:when test="self::tei:trailer">
+                                <xsl:when test="$element/self::tei:trailer">
                                     <xsl:value-of select="'trailer'"/>
                                 </xsl:when>
-                                <xsl:when test="self::tei:bibl">
+                                <xsl:when test="$element/self::tei:bibl">
                                     <xsl:value-of select="'bibl'"/>
                                 </xsl:when>
-                                <xsl:when test="self::tei:lg">
+                                <xsl:when test="$element/self::tei:lg">
                                     <xsl:value-of select="'line-group'"/>
                                 </xsl:when>
                             </xsl:choose>
                             
                         </xsl:with-param>
+                        
+                        <xsl:with-param name="html-classes">
+                            <xsl:if test="$quote-link">
+                                <xsl:value-of select="'quote-linked'"/>
+                            </xsl:if>
+                        </xsl:with-param>
+                        
                     </xsl:call-template>
                     
                     <!-- Output the content, filtering out the ref prologue -->
                     <xsl:call-template name="filter-ref-prologue">
-                        <xsl:with-param name="node" select="."/>
+                        <xsl:with-param name="node" select="$element"/>
                     </xsl:call-template>
+                    
+                    <!-- Output quote link -->
+                    <xsl:sequence select="$quote-link"/>
                     
                     <!-- Add link to tei editor -->
                     <xsl:call-template name="tei-editor">
-                        <xsl:with-param name="node" select="."/>
+                        <xsl:with-param name="node" select="$element"/>
                     </xsl:call-template>
                     
                 </xsl:element>
@@ -518,16 +620,16 @@
             
             <xsl:with-param name="row-type">
                 <xsl:choose>
-                    <xsl:when test="(@rend,@type) = 'mantra'">
+                    <xsl:when test="($element/@rend, $element/@type) = 'mantra'">
                         <xsl:value-of select="'mantra'"/>
                     </xsl:when>
-                    <xsl:when test="self::tei:trailer">
+                    <xsl:when test="$element/self::tei:trailer">
                         <xsl:value-of select="'trailer'"/>
                     </xsl:when>
-                    <xsl:when test="self::tei:lg">
+                    <xsl:when test="$element/self::tei:lg">
                         <xsl:value-of select="'line-group'"/>
                     </xsl:when>
-                    <xsl:when test="self::tei:q">
+                    <xsl:when test="$element/self::tei:q">
                         <xsl:value-of select="'blockquote'"/>
                     </xsl:when>
                     <xsl:otherwise>
@@ -541,8 +643,6 @@
     </xsl:template>
     
     <xsl:template match="tei:l">
-        
-        <xsl:variable name="matches-ref-prologue-parent" select="count(. | $ref-prologue-parent) eq count(.)" as="xs:boolean"/>
         
         <xsl:call-template name="milestone">
             <xsl:with-param name="content">
@@ -824,6 +924,7 @@
         </xsl:call-template>
     </xsl:template>
     <xsl:template match="tei:list">
+        
         <xsl:call-template name="milestone">
             <xsl:with-param name="content">
                 <div>
@@ -976,13 +1077,13 @@
                 
                 <xsl:attribute name="id" select="concat('end-note-', $end-note/@xml:id)"/>
                 
-                <xsl:if test="$view-mode[not(@client = ('ebook', 'app'))]">
-                    <xsl:attribute name="data-passage-id" select="$end-note/@xml:id"/>
-                </xsl:if>
+                <xsl:call-template name="data-location-id-attribute">
+                    <xsl:with-param name="node" select="$end-note"/>
+                </xsl:call-template>
                 
                 <xsl:if test="$view-mode[@glossary = ('defer', 'editor-defer')]">
                     <xsl:call-template name="in-view-replace-attribute">
-                        <xsl:with-param name="part-id" select="$end-note/@xml:id"/>
+                        <xsl:with-param name="element-id" select="$end-note/@xml:id"/>
                         <xsl:with-param name="target-id" select="concat('end-note-', $end-note/@xml:id)"/>
                     </xsl:call-template>
                 </xsl:if>
@@ -1163,13 +1264,13 @@
                     
                     <xsl:attribute name="id" select="$glossary-item/@xml:id"/>
                     
-                    <xsl:if test="$view-mode[not(@client = ('ebook', 'app'))]">
-                        <xsl:attribute name="data-passage-id" select="$glossary-item/@xml:id"/>
-                    </xsl:if>
+                    <xsl:call-template name="data-location-id-attribute">
+                        <xsl:with-param name="node" select="$glossary-item"/>
+                    </xsl:call-template>
                     
                     <xsl:if test="$view-mode[@glossary = ('defer', 'editor-defer')]">
                         <xsl:call-template name="in-view-replace-attribute">
-                            <xsl:with-param name="part-id" select="$glossary-item/@xml:id"/>
+                            <xsl:with-param name="element-id" select="$glossary-item/@xml:id"/>
                             <xsl:with-param name="target-id" select="$glossary-item/@xml:id"/>
                         </xsl:call-template>
                     </xsl:if>
@@ -1303,13 +1404,14 @@
                         </xsl:if>
                         
                         <!-- Entity definition -->
-                        <xsl:if test="$view-mode[@id = ('editor', 'editor-passage')] and not($entity)">
+                        <xsl:if test="$tei-editor and not($entity)">
                             <div class="footer">
                                 <span class="label label-warning">
                                     <xsl:value-of select="'No shared entity assigned'"/>
                                 </span>
                             </div>
                         </xsl:if>
+                        
                         <xsl:if test="($entity-definition and not($entry-definition)) or ($entity-definition and $entity-instance[@use-definition = ('both','override')])">
                             <div class="footer">
                                 <h4 class="heading">
@@ -1357,9 +1459,9 @@
                         <xsl:variable name="glossary-instances" select="$entity/m:instance[@type eq 'glossary-item'][not(@id eq $glossary-item/@xml:id)]"/>
                         <xsl:variable name="knowledgebase-instances" select="$entity/m:instance[@type eq 'knowledgebase-article'][not(@id eq $kb-id)]"/>
                         <xsl:variable name="requires-attention" select="$entity-instance/m:flag[@type eq 'requires-attention']"/>
-                        <xsl:if test="$view-mode[@client = ('browser', 'ajax')] and ($glossary-instances, $knowledgebase-instances) and ($view-mode[@id = ('editor', 'editor-passage')] or not($requires-attention))">
+                        <xsl:if test="$view-mode[@client = ('browser', 'ajax')] and ($glossary-instances, $knowledgebase-instances) and ($tei-editor or not($requires-attention))">
                             <div class="footer entity-content" role="navigation">
-                                <xsl:if test="$view-mode[@id = ('editor', 'editor-passage')] and $requires-attention">
+                                <xsl:if test="$tei-editor and $requires-attention">
                                     <xsl:attribute name="class" select="'footer entity-content well well-sm'"/>
                                     <div>
                                         <span class="label label-danger">
@@ -1374,7 +1476,7 @@
                                     <xsl:if test="$glossary-instances">
                                         <li>
                                             <a target="84000-glossary">
-                                                <xsl:attribute name=" href" select="concat('/glossary/', $entity/@xml:id, '.html', if($view-mode[@id = ('editor', 'editor-passage')]) then '&amp;view-mode=editor' else '')"/>
+                                                <xsl:attribute name=" href" select="concat('/glossary/', $entity/@xml:id, '.html', if($tei-editor) then '&amp;view-mode=editor' else '')"/>
                                                 <xsl:value-of select="concat(format-number(count($glossary-instances), '#,###'), ' related glossary ', if(count($glossary-instances) eq 1) then 'entry' else 'entries')"/>
                                             </a>
                                         </li>
@@ -1382,7 +1484,7 @@
                                     <xsl:if test="$knowledgebase-instances">
                                         <li>
                                             <a target="84000-knowledgebase">
-                                                <xsl:attribute name=" href" select="concat('/knowledgebase/', $knowledgebase-instances[1]/@id, '.html', if($view-mode[@id = ('editor', 'editor-passage')]) then '?view-mode=editor' else '')"/>
+                                                <xsl:attribute name=" href" select="concat('/knowledgebase/', $knowledgebase-instances[1]/@id, '.html', if($tei-editor) then '?view-mode=editor' else '')"/>
                                                 <xsl:value-of select="'View the 84000 Knowledge Base article'"/>
                                             </a>
                                         </li>
@@ -1392,7 +1494,7 @@
                         </xsl:if>
                         
                         <!-- Link to glossary tool -->
-                        <xsl:if test="$view-mode[@id = ('editor', 'editor-passage')] and $environment/m:url[@id eq 'operations']">
+                        <xsl:if test="$tei-editor and $environment/m:url[@id eq 'operations']">
                             
                             <div>
                                 
@@ -1418,7 +1520,7 @@
         
         <!-- Link to glossary form -->
         <!-- Knowledge base only, editor mode, operations app, no child divs and an id -->
-        <xsl:if test="$view-mode[@id = ('editor', 'editor-passage')] and $environment/m:url[@id eq 'operations'] and m:knowledgebase/m:page[@xml:id gt '']">
+        <xsl:if test="$tei-editor and $environment/m:url[@id eq 'operations'] and m:knowledgebase/m:page[@xml:id gt '']">
             <div>
                 <a class="editor" target="84000-operations">
                     <xsl:attribute name="href" select="concat($environment/m:url[@id eq 'operations']/text(), '/edit-glossary.html', '?resource-id=', m:knowledgebase/m:page/@xml:id, '&amp;resource-type=knowledgebase&amp;filter=blank-form')"/>
@@ -1462,7 +1564,7 @@
                             </xsl:choose>
                             
                             <xsl:if test="$view-mode[not(@client = ('ebook', 'app'))]">
-                                <xsl:attribute name="data-glossary-location" select="$cached-location/@id"/>
+                                <xsl:attribute name="data-location-id" select="$cached-location/@id"/>
                                 <!-- marks a target -->
                                 <xsl:attribute name="data-mark" select="concat('[data-mark-id=&#34;', $glossary-id, '&#34;]')"/>
                                 <xsl:attribute name="class" select="'scroll-to-anchor'"/>
@@ -1486,6 +1588,47 @@
         </xsl:if>
     </xsl:template>
     
+    <!-- Sections -->
+    <xsl:template match="m:part | tei:div">
+        
+        <xsl:variable name="element" select="."/>
+        <xsl:variable name="element-id" select="($element/@id, $element/@xml:id)[1]" as="xs:string?"/>
+        
+        <div>
+            
+            <!-- Set the id -->
+            <xsl:attribute name="id" select="$element-id"/>
+            
+            <!-- Set the class -->
+            <xsl:call-template name="class-attribute">
+                <xsl:with-param name="base-classes" as="xs:string*">
+                    
+                    <xsl:value-of select="'nested-section'"/>
+                    <xsl:value-of select="'relative'"/>
+                    
+                </xsl:with-param>
+            </xsl:call-template>
+            
+            <xsl:call-template name="data-location-id-attribute">
+                <xsl:with-param name="node" select="$element"/>
+            </xsl:call-template>
+            
+            <!-- If the child is another div it will recurse -->
+            <!--<xsl:if test="$view-mode[not(@parts eq 'passage')] or node()[not(self::tei:head)]">
+                <xsl:apply-templates select="node()"/>
+            </xsl:if>-->
+            
+            <xsl:apply-templates select="$element/node()"/>
+            
+            <!-- Add link to tei editor -->
+            <xsl:call-template name="tei-editor">
+                <xsl:with-param name="node" select="$element"/>
+            </xsl:call-template>
+            
+        </div>
+        
+    </xsl:template>
+    
     <!-- Headers -->
     <!-- About headers -->
     <xsl:template match="tei:head[@type eq 'about']">
@@ -1504,7 +1647,7 @@
             
         </h2>
     </xsl:template>
-    <!-- Primary headers -->
+    <!-- Primary headers / linked to a section -->
     <xsl:template match="tei:head[@type eq parent::*/@type]">
         
         <xsl:variable name="part" select="(parent::m:part, parent::tei:div)[1]"/>
@@ -1536,9 +1679,15 @@
                 </xsl:with-param>
             </xsl:call-template>
             
-            <!-- data-passage-id -->
-            <xsl:if test="$view-mode[not(@client = ('ebook', 'app'))]">
-                <xsl:attribute name="data-passage-id" select="$part/@id"/>
+            <xsl:call-template name="data-location-id-attribute">
+                <xsl:with-param name="node" select="$part"/>
+            </xsl:call-template>
+            
+            <xsl:variable name="quote-source" select="key('quote-sources', $part/@id, $root)[1]"/>
+            <xsl:if test="$quote-source">
+                <xsl:call-template name="quote-link">
+                    <xsl:with-param name="quote" select="$quote-source/parent::m:quote"/>
+                </xsl:call-template>
             </xsl:if>
             
             <!-- Add a milestone .gtr -->
@@ -1647,7 +1796,6 @@
             
         </div>
         
-        
     </xsl:template>
     <!-- Other headers, could be anywhere in text -->
     <xsl:template match="tei:head">
@@ -1715,31 +1863,6 @@
         </span>
     </xsl:template>
 
-    <xsl:template match="m:part | tei:div">
-        
-        <div>
-            
-            <!-- Set the id -->
-            <xsl:variable name="id" select="(@id, @xml:id)[1]"/>
-            <xsl:attribute name="id" select="$id"/>
-            
-            <!-- Set the class -->
-            <xsl:attribute name="class" select="'nested-section relative'"/>
-            
-            <!-- If the child is another div it will recurse -->
-            <xsl:if test="$view-mode[not(@parts eq 'passage')] or node()[not(self::tei:head)]">
-                <xsl:apply-templates select="node()"/>
-            </xsl:if>
-            
-            <!-- Add link to tei editor -->
-            <xsl:call-template name="tei-editor">
-                <xsl:with-param name="node" select="."/>
-            </xsl:call-template>
-            
-        </div>
-        
-    </xsl:template>
-    
     <xsl:template match="tei:media">
         <xsl:choose>
             
@@ -1800,56 +1923,68 @@
         
     </xsl:template>
     
+    <xsl:template match="tei:code">
+        <code>
+            <xsl:apply-templates select="node()"/>
+        </code>
+    </xsl:template>
+    
     <!-- Milestone -->
     <xsl:template name="milestone">
         
         <xsl:param name="content" required="yes"/>
         <xsl:param name="row-type" required="yes"/>
         
+        <xsl:variable name="element" select="."/>
+        
         <div>
             
             <xsl:if test="($translation | $knowledgebase)">
                
                 <!-- Set id -->
-                <xsl:variable name="milestone" select="(preceding-sibling::tei:*[1][self::tei:milestone] | preceding-sibling::tei:*[2][self::tei:milestone[following-sibling::tei:*[1][self::tei:lb]]] | parent::tei:seg/preceding-sibling::tei:*[1][self::tei:milestone] | parent::tei:seg/preceding-sibling::tei:*[2][self::tei:milestone[following-sibling::tei:*[1][self::tei:lb]]])[1]"/>
-                <xsl:if test="$milestone">
+                <xsl:variable name="milestone" select="($element/preceding-sibling::tei:*[1][self::tei:milestone] | $element/preceding-sibling::tei:*[2][self::tei:milestone[following-sibling::tei:*[1][self::tei:lb]]] | $element/parent::tei:seg/preceding-sibling::tei:*[1][self::tei:milestone] | $element/parent::tei:seg/preceding-sibling::tei:*[2][self::tei:milestone[following-sibling::tei:*[1][self::tei:lb]]])[1]"/>
+                
+                <xsl:if test="$milestone[@xml:id]">
                     <xsl:attribute name="id" select="$milestone/@xml:id"/>
                 </xsl:if>
                 
-                <!-- Set the class -->
+                <!-- Set nearest id -->
+                <xsl:variable name="location-id">
+                    <xsl:call-template name="persistent-location">
+                        <xsl:with-param name="node" select="$element"/>
+                    </xsl:call-template>
+                </xsl:variable>
+                
+                <xsl:attribute name="data-location-id" select="$location-id"/>
+                
+                <!-- Set the css class -->
                 <xsl:call-template name="class-attribute">
                     <xsl:with-param name="base-classes" as="xs:string*">
                         <xsl:value-of select="'rw'"/>
                         <xsl:value-of select="concat('rw-', $row-type)"/>
-                        <!-- .rw-first specifies no preceding siblings -->
-                        <xsl:variable name="count-previous-siblings" select="count(preceding-sibling::tei:*)"/>
-                        <xsl:choose>
-                            <xsl:when test="$count-previous-siblings eq 0">
-                                <xsl:value-of select="'rw-first'"/>
-                                <!-- .rw-no-head specifies no preceding siblings -->
-                                <xsl:if test="parent::tei:div">
-                                    <xsl:value-of select="'rw-first-in-section'"/>
-                                </xsl:if>
-                            </xsl:when>
-                        </xsl:choose>
                     </xsl:with-param>
                 </xsl:call-template>
-                
-                <!-- Set nearest id -->
-                <xsl:if test="$view-mode[not(@client = ('ebook', 'app'))]">
-                    <xsl:variable name="nearest-milestone" select="preceding-sibling::tei:milestone[@xml:id][1]"/>
-                    <xsl:if test="$nearest-milestone">
-                        <xsl:attribute name="data-passage-id" select="$nearest-milestone/@xml:id"/>
-                    </xsl:if>
-                </xsl:if>
                 
                 <!-- If there's a milestone add a gutter and milestone link -->
                 <xsl:if test="$milestone">
                     
+                    <!-- Check for inbound quote link -->
+                    <!-- Also check if this is the first node of a section with no header. 
+                     The assumption is that the first node in the section will be a milestone. 
+                     If this is the anchor of the first milestone in the section then it's the first element in the section -->
+                    <xsl:variable name="quote-source" select="key('quote-sources', ($milestone/@xml:id, $milestone/ancestor::m:part[1][not(tei:head/@type = @type)][count(descendant::tei:milestone[1] | $milestone) eq 1]/@id), $root)[1]"/>
+                    
+                    <xsl:if test="$quote-source">
+                        <xsl:call-template name="quote-link">
+                            <xsl:with-param name="quote" select="$quote-source/parent::m:quote"/>
+                        </xsl:call-template>
+                    </xsl:if>
+                    
+                    <!-- Add a milestone anchor -->
+                    <xsl:variable name="part" select="$element/ancestor::m:part[@prefix][1]"/>
                     <xsl:variable name="milestones-cache-milestone" select="key('milestones-cache-milestone', $milestone/@xml:id, $root)[1]"/>
+                    
                     <xsl:if test="$milestones-cache-milestone">
-                        
-                        <xsl:variable name="part" select="ancestor::m:part[@prefix][1]"/>
                         
                         <xsl:variable name="milestone-label">
                             <xsl:call-template name="bookmark-label">
@@ -1882,6 +2017,7 @@
                                 
                             </xsl:choose>
                         </div>
+                    
                     </xsl:if>
                     
                 </xsl:if>
@@ -1925,7 +2061,7 @@
                     
                     <xsl:if test="$view-mode[@glossary = ('defer', 'editor-defer')] and m:glossarize-context($node) and not(self::tei:head) and $node[@tid] and not($node[descendant::*/@tid])">
                         <xsl:call-template name="in-view-replace-attribute">
-                            <xsl:with-param name="part-id" select="$id"/>
+                            <xsl:with-param name="element-id" select="$id"/>
                             <xsl:with-param name="target-id" select="$id"/>
                         </xsl:call-template>
                     </xsl:if>
@@ -1952,6 +2088,60 @@
                 </xsl:when>
                 
             </xsl:choose>
+        </xsl:if>
+    </xsl:template>
+    
+    <!-- Add links to inbound and outbound quotes -->
+    <xsl:template name="quote-link">
+        
+        <xsl:param name="quote" as="element(m:quote)"/>
+        
+        <!-- If incomplete, only show if we're in editor mode -->
+        <xsl:if test="$view-mode[@client = ('browser', 'ajax')] and ($quote/@resource-id gt '' and $quote/m:source/@resource-id gt '' or $tei-editor)">
+            <a>
+                
+                <xsl:call-template name="class-attribute">
+                    <xsl:with-param name="base-classes" as="xs:string*">
+                        
+                        <xsl:value-of select="'quote-link'"/>
+                        
+                        <xsl:if test="not($quote/@resource-id gt '') or not($quote/m:source/@resource-id gt '')">
+                            <xsl:value-of select="'quote-error'"/>
+                        </xsl:if>
+                        
+                        <xsl:value-of select="'log-click'"/>
+                        
+                    </xsl:with-param>
+                </xsl:call-template>
+                
+                <xsl:choose>
+                    
+                    <!-- This text quotes another text -->
+                    <xsl:when test="$quote/@resource-id eq $toh-key">
+                        <xsl:attribute name="href" select="concat('/translation/', $quote/m:source/@resource-id, '.html','?part=', $quote/m:source/@location-id, '#dualview-content-', $quote/m:source/@resource-id)"/>
+                        <xsl:attribute name="data-dualview-tab" select="concat('dualview-tab-', $quote/m:source/@resource-id)"/>
+                    </xsl:when>
+                    
+                    <!-- Another text references this as the source -->
+                    <xsl:when test="$quote/@resource-id gt ''">
+                        <xsl:attribute name="href" select="concat('/translation/', $quote/@resource-id, '.html','?part=', $quote/@location-id, '#dualview-content-', $quote/@resource-id)"/>
+                        <xsl:attribute name="data-dualview-tab" select="concat('dualview-tab-', $quote/@resource-id)"/>
+                    </xsl:when>
+                    
+                </xsl:choose>
+                
+                <!-- Create a key for this link -->
+                <xsl:variable name="quote-key" select="string-join(($quote/@location-id, $quote/m:source/@location-id), '-')"/>
+                <xsl:attribute name="data-quote-key" select="$quote-key"/>
+                <xsl:attribute name="data-dualview-target" select="concat('[data-quote-key=&#34;', $quote-key, '&#34;]')"/>
+                
+                <!--<xsl:attribute name="data-dualview-highlight-text" select="$quote/m:highlight/text()"/>-->
+                <!--<xsl:attribute name="data-ref" select="$quote/m:source/@location-id"/>-->
+                
+                <xsl:attribute name="title" select="$quote/m:label"/>
+                <xsl:value-of select="$quote/m:label"/>
+                
+            </a>
         </xsl:if>
     </xsl:template>
     
@@ -2354,8 +2544,8 @@
     <xsl:template name="class-attribute">
         
         <xsl:param name="base-classes" as="xs:string*"/>
-        <xsl:param name="lang" as="xs:string?"/>
         <xsl:param name="html-classes" as="xs:string*"/>
+        <xsl:param name="lang" as="xs:string?"/>
         
         <xsl:variable name="lang-class" select="common:lang-class(normalize-space($lang))"/>
         
@@ -2363,7 +2553,7 @@
             <xsl:if test="count($base-classes[normalize-space()]) gt 0">
                 <xsl:value-of select="string-join($base-classes[normalize-space()], ' ')"/>
             </xsl:if>
-            <xsl:if test="count($html-classes[normalize-space()]) gt 0 and $view-mode[not(@client = ('ebook', 'app'))]">
+            <xsl:if test="count($html-classes[normalize-space()]) gt 0 and $view-mode[@client = ('browser', 'pdf', 'ajax')]">
                 <xsl:value-of select="string-join($html-classes[normalize-space()], ' ')"/>
             </xsl:if>
             <xsl:value-of select="$lang-class"/>
@@ -2401,28 +2591,6 @@
         
         <xsl:choose>
             
-            <xsl:when test="$view-mode[@client = ('browser', 'ajax', 'pdf')]">
-                
-                <!-- Hash only, so it will be appended to page location on right-click and won't be followed by crawlers -->
-                <xsl:attribute name="href" select="concat('#', $target-id)"/>
-                
-                <!-- Add relative url for later -->
-                <xsl:choose>
-                    <xsl:when test="$toh-key">
-                        <xsl:attribute name="data-href-relative" select="concat('/translation/', $toh-key, '.html#', $target-id)"/>
-                    </xsl:when>
-                    <xsl:when test="$kb-id">
-                        <xsl:attribute name="data-href-relative" select="concat('/knowledgebase/', $kb-id, '.html#', $target-id)"/>
-                    </xsl:when>
-                </xsl:choose>
-                
-                <!-- Marks a target -->
-                <xsl:if test="$mark-id">
-                    <xsl:attribute name="data-mark" select="concat('[data-mark-id=&#34;', $mark-id, '&#34;]')"/>
-                </xsl:if>
-                
-            </xsl:when>
-            
             <xsl:when test="$view-mode[@client = ('ebook', 'app')]">
                 
                 <!-- Link to section in ebook -->
@@ -2432,23 +2600,54 @@
                 
             </xsl:when>
             
+            <xsl:otherwise>
+                
+                <xsl:attribute name="href">
+                    <xsl:choose>
+                        <xsl:when test="$toh-key">
+                            <xsl:value-of select="concat('/translation/', $toh-key, '.html#', $target-id)"/>
+                        </xsl:when>
+                        <xsl:when test="$kb-id">
+                            <xsl:value-of select="concat('/knowledgebase/', $kb-id, '.html#', $target-id)"/>
+                        </xsl:when>
+                    </xsl:choose>
+                </xsl:attribute>
+                
+                <!-- Marks a target -->
+                <xsl:if test="$mark-id">
+                    <xsl:attribute name="data-mark" select="concat('[data-mark-id=&#34;', $mark-id, '&#34;]')"/>
+                </xsl:if>
+                
+            </xsl:otherwise>
+            
         </xsl:choose>
         
     </xsl:template>
     
     <xsl:template name="in-view-replace-attribute">
         
-        <xsl:param name="part-id" as="xs:string"/>
+        <xsl:param name="element-id" as="xs:string"/>
         <xsl:param name="target-id" as="xs:string"/>
         
         <xsl:variable name="request-view-mode" select="if($view-mode[@glossary = ('defer')]) then 'passage' else 'editor-passage'"/>
         
         <xsl:choose>
             <xsl:when test="$toh-key">
-                <xsl:attribute name="data-in-view-replace" select="concat('/translation/', $toh-key, '.html', '?part=', $part-id, m:view-mode-parameter($request-view-mode), m:archive-path-parameter(), '#', $target-id)"/>
+                <xsl:attribute name="data-in-view-replace" select="concat('/passage/', $toh-key, '.html', '?passage-id=', $element-id, m:view-mode-parameter($request-view-mode), m:archive-path-parameter(), '#', $target-id)"/>
             </xsl:when>
         </xsl:choose>
         
+    </xsl:template>
+    
+    <xsl:template name="data-location-id-attribute">
+        <xsl:param name="node" as="node()"/>
+        <xsl:if test="$view-mode[not(@client = ('ebook', 'app'))]">
+            <xsl:attribute name="data-location-id">
+                <xsl:call-template name="persistent-location">
+                    <xsl:with-param name="node" select="$node"/>
+                </xsl:call-template>
+            </xsl:attribute>
+        </xsl:if>
     </xsl:template>
     
     <xsl:template name="target-element" as="element()?">
@@ -2664,6 +2863,36 @@
         </xsl:choose>
     </xsl:template>
     
+    <!-- Determine the nearest xml:id -->
+    <xsl:template name="persistent-location" as="xs:string">
+        
+        <xsl:param name="node" as="node()"/>
+        
+        <xsl:choose>
+            
+            <!-- Get the xml:id from the container -->
+            <xsl:when test="$node[ancestor-or-self::tei:*[@xml:id]]">
+                <xsl:value-of select="$node/ancestor-or-self::tei:*[@xml:id][1]/@xml:id"/>
+            </xsl:when>
+            
+            <!-- Get the eft:id from the container -->
+            <xsl:when test="$node[ancestor-or-self::m:entry[parent::m:glossary][@id]]">
+                <xsl:value-of select="$node/ancestor-or-self::m:entry[@id][1]/@id"/>
+            </xsl:when>
+            
+            <!-- Look for a nearest milestone -->
+            <xsl:when test="$node[ancestor-or-self::tei:*/preceding-sibling::tei:milestone[@xml:id]]">
+                <xsl:value-of select="$node/ancestor-or-self::tei:*[preceding-sibling::tei:milestone[@xml:id]][1]/preceding-sibling::tei:milestone[@xml:id][1]/@xml:id"/>
+            </xsl:when>
+            
+            <!-- Default to the id of the nearest part -->
+            <xsl:otherwise>
+                <xsl:value-of select="$node/ancestor-or-self::m:part[@id][1]/@id"/>
+            </xsl:otherwise>
+            
+        </xsl:choose>
+    </xsl:template>
+    
     <!-- Glossarize an element -->
     <xsl:template name="glossarize-element">
         
@@ -2702,12 +2931,13 @@
                             <xsl:attribute name="data-glossary-id" select="$matching-glossary/@xml:id"/>
                             <xsl:attribute name="data-match-mode" select="'marked'"/>
                             
-                            <xsl:variable name="glossary-location">
-                                <xsl:call-template name="glossary-location">
+                            <xsl:variable name="location-id">
+                                <xsl:call-template name="persistent-location">
                                     <xsl:with-param name="node" select="$element"/>
                                 </xsl:call-template>
                             </xsl:variable>
-                            <xsl:attribute name="data-glossary-location" select="$glossary-location"/>
+                            
+                            <!--<xsl:attribute name="data-location-id" select="$location-id"/>-->
                             
                             <!-- target to be marked -->
                             <xsl:attribute name="data-mark-id" select="$matching-glossary/@xml:id"/>
@@ -2721,7 +2951,7 @@
                                     <!-- Check if the location is cached and flag it if not -->
                                     <xsl:if test="$view-mode[@glossary = ('no-cache', 'editor-defer')]">
                                         <xsl:variable name="glossary-cache-gloss" select="key('glossary-cache-gloss', $matching-glossary/@xml:id, $root)[1]" as="element(m:gloss)*"/>
-                                        <xsl:if test="not($glossary-cache-gloss/m:location[@id/string() eq $glossary-location])">
+                                        <xsl:if test="not($glossary-cache-gloss/m:location[@id/string() eq $location-id])">
                                             <xsl:value-of select="'not-cached'"/>
                                         </xsl:if>
                                     </xsl:if>
@@ -2763,8 +2993,8 @@
         <!--<xsl:variable name="text-word-count" select="count(tokenize($text-normalized, '\s+'))"/>-->
         
         <!-- Get a location reference -->
-        <xsl:variable name="glossary-location">
-            <xsl:call-template name="glossary-location">
+        <xsl:variable name="location-id">
+            <xsl:call-template name="persistent-location">
                 <xsl:with-param name="node" select="$text-node"/>
             </xsl:call-template>
         </xsl:variable>
@@ -2781,7 +3011,7 @@
                 
                 <!-- Preferably use the cache -->
                 <xsl:when test="$view-mode[@glossary eq 'use-cache']">
-                    <xsl:variable name="cached-location-gloss-ids" select="key('glossary-cache-location', $glossary-location, $root)/parent::m:gloss/@id" as="xs:string*"/>
+                    <xsl:variable name="cached-location-gloss-ids" select="key('glossary-cache-location', $location-id, $root)/parent::m:gloss/@id" as="xs:string*"/>
                     <xsl:sequence select="$glossary-prioritised[@xml:id = $cached-location-gloss-ids][not(@xml:id = $exclude-gloss-ids)][not(@mode eq 'marked')]"/>
                 </xsl:when>
                 
@@ -2833,9 +3063,9 @@
                     
                     <!-- If there's a match output the match -->
                     <xsl:when test="$matching-glossary">
-                        <xsl:call-template name="mark-text">
+                        <xsl:call-template name="glossary-mark-text">
                             <xsl:with-param name="glossary-id" select="$matching-glossary/@xml:id"/>
-                            <xsl:with-param name="glossary-location" select="$glossary-location"/>
+                            <xsl:with-param name="location-id" select="$location-id"/>
                             <!--<xsl:with-param name="match-mode" select="'matched'"/>-->
                             <xsl:with-param name="text" select="$text-normalized"/>
                         </xsl:call-template>
@@ -2852,10 +3082,10 @@
             
             <!-- Recursively scan for matches -->
             <xsl:when test="$match-glossary-items">
-                <xsl:call-template name="scan-text">
+                <xsl:call-template name="glossary-scan-text">
                     <xsl:with-param name="match-glossary-items" select="$match-glossary-items"/>
                     <xsl:with-param name="match-glossary-index" select="1"/>
-                    <xsl:with-param name="glossary-location" select="$glossary-location"/>
+                    <xsl:with-param name="location-id" select="$location-id"/>
                     <xsl:with-param name="text" select="$text-normalized"/>
                 </xsl:call-template>
             </xsl:when>
@@ -2870,11 +3100,11 @@
     </xsl:template>
     
     <!-- Recursively hunt for matches -->
-    <xsl:template name="scan-text">
+    <xsl:template name="glossary-scan-text">
         
         <xsl:param name="match-glossary-items" as="element(tei:gloss)*"/>
         <xsl:param name="match-glossary-index" as="xs:integer"/>
-        <xsl:param name="glossary-location" as="xs:string"/>
+        <xsl:param name="location-id" as="xs:string"/>
         <xsl:param name="text" as="xs:string"/>
         
         <!-- We are recursing through the terms  -->
@@ -2889,9 +3119,9 @@
                     
                     <xsl:matching-substring>
                         <xsl:value-of select="regex-group(1)"/>
-                        <xsl:call-template name="mark-text">
+                        <xsl:call-template name="glossary-mark-text">
                             <xsl:with-param name="glossary-id" select="$match-glossary-item/@xml:id"/>
-                            <xsl:with-param name="glossary-location" select="$glossary-location"/>
+                            <xsl:with-param name="location-id" select="$location-id"/>
                             <xsl:with-param name="text" as="text()">
                                 <xsl:value-of select="concat(regex-group(2), regex-group(3), '')"/>
                             </xsl:with-param>
@@ -2900,10 +3130,10 @@
                     </xsl:matching-substring>
                     
                     <xsl:non-matching-substring>
-                        <xsl:call-template name="scan-text">
+                        <xsl:call-template name="glossary-scan-text">
                             <xsl:with-param name="match-glossary-items" select="$match-glossary-items"/>
                             <xsl:with-param name="match-glossary-index" select="$match-glossary-index + 1"/>
-                            <xsl:with-param name="glossary-location" select="$glossary-location"/>
+                            <xsl:with-param name="location-id" select="$location-id"/>
                             <xsl:with-param name="text" select="."/>
                         </xsl:call-template>
                     </xsl:non-matching-substring>
@@ -2921,10 +3151,10 @@
     </xsl:template>
 
     <!-- Mark the matched text -->
-    <xsl:template name="mark-text">
+    <xsl:template name="glossary-mark-text">
         
         <xsl:param name="glossary-id" as="xs:string"/>
-        <xsl:param name="glossary-location" as="xs:string"/>
+        <xsl:param name="location-id" as="xs:string"/>
         <xsl:param name="text" as="text()*"/>
         
         <xsl:choose>
@@ -2938,7 +3168,7 @@
                     
                     <xsl:attribute name="data-glossary-id" select="$glossary-id"/>
                     <xsl:attribute name="data-match-mode" select="'matched'"/>
-                    <xsl:attribute name="data-glossary-location" select="$glossary-location"/>
+                    <!--<xsl:attribute name="data-glossary-location-id" select="$location-id"/>-->
                     
                     <!-- target to be marked -->
                     <xsl:attribute name="data-mark-id" select="$glossary-id"/>
@@ -2952,7 +3182,7 @@
                             <!-- Check if the location is cached and flag it if not -->
                             <xsl:if test="$view-mode[@glossary = ('no-cache', 'editor-defer')]">
                                 <xsl:variable name="glossary-cache-gloss" select="key('glossary-cache-gloss', $glossary-id, $root)[1]" as="element(m:gloss)*"/>
-                                <xsl:if test="not($glossary-cache-gloss/m:location[@id/string() eq $glossary-location])">
+                                <xsl:if test="not($glossary-cache-gloss/m:location[@id/string() eq $location-id])">
                                     <xsl:value-of select="'not-cached'"/>
                                 </xsl:if>
                             </xsl:if>
@@ -2978,35 +3208,7 @@
         
     </xsl:template>
     
-    <!-- Get the location for glossary caching -->
-    <xsl:template name="glossary-location" as="xs:string">
-        <xsl:param name="node" as="node()"/>
-        <xsl:choose>
-            
-            <!-- Get the xml:id from the container -->
-            <xsl:when test="$node[ancestor::tei:*[@xml:id]]">
-                <xsl:value-of select="$node/ancestor::tei:*[@xml:id][1]/@xml:id"/>
-            </xsl:when>
-            
-            <!-- Get the xml:id from the container -->
-            <xsl:when test="$node[ancestor::m:entry[parent::m:glossary][@id]]">
-                <xsl:value-of select="$node/ancestor::m:entry[@id][1]/@id"/>
-            </xsl:when>
-            
-            <!-- Look for a nearest milestone -->
-            <xsl:when test="$node[ancestor::tei:*/preceding-sibling::tei:milestone[@xml:id]]">
-                <xsl:value-of select="$node/ancestor::tei:*[preceding-sibling::tei:milestone[@xml:id]][1]/preceding-sibling::tei:milestone[@xml:id][1]/@xml:id"/>
-            </xsl:when>
-            
-            <!-- Default to the id of the nearest part -->
-            <xsl:otherwise>
-                <xsl:value-of select="$node/ancestor::m:part[@id][1]/@id"/>
-            </xsl:otherwise>
-            
-        </xsl:choose>
-    </xsl:template>
-    
-    <!-- Check the context of the node is a somewhere to glossarize -->
+    <!-- Check the context of the node is somewhere to glossarize -->
     <xsl:function name="m:glossarize-context" as="xs:boolean">
         
         <xsl:param name="node" as="node()"/>
@@ -3014,6 +3216,10 @@
         <xsl:choose>
             
             <xsl:when test="$view-mode[@glossary eq 'suppress']">
+                <xsl:value-of select="false()"/>
+            </xsl:when>
+            
+            <xsl:when test="$node[ancestor-or-self::*[@rend eq 'ignoreGlossary']]">
                 <xsl:value-of select="false()"/>
             </xsl:when>
             
@@ -3038,6 +3244,86 @@
         <xsl:param name="glossary-items" as="element(tei:gloss)*"/>
         <xsl:sequence select="$glossary-items/tei:term[not(@type eq 'definition')][not(@xml:lang) or @xml:lang eq 'en'][normalize-space(data())]/data()"/>
     </xsl:function>
+    
+    <!-- Highlight a text node -->
+    <xsl:template name="highlight-text">
+        
+        <xsl:param name="text-node" as="text()"/>
+        <xsl:param name="text-normalized" as="text()"/>
+        
+        <xsl:choose>
+            
+            <xsl:when test="not(normalize-space($text-normalized) gt '')">
+                <xsl:value-of select="$text-normalized"/>
+            </xsl:when>
+            
+            <xsl:otherwise>
+                
+                <xsl:variable name="location-id">
+                    <xsl:call-template name="persistent-location">
+                        <xsl:with-param name="node" select="$text-node"/>
+                    </xsl:call-template>
+                </xsl:variable>
+                
+                <xsl:choose>
+                    
+                    <xsl:when test="$location-id eq $requested-passage">
+                        
+                        <xsl:choose>
+                            
+                            <xsl:when test="$requested-highlight gt '' and matches($requested-highlight, '…')">
+                                
+                                <xsl:analyze-string regex="{ concat('(', string-join(tokenize($requested-highlight, '…') ! normalize-space(.) ! common:escape-for-regex(.), ').+('), ')') }" select="$text-normalized" flags="i">
+                                    
+                                    <xsl:matching-substring>
+                                        <span class="mark">
+                                            <xsl:value-of select="."/>
+                                        </span>
+                                    </xsl:matching-substring>
+                                    
+                                    <xsl:non-matching-substring>
+                                        <xsl:value-of select="."/>
+                                    </xsl:non-matching-substring>
+                                    
+                                </xsl:analyze-string>
+                            </xsl:when>
+                            
+                            <xsl:when test="$requested-highlight gt ''">
+                                
+                                <xsl:analyze-string regex="{ common:escape-for-regex($requested-highlight) }" select="$text-normalized" flags="i">
+                                    
+                                    <xsl:matching-substring>
+                                        <span class="mark">
+                                            <xsl:value-of select="."/>
+                                        </span>
+                                    </xsl:matching-substring>
+                                    
+                                    <xsl:non-matching-substring>
+                                        <xsl:value-of select="."/>
+                                    </xsl:non-matching-substring>
+                                    
+                                </xsl:analyze-string>
+                            </xsl:when>
+                            
+                            <xsl:otherwise>
+                                <span class="mark">
+                                    <xsl:value-of select="$text-normalized"/>
+                                </span>
+                            </xsl:otherwise>
+                        </xsl:choose>
+                        
+                    </xsl:when>
+                    
+                    <xsl:otherwise>
+                        <xsl:value-of select="$text-normalized"/>
+                    </xsl:otherwise>
+                    
+                </xsl:choose>
+                
+            </xsl:otherwise>
+        </xsl:choose>
+        
+    </xsl:template>
     
     <!-- Tantra warning -->
     <xsl:template name="tantra-warning">
@@ -3092,7 +3378,7 @@
         <xsl:param name="expand-id" as="xs:string"/>
         <xsl:param name="prepend-hr" as="xs:boolean" select="true()"/>
         
-        <xsl:variable name="toh-key" select="$text/m:toh/@key"/>
+        <xsl:variable name="toh-key" select="$toh-key"/>
         
         <xsl:variable name="supplementaryRoles" select="('translator', 'reviser')"/>
         <xsl:variable name="summary" select="$text/m:part[@type eq 'summary']/tei:p"/>

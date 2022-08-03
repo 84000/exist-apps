@@ -67,17 +67,9 @@ declare function tei-content:tei($resource-id as xs:string, $resource-type as xs
 
 declare function tei-content:tei($resource-id as xs:string, $resource-type as xs:string, $archive-path as xs:string?) as element(tei:TEI)? {
 
-    (:
-        This is controls the method of looking up the resource-id 
-        from the controller and finding the document.
-        Current options: 
-        1.  UT Number e.g. translation/UT22084-061-013.html
-        2.  Tohoku Number e.g. translation/toh739.html
-    :)
-    
     let $collection := 
         (: Layout checks :)
-        if(lower-case($resource-id) = ('toh00', 'ut22084-000-000')) then
+        if(lower-case($resource-id) = ('toh00', 'ut22084-000-000', 'toh00c', 'ut23703-000-000')) then
             collection(concat($common:data-path, '/tei/layout-checks'))
         
         (: Archived copy :)
@@ -631,6 +623,48 @@ declare function tei-content:milestones-cache($tei as element(tei:TEI), $refresh
                     attribute seconds-to-build { functx:total-seconds-from-duration($end-time - $start-time) },
                     
                     $milestones,
+                    
+                    common:ws(1)
+                }
+};
+
+declare function tei-content:quotes-cache($tei as element(tei:TEI), $refresh as xs:boolean?, $create-if-unavailable as xs:boolean?) as element(m:notes-cache) {
+    
+    let $cache := tei-content:cache($tei, $create-if-unavailable)
+    
+    return
+        if($cache[m:quotes-cache] and not($refresh)) then
+            $cache/m:quotes-cache
+        else
+            
+            let $start-time := util:system-dateTime()
+            
+            let $quotes :=
+            
+                for $quote-ref in $tei//tei:q/@ref
+                let $quote := collection($common:tei-path)//id($quote-ref)
+                let $quote-tei := $quote/ancestor::tei:TEI
+                let $quote-bibl := tei-content:source-bibl($quote-tei, '')[1]
+                where $quote-bibl
+                return (
+                    common:ws(2),
+                    element { QName('http://read.84000.co/ns/1.0', 'quote') } {
+                        attribute id { $quote-ref },
+                        attribute resource-id { $quote-bibl/@key/string() },
+                        attribute resource-type { tei-content:type($quote-tei) },
+                        attribute label { $quote-bibl/tei:ref/text() }
+                    }
+                )
+            
+            let $end-time := util:system-dateTime()
+            
+            return
+                element { QName('http://read.84000.co/ns/1.0', 'quotes-cache') } {
+                
+                    attribute timestamp { current-dateTime() },
+                    attribute seconds-to-build { functx:total-seconds-from-duration($end-time - $start-time) },
+                    
+                    $quotes,
                     
                     common:ws(1)
                 }

@@ -502,7 +502,7 @@
             </div>
             
             <!-- General pop-up for notes -->
-            <div id="popup-footer" class="fixed-footer collapse hidden-print">
+            <div id="popup-footer-text" class="fixed-footer collapse hidden-print">
                 <div class="fix-height">
                     <div class="container">
                         <div class="row">

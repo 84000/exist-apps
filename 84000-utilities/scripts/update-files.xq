@@ -11,17 +11,17 @@ declare function local:files-mimetype-xml($collection-uri as xs:string, $file-ex
     where ends-with($file, '.' || $file-extension)
     return
         if(not(xmldb:get-mime-type(xs:anyURI(concat($collection-uri, '/', $file))) eq 'application/xml')) then(
-            xmldb:store(
-                $collection-uri, 
-                $file, 
-                util:binary-to-string(util:binary-doc(concat($collection-uri, '/', $file))), 
-                (:doc(concat($collection-uri, '/', $file)), :)
-                'application/xml'
-            ),
-            concat('CONVERTED TO XML: ', $file)
+            let $content :=
+                if(util:is-binary-doc(concat($collection-uri, '/', $file))) then
+                    util:binary-to-string(util:binary-doc(concat($collection-uri, '/', $file)))
+                else 
+                    doc(concat($collection-uri, '/', $file))
+            let $store := xmldb:store($collection-uri, $file, $content, 'application/xml')
+            return
+                concat('CONVERTED TO XML: ', $file)
         )
         else
-            concat('ALREADY XML: ', $file)
+            (:concat('ALREADY XML: ', $file):)()
 };
 
 (: Sets group and permissions for all files in collection with the given file extension :)
@@ -45,7 +45,7 @@ local:files-permissions('/db/apps/84000-data/azw3', 'azw3', 'admin', 'utilities'
 local:files-permissions('/db/apps/84000-data/cache', 'cache', 'admin', 'tei', 'rw-rw-r--'),
 local:files-permissions('/db/apps/84000-data/epub', 'epub', 'admin', 'utilities', 'rw-rw-r--'),
 local:files-permissions('/db/apps/84000-data/pdf', 'pdf', 'admin', 'utilities', 'rw-rw-r--'),
-local:files-permissions('/db/apps/84000-data/rdf', 'rdf', 'admin', 'utilities', 'rw-rw-r--')
-local:files-mimetype-xml('/db/apps/84000-data/cache', 'cache'):)
-local:files-mimetype-xml('/db/apps/84000-data/translation-memory', 'tmx')
+local:files-permissions('/db/apps/84000-data/rdf', 'rdf', 'admin', 'utilities', 'rw-rw-r--'):)
+local:files-mimetype-xml('/db/apps/84000-data/cache', 'cache')
+(:local:files-mimetype-xml('/db/apps/84000-data/translation-memory', 'tmx'):)
 

@@ -58,7 +58,7 @@
         </div>
         
         <!-- Source pop-up -->
-        <div id="popup-footer-source" class="fixed-footer collapse hidden-print">
+        <div id="popup-footer-dualview" class="fixed-footer collapse hidden-print">
             <div class="fix-height">
                 <div class="data-container">
                     <!-- Ajax data here -->

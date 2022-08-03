@@ -22,6 +22,9 @@
     <xsl:template match="text()[ancestor::eft:html]">
         <!-- Don't output text nodes unless explicit -->
     </xsl:template>
+    <xsl:template match="eft:translation">
+        <!-- Don't output text nodes unless explicit -->
+    </xsl:template>
     
     <xsl:template match="eft:eft-header">
         <div class="navbar navbar-default">
@@ -848,10 +851,13 @@
     </xsl:template>
     
     <xsl:template name="translation">
+        
         <xsl:param name="translation-id"/>
         <xsl:param name="lang" select="'en'"/>
         <xsl:param name="text-node" select="true()"/>
+        
         <xsl:variable name="translation" select="eft:translation[@id = $translation-id]"/>
+        
         <xsl:choose>
             <xsl:when test="$translation/eft:html[@xml:lang = $lang]/*">
                 <xsl:copy-of select="$translation/eft:html[@xml:lang = $lang]"/>

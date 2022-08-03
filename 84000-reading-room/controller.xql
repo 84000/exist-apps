@@ -276,6 +276,25 @@ return
                     </parameters>
                 )
         
+        (: Translation :)
+        else if ($collection-path eq "passage") then
+            (: xml model -> model sets view :)
+            if ($resource-suffix = ('xml', 'html')) then
+                local:dispatch("/models/passage.xq", "",
+                    <parameters xmlns="http://exist.sourceforge.net/NS/exist">
+                        <add-parameter name="resource-id" value="{ $resource-id }"/>
+                        <add-parameter name="resource-suffix" value="{ $resource-suffix }"/>
+                    </parameters>
+                )
+            (: default to html view :)
+            else
+                local:dispatch("/models/passage.xq", "",
+                    <parameters xmlns="http://exist.sourceforge.net/NS/exist">
+                        <add-parameter name="resource-id" value="{ $resource-id }"/>
+                        <add-parameter name="resource-suffix" value="html"/>
+                    </parameters>
+                )
+                
         (: Section :)
         else if ($collection-path eq "section") then
             (: xml model -> json view :)

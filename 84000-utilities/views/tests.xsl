@@ -71,11 +71,6 @@
                                             <xsl:value-of select="'Sections'"/>
                                         </a>
                                     </li>
-                                    <li>
-                                        <a href="/test-searches.html" target="test-searches">
-                                            <xsl:value-of select="'Searches'"/>
-                                        </a>
-                                    </li>
                                 </ul>
                             </li>
                             <li>

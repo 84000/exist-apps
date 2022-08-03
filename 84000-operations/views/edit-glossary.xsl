@@ -2045,9 +2045,9 @@
                     <xsl:when test="$link[@data-bookmark]">
                         <xsl:value-of select="concat($reading-room-path, '/', $request-resource-type, '/', $request-resource-id, '.html?view-mode=editor', $link/@href)"/>
                     </xsl:when>
-                    <xsl:when test="$link[@data-glossary-location]">
+                    <!--<xsl:when test="$link[@data-location-id]">
                         <xsl:value-of select="concat($reading-room-path, '/', $request-resource-type, '/', $request-resource-id, '.html?view-mode=editor', $link/@href)"/>
-                    </xsl:when>
+                    </xsl:when>-->
                     <xsl:when test="$link[@data-pointer-type eq 'id']">
                         <xsl:value-of select="concat($reading-room-path, '/', $request-resource-type, '/', $request-resource-id, '.html?view-mode=editor', $link/@href)"/>
                     </xsl:when>
