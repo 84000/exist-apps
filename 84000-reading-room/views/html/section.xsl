@@ -32,7 +32,7 @@
                                 <xsl:if test="$section-id eq 'all-translated'">
                                     <li>
                                         <a>
-                                            <xsl:attribute name="href" select="common:internal-link('/section/lobby.html', m:view-mode-parameter((), ()), '', /m:response/@lang)"/>
+                                            <xsl:attribute name="href" select="common:internal-link('/section/lobby.html', m:view-mode-parameter((),()), '', /m:response/@lang)"/>
                                             <xsl:value-of select="'The Collection'"/>
                                         </a>
                                     </li>
@@ -53,7 +53,7 @@
                                 <xsl:if test="not($section-id eq 'all-translated')">
                                     <div>
                                         <a class="center-vertical">
-                                            <xsl:attribute name="href" select="common:internal-link('/section/all-translated.html', (m:view-mode-parameter((), ())), '', /m:response/@lang)"/>
+                                            <xsl:attribute name="href" select="common:internal-link('/section/all-translated.html', (m:view-mode-parameter((),())), '', /m:response/@lang)"/>
                                             <span>
                                                 <span class="btn-round sml">
                                                     <i class="fa fa-list"/>
@@ -131,7 +131,7 @@
                                         </xsl:if>
                                         
                                         <a class="filter-panel log-click" data-match-height="carousel-filters">
-                                            <xsl:attribute name="href" select="common:internal-link(concat('/section/', lower-case(m:section/@id), '.html'), (m:view-mode-parameter((), ())), '#section-content', /m:response/@lang)"/>
+                                            <xsl:attribute name="href" select="common:internal-link(concat('/section/', lower-case(m:section/@id), '.html'), (m:view-mode-parameter((),())), '#section-content', /m:response/@lang)"/>
                                             <xsl:attribute name="data-ajax-target" select="'#section-content'"/>
                                             <div class="h3">
                                                 <xsl:value-of select="'All Publications'"/>
@@ -157,7 +157,7 @@
                                             </xsl:if>
                                             
                                             <a class="filter-panel log-click" data-match-height="carousel-filters">
-                                                <xsl:attribute name="href" select="common:internal-link(concat('/section/', lower-case(/m:response/m:section/@id), '.html'), (concat('filter-id=', @xml:id), m:view-mode-parameter((), ())), '#section-content', /m:response/@lang)"/>
+                                                <xsl:attribute name="href" select="common:internal-link(concat('/section/', lower-case(/m:response/m:section/@id), '.html'), (concat('filter-id=', @xml:id), m:view-mode-parameter((),())), '#section-content', /m:response/@lang)"/>
                                                 <xsl:attribute name="data-ajax-target" select="'#section-content'"/>
                                                 <div class="h3">
                                                     <xsl:value-of select="tei:head[@type eq 'filter']"/>
@@ -441,7 +441,7 @@
                                 </div>
                                 <div class="col-sm-4 bottom-margin-xs">
                                     <a class="text-danger center-vertical">
-                                        <xsl:attribute name="href" select="common:internal-link('/section/all-translated.html', (m:view-mode-parameter((), ())), '', /m:response/@lang)"/>
+                                        <xsl:attribute name="href" select="common:internal-link('/section/all-translated.html', (m:view-mode-parameter((),())), '', /m:response/@lang)"/>
                                         <span class="btn-round red sml">
                                             <i class="fa fa-list"/>
                                         </span>
@@ -517,7 +517,7 @@
                                         <div class="center-vertical full-width">
                                             
                                             <a class="log-click">
-                                                <xsl:attribute name="href" select="common:internal-link(concat('/section/', lower-case(m:section/@id), '.html'), (m:view-mode-parameter((), ())), '#section-content', /m:response/@lang)"/>
+                                                <xsl:attribute name="href" select="common:internal-link(concat('/section/', lower-case(m:section/@id), '.html'), (m:view-mode-parameter((),())), '#section-content', /m:response/@lang)"/>
                                                 <xsl:attribute name="data-ajax-target" select="'#section-content'"/>
                                                 <xsl:attribute name="id" select="concat(m:section/@id, '-filter-label')"/>
                                                 <xsl:value-of select="'All Published Translations (no filter)'"/>
@@ -538,7 +538,7 @@
                                             <div class="center-vertical full-width">
                                                 
                                                 <a class="log-click">
-                                                    <xsl:attribute name="href" select="common:internal-link(concat('/section/', lower-case(/m:response/m:section/@id), '.html'), (concat('filter-id=', $filter/@xml:id), m:view-mode-parameter((), ())), '#section-content', /m:response/@lang)"/>
+                                                    <xsl:attribute name="href" select="common:internal-link(concat('/section/', lower-case(/m:response/m:section/@id), '.html'), (concat('filter-id=', $filter/@xml:id), m:view-mode-parameter((),())), '#section-content', /m:response/@lang)"/>
                                                     <xsl:attribute name="data-ajax-target" select="'#section-content'"/>
                                                     <xsl:attribute name="id" select="concat($filter/@xml:id, '-filter-label')"/>
                                                     <xsl:value-of select="$filter/tei:head[@type eq 'filter']"/>
@@ -1071,7 +1071,7 @@
                                             <xsl:choose>
                                                 <xsl:when test="@status-group = 'published'">
                                                     <a>
-                                                        <xsl:attribute name="href" select="common:internal-link(concat('/translation/', $text-1/m:source/@key, '.html'), (m:view-mode-parameter((), ())), '', /m:response/@lang)"/>
+                                                        <xsl:attribute name="href" select="common:internal-link(concat('/translation/', $text-1/m:source/@key, '.html'), (m:view-mode-parameter((),())), '', /m:response/@lang)"/>
                                                         <xsl:attribute name="target" select="concat($text-1/@id, '.html')"/>
                                                         <xsl:value-of select="normalize-space($text-1/m:titles/m:title[@xml:lang eq 'en'][not(@type)][1])"/> 
                                                     </a>
@@ -1101,7 +1101,7 @@
                                                     <xsl:choose>
                                                         <xsl:when test="@status-group = 'published'">
                                                             <a>
-                                                                <xsl:attribute name="href" select="common:internal-link(concat('/translation/', m:source/@key, '.html'), (m:view-mode-parameter((), ())), '', /m:response/@lang)"/>
+                                                                <xsl:attribute name="href" select="common:internal-link(concat('/translation/', m:source/@key, '.html'), (m:view-mode-parameter((),())), '', /m:response/@lang)"/>
                                                                 <xsl:attribute name="target" select="concat(@id, '.html')"/>
                                                                 <xsl:value-of select="normalize-space(m:source/m:toh)"/> 
                                                             </a>
@@ -1236,7 +1236,7 @@
                                                         </xsl:attribute>
                                                         <xsl:choose>
                                                             <xsl:when test="@type eq 'html'">
-                                                                <xsl:attribute name="href" select="common:internal-link(@url, (m:view-mode-parameter((), ())), '', /m:response/@lang)"/>
+                                                                <xsl:attribute name="href" select="common:internal-link(@url, (m:view-mode-parameter((),())), '', /m:response/@lang)"/>
                                                                 <xsl:attribute name="target" select="concat($text-1/@id, '.html')"/>
                                                             </xsl:when>
                                                             <xsl:otherwise>
@@ -1464,7 +1464,7 @@
                                 
                                 <a target="_self" class="block-link printable">
                                     
-                                    <xsl:attribute name="href" select="common:internal-link(concat('/section/', @id/string(), '.html'), (m:view-mode-parameter((), ())), '', /m:response/@lang)"/>
+                                    <xsl:attribute name="href" select="common:internal-link(concat('/section/', @id/string(), '.html'), (m:view-mode-parameter((),())), '', /m:response/@lang)"/>
                                     
                                     <h3 class="title main-title break">
                                         <xsl:value-of select="m:titles/m:title[@xml:lang='en']/text()"/> 

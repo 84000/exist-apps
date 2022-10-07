@@ -10,7 +10,7 @@
     
     <xsl:variable name="page-title" as="node()*">
         <xsl:sequence select="/m:response/m:translation/m:titles/m:title[@xml:lang eq 'en']"/>
-        <xsl:sequence select="/m:response/m:translation/m:part[@type eq 'translation']/m:part[@render eq 'show'][1]/tei:head[@type eq parent::m:part/@type]"/>
+        <xsl:sequence select="/m:response/m:translation//m:part[@content-status eq 'complete'][@id eq $requested-part][1]/tei:head[@type eq parent::m:part/@type]"/>
     </xsl:variable>
     
     <xsl:template match="/m:response">
@@ -33,7 +33,7 @@
             
             <!-- Breadcrumbs -->
             <xsl:if test="m:translation[m:parent]">
-                <div class="title-band hidden-print">
+                <div class="title-band hidden-print hidden-iframe">
                     <div class="container">
                         <div class="center-vertical center-aligned text-center">
                             <nav role="navigation" aria-label="Breadcrumbs">
@@ -48,22 +48,18 @@
             
             <!-- Main article -->
             <main class="content-band">
-                <div id="dualview-content-{ $toh-key }" class="container dualview-content">
+                <div class="container">
                     
-                    <xsl:if test="$view-mode[not(@layout eq 'part-only')] or $requested-part = ('all', 'front')">
-                        
-                        <!-- Front matter -->
-                        <xsl:call-template name="front-matter"/>
-                        
-                        <!-- Table of Contents -->
-                        <xsl:if test="m:translation/@status = $render-status">
-                            <div class="row">
-                                <div class="col-md-offset-1 col-md-10 col-lg-offset-2 col-lg-8 print-width-override">
-                                    <xsl:call-template name="table-of-contents"/>
-                                </div>
+                    <!-- Front matter -->
+                    <xsl:call-template name="front-matter"/>
+                    
+                    <!-- Table of Contents -->
+                    <xsl:if test="m:translation/@status = $render-status">
+                        <div class="row">
+                            <div class="col-md-offset-1 col-md-10 col-lg-offset-2 col-lg-8 print-width-override">
+                                <xsl:call-template name="table-of-contents"/>
                             </div>
-                        </xsl:if>
-                        
+                        </div>
                     </xsl:if>
                     
                     <div id="parts">
@@ -143,10 +139,10 @@
             </main>
             
             <!-- Additional functional elements -->
-            <xsl:if test="$view-mode[@client eq 'browser'][not(@layout eq 'part-only')]">
+            <xsl:if test="$view-mode[@client eq 'browser'][not(@layout eq 'flat')]">
                 
                 <!-- Navigation controls -->
-                <nav class="nav-controls show-on-scroll-xs hidden-print" aria-label="Navigation icons">
+                <nav class="nav-controls show-on-scroll-xs hidden-print hidden-iframe" aria-label="Navigation icons">
                     
                     <div id="navigation-btn-container" class="fixed-btn-container">
                         <a href="#contents-sidebar" class="btn-round show-sidebar" aria-haspopup="true" title="Show the side navigation panel">
@@ -161,14 +157,12 @@
                         </a>
                     </div>
                     
+                    <!-- Link to the start of the section / defaults to the start of the page -->
                     <div id="link-to-trans-top-container" class="fixed-btn-container">
-                        
-                        <!-- Link to the start of the section / defaults to the start of the page -->
-                        <a class="btn-round scroll-to-anchor link-to-top" title="Go to the top of the page">
+                        <a class="btn-round link-to-top" title="Go to the top of the page">
                             <xsl:attribute name="href" select="'#top'"/>
                             <i class="fa fa-arrow-up" aria-hidden="true"/>
                         </a>
-                        
                     </div>
                     
                     <div id="rewind-btn-container" class="fixed-btn-container hidden">
@@ -202,21 +196,7 @@
                 </div>
                 
                 <!-- Dual-view pop-up -->
-                <div id="popup-footer-dualview" class="fixed-footer collapse hidden-print">
-                    <div class="fix-height">
-                        <div class="data-container">
-                            <!-- Create data tabs here -->
-                            <div class="tab-content"/>
-                        </div>
-                    </div>
-                    <div class="fixed-btn-container close-btn-container">
-                        <button type="button" class="btn-round close close-collapse" aria-label="Close">
-                            <span aria-hidden="true">
-                                <i class="fa fa-times"/>
-                            </span>
-                        </button>
-                    </div>
-                </div>
+                <xsl:call-template name="dualview-popup"/>
                 
                 <!-- Contents fly-out -->
                 <div id="contents-sidebar" class="fixed-sidebar collapse width hidden-print">
@@ -527,7 +507,7 @@
                     <xsl:value-of select="concat(' part-', $requested-part)"/>
                 </xsl:if>
             </xsl:with-param>
-            <xsl:with-param name="page-title" select="string-join(($page-title/data(), '84000 Reading Room'), ' | ')"/>
+            <xsl:with-param name="page-title" select="string-join(($page-title/data(), '84000 Reading Room'), ' / ')"/>
             <xsl:with-param name="page-description" select="normalize-space(data(m:translation/m:part[@type eq 'summary']/tei:p[1]))"/>
             <xsl:with-param name="content" select="$content"/>
             <xsl:with-param name="additional-links">
@@ -565,11 +545,11 @@
         <xsl:param name="css-classes" as="xs:string" select="''"/>
         
         <!-- 'hide' allows the inclusion of content in the xml structure without outputting -->
-        <xsl:if test="$part[@render = ('persist', 'show', 'collapse', 'preview', 'passage')]">
+        <xsl:if test="$part[@content-status = ('complete', 'preview', 'passage')]">
             <div class="row">
                 <div class="col-md-offset-1 col-md-10 col-lg-offset-2 col-lg-8 print-width-override">
                     
-                    <xsl:element name="{ if($part[@render = ('preview')]) then 'aside' else 'section' }" namespace="http://www.w3.org/1999/xhtml">
+                    <xsl:element name="{ if($part[@content-status = ('complete')]) then 'section' else 'aside' }" namespace="http://www.w3.org/1999/xhtml">
                         
                         <xsl:attribute name="id" select="$part/@id"/>
                         
@@ -586,26 +566,21 @@
                             <xsl:with-param name="html-classes" as="xs:string*">
                                 
                                 <xsl:choose>
-                                    <xsl:when test="$part[@render eq 'collapse'] and $view-mode[@layout = ('expanded', 'expanded-fixed')]">
-                                        <!-- .show displays content expanded -->
+                                    <!-- Expand all -->
+                                    <xsl:when test="$view-mode[@layout = ('expanded', 'flat')]">
                                         <xsl:value-of select="'show'"/>
                                     </xsl:when>
-                                    <xsl:when test="$part[@render eq 'preview']">
-                                        <!-- .preview displays content collapsed -->
-                                        <!-- .partial indicates that it is incomplete -->
+                                    <!-- Expand only the complete part -->
+                                    <xsl:when test="$part[@content-status eq 'complete'] and $part[@id eq $requested-part]">
+                                        <xsl:value-of select="'show'"/>
+                                    </xsl:when>
+                                    <!-- Collapse and flag as .partial -->
+                                    <xsl:when test="$part[@content-status eq 'preview']">
                                         <xsl:value-of select="'preview partial'"/>
                                     </xsl:when>
-                                    <xsl:when test="$part[@render eq 'collapse']">
-                                        <!-- .preview displays content collapsed -->
-                                        <xsl:value-of select="'preview'"/>
-                                    </xsl:when>
-                                    <xsl:when test="$part[@render eq 'part-only']">
-                                        <!-- .hidden hides content -->
-                                        <xsl:value-of select="'hidden'"/>
-                                    </xsl:when>
+                                    <!-- Collapse by default -->
                                     <xsl:otherwise>
-                                        <!-- .show displays content expanded -->
-                                        <xsl:value-of select="'show'"/>
+                                        <xsl:value-of select="'preview'"/>
                                         <!--<xsl:if test="$view-mode[@client eq 'browser']">
                                             <xsl:value-of select="'delay-render'"/>
                                         </xsl:if>-->
@@ -644,7 +619,7 @@
                         </xsl:choose>
                         
                         <!-- Add controls to expand / collapse -->
-                        <xsl:if test="$part[@render = ('show', 'collapse', 'preview')] and $view-mode[not(@layout = ('expanded-fixed'))]">
+                        <xsl:if test="$part[@content-status = ('complete', 'preview')] and $view-mode[not(@layout = ('flat'))]">
                             
                             <xsl:call-template name="preview-controls">
                                 
@@ -652,9 +627,12 @@
                                 <xsl:with-param name="log-click" select="true()"/>
                                 
                                 <!-- Provide complete navigation links so they will be followed by crawlers and right-click works -->
-                                <xsl:with-param name="get-url">
-                                    <xsl:if test="$part[@render eq 'preview']">
-                                        <xsl:value-of select="concat('/translation/', $toh-key, '.html?part=', $part/@id, m:view-mode-parameter(()), m:archive-path-parameter(), '#', $part/@id)"/>
+                                <xsl:with-param name="href" select="concat('/translation/', $toh-key, '.html?part=', $part/@id, m:view-mode-parameter(()), m:archive-path-parameter(), '#', $part/@id)"/>
+                                
+                                <!-- The javascript will intercept and use this in the RR, loading the part into the skeleton of the text -->
+                                <xsl:with-param name="href-override">
+                                    <xsl:if test="$view-mode[@client = ('browser', 'ajax')]">
+                                        <xsl:value-of select="concat('#', $part/@id)"/>
                                     </xsl:if>
                                 </xsl:with-param>
                                 
@@ -671,18 +649,6 @@
     </xsl:template>
     
     <xsl:template name="front-matter">
-        
-        <xsl:if test="$view-mode[@client = ('browser', 'ajax')]">
-            <div class="fixed-footer-show" id="popup-title">
-                <ul class="list-inline inline-dots">
-                    <xsl:for-each select="(m:translation/m:source/m:toh, $page-title)">
-                        <li>
-                            <xsl:value-of select="common:limit-str(., 50)"/>
-                        </li>
-                    </xsl:for-each>
-                </ul>
-            </div>
-        </xsl:if>
         
         <div class="row">
             <div class="col-md-offset-1 col-md-10 col-lg-offset-2 col-lg-8 print-width-override">
@@ -745,7 +711,7 @@
                             
                             <xsl:apply-templates select="$main-titles[@xml:lang eq 'bo']"/>
                             
-                            <h1 class="title main-title break">
+                            <h1 class="title main-title">
                                 <xsl:for-each select="$page-title">
                                     <xsl:choose>
                                         <xsl:when test="self::m:title">

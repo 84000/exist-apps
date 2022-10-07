@@ -79,31 +79,31 @@ declare function tests:translations($translation-id as xs:string) as element(m:r
                         tests:outline-context($tei, $toh-key),
                         tests:complete-source($toh-html),
                         tests:translation-tantra-warning($tei, $toh-html),
-                        tests:section(
+                        tests:part(
                             $tei//tei:front//tei:div[@type eq 'summary'][not(@xml:lang) or @xml:lang eq 'en'], 
                             $toh-html//xhtml:section[common:contains-class(@class, 'part-type-summary')], 
                             'summary', 1),
-                        tests:section(
+                        tests:part(
                             $tei//tei:front//tei:div[@type eq 'acknowledgment'], 
                             $toh-html//xhtml:section[common:contains-class(@class, 'part-type-acknowledgment')],
                             'acknowledgment', 1),
-                        tests:section(
+                        tests:part(
                             $tei//tei:front//tei:div[@type eq 'preface'], 
                             $toh-html//xhtml:section[common:contains-class(@class, 'part-type-preface')], 
                             'preface', 0),
-                        tests:section(
+                        tests:part(
                             $tei//tei:front//tei:div[@type eq 'introduction'], 
                             $toh-html//xhtml:section[common:contains-class(@class, 'part-type-introduction')], 
                             'introduction', 1),
-                        tests:section(
+                        tests:part(
                             $tei//tei:body//tei:div[@type eq 'prologue'], 
                             $toh-html//xhtml:section[common:contains-class(@class, 'part-type-prologue')], 
                             'prologue', 0),
-                        tests:section(
+                        tests:part(
                             $tei//tei:body//tei:div[@type eq 'homage'], 
                             $toh-html//xhtml:section[common:contains-class(@class, 'part-type-homage')], 
                             'homage', 0),
-                        tests:section(
+                        tests:part(
                             element tei:div {
                                 $tei//tei:body/tei:div[@type eq 'translation']/tei:div[@type = ('section', 'chapter')]
                             },
@@ -111,11 +111,11 @@ declare function tests:translations($translation-id as xs:string) as element(m:r
                                 $toh-html//xhtml:section[common:contains-class(@class, ('part-type-chapter', 'part-type-section'))]
                             }, 
                             'body', 1),
-                        tests:section(
+                        tests:part(
                             $tei//tei:body//tei:div[@type eq 'colophon'], 
                             $toh-html//xhtml:section[common:contains-class(@class, 'part-type-colophon')], 
                             'colophon', 0),
-                        tests:section(
+                        tests:part(
                             $tei//tei:back//tei:div[@type eq 'appendix'], 
                             $toh-html//xhtml:section[common:contains-class(@class, 'part-type-appendix')], 
                             'appendix', 0),
@@ -182,8 +182,8 @@ declare function tests:sections($section-id as xs:string) as element(m:results) 
                         tests:duplicate-ids($tei),
                         tests:scoped-ids($tei),
                         tests:outline-context($tei, $resource-id),
-                        tests:section($tei//tei:front//tei:div[@type eq 'abstract'], $html//*[@id eq 'title']//*[@id eq 'abstract'], 'abstract', 0),
-                        tests:section($tei//tei:body//tei:div[@type eq 'about'], $html//*[@id eq 'summary'], 'summary', 0),
+                        tests:part($tei//tei:front//tei:div[@type eq 'abstract'], $html//*[@id eq 'title']//*[@id eq 'abstract'], 'abstract', 0),
+                        tests:part($tei//tei:body//tei:div[@type eq 'about'], $html//*[@id eq 'summary'], 'summary', 0),
                         tests:section-tantra-warning($tei, $html)
                     }
                     </tests>
@@ -260,7 +260,12 @@ declare function tests:scoped-ids($tei as element(tei:TEI)) as element(m:test) {
 declare function tests:valid-pointers($tei as element(tei:TEI)) as element(m:test) {
     
     let $tei-id := tei-content:id($tei)
-    let $invalid-ptrs := $tei//tei:ptr[empty(text())]/@target[not(matches(., concat('^', functx:escape-for-regex(concat('#', $tei-id)), '')))]
+    let $invalid-ptrs := 
+        for $pointer in $tei//tei:ptr[matches(@target, '^#')]
+        let $target := replace($pointer/@target, '^#', '') ! replace(., '^bibliography$', 'listBibl') ! replace(., '^abbreviations$', 'notes')
+        where not($tei/id($target)) and not($tei//tei:div[@type = $target])
+        return
+            $pointer
     
     return
         <test xmlns="http://read.84000.co/ns/1.0"
@@ -271,7 +276,7 @@ declare function tests:valid-pointers($tei as element(tei:TEI)) as element(m:tes
                 {
                     for $invalid-ptr in $invalid-ptrs
                     return
-                        <detail type="debug">Target { string($invalid-ptr) } was not found in the text.</detail>
+                        <detail type="debug">Target { string($invalid-ptr/@target) } was not found in the text.</detail>
                 }
             </details>
         </test>
@@ -360,17 +365,17 @@ declare function tests:complete-source($toh-html as document-node()) as element(
         </test>
 };
 
-declare function tests:section($section-tei as element()*, $section-html as element()*, $section-name as xs:string, $required-paragraphs as xs:integer) as element(m:test) {
+declare function tests:part($section-tei as element()*, $section-html as element()*, $section-name as xs:string, $required-paragraphs as xs:integer) as element(m:test) {
     
     let $section-tei-type := $section-tei/ancestor::tei:TEI/tei:teiHeader/tei:fileDesc/@type
     
     let $section-count-tei-p := 
         count($section-tei//*[self::tei:p | self::tei:ab | self::tei:trailer | self::tei:bibl][not(ancestor::tei:note)])
     let $section-count-html-p := 
-        count($section-html//xhtml:p[not(common:contains-class(@class, ('ref-prologue', 'table-as-list-row')))]) 
+        count($section-html//xhtml:p[not(common:contains-class(@class, ('ref-prologue', 'table-as-list-row', 'table-note')))]) 
         
     let $section-count-tei-line := 
-        count($section-tei//tei:l[parent::tei:lg][not(ancestor::tei:note)])
+        count($section-tei//tei:l[not(ancestor::tei:note)])
     let $section-count-html-line := 
         count($section-html//xhtml:div[common:contains-class(@class, 'line')]) 
     
@@ -609,7 +614,7 @@ declare function tests:glossary($tei as element(tei:TEI)*, $html as document-nod
 
 declare function tests:refs($tei as element(tei:TEI)*, $html as document-node()*, $toh-key as xs:string) as element(m:test) {
     
-    let $tei-folios := translation:folios($tei, $toh-key)//m:folio[not(@rend = ('blank', 'hidden'))]
+    let $tei-folios := translation:folios($tei, $toh-key)//m:folio[not(@rend = ('blank', 'hidden'))][@ref-id gt '']
     let $html-refs := $html//xhtml:a[common:contains-class(@class, 'ref')]
     
     let $folio-count-tei := count($tei-folios)

@@ -19,6 +19,11 @@ import module namespace contributors="http://read.84000.co/contributors" at "con
 import module namespace functx="http://www.functx.com";
 
 declare variable $glossary:tei := (
+    (:collection(concat($common:data-path, '/tei/layout-checks'))//tei:TEI
+        [tei:text/tei:back/tei:div[@type eq 'glossary']]
+        [tei:teiHeader/tei:fileDesc/tei:publicationStmt
+            [@status = $common:environment/m:render/m:status[@type eq 'translation']/@status-id]
+        ],:)
     collection($common:translations-path)//tei:TEI
         [tei:text/tei:back/tei:div[@type eq 'glossary']]
         [tei:teiHeader/tei:fileDesc/tei:publicationStmt
@@ -178,11 +183,17 @@ declare function glossary:glossary-startletter($type as xs:string*, $lang as xs:
 declare function glossary:glossary-flagged($flag-type as xs:string*, $glossary-type as xs:string*) as element(tei:gloss)* {
     
     let $flag := $entities:flags//m:flag[@id eq $flag-type]
-    let $flagged-instances := $entities:entities//m:flag[@type eq $flag/@id]/parent::m:instance
+    
+    let $flagged-instances := 
+        if($flag[@id eq 'entity-definition']) then
+            $entities:entities//m:entity[m:content[@type eq 'glossary-definition'][node()]]/m:instance
+        else
+            $entities:entities//m:flag[@type eq $flag/@id]/parent::m:instance
+    
     let $valid-glossary-type := local:valid-type($glossary-type)
-    return
-        $glossary:tei//tei:gloss[not(@mode eq 'surfeit')]/id($flagged-instances/@id)[@type = $valid-glossary-type]
-        
+    
+    return $glossary:tei//tei:gloss/id($flagged-instances/@id)[not(@mode eq 'surfeit')][@type = $valid-glossary-type]
+    
 };
 
 declare function glossary:glossary-terms($type as xs:string?, $lang as xs:string, $search as xs:string, $include-count as xs:boolean) as element(m:glossary)* {
@@ -735,7 +746,7 @@ declare function glossary:xml-response($tei as element(tei:TEI), $resource-id as
                 $source,
                 translation:toh($tei, $source/@key),
                 translation:publication($tei),
-                translation:parts($tei, 'all', $translation:view-modes/m:view-mode[@id eq 'glossary-check'])
+                translation:parts($tei, 'all', $translation:view-modes/m:view-mode[@id eq 'glossary-check'], ())
             }
     
     (: Include caches - do not call glossary:cache(), this causes a recursion problem :)
@@ -796,6 +807,13 @@ declare function glossary:filter($tei as element(tei:TEI), $resource-type as xs:
             return
                 $tei//tei:back//tei:div[@type eq 'glossary']//id($entities-with-type/m:instance/@id)/self::tei:gloss
         
+        (: Entries using entity definitions :)
+        else if($filter eq 'entity-definition') then
+            let $instances-entity-definition := $entities:entities//m:entity[m:content[@type eq 'glossary-definition'][node()]]/m:instance
+            return
+                $tei//tei:back//tei:div[@type eq 'glossary']//id($instances-entity-definition[@use-definition = ('both','override')]/@id)/self::tei:gloss
+                | $tei//tei:back//tei:div[@type eq 'glossary']//id($instances-entity-definition/@id)/self::tei:gloss[not(tei:term[@type eq 'definition'][node()])]
+        
         (: No locations in the cache :)
         else if($filter eq 'no-locations') then
             let $cache-with-locations := $glossary-cache[m:location]
@@ -829,7 +847,7 @@ declare function glossary:filter($tei as element(tei:TEI), $resource-type as xs:
     
     (: $filter matches a flag :)
     let $tei-gloss :=
-        if($entities:flags//m:flag[@id eq $filter]) then
+        if($entities:flags//m:flag[@id eq $filter][not(@type eq 'computed')]) then
             for $gloss in $tei-gloss
             let $entity-flagged := $entities:entities//m:instance[@id eq $gloss/@xml:id]/m:flag[@type = $filter]
             where $entity-flagged

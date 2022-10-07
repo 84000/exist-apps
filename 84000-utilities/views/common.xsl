@@ -168,15 +168,6 @@
             
         </div>
         
-        <!-- Link to top of page -->
-        <div class="hidden-print">
-            <div id="link-to-top-container" class="fixed-btn-container">
-                <a href="#top" id="link-to-top" class="btn-round scroll-to-anchor" title="Return to the top of the page">
-                    <i class="fa fa-arrow-up" aria-hidden="true"/>
-                </a>
-            </div>
-        </div>
-        
         <!-- Pop-up footer  -->
         <div id="popup-footer-text" class="fixed-footer collapse persist hidden-print">
             <div class="fix-height">
@@ -184,23 +175,6 @@
                     <div class="data-container">
                         <!-- Ajax data here -->
                     </div>
-                </div>
-            </div>
-            <div class="fixed-btn-container close-btn-container">
-                <button type="button" class="btn-round close close-collapse" aria-label="Close">
-                    <span aria-hidden="true">
-                        <i class="fa fa-times"/>
-                    </span>
-                </button>
-            </div>
-        </div>
-        
-        <!-- Source pop-up -->
-        <div id="popup-footer-dualview" class="fixed-footer collapse hidden-print">
-            <div class="fix-height">
-                <div class="data-container">
-                    <!-- Ajax data here -->
-                    <div class="ajax-target"/>
                 </div>
             </div>
             <div class="fixed-btn-container close-btn-container">

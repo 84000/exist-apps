@@ -21,10 +21,10 @@ declare variable $knowledgebase:title-prefixes := '(The|A)';
 
 declare variable $knowledgebase:view-modes := 
     <view-modes xmlns="http://read.84000.co/ns/1.0">
-        <view-mode id="default"         client="browser"    layout="full"            glossary="use-cache"       parts="all"/>
-        <view-mode id="editor"          client="browser"    layout="full"            glossary="no-cache"        parts="all"/>
-        <view-mode id="glossary-editor" client="browser"    layout="full"            glossary="use-cache"       parts="all"/>
-        <view-mode id="glossary-check"  client="browser"    layout="expanded-fixed"  glossary="no-cache"        parts="all"/>
+        <view-mode id="default"          client="browser"  layout="full"  glossary="use-cache"  parts="all"/>
+        <view-mode id="editor"           client="browser"  layout="full"  glossary="no-cache"   parts="all"/>
+        <view-mode id="glossary-editor"  client="browser"  layout="full"  glossary="use-cache"  parts="all"/>
+        <view-mode id="glossary-check"   client="browser"  layout="flat"  glossary="no-cache"   parts="all"/>
     </view-modes>;
 
 declare function knowledgebase:kb-id($tei as element(tei:TEI)) as xs:string? {

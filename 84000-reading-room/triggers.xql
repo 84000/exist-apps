@@ -28,23 +28,27 @@ declare function trigger:after-create-document($uri as xs:anyURI) {
 
 declare function local:after-update-document-functions($doc) {
 
-    if($doc[tei:TEI/tei:teiHeader/tei:fileDesc[@type = "section"]/tei:publicationStmt/tei:idno[@xml:id]]) then (
+    (# exist:batch-transaction #) {
+
+        if($doc[tei:TEI/tei:teiHeader/tei:fileDesc[@type = "section"]/tei:publicationStmt/tei:idno[@xml:id]]) then (
+        
+            local:permanent-ids($doc),
+            local:temporary-ids($doc),
+            local:last-updated($doc)
+            
+        )
+        else if($doc[tei:TEI/tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:idno[@xml:id]]) then (
+            
+            local:permanent-ids($doc),
+            local:temporary-ids($doc),
+            local:refresh-cache($doc),
+            local:glossary-bo($doc, false()),
+            local:last-updated($doc)
+            
+        )
+        else ()
     
-        local:permanent-ids($doc),
-        local:temporary-ids($doc),
-        local:last-updated($doc)
-        
-    )
-    else if($doc[tei:TEI/tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:idno[@xml:id]]) then (
-        
-        local:permanent-ids($doc),
-        local:temporary-ids($doc),
-        local:refresh-cache($doc),
-        local:glossary-bo($doc, false()),
-        local:last-updated($doc)
-        
-    )
-    else ()
+    }
     
 };
 
@@ -132,6 +136,7 @@ declare function local:permanent-ids($doc) {
             $doc//tei:text//tei:milestone
             | $doc//tei:text//tei:note
             | $doc//tei:text//tei:ref[@type = ('folio', 'volume')]
+            | $doc//tei:text//tei:q[ancestor-or-self::*/@ref]
             | $doc//tei:div[@type="notes"]//tei:item
             | $doc//tei:div[@type='listBibl']//tei:bibl
             | $doc//tei:div[@type='glossary']//tei:gloss
@@ -188,9 +193,10 @@ declare function local:temporary-ids($doc) {
         util:log('info', concat('trigger-temporary-ids:', $translation-id)),
         
         let $elements := 
-            $doc//tei:text//tei:head
-            | $doc//tei:text//tei:p
+            $doc//tei:text//tei:p
             | $doc//tei:text//tei:label[not(parent::tei:p)]
+            | $doc//tei:text//tei:table
+            | $doc//tei:text//tei:head[not(parent::tei:table)]
             | $doc//tei:text//tei:lg
             | $doc//tei:text//tei:ab
             | $doc//tei:text//tei:trailer
@@ -198,6 +204,7 @@ declare function local:temporary-ids($doc) {
             | $doc//tei:front//tei:list/tei:head
             | $doc//tei:body//tei:list/tei:head:)
         
+        (: find duplicates and empty nodes :)
         let $elements-to-update := (
             for $element in $elements[@tid]
             let $element-id := $element/@tid
@@ -212,9 +219,16 @@ declare function local:temporary-ids($doc) {
         
         let $max-id := max($doc//@tid ! common:integer(.))
         
-        for $element at $index in $elements-to-update
+        for $element at $index in $elements-to-update[not(ancestor::tei:note[@place eq "end"])]
         return
             update insert attribute tid { sum(($max-id, $index)) } into $element
+        ,
+        
+        (: clear any tids in notes :)
+        for $tid in $doc//tei:*[ancestor::tei:note[@place eq "end"]]/@tid
+        return
+            update delete $tid
+        
     )
 };
 

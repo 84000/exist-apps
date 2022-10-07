@@ -73,7 +73,7 @@
                                         </span>
                                         <xsl:call-template name="search-form"/>
                                         <span>
-                                            <a class="btn btn-sm btn-danger">
+                                            <a class="btn btn-sm btn-warning btn-bold-text">
                                                 <xsl:attribute name="href">
                                                     <xsl:call-template name="local-url">
                                                         <xsl:with-param name="url">
@@ -363,7 +363,7 @@
     <xsl:template match="eft:eft-footer">
         
         <!-- Page footer -->
-        <footer class="hidden-print">
+        <footer class="hidden-print hidden-iframe">
             <div class="container" itemscope="itemscope" itemtype="http://schema.org/Organization">
                 
                 <div>
@@ -439,7 +439,7 @@
         <!-- Link to top of page -->
         <div class="hidden-print">
             <div id="link-to-top-container" class="fixed-btn-container">
-                <a href="#top" class="btn-round scroll-to-anchor link-to-top">
+                <a href="#top" class="btn-round link-to-top">
                     <xsl:attribute name="title">
                         <xsl:call-template name="translation">
                             <xsl:with-param name="translation-id" select="'top-link-title'"/>
@@ -590,7 +590,6 @@
                                                     <a>
                                                         <xsl:call-template name="translation-lang-class">
                                                             <xsl:with-param name="lang" select="$lang"/>
-                                                            <xsl:with-param name="persist-class-str" select="'scroll-to-anchor'"/>
                                                         </xsl:call-template>
                                                         <xsl:attribute name="href">
                                                             <xsl:value-of select="concat('#', @id)"/>

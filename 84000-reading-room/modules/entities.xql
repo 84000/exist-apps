@@ -46,6 +46,9 @@ declare variable $entities:flags :=
         <flag id="requires-attention">
             <label>requires attention</label>
         </flag>
+        <flag id="entity-definition" type="computed">
+            <label>entity definitions</label>
+        </flag>
     </entity-flags>;
 
 declare variable $entities:instance-types := ('glossary-item', 'knowledgebase-article');
@@ -160,16 +163,20 @@ declare function entities:related($entities as element(m:entity)*, $include-unre
         
         let $tei := $gloss/ancestor::tei:TEI
         let $text-id := tei-content:id($tei)
-        let $glossary-status := $tei//tei:div[@type eq 'glossary']/@status
-        where not($glossary-status = $exclude-status)
         group by $text-id
+        
+        let $glossary-status := $tei[1]//tei:div[@type eq 'glossary']/@status
+        where not($glossary-status = $exclude-status)
+        
         let $text-type := tei-content:type($tei[1])
+        let $glossary-cache := glossary:cache($tei[1], (), false())
+        
         return
             element { QName('http://read.84000.co/ns/1.0', 'text') } {
         
                 attribute id { $text-id }, 
                 attribute type { $text-type },
-                $tei//tei:div[@type eq 'glossary']/@status ! attribute glossary-status { . },
+                $tei[1]//tei:div[@type eq 'glossary']/@status ! attribute glossary-status { . },
                 
                 tei-content:titles($tei[1]),
                 
@@ -182,17 +189,15 @@ declare function entities:related($entities as element(m:entity)*, $include-unre
                 return
                     (: Must group these in m:bibl to keep track of @key group :)
                     element bibl {
-                        translation:toh($tei, $toh-key),
-                        tei-content:ancestors($tei, $toh-key, 1)
+                        translation:toh($tei[1], $toh-key),
+                        tei-content:ancestors($tei[1], $toh-key, 1)
                     }
                 ,
                 
                 $gloss ! glossary:glossary-entry(., false()),
                 
                 element glossary-cache {
-                    let $glossary-cache := glossary:cache($tei, (), false())
-                    return
-                        $glossary-cache//m:gloss[@id = $gloss/@xml:id]
+                    $glossary-cache/m:gloss[range:eq(@id,$gloss/@xml:id)]
                 }
                 
             },

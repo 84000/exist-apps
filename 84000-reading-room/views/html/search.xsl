@@ -307,6 +307,7 @@
                                 
                                 <div class="search-result">
                                     
+                                    <!-- Title -->
                                     <div class="row">
                                         
                                         <div class="col-sm-12 col-md-10">
@@ -357,6 +358,7 @@
                                         
                                     </div>
                                     
+                                    <!-- Location / breadcrumbs -->
                                     <xsl:for-each select="$tei[@type eq 'translation']/m:bibl">
                                         <xsl:variable name="toh-key" select="m:toh/@key"/>
                                         <nav role="navigation" aria-label="Breadcrumbs" class="small text-muted">
@@ -398,6 +400,7 @@
                                         </p>
                                     </xsl:for-each>
                                     
+                                    <!-- Warnings -->
                                     <xsl:variable name="tantric-restriction" select="$tei[@type eq 'translation']/m:publication/m:tantric-restriction"/>
                                     <xsl:if test="$tantric-restriction/tei:p">
                                         <div class="row">
@@ -441,23 +444,26 @@
                                         </div>
                                     </xsl:if>
                                     
+                                    <!-- Matches -->
                                     <section class="result-matches">
                                         
                                         <xsl:variable name="section-id" select="concat('result-matches-', position())"/>
                                         <xsl:attribute name="id" select="$section-id"/>
                                         
-                                        <xsl:if test="$count-matches gt 1 and not($specified-text)">
+                                        <xsl:if test="not($specified-text) and count($matches[not(@node-name eq 'title' and @node-type eq 'mainTitle' and @node-lang eq 'en')]) gt 0">
                                             
                                             <xsl:attribute name="class" select="'result-matches preview'"/>
                                             
                                             <xsl:call-template name="preview-controls">
                                                 
                                                 <xsl:with-param name="section-id" select="$section-id"/>
+                                                <xsl:with-param name="href" select="concat('#', $section-id)"/>
                                                 
                                             </xsl:call-template>
                                             
                                         </xsl:if>
                                         
+                                        <!-- Count of matches -->
                                         <div class="row">
                                             <div class="col-sm-12">
                                                 
@@ -479,7 +485,8 @@
                                             </div>
                                         </div>
                                         
-                                        <xsl:for-each select="$matches">
+                                        <!-- Output the matches -->
+                                        <xsl:for-each select="$matches[not(@node-name eq 'title' and @node-type eq 'mainTitle' and @node-lang eq 'en')]">
                                             <xsl:sort select="@score" data-type="number" order="descending"/>
                                             <xsl:choose>
                                                 <xsl:when test="@node-name eq 'title' and @node-type eq 'mainTitle' and @node-lang eq 'en'">
@@ -491,6 +498,7 @@
                                             </xsl:choose>
                                         </xsl:for-each>
                                         
+                                        <!-- Link to view remainder -->
                                         <xsl:if test="$count-matches gt count($matches)">
                                             <div class="row">
                                                 
@@ -526,6 +534,7 @@
                     </xsl:when>
                     <xsl:otherwise>
                         
+                        <!-- No results -->
                         <div class="text-center">
                             
                             <p class="text-muted italic ">
@@ -573,26 +582,26 @@
                                         <div class="col-sm-11">
                                             
                                             <ul class="list-unstyled search-match-gloss">
-                                                <xsl:if test="m:match/m:tibetan[string()]">
+                                                <xsl:if test="m:match/m:tibetan[node()]">
                                                     <li>
                                                         
                                                         <span class="text-bo">
-                                                            <xsl:apply-templates select="m:match/m:tibetan"/>
+                                                            <xsl:apply-templates select="m:match/m:tibetan/node()"/>
                                                         </span>
                                                         
                                                     </li>
                                                 </xsl:if>
-                                                <xsl:if test="m:match/m:translation[string()]">
+                                                <xsl:if test="m:match/m:translation[node()]">
                                                     <li>
                                                         <span class="translation">
-                                                            <xsl:apply-templates select="m:match/m:translation"/>
+                                                            <xsl:apply-templates select="m:match/m:translation/node()"/>
                                                         </span>
                                                     </li>
                                                 </xsl:if>
-                                                <xsl:if test="m:match/m:sanskrit[string()]">
+                                                <xsl:if test="m:match/m:sanskrit[node()]">
                                                     <li>
                                                         <span class="text-sa">
-                                                            <xsl:apply-templates select="m:match/m:sanskrit"/>
+                                                            <xsl:apply-templates select="m:match/m:sanskrit/node()"/>
                                                         </span>
                                                     </li>
                                                 </xsl:if>
@@ -758,7 +767,7 @@
                 <div class="search-match">
                     
                     <!-- Output the match (unless it's only in the note) -->
-                    <xsl:if test="not(ancestor::tei:note)">
+                    <xsl:if test="descendant::exist:match[not(ancestor::tei:note[@place eq 'end'][@xml:id])] or not(descendant::exist:match)">
                         <div>
                             <xsl:attribute name="class" select="concat('search-match-', @node-name)"/>
                             <!-- Reduce this to a snippet -->
@@ -934,6 +943,5 @@
     <xsl:template match="m:full[parent::m:toh]">
         <xsl:apply-templates select="text()"/>
     </xsl:template>
-    
     
 </xsl:stylesheet>

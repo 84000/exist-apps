@@ -402,51 +402,52 @@
                             
                         </div>
                         
-                        <section>
-                            
-                            <xsl:variable name="section-id" select="'markdown-help'"/>
-                            
-                            <xsl:attribute name="id" select="$section-id"/>
-                            <xsl:attribute name="class" select="'preview-list preview'"/>
-                            
-                            <xsl:call-template name="preview-controls">
-                                
-                                <xsl:with-param name="section-id" select="$section-id"/>
-                                
+                        <div class="list-group" id="markdown-help-list">
+                            <xsl:call-template name="expand-item">
+                                <xsl:with-param name="id" select="'markdown-help'"/>
+                                <xsl:with-param name="accordion-selector" select="'markdown-help-list'"/>
+                                <xsl:with-param name="persist" select="true()"/>
+                                <xsl:with-param name="title">
+                                    <h3 class="no-top-margin no-bottom-margin">
+                                        <xsl:value-of select="'Using 84000 Markdown'"/>
+                                    </h3>
+                                </xsl:with-param>
+                                <xsl:with-param name="content">
+                                    <div class="top-margin">
+                                        
+                                        <p class="small">
+                                            <xsl:value-of select="'All TEI tags are supported by specifying the text in square brackets [text] followed by the tag definition in round brackets (tag).'"/>
+                                        </p>
+                                        
+                                        <pre class="wrap small">
+                                            <xsl:value-of select="'The language of a term can be specified [Maitrāyanī](Sa-Ltn), '"/>
+                                            <xsl:value-of select="'and links can be added [84000.co](https://84000.co).'"/>
+                                            <br/>
+                                            <xsl:value-of select="'Specific tags with multiple attributes [Karmaśataka](title lang:Sa-Ltn ref:entity-123) can also be defined.'"/>
+                                            <br/>
+                                        </pre>
+                                        
+                                        <pre class="wrap small">
+                                            <xsl:value-of select="'You can add a notes using the syntax [1](note) and another [2](note).'"/>
+                                            <br/>
+                                            <br/>
+                                            <xsl:value-of select="'n.1 Specify the content of the 1st note like this.'"/>
+                                            <br/>
+                                            <xsl:value-of select="'n.2 And the content for the 2nd on another new line.'"/>
+                                            <br/>
+                                        </pre>
+                                        
+                                        <pre class="wrap small">
+                                            <xsl:value-of select="'You may encounter complex nesting of elements, like [[[The Teaching of [[[Vimalakīrti]]](term ref:entity-123)]](http://read.84000.co/translation/toh176.html)](title lang:en) (Toh 176). '"/>
+                                            <xsl:value-of select="'If in doubt leave brackets alone and ask a TEI editor to help. '"/>
+                                        </pre>
+                                        
+                                    </div>
+                                    
+                                </xsl:with-param>
                             </xsl:call-template>
-                            
-                            <h3>
-                                <xsl:value-of select="'Using 84000 Markdown'"/>
-                            </h3>
-                            
-                            <p class="small">
-                                <xsl:value-of select="'All TEI tags are supported by specifying the text in square brackets [text] followed by the tag definition in round brackets (tag).'"/>
-                            </p>
-                            
-                            <pre class="wrap small">
-                                <xsl:value-of select="'The language of a term can be specified [Maitrāyanī](Sa-Ltn), '"/>
-                                <xsl:value-of select="'and links can be added [84000.co](https://84000.co).'"/>
-                                <br/>
-                                <xsl:value-of select="'Specific tags with multiple attributes [Karmaśataka](title lang:Sa-Ltn ref:entity-123) can also be defined.'"/>
-                                <br/>
-                            </pre>
-                            
-                            <pre class="wrap small">
-                                <xsl:value-of select="'You can add a notes using the syntax [1](note) and another [2](note).'"/>
-                                <br/>
-                                <br/>
-                                <xsl:value-of select="'n.1 Specify the content of the 1st note like this.'"/>
-                                <br/>
-                                <xsl:value-of select="'n.2 And the content for the 2nd on another new line.'"/>
-                                <br/>
-                            </pre>
-                            
-                            <pre class="wrap small">
-                                <xsl:value-of select="'You may encounter complex nesting of elements, like [[[The Teaching of [[[Vimalakīrti]]](term ref:entity-123)]](http://read.84000.co/translation/toh176.html)](title lang:en) (Toh 176). '"/>
-                                <xsl:value-of select="'If in doubt leave brackets alone and ask a TEI editor to help. '"/>
-                            </pre>
-                            
-                        </section>
+                        </div>
+                        
                         
                     </xsl:when>
                     

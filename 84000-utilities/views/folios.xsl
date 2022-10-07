@@ -225,22 +225,25 @@
                                                     </td>
                                                     <td>
                                                         <a>
-                                                            <xsl:attribute name="target" select="'check-folios'"/>
-                                                            <xsl:attribute name="href" select="concat(m:url[@format eq 'html'][@xml:lang eq 'bo'], '#ajax-source')"/>
-                                                            <xsl:attribute name="data-dualview-scroll" select="'any-text#ajax-source'"/>
-                                                            <xsl:value-of select="'Tibetan (pop-up)'"/>
+                                                            <xsl:attribute name="target" select="$toh-key || '-source'"/>
+                                                            <xsl:attribute name="href" select="m:url[@format eq 'html'][@xml:lang eq 'bo']"/>
+                                                            <xsl:attribute name="data-dualview-href" select="m:url[@format eq 'html'][@xml:lang eq 'bo']"/>
+                                                            <xsl:attribute name="data-dualview-title" select="$toh-key || ' source'"/>
+                                                            <xsl:value-of select="'Tibetan source'"/>
+                                                        </a>
+                                                        <xsl:value-of select="' | '"/>
+                                                        <a>
+                                                            <xsl:attribute name="target" select="$toh-key || '-translation'"/>
+                                                            <xsl:attribute name="href" select="concat($reading-room-path, '/translation/', $toh-key, '#', @ref-id)"/>
+                                                            <xsl:attribute name="data-dualview-href" select="concat($reading-room-path, '/translation/', $toh-key, '#', @ref-id)"/>
+                                                            <xsl:attribute name="data-dualview-title" select="$toh-key || ' translation'"/>
+                                                            <xsl:value-of select="'Published translation'"/>
                                                         </a>
                                                         <xsl:value-of select="' | '"/>
                                                         <a>
                                                             <xsl:attribute name="target" select="'check-folios'"/>
                                                             <xsl:attribute name="href" select="m:url[@format eq 'xml'][@xml:lang eq 'bo']"/>
                                                             <xsl:value-of select="'Bilingual (XML)'"/>
-                                                        </a>
-                                                        <xsl:value-of select="' | '"/>
-                                                        <a>
-                                                            <xsl:attribute name="target" select="'check-folios'"/>
-                                                            <xsl:attribute name="href" select="concat($reading-room-path, '/translation/', $toh-key, '.html?part=', @ref-id, '#', @ref-id)"/>
-                                                            <xsl:value-of select="'Reading Room (link)'"/>
                                                         </a>
                                                     </td>
                                                 </tr>
@@ -270,9 +273,14 @@
             <xsl:with-param name="page-title" select="'Folios | 84000 Utilities'"/>
             <xsl:with-param name="page-description" select="'Utilities for Individual Folios'"/>
             <xsl:with-param name="content">
+                
                 <xsl:call-template name="utilities-page">
                     <xsl:with-param name="content" select="$content"/>
                 </xsl:call-template>
+                
+                <!-- Dual-view pop-up -->
+                <xsl:call-template name="dualview-popup"/>
+                
             </xsl:with-param>
         </xsl:call-template>
         

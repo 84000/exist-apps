@@ -22,7 +22,7 @@
     <!-- language [en|zh] -->
     <xsl:variable name="lang" select="if(/m:response/@lang) then /m:response/@lang else 'en'" as="xs:string"/>
     
-    <!-- view-mode [default|editor|annotation|txt|ebook|pdf|app|tests|glossary-editor|glossary-check|ajax-part|passage|editor-passage] -->
+    <!-- view-mode [default|editor|annotation|txt|ebook|pdf|app|tests|glossary-editor|glossary-check] -->
     <xsl:variable name="view-mode" select="/m:response/m:request/m:view-mode" as="element(m:view-mode)?"/>
     <xsl:function name="m:view-mode-parameter" as="xs:string">
         <xsl:param name="override" as="xs:string?"/>
@@ -31,8 +31,20 @@
     <xsl:function name="m:view-mode-parameter" as="xs:string?">
         <xsl:param name="override" as="xs:string?"/>
         <xsl:param name="prefix" as="xs:string?"/>
-        <xsl:variable name="view-mode-id" select="if($override gt '') then $override else if($view-mode[not(@id eq 'default')]) then  $view-mode/@id  else ''"/>
-        <xsl:value-of select="if($view-mode-id gt '') then concat($prefix,'view-mode=', $view-mode-id, '&amp;timestamp=', current-dateTime())  else ()"/>
+        <xsl:variable name="view-mode-id" as="xs:string?">
+            <xsl:choose>
+                <xsl:when test="$override gt ''">
+                    <xsl:value-of select="$override"/>
+                </xsl:when>
+                <xsl:when test="$tei-editor">
+                    <xsl:value-of select="'editor'"/>
+                </xsl:when>
+                <xsl:when test="$view-mode[not(@id eq 'default')]">
+                    <xsl:value-of select="$view-mode/@id"/>
+                </xsl:when>
+            </xsl:choose>
+        </xsl:variable>
+        <xsl:value-of select="$view-mode-id ! concat($prefix, 'view-mode=',.)"/>
     </xsl:function>
     
     <xsl:variable name="archive-path" select="/m:response/m:request/@archive-path" as="xs:string?"/>
@@ -41,8 +53,8 @@
     </xsl:function>
     
     <!-- Tei Editor -->
-    <xsl:variable name="tei-editor" select="/m:response[@tei-editor eq 'true'] and $view-mode[@id = ('editor', 'editor-passage')]"/>
-    <xsl:variable name="tei-editor-off" select="/m:response[@tei-editor eq 'true'] and not($view-mode[@id = ('editor', 'editor-passage')])"/>
+    <xsl:variable name="tei-editor" select="/m:response[@tei-editor eq 'true'] and $view-mode[@id = ('editor','editor-passage')]"/>
+    <xsl:variable name="tei-editor-off" select="/m:response[@tei-editor eq 'true'] and not($view-mode[@id = ('editor','editor-passage')])"/>
     
     <!-- doc-type [html|epub|ncx] -->
     <xsl:variable name="doc-type" select="/m:response/m:request/@doc-type"/>
@@ -277,9 +289,9 @@
                 </xsl:if>
                 
                 <!-- Alert -->
-                <section id="page-alert" class="fixed-footer fix-height collapse">
+                <aside id="page-alert" class="fixed-footer fix-height collapse">
                     <div class="container"/>
-                </section>
+                </aside>
                 
                 <!-- Shared header -->
                 <xsl:apply-templates select="$eft-header"/>
@@ -339,9 +351,9 @@
                 </xsl:if>
                 
                 <!-- Alert -->
-                <section id="page-alert" class="fixed-footer fix-height collapse">
+                <aside id="page-alert" class="fixed-footer fix-height collapse">
                     <div class="container"/>
-                </section>
+                </aside>
                 
                 <!-- Place content -->
                 <xsl:sequence select="$content"/>
@@ -351,68 +363,6 @@
                     <xsl:with-param name="front-end-path" select="$front-end-path"/>
                     <xsl:with-param name="ga-tracking-id" select="$ga-tracking-id"/>
                 </xsl:call-template>
-                
-            </body>
-        </html>
-        
-    </xsl:template>
-    
-    <!-- Modal page - Unused??? -->
-    <xsl:template name="modal-page">
-        
-        <xsl:param name="page-title" required="yes" as="xs:string"/>
-        <xsl:param name="content" required="no" as="node()*"/>
-        
-        <html>
-            
-            <xsl:attribute name="lang" select="$lang"/>
-            
-            <head>
-                
-                <meta charset="utf-8"/>
-                <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
-                <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=0"/>
-                
-                <title>
-                    <xsl:value-of select="concat($page-title, ' | 84000 Reading Room')"/>
-                </title>
-                
-                <!-- Styles -->
-                <link rel="stylesheet" type="text/css">
-                    <xsl:attribute name="href" select="concat($front-end-path, '/css/84000-translation.css', $app-version-url-attribute)"/>
-                </link>
-                <link rel="stylesheet" type="text/css">
-                    <xsl:attribute name="href" select="concat($front-end-path, '/css/ie10-viewport-bug-workaround.css')"/>
-                </link>
-                <script>
-                    <xsl:attribute name="src" select="concat($front-end-path, '/js/84000-fe.min.js', $app-version-url-attribute)"/>
-                </script>
-                <!--[if lt IE 9]>
-                   <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
-                   <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
-               <![endif]-->
-            </head>
-            
-            <body id="top" class="reading-room modal-page">
-                
-                <!-- Place content -->
-                <xsl:copy-of select="$content"/>
-                
-                <xsl:if test="not($view-mode) or $view-mode[@client eq 'browser']">
-                    
-                    <!-- Foooter components -->
-                    <span id="media_test">
-                        <span class="visible-xs"/>
-                        <span class="visible-sm"/>
-                        <span class="visible-md"/>
-                        <span class="visible-lg"/>
-                        <span class="visible-print"/>
-                        <span class="visible-mobile"/>
-                        <span class="visible-desktop"/>
-                        <span class="event-hover"/>
-                    </span>
-                    
-                </xsl:if>
                 
             </body>
         </html>
@@ -454,5 +404,5 @@
         </html>
         
     </xsl:template>
-
+    
 </xsl:stylesheet>

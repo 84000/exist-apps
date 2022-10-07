@@ -182,7 +182,7 @@ let $matched-entities :=
     let $instances-exclude := $entities:entities//m:instance[@id = $gloss/@xml:id][m:flag[@type eq $exclude-flagged]]
     let $instances := $entities:entities//m:instance[@id = $gloss/@xml:id] except $instances-exclude
     let $instances-entity := $instances/parent::m:entity
-    let $instances-entity-id := $instances-entity/@xml:id
+    let $instances-entity-id := $instances-entity[1]/@xml:id
     group by $instances-entity-id
     order by min($index)
     return

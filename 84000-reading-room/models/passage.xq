@@ -11,13 +11,15 @@ import module namespace common="http://read.84000.co/common" at "../modules/comm
 import module namespace tei-content="http://read.84000.co/tei-content" at "../modules/tei-content.xql";
 import module namespace translation="http://read.84000.co/translation" at "../modules/translation.xql";
 import module namespace entities="http://read.84000.co/entities" at "../modules/entities.xql";
+import module namespace functx = "http://www.functx.com";
 
 declare option exist:serialize "method=xml indent=no";
 
 let $resource-id := request:get-parameter('resource-id', '')
 let $resource-suffix := request:get-parameter('resource-suffix', '')
 let $passage-id := request:get-parameter('passage-id', 'none')
-let $view-mode := (request:get-parameter('view-mode', '')[. = ('passage', 'editor-passage')], 'passage')[1]
+let $view-mode := request:get-parameter('view-mode', 'passage')
+let $view-mode := if($view-mode = ('editor','editor-passage')) then 'editor-passage' else 'passage'
 let $archive-path := request:get-parameter('archive-path', ())
 
 (: Validate the resource-id :)
@@ -30,7 +32,7 @@ let $source := tei-content:source($tei, $resource-id)
 let $view-mode := $translation:view-modes/m:view-mode[@id eq $view-mode]
 
 (: Validate the passage-id :)
-let $passage := translation:passage($tei, $passage-id, $view-mode)
+let $content := translation:parts($tei, $passage-id, $view-mode, ()) 
 
 (:  Sanitize the request :)
 let $request := 
@@ -40,10 +42,9 @@ let $request :=
         attribute resource-id { $source/@key },
         attribute resource-suffix { $resource-suffix },
         attribute lang { common:request-lang() },
-        attribute passage-id { if($passage) then $passage-id else () },
+        attribute passage-id { if($content) then $passage-id else () },
         attribute view-mode { $view-mode/@id },
         attribute archive-path { $archive-path },
-        element highlight { request:get-parameter('highlight', '') },
         
         $view-mode
         
@@ -88,13 +89,13 @@ return
                 translation:toh($tei, $source/@key),
                 tei-content:ancestors($tei, $source/@key, 1),
                 
-                $passage
+                $content
                 
             }
             
-        let $entities := translation:entities((), $passage[@id eq 'glossary']//tei:gloss/@xml:id)
+        let $entities := translation:entities((), $content[@id eq 'glossary']//tei:gloss/@xml:id)
         
-        let $quotes := translation:quotes($tei, $passage)
+        let $quotes := translation:quotes($tei, $content)
         
         (: Get caches :)
         let $cache := tei-content:cache($tei, false())/m:*

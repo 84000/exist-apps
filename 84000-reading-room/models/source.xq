@@ -73,7 +73,7 @@ let $translation-response :=
         translation:titles($tei),
         tei-content:ancestors($tei, $request/@resource-id, 1), 
         translation:toh($tei, $request/@resource-id),
-        $translation-text  
+        $translation-text
     }
 
 let $xml-response := 

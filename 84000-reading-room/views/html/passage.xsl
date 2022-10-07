@@ -10,7 +10,7 @@
     
     <xsl:variable name="page-title" as="node()*">
         <xsl:sequence select="/m:response/m:translation/m:titles/m:title[@xml:lang eq 'en']"/>
-        <xsl:sequence select="/m:response/m:translation//m:part[@prefix][@render eq 'show'][1]/tei:head[@type eq parent::m:part/@type]"/>
+        <xsl:sequence select="/m:response/m:translation//m:part[@prefix][@content-status eq 'complete'][1]/tei:head[@type eq parent::m:part/@type]"/>
     </xsl:variable>
     
     <xsl:template match="/m:response">
@@ -51,17 +51,18 @@
                 
                 <div id="ajax-source" class="ajax-target bottom-margin">
                     
-                    <h1 class="title text-center">
-                        <xsl:value-of select="m:translation/m:titles/m:title[@xml:lang eq 'en']"/>
-                    </h1>
-                    
-                    <hr/>
-                    
                     <div class="container">
+                        
+                        <h1 class="title text-center">
+                            <xsl:value-of select="m:translation/m:titles/m:title[@xml:lang eq 'en']"/>
+                        </h1>
+                        
+                        <hr/>
+                        
                         <div class="row">
                             <div class="col-md-offset-1 col-md-10 col-lg-offset-2 col-lg-8 print-width-override ">
                                 
-                                <xsl:for-each select="m:translation/m:part[descendant-or-self::*/@render = ('passage','show')]">
+                                <xsl:for-each select="m:translation//m:part[not(@type eq 'translation')][@nesting eq '0'][descendant-or-self::*/@content-status = ('passage','complete','preview')]">
                                     <xsl:choose>
                                         
                                         <xsl:when test="@type eq 'end-notes'">

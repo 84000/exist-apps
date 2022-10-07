@@ -13,26 +13,36 @@ import module namespace tei-content="http://read.84000.co/tei-content" at "../mo
 import module namespace translation="http://read.84000.co/translation" at "../modules/translation.xql";
 import module namespace entities="http://read.84000.co/entities" at "../modules/entities.xql";
 import module namespace contributors="http://read.84000.co/contributors" at "../modules/contributors.xql";
+import module namespace functx = "http://www.functx.com";
 
 declare option exist:serialize "method=xml indent=no";
 
 let $resource-suffix := request:get-parameter('resource-suffix', '')
 let $resource-id := request:get-parameter('resource-id', '')
-let $archive-path := request:get-parameter('archive-path', ())
 let $part-id := request:get-parameter('part', 'none') ! replace(., '^(end\-notes|end-note\-[a-zA-Z0-9\-]+)$', 'end-notes')
+let $part-id-int := replace($part-id, '^node\-', '')[functx:is-a-number(.)] ! xs:integer(.)
+let $commentary-key := request:get-parameter('commentary', '')
 let $view-mode := request:get-parameter('view-mode', 'default')
+let $archive-path := request:get-parameter('archive-path', ())
 
 (: Validate the resource-id :)
 let $tei-type := 'translation'
 let $tei := tei-content:tei($resource-id, $tei-type, $archive-path)
-
 (: Get the Toh-key :)
 let $source := tei-content:source($tei, $resource-id)
 
-(: Validate the part-id :)
+(: Validate the commentary key :)
+let $commentary-tei := $commentary-key[. gt ''][1] ! tei-content:tei(., $tei-type)
+let $commentary-source := $commentary-tei[1] ! tei-content:source(., '')
+
+(: Derive the root part (section/chapter) based on the id requested
+   - Use this derived root to process further
+   - Cache key is the same for all requests contained in that part
+:)
 let $part := 
     $tei//id($part-id)/ancestor-or-self::tei:div[@type][not(@type eq 'translation')][last()]
     | $tei//tei:div[@type eq $part-id]
+    | $tei//tei:*[@tid eq $part-id-int]/ancestor-or-self::tei:div[@type][not(@type eq 'translation')][last()]
 
 (:  Sanitize the request :)
 let $request := 
@@ -43,6 +53,7 @@ let $request :=
         attribute lang { common:request-lang() },
         attribute doc-type { request:get-parameter('resource-suffix', 'html') },
         attribute part { ($part/@xml:id, $part/@type, $part-id[. = ('end-notes')])[1] },
+        attribute commentary { $commentary-source/@key },
         attribute view-mode { $view-mode },
         attribute archive-path { $archive-path },
         
@@ -58,11 +69,6 @@ let $request :=
         
         else
             $translation:view-modes/m:view-mode[@id eq 'default']
-        ,
-        
-        element highlight {
-            request:get-parameter('highlight', '')
-        }
         
     }
 
@@ -99,7 +105,7 @@ return
             if($resource-suffix = ('rdf', 'json')) then 
                 translation:summary($tei)
             else 
-                translation:parts($tei, $part-id, $request/m:view-mode)
+                translation:parts($tei, $request/@part, $request/m:view-mode, ())
         
         (: Compile all the translation data :)
         let $translation-data :=

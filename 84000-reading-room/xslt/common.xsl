@@ -277,7 +277,7 @@
                     
                     <xsl:if test="not(preceding-sibling::*[@start-letter = $start-letter])">
                         
-                        <a class="btn btn-default scroll-to-anchor">
+                        <a class="btn btn-default">
                             <xsl:attribute name="href" select="concat('#marker-', $start-letter)"/>
                             <xsl:value-of select="$start-letter"/>
                         </a>

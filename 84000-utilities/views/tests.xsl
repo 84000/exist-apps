@@ -6,9 +6,6 @@
     
     <xsl:template match="/m:response">
         
-        <xsl:variable name="environment" select="/m:response/m:environment"/>
-        <xsl:variable name="reading-room-path" select="$environment/m:url[@id eq 'reading-room']/text()"/>
-        
         <xsl:variable name="content">
             
             <div class="container">
@@ -89,7 +86,7 @@
                                                 <xsl:for-each select="m:link">
                                                     <li>
                                                         <a>
-                                                            <xsl:attribute name="href" select="concat($reading-room-path, @url)"/>
+                                                            <xsl:attribute name="href" select="@url"/>
                                                             <xsl:attribute name="target" select="parent::m:resource/@id"/>
                                                             <xsl:value-of select="text()"/>
                                                         </a>

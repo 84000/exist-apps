@@ -10,7 +10,7 @@
             
             <xsl:call-template name="operations-page">
                 <xsl:with-param name="active-tab" select="@model"/>
-                <xsl:with-param name="page-content">
+                <xsl:with-param name="tab-content">
                     
                     <h1 class="visible-print-block no-top-margin">
                         <xsl:value-of select="'84000 Project Management: Translations Report '"/>

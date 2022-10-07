@@ -10,7 +10,7 @@
             
             <xsl:call-template name="operations-page">
                 <xsl:with-param name="active-tab" select="@model"/>
-                <xsl:with-param name="page-content">
+                <xsl:with-param name="tab-content">
                     <div class="well well-sm center-vertical full-width bottom-margin">
                         
                         <span>
@@ -110,6 +110,7 @@
                                                             <xsl:call-template name="preview-controls">
                                                                 
                                                                 <xsl:with-param name="section-id" select="$section-id"/>
+                                                                <xsl:with-param name="href" select="concat('#', $section-id)"/>
                                                                 
                                                             </xsl:call-template>
                                                         </xsl:if>

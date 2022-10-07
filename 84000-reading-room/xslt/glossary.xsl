@@ -114,102 +114,73 @@
             <xsl:variable name="instances-flagged" select="$entity/m:instance[m:flag]"/>
             <xsl:variable name="related-entries" select="key('related-entries', $entity/m:instance/@id, $root)"/>
             <xsl:variable name="related-entries-excluded" select="$related-entries[parent::m:text/@glossary-status eq 'excluded']"/>
+            <xsl:variable name="related-entries-no-definition" select="$related-entries[not(m:definition[node()])]"/>
+            <xsl:variable name="instances-use-definition" select="$entity/m:instance[@use-definition = ('both','override')] | $entity/m:instance[@id = $related-entries-no-definition/@id]"/>
+            <xsl:variable name="glossary-notes" select="$entity/m:content[@type eq 'glossary-notes'][node()]"/>
             
-            <!-- Summary -->
-            <xsl:variable name="summary">
+            <div class="well well-sm">
                 
-                <div class="center-vertical align-left">
+                <ul class="list-inline inline-dots">
                     
-                    <xsl:if test="$entity/m:content[@type eq 'glossary-notes']">
-                        <span>
-                            <span class="label label-warning">
-                                <xsl:value-of select="count($entity/m:content[@type eq 'glossary-notes'])"/>
-                                <xsl:value-of select="if (count($entity/m:content[@type eq 'glossary-notes']) eq 1) then ' note' else ' notes'"/>
-                            </span>
+                    <li>
+                        <span class="small text-muted">
+                            <xsl:if test="$entity/m:content[@type eq 'glossary-definition'][node()] and $instances-use-definition">
+                                <xsl:attribute name="class" select="'small text-danger'"/>
+                            </xsl:if>
+                            <xsl:value-of select="count($instances-use-definition)"/>
+                            <xsl:value-of select="if (count($instances-use-definition) eq 1) then ' entry displays entity definition' else ' entries display entity definition'"/>
                         </span>
-                    </xsl:if>
+                    </li>
                     
-                    <xsl:if test="$related-entries-excluded">
-                        <span>
-                            <span class="label label-danger">
-                                <xsl:value-of select="count($related-entries-excluded)"/>
-                                <xsl:value-of select="if (count($related-entries-excluded) eq 1) then ' entry in an excluded text' else ' entries in excluded texts'"/>
-                            </span>
+                    <li>
+                        <span class="small text-muted">
+                            <xsl:if test="$related-entries-excluded">
+                                <xsl:attribute name="class" select="'small text-danger'"/>
+                            </xsl:if>
+                            <xsl:value-of select="count($related-entries-excluded)"/>
+                            <xsl:value-of select="if (count($related-entries-excluded) eq 1) then ' entry in an excluded text' else ' entries in excluded texts'"/>
                         </span>
-                    </xsl:if>
+                    </li>
                     
-                    <xsl:if test="$instances-flagged">
-                        <span>
-                            <span class="label label-danger">
-                                <xsl:choose>
-                                    <xsl:when test="count($entity/m:instance[@type eq 'glossary-item']) eq count($entity/m:instance[@type eq 'glossary-item'][m:flag])">
-                                        <xsl:value-of select="'All entries are flagged, this entity is EXCLUDED from the public glossary'"/>
-                                    </xsl:when>
-                                    <xsl:otherwise>
-                                        <xsl:value-of select="count($instances-flagged)"/>
-                                        <xsl:value-of select="if (count($instances-flagged) eq 1) then ' entry flagged' else ' entries flagged'"/>
-                                    </xsl:otherwise>
-                                </xsl:choose>
-                            </span>
+                    <li>
+                        <span class="small text-muted">
+                            <xsl:if test="$instances-flagged">
+                                <xsl:attribute name="class" select="'small text-danger'"/>
+                            </xsl:if>
+                            <xsl:choose>
+                                <xsl:when test="count($entity/m:instance[@type eq 'glossary-item']) eq count($entity/m:instance[@type eq 'glossary-item'][m:flag])">
+                                    <xsl:value-of select="'All entries are flagged, this entity is EXCLUDED from the public glossary'"/>
+                                </xsl:when>
+                                <xsl:otherwise>
+                                    <xsl:value-of select="count($instances-flagged)"/>
+                                    <xsl:value-of select="if (count($instances-flagged) eq 1) then ' entry flagged' else ' entries flagged'"/>
+                                </xsl:otherwise>
+                            </xsl:choose>
                         </span>
-                    </xsl:if>
+                    </li>
                     
                     <!-- Editor link -->
-                    <span>
+                    <li>
                         <a target="84000-operations" class="editor">
                             <xsl:attribute name="href" select="concat('/edit-entity.html?entity-id=', $entity/@xml:id, '#ajax-source')"/>
                             <xsl:attribute name="data-ajax-target" select="'#popup-footer-editor .data-container'"/>
                             <xsl:value-of select="'Entity editor'"/>
                         </a>
-                    </span>
+                    </li>
                     
-                </div>
+                </ul>
                 
-            </xsl:variable>
-            
-            <xsl:choose>
+                <xsl:if test="$glossary-notes">
+                    <hr class="sml-margin"/>
+                    <h6 class="sml-margin bottom">Notes: </h6>
+                    <xsl:for-each select="$glossary-notes">
+                        <p class="sml-margin bottom small">
+                            <xsl:value-of select="."/>
+                        </p>
+                    </xsl:for-each>
+                </xsl:if>
                 
-                <!-- Show expandable with notes -->
-                <xsl:when test="$entity/m:content[@type eq 'glossary-notes']">
-                    
-                    <div id="editor-summary-accordion-{ $entity/@xml:id }" class="bottom-margin">
-                        
-                        <xsl:call-template name="expand-item">
-                            
-                            <xsl:with-param name="id" select="'editor-summary-' || $entity/@xml:id"/>
-                            <xsl:with-param name="accordion-selector" select="'#editor-summary-accordion-' || $entity/@xml:id"/>
-                            
-                            <xsl:with-param name="title">
-                                <xsl:sequence select="$summary"/>
-                            </xsl:with-param>
-                            
-                            <xsl:with-param name="content">
-                                
-                                <hr class="sml-margin"/>
-                                <div>
-                                    <xsl:for-each select="$entity/m:content[@type eq 'glossary-notes']">
-                                        <p class="sml-margin bottom small">
-                                            <xsl:value-of select="."/>
-                                        </p>
-                                    </xsl:for-each>
-                                </div>
-                                
-                            </xsl:with-param>
-                            
-                        </xsl:call-template>
-                        
-                    </div>
-                    
-                </xsl:when>
-                
-                <!-- Just an editor link -->
-                <xsl:otherwise>
-                    <div class="clearfix bottom-margin">
-                        <xsl:sequence select="$summary"/>
-                    </div>
-                </xsl:otherwise>
-                
-            </xsl:choose>
+            </div>
             
         </xsl:if>
         

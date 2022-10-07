@@ -206,7 +206,7 @@ declare function translations:filtered-texts(
     let $selected-sponsorship-group := $sponsorship:sponsorship-groups/m:group[@id eq $filter]
     
     (: Entities filter :)
-    let $selected-entities-group := if($filter = ('entities-missing', 'entities-flagged-attention')) then $filter else ''
+    let $selected-entities-group := if($filter = ('entities-missing', 'entities-flagged-attention', 'using-entity-definition')) then $filter else ''
     
     (: Toh range :)
     let $toh-min := 
@@ -326,7 +326,7 @@ declare function translations:filtered-texts(
                 let $instances-requiring-attention := $entities:entities//m:instance[m:flag/@type = 'requires-attention']
                 return
                     $teis/id($instances-requiring-attention/@id/string())/ancestor::tei:TEI
-                
+ 
             (: Get them all :)
             else
                 $teis

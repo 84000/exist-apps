@@ -136,6 +136,13 @@
                                 <xsl:value-of select="common:limit-str(concat(@file-name, ' / ', data(.)), 140)"/>
                             </option>
                         </xsl:for-each>
+                        <xsl:if test="not(m:translations/m:file[@id eq $request-translation-id])">
+                            <option>
+                                <xsl:attribute name="value" select="$request-translation-id"/>
+                                <xsl:attribute name="selected" select="'selected'"/>
+                                <xsl:value-of select="'[Text not found] ' || $request-translation-id"/>
+                            </option>
+                        </xsl:if>
                     </select>
                 </div>
                 <div class="form-group">

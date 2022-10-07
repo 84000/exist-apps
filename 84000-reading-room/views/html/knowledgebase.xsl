@@ -247,7 +247,7 @@
                             <xsl:if test="m:has-user-content(m:knowledgebase/m:part[@type eq 'bibliography'])">
                                 <section id="bibliography" class="tei-parser gtr-right">
                                     <!--<hr class="hidden-print"/>-->
-                                    <xsl:apply-templates select="m:knowledgebase/m:part[@type eq 'bibliography']"/>
+                                    <xsl:apply-templates select="m:knowledgebase/m:part[@type eq 'bibliography']/*"/>
                                 </section>
                             </xsl:if>
                             
@@ -289,7 +289,7 @@
                                     <ul>
                                         
                                         <li>
-                                            <a class="scroll-to-anchor">
+                                            <a>
                                                 <xsl:attribute name="href" select="'#title'"/>
                                                 <xsl:value-of select="'Title'"/>
                                             </a>
@@ -298,7 +298,7 @@
                                         <xsl:for-each select="m:knowledgebase/m:part[@type eq 'article']/m:part[@type eq 'section']">
                                             <xsl:if test="m:has-user-content(.)">
                                                 <li>
-                                                    <a class="scroll-to-anchor">
+                                                    <a>
                                                         <xsl:attribute name="href" select="'#' || @id"/>
                                                         <xsl:apply-templates select="tei:head/node()"/>
                                                     </a>
@@ -308,7 +308,7 @@
                                         
                                         <xsl:if test="$related-texts">
                                             <li>
-                                                <a class="scroll-to-anchor">
+                                                <a>
                                                     <xsl:attribute name="href" select="'#related-texts'"/>
                                                     <xsl:apply-templates select="m:knowledgebase/m:part[@type eq 'related-texts']/tei:head/node()"/>
                                                 </a>
@@ -317,7 +317,7 @@
                                         
                                         <xsl:if test="m:has-user-content(m:knowledgebase/m:part[@type eq 'bibliography'])">
                                             <li>
-                                                <a class="scroll-to-anchor">
+                                                <a>
                                                     <xsl:attribute name="href" select="'#bibliography'"/>
                                                     <xsl:apply-templates select="m:knowledgebase/m:part[@type eq 'bibliography']/tei:head/node()"/>
                                                 </a>
@@ -326,7 +326,7 @@
                                         
                                         <xsl:if test="m:has-user-content(m:knowledgebase/m:part[@type = ('article','bibliography')]//tei:note[@place eq 'end'][@xml:id])">
                                             <li>
-                                                <a class="scroll-to-anchor">
+                                                <a>
                                                     <xsl:attribute name="href" select="'#end-notes'"/>
                                                     <xsl:value-of select="'Notes'"/>
                                                 </a>
@@ -335,7 +335,7 @@
                                         
                                         <xsl:if test="m:has-user-content(m:knowledgebase/m:part[@type eq 'glossary'])">
                                             <li>
-                                                <a class="scroll-to-anchor">
+                                                <a>
                                                     <xsl:attribute name="href" select="'#glossary'"/>
                                                     <xsl:apply-templates select="m:knowledgebase/m:part[@type eq 'glossary']/tei:head/node()"/>
                                                 </a>
@@ -410,12 +410,12 @@
                                                             
                                                             <xsl:attribute name="href" select="concat('/glossary/', $related-entity/@xml:id, '.html')"/>
                                                             
-                                                            <h4 class="sml-margin bottom { common:lang-class($entity-data/m:label[@type eq 'primary']/@xml:lang) }">
+                                                            <h4 class="no-bottom-margin { common:lang-class($entity-data/m:label[@type eq 'primary']/@xml:lang) }">
                                                                 <xsl:value-of select="normalize-space($entity-data/m:label[@type eq 'primary']/text())"/>
                                                             </h4>
                                                             
                                                             <xsl:for-each select="$entity-data/m:label[not(@type eq 'primary')]">
-                                                                <p class="sml-margin bottom { common:lang-class(@xml:lang) }">
+                                                                <p class="no-bottom-margin { common:lang-class(@xml:lang) }">
                                                                     <xsl:value-of select="text() ! normalize-space(.)"/>
                                                                 </p>
                                                             </xsl:for-each>

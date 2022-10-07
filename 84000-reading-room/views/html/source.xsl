@@ -20,33 +20,9 @@
                 </xsl:choose>
             </xsl:variable>
             
-            <div class="title-band">
-                <div class="container">
-                    <div class="center-vertical center-aligned text-center">
-                    
-                        <nav role="navigation" aria-label="Breadcrumbs">
-                            <ul class="breadcrumb">
-                                
-                                <xsl:sequence select="common:breadcrumb-items(m:translation/m:parent/descendant-or-self::m:parent, /m:response/@lang)"/>
-                                
-                                <li>
-                                    <a>
-                                        <xsl:attribute name="href" select="common:internal-link(concat('/translation/', m:translation/m:toh/@key, '.html'), (), '', /m:response/@lang)"/>
-                                        <xsl:attribute name="target" select="concat(m:translation/@id, '.html')"/>
-                                        <xsl:value-of select="m:translation/m:titles/m:title[@xml:lang eq 'en']"/>
-                                    </a>
-                                </li>
-                                
-                            </ul>
-                        </nav>
-                        
-                    </div>
-                </div>
-            </div>
-            
             <div class="content-band">
                 <main>
-                    <div id="dualview-content-{ m:translation/m:toh/@key }-source" class="dualview-content">
+                    <div>
                         
                         <xsl:for-each select="m:source/m:page">
                             <div>
@@ -66,8 +42,43 @@
                                     <xsl:value-of select="concat('Degé ', $work-string, ' volume ', @volume, ', ', $folio-string)"/>
                                 </h1>
                                 
-                                <div class="container top-margin">
+                                <div class="container relative">
+                                    
                                     <xsl:apply-templates select="m:language[@xml:lang eq 'bo']"/>
+                                    
+                                    <xsl:variable name="current-ref-index" select="/m:response/m:translation/m:folio-content/@ref-index" as="xs:integer"/>
+                                    <xsl:variable name="last-ref-index" select="/m:response/m:translation/m:folio-content/@count-refs" as="xs:integer"/>
+                                    
+                                    <xsl:if test="$current-ref-index gt 1">
+                                        
+                                        <a class="carousel-control left" title="Pevious" data-loading="Loading previous...">
+                                            
+                                            <xsl:attribute name="href" select="concat('?ref-index=', $current-ref-index - 1)"/>
+                                            
+                                            <i class="fa fa-chevron-left" aria-hidden="true"/>
+                                            <span class="sr-only">
+                                                <xsl:value-of select="'Previous'"/>
+                                            </span>
+                                        
+                                        </a>
+                                        
+                                    </xsl:if>
+                                    
+                                    <xsl:if test="$current-ref-index lt $last-ref-index">
+                                    
+                                       <a class="carousel-control right" title="Next" data-loading="Loading next...">
+                                           
+                                           <xsl:attribute name="href" select="concat('?ref-index=', $current-ref-index + 1)"/>
+                                           
+                                           <i class="fa fa-chevron-right" aria-hidden="true"/>
+                                           <span class="sr-only">
+                                               <xsl:value-of select="'Next'"/>
+                                           </span>
+                                           
+                                       </a>
+                                    
+                                    </xsl:if>
+                                    
                                 </div>
                                 
                                 <hr/>
@@ -101,19 +112,21 @@
                     
                     <!-- Keep outside of ajax data -->
                     <xsl:if test="m:back-link/@url">
-                        <hr class="no-margin"/>
-                        <div class="container top-margin bottom-margin">
-                            <p class="text-center">
-                                <xsl:call-template name="local-text">
-                                    <xsl:with-param name="local-key" select="'backlink-label'"/>
-                                </xsl:call-template>
-                                <br/>
-                                <a>
-                                    <xsl:attribute name="href" select="m:back-link/@url"/>
-                                    <xsl:attribute name="target" select="concat(m:translation/@id, '.html')"/>
-                                    <xsl:value-of select="m:back-link/@url"/>
-                                </a>
-                            </p>
+                        <div class="hidden-iframe">
+                            <hr class="no-margin"/>
+                            <div class="container top-margin bottom-margin">
+                                <p class="text-center">
+                                    <xsl:call-template name="local-text">
+                                        <xsl:with-param name="local-key" select="'backlink-label'"/>
+                                    </xsl:call-template>
+                                    <br/>
+                                    <a>
+                                        <xsl:attribute name="href" select="m:back-link/@url"/>
+                                        <xsl:attribute name="target" select="concat(m:translation/@id, '.html')"/>
+                                        <xsl:value-of select="m:back-link/@url"/>
+                                    </a>
+                                </p>
+                            </div>
                         </div>
                     </xsl:if>
                     

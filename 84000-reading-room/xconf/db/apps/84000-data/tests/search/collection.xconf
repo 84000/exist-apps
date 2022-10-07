@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<collection xmlns="http://exist-db.org/collection-config/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+    
+    <!-- /db/apps/84000-data/tests/search -->
+    
+    <index xmlns:eft="http://read.84000.co/ns/1.0">
+        
+        <lucene>
+            
+            <analyzer id="en" class="org.exist.indexing.lucene.analyzers.NoDiacriticsStandardAnalyzer"/>
+            
+            <!-- Documentation: https://github.com/buda-base/lucene-sa -->
+            <analyzer id="sa" class="io.bdrc.lucene.sa.SanskritAnalyzer">
+                <param name="mode" type="java.lang.String" value="word"/>
+                <param name="inputEncoding" type="java.lang.String" value="roman"/>
+                <param name="mergePrepositions" type="boolean" value="false"/>
+                <param name="filterGeminates" type="boolean" value="true"/>
+                <param name="lenient" type="java.lang.String" value="query"/>
+            </analyzer>
+            
+            <!-- Documentation: https://github.com/buda-base/lucene-bo -->
+            <analyzer id="bo" class="io.bdrc.lucene.bo.TibetanAnalyzer">
+                <param name="segmentInWords" type="boolean" value="false"/>
+                <param name="lemmatize" type="boolean" value="true"/>
+                <param name="filterChars" type="boolean" value="false"/>
+                <param name="inputMethod" type="java.lang.String" value="ewts"/>
+                <param name="stopFilename" type="java.lang.String" value=""/>
+            </analyzer>
+            
+            <!-- tests.xml -->
+            <text match="//eft:content">
+                <field name="en" if="@xml:lang='en'" analyzer="en"/>
+                <field name="sa" if="@xml:lang='Sa-Ltn'" analyzer="sa"/>
+                <field name="bo" if="@xml:lang='bo'" analyzer="bo"/>
+            </text>
+            
+        </lucene>
+        
+    </index>
+</collection>

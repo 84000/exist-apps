@@ -17,7 +17,7 @@ let $pdf-config := $common:environment//m:store-conf[@type eq 'master']/m:pdfs
 return
     if($pdf-config and $tei and $common:environment/m:render/m:status[@type eq 'translation'][@status-id = $status-id]) then 
         
-        let $parts := translation:parts($tei, (), $translation:view-modes/m:view-mode[@id eq 'pdf'])
+        let $parts := translation:parts($tei, (), $translation:view-modes/m:view-mode[@id eq 'pdf'], ())
         let $body-parts := $parts[@type eq 'translation']/m:part/@id/string()
         let $back-parts := $parts[@type = ('appendix', 'abbreviations', 'end-notes', 'bibliography', 'glossary')]/@id/string()
         

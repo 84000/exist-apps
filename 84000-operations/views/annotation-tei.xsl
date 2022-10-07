@@ -11,7 +11,7 @@
         <xsl:variable name="content">
             <xsl:call-template name="operations-page">
                 <xsl:with-param name="active-tab" select="@model"/>
-                <xsl:with-param name="page-content">
+                <xsl:with-param name="tab-content">
                     
                     <form action="/annotation-tei.html" method="post" class="filter-form" data-loading="Checking archive...">
                         <div class="form-group">

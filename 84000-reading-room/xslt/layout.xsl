@@ -25,31 +25,23 @@
     <!-- Controls to open / close .preview -->
     <xsl:template name="preview-controls">
         
-        <xsl:param name="section-id" as="xs:string"/>
-        <xsl:param name="get-url" as="xs:string?"/>
+        <xsl:param name="section-id" as="xs:string" required="true"/>
+        <xsl:param name="href" as="xs:string" required="true"/>
+        <xsl:param name="href-override" as="xs:string?"/>
         <xsl:param name="log-click" as="xs:boolean?"/>
         
         <!-- Expand -->
         <a target="_self" title="Read this section">
             
-            <xsl:attribute name="href">
-                <xsl:choose>
-                    <xsl:when test="$get-url">
-                        <xsl:value-of select="$get-url"/>
-                    </xsl:when>
-                    <xsl:otherwise>
-                        <xsl:value-of select="concat('#', $section-id)"/>
-                    </xsl:otherwise>
-                </xsl:choose>
-            </xsl:attribute>
+            <xsl:attribute name="href" select="$href"/>
+            <xsl:if test="$href-override">
+                <xsl:attribute name="data-href-override" select="$href-override"/>
+            </xsl:if>
             
             <xsl:attribute name="class">
                 <xsl:value-of select="'reveal'"/>
                 <xsl:if test="$log-click">
                     <xsl:value-of select="' log-click'"/>
-                </xsl:if>
-                <xsl:if test="$get-url">
-                    <xsl:value-of select="' scroll-to-anchor'"/>
                 </xsl:if>
             </xsl:attribute>
             
@@ -219,6 +211,62 @@
             
         </div>
     
+    </xsl:template>
+    
+    <!-- Dual-view pop-up -->
+    <xsl:template name="dualview-popup">
+        
+        <div id="popup-footer-dualview" class="fixed-footer collapse persist hidden-print">
+            <div class="fix-height">
+                
+                <!-- Create data tabs here -->
+                <div class="tabs-container hidden-print">
+                    <div class="container">
+                        <div class="center-vertical full-width">
+                            <div>
+                                <ul class="nav nav-tabs" role="tablist">
+                                    <!-- Add tabs here -->
+                                </ul>
+                            </div>
+                            <div>
+                                <form class="form-inline pull-right">
+                                    <div class="checkbox small">
+                                        <label>
+                                            <input type="checkbox" value="1" id="dualview-sync"/>
+                                            <xsl:value-of select="' Keep synced'"/>
+                                        </label>
+                                    </div>
+                                    <!--<button type="button" class="btn btn-default btn-sm close-collapse" aria-label="Close">
+                                        <xsl:value-of select="'Close'"/>
+                                    </button>-->
+                                </form>
+                            </div>
+                        </div>
+                        
+                    </div>
+                </div>
+                
+                <!-- Add tabbed content here -->
+                <div class="relative">
+                    
+                    <div class="tab-content ">
+                        <!-- Add tab panels here -->
+                    </div>
+                    
+                    <div class="fixed-btn-container close-btn-container">
+                        <button type="button" class="btn-round close close-collapse" aria-label="Close">
+                            <span aria-hidden="true">
+                                <i class="fa fa-times"/>
+                            </span>
+                        </button>
+                    </div>
+                    
+                </div>
+                
+            </div>
+            
+        </div>
+        
     </xsl:template>
     
 </xsl:stylesheet>

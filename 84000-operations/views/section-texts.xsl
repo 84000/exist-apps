@@ -12,7 +12,7 @@
                 
                 <xsl:with-param name="active-tab" select="@model"/>
                 
-                <xsl:with-param name="page-content">
+                <xsl:with-param name="tab-content">
                     
                     <xsl:apply-templates select="m:section"/>
                     

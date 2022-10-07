@@ -19,7 +19,6 @@ import module namespace functx="http://www.functx.com";
 
 declare option exist:serialize "method=xml indent=no";
 
-
 let $default-max-records := 3
 let $default-filter := 'check-all'
 
@@ -211,7 +210,7 @@ let $glossary :=
         
         for $gloss in $gloss-filtered-subsequence
             let $entry := glossary:glossary-entry($gloss, false())
-            let $entity := $entities:entities//m:instance[@id = $gloss/@xml:id]/parent::m:entity
+            let $entity := $entities:entities//m:instance[@id = $gloss/@xml:id][1]/parent::m:entity
         return 
             (: Copy each glossary entry :)
             element { node-name($entry) }{
@@ -233,7 +232,7 @@ let $glossary :=
                 else (),
                 
                 (: Report possible matches for reconciliation :)
-                if($filter = ('check-entities', 'check-all', 'check-terms', 'check-people', 'check-places', 'check-texts', 'missing-entities', 'requires-attention')) then
+                if($filter = ('check-entities', 'check-all', 'check-terms', 'check-people', 'check-places', 'check-texts', 'missing-entities', 'requires-attention', 'entity-definition')) then
                     let $search-terms := (
                         $entry/m:term[@xml:lang = ('Bo-Ltn', 'Sa-Ltn')]/data(),
                         $entry/m:alternatives[@xml:lang = ('Bo-Ltn', 'Sa-Ltn')]/data(),
