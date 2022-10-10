@@ -229,6 +229,7 @@
                                                             <xsl:attribute name="href" select="m:url[@format eq 'html'][@xml:lang eq 'bo']"/>
                                                             <xsl:attribute name="data-dualview-href" select="m:url[@format eq 'html'][@xml:lang eq 'bo']"/>
                                                             <xsl:attribute name="data-dualview-title" select="$toh-key || ' source'"/>
+                                                            <xsl:attribute name="data-loading" select="'Loading ' || $toh-key || ' source...'"/>
                                                             <xsl:value-of select="'Tibetan source'"/>
                                                         </a>
                                                         <xsl:value-of select="' | '"/>
@@ -237,6 +238,7 @@
                                                             <xsl:attribute name="href" select="concat($reading-room-path, '/translation/', $toh-key, '#', @ref-id)"/>
                                                             <xsl:attribute name="data-dualview-href" select="concat($reading-room-path, '/translation/', $toh-key, '#', @ref-id)"/>
                                                             <xsl:attribute name="data-dualview-title" select="$toh-key || ' translation'"/>
+                                                            <xsl:attribute name="data-loading" select="'Loading ' || $toh-key || ' translation...'"/>
                                                             <xsl:value-of select="'Published translation'"/>
                                                         </a>
                                                         <xsl:value-of select="' | '"/>

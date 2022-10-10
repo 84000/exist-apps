@@ -203,7 +203,7 @@
     </xsl:template>
     <xsl:template match="m:title">
         <xsl:if test="text()">
-            <div>
+            <xhtml:div>
                 <xsl:call-template name="class-attribute">
                     <xsl:with-param name="lang" select="@xml:lang"/>
                     <xsl:with-param name="base-classes" as="xs:string*">
@@ -217,7 +217,7 @@
                     </xsl:with-param>
                 </xsl:call-template>
                 <xsl:apply-templates select="node()"/>
-            </div>
+            </xhtml:div>
         </xsl:if>
     </xsl:template>
     
@@ -535,11 +535,11 @@
         
         <!-- Output the ref prologue -->
         <xsl:if test="$ref-prologue-container and count($element | $ref-prologue-container) eq count($element)">
-            <div class="rw rw-first rw-paragraph">
+            <xhtml:div class="rw rw-first rw-paragraph">
                 <p class="ref-prologue">
                     <xsl:apply-templates select="$ref-prologue"/>
                 </p>
-            </div>
+            </xhtml:div>
             <br/>
         </xsl:if>
         
@@ -555,17 +555,9 @@
                     </xsl:call-template>
                     
                     <!-- Outbound quote link -->
-                    <xsl:variable name="quote-outbound" as="element(m:quote)?">
+                    <xsl:variable name="quotes-outbound" as="element(m:quote)*">
                         <xsl:if test="$element/self::tei:q[@xml:id][ancestor-or-self::*/@ref gt '']">
                             <xsl:sequence select="key('quotes-outbound', $element/@xml:id, $root)[m:source/@location-id eq $element/ancestor-or-self::*[@ref][1]/@ref]"/>
-                        </xsl:if>
-                    </xsl:variable>
-                    
-                    <xsl:variable name="quote-link" as="element(xhtml:a)?">
-                        <xsl:if test="$quote-outbound">
-                            <xsl:call-template name="quote-link">
-                                <xsl:with-param name="quote" select="$quote-outbound[1]"/>
-                            </xsl:call-template>
                         </xsl:if>
                     </xsl:variable>
                     
@@ -600,7 +592,7 @@
                         </xsl:with-param>
                         
                         <xsl:with-param name="html-classes">
-                            <xsl:if test="$quote-link">
+                            <xsl:if test="$quotes-outbound">
                                 <xsl:value-of select="'quote-linked'"/>
                             </xsl:if>
                         </xsl:with-param>
@@ -613,7 +605,11 @@
                     </xsl:call-template>
                     
                     <!-- Output quote link -->
-                    <xsl:sequence select="$quote-link"/>
+                    <xsl:if test="$quotes-outbound">
+                        <xsl:call-template name="quote-link">
+                            <xsl:with-param name="quote" select="$quotes-outbound[1]"/>
+                        </xsl:call-template>
+                    </xsl:if>
                     
                     <!-- Add link to tei editor -->
                     <xsl:call-template name="tei-editor">
@@ -651,7 +647,7 @@
         
         <xsl:call-template name="milestone">
             <xsl:with-param name="content">
-                <div>
+                <xhtml:div>
                     
                     <xsl:call-template name="class-attribute">
                         <xsl:with-param name="base-classes" as="xs:string*">
@@ -668,7 +664,7 @@
                         <xsl:with-param name="node" select="."/>
                     </xsl:call-template>
                     
-                </div>
+                </xhtml:div>
             </xsl:with-param>
             <xsl:with-param name="row-type" select="'line'"/>
         </xsl:call-template>
@@ -695,7 +691,7 @@
         <xsl:call-template name="milestone">
             <xsl:with-param name="content">
                 
-                <div>
+                <xhtml:div>
                     
                     <!-- id -->
                     <xsl:call-template name="id-attribute">
@@ -705,10 +701,10 @@
                     <xsl:apply-templates select="tei:head"/>
                     
                     <!-- Render the list version of the table in case it's for printing -->
-                    <div class="visible-print visible-ebook">
+                    <xhtml:div class="visible-print visible-ebook">
                         <xsl:variable name="label-row" select="(tei:row[@role eq 'label'][1], tei:row[1])[1]"/>
                         <xsl:variable name="data-rows" select="tei:row[not(. = $label-row)]"/>
-                        <div class="table-as-list">
+                        <xhtml:div class="table-as-list">
                             <xsl:for-each select="$data-rows">
                                 
                                 <xsl:variable name="row" select="."/>
@@ -782,12 +778,12 @@
                                     
                                 </p>
                             </xsl:for-each>
-                        </div>
-                    </div>
+                        </xhtml:div>
+                    </xhtml:div>
                     
                     <!-- Render the table version for html -->
                     <xsl:if test="$view-mode[not(@id = ('ebook', 'pdf'))]">
-                        <div class="table-responsive hidden-print hidden-ebook">
+                        <xhtml:div class="table-responsive hidden-print hidden-ebook">
                             <table>
                                 <xsl:call-template name="class-attribute">
                                     <xsl:with-param name="base-classes" select="'table table-unpad'"/>
@@ -814,16 +810,16 @@
                                     </xsl:for-each>
                                 </tbody>
                             </table>
-                        </div>
+                        </xhtml:div>
                     </xsl:if>
                     
                     <xsl:if test="tei:note">
-                        <div class="table-notes">
+                        <xhtml:div class="table-notes">
                             <xsl:apply-templates select="tei:note"/>
-                        </div>
+                        </xhtml:div>
                     </xsl:if>
                     
-                </div>
+                </xhtml:div>
                 
             </xsl:with-param>
             <xsl:with-param name="row-type" select="'table'"/>
@@ -938,7 +934,7 @@
         
         <xsl:call-template name="milestone">
             <xsl:with-param name="content">
-                <div>
+                <xhtml:div>
                     
                     <xsl:call-template name="class-attribute">
                         <xsl:with-param name="base-classes" as="xs:string*">
@@ -963,7 +959,7 @@
                     
                     <xsl:apply-templates select="node()"/>
                     
-                </div>
+                </xhtml:div>
             </xsl:with-param>
             <xsl:with-param name="row-type" select="concat('list-', @type)"/>
         </xsl:call-template>
@@ -994,7 +990,7 @@
     <xsl:template match="tei:item[parent::tei:list]">
         <xsl:call-template name="milestone">
             <xsl:with-param name="content">
-                <div>
+                <xhtml:div>
                     
                     <xsl:attribute name="class">
                         <xsl:value-of select="'list-item'"/>
@@ -1008,7 +1004,7 @@
                     
                     <xsl:apply-templates select="node()"/>
                     
-                </div>
+                </xhtml:div>
             </xsl:with-param>
             
             <xsl:with-param name="row-type" select="'list-item'"/>
@@ -1084,7 +1080,7 @@
             <xsl:variable name="notes-cache-end-note" select="key('notes-cache-end-note', @xml:id, $root)[1]"/>
             <xsl:variable name="part" select="key('text-parts', $notes-cache-end-note/@part-id, $root)[1]"/>
             
-            <div class="rw footnote">
+            <xhtml:div class="rw footnote">
                 
                 <xsl:attribute name="id" select="concat('end-note-', $end-note/@xml:id)"/>
                 
@@ -1100,7 +1096,7 @@
                     </xsl:call-template>
                 </xsl:if>
                 
-                <div class="gtr">
+                <xhtml:div class="gtr">
                     
                     <xsl:choose>
                         
@@ -1140,13 +1136,13 @@
                         
                     </xsl:choose>
                     
-                </div>
+                </xhtml:div>
                 
-                <div>
+                <xhtml:div>
                     <xsl:apply-templates select="node()"/>
-                </div>
+                </xhtml:div>
                 
-            </div>
+            </xhtml:div>
             
         </xsl:for-each>
         
@@ -1267,7 +1263,7 @@
                     </xsl:call-template>
                 </xsl:variable>
                 
-                <div class="rw glossary-item">
+                <xhtml:div class="rw glossary-item">
                     
                     <xsl:attribute name="id" select="$glossary-item/@xml:id"/>
                     
@@ -1283,7 +1279,7 @@
                         </xsl:call-template>
                     </xsl:if>
                     
-                    <div class="gtr">
+                    <xhtml:div class="gtr">
                         <xsl:choose>
                             
                             <xsl:when test="$view-mode[not(@client = ('ebook', 'app'))]">
@@ -1301,9 +1297,9 @@
                             </xsl:otherwise>
                             
                         </xsl:choose>
-                    </div>
+                    </xhtml:div>
                     
-                    <div>
+                    <xhtml:div>
                         
                         <!-- Main term -->
                         <h3 class="term">
@@ -1322,7 +1318,7 @@
                             </xsl:variable>
                             
                             <xsl:if test="$term-lang-terms or $term-empty-text gt ''">
-                                <div>
+                                <xhtml:div>
                                     <ul class="list-inline inline-dots">
                                         <xsl:choose>
                                             
@@ -1365,7 +1361,7 @@
                                             
                                         </xsl:choose>
                                     </ul>
-                                </div>
+                                </xhtml:div>
                             </xsl:if>
                             
                         </xsl:for-each>
@@ -1413,15 +1409,15 @@
                         
                         <!-- Entity definition -->
                         <xsl:if test="$tei-editor and not($entity)">
-                            <div class="footer">
+                            <xhtml:div class="footer">
                                 <span class="label label-warning">
                                     <xsl:value-of select="'No shared entity assigned'"/>
                                 </span>
-                            </div>
+                            </xhtml:div>
                         </xsl:if>
                         
                         <xsl:if test="($entity-definition and not($entry-definition)) or ($entity-definition and $entity-instance[@use-definition = ('both','override')])">
-                            <div class="footer">
+                            <xhtml:div class="footer">
                                 <h4 class="heading">
                                     <xsl:value-of select="'Definition from the 84000 Glossary of Terms:'"/>
                                 </h4>
@@ -1433,12 +1429,12 @@
                                         <xsl:apply-templates select="node()"/>
                                     </p>
                                 </xsl:for-each>
-                            </div>
+                            </xhtml:div>
                         </xsl:if>
                         
                         <!-- Expressions -->
                         <xsl:if test="$view-mode[not(@id eq 'pdf')]">
-                            <div class="footer hidden-print" role="navigation" aria-label="Locations of this term in the text">
+                            <xhtml:div class="footer hidden-print" role="navigation" aria-label="Locations of this term in the text">
                                 
                                 <xsl:variable name="count-locations" select="count($cached-locations)"/>
                                 <h4 class="heading">
@@ -1460,7 +1456,7 @@
                                     <xsl:with-param name="glossary-id" select="$glossary-item/@xml:id"/>
                                 </xsl:call-template>
                                 
-                            </div>
+                            </xhtml:div>
                         </xsl:if>
                         
                         <!-- Link to the Glossary / Knowledge Base -->
@@ -1468,14 +1464,14 @@
                         <xsl:variable name="knowledgebase-instances" select="$entity/m:instance[@type eq 'knowledgebase-article'][not(@id eq $kb-id)][$environment/m:enable[@type eq 'knowledgebase']]"/>
                         <xsl:variable name="requires-attention" select="$entity-instance/m:flag[@type eq 'requires-attention']"/>
                         <xsl:if test="$view-mode[@client = ('browser', 'ajax')] and ($glossary-instances, $knowledgebase-instances) and ($tei-editor or not($requires-attention))">
-                            <div class="footer entity-content" role="navigation">
+                            <xhtml:div class="footer entity-content" role="navigation">
                                 <xsl:if test="$tei-editor and $requires-attention">
                                     <xsl:attribute name="class" select="'footer entity-content well well-sm'"/>
-                                    <div>
+                                    <xhtml:div>
                                         <span class="label label-danger">
                                             <xsl:value-of select="/m:response/m:entity-flags/m:flag[@id eq 'requires-attention']/m:label"/>
                                         </span>
-                                    </div>
+                                    </xhtml:div>
                                 </xsl:if>
                                 <h4 class="heading">
                                     <xsl:value-of select="'Links to further resources:'"/>
@@ -1498,13 +1494,13 @@
                                         </li>
                                     </xsl:if>
                                 </ul>
-                            </div>
+                            </xhtml:div>
                         </xsl:if>
                         
                         <!-- Link to glossary tool -->
                         <xsl:if test="$tei-editor and $environment/m:url[@id eq 'operations']">
                             
-                            <div>
+                            <xhtml:div>
                                 
                                 <xsl:variable name="resource-id" select="if($knowledgebase) then $knowledgebase/m:page/@xml:id else $glossary-part/parent::m:translation/@id"/>
                                 <xsl:variable name="resource-type" select="if($knowledgebase) then 'knowledgebase' else 'translation'"/>
@@ -1514,13 +1510,13 @@
                                     <xsl:value-of select="'Open in the glossary editor'"/>
                                 </a>
                                 
-                            </div>
+                            </xhtml:div>
                             
                         </xsl:if>
                         
-                    </div>
+                    </xhtml:div>
                     
-                </div>
+                </xhtml:div>
                 
             </xsl:for-each>
             
@@ -1529,12 +1525,12 @@
         <!-- Link to glossary form -->
         <!-- Knowledge base only, editor mode, operations app, no child divs and an id -->
         <xsl:if test="$tei-editor and $environment/m:url[@id eq 'operations'] and m:knowledgebase/m:page[@xml:id gt '']">
-            <div>
+            <xhtml:div>
                 <a class="editor" target="84000-operations">
                     <xsl:attribute name="href" select="concat($environment/m:url[@id eq 'operations']/text(), '/edit-glossary.html', '?resource-id=', m:knowledgebase/m:page/@xml:id, '&amp;resource-type=knowledgebase&amp;filter=blank-form')"/>
                     <xsl:value-of select="'Add a glossary entry'"/>
                 </a>
-            </div>
+            </xhtml:div>
         </xsl:if>
         
     </xsl:template>
@@ -1599,7 +1595,7 @@
         <xsl:variable name="element" select="."/>
         <xsl:variable name="element-id" select="($element/@id, $element/@xml:id)[1]" as="xs:string?"/>
         
-        <div>
+        <xhtml:div>
             
             <!-- Set the id -->
             <xsl:attribute name="id" select="$element-id"/>
@@ -1630,7 +1626,7 @@
                 <xsl:with-param name="node" select="$element"/>
             </xsl:call-template>
             
-        </div>
+        </xhtml:div>
         
     </xsl:template>
     
@@ -1674,7 +1670,7 @@
         <xsl:variable name="title-supp" select="$part/m:title-supp[1]"/>
         
         <!-- .rw container -->
-        <div>
+        <xhtml:div>
             
             <!-- .rw container classes -->
             <xsl:call-template name="class-attribute">
@@ -1698,7 +1694,7 @@
             
             <!-- Add a milestone .gtr -->
             <xsl:if test="$part[@prefix]">
-                <div class="gtr">
+                <xhtml:div class="gtr">
                     <xsl:choose>
                         
                         <!-- show a link -->
@@ -1723,11 +1719,11 @@
                         </xsl:otherwise>
                         
                     </xsl:choose>
-                </div>
+                </xhtml:div>
             </xsl:if>
             
             <!-- .rw-heading container -->
-            <div>
+            <xhtml:div>
                 
                 <!-- .rw-heading container classes -->
                 <xsl:call-template name="class-attribute">
@@ -1748,7 +1744,7 @@
                     
                     <!-- Supplementary title -->
                     <xsl:if test="$title-supp[text()]">
-                        <div class="h4">
+                        <xhtml:div class="h4">
                             
                             <xsl:call-template name="id-attribute">
                                 <xsl:with-param name="node" select="$title-supp"/>
@@ -1756,7 +1752,7 @@
                             
                             <xsl:apply-templates select="$title-supp/text()"/>
                             
-                        </div>
+                        </xhtml:div>
                     </xsl:if>
                     
                     <xsl:element name="{ $header-tag }">
@@ -1784,7 +1780,7 @@
                     
                     <xsl:if test="$title-text[text()]">
                         
-                        <div class="h3">
+                        <xhtml:div class="h3">
                             
                             <xsl:call-template name="id-attribute">
                                 <xsl:with-param name="node" select="$title-text"/>
@@ -1792,15 +1788,15 @@
                             
                             <xsl:apply-templates select="$title-text/node()"/>
                             
-                        </div>
+                        </xhtml:div>
                         
                     </xsl:if>
                     
                 </header>
                 
-            </div>
+            </xhtml:div>
             
-        </div>
+        </xhtml:div>
         
     </xsl:template>
     <!-- Other headers, could be anywhere in text -->
@@ -1812,7 +1808,7 @@
             <xsl:with-param name="content">
                 
                 <!-- .rw-heading container -->
-                <div>
+                <xhtml:div>
                     
                     <xsl:call-template name="class-attribute">
                         <xsl:with-param name="base-classes" as="xs:string*">
@@ -1848,7 +1844,7 @@
                         
                     </header>
                     
-                </div>
+                </xhtml:div>
             </xsl:with-param>
             
             <xsl:with-param name="row-type" select="'section-head'"/>
@@ -1893,26 +1889,26 @@
                     <xsl:when test="$caption">
                         <xsl:choose>
                             <xsl:when test="$view-mode[@client eq 'ebook']">
-                                <div class="row sml-margin top bottom">
+                                <xhtml:div class="row sml-margin top bottom">
                                     <xsl:apply-templates select="$caption"/>
                                     <img>
                                         <xsl:attribute name="src" select="concat('image', @url)"/>
                                         <xsl:attribute name="title" select="$caption"/>
                                     </img>
-                                </div>
+                                </xhtml:div>
                             </xsl:when>
                             <xsl:otherwise>
-                                <div class="row sml-margin top bottom">
-                                    <div class="col-sm-8 col-xs-6">
+                                <xhtml:div class="row sml-margin top bottom">
+                                    <xhtml:div class="col-sm-8 col-xs-6">
                                         <xsl:apply-templates select="$caption"/>
-                                    </div>
-                                    <div class="col-sm-4 col-xs-6">
+                                    </xhtml:div>
+                                    <xhtml:div class="col-sm-4 col-xs-6">
                                         <img class="img-responsive pull-right">
                                             <xsl:attribute name="src" select="concat($reading-room-path, @url)"/>
                                             <xsl:attribute name="title" select="$caption"/>
                                         </img>
-                                    </div>
-                                </div>
+                                    </xhtml:div>
+                                </xhtml:div>
                             </xsl:otherwise>
                         </xsl:choose>
                         
@@ -1943,7 +1939,7 @@
         
         <xsl:variable name="element" select="."/>
         
-        <div>
+        <xhtml:div>
             
             <xsl:if test="($translation | $knowledgebase)">
                
@@ -1999,7 +1995,7 @@
                             </xsl:call-template>
                         </xsl:variable>
                         
-                        <div class="gtr">
+                        <xhtml:div class="gtr">
                             <xsl:choose>
                                 
                                 <!-- show a relative link -->
@@ -2022,7 +2018,7 @@
                                 </xsl:otherwise>
                                 
                             </xsl:choose>
-                        </div>
+                        </xhtml:div>
                     
                     </xsl:if>
                     
@@ -2033,7 +2029,7 @@
             <!-- Output the content -->
             <xsl:sequence select="$content"/>
             
-        </div>
+        </xhtml:div>
         
     </xsl:template>
     
@@ -2152,6 +2148,7 @@
                 
                 <xsl:attribute name="title" select="$quote/m:label"/>
                 <!--<xsl:value-of select="$quote/m:label"/>-->
+                <i class="fa fa-quote-right"/>
                 
             </a>
         </xsl:if>
@@ -2222,8 +2219,8 @@
             
             <hr class="hidden-print"/>
             
-            <div class="rw rw-section-head">
-                <div class="gtr">
+            <xhtml:div class="rw rw-section-head">
+                <xhtml:div class="gtr">
                     <xsl:call-template name="bookmark-link">
                         <xsl:with-param name="bookmark-target-hash" select="'toc'"/>
                         <xsl:with-param name="bookmark-target-part" select="'contents'"/>
@@ -2233,15 +2230,15 @@
                             </xsl:call-template>
                         </xsl:with-param>
                     </xsl:call-template>
-                </div>
-                <div class="rw-heading heading-section chapter">
+                </xhtml:div>
+                <xhtml:div class="rw-heading heading-section chapter">
                     <header>
                         <h2 class="section-title">
                             <xsl:value-of select="'Table of Contents'"/>
                         </h2>
                     </header>
-                </div>
-            </div>
+                </xhtml:div>
+            </xhtml:div>
             
             <nav class="rw" aria-label="Table of Contents">
                 <table class="contents-table">
@@ -2500,7 +2497,7 @@
                                     </a>
                                     
                                     <!-- Expandable box -->
-                                    <div>
+                                    <xhtml:div>
                                         
                                         <xsl:attribute name="id" select="$expand-id"/>
                                         
@@ -2524,7 +2521,7 @@
                                                 </xsl:call-template>
                                             </tbody>
                                         </table>
-                                    </div>
+                                    </xhtml:div>
                                     
                                 </td>
                             </tr>
@@ -3381,7 +3378,7 @@
         <xsl:param name="id"/>
         <xsl:param name="node"/>
         
-        <div class="hidden-print">
+        <xhtml:div class="hidden-print">
             
             <a data-toggle="modal" class="block-link warning">
                 <xsl:attribute name="href" select="concat('#tantra-warning-', $id)"/>
@@ -3390,12 +3387,12 @@
                 <xsl:value-of select="' Tantra Text Warning'"/>
             </a>
             
-            <div class="modal fade warning" tabindex="-1" role="dialog">
+            <xhtml:div class="modal fade warning" tabindex="-1" role="dialog">
                 <xsl:attribute name="id" select="concat('tantra-warning-', $id)"/>
                 <xsl:attribute name="aria-labelledby" select="concat('tantra-warning-label-', $id)"/>
-                <div class="modal-dialog" role="document">
-                    <div class="modal-content">
-                        <div class="modal-header">
+                <xhtml:div class="modal-dialog" role="document">
+                    <xhtml:div class="modal-content">
+                        <xhtml:div class="modal-header">
                             <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                                 <span aria-hidden="true">
                                     <i class="fa fa-times"/>
@@ -3406,19 +3403,19 @@
                                 <i class="fa fa-exclamation-circle" aria-hidden="true"/>
                                 <xsl:value-of select="' Tantra Text Warning'"/>
                             </h4>
-                        </div>
-                        <div class="modal-body">
+                        </xhtml:div>
+                        <xhtml:div class="modal-body">
                             <xsl:apply-templates select="$node"/>
-                        </div>
-                    </div>
-                </div>
-            </div>
+                        </xhtml:div>
+                    </xhtml:div>
+                </xhtml:div>
+            </xhtml:div>
             
-        </div>
+        </xhtml:div>
         
-        <div class="visible-print-block small">
+        <xhtml:div class="visible-print-block small">
             <xsl:apply-templates select="$node"/>
-        </div>
+        </xhtml:div>
         
     </xsl:template>
     
@@ -3452,12 +3449,12 @@
             
             <xsl:variable name="summary-content">
                 
-                <div class="well well-sm small">
+                <xhtml:div class="well well-sm small">
                     
                     <h4 class="no-top-margin">
                         <xsl:value-of select="'Summary'"/>
                     </h4>
-                    <div class="summary">
+                    <xhtml:div class="summary">
                         <xsl:choose>
                             <xsl:when test="$summary">
                                 <xsl:apply-templates select="$summary"/>
@@ -3468,10 +3465,10 @@
                                 </p>
                             </xsl:otherwise>
                         </xsl:choose>
-                    </div>
+                    </xhtml:div>
                     
                     <xsl:if test="$titleVariants">
-                        <div>
+                        <xhtml:div>
                             <xsl:attribute name="id" select="concat($toh-key, '-title-variants')"/>
                             <h4>
                                 <xsl:value-of select="'Title variants'"/>
@@ -3486,11 +3483,11 @@
                                     </li>
                                 </xsl:for-each>
                             </ul>
-                        </div>
+                        </xhtml:div>
                     </xsl:if>
                     
                     <xsl:if test="$supplementaryAttributions">
-                        <div>
+                        <xhtml:div>
                             <xsl:attribute name="id" select="concat($toh-key, '-supplementary-roles')"/>
                             <xsl:for-each select="$supplementaryRoles">
                                 <xsl:variable name="supplementaryRole" select="."/>
@@ -3521,14 +3518,14 @@
                                     </ul>
                                 </xsl:if>
                             </xsl:for-each>
-                        </div>
+                        </xhtml:div>
                     </xsl:if>
                     
-                </div>
+                </xhtml:div>
                 
             </xsl:variable>
             
-            <div>
+            <xhtml:div>
                 
                 <xsl:attribute name="id" select="$expand-id"/>
                 
@@ -3536,7 +3533,7 @@
                 
                 <xsl:sequence select="$summary-content"/>
                 
-            </div>
+            </xhtml:div>
             
         </xsl:if>
         
@@ -3549,7 +3546,7 @@
         
         <xsl:if test="$text/m:source/m:attribution[@ref][@role eq 'author'][normalize-space(text())]">
             <hr/>
-            <div role="navigation" aria-label="The attributed authors of the source text" class="small">
+            <xhtml:div role="navigation" aria-label="The attributed authors of the source text" class="small">
                 <span class="text-muted">
                     <xsl:value-of select="'by '"/>
                 </span>
@@ -3566,7 +3563,7 @@
                         </li>
                     </xsl:for-each>
                 </ul>
-            </div>
+            </xhtml:div>
         </xsl:if>
         
     </xsl:template>

@@ -107,15 +107,6 @@
                                 </p>
                             </li>
                             <li>
-                                <a target="resources">  
-                                    <xsl:attribute name="href" select="$environment/m:url[@id eq 'resources']/text()"/>
-                                    <xsl:value-of select="'84000 Resources'"/>
-                                </a>
-                                <p class="text-muted small">
-                                    <xsl:value-of select="'Check the resources browser.'"/>
-                                </p>
-                            </li>
-                            <li>
                                 <a target="server-error">
                                     <xsl:attribute name="href" select="concat($environment/m:url[@id eq 'reading-room']/text(), '/invalid-route.html')"/>
                                     <xsl:value-of select="'Server Error Page'"/>
