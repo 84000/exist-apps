@@ -1768,24 +1768,22 @@ declare function local:quote($quote as element(tei:q), $toh-key as xs:string, $t
             element text-title { $source-text-title }
         },
         
-        (: Instructions on the highlight :)
+        (: Definition of the highlight :)
         for $text in 
             if($quote[@alt]) then
                 $quote/@alt/string()
             else if($quote/@type eq 'substring') then
-                $quote//text()[normalize-space(.)]
-            else
-                string-join($quote//text(), '')
-                
+                $quote//text()[not(ancestor::tei:note)][normalize-space(.)]
+            else ()
+        
         let $text-normalized := $text ! normalize-space(.) ! lower-case(.) ! replace(., '^[^a-z]+', '') ! replace(., '[^a-z]+$', '')
-        where $text-normalized gt ''
         return
             element highlight {
                 
                 attribute type { ($quote/@type, 'passage')[1] },
                 
                 (: Normalise and remove trailing punctuation :)
-                if($quote/@type eq 'substring') then
+                if($quote/@type eq 'substring' and $text-normalized gt '') then
                     text { $text-normalized }
                 else ()
                 
