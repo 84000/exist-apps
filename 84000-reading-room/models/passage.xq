@@ -32,7 +32,7 @@ let $source := tei-content:source($tei, $resource-id)
 let $view-mode := $translation:view-modes/m:view-mode[@id eq $view-mode]
 
 (: Validate the passage-id :)
-let $content := translation:parts($tei, $passage-id, $view-mode, ()) 
+let $passage :=  translation:passage($tei, $passage-id, $view-mode)
 
 (:  Sanitize the request :)
 let $request := 
@@ -42,7 +42,7 @@ let $request :=
         attribute resource-id { $source/@key },
         attribute resource-suffix { $resource-suffix },
         attribute lang { common:request-lang() },
-        attribute passage-id { if($content) then $passage-id else () },
+        attribute passage-id { if($passage) then $passage-id else () },
         attribute view-mode { $view-mode/@id },
         attribute archive-path { $archive-path },
         
@@ -73,6 +73,9 @@ return
             concat('passage=', $request/@passage-id)
         )
         
+        (: Get parts from cache and merge passages :)
+        let $parts := translation:parts-cached($tei, $passage)
+        
         (: Get glossaries :)
         (: Compile all the translation data :)
         let $translation-data :=
@@ -89,13 +92,13 @@ return
                 translation:toh($tei, $source/@key),
                 tei-content:ancestors($tei, $source/@key, 1),
                 
-                $content
+                $parts
                 
             }
             
-        let $entities := translation:entities((), $content[@id eq 'glossary']//tei:gloss/@xml:id)
+        let $entities := translation:entities((), $passage[@id eq 'glossary']//tei:gloss/@xml:id)
         
-        let $quotes := translation:quotes($tei, $content)
+        let $quotes := translation:quotes($tei, $passage)
         
         (: Get caches :)
         let $cache := tei-content:cache($tei, false())/m:*

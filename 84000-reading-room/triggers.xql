@@ -28,27 +28,24 @@ declare function trigger:after-create-document($uri as xs:anyURI) {
 
 declare function local:after-update-document-functions($doc) {
 
-    (# exist:batch-transaction #) {
-
-        if($doc[tei:TEI/tei:teiHeader/tei:fileDesc[@type = "section"]/tei:publicationStmt/tei:idno[@xml:id]]) then (
-        
-            local:permanent-ids($doc),
-            local:temporary-ids($doc),
-            local:last-updated($doc)
-            
-        )
-        else if($doc[tei:TEI/tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:idno[@xml:id]]) then (
-            
-            local:permanent-ids($doc),
-            local:temporary-ids($doc),
-            local:refresh-cache($doc),
-            local:glossary-bo($doc, false()),
-            local:last-updated($doc)
-            
-        )
-        else ()
+    if($doc[tei:TEI/tei:teiHeader/tei:fileDesc[@type = "section"]/tei:publicationStmt/tei:idno[@xml:id]]) then (
     
-    }
+        local:permanent-ids($doc),
+        local:temporary-ids($doc),
+        local:last-updated($doc)
+        
+    )
+    else if($doc[tei:TEI/tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:idno[@xml:id]]) then (
+        
+        local:permanent-ids($doc),
+        (:local:remove-temporary-ids($doc),:)
+        local:temporary-ids($doc),
+        local:refresh-cache($doc),
+        local:glossary-bo($doc, false()),
+        local:last-updated($doc)
+        
+    )
+    else ()
     
 };
 

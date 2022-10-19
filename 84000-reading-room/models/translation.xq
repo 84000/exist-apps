@@ -97,8 +97,8 @@ return
     else
 
         let $canonical-id := (
-            $request/@archive-path ! concat('id=', .), 
-            concat('part=', $request/@part)
+            $request/@archive-path[. gt ''] ! concat('id=', .), 
+            $request/@part[. gt ''] ! concat('part=', .)
         )
         
         let $parts := 
@@ -134,6 +134,9 @@ return
         
         (: Get caches :)
         let $cache := tei-content:cache($tei, false())/m:*
+        
+        (:let $pointers := $parts//tei:ptr/@target[matches(., '^#')] ! replace(., '^#', '') 
+        let $caches := collection(concat($common:data-path, '/', 'cache'))/m:cache/m:*[descendant::*/@id = $pointers] except $cache:)
         
         (: Calculated strings :)
         let $strings := translation:replace-text($source/@key)

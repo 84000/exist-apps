@@ -23,6 +23,7 @@ declare variable $translation:view-modes :=
       <view-mode id="editor"            client="browser"  cache="suppress"   layout="expanded"  glossary="defer"      parts="all"            />
       <view-mode id="passage"           client="browser"  cache="suppress"   layout="flat"      glossary="use-cache"  parts="passage"        />
       <view-mode id="editor-passage"    client="browser"  cache="suppress"   layout="flat"      glossary="no-cache"   parts="passage"        />
+      <view-mode id="outline"           client="browser"  cache="suppress"   layout="flat"      glossary="suppress"   parts="outline"        />
       <view-mode id="annotation"        client="browser"  cache="use-cache"  layout="expanded"  glossary="use-cache"  parts="all"            />
       <view-mode id="txt"               client="none"     cache="use-cache"  layout="flat"      glossary="suppress"   parts="all"            />
       <view-mode id="ebook"             client="ebook"    cache="use-cache"  layout="flat"      glossary="use-cache"  parts="all"            />
@@ -69,7 +70,7 @@ declare variable $translation:type-labels := map {
         'bibliography':   'Bibliography',
         'glossary':       'Glossary'
 };
-    
+
 declare function translation:titles($tei as element(tei:TEI)) as element() {
     element {QName('http://read.84000.co/ns/1.0', 'titles')} {
         tei-content:title-set($tei, 'mainTitle')
@@ -106,6 +107,9 @@ declare function translation:publication($tei as element(tei:TEI)) as element() 
     let $fileDesc := $tei/tei:teiHeader/tei:fileDesc
     return
         element {QName('http://read.84000.co/ns/1.0', 'publication')} {
+        
+            contributors:team($fileDesc/tei:titleStmt/tei:author[@role eq 'translatorMain'][1]/@ref ! contributors:contributor-id(.), false(), false()),
+            
             element contributors {
                 for $contributor in $fileDesc/tei:titleStmt/tei:author[@role eq 'translatorMain']
                 return
@@ -391,7 +395,7 @@ declare function translation:parts($tei as element(tei:TEI), $passage-id as xs:s
     
 };
 
-(:declare function translation:passage($tei as element(tei:TEI), $passage-id as xs:string?, $view-mode as element(m:view-mode)?) as element(m:part)* {
+declare function translation:passage($tei as element(tei:TEI), $passage-id as xs:string?, $view-mode as element(m:view-mode)?) as element(m:part)* {
     
     let $passage := $tei//id($passage-id)
     let $passage-int := replace($passage-id, '^node\-', '')
@@ -403,8 +407,8 @@ declare function translation:parts($tei as element(tei:TEI), $passage-id as xs:s
             $passage
     
     let $chapter-part := $passage/ancestor-or-self::tei:div[not(@type eq 'translation')][@type][last()]
-    (\:let $chapter-prefix := translation:chapter-prefix($chapter-part):\)
-    (\:let $root-part := $chapter-part/ancestor-or-self::tei:div[@type][last()]:\)
+    (:let $chapter-prefix := translation:chapter-prefix($chapter-part):)
+    (:let $root-part := $chapter-part/ancestor-or-self::tei:div[@type][last()]:)
     
     where $chapter-part
     return (
@@ -430,13 +434,13 @@ declare function translation:parts($tei as element(tei:TEI), $passage-id as xs:s
             translation:body($tei, $passage-id, $view-mode, $chapter-part/@xml:id)
         ,
         
-        (\: Include relevant notes :\)
+        (: Include relevant notes :)
         if(not($chapter-part/@type eq 'end-notes')) then
             translation:end-notes($tei, $passage-id, $view-mode, $passage//tei:note[@place eq "end"]/@xml:id)
         else ()
         ,
         
-        (\: Include relevant glossary entries :\)
+        (: Include relevant glossary entries :)
         if(not($chapter-part/@type eq 'glossary')) then
             if($view-mode[@glossary eq 'no-cache']) then
                 translation:glossary($tei, $passage-id, $view-mode, ())
@@ -447,7 +451,64 @@ declare function translation:parts($tei as element(tei:TEI), $passage-id as xs:s
         
     )
 
-};:)
+};
+
+declare function translation:parts-cached($tei as element(tei:TEI), $merge-parts as element(m:part)*) as element(m:part)* {
+    
+    let $resource-id := tei-content:id($tei)
+    
+    let $request := 
+        element { QName('http://read.84000.co/ns/1.0', 'request')} {
+            attribute model { 'text-outline' },
+            attribute resource-suffix { 'xml' },
+            attribute resource-id { $resource-id }
+        }
+    
+    let $tei-timestamp := tei-content:last-modified($tei)
+    let $app-version := replace($common:app-version, '\.', '-')
+    
+    let $cache-key := 
+        if($tei-timestamp instance of xs:dateTime) then
+            lower-case(format-dateTime($tei-timestamp, "[Y0001]-[M01]-[D01]-[H01]-[m01]-[s01]") || '-' || $app-version)
+        else ()
+    
+    let $cache := common:cache-get($request, $cache-key, false())
+    
+    let $cached-outline := 
+        if(not($cache/m:text-outline)) then
+            
+            let $outline-new := 
+                element {QName('http://read.84000.co/ns/1.0', 'text-outline')} {
+                    attribute text-id { $resource-id },
+                    attribute tei-timestamp { $tei-timestamp },
+                    attribute app-version { $app-version },
+                    translation:parts($tei, (), $translation:view-modes/m:view-mode[@id eq 'outline'], ())
+                }
+             
+             let $do-cache := common:cache-put($request, $outline-new, $cache-key)
+             return $outline-new
+             
+        else
+            $cache/m:text-outline
+    
+    let $merged-parts :=
+        for $part in $cached-outline/m:part
+        return 
+            if($part[@id eq 'translation']) then 
+                element { node-name($part) } {
+                    $part/@*,
+                    $part/*[not(self::m:part)],
+                    for $chapter in $cache/m:text-outline/m:part[@id eq 'translation']/m:part
+                    return 
+                        ($merge-parts[@id eq 'translation']/m:part[@id eq $chapter/@id], $chapter)[1]
+                 }
+            else
+                ($merge-parts[@id eq $part/@id], $part)[1]
+    
+    return 
+        $merged-parts
+        
+};
 
 declare function translation:part($part as element(tei:div)?, $content-directive as xs:string, $type as xs:string, $prefix as xs:string, $label as node()*, $output-ids as xs:string*) as element(m:part) {
     local:part($part, $content-directive, $type, $prefix, $label, $output-ids, 0, 1, ())
@@ -600,17 +661,16 @@ declare function local:part($part as element(tei:div)?, $content-directive as xs
                     )
                     
                     (: Test for @tid :)
-                    else
-                        for $passage in $node/descendant-or-self::tei:*[@tid = $output-ids-int]
-                        return (
-                            (: Return the preceding milestone :)
-                            (:$passage/ancestor-or-self::*[preceding-sibling::tei:milestone[@unit eq 'chunk'][@xml:id]][1]/preceding-sibling::tei:milestone[@unit eq 'chunk'][@xml:id][1],:)
-                            (: Bizarre fix required here - milestone name not selecting :)
-                            $passage/ancestor-or-self::*[preceding-sibling::tei:milestone[@unit eq 'chunk'][@xml:id]][1]/preceding-sibling::tei:*[@unit eq 'chunk'][@xml:id][1],
-                            (: And the passage :)
-                            $passage
-                        )
-                
+                    else if($node/descendant-or-self::tei:*[@tid = $output-ids-int]) then (
+                        (: Return the preceding milestone :)
+                        (:$passage/ancestor-or-self::*[preceding-sibling::tei:milestone[@unit eq 'chunk'][@xml:id]][1]/preceding-sibling::tei:milestone[@unit eq 'chunk'][@xml:id][1],:)
+                        (: Bizarre fix required here - milestone name not selecting :)
+                        $node/ancestor-or-self::*[preceding-sibling::tei:milestone[@unit eq 'chunk'][@xml:id]][1]/preceding-sibling::tei:*[@unit eq 'chunk'][@xml:id][1],
+                        (: And the passage :)
+                        $node
+                    )
+                    else ()
+                    
                 (: Partial rendering - return some nodes :)
                 else if ($content-directive eq 'preview' and count($preview) gt 0) then (
                 
@@ -699,7 +759,6 @@ declare function translation:summary($tei as element(tei:TEI), $passage-id as xs
     
     where $summary
     
-    (:let $content-directive := local:content-directive($summary, ($type, 'front'), $passage-id, $view-mode, 'complete'):)
     let $content-directive := 
         if($passage-id = ('summary','front','all')) then
             'complete'
@@ -708,6 +767,8 @@ declare function translation:summary($tei as element(tei:TEI), $passage-id as xs
                 'passage'
             else
                 'empty'
+        else if($view-mode[@parts eq 'outline']) then
+            'empty'
         else
             'complete'
     
@@ -726,7 +787,6 @@ declare function translation:acknowledgment($tei as element(tei:TEI), $passage-i
     let $acknowledgment := $tei/tei:text/tei:front/tei:div[@type eq $type]
     where $acknowledgment
     
-    (:let $content-directive := local:content-directive($acknowledgment, ($type, 'front'), $passage-id, $view-mode, 'complete'):)
     let $content-directive := 
         if($passage-id = ('acknowledgment','front','all')) then
             'complete'
@@ -735,6 +795,8 @@ declare function translation:acknowledgment($tei as element(tei:TEI), $passage-i
                 'passage'
             else
                 'empty'
+        else if($view-mode[@parts eq 'outline']) then
+            'empty'
         else
             'complete'
     
@@ -761,6 +823,8 @@ declare function translation:preface($tei as element(tei:TEI), $passage-id as xs
                 'passage'
             else
                 'empty'
+        else if($view-mode[@parts eq 'outline']) then
+            'empty'
         else
             'preview'
 
@@ -787,6 +851,8 @@ declare function translation:introduction($tei as element(tei:TEI), $passage-id 
                 'passage'
             else
                 'empty'
+        else if($view-mode[@parts eq 'outline']) then
+            'empty'
         else
             'preview'
 
@@ -854,6 +920,8 @@ declare function translation:body($tei as element(tei:TEI), $passage-id as xs:st
                             'passage'
                         else
                             'empty'
+                    else if($view-mode[@parts eq 'outline']) then
+                        'empty'
                     else if($chapter/@type = ('colophon', 'homage')) then
                         'complete'
                     else
@@ -887,6 +955,8 @@ declare function translation:appendix($tei as element(tei:TEI), $passage-id as x
                 'passage'
             else
                 'empty'
+        else if($view-mode[@parts eq 'outline']) then
+            'empty'
         else
             'preview'
     
@@ -916,7 +986,7 @@ declare function translation:appendix($tei as element(tei:TEI), $passage-id as x
             for $chapter at $chapter-index in $appendix/tei:div[@type = ('section', 'chapter', 'prologue')]
             let $chapter-prefix := translation:chapter-prefix($chapter)
             return
-                local:part($chapter, $content-directive, $chapter/@type, $chapter-prefix, (), $passage-id, 0, $chapter-index, ())
+                local:part($chapter, $content-directive, $chapter/@type, $chapter-prefix, (), $passage-id, 1, $chapter-index, ())
         }
 
 };
@@ -946,6 +1016,8 @@ declare function translation:abbreviations($tei as element(tei:TEI), $passage-id
                 'passage'
             else
                 'empty'
+        else if($view-mode[@parts eq 'outline']) then
+            'empty'
         else
             'complete'
 
@@ -974,6 +1046,8 @@ declare function translation:end-notes($tei as element(tei:TEI), $passage-id as 
                 'passage'
             else
                 'empty'
+        else if($view-mode[@parts eq 'outline']) then
+            'empty'
         else
             'preview'
     
@@ -1013,6 +1087,8 @@ declare function translation:bibliography($tei as element(tei:TEI), $passage-id 
                 'passage'
             else
                 'empty'
+        else if($view-mode[@parts eq 'outline']) then
+            'empty'
         else
             'complete'
     
@@ -1047,6 +1123,8 @@ declare function translation:glossary($tei as element(tei:TEI), $passage-id as x
                 'passage'
             else
                 'empty'
+        else if($view-mode[@parts eq 'outline']) then
+            'empty'
         else
             'preview'
 
@@ -1120,6 +1198,57 @@ declare function translation:folios-cache($tei as element(tei:TEI), $refresh as 
                 
             }
 };
+
+(:declare function local:folio-refs-pre-processed($tei as element(tei:TEI)){
+    
+    let $start-time := util:system-dateTime()
+    
+    let $folio-refs :=
+        for $bibl in $tei/tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl[@key]
+        let $resource-id := $bibl/@key
+        let $folios-for-toh := translation:folio-refs-sorted($tei, $resource-id)
+        return
+            for $folio in $folios-for-toh
+            return (
+                common:ws(2),
+                element { QName('http://read.84000.co/ns/1.0', 'folio-ref') } {
+                    attribute id { $folio/@xml:id },
+                    attribute resource-id { $resource-id },
+                    $folio/@index-in-resource,
+                    $folio/@index-in-sort,
+                    if($folio[@cRef-volume]) then
+                        $folio/@cRef-volume
+                    else ()
+                }
+            )
+    
+    let $end-time := util:system-dateTime()
+    
+    return
+        element { QName('http://read.84000.co/ns/1.0', 'pre-processed') } {
+            
+            attribute type { 'folio-refs' },
+            attribute timestamp { current-dateTime() },
+            attribute seconds-to-build { functx:total-seconds-from-duration($end-time - $start-time) },
+            
+            $folio-refs,
+            
+            common:ws(1)
+            
+        }
+};
+
+declare function translation:folios-cache($tei as element(tei:TEI)) as element(m:folios-cache) {
+    
+    let $folios-pre-processed := translation:parts-cached($tei, ())/m:pre-processed[@type eq 'folio-refs']
+    
+    return
+        element { QName('http://read.84000.co/ns/1.0', 'folios-cache') } {
+            $folios-pre-processed/@*,
+            translation:parts-cached($tei, ())/m:pre-processed[@type eq 'folio-refs']/*
+        }
+    
+};:)
 
 declare function translation:word-count($tei as element(tei:TEI)) as xs:integer {
     let $translated-text :=
@@ -1547,9 +1676,9 @@ declare function translation:entities($entity-ids as xs:string*, $instance-ids a
 declare function translation:quotes($tei as element(tei:TEI), $parts as element(m:part)*) as element(m:quotes) {
     
     let $published := collection($common:tei-path)//tei:TEI[tei:teiHeader/tei:fileDesc/tei:publicationStmt/@status = $common:environment/m:render/m:status[@type eq 'translation']/@status-id]
-    let $this-source := tei-content:source($tei, '')
+    let $this-toh := translation:toh($tei, '')
     let $this-tei-type := tei-content:type($tei)
-    let $this-text-title := $this-source/m:toh/data() (:tei-content:title($tei):)
+    let $this-text-title := (tei-content:title($tei, 'shortcode', 'en'), $this-toh ! concat('t', @number, @letter) ! upper-case(.))[1] (:tei-content:title($tei):)
     
     return
         element { QName('http://read.84000.co/ns/1.0', 'quotes') }{
@@ -1566,20 +1695,18 @@ declare function translation:quotes($tei as element(tei:TEI), $parts as element(
             group by $remote-text-id
             
             let $remote-tei-type := $remote-tei[1] ! tei-content:type(.)
-            let $remote-source := $remote-tei[1] ! tei-content:source(., '')
-            let $remote-text-title := ($remote-source/m:toh/data(), '[source not found]')[1] (:tei-content:title($referenced-tei):)
+            let $remote-toh := $remote-tei[1] ! translation:toh(., '')
+            let $remote-text-title := (tei-content:title($remote-tei[1], 'shortcode', 'en'), $remote-toh ! concat('t', @number, @letter) ! upper-case(.), '[source not found]')[1] (:tei-content:title($referenced-tei):)
             
             (: Descriptive label :)
-            let $label := concat('This quotes ', $remote-text-title)
+            let $label := concat('This quote refers to ', tei-content:title($remote-tei[1], 'mainTitle', 'en'))
             
             (: Loop through each element referenced :)
             for $remote-location-single in $remote-location
-            let $remote-location-type := local-name($remote-location-single)
-            
             (: Derive the quote that references it:)
             for $local-quote in $tei//tei:*[@ref eq $remote-location-single/@xml:id]/descendant-or-self::tei:q
             return 
-                local:quote($local-quote, $this-source/@key, $this-tei-type, $this-text-title, $remote-source/@key, $remote-tei-type, $remote-location-single/@xml:id, $remote-location-type, $remote-text-title, $label)
+                local:quote($local-quote, $this-toh/@key, $this-tei-type, $this-text-title, $remote-toh/@key, $remote-tei-type, $remote-location-single, $remote-text-title, $label)
             ,
             
             (: Where other texts reference this :)
@@ -1597,36 +1724,34 @@ declare function translation:quotes($tei as element(tei:TEI), $parts as element(
             let $inbound-text-id := tei-content:id($inbound-tei)
             group by $inbound-text-id
             
-            let $inbound-source := tei-content:source($inbound-tei[1], '')
-            let $inbound-toh-key := $inbound-source/@key
-            let $inbound-tei-type := tei-content:type($inbound-tei[1])
-            let $inbound-text-title := $inbound-source/m:toh/data()(:tei-content:title($quote-tei):)
+            let $inbound-tei-type := $inbound-tei[1] ! tei-content:type(.)
+            let $inbound-toh := $inbound-tei[1] ! translation:toh(., '')
+            let $inbound-text-title := (tei-content:title($inbound-tei[1], 'shortcode', 'en'), $inbound-toh ! concat('t', @number, @letter) ! upper-case(.))[1](:tei-content:title($quote-tei):)
             
             (: Descriptive label :)
-            let $label := concat('This passage is quoted in ', $inbound-text-title)
+            let $label := concat('This passage is quoted in ', tei-content:title($inbound-tei[1], 'mainTitle', 'en'))
             
+            (: Loop through each location :)
             for $inbound-location-single in $inbound-location
-            
             let $local-location := $tei/id($inbound-location-single/@ref)
-            let $local-location-type := local-name($local-location)
-            
+            (: Derive the quote that references it :)
             for $inbound-quote in $inbound-location-single/descendant-or-self::tei:q
             return 
-                local:quote($inbound-quote, $inbound-toh-key, $inbound-tei-type, $inbound-text-title, $this-source/@key, $this-tei-type, $inbound-location-single/@ref, $local-location-type, $this-text-title, $label)
+                local:quote($inbound-quote, $inbound-toh/@key, $inbound-tei-type, $inbound-text-title, $this-toh/@key, $this-tei-type, $local-location, $this-text-title, $label)
             
         }
     
 };
 
-declare function local:quote($quote as element(tei:q), $toh-key as xs:string, $tei-type as xs:string, $quote-text-title as xs:string, $source-toh-key as xs:string?, $source-tei-type as xs:string?, $source-location-id as xs:string?, $source-location-type as xs:string?, $source-text-title as xs:string, $label as xs:string) as element(m:quote) {
+declare function local:quote($quote as element(tei:q), $toh-key as xs:string, $tei-type as xs:string, $quote-text-title as xs:string, $source-toh-key as xs:string?, $source-tei-type as xs:string?, $source-element as element()?, $source-text-title as xs:string, $label as xs:string) as element(m:quote)* {
     
     element { QName('http://read.84000.co/ns/1.0', 'quote') } {
         
         (: Properties of the quote :)
-        (:attribute key { string-join(($quote/@xml:id, $ref), '-') },:)
         attribute resource-id { $toh-key },
         attribute resource-type { $tei-type },
         attribute id { $quote/@xml:id},
+        attribute part { $quote/ancestor-or-self::tei:div[@xml:id][not(@type eq 'translation')][last()]/@xml:id },
         
         (: Label :)
         element label { $label },
@@ -1637,22 +1762,34 @@ declare function local:quote($quote as element(tei:q), $toh-key as xs:string, $t
         element source {
             attribute resource-id { $source-toh-key },
             attribute resource-type { $source-tei-type },
-            attribute location-id { $source-location-id },
-            attribute location-type { $source-location-type },
+            attribute location-id { $source-element/@xml:id },
+            attribute location-type { local-name($source-element) },
+            attribute location-part { $source-element/ancestor-or-self::tei:div[@xml:id][not(@type eq 'translation')][last()]/@xml:id },
             element text-title { $source-text-title }
         },
         
         (: Instructions on the highlight :)
-        element highlight {
-            
-            attribute type { ($quote/@type, 'passage')[1] },
-            
-            (: Normalise and remove trailing punctuation :)
-            if($quote/@type eq 'substring') then
-                text { ($quote/@alt/string(), string-join($quote/string(), ''))[normalize-space(.)][1] ! normalize-space(.) ! lower-case(.) ! replace(., '[^a-z]+$', '') }
-            else ()
-            
-        }
+        for $text in 
+            if($quote[@alt]) then
+                $quote/@alt/string()
+            else if($quote/@type eq 'substring') then
+                $quote//text()[normalize-space(.)]
+            else
+                string-join($quote//text(), '')
+                
+        let $text-normalized := $text ! normalize-space(.) ! lower-case(.) ! replace(., '^[^a-z]+', '') ! replace(., '[^a-z]+$', '')
+        where $text-normalized gt ''
+        return
+            element highlight {
+                
+                attribute type { ($quote/@type, 'passage')[1] },
+                
+                (: Normalise and remove trailing punctuation :)
+                if($quote/@type eq 'substring') then
+                    text { $text-normalized }
+                else ()
+                
+            }
         
     }
                 

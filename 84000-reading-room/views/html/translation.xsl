@@ -33,7 +33,7 @@
             
             <!-- Breadcrumbs -->
             <xsl:if test="m:translation[m:parent]">
-                <div class="title-band hidden-print hidden-iframe">
+                <div class="title-band hidden-print">
                     <div class="container">
                         <div class="center-vertical center-aligned text-center">
                             <nav role="navigation" aria-label="Breadcrumbs">
@@ -166,7 +166,7 @@
                     </div>
                     
                     <div id="rewind-btn-container" class="fixed-btn-container hidden">
-                        <button class="btn-round" title="Return to the last location">
+                        <button class="btn-round" title="Return to the previous location">
                             <i class="fa fa-undo" aria-hidden="true"/>
                         </button>
                     </div>
@@ -231,21 +231,6 @@
                                     </div>
                                 </form>
                                 <hr/>
-                                
-                                <xsl:if test="$communications-site-path">
-                                    <h4>
-                                        <xsl:value-of select="'Spotted a mistake?'"/>
-                                    </h4>
-                                    <p class="small text-muted">
-                                        <xsl:value-of select="'Please use the contact form provided to '"/>
-                                        <a target="84000-comms">
-                                            <xsl:attribute name="href" select="concat($communications-site-path, '/about/contact/?toh=', m:translation/m:source/m:toh[1] ,'#suggest-a-correction-section')"/>
-                                            <xsl:value-of select="'suggest a correction'"/>
-                                        </a>
-                                        <xsl:value-of select="'.'"/>
-                                    </p>
-                                    <hr/>
-                                </xsl:if>
                                 
                                 <h4>
                                     <xsl:value-of select="'Other ways to read'"/>
@@ -348,6 +333,49 @@
                                 <hr/>
                                 
                             </xsl:if>
+                            
+                            
+                            
+                            <xsl:if test="$communications-site-path">
+                                <h4>
+                                    <xsl:value-of select="'Spotted a mistake?'"/>
+                                </h4>
+                                <p class="small text-muted">
+                                    <xsl:value-of select="'Please use the contact form provided to '"/>
+                                    <a target="84000-comms">
+                                        <xsl:attribute name="href" select="concat($communications-site-path, '/about/contact/?toh=', m:translation/m:source/m:toh[1] ,'#suggest-a-correction-section')"/>
+                                        <xsl:value-of select="'suggest a correction'"/>
+                                    </a>
+                                    <xsl:value-of select="'.'"/>
+                                </p>
+                                <hr/>
+                            </xsl:if>
+                            
+                            <h4>
+                                <xsl:value-of select="'How to cite this text'"/>
+                            </h4>
+                            <p class="small text-muted">
+                                <xsl:value-of select="'The following is an example of how to correctly cite this publication. '"/>
+                                <xsl:value-of select="'Links to specific passages can be derived by right-clicking on the milestones markers in the left-hand margin (e.g. s.1). The copied link address can replace the url below.'"/>
+                            </p>
+                            <p class="small break">
+                                <xsl:value-of select="concat(m:translation/m:publication/m:team[1]/m:label[1], ' (tr.). ')"/>
+                                <xsl:value-of select="concat(m:translation/m:titles/m:title[@xml:lang eq 'en'],' ')"/>
+                                <xsl:value-of select="'('"/>
+                                <xsl:for-each select="(m:translation/m:titles/m:title[@xml:lang eq 'Sa-Ltn'], m:translation/m:titles/m:title[@xml:lang eq 'bo'])[1]">
+                                    <span>
+                                        <xsl:call-template name="class-attribute">
+                                            <xsl:with-param name="lang" select="@xml:lang"/>
+                                        </xsl:call-template>
+                                        <xsl:value-of select="."/>
+                                    </span>
+                                </xsl:for-each>
+                                <xsl:value-of select="concat(', ', m:translation/m:toh/m:full, '). ')"/>
+                                <xsl:value-of select="concat('84000: Translating the Words of the Buddha, ', m:translation/m:publication/m:edition/tei:date[1], ': ')"/>
+                                <br/>
+                                <xsl:value-of select="m:translation/@canonical-html"/>
+                            </p>
+                            <hr/>
                             
                             <h4>
                                 <xsl:value-of select="'Other links'"/>

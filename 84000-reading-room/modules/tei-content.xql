@@ -43,6 +43,7 @@ declare variable $tei-content:title-types :=
         <title-type id="mainTitle">Main</title-type>
         <title-type id="longTitle">Long</title-type>
         <title-type id="otherTitle">Other</title-type>
+        <title-type id="shortcode">Shortcode</title-type>
     </title-types>;
 
 declare function tei-content:id($tei as element(tei:TEI)) as xs:string {
@@ -628,7 +629,7 @@ declare function tei-content:milestones-cache($tei as element(tei:TEI), $refresh
                 }
 };
 
-declare function tei-content:quotes-cache($tei as element(tei:TEI), $refresh as xs:boolean?, $create-if-unavailable as xs:boolean?) as element(m:notes-cache) {
+(:declare function tei-content:quotes-cache($tei as element(tei:TEI), $refresh as xs:boolean?, $create-if-unavailable as xs:boolean?) as element(m:quotes-cache) {
     
     let $cache := tei-content:cache($tei, $create-if-unavailable)
     
@@ -668,7 +669,7 @@ declare function tei-content:quotes-cache($tei as element(tei:TEI), $refresh as 
                     
                     common:ws(1)
                 }
-};
+};:)
 
 declare function tei-content:status-updates($tei as element()) as element(m:status-updates) {
     

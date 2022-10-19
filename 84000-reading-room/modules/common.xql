@@ -938,6 +938,10 @@ declare function common:cache-last-modified($request as element(m:request), $cac
 };
 
 declare function common:cache-get($request as element(m:request), $cache-key as xs:string?) {
+    common:cache-get($request, $cache-key, true())
+};
+
+declare function common:cache-get($request as element(m:request), $cache-key as xs:string?, $headers as xs:boolean?) {
 
     let $cache-collection := common:cache-collection($request)
     let $cache-filename := common:cache-filename($request, $cache-key)
@@ -954,7 +958,7 @@ declare function common:cache-get($request as element(m:request), $cache-key as 
         (:where $cached:)
         return (
         
-            if(response:exists()) then response:set-header('X-EFT-Cache', 'from-cache') else (),
+            if(response:exists() and $headers) then response:set-header('X-EFT-Cache', 'from-cache') else (),
             
             if($request/@resource-suffix eq 'html') then
                 common:serialize-html($cached)

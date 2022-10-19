@@ -34,7 +34,7 @@
     <xsl:key name="related-entities" match="m:entities/m:related/m:entity" use="@xml:id"/>
     <xsl:key name="quotes-outbound" match="m:quotes/m:quote[@resource-id eq $toh-key]" use="@id"/>
     <xsl:key name="quotes-inbound" match="m:quotes/m:quote/m:source[@resource-id eq $toh-key]" use="@location-id"/>
-    <xsl:key name="quotes-commentary" match="m:quotes/m:quote[@resource-id eq $requested-commentary]/m:source[@resource-id eq $toh-key]" use="@location-id"/>
+    <!--<xsl:key name="quotes-commentary" match="m:quotes/m:quote[@resource-id eq $requested-commentary]/m:source[@resource-id eq $toh-key]" use="@location-id"/>-->
     
     <!-- Pre-sort the glossaries by priority -->
     <xsl:variable name="glossary-prioritised" as="element(tei:gloss)*">
@@ -48,7 +48,7 @@
     <xsl:variable name="quotes-highlights-prioritised" as="element(m:quote)*">
         <xsl:perform-sort select="/m:response/m:quotes/m:quote[@resource-id eq $requested-commentary][m:source/@resource-id eq $toh-key]">
             <xsl:sort select="if(matches(m:highlight[@type eq 'substring'][1]/text(), '…')) then 1 else 0" order="descending"/>
-            <xsl:sort select="string-length(m:highlight[@type eq 'substring'][1]/text())" order="descending"/>
+            <xsl:sort select="string-length(string-join(m:highlight[@type eq 'substring']/text(), ''))" order="descending"/>
         </xsl:perform-sort>
     </xsl:variable>
     
@@ -203,7 +203,7 @@
     </xsl:template>
     <xsl:template match="m:title">
         <xsl:if test="text()">
-            <xhtml:div>
+            <div>
                 <xsl:call-template name="class-attribute">
                     <xsl:with-param name="lang" select="@xml:lang"/>
                     <xsl:with-param name="base-classes" as="xs:string*">
@@ -217,7 +217,7 @@
                     </xsl:with-param>
                 </xsl:call-template>
                 <xsl:apply-templates select="node()"/>
-            </xhtml:div>
+            </div>
         </xsl:if>
     </xsl:template>
     
@@ -486,36 +486,25 @@
         
         <xsl:variable name="element" select="."/>
         
+        <!-- Outbound quotes -->
+        <xsl:variable name="quotes-outbound" as="element(m:quote)?">
+            <xsl:if test="$element[@xml:id][ancestor-or-self::*/@ref]">
+                <xsl:sequence select="key('quotes-outbound', $element/@xml:id, $root)[m:source/@location-id eq $element/ancestor-or-self::*[@ref][1]/@ref]"/>
+            </xsl:if>
+        </xsl:variable>
+        
         <span>
             
             <xsl:if test="$element[@xml:id]">
                 <xsl:attribute name="id" select="$element/@xml:id"/>
             </xsl:if>
             
-            <!-- Outbound quote link -->
-            <xsl:variable name="quote-outbound" as="element(m:quote)?">
-                <xsl:if test="$element[@xml:id][ancestor-or-self::*/@ref]">
-                    <xsl:sequence select="key('quotes-outbound', $element/@xml:id, $root)[m:source/@location-id eq $element/ancestor-or-self::*[@ref][1]/@ref]"/>
-                </xsl:if>
-            </xsl:variable>
-            
-            <xsl:variable name="quote-link" as="element(xhtml:a)?">
-                <xsl:if test="$quote-outbound">
-                    <xsl:call-template name="quote-link">
-                        <xsl:with-param name="quote" select="$quote-outbound[1]"/>
-                    </xsl:call-template>
-                </xsl:if>
-            </xsl:variable>
-            
             <xsl:call-template name="class-attribute">
+                
                 <xsl:with-param name="base-classes">
                     <xsl:value-of select="'quote'"/>
                 </xsl:with-param>
-                <xsl:with-param name="html-classes">
-                    <xsl:if test="$quote-link">
-                        <xsl:value-of select="'quote-linked'"/>
-                    </xsl:if>
-                </xsl:with-param>
+                
             </xsl:call-template>
             
             <!-- Output the content, filtering out the ref prologue -->
@@ -523,9 +512,18 @@
                 <xsl:with-param name="node" select="$element"/>
             </xsl:call-template>
             
-            <xsl:sequence select="$quote-link"/>
-            
         </span>
+        
+        <xsl:for-each select="$quotes-outbound">
+            
+            <xsl:call-template name="quote-link">
+                <xsl:with-param name="quote" select="."/>
+            </xsl:call-template>
+            
+            <xsl:value-of select="' '"/>
+            
+        </xsl:for-each>
+        
     </xsl:template>
     
     <!-- Elements that may have a milestone -->
@@ -535,11 +533,11 @@
         
         <!-- Output the ref prologue -->
         <xsl:if test="$ref-prologue-container and count($element | $ref-prologue-container) eq count($element)">
-            <xhtml:div class="rw rw-first rw-paragraph">
+            <div class="rw rw-first rw-paragraph">
                 <p class="ref-prologue">
                     <xsl:apply-templates select="$ref-prologue"/>
                 </p>
-            </xhtml:div>
+            </div>
             <br/>
         </xsl:if>
         
@@ -556,9 +554,17 @@
                     
                     <!-- Outbound quote link -->
                     <xsl:variable name="quotes-outbound" as="element(m:quote)*">
-                        <xsl:if test="$element/self::tei:q[@xml:id][ancestor-or-self::*/@ref gt '']">
-                            <xsl:sequence select="key('quotes-outbound', $element/@xml:id, $root)[m:source/@location-id eq $element/ancestor-or-self::*[@ref][1]/@ref]"/>
-                        </xsl:if>
+                        <xsl:choose>
+                            <xsl:when test="$element[self::tei:q][@xml:id][ancestor-or-self::*/@ref gt '']">
+                                <xsl:sequence select="key('quotes-outbound', $element/@xml:id, $root)[m:source/@location-id eq $element/ancestor-or-self::*[@ref][1]/@ref]"/>
+                            </xsl:when>
+                            <xsl:when test="$element/tei:q[@xml:id][parent::tei:p | parent::tei:l][ancestor-or-self::*/@ref gt '']">
+                                <xsl:sequence select="key('quotes-outbound', $element/tei:q/@xml:id, $root)[m:source/@location-id eq $element/tei:q/ancestor-or-self::*[@ref][1]/@ref]"/>
+                            </xsl:when>
+                            <xsl:when test="$element[not(tei:l)]/parent::tei:q[@xml:id][ancestor-or-self::*/@ref gt ''] and not($element/following-sibling::tei:*)">
+                                <xsl:sequence select="key('quotes-outbound', $element/ancestor::tei:q[@xml:id][1]/@xml:id, $root)[m:source/@location-id eq $element/ancestor-or-self::*[@ref][1]/@ref]"/>
+                            </xsl:when>
+                        </xsl:choose>
                     </xsl:variable>
                     
                     <!-- class -->
@@ -592,8 +598,8 @@
                         </xsl:with-param>
                         
                         <xsl:with-param name="html-classes">
-                            <xsl:if test="$quotes-outbound">
-                                <xsl:value-of select="'quote-linked'"/>
+                            <xsl:if test="$quotes-outbound and $element/descendant-or-self::tei:q">
+                                <xsl:value-of select="'quote-container'"/>
                             </xsl:if>
                         </xsl:with-param>
                         
@@ -604,11 +610,17 @@
                         <xsl:with-param name="node" select="$element"/>
                     </xsl:call-template>
                     
-                    <!-- Output quote link -->
-                    <xsl:if test="$quotes-outbound">
-                        <xsl:call-template name="quote-link">
-                            <xsl:with-param name="quote" select="$quotes-outbound[1]"/>
-                        </xsl:call-template>
+                    <!-- Output quote links -->
+                    <xsl:if test="$quotes-outbound and $element[not(descendant-or-self::tei:q)]">
+                        <xsl:for-each select="$quotes-outbound">
+                            
+                            <xsl:value-of select="' '"/>
+                            
+                            <xsl:call-template name="quote-link">
+                                <xsl:with-param name="quote" select="."/>
+                            </xsl:call-template>
+                            
+                        </xsl:for-each>
                     </xsl:if>
                     
                     <!-- Add link to tei editor -->
@@ -645,18 +657,30 @@
     
     <xsl:template match="tei:l">
         
+        <xsl:variable name="element" select="."/>
+        
         <xsl:call-template name="milestone">
             <xsl:with-param name="content">
-                <xhtml:div>
+                <div>
+                    
+                    <!-- Outbound quote link -->
+                    <xsl:variable name="quotes-outbound" as="element(m:quote)*">
+                        <xsl:if test="$element/ancestor::tei:q[@xml:id][ancestor-or-self::*/@ref gt ''] and not($element/following-sibling::tei:l)">
+                            <xsl:sequence select="key('quotes-outbound', $element/ancestor::tei:q[@xml:id][1]/@xml:id, $root)[m:source/@location-id eq $element/ancestor-or-self::*[@ref][1]/@ref]"/>
+                        </xsl:if>
+                    </xsl:variable>
                     
                     <xsl:call-template name="class-attribute">
+                        
                         <xsl:with-param name="base-classes" as="xs:string*">
                             <xsl:value-of select="'line'"/>
-                            <xsl:if test="parent::tei:mantra">
+                            <xsl:if test="$element/parent::tei:mantra">
                                 <xsl:value-of select="'mantra'"/>
                             </xsl:if>
                         </xsl:with-param>
-                        <xsl:with-param name="lang" select="parent::tei:mantra/@xml:lang"/>
+                        
+                        <xsl:with-param name="lang" select="$element/parent::tei:mantra/@xml:lang"/>
+                        
                     </xsl:call-template>
                     
                     <!-- Output the content, filtering out the ref prologue -->
@@ -664,7 +688,18 @@
                         <xsl:with-param name="node" select="."/>
                     </xsl:call-template>
                     
-                </xhtml:div>
+                    <!-- Output quote links -->
+                    <xsl:for-each select="$quotes-outbound">
+                        
+                        <xsl:value-of select="' '"/>
+                        
+                        <xsl:call-template name="quote-link">
+                            <xsl:with-param name="quote" select="."/>
+                        </xsl:call-template>
+                        
+                    </xsl:for-each>
+                    
+                </div>
             </xsl:with-param>
             <xsl:with-param name="row-type" select="'line'"/>
         </xsl:call-template>
@@ -691,7 +726,7 @@
         <xsl:call-template name="milestone">
             <xsl:with-param name="content">
                 
-                <xhtml:div>
+                <div>
                     
                     <!-- id -->
                     <xsl:call-template name="id-attribute">
@@ -701,10 +736,10 @@
                     <xsl:apply-templates select="tei:head"/>
                     
                     <!-- Render the list version of the table in case it's for printing -->
-                    <xhtml:div class="visible-print visible-ebook">
+                    <div class="visible-print visible-ebook">
                         <xsl:variable name="label-row" select="(tei:row[@role eq 'label'][1], tei:row[1])[1]"/>
                         <xsl:variable name="data-rows" select="tei:row[not(. = $label-row)]"/>
-                        <xhtml:div class="table-as-list">
+                        <div class="table-as-list">
                             <xsl:for-each select="$data-rows">
                                 
                                 <xsl:variable name="row" select="."/>
@@ -778,12 +813,12 @@
                                     
                                 </p>
                             </xsl:for-each>
-                        </xhtml:div>
-                    </xhtml:div>
+                        </div>
+                    </div>
                     
                     <!-- Render the table version for html -->
                     <xsl:if test="$view-mode[not(@id = ('ebook', 'pdf'))]">
-                        <xhtml:div class="table-responsive hidden-print hidden-ebook">
+                        <div class="table-responsive hidden-print hidden-ebook">
                             <table>
                                 <xsl:call-template name="class-attribute">
                                     <xsl:with-param name="base-classes" select="'table table-unpad'"/>
@@ -810,16 +845,16 @@
                                     </xsl:for-each>
                                 </tbody>
                             </table>
-                        </xhtml:div>
+                        </div>
                     </xsl:if>
                     
                     <xsl:if test="tei:note">
-                        <xhtml:div class="table-notes">
+                        <div class="table-notes">
                             <xsl:apply-templates select="tei:note"/>
-                        </xhtml:div>
+                        </div>
                     </xsl:if>
                     
-                </xhtml:div>
+                </div>
                 
             </xsl:with-param>
             <xsl:with-param name="row-type" select="'table'"/>
@@ -934,7 +969,7 @@
         
         <xsl:call-template name="milestone">
             <xsl:with-param name="content">
-                <xhtml:div>
+                <div>
                     
                     <xsl:call-template name="class-attribute">
                         <xsl:with-param name="base-classes" as="xs:string*">
@@ -959,7 +994,7 @@
                     
                     <xsl:apply-templates select="node()"/>
                     
-                </xhtml:div>
+                </div>
             </xsl:with-param>
             <xsl:with-param name="row-type" select="concat('list-', @type)"/>
         </xsl:call-template>
@@ -990,7 +1025,7 @@
     <xsl:template match="tei:item[parent::tei:list]">
         <xsl:call-template name="milestone">
             <xsl:with-param name="content">
-                <xhtml:div>
+                <div>
                     
                     <xsl:attribute name="class">
                         <xsl:value-of select="'list-item'"/>
@@ -1004,7 +1039,7 @@
                     
                     <xsl:apply-templates select="node()"/>
                     
-                </xhtml:div>
+                </div>
             </xsl:with-param>
             
             <xsl:with-param name="row-type" select="'list-item'"/>
@@ -1080,7 +1115,7 @@
             <xsl:variable name="notes-cache-end-note" select="key('notes-cache-end-note', @xml:id, $root)[1]"/>
             <xsl:variable name="part" select="key('text-parts', $notes-cache-end-note/@part-id, $root)[1]"/>
             
-            <xhtml:div class="rw footnote">
+            <div class="rw footnote">
                 
                 <xsl:attribute name="id" select="concat('end-note-', $end-note/@xml:id)"/>
                 
@@ -1096,7 +1131,7 @@
                     </xsl:call-template>
                 </xsl:if>
                 
-                <xhtml:div class="gtr">
+                <div class="gtr">
                     
                     <xsl:choose>
                         
@@ -1136,13 +1171,13 @@
                         
                     </xsl:choose>
                     
-                </xhtml:div>
+                </div>
                 
-                <xhtml:div>
+                <div>
                     <xsl:apply-templates select="node()"/>
-                </xhtml:div>
+                </div>
                 
-            </xhtml:div>
+            </div>
             
         </xsl:for-each>
         
@@ -1263,7 +1298,7 @@
                     </xsl:call-template>
                 </xsl:variable>
                 
-                <xhtml:div class="rw glossary-item">
+                <div class="rw glossary-item">
                     
                     <xsl:attribute name="id" select="$glossary-item/@xml:id"/>
                     
@@ -1279,7 +1314,7 @@
                         </xsl:call-template>
                     </xsl:if>
                     
-                    <xhtml:div class="gtr">
+                    <div class="gtr">
                         <xsl:choose>
                             
                             <xsl:when test="$view-mode[not(@client = ('ebook', 'app'))]">
@@ -1297,9 +1332,9 @@
                             </xsl:otherwise>
                             
                         </xsl:choose>
-                    </xhtml:div>
+                    </div>
                     
-                    <xhtml:div>
+                    <div>
                         
                         <!-- Main term -->
                         <h3 class="term">
@@ -1318,7 +1353,7 @@
                             </xsl:variable>
                             
                             <xsl:if test="$term-lang-terms or $term-empty-text gt ''">
-                                <xhtml:div>
+                                <div>
                                     <ul class="list-inline inline-dots">
                                         <xsl:choose>
                                             
@@ -1361,7 +1396,7 @@
                                             
                                         </xsl:choose>
                                     </ul>
-                                </xhtml:div>
+                                </div>
                             </xsl:if>
                             
                         </xsl:for-each>
@@ -1409,15 +1444,15 @@
                         
                         <!-- Entity definition -->
                         <xsl:if test="$tei-editor and not($entity)">
-                            <xhtml:div class="footer">
+                            <div class="footer">
                                 <span class="label label-warning">
                                     <xsl:value-of select="'No shared entity assigned'"/>
                                 </span>
-                            </xhtml:div>
+                            </div>
                         </xsl:if>
                         
                         <xsl:if test="($entity-definition and not($entry-definition)) or ($entity-definition and $entity-instance[@use-definition = ('both','override')])">
-                            <xhtml:div class="footer">
+                            <div class="footer">
                                 <h4 class="heading">
                                     <xsl:value-of select="'Definition from the 84000 Glossary of Terms:'"/>
                                 </h4>
@@ -1429,12 +1464,12 @@
                                         <xsl:apply-templates select="node()"/>
                                     </p>
                                 </xsl:for-each>
-                            </xhtml:div>
+                            </div>
                         </xsl:if>
                         
                         <!-- Expressions -->
                         <xsl:if test="$view-mode[not(@id eq 'pdf')]">
-                            <xhtml:div class="footer hidden-print" role="navigation" aria-label="Locations of this term in the text">
+                            <div class="footer hidden-print" role="navigation" aria-label="Locations of this term in the text">
                                 
                                 <xsl:variable name="count-locations" select="count($cached-locations)"/>
                                 <h4 class="heading">
@@ -1456,7 +1491,7 @@
                                     <xsl:with-param name="glossary-id" select="$glossary-item/@xml:id"/>
                                 </xsl:call-template>
                                 
-                            </xhtml:div>
+                            </div>
                         </xsl:if>
                         
                         <!-- Link to the Glossary / Knowledge Base -->
@@ -1464,14 +1499,14 @@
                         <xsl:variable name="knowledgebase-instances" select="$entity/m:instance[@type eq 'knowledgebase-article'][not(@id eq $kb-id)][$environment/m:enable[@type eq 'knowledgebase']]"/>
                         <xsl:variable name="requires-attention" select="$entity-instance/m:flag[@type eq 'requires-attention']"/>
                         <xsl:if test="$view-mode[@client = ('browser', 'ajax')] and ($glossary-instances, $knowledgebase-instances) and ($tei-editor or not($requires-attention))">
-                            <xhtml:div class="footer entity-content" role="navigation">
+                            <div class="footer entity-content" role="navigation">
                                 <xsl:if test="$tei-editor and $requires-attention">
                                     <xsl:attribute name="class" select="'footer entity-content well well-sm'"/>
-                                    <xhtml:div>
+                                    <div>
                                         <span class="label label-danger">
                                             <xsl:value-of select="/m:response/m:entity-flags/m:flag[@id eq 'requires-attention']/m:label"/>
                                         </span>
-                                    </xhtml:div>
+                                    </div>
                                 </xsl:if>
                                 <h4 class="heading">
                                     <xsl:value-of select="'Links to further resources:'"/>
@@ -1494,13 +1529,13 @@
                                         </li>
                                     </xsl:if>
                                 </ul>
-                            </xhtml:div>
+                            </div>
                         </xsl:if>
                         
                         <!-- Link to glossary tool -->
                         <xsl:if test="$tei-editor and $environment/m:url[@id eq 'operations']">
                             
-                            <xhtml:div>
+                            <div>
                                 
                                 <xsl:variable name="resource-id" select="if($knowledgebase) then $knowledgebase/m:page/@xml:id else $glossary-part/parent::m:translation/@id"/>
                                 <xsl:variable name="resource-type" select="if($knowledgebase) then 'knowledgebase' else 'translation'"/>
@@ -1510,13 +1545,13 @@
                                     <xsl:value-of select="'Open in the glossary editor'"/>
                                 </a>
                                 
-                            </xhtml:div>
+                            </div>
                             
                         </xsl:if>
                         
-                    </xhtml:div>
+                    </div>
                     
-                </xhtml:div>
+                </div>
                 
             </xsl:for-each>
             
@@ -1525,12 +1560,12 @@
         <!-- Link to glossary form -->
         <!-- Knowledge base only, editor mode, operations app, no child divs and an id -->
         <xsl:if test="$tei-editor and $environment/m:url[@id eq 'operations'] and m:knowledgebase/m:page[@xml:id gt '']">
-            <xhtml:div>
+            <div>
                 <a class="editor" target="84000-operations">
                     <xsl:attribute name="href" select="concat($environment/m:url[@id eq 'operations']/text(), '/edit-glossary.html', '?resource-id=', m:knowledgebase/m:page/@xml:id, '&amp;resource-type=knowledgebase&amp;filter=blank-form')"/>
                     <xsl:value-of select="'Add a glossary entry'"/>
                 </a>
-            </xhtml:div>
+            </div>
         </xsl:if>
         
     </xsl:template>
@@ -1595,7 +1630,7 @@
         <xsl:variable name="element" select="."/>
         <xsl:variable name="element-id" select="($element/@id, $element/@xml:id)[1]" as="xs:string?"/>
         
-        <xhtml:div>
+        <div>
             
             <!-- Set the id -->
             <xsl:attribute name="id" select="$element-id"/>
@@ -1626,7 +1661,7 @@
                 <xsl:with-param name="node" select="$element"/>
             </xsl:call-template>
             
-        </xhtml:div>
+        </div>
         
     </xsl:template>
     
@@ -1670,7 +1705,7 @@
         <xsl:variable name="title-supp" select="$part/m:title-supp[1]"/>
         
         <!-- .rw container -->
-        <xhtml:div>
+        <div>
             
             <!-- .rw container classes -->
             <xsl:call-template name="class-attribute">
@@ -1684,17 +1719,9 @@
                 <xsl:with-param name="node" select="$part"/>
             </xsl:call-template>
             
-            <xsl:variable name="quotes-inbound" select="key('quotes-inbound', $part/@id, $root)"/>
-            
-            <xsl:for-each select="$quotes-inbound">
-                <xsl:call-template name="quote-link">
-                    <xsl:with-param name="quote" select="./parent::m:quote"/>
-                </xsl:call-template>
-            </xsl:for-each>
-            
             <!-- Add a milestone .gtr -->
             <xsl:if test="$part[@prefix]">
-                <xhtml:div class="gtr">
+                <div class="gtr">
                     <xsl:choose>
                         
                         <!-- show a link -->
@@ -1719,11 +1746,39 @@
                         </xsl:otherwise>
                         
                     </xsl:choose>
-                </xhtml:div>
+                </div>
+            </xsl:if>
+            
+            <xsl:variable name="quotes-inbound" select="key('quotes-inbound', $part/@id, $root)"/>
+            
+            <xsl:if test="$quotes-inbound">
+                <div class="quotes-inbound">
+                    <xsl:for-each-group select="$quotes-inbound" group-by="@resource-id">
+                        <xsl:for-each select="current-group()">
+                            <xsl:choose>
+                                <xsl:when test="position() gt 1">
+                                    <span class="hidden">
+                                        <xsl:call-template name="quote-link">
+                                            <xsl:with-param name="quote" select="./parent::m:quote"/>
+                                        </xsl:call-template>
+                                    </span>
+                                </xsl:when>
+                                <xsl:otherwise>
+                                    <xsl:call-template name="quote-link">
+                                        <xsl:with-param name="quote" select="./parent::m:quote"/>
+                                    </xsl:call-template>
+                                </xsl:otherwise>
+                            </xsl:choose>
+                        </xsl:for-each>
+                        <xsl:if test="position() gt 1">
+                            <br/>
+                        </xsl:if>
+                    </xsl:for-each-group>
+                </div>
             </xsl:if>
             
             <!-- .rw-heading container -->
-            <xhtml:div>
+            <div>
                 
                 <!-- .rw-heading container classes -->
                 <xsl:call-template name="class-attribute">
@@ -1744,7 +1799,7 @@
                     
                     <!-- Supplementary title -->
                     <xsl:if test="$title-supp[text()]">
-                        <xhtml:div class="h4">
+                        <div class="h4">
                             
                             <xsl:call-template name="id-attribute">
                                 <xsl:with-param name="node" select="$title-supp"/>
@@ -1752,7 +1807,7 @@
                             
                             <xsl:apply-templates select="$title-supp/text()"/>
                             
-                        </xhtml:div>
+                        </div>
                     </xsl:if>
                     
                     <xsl:element name="{ $header-tag }">
@@ -1780,7 +1835,7 @@
                     
                     <xsl:if test="$title-text[text()]">
                         
-                        <xhtml:div class="h3">
+                        <div class="h3">
                             
                             <xsl:call-template name="id-attribute">
                                 <xsl:with-param name="node" select="$title-text"/>
@@ -1788,15 +1843,15 @@
                             
                             <xsl:apply-templates select="$title-text/node()"/>
                             
-                        </xhtml:div>
+                        </div>
                         
                     </xsl:if>
                     
                 </header>
                 
-            </xhtml:div>
+            </div>
             
-        </xhtml:div>
+        </div>
         
     </xsl:template>
     <!-- Other headers, could be anywhere in text -->
@@ -1808,7 +1863,7 @@
             <xsl:with-param name="content">
                 
                 <!-- .rw-heading container -->
-                <xhtml:div>
+                <div>
                     
                     <xsl:call-template name="class-attribute">
                         <xsl:with-param name="base-classes" as="xs:string*">
@@ -1844,7 +1899,7 @@
                         
                     </header>
                     
-                </xhtml:div>
+                </div>
             </xsl:with-param>
             
             <xsl:with-param name="row-type" select="'section-head'"/>
@@ -1889,26 +1944,26 @@
                     <xsl:when test="$caption">
                         <xsl:choose>
                             <xsl:when test="$view-mode[@client eq 'ebook']">
-                                <xhtml:div class="row sml-margin top bottom">
+                                <div class="row sml-margin top bottom">
                                     <xsl:apply-templates select="$caption"/>
                                     <img>
                                         <xsl:attribute name="src" select="concat('image', @url)"/>
                                         <xsl:attribute name="title" select="$caption"/>
                                     </img>
-                                </xhtml:div>
+                                </div>
                             </xsl:when>
                             <xsl:otherwise>
-                                <xhtml:div class="row sml-margin top bottom">
-                                    <xhtml:div class="col-sm-8 col-xs-6">
+                                <div class="row sml-margin top bottom">
+                                    <div class="col-sm-8 col-xs-6">
                                         <xsl:apply-templates select="$caption"/>
-                                    </xhtml:div>
-                                    <xhtml:div class="col-sm-4 col-xs-6">
+                                    </div>
+                                    <div class="col-sm-4 col-xs-6">
                                         <img class="img-responsive pull-right">
                                             <xsl:attribute name="src" select="concat($reading-room-path, @url)"/>
                                             <xsl:attribute name="title" select="$caption"/>
                                         </img>
-                                    </xhtml:div>
-                                </xhtml:div>
+                                    </div>
+                                </div>
                             </xsl:otherwise>
                         </xsl:choose>
                         
@@ -1939,7 +1994,7 @@
         
         <xsl:variable name="element" select="."/>
         
-        <xhtml:div>
+        <div>
             
             <xsl:if test="($translation | $knowledgebase)">
                
@@ -1970,18 +2025,6 @@
                 <!-- If there's a milestone add a gutter and milestone link -->
                 <xsl:if test="$milestone">
                     
-                    <!-- Check for inbound quote link -->
-                    <!-- Also check if this is the first node of a section with no header. 
-                     The assumption is that the first node in the section will be a milestone. 
-                     If this is the anchor of the first milestone in the section then it's the first element in the section -->
-                    <xsl:variable name="quotes-inbound" select="key('quotes-inbound', ($milestone/@xml:id, $milestone/ancestor::m:part[1][not(tei:head/@type = @type)][count(descendant::tei:milestone[1] | $milestone) eq 1]/@id), $root)"/>
-                    
-                    <xsl:for-each select="$quotes-inbound">
-                        <xsl:call-template name="quote-link">
-                            <xsl:with-param name="quote" select="./parent::m:quote"/>
-                        </xsl:call-template>
-                    </xsl:for-each>
-                    
                     <!-- Add a milestone anchor -->
                     <xsl:variable name="part" select="$element/ancestor::m:part[@prefix][1]"/>
                     <xsl:variable name="milestones-cache-milestone" select="key('milestones-cache-milestone', $milestone/@xml:id, $root)[1]"/>
@@ -1995,7 +2038,7 @@
                             </xsl:call-template>
                         </xsl:variable>
                         
-                        <xhtml:div class="gtr">
+                        <div class="gtr">
                             <xsl:choose>
                                 
                                 <!-- show a relative link -->
@@ -2018,10 +2061,43 @@
                                 </xsl:otherwise>
                                 
                             </xsl:choose>
-                        </xhtml:div>
+                        </div>
                     
                     </xsl:if>
                     
+                </xsl:if>
+                
+                <!-- Check for inbound quote link -->
+                <!-- Also check if this is the first node of a section with no header. 
+                     The assumption is that the first node in the section will be a milestone. 
+                     If this is the anchor of the first milestone in the section then it's the first element in the section -->
+                <xsl:variable name="quotes-location-id" select="($milestone/@xml:id, $milestone/ancestor::m:part[1][not(tei:head/@type = @type)][count(descendant::tei:milestone[1] | $milestone) eq 1]/@id)[1]" as="xs:string?"/>
+                <xsl:variable name="quotes-inbound" select="key('quotes-inbound', $quotes-location-id, $root)"/>
+                
+                <xsl:if test="$quotes-inbound">
+                    <div class="quotes-inbound">
+                        <xsl:for-each-group select="$quotes-inbound" group-by="@resource-id">
+                            <xsl:for-each select="current-group()">
+                                <xsl:choose>
+                                    <xsl:when test="position() gt 1">
+                                        <span class="hidden">
+                                            <xsl:call-template name="quote-link">
+                                                <xsl:with-param name="quote" select="./parent::m:quote"/>
+                                            </xsl:call-template>
+                                        </span>
+                                    </xsl:when>
+                                    <xsl:otherwise>
+                                        <xsl:call-template name="quote-link">
+                                            <xsl:with-param name="quote" select="./parent::m:quote"/>
+                                        </xsl:call-template>
+                                    </xsl:otherwise>
+                                </xsl:choose>
+                            </xsl:for-each>
+                            <xsl:if test="position() gt 1">
+                                <br/>
+                            </xsl:if>
+                        </xsl:for-each-group>
+                    </div>
                 </xsl:if>
                 
             </xsl:if>
@@ -2029,7 +2105,7 @@
             <!-- Output the content -->
             <xsl:sequence select="$content"/>
             
-        </xhtml:div>
+        </div>
         
     </xsl:template>
     
@@ -2107,9 +2183,6 @@
         <xsl:if test="$view-mode[@client = ('browser', 'ajax')] and ($quote/@resource-id gt '' and $quote/m:source/@resource-id gt '' or $tei-editor)">
             <a>
                 
-                <!-- Create a key for this link -->
-                <!--<xsl:attribute name="id" select="$quote/@key"/>-->
-                
                 <xsl:attribute name="data-quote-id" select="$quote/@id"/>
                 
                 <xsl:call-template name="class-attribute">
@@ -2128,27 +2201,35 @@
                     
                     <!-- This text quotes another text -->
                     <xsl:when test="$quote/@resource-id eq $toh-key">
-                        <xsl:attribute name="href" select="concat('/translation/', $quote/m:source/@resource-id, '.html', '?commentary=', $toh-key, '#', $quote/m:source/@location-id)"/>
+                        
+                        <xsl:attribute name="href" select="concat('/translation/', $quote/m:source/@resource-id, '.html', '?commentary=', $toh-key, '&amp;part=', $quote/m:source/@location-part, '#', $quote/m:source/@location-id)"/>
                         <xsl:attribute name="target" select="concat('translation-', $quote/m:source/@resource-id)"/>
                         <xsl:attribute name="data-dualview-href" select="concat('/translation/', $quote/m:source/@resource-id, '.html', '?commentary=', $toh-key, '#', $quote/m:source/@location-id, '/', $quote/@id)"/>
                         <xsl:attribute name="data-dualview-title" select="concat('Root text: ', $quote/m:source/m:text-title)"/>
                         <xsl:attribute name="data-loading" select="concat('Loading ', 'root text', '...')"/>
+                        <xsl:attribute name="title" select="$quote/m:label"/>
+                        
+                        <xsl:value-of select="$quote/m:source/m:text-title"/>
+                        
                     </xsl:when>
                     
                     <!-- Another text references this as the source -->
                     <xsl:when test="$quote/@resource-id gt ''">
-                        <xsl:attribute name="href" select="concat('/translation/', $quote/@resource-id, '.html', '#', $quote/@id)"/>
+                        
+                        <xsl:attribute name="href" select="concat('/translation/', $quote/@resource-id, '.html', '?part=', $quote/@part, '#', $quote/@id)"/>
                         <xsl:attribute name="target" select="concat('translation-', $quote/@resource-id)"/>
                         <xsl:attribute name="data-dualview-href" select="concat('/translation/', $quote/@resource-id, '.html', '#', $quote/@id)"/>
                         <xsl:attribute name="data-dualview-title" select="concat('Commentary: ', $quote/m:text-title)"/>
                         <xsl:attribute name="data-loading" select="concat('Loading ', 'commentary', '...')"/>
+                        <xsl:attribute name="title" select="$quote/m:label"/>
+                        
+                        <xsl:value-of select="$quote/m:text-title"/>
+                        
                     </xsl:when>
                     
                 </xsl:choose>
                 
-                <xsl:attribute name="title" select="$quote/m:label"/>
-                <!--<xsl:value-of select="$quote/m:label"/>-->
-                <i class="fa fa-quote-right"/>
+                <!--<i class="fa fa-quote-right"/>-->
                 
             </a>
         </xsl:if>
@@ -2219,8 +2300,8 @@
             
             <hr class="hidden-print"/>
             
-            <xhtml:div class="rw rw-section-head">
-                <xhtml:div class="gtr">
+            <div class="rw rw-section-head">
+                <div class="gtr">
                     <xsl:call-template name="bookmark-link">
                         <xsl:with-param name="bookmark-target-hash" select="'toc'"/>
                         <xsl:with-param name="bookmark-target-part" select="'contents'"/>
@@ -2230,15 +2311,15 @@
                             </xsl:call-template>
                         </xsl:with-param>
                     </xsl:call-template>
-                </xhtml:div>
-                <xhtml:div class="rw-heading heading-section chapter">
+                </div>
+                <div class="rw-heading heading-section chapter">
                     <header>
                         <h2 class="section-title">
                             <xsl:value-of select="'Table of Contents'"/>
                         </h2>
                     </header>
-                </xhtml:div>
-            </xhtml:div>
+                </div>
+            </div>
             
             <nav class="rw" aria-label="Table of Contents">
                 <table class="contents-table">
@@ -2497,7 +2578,7 @@
                                     </a>
                                     
                                     <!-- Expandable box -->
-                                    <xhtml:div>
+                                    <div>
                                         
                                         <xsl:attribute name="id" select="$expand-id"/>
                                         
@@ -2521,7 +2602,7 @@
                                                 </xsl:call-template>
                                             </tbody>
                                         </table>
-                                    </xhtml:div>
+                                    </div>
                                     
                                 </td>
                             </tr>
@@ -3300,6 +3381,7 @@
                 <xsl:call-template name="mark-quote">
                     <xsl:with-param name="quotes" select="$quotes-highlights-location"/>
                     <xsl:with-param name="quote-index" select="1"/>
+                    <xsl:with-param name="highlight-index" select="1"/>
                     <xsl:with-param name="text" select="$text-node"/>
                 </xsl:call-template>
             </xsl:if>
@@ -3312,14 +3394,18 @@
         
         <xsl:param name="quotes" as="element(m:quote)*" required="true"/>
         <xsl:param name="quote-index" as="xs:integer"/>
+        <xsl:param name="highlight-index" as="xs:integer"/>
         <xsl:param name="text" as="xs:string"/>
         
         <xsl:choose>
             <xsl:when test="$quote-index le count($quotes) and matches($text, '[a-zA-Z]')">
                 
                 <xsl:variable name="quote" select="$quotes[$quote-index]" as="element(m:quote)"/>
-                <xsl:variable name="substring" select="$quote/m:highlight[@type eq 'substring']/text() ! normalize-space(.)" as="xs:string?"/>
+                <xsl:variable name="substring" select="$quote/m:highlight[@type eq 'substring'][$highlight-index]/text() ! normalize-space(.)" as="xs:string?"/>
                 <xsl:variable name="substring-regex" select="$substring ! concat('(', string-join(tokenize(., '…') ! normalize-space(.) ! common:escape-for-regex(.), ').+('), ')')"/>
+                
+                <xsl:variable name="quote-index-next" select="if($highlight-index lt count($quote/m:highlight[@type eq 'substring'])) then $quote-index else $quote-index + 1"/>
+                <xsl:variable name="highlight-index-next" select="if($highlight-index lt count($quote/m:highlight[@type eq 'substring'])) then $highlight-index + 1 else 1"/>
                 
                 <xsl:choose>
                     
@@ -3334,7 +3420,8 @@
                                     
                                     <xsl:call-template name="mark-quote">
                                         <xsl:with-param name="quotes" select="$quotes"/>
-                                        <xsl:with-param name="quote-index" select="$quote-index + 1"/>
+                                        <xsl:with-param name="quote-index" select="$quote-index-next"/>
+                                        <xsl:with-param name="highlight-index" select="$highlight-index-next"/>
                                         <xsl:with-param name="text" select="."/>
                                     </xsl:call-template>
                                     
@@ -3344,7 +3431,8 @@
                             <xsl:non-matching-substring>
                                 <xsl:call-template name="mark-quote">
                                     <xsl:with-param name="quotes" select="$quotes"/>
-                                    <xsl:with-param name="quote-index" select="$quote-index + 1"/>
+                                    <xsl:with-param name="quote-index" select="$quote-index-next"/>
+                                    <xsl:with-param name="highlight-index" select="$highlight-index-next"/>
                                     <xsl:with-param name="text" select="."/>
                                 </xsl:call-template>
                             </xsl:non-matching-substring>
@@ -3356,13 +3444,15 @@
                         
                         <xsl:call-template name="mark-quote">
                             <xsl:with-param name="quotes" select="$quotes"/>
-                            <xsl:with-param name="quote-index" select="$quote-index + 1"/>
+                            <xsl:with-param name="quote-index" select="$quote-index-next"/>
+                            <xsl:with-param name="highlight-index" select="$highlight-index-next"/>
                             <xsl:with-param name="text" select="$text"/>
                         </xsl:call-template>
                         
                     </xsl:otherwise>
                     
                 </xsl:choose>
+                
             </xsl:when>
             
             <xsl:otherwise>
@@ -3378,7 +3468,7 @@
         <xsl:param name="id"/>
         <xsl:param name="node"/>
         
-        <xhtml:div class="hidden-print">
+        <div class="hidden-print">
             
             <a data-toggle="modal" class="block-link warning">
                 <xsl:attribute name="href" select="concat('#tantra-warning-', $id)"/>
@@ -3387,12 +3477,12 @@
                 <xsl:value-of select="' Tantra Text Warning'"/>
             </a>
             
-            <xhtml:div class="modal fade warning" tabindex="-1" role="dialog">
+            <div class="modal fade warning" tabindex="-1" role="dialog">
                 <xsl:attribute name="id" select="concat('tantra-warning-', $id)"/>
                 <xsl:attribute name="aria-labelledby" select="concat('tantra-warning-label-', $id)"/>
-                <xhtml:div class="modal-dialog" role="document">
-                    <xhtml:div class="modal-content">
-                        <xhtml:div class="modal-header">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
                             <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                                 <span aria-hidden="true">
                                     <i class="fa fa-times"/>
@@ -3403,19 +3493,19 @@
                                 <i class="fa fa-exclamation-circle" aria-hidden="true"/>
                                 <xsl:value-of select="' Tantra Text Warning'"/>
                             </h4>
-                        </xhtml:div>
-                        <xhtml:div class="modal-body">
+                        </div>
+                        <div class="modal-body">
                             <xsl:apply-templates select="$node"/>
-                        </xhtml:div>
-                    </xhtml:div>
-                </xhtml:div>
-            </xhtml:div>
+                        </div>
+                    </div>
+                </div>
+            </div>
             
-        </xhtml:div>
+        </div>
         
-        <xhtml:div class="visible-print-block small">
+        <div class="visible-print-block small">
             <xsl:apply-templates select="$node"/>
-        </xhtml:div>
+        </div>
         
     </xsl:template>
     
@@ -3449,12 +3539,12 @@
             
             <xsl:variable name="summary-content">
                 
-                <xhtml:div class="well well-sm small">
+                <div class="well well-sm small">
                     
                     <h4 class="no-top-margin">
                         <xsl:value-of select="'Summary'"/>
                     </h4>
-                    <xhtml:div class="summary">
+                    <div class="summary">
                         <xsl:choose>
                             <xsl:when test="$summary">
                                 <xsl:apply-templates select="$summary"/>
@@ -3465,10 +3555,10 @@
                                 </p>
                             </xsl:otherwise>
                         </xsl:choose>
-                    </xhtml:div>
+                    </div>
                     
                     <xsl:if test="$titleVariants">
-                        <xhtml:div>
+                        <div>
                             <xsl:attribute name="id" select="concat($toh-key, '-title-variants')"/>
                             <h4>
                                 <xsl:value-of select="'Title variants'"/>
@@ -3483,11 +3573,11 @@
                                     </li>
                                 </xsl:for-each>
                             </ul>
-                        </xhtml:div>
+                        </div>
                     </xsl:if>
                     
                     <xsl:if test="$supplementaryAttributions">
-                        <xhtml:div>
+                        <div>
                             <xsl:attribute name="id" select="concat($toh-key, '-supplementary-roles')"/>
                             <xsl:for-each select="$supplementaryRoles">
                                 <xsl:variable name="supplementaryRole" select="."/>
@@ -3518,14 +3608,14 @@
                                     </ul>
                                 </xsl:if>
                             </xsl:for-each>
-                        </xhtml:div>
+                        </div>
                     </xsl:if>
                     
-                </xhtml:div>
+                </div>
                 
             </xsl:variable>
             
-            <xhtml:div>
+            <div>
                 
                 <xsl:attribute name="id" select="$expand-id"/>
                 
@@ -3533,7 +3623,7 @@
                 
                 <xsl:sequence select="$summary-content"/>
                 
-            </xhtml:div>
+            </div>
             
         </xsl:if>
         
@@ -3546,7 +3636,7 @@
         
         <xsl:if test="$text/m:source/m:attribution[@ref][@role eq 'author'][normalize-space(text())]">
             <hr/>
-            <xhtml:div role="navigation" aria-label="The attributed authors of the source text" class="small">
+            <div role="navigation" aria-label="The attributed authors of the source text" class="small">
                 <span class="text-muted">
                     <xsl:value-of select="'by '"/>
                 </span>
@@ -3563,7 +3653,7 @@
                         </li>
                     </xsl:for-each>
                 </ul>
-            </xhtml:div>
+            </div>
         </xsl:if>
         
     </xsl:template>
