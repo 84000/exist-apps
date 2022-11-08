@@ -232,109 +232,113 @@
                                 </form>
                                 <hr/>
                                 
-                                <h4>
-                                    <xsl:value-of select="'Other ways to read'"/>
-                                </h4>
-                                <table class="contents-table bottom-margin">
-                                    <tbody>
-                                        
-                                        <xsl:if test="$part-status eq 'complete'">
-                                            <tr>
-                                                <td>
-                                                    <a target="_blank" class="print-preview">
-                                                        <xsl:attribute name="title" select="'Print'"/>
-                                                        <xsl:attribute name="href" select="'#'"/>
-                                                        <i class="fa fa-laptop"/>
-                                                    </a>
-                                                </td>
-                                                <td>
-                                                    <a href="#" title="Print" class="print-preview">
-                                                        <xsl:value-of select="'Print'"/>
-                                                    </a>
-                                                </td>
-                                            </tr>
-                                        </xsl:if>
-                                        
-                                        <xsl:for-each select="m:translation/m:downloads/m:download[@type = ('pdf', 'epub', 'azw3')]">
-                                            <tr>
-                                                <td class="icon">
-                                                    <a target="_blank">
-                                                        <xsl:attribute name="title">
+                                <xsl:if test="m:translation/m:downloads/m:download[@type = ('pdf', 'epub', 'azw3')]">
+                                    
+                                    <h4>
+                                        <xsl:value-of select="'Other ways to read'"/>
+                                    </h4>
+                                    
+                                    <table class="contents-table bottom-margin">
+                                        <tbody>
+                                            
+                                            <xsl:if test="$part-status eq 'complete'">
+                                                <tr>
+                                                    <td>
+                                                        <a target="_blank" class="print-preview">
+                                                            <xsl:attribute name="title" select="'Print'"/>
+                                                            <xsl:attribute name="href" select="'#'"/>
+                                                            <i class="fa fa-laptop"/>
+                                                        </a>
+                                                    </td>
+                                                    <td>
+                                                        <a href="#" title="Print" class="print-preview">
+                                                            <xsl:value-of select="'Print'"/>
+                                                        </a>
+                                                    </td>
+                                                </tr>
+                                            </xsl:if>
+                                            
+                                            <xsl:for-each select="m:translation/m:downloads/m:download[@type = ('pdf', 'epub', 'azw3')]">
+                                                <tr>
+                                                    <td class="icon">
+                                                        <a target="_blank">
+                                                            <xsl:attribute name="title">
+                                                                <xsl:call-template name="download-label">
+                                                                    <xsl:with-param name="type" select="@type"/>
+                                                                </xsl:call-template>
+                                                            </xsl:attribute>
+                                                            <xsl:attribute name="href" select="@download-url"/>
+                                                            <xsl:attribute name="download" select="@filename"/>
+                                                            <xsl:attribute name="class" select="'log-click'"/>
+                                                            <xsl:attribute name="data-page-alert" select="common:internal-link('/widget/download-dana.html', concat('resource-id=', $toh-key), '#dana-description', /m:response/@lang)"/>
+                                                            <xsl:call-template name="download-icon">
+                                                                <xsl:with-param name="type" select="@type"/>
+                                                            </xsl:call-template>
+                                                        </a>
+                                                    </td>
+                                                    <td>
+                                                        <a target="_blank">
+                                                            <xsl:attribute name="title">
+                                                                <xsl:call-template name="download-label">
+                                                                    <xsl:with-param name="type" select="@type"/>
+                                                                </xsl:call-template>
+                                                            </xsl:attribute>
+                                                            <xsl:attribute name="href" select="@download-url"/>
+                                                            <xsl:attribute name="download" select="@filename"/>
+                                                            <xsl:attribute name="class" select="'log-click'"/>
+                                                            <xsl:attribute name="data-page-alert" select="common:internal-link('/widget/download-dana.html', concat('resource-id=', $toh-key), '#dana-description', /m:response/@lang)"/>
                                                             <xsl:call-template name="download-label">
                                                                 <xsl:with-param name="type" select="@type"/>
                                                             </xsl:call-template>
-                                                        </xsl:attribute>
-                                                        <xsl:attribute name="href" select="@download-url"/>
-                                                        <xsl:attribute name="download" select="@filename"/>
-                                                        <xsl:attribute name="class" select="'log-click'"/>
-                                                        <xsl:attribute name="data-page-alert" select="common:internal-link('/widget/download-dana.html', concat('resource-id=', $toh-key), '#dana-description', /m:response/@lang)"/>
-                                                        <xsl:call-template name="download-icon">
-                                                            <xsl:with-param name="type" select="@type"/>
-                                                        </xsl:call-template>
-                                                    </a>
-                                                </td>
-                                                <td>
-                                                    <a target="_blank">
-                                                        <xsl:attribute name="title">
-                                                            <xsl:call-template name="download-label">
-                                                                <xsl:with-param name="type" select="@type"/>
+                                                        </a>
+                                                    </td>
+                                                </tr>
+                                            </xsl:for-each>
+                                            
+                                            <xsl:if test="m:translation[@status eq '1'] and $app-path">
+                                                <xsl:variable name="app-href" select="concat($app-path, '/translation/', $toh-key, '.html')"/>
+                                                <tr>
+                                                    <td class="icon">
+                                                        <a target="_blank">
+                                                            <xsl:attribute name="title">
+                                                                <xsl:call-template name="download-label">
+                                                                    <xsl:with-param name="type" select="'app'"/>
+                                                                </xsl:call-template>
+                                                            </xsl:attribute>
+                                                            <xsl:attribute name="href" select="$app-href"/>
+                                                            <xsl:attribute name="class" select="'log-click'"/>
+                                                            <xsl:attribute name="target" select="'84000-comms'"/>
+                                                            <xsl:call-template name="download-icon">
+                                                                <xsl:with-param name="type" select="'app'"/>
                                                             </xsl:call-template>
-                                                        </xsl:attribute>
-                                                        <xsl:attribute name="href" select="@download-url"/>
-                                                        <xsl:attribute name="download" select="@filename"/>
-                                                        <xsl:attribute name="class" select="'log-click'"/>
-                                                        <xsl:attribute name="data-page-alert" select="common:internal-link('/widget/download-dana.html', concat('resource-id=', $toh-key), '#dana-description', /m:response/@lang)"/>
-                                                        <xsl:call-template name="download-label">
-                                                            <xsl:with-param name="type" select="@type"/>
-                                                        </xsl:call-template>
-                                                    </a>
-                                                </td>
-                                            </tr>
-                                        </xsl:for-each>
-                                        
-                                        <xsl:if test="m:translation[@status eq '1'] and $app-path">
-                                            <xsl:variable name="app-href" select="concat($app-path, '/translation/', $toh-key, '.html')"/>
-                                            <tr>
-                                                <td class="icon">
-                                                    <a target="_blank">
-                                                        <xsl:attribute name="title">
+                                                        </a>
+                                                    </td>
+                                                    <td>
+                                                        <a target="_blank">
+                                                            <xsl:attribute name="title">
+                                                                <xsl:call-template name="download-label">
+                                                                    <xsl:with-param name="type" select="'app'"/>
+                                                                </xsl:call-template>
+                                                            </xsl:attribute>
+                                                            <xsl:attribute name="href" select="$app-href"/>
+                                                            <xsl:attribute name="class" select="'log-click'"/>
+                                                            <xsl:attribute name="target" select="'84000-comms'"/>
                                                             <xsl:call-template name="download-label">
                                                                 <xsl:with-param name="type" select="'app'"/>
                                                             </xsl:call-template>
-                                                        </xsl:attribute>
-                                                        <xsl:attribute name="href" select="$app-href"/>
-                                                        <xsl:attribute name="class" select="'log-click'"/>
-                                                        <xsl:attribute name="target" select="'84000-comms'"/>
-                                                        <xsl:call-template name="download-icon">
-                                                            <xsl:with-param name="type" select="'app'"/>
-                                                        </xsl:call-template>
-                                                    </a>
-                                                </td>
-                                                <td>
-                                                    <a target="_blank">
-                                                        <xsl:attribute name="title">
-                                                            <xsl:call-template name="download-label">
-                                                                <xsl:with-param name="type" select="'app'"/>
-                                                            </xsl:call-template>
-                                                        </xsl:attribute>
-                                                        <xsl:attribute name="href" select="$app-href"/>
-                                                        <xsl:attribute name="class" select="'log-click'"/>
-                                                        <xsl:attribute name="target" select="'84000-comms'"/>
-                                                        <xsl:call-template name="download-label">
-                                                            <xsl:with-param name="type" select="'app'"/>
-                                                        </xsl:call-template>
-                                                    </a>
-                                                </td>
-                                            </tr>
-                                        </xsl:if>
-                                        
-                                    </tbody>
-                                </table>
-                                <hr/>
+                                                        </a>
+                                                    </td>
+                                                </tr>
+                                            </xsl:if>
+                                            
+                                        </tbody>
+                                    </table>
+                                    
+                                    <hr/>
+                                    
+                                </xsl:if>
                                 
                             </xsl:if>
-                            
-                            
                             
                             <xsl:if test="$communications-site-path">
                                 <h4>

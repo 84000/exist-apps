@@ -48,7 +48,6 @@ declare function knowledgebase:sort-name($tei as element(tei:TEI)) as xs:string?
         ! common:alphanumeric(.)
 };
 
-
 declare function knowledgebase:titles($tei as element(tei:TEI)) as element(m:titles) {
     
     let $tei-titles := tei-content:titles($tei)
@@ -221,7 +220,6 @@ declare function knowledgebase:end-notes($tei as element(tei:TEI)) as element() 
     }
 };
 
-
 declare function knowledgebase:related-texts($tei as element(tei:TEI)) as element()? {
     
     element { QName('http://read.84000.co/ns/1.0', 'part') } {
@@ -233,7 +231,7 @@ declare function knowledgebase:related-texts($tei as element(tei:TEI)) as elemen
         
         let $knowledgebase-id := tei-content:id($tei)
         let $knowledgebase-entity := $entities:entities//m:instance[@id eq $knowledgebase-id]/parent::m:entity
-        let $author-ref := concat('eft:', $knowledgebase-entity/@xml:id)
+        let $author-refs := ($knowledgebase-entity/@xml:id | $entities:entities//m:relation[@id eq $knowledgebase-entity/@xml:id][@predicate eq 'sameAs']/parent::m:entity/@xml:id) ! concat('eft:', .)
         let $knowledgebase-title := knowledgebase:titles($tei)//m:title[@type eq 'mainTitle']
         
         return (
@@ -247,7 +245,7 @@ declare function knowledgebase:related-texts($tei as element(tei:TEI)) as elemen
                 }
             },
             
-            for $attribution in $tei-content:translations-collection//tei:sourceDesc/tei:bibl//*[@ref eq $author-ref]
+            for $attribution in $tei-content:translations-collection//tei:sourceDesc/tei:bibl//*[@ref = $author-refs]
             return
                 translations:filtered-text($attribution/ancestor::tei:TEI, $attribution/ancestor::tei:bibl/@key, false(), 'none', false())
                 

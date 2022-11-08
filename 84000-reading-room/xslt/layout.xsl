@@ -222,26 +222,10 @@
                 <!-- Create data tabs here -->
                 <div class="tabs-container hidden-print">
                     <div class="container">
-                        <div class="center-vertical full-width">
-                            <div>
-                                <ul class="nav nav-tabs" role="tablist">
-                                    <!-- Add tabs here -->
-                                </ul>
-                            </div>
-                            <div>
-                                <form class="form-inline pull-right">
-                                    <div class="checkbox small">
-                                        <label>
-                                            <input type="checkbox" value="1" id="dualview-sync"/>
-                                            <xsl:value-of select="' Keep synced'"/>
-                                        </label>
-                                    </div>
-                                    <!--<button type="button" class="btn btn-default btn-sm close-collapse" aria-label="Close">
-                                        <xsl:value-of select="'Close'"/>
-                                    </button>-->
-                                </form>
-                            </div>
-                        </div>
+                        
+                        <ul class="nav nav-tabs" role="tablist">
+                            <!-- Add tabs here -->
+                        </ul>
                         
                     </div>
                 </div>
@@ -249,16 +233,56 @@
                 <!-- Add tabbed content here -->
                 <div class="relative">
                     
-                    <div class="tab-content ">
+                    <div class="tab-content">
                         <!-- Add tab panels here -->
                     </div>
                     
                     <div class="fixed-btn-container close-btn-container">
-                        <button type="button" class="btn-round close close-collapse" aria-label="Close">
-                            <span aria-hidden="true">
-                                <i class="fa fa-times"/>
-                            </span>
-                        </button>
+                        
+                        <div class="center-vertical align-right">
+                            
+                            <!-- Keep synced option -->
+                            <div>
+                                <div id="dualview-sync-container" class="center-vertical">
+                                    <div>
+                                        <input type="checkbox" value="1" id="dualview-sync"/>
+                                    </div>
+                                    <div class="small">
+                                        <label for="dualview-sync">
+                                            <xsl:value-of select="'Sync views'"/>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Close tab button -->
+                            <!--<div>
+                                <button type="button" class="btn-round remove-active-tab hidden" aria-label="Close the active tab" title="Close the active tab">
+                                    <span aria-hidden="true">
+                                        <i class="fa fa-times"/>
+                                    </span>
+                                </button>
+                            </div>-->
+                            
+                            <!-- Set footer height -->
+                            <div>
+                                <button type="button" class="btn-round" data-drag-height="#popup-footer-dualview .tab-content" aria-label="Set the height of the footer" title="Set the height of the footer">
+                                    <span aria-hidden="true">
+                                        <i class="fa fa-sort"/>
+                                    </span>
+                                </button>
+                            </div>
+                            
+                            <!-- Minimise button -->
+                            <!--<div>
+                                <button type="button" class="btn-round close close-collapse" aria-label="Hide the footer" title="Hide the footer">
+                                    <span aria-hidden="true">
+                                        <i class="fa fa-times"/>
+                                    </span>
+                                </button>
+                            </div>-->
+                            
+                        </div>
                     </div>
                     
                 </div>

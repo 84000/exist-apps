@@ -338,6 +338,7 @@ declare function update-entity:merge($entity-id as xs:string, $target-entity-id 
                     $target-entity/m:label[not(@xml:lang = ('en','Bo-Ltn'))]
                 )[1],
                 
+                (: Add reference to old entity in new :)
                 common:ws(2),
                 element { QName('http://read.84000.co/ns/1.0', 'relation') } {
                     attribute predicate { 'sameAs' },
@@ -361,9 +362,10 @@ declare function update-entity:merge($entity-id as xs:string, $target-entity-id 
             for $relation in $entities:entities//m:relation[@id eq $target-entity-id]
             return 
                 common:update('entity-merge-relation', $relation/@id, attribute id { $entity-id }, (), ())
-            ,
+            (:,
             
-            (: Update attributions :)
+            (\: Update attributions :\)
+            (\: This is too big an overhead!! :\)
             for $tei in collection($common:tei-path)//tei:TEI[descendant::tei:*/@ref[. eq concat('eft:', $target-entity-id)]]
             return (
                 for $attribution-ref in $tei/descendant::tei:*/@ref[. eq concat('eft:', $target-entity-id)]
@@ -371,7 +373,7 @@ declare function update-entity:merge($entity-id as xs:string, $target-entity-id 
                     common:update('entity-merge-attribution', $attribution-ref, concat('eft:', $entity-id), (), ())
                 ,
                 update-tei:minor-version-increment($tei, 'entity-merge-attribution')
-            )
+            ):)
             
             (:element update-debug {
                 attribute entity-id { $entity-id },

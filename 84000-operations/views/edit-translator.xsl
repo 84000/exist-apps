@@ -172,6 +172,7 @@
                                         <xsl:call-template name="preview-controls">
                                             
                                             <xsl:with-param name="section-id" select="$section-id"/>
+                                            <xsl:with-param name="href" select="concat('#', $section-id)"/>
                                             
                                         </xsl:call-template>
                                         

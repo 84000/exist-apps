@@ -187,7 +187,6 @@ declare function update-tm:new-tmx-from-bcrdCorpus($tei as element(tei:TEI), $bc
     
     let $text-id := tei-content:id($tei)
     let $text-version := tei-content:version-str($tei)
-    let $location := translation:location($tei, '')
     
     let $filename := concat(translation:filename($tei, ''), '.tmx')
     
@@ -207,5 +206,61 @@ declare function update-tm:new-tmx-from-bcrdCorpus($tei as element(tei:TEI), $bc
         sm:chgrp(xs:anyURI(concat($update-tm:tm-path, '/', $filename)), 'translation-memory'),
         sm:chmod(xs:anyURI(concat($update-tm:tm-path, '/', $filename)), 'rw-rw-r--')
     )
+    
+};
+
+declare function update-tm:new-tmx-from-linguae-dharmae($toh-key as xs:string) as element(tmx:tmx)? {
+    
+    let $ld-path := concat($common:data-path, '/uploads/linguae-dharmae/aligned/31-10-2022/cleaned/', $toh-key, '-bo_aligned_cleaned.txt')
+    let $ld-doc := util:binary-to-string(util:binary-doc($ld-path))
+    
+    let $tei := tei-content:tei($toh-key, 'translation')
+    let $text-id := tei-content:id($tei)
+    let $text-version := tei-content:version-str($tei)
+    
+    return
+    <tmx xmlns="http://www.lisa.org/tmx14" xmlns:eft="http://read.84000.co/ns/1.0" xmlns:tei="http://www.tei-c.org/ns/1.0" version="1.4b">
+        { common:ws(1) }
+        <header creationtool="linguae-dharmae/84000" creationtoolversion="{ $common:app-version }" datatype="PlainText" segtype="block" adminlang="en-us" srclang="bo" eft:text-id="{ $text-id }" eft:text-version="{ $text-version }" eft:source-ref="{ $ld-path }"/>
+        { common:ws(1) }
+        <body>
+        {   
+            for $line at $index in tokenize($ld-doc, '\n')
+            let $segments := tokenize($line, '\t')
+            let $bo := $segments[1] ! replace(., '\{.+\}', '')
+            let $en := $segments[2]
+            where $bo
+            return (
+                common:ws(2),
+                <tu id="{ $text-id }-TU-{ $index }">
+                    { common:ws(3) }
+                    <tuv xml:lang="bo">
+                        <seg>{ $bo }</seg>
+                    </tuv>
+                    { common:ws(3) }
+                    <tuv xml:lang="en">
+                        <seg>{ $en }</seg>
+                    </tuv>
+                    { common:ws(2) }
+                </tu>
+            ),
+            common:ws(1) 
+        }
+        </body>
+        { common:ws(0) }
+    </tmx>
+
+};
+
+declare function update-tm:maintain-tmx($tei as element(tei:TEI)){
+    
+    (: Get the TM file :)
+    
+    (: Convert TEI to text :)
+    
+    (: Loop through TM segments :)
+        (: Match the translation :)
+        (: Update changes to translation :)
+        (: Add milestone ids :)
     
 };

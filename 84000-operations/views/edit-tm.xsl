@@ -539,7 +539,7 @@
         <xsl:variable name="tei-text-match-analyzed" select="analyze-string($tei-text-substr-match, '\{{2}milestone:[^\{\}]+\}{2}')" as="element()"/>
         
         <xsl:variable name="tei-text-substr-remainder" select="string-join(($tei-text-preceding-analyzed//fn:no-match/text(), $tei-text-match-analyzed//fn:match, $tei-text-substr-trailing//text()))" as="xs:string?"/>
-            
+        
         <xsl:element name="tm-unit-aligned" namespace="http://read.84000.co/ns/1.0">
             
             <xsl:attribute name="id" select="$tm-unit/@id"/>

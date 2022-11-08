@@ -45,7 +45,8 @@ declare function local:parse-node($response as element(m:response), $element as 
                 
                 (: Output refs with cRef :)
                 else if($node[self::tei:ref]) then
-                    let $cache-folio := $response/m:folios-cache/m:folio-ref[@id eq $node/@xml:id]
+                    let $resource-id := ($response/m:request/@resource-id[. = $response/m:translation/m:source/@key], $response/m:translation/m:source/@key)[1]
+                    let $cache-folio := $response/m:folios-cache/m:folio-ref[@id eq $node/@xml:id][@resource-id eq $resource-id]
                     where $cache-folio
                     return (
                         text { '{{page:{number:' || $cache-folio/@index-in-resource || ',id:' || $node/@xml:id || ',folio:' || $node/@cRef || $cache-folio[@cRef-volume gt ''] ! concat(',volume:', ./@cRef-volume) || '}}}' }
@@ -90,7 +91,7 @@ let $string := string-join($parsed-content, '')
 let $binary := util:base64-encode($string)
 
 return
-    (: response:stream-binary($binary, 'text/plain') :)$string
+     (:response:stream-binary($binary, 'text/plain'):) $string
 
 
 

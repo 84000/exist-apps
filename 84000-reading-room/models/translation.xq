@@ -97,8 +97,15 @@ return
     else
 
         let $canonical-id := (
+        
             $request/@archive-path[. gt ''] ! concat('id=', .), 
-            $request/@part[. gt ''] ! concat('part=', .)
+            
+            (: Keep part parameter in annotation views to maintain legacy annotations :)
+            if($request/m:view-mode[@id eq 'annotation']) then
+                concat('part=', $request/@part)
+            else
+                $request/@part[. gt ''] ! concat('part=', .)
+                
         )
         
         let $parts := 
