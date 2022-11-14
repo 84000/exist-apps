@@ -202,6 +202,8 @@ let $glossary :=
         attribute records-assigned-entities { count($glossary-full/id($entities:entities//m:entity/m:instance/@id)) },
         attribute tei-version-cached { store:stored-version-str($resource-id, 'cache') },
         
+        $tei//tei:div[@type eq 'glossary']/@status,
+        
         (: Get expressions for these entries :)
         let $glossary-locations := 
             if($filter = ('check-locations', 'check-all', 'new-locations', 'no-locations', 'cache-behind') and $gloss-filtered-subsequence) then

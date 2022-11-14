@@ -121,7 +121,7 @@
                                             
                                         </li>
                                         
-                                        <xsl:variable name="glossary-status" select="/m:response/m:entities/m:related/m:text[@id = $request-resource-id]/@glossary-status"/>
+                                        <xsl:variable name="glossary-status" select="$glossary/@status"/>
                                         <li>
                                             
                                             <span class="small">

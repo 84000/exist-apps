@@ -138,6 +138,7 @@ declare function entities:related($entities as element(m:entity)*) as element()*
 declare function entities:related($entities as element(m:entity)*, $include-unrelated as xs:boolean, $exclude-flagged as xs:string*, $exclude-status as xs:string*) as element()* {
 
     (: Related entities :)
+    (: TO DO: this needs chunking!! :)
     let $related-entities := (
         if($include-unrelated) then (
             $entities:entities//m:entity/id($entities/m:relation/@id)

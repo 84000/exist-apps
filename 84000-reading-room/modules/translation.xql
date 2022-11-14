@@ -676,7 +676,8 @@ declare function local:part($part as element(tei:div)?, $content-directive as xs
                 
                     (:element debug { attribute count-preview { count($preview) }, attribute count-text { count($node//text()) } },:)
                     if(count($node//text() | $preview) lt (count($node//text()) + count($preview))) then (
-                        $node/preceding-sibling::*[1][self::tei:milestone],
+                        $node/preceding-sibling::*[1][self::tei:milestone | self::tei:lb]
+                        | $node/preceding-sibling::*[2][self::tei:milestone | self::tei:lb][following-sibling::*[1][self::tei:milestone | self::tei:lb]],
                         $node
                     )
                     else ()
@@ -1768,23 +1769,35 @@ declare function local:quote($quote as element(tei:q), $toh-key as xs:string, $t
             element text-title { $source-text-title }
         },
         
-        (: Definition of the highlight :)
-        for $text in 
+        (: Define the highlight :)
+        let $string-matches := 
             if($quote[@alt]) then
-                $quote/@alt/string()
+                $quote/@alt/string() ! tokenize(., '…')
             else if($quote/@type eq 'substring') then
-                $quote//text()[not(ancestor::tei:note)][normalize-space(.)]
+                string-join($quote//text()[not(ancestor::tei:note)][normalize-space(.)], '…') ! tokenize(., '…')
             else ()
+            
+        (: Remove leading and trailing punctuation :)
+        let $string-matches := $string-matches ! normalize-space(.) ! lower-case(.) ! replace(., '^([\.,!?—;:"]\s*)+', '') ! replace(., '(\s*[\.,!"?—;:])+$', '')
+        let $string-matches := $string-matches[. gt '']
         
-        let $text-normalized := $text ! normalize-space(.) ! lower-case(.) ! replace(., '^[^a-z]+', '') ! replace(., '[^a-z]+$', '')
+        for $string-match at $index in $string-matches
         return
             element highlight {
                 
                 attribute type { ($quote/@type, 'passage')[1] },
                 
                 (: Normalise and remove trailing punctuation :)
-                if($quote/@type eq 'substring' and $text-normalized gt '') then
-                    text { $text-normalized }
+                if($quote/@type eq 'substring' and $string-match gt '') then 
+                    
+                    if(matches($string-match, '.*\[(\d+)\]$', 'i')) then (
+                        attribute occurrence { replace($string-match, '.*\[(\d+)\]$', '$1', 'i') },
+                        text { replace($string-match, '(.*)\[\d+\]$', '$1', 'i') }
+                    )
+                    else (
+                        text { $string-match }
+                    )
+                    
                 else ()
                 
             }

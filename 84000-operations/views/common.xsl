@@ -1317,6 +1317,12 @@
             <!-- Text -->
             <legend>
                 <xsl:value-of select="concat('In ', ($related-text/m:bibl/m:toh/m:full)[1], ' / ', ops:limit-str($related-text/m:titles/m:title[@type eq 'mainTitle'][@xml:lang eq 'en'], 80))"/>
+                <xsl:if test="$related-text[@glossary-status eq 'excluded']">
+                    <xsl:value-of select="' '"/>
+                    <span class="label label-danger">
+                        <xsl:value-of select="'excluded'"/>
+                    </span>
+                </xsl:if>
             </legend>
             
             <div class="div-list no-border-top no-padding-top">

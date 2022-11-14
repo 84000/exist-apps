@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:common="http://read.84000.co/common" xmlns:epub="http://www.idpf.org/2007/ops" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:functx="http://www.functx.com" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:common="http://read.84000.co/common" xmlns:epub="http://www.idpf.org/2007/ops" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:functx="http://www.functx.com" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" version="3.0" exclude-result-prefixes="#all">
     
     <!-- Transforms tei to xhtml -->
     
@@ -102,7 +102,9 @@
         <xsl:variable name="text-highlighted" as="node()*">
             <xsl:choose>
                 <xsl:when test="$text-normalized gt ''">
-                    <xsl:sequence select="m:mark-quotes(.)"/>
+                    <xsl:call-template name="mark-quotes">
+                        <xsl:with-param name="text-node" select="."/>
+                    </xsl:call-template>
                 </xsl:when>
             </xsl:choose>
         </xsl:variable>
@@ -337,7 +339,7 @@
                                     <xsl:attribute name="data-ref" select="$ref/@cRef"/>
                                     <xsl:attribute name="target" select="concat('source-', $toh-key)"/>
                                     <xsl:attribute name="data-dualview-href" select="concat('/source/', $toh-key, '.html?ref-index=', $index)"/>
-                                    <xsl:attribute name="data-dualview-title" select="concat('Source text: ', $translation/m:source/m:toh)"/>
+                                    <xsl:attribute name="data-dualview-title" select="concat($translation/m:source/m:toh, ' (source text)')"/>
                                     <xsl:attribute name="data-loading" select="concat('Loading ', $translation/m:source/m:toh, '...')"/>
                                     <xsl:value-of select="concat('[', $ref/@cRef, ']')"/>
                                 </a>
@@ -506,7 +508,7 @@
             </xsl:call-template>
             
             <!-- Output the content, filtering out the ref prologue -->
-            <xsl:call-template name="filter-ref-prologue">
+            <xsl:call-template name="parse-content">
                 <xsl:with-param name="node" select="$element"/>
             </xsl:call-template>
             
@@ -604,7 +606,7 @@
                     </xsl:call-template>
                     
                     <!-- Output the content, filtering out the ref prologue -->
-                    <xsl:call-template name="filter-ref-prologue">
+                    <xsl:call-template name="parse-content">
                         <xsl:with-param name="node" select="$element"/>
                     </xsl:call-template>
                     
@@ -682,8 +684,8 @@
                     </xsl:call-template>
                     
                     <!-- Output the content, filtering out the ref prologue -->
-                    <xsl:call-template name="filter-ref-prologue">
-                        <xsl:with-param name="node" select="."/>
+                    <xsl:call-template name="parse-content">
+                        <xsl:with-param name="node" select="$element"/>
                     </xsl:call-template>
                     
                     <!-- Output quote links -->
@@ -2167,7 +2169,7 @@
                         <xsl:attribute name="href" select="concat('/translation/', $quote/m:source/@resource-id, '.html', '?commentary=', $toh-key, '&amp;part=', $quote/m:source/@location-part, '#', $quote/m:source/@location-id)"/>
                         <xsl:attribute name="target" select="concat('translation-', $quote/m:source/@resource-id)"/>
                         <xsl:attribute name="data-dualview-href" select="concat('/translation/', $quote/m:source/@resource-id, '.html', '?commentary=', $toh-key, '#', $quote/m:source/@location-id, '/', $quote/@id)"/>
-                        <xsl:attribute name="data-dualview-title" select="concat('Root text: ', $quote/m:source/m:text-title)"/>
+                        <xsl:attribute name="data-dualview-title" select="concat($quote/m:source/m:text-title, ' (root text)')"/>
                         <xsl:attribute name="data-loading" select="concat('Loading ', 'root text', '...')"/>
                         <xsl:attribute name="title" select="$quote/m:label"/>
                         
@@ -2181,7 +2183,7 @@
                         <xsl:attribute name="href" select="concat('/translation/', $quote/@resource-id, '.html', '?part=', $quote/@part, '#', $quote/@id)"/>
                         <xsl:attribute name="target" select="concat('translation-', $quote/@resource-id)"/>
                         <xsl:attribute name="data-dualview-href" select="concat('/translation/', $quote/@resource-id, '.html', '#', $quote/@id)"/>
-                        <xsl:attribute name="data-dualview-title" select="concat('Commentary: ', $quote/m:text-title)"/>
+                        <xsl:attribute name="data-dualview-title" select="concat($quote/m:text-title, ' (commentary)')"/>
                         <xsl:attribute name="data-loading" select="concat('Loading ', 'commentary', '...')"/>
                         <xsl:attribute name="title" select="$quote/m:label"/>
                         
@@ -2927,24 +2929,99 @@
         <xsl:param name="skip-nodes" as="node()*"/>
         <xsl:for-each select="$child-nodes">
             <xsl:if test="count(.|$skip-nodes) gt count($skip-nodes)">
-                <xsl:apply-templates select="."/>
+                <xsl:sequence select="."/>
             </xsl:if>
         </xsl:for-each>
     </xsl:template>
     
-    <xsl:template name="filter-ref-prologue" as="node()*">
+    <!-- Return xhtml content, with some elements filtered -->
+    <xsl:template name="parse-content" as="node()*">
+        
+        <!-- Input is TEI -->
         <xsl:param name="node" as="node()?"/>
+        
+        <!-- Filter out the ref-prologue -->
+        <xsl:variable name="nodes-ref-prologue-filtered" as="node()*">
+            <xsl:choose>
+                <xsl:when test="count($node | $ref-prologue-parent) eq count($node)">
+                    <xsl:call-template name="filter-child-nodes">
+                        <xsl:with-param name="child-nodes" select="$node/node()"/>
+                        <xsl:with-param name="skip-nodes" select="$ref-prologue"/>
+                    </xsl:call-template>
+                </xsl:when>
+                <xsl:otherwise>
+                    <xsl:sequence select="$node/node()"/>
+                </xsl:otherwise>
+            </xsl:choose>
+        </xsl:variable>
+        
+        <!-- Convert to XHTML -->
+        <xsl:variable name="xhtml-content" as="node()*">
+            <xsl:apply-templates select="$nodes-ref-prologue-filtered"/>
+        </xsl:variable>
+        
+        <!-- Mark quotes elided by ellipses -->
+        <xsl:variable name="xhtml-content-quotes-merged" as="node()*">
+            
+            <!-- Has quoted content, including duplicates -->
+            <xsl:if test="$requested-commentary and count($xhtml-content/descendant-or-self::xhtml:span/@data-quote-id) gt count(distinct-values($xhtml-content/descendant-or-self::xhtml:span/@data-quote-id)) ">
+                
+                <!-- Look for content between quotes with the same id -->
+                <xsl:for-each select="$xhtml-content">
+                    <xsl:variable name="position" select="position()"/>
+                    <xsl:variable name="preceding-quotes" select="$xhtml-content[position() lt $position]/descendant-or-self::xhtml:span[@data-quote-id]" as="element(xhtml:span)*"/>
+                    <xsl:variable name="trailing-quotes" select="$xhtml-content[position() gt $position]/descendant-or-self::xhtml:span[@data-quote-id]" as="element(xhtml:span)*"/>
+                    <xsl:choose>
+                        <xsl:when test="$preceding-quotes/@data-quote-id = $trailing-quotes/@data-quote-id">
+                            <xsl:call-template name="quoted-ellipt">
+                                <xsl:with-param name="content" select="."/>
+                                <xsl:with-param name="data-quote-ids" select="$preceding-quotes[@data-quote-id = $trailing-quotes/@data-quote-id]/@data-quote-id"/>
+                                <xsl:with-param name="data-quote-index" select="1"/>
+                            </xsl:call-template>
+                        </xsl:when>
+                        <xsl:otherwise>
+                            <xsl:sequence select="."/>
+                        </xsl:otherwise>
+                    </xsl:choose>
+                </xsl:for-each>
+                
+            </xsl:if>
+        </xsl:variable>
+        
+        <!-- Output is XHTML -->
         <xsl:choose>
-            <xsl:when test="count($node | $ref-prologue-parent) eq count($node)">
-                <xsl:call-template name="filter-child-nodes">
-                    <xsl:with-param name="child-nodes" select="$node/node()"/>
-                    <xsl:with-param name="skip-nodes" select="$ref-prologue"/>
-                </xsl:call-template>
+            <xsl:when test="$xhtml-content-quotes-merged">
+                <xsl:sequence select="$xhtml-content-quotes-merged"/>
             </xsl:when>
             <xsl:otherwise>
-                <xsl:apply-templates select="$node/node()"/>
+                <xsl:sequence select="$xhtml-content"/>
             </xsl:otherwise>
         </xsl:choose>
+        
+    </xsl:template>
+    
+    <xsl:template name="quoted-ellipt">
+        
+        <xsl:param name="content" as="node()*"/>
+        <xsl:param name="data-quote-ids" as="xs:string*"/>
+        <xsl:param name="data-quote-index" as="xs:integer"/>
+        
+        <span data-quote-id="{ $data-quote-ids[$data-quote-index] }" class="quoted ellipt">
+            <xsl:choose>
+                <xsl:when test="$data-quote-index lt count($data-quote-ids)">
+                    <xsl:call-template name="quoted-ellipt">
+                        <xsl:with-param name="content" select="$content"/>
+                        <xsl:with-param name="data-quote-ids" select="$data-quote-ids"/>
+                        <xsl:with-param name="data-quote-index" select="$data-quote-index + 1"/>
+                    </xsl:call-template>
+                </xsl:when>
+                <xsl:otherwise>
+                    <xsl:sequence select="$content"/>
+                </xsl:otherwise>
+            </xsl:choose>
+            
+        </span>
+        
     </xsl:template>
     
     <!-- Determine the nearest xml:id -->
@@ -3358,7 +3435,7 @@
     </xsl:function>
     
     <!-- Highlight a text node -->
-    <xsl:function name="m:mark-quotes" as="node()*">
+    <xsl:template name="mark-quotes">
         
         <!-- Return quotes marked, or an empty sequence if no match found -->
         
@@ -3373,80 +3450,248 @@
                 </xsl:call-template>
             </xsl:variable>
             
+            <!-- Quoted at this location? -->
             <xsl:variable name="quotes-highlights-location" select="$quotes-highlights-prioritised[m:source/@location-id eq $location-id]" as="element(m:quote)*"/>
+            <xsl:variable name="text-context" select="$text-node/ancestor-or-self::*[preceding-sibling::tei:milestone][1]//text()" as="text()*"/>
+            <xsl:variable name="text-index" select="common:index-of-node($text-context, $text-node)" as="xs:integer?"/>
             
             <xsl:if test="$quotes-highlights-location">
                 <xsl:call-template name="mark-quote">
                     <xsl:with-param name="quotes" select="$quotes-highlights-location"/>
                     <xsl:with-param name="quote-index" select="1"/>
                     <xsl:with-param name="highlight-index" select="1"/>
-                    <xsl:with-param name="text" select="normalize-space($text-node)"/>
+                    <xsl:with-param name="text-context" select="$text-context"/>
+                    <xsl:with-param name="text-index" select="$text-index"/>
+                    <xsl:with-param name="text" select="$text-node ! replace(., '\s+', ' ')"/>
                 </xsl:call-template>
             </xsl:if>
             
         </xsl:if>
         
-    </xsl:function>
+    </xsl:template>
     
     <xsl:template name="mark-quote">
         
         <xsl:param name="quotes" as="element(m:quote)*" required="true"/>
         <xsl:param name="quote-index" as="xs:integer"/>
         <xsl:param name="highlight-index" as="xs:integer"/>
-        <xsl:param name="text" as="xs:string"/>
+        <xsl:param name="text-context" as="text()*"/>
+        <xsl:param name="text-index" as="xs:integer?"/>
+        <xsl:param name="text" as="xs:string?"/>
         
         <xsl:choose>
-            <xsl:when test="$quote-index le count($quotes) and matches($text, '[a-zA-Z]')">
+            <xsl:when test="$quote-index le count($quotes) and matches($text, '[a-zA-Z0-9]')">
                 
                 <xsl:variable name="quote" select="$quotes[$quote-index]" as="element(m:quote)"/>
-                <xsl:variable name="substring" select="$quote/m:highlight[@type eq 'substring'][$highlight-index]/text() ! normalize-space(.)" as="xs:string?"/>
-                <xsl:variable name="substring-regex" select="$substring ! concat('(', string-join(tokenize(., '…') ! normalize-space(.) ! common:escape-for-regex(.), ').+('), ')')"/>
+                <xsl:variable name="highlights" select="$quote/m:highlight[@type eq 'substring']" as="element(m:highlight)*"/>
                 
-                <xsl:variable name="quote-index-next" select="if($highlight-index lt count($quote/m:highlight[@type eq 'substring'])) then $quote-index else $quote-index + 1"/>
-                <xsl:variable name="highlight-index-next" select="if($highlight-index lt count($quote/m:highlight[@type eq 'substring'])) then $highlight-index + 1 else 1"/>
+                <!-- The regex to mark this string -->
+                <xsl:variable name="mark-regex" select="$highlights[$highlight-index]/text() ! normalize-space(.) ! common:escape-for-regex(.)" as="xs:string?"/>
+                
+                <!-- This is reccurring, so specifiy the next quote to test -->
+                <xsl:variable name="quote-index-next" select="if($highlight-index lt count($highlights)) then $quote-index else $quote-index + 1" as="xs:integer"/>
+                <!-- This is reccurring, so specifiy the next highlight to test -->
+                <xsl:variable name="highlight-index-next" select="if($highlight-index lt count($highlights)) then $highlight-index + 1 else 1" as="xs:integer"/>
                 
                 <xsl:choose>
                     
-                    <xsl:when test="$substring gt ''">
+                    <xsl:when test="$mark-regex gt ''">
                         
-                        <xsl:analyze-string regex="{ $substring-regex }" select="$text" flags="i">
+                        <!-- Get matches in context -->
+                        <xsl:variable name="context" select="string-join($text-context ! replace(., '\s+', ' '), '')" as="xs:string?"/>
+                        <xsl:variable name="context-analyzed" select="analyze-string($context, $mark-regex, 'i')" as="element(fn:analyze-string-result)?"/>
+                        
+                        <!-- Loop through the context validating matches -->
+                        <xsl:variable name="context-occurrences-validated" as="xs:integer*">
                             
-                            <xsl:matching-substring>
-                                <span class="quoted">
+                            <xsl:for-each select="$context-analyzed/*">
+                                
+                                <xsl:variable name="context-analyzed-index" select="position()" as="xs:integer"/>
+                                
+                                <xsl:if test="self::fn:match">
                                     
-                                    <xsl:attribute name="data-quote-id" select="$quote/@id"/>
+                                    <!-- Test that this text is preceded by the preceding highlight(s) -->
+                                    <xsl:variable name="matches-preceding" as="xs:boolean">
+                                        
+                                        <xsl:choose>
+                                            
+                                            <!-- First highlight so none preceding -->
+                                            <xsl:when test="$highlight-index eq 1">
+                                                <xsl:value-of select="true()"/>
+                                            </xsl:when>
+                                            
+                                            <!-- Check for matches -->
+                                            <xsl:when test="$highlight-index gt 1 and $context-analyzed-index gt 1">
+                                                
+                                                <!-- Concatenate preceding nodes in context -->
+                                                <xsl:variable name="preceding-context" select="string-join($context-analyzed/*[position() lt $context-analyzed-index] ! replace(., '\s+', ' '), '')" as="xs:string?"/>
+                                                
+                                                <!-- Check that the preceding strings are in scope -->
+                                                <xsl:variable name="preceding-regex" select="string-join($highlights[position() lt $highlight-index] ! normalize-space(.) ! common:escape-for-regex(.), ').+(') ! concat('(', ., ')')" as="xs:string?"/>
+                                                
+                                                <xsl:value-of select="matches($preceding-context, $preceding-regex, 'i')"/>
+                                                
+                                            </xsl:when>
+                                            
+                                            <!-- Highlights to match but no preceding text to check -->
+                                            <xsl:otherwise>
+                                                <xsl:value-of select="false()"/>
+                                            </xsl:otherwise>
+                                            
+                                        </xsl:choose>
+                                        
+                                    </xsl:variable>
                                     
-                                    <xsl:call-template name="mark-quote">
-                                        <xsl:with-param name="quotes" select="$quotes"/>
-                                        <xsl:with-param name="quote-index" select="$quote-index-next"/>
-                                        <xsl:with-param name="highlight-index" select="$highlight-index-next"/>
-                                        <xsl:with-param name="text" select="."/>
-                                    </xsl:call-template>
+                                    <!-- Test following text that the following highlight matches -->
+                                    <xsl:variable name="matches-following" as="xs:boolean">
+                                        
+                                        <xsl:choose>
+                                            
+                                            <!-- Already failed so don't bother -->
+                                            <xsl:when test="$matches-preceding eq false()">
+                                                <xsl:value-of select="false()"/>
+                                            </xsl:when>
+                                            
+                                            <!-- No more highlights to match -->
+                                            <xsl:when test="$highlight-index ge count($highlights)">
+                                                <xsl:value-of select="true()"/>
+                                            </xsl:when>
+                                            
+                                            <!-- Check for matches -->
+                                            <xsl:when test="$highlight-index lt count($highlights) and $context-analyzed-index lt count($context-analyzed/*)">
+                                                
+                                                <!-- Concatenate following nodes in context -->
+                                                <xsl:variable name="following-context" select="string-join($context-analyzed/*[position() gt $context-analyzed-index] ! replace(., '\s+', ' '), '')" as="xs:string?"/>
+                                                
+                                                <!-- Check that the following strings are in scope -->
+                                                <xsl:variable name="following-regex" select="string-join($highlights[position() gt $highlight-index] ! normalize-space(.) ! common:escape-for-regex(.), ').+(') ! concat('(', ., ')')" as="xs:string?"/>
+                                                
+                                                <xsl:value-of select="matches($following-context, $following-regex, 'i')"/>
+                                                
+                                            </xsl:when>
+                                            
+                                            <!-- Highlights to match but no following text to check -->
+                                            <xsl:otherwise>
+                                                <xsl:value-of select="false()"/>
+                                            </xsl:otherwise>
+                                            
+                                        </xsl:choose>
+                                        
+                                    </xsl:variable>
                                     
-                                </span>
-                            </xsl:matching-substring>
+                                    <!-- Remember the indexes of valid matches -->
+                                    <xsl:if test="$matches-preceding and $matches-following">
+                                        <xsl:value-of select="common:index-of-node($context-analyzed/fn:match, .)"/>
+                                    </xsl:if>
+                                    
+                                </xsl:if>
+                            </xsl:for-each>
+                        
+                        </xsl:variable>
+                        
+                        <xsl:choose>
                             
-                            <xsl:non-matching-substring>
+                            <xsl:when test="count($context-occurrences-validated) gt 0">
+                                
+                                <!-- Get the number of matches in the preceding context -->
+                                <xsl:variable name="preceding-context" select="string-join(($text-context[position() lt $text-index]) ! replace(., '\s+', ' '), '')" as="xs:string?"/>
+                                <xsl:variable name="preceding-analyzed" select="analyze-string($preceding-context, $mark-regex, 'i')" as="element(fn:analyze-string-result)?"/>
+                                <xsl:variable name="preceding-context-occurrences-count" select="count($preceding-analyzed/fn:match)" as="xs:integer"/>
+                                
+                                <!-- Get matches in text -->
+                                <xsl:variable name="text-analyzed" select="analyze-string(replace($text, '\s+', ' '), $mark-regex, 'i')" as="element(fn:analyze-string-result)?"/>
+                                
+                                <!-- Mark the text -->
+                                <xsl:for-each select="$text-analyzed/*">
+                                    
+                                    <xsl:variable name="text-analyzed-index" select="position()" as="xs:integer"/>
+                                    
+                                    <!-- Calculate which occurrence this is in the context -->
+                                    <xsl:variable name="valid-occurrence" as="xs:boolean">
+                                        <xsl:choose>
+                                            <xsl:when test="self::fn:match">
+                                                
+                                                <xsl:variable name="text-occurrence" select="(common:index-of-node($text-analyzed/fn:match, .),0)[1]" as="xs:integer"/>
+                                                <xsl:variable name="context-occurrence" select="$preceding-context-occurrences-count + $text-occurrence" as="xs:integer"/>
+                                                
+                                                <!-- The specified occurrence of this string, or first -->
+                                                <xsl:variable name="target-occurrence" select="$highlights[$highlight-index]/@occurrence" as="xs:integer?"/>
+                                                
+                                                <xsl:choose>
+                                                    <xsl:when test="                                                         (: It's the only valid occurrence :)                                                         (count($context-occurrences-validated) eq 1 and $context-occurrences-validated[. = $context-occurrence])                                                         (: It's the target valid occurrence :)                                                                                                                  or ($context-occurrences-validated[. = $context-occurrence][. = $target-occurrence])                                                     ">
+                                                        <xsl:value-of select="true()"/>
+                                                    </xsl:when>
+                                                    <xsl:otherwise>
+                                                        <xsl:value-of select="false()"/>
+                                                    </xsl:otherwise>
+                                                </xsl:choose>
+                                                
+                                            </xsl:when>
+                                            <xsl:otherwise>
+                                                <xsl:value-of select="false()"/>
+                                            </xsl:otherwise>
+                                        </xsl:choose>
+                                    </xsl:variable>
+                                    
+                                    <xsl:choose>
+                                        <xsl:when test="$valid-occurrence">
+                                            
+                                            <span data-quote-id="{ $quote/@id }" class="quoted">
+                                                <!--<span data-debug="{ 'text node: ' || $text || ', search for: ' || $mark-regex ||  '[' || $target-occurrence || '] of (' || string-join($highlights, '+') || ') [' || string-join($context-occurrences-validated, ',') || '] = ' || $context-occurrence || ' in ' || string-join(($text-context[position() lt $text-index],' | ', $text-analyzed/*/text(),' | ', $text-context[position() gt $text-index]), '') }"/>-->
+                                                <xsl:call-template name="mark-quote">
+                                                    <xsl:with-param name="quotes" select="$quotes"/>
+                                                    <xsl:with-param name="quote-index" select="$quote-index-next"/>
+                                                    <xsl:with-param name="highlight-index" select="$highlight-index-next"/>
+                                                    <xsl:with-param name="text-context" select="($text-context[position() lt $text-index], $text-analyzed/*/text(), $text-context[position() gt $text-index])"/>
+                                                    <xsl:with-param name="text-index" select="($text-index - 1) + $text-analyzed-index"/>
+                                                    <xsl:with-param name="text" select="."/>
+                                                </xsl:call-template>
+                                            </span>
+                                            
+                                        </xsl:when>
+                                        
+                                        <xsl:otherwise>
+                                            <xsl:call-template name="mark-quote">
+                                                <xsl:with-param name="quotes" select="$quotes"/>
+                                                <xsl:with-param name="quote-index" select="$quote-index-next"/>
+                                                <xsl:with-param name="highlight-index" select="$highlight-index-next"/>
+                                                <xsl:with-param name="text-context" select="($text-context[position() lt $text-index], $text-analyzed/*/text(), $text-context[position() gt $text-index])"/>
+                                                <xsl:with-param name="text-index" select="($text-index - 1) + $text-analyzed-index"/>
+                                                <xsl:with-param name="text" select="."/>
+                                            </xsl:call-template>
+                                        </xsl:otherwise>
+                                        
+                                    </xsl:choose>
+                                    
+                                </xsl:for-each>
+                                
+                            </xsl:when>
+                            
+                            <!-- No valid occurrences so move on -->
+                            <xsl:otherwise>
                                 <xsl:call-template name="mark-quote">
                                     <xsl:with-param name="quotes" select="$quotes"/>
                                     <xsl:with-param name="quote-index" select="$quote-index-next"/>
                                     <xsl:with-param name="highlight-index" select="$highlight-index-next"/>
-                                    <xsl:with-param name="text" select="."/>
-                                </xsl:call-template>
-                            </xsl:non-matching-substring>
-                            
-                        </xsl:analyze-string>
+                                    <xsl:with-param name="text-context" select="$text-context"/>
+                                    <xsl:with-param name="text-index" select="$text-index"/>
+                                    <xsl:with-param name="text" select="$text"/>
+                                </xsl:call-template>  
+                            </xsl:otherwise>
+                        </xsl:choose>
+                        
                     </xsl:when>
                     
+                    <!-- Otherwise move on to the next highlight -->
                     <xsl:otherwise>
-                        
                         <xsl:call-template name="mark-quote">
                             <xsl:with-param name="quotes" select="$quotes"/>
                             <xsl:with-param name="quote-index" select="$quote-index-next"/>
                             <xsl:with-param name="highlight-index" select="$highlight-index-next"/>
+                            <xsl:with-param name="text-context" select="$text-context"/>
+                            <xsl:with-param name="text-index" select="$text-index"/>
                             <xsl:with-param name="text" select="$text"/>
-                        </xsl:call-template>
-                        
+                        </xsl:call-template>    
                     </xsl:otherwise>
                     
                 </xsl:choose>
@@ -3454,7 +3699,7 @@
             </xsl:when>
             
             <xsl:otherwise>
-                <xsl:value-of select="$text"/>
+                <xsl:value-of select="replace($text, '\s+', ' ')"/>
             </xsl:otherwise>
             
         </xsl:choose>
