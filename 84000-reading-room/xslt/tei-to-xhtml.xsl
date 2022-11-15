@@ -2964,13 +2964,13 @@
         <xsl:variable name="xhtml-content-quotes-merged" as="node()*">
             
             <!-- Has quoted content, including duplicates -->
-            <xsl:if test="$requested-commentary and count($xhtml-content/descendant-or-self::xhtml:span/@data-quote-id) gt count(distinct-values($xhtml-content/descendant-or-self::xhtml:span/@data-quote-id)) ">
+            <xsl:if test="$requested-commentary gt '' and count($xhtml-content/descendant-or-self::xhtml:span/@data-quote-id) gt count(distinct-values($xhtml-content/descendant-or-self::xhtml:span/@data-quote-id)) ">
                 
                 <!-- Look for content between quotes with the same id -->
                 <xsl:for-each select="$xhtml-content">
-                    <xsl:variable name="position" select="position()"/>
-                    <xsl:variable name="preceding-quotes" select="$xhtml-content[position() lt $position]/descendant-or-self::xhtml:span[@data-quote-id]" as="element(xhtml:span)*"/>
-                    <xsl:variable name="trailing-quotes" select="$xhtml-content[position() gt $position]/descendant-or-self::xhtml:span[@data-quote-id]" as="element(xhtml:span)*"/>
+                    <xsl:variable name="xhtml-content-index" select="position()"/>
+                    <xsl:variable name="preceding-quotes" select="$xhtml-content[position() lt $xhtml-content-index]/descendant-or-self::xhtml:span[@data-quote-id]" as="element(xhtml:span)*"/>
+                    <xsl:variable name="trailing-quotes" select="$xhtml-content[position() gt $xhtml-content-index]/descendant-or-self::xhtml:span[@data-quote-id]" as="element(xhtml:span)*"/>
                     <xsl:choose>
                         <xsl:when test="$preceding-quotes/@data-quote-id = $trailing-quotes/@data-quote-id">
                             <xsl:call-template name="quoted-ellipt">
@@ -3488,6 +3488,9 @@
                 <!-- The regex to mark this string -->
                 <xsl:variable name="mark-regex" select="$highlights[$highlight-index]/text() ! normalize-space(.) ! common:escape-for-regex(.)" as="xs:string?"/>
                 
+                <!-- Get matches in text -->
+                <xsl:variable name="text-analyzed" select="$mark-regex ! analyze-string(replace($text, '\s+', ' '), $mark-regex, 'i')" as="element(fn:analyze-string-result)?"/>
+                
                 <!-- This is reccurring, so specifiy the next quote to test -->
                 <xsl:variable name="quote-index-next" select="if($highlight-index lt count($highlights)) then $quote-index else $quote-index + 1" as="xs:integer"/>
                 <!-- This is reccurring, so specifiy the next highlight to test -->
@@ -3495,7 +3498,7 @@
                 
                 <xsl:choose>
                     
-                    <xsl:when test="$mark-regex gt ''">
+                    <xsl:when test="$text-analyzed[fn:match]">
                         
                         <!-- Get matches in context -->
                         <xsl:variable name="context" select="string-join($text-context ! replace(., '\s+', ' '), '')" as="xs:string?"/>
@@ -3591,15 +3594,13 @@
                         
                         <xsl:choose>
                             
+                            <!-- Compare this match with occurrences in the context -->
                             <xsl:when test="count($context-occurrences-validated) gt 0">
                                 
                                 <!-- Get the number of matches in the preceding context -->
                                 <xsl:variable name="preceding-context" select="string-join(($text-context[position() lt $text-index]) ! replace(., '\s+', ' '), '')" as="xs:string?"/>
                                 <xsl:variable name="preceding-analyzed" select="analyze-string($preceding-context, $mark-regex, 'i')" as="element(fn:analyze-string-result)?"/>
                                 <xsl:variable name="preceding-context-occurrences-count" select="count($preceding-analyzed/fn:match)" as="xs:integer"/>
-                                
-                                <!-- Get matches in text -->
-                                <xsl:variable name="text-analyzed" select="analyze-string(replace($text, '\s+', ' '), $mark-regex, 'i')" as="element(fn:analyze-string-result)?"/>
                                 
                                 <!-- Mark the text -->
                                 <xsl:for-each select="$text-analyzed/*">
