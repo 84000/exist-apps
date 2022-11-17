@@ -889,7 +889,7 @@
                                                                 
                                                                 <li>
                                                                     <span class="{ common:lang-class($loop-glossary-entity-label/@xml:lang) }" title="{ common:normalize-data(string-join($loop-glossary-entity-label,' ')) }">
-                                                                        <xsl:value-of select="common:limit-str($loop-glossary-entity-label/data() ! fn:normalize-space(.), 70)"/>
+                                                                        <xsl:value-of select="common:limit-str($loop-glossary-entity-label/data() ! fn:normalize-space(.), 90)"/>
                                                                     </span>
                                                                 </li>
                                                                 
@@ -1838,6 +1838,13 @@
                             <xsl:with-param name="target-entity-label">
                                 
                                 <xsl:variable name="entity-label" select="($entity/m:label[@xml:lang eq 'en'], $entity/m:label[@xml:lang eq 'Sa-Ltn'], $entity/m:label)[1]"/>
+                                <xsl:variable name="entity-instance-entry-definition" as="xs:string?">
+                                    <xsl:if test="count($entity/m:instance) eq 1">
+                                        <xsl:value-of select="string-join(/m:response/m:entities/m:related/m:text/m:entry[@id = $entity/m:instance/@id]/m:definition[node()] ! normalize-space(.), ' ')"/>
+                                    </xsl:if>
+                                </xsl:variable>
+                                <xsl:variable name="entity-label-limited" select="common:limit-str($entity-label ! normalize-space(.), (if($entity-instance-entry-definition) then 70 else 90) - string-length(string-join(/m:response/m:entity-types/m:type/text(), ' ')))"/>
+                                <xsl:variable name="entity-instance-entry-definition-limited" select="common:limit-str($entity-instance-entry-definition ! normalize-space(.), (90 - string-length(string-join(($entity-label-limited, /m:response/m:entity-types/m:type/text()), ' '))))"/>
                                 
                                 <ul class="list-inline inline-dots">
                                     
@@ -1848,13 +1855,12 @@
                                         </xsl:call-template>
                                     </li>
                                     
-                                    <xsl:variable name="label-limited" select="common:limit-str($entity-label ! normalize-space(.), 50)"/>
+                                    
                                     <li class="small">
                                         <span>
-                                            <xsl:attribute name="class">
-                                                <xsl:value-of select="common:lang-class($entity-label/@xml:lang)"/>
-                                            </xsl:attribute>
-                                            <xsl:value-of select="$label-limited"/>
+                                            <xsl:attribute name="class" select="common:lang-class($entity-label/@xml:lang)"/>
+                                            <xsl:attribute name="title" select="$entity-label ! normalize-space(.)"/>
+                                            <xsl:value-of select="$entity-label-limited"/>
                                         </span>
                                     </li>
                                     
@@ -1862,16 +1868,11 @@
                                         <xsl:value-of select="concat('Groups ', count($entity/m:instance))"/>
                                     </li>
                                     
-                                    <xsl:if test="count($entity/m:instance) eq 1">
-                                        
-                                        <xsl:variable name="entity-instance-entry-definition" select="/m:response/m:entities/m:related/m:text/m:entry[@id = $entity/m:instance/@id]/m:definition[node()]"/>
-                                        
-                                        <xsl:if test="$entity-instance-entry-definition">
-                                            <li class="small text-muted">
-                                                <xsl:value-of select="concat('(', common:limit-str(common:normalize-data(string-join($entity-instance-entry-definition,' ')), (90 - string-length($label-limited))),')')"/>
-                                            </li>
-                                        </xsl:if>
-                                        
+                                    <xsl:if test="$entity-instance-entry-definition">
+                                        <li class="small text-muted">
+                                            <xsl:attribute name="title" select="$entity-instance-entry-definition"/>
+                                            <xsl:value-of select="$entity-instance-entry-definition-limited"/>
+                                        </li>
                                     </xsl:if>
                                     
                                 </ul>

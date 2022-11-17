@@ -47,8 +47,7 @@
     <!-- Pre-sort the inbound quotes by length -->
     <xsl:variable name="quotes-highlights-prioritised" as="element(m:quote)*">
         <xsl:perform-sort select="/m:response/m:quotes/m:quote[@resource-id eq $requested-commentary][m:source/@resource-id eq $toh-key]">
-            <xsl:sort select="if(matches(m:highlight[@type eq 'substring'][1]/text(), '…')) then 1 else 0" order="descending"/>
-            <xsl:sort select="string-length(string-join(m:highlight[@type eq 'substring']/text(), ''))" order="descending"/>
+            <xsl:sort select="string-length(string-join(m:highlight/text(), ' '))" order="descending"/>
         </xsl:perform-sort>
     </xsl:variable>
     
@@ -555,13 +554,16 @@
                     <!-- Outbound quote link -->
                     <xsl:variable name="quotes-outbound" as="element(m:quote)*">
                         <xsl:choose>
+                            <!-- quote elements -->
                             <xsl:when test="$element[self::tei:q][@xml:id][ancestor-or-self::*/@ref gt '']">
                                 <xsl:sequence select="key('quotes-outbound', $element/@xml:id, $root)[m:source/@location-id eq $element/ancestor-or-self::*[@ref][1]/@ref]"/>
                             </xsl:when>
+                            <!-- elements containing quotes -->
                             <xsl:when test="$element/tei:q[@xml:id][parent::tei:p | parent::tei:l][ancestor-or-self::*/@ref gt '']">
                                 <xsl:sequence select="key('quotes-outbound', $element/tei:q/@xml:id, $root)[m:source/@location-id eq $element/tei:q/ancestor-or-self::*[@ref][1]/@ref]"/>
                             </xsl:when>
-                            <xsl:when test="$element[not(tei:l)]/parent::tei:q[@xml:id][ancestor-or-self::*/@ref gt ''] and not($element/following-sibling::tei:*)">
+                            <!-- elements in quotes (must be the last one - accounting for hidden elements) -->
+                            <xsl:when test="$element[not(tei:l)]/parent::tei:q[@xml:id][ancestor-or-self::*/@ref gt ''] and not($element/following-sibling::tei:*[not(self::tei:orig)])">
                                 <xsl:sequence select="key('quotes-outbound', $element/ancestor::tei:q[@xml:id][1]/@xml:id, $root)[m:source/@location-id eq $element/ancestor-or-self::*[@ref][1]/@ref]"/>
                             </xsl:when>
                         </xsl:choose>
@@ -704,6 +706,10 @@
             <xsl:with-param name="row-type" select="'line'"/>
         </xsl:call-template>
         
+    </xsl:template>
+    
+    <xsl:template match="tei:orig">
+        <!-- Don't output orig -->
     </xsl:template>
     
     <!-- Highlights -->
@@ -3411,7 +3417,7 @@
             </xsl:when>
             
             <!-- Check if deferred -->
-            <xsl:when test="$view-mode[@glossary eq 'defer'] and ($node/ancestor::tei:*[@tid] or $node/ancestor::tei:note[@place eq 'end'][@xml:id] or $node/ancestor::tei:gloss[@xml:id])">
+            <xsl:when test="$view-mode[@glossary eq 'defer'] and ($node/ancestor::tei:*[@tid] or $node/ancestor::tei:note[@place eq 'end'][@xml:id] or $node/ancestor::tei:gloss[@xml:id] or $node/ancestor::tei:orig)">
                 <xsl:value-of select="false()"/>
             </xsl:when>
             
@@ -3452,7 +3458,7 @@
             
             <!-- Quoted at this location? -->
             <xsl:variable name="quotes-highlights-location" select="$quotes-highlights-prioritised[m:source/@location-id eq $location-id]" as="element(m:quote)*"/>
-            <xsl:variable name="text-context" select="$text-node/ancestor-or-self::*[preceding-sibling::tei:milestone][1]//text()" as="text()*"/>
+            <xsl:variable name="text-context" select="$text-node/ancestor-or-self::*[preceding-sibling::tei:milestone][1]//text()[not(ancestor::tei:note)][not(ancestor::tei:orig)]" as="text()*"/>
             <xsl:variable name="text-index" select="common:index-of-node($text-context, $text-node)" as="xs:integer?"/>
             
             <xsl:if test="$quotes-highlights-location">
@@ -3483,13 +3489,16 @@
             <xsl:when test="$quote-index le count($quotes) and matches($text, '[a-zA-Z0-9]')">
                 
                 <xsl:variable name="quote" select="$quotes[$quote-index]" as="element(m:quote)"/>
-                <xsl:variable name="highlights" select="$quote/m:highlight[@type eq 'substring']" as="element(m:highlight)*"/>
+                <xsl:variable name="highlights" select="$quote/m:highlight" as="element(m:highlight)*"/>
                 
                 <!-- The regex to mark this string -->
                 <xsl:variable name="mark-regex" select="$highlights[$highlight-index]/text() ! normalize-space(.) ! common:escape-for-regex(.)" as="xs:string?"/>
                 
                 <!-- Get matches in text -->
                 <xsl:variable name="text-analyzed" select="$mark-regex ! analyze-string(replace($text, '\s+', ' '), $mark-regex, 'i')" as="element(fn:analyze-string-result)?"/>
+                
+                <!-- The specified occurrence of this string, or first -->
+                <xsl:variable name="target-occurrence" select="($highlights[$highlight-index]/@occurrence, 1)[1]" as="xs:integer?"/>
                 
                 <!-- This is reccurring, so specifiy the next quote to test -->
                 <xsl:variable name="quote-index-next" select="if($highlight-index lt count($highlights)) then $quote-index else $quote-index + 1" as="xs:integer"/>
@@ -3588,6 +3597,7 @@
                                     </xsl:if>
                                     
                                 </xsl:if>
+                            
                             </xsl:for-each>
                         
                         </xsl:variable>
@@ -3615,11 +3625,10 @@
                                                 <xsl:variable name="text-occurrence" select="(common:index-of-node($text-analyzed/fn:match, .),0)[1]" as="xs:integer"/>
                                                 <xsl:variable name="context-occurrence" select="$preceding-context-occurrences-count + $text-occurrence" as="xs:integer"/>
                                                 
-                                                <!-- The specified occurrence of this string, or first -->
-                                                <xsl:variable name="target-occurrence" select="$highlights[$highlight-index]/@occurrence" as="xs:integer?"/>
-                                                
                                                 <xsl:choose>
-                                                    <xsl:when test="                                                         (: It's the only valid occurrence :)                                                         (count($context-occurrences-validated) eq 1 and $context-occurrences-validated[. = $context-occurrence])                                                         (: It's the target valid occurrence :)                                                                                                                  or ($context-occurrences-validated[. = $context-occurrence][. = $target-occurrence])                                                     ">
+                                                    <!-- It's the only valid occurrence -->
+                                                    <!-- OR it's the target valid occurrence -->
+                                                    <xsl:when test="(count($context-occurrences-validated) eq 1 and $context-occurrences-validated[. = $context-occurrence]) or ($context-occurrences-validated[. = $context-occurrence][. = $target-occurrence])">
                                                         <xsl:value-of select="true()"/>
                                                     </xsl:when>
                                                     <xsl:otherwise>
@@ -3679,6 +3688,7 @@
                                     <xsl:with-param name="text" select="$text"/>
                                 </xsl:call-template>  
                             </xsl:otherwise>
+                            
                         </xsl:choose>
                         
                     </xsl:when>

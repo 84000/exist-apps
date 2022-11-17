@@ -125,7 +125,9 @@ declare function entities:similar($entity as element(m:entity)?, $search-terms a
             | $entities:entities//m:entity/id($matching-entity-ids)
         )
         
-        order by if($similar-entity[m:label/text() = $search-terms]) then 1 else 0 descending
+        order by 
+            if($similar-entity[m:label/text() = $search-terms]) then 1 else 0 descending,
+            count($similar-entity/m:instance) descending
         return
             $similar-entity
            

@@ -535,7 +535,7 @@
                     <xsl:otherwise>
                         
                         <!-- No results -->
-                        <div class="text-center">
+                        <div class="text-center top-margin">
                             
                             <p class="text-muted italic ">
                                 <xsl:value-of select="'~ No search results ~'"/>
@@ -553,11 +553,11 @@
     
     <xsl:template match="m:tm-search">
         
-        <hr/>
-        
         <!-- Results list -->
         <xsl:choose>
             <xsl:when test="m:results[m:item]">
+                
+                <hr/>
                 
                 <div class="search-results">
                     <xsl:for-each select="m:results/m:item">
@@ -709,17 +709,15 @@
                     </xsl:for-each>
                 </div>
                 
-                <hr/>
-                
                 <!-- Pagination -->
                 <xsl:sequence select="common:pagination($request/@first-record, $request/@max-records, m:results/@count-records, $base-url)"/>
                 
             </xsl:when>
             <xsl:otherwise>
                 
-                <div class="text-center">
+                <div class="text-center top-margin">
                     
-                    <p class="text-muted italic ">
+                    <p class="text-muted italic">
                         <xsl:value-of select="'~ No search results ~'"/>
                     </p>
                     
@@ -767,7 +765,7 @@
                 <div class="search-match">
                     
                     <!-- Output the match (unless it's only in the note) -->
-                    <xsl:if test="descendant::exist:match[not(ancestor::tei:note[@place eq 'end'][@xml:id])] or not(descendant::exist:match)">
+                    <xsl:if test="descendant::exist:match[not(ancestor::tei:note)][not(ancestor::tei:orig)] or not(descendant::exist:match)">
                         <div>
                             <xsl:attribute name="class" select="concat('search-match-', @node-name)"/>
                             <!-- Reduce this to a snippet -->

@@ -29,7 +29,7 @@ declare function local:parse-node($response as element(m:response), $element as 
     if($element[self::m:honoration | self::m:main-title | self::tei:head | self::tei:p | self::tei:ab | self::tei:l | self::tei:q | self::tei:list | self::tei:trailer | self::tei:label | self::tei:seg | self::tei:milestone])then (
         
         (: These are the nodes we want to output :)
-        let $output-nodes := $element/descendant::text()[not(ancestor::tei:note)][normalize-space(.) gt ''] | $element//tei:milestone | $element//tei:ref | $element//tei:note
+        let $output-nodes := $element/descendant::text()[not(ancestor::tei:note)][not(ancestor::tei:orig)][normalize-space(.) gt ''] | $element//tei:milestone | $element//tei:ref | $element//tei:note
         return (
             for $node at $position in ($element[self::tei:milestone] | $output-nodes)
             return

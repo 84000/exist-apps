@@ -216,13 +216,13 @@ declare function local:temporary-ids($doc) {
         
         let $max-id := max($doc//@tid ! common:integer(.))
         
-        for $element at $index in $elements-to-update[not(ancestor::tei:note[@place eq "end"])]
+        for $element at $index in $elements-to-update[not(ancestor::tei:note)][not(ancestor::tei:orig)]
         return
             update insert attribute tid { sum(($max-id, $index)) } into $element
         ,
         
         (: clear any tids in notes :)
-        for $tid in $doc//tei:*[ancestor::tei:note[@place eq "end"]]/@tid
+        for $tid in $doc//tei:*[ancestor::tei:note | ancestor::tei:orig]/@tid
         return
             update delete $tid
         

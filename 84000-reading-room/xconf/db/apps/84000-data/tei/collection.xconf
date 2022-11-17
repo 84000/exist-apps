@@ -56,13 +56,11 @@
                 <inline qname="tei:title"/>
                 <inline qname="tei:foreign"/>
             </text>
-            <text match="//tei:back//tei:gloss">
-                <inline qname="tei:term"/>
+            <text match="//tei:back//tei:gloss/tei:term" analyzer="no-stopwords" field="full-term"/>
+            <text match="//tei:back//tei:gloss/tei:term">
                 <inline qname="tei:title"/>
                 <inline qname="tei:foreign"/>
             </text>
-            <text match="//tei:back//tei:gloss/tei:term" analyzer="no-stopwords" field="full-term"/>
-            <text match="//tei:back//tei:gloss/tei:term"/>
         </lucene>
         
         <range>
@@ -89,7 +87,7 @@
             <create qname="@count-pages" type="xs:integer"/>
             <create qname="@tid" type="xs:integer"/>
             
-            <create qname="tei:term" type="xs:string"/>
+            <create qname="tei:term" type="xs:string" case="no"/>
             
         </range>
         

@@ -581,8 +581,9 @@ declare function local:part($part as element(tei:div)?, $content-directive as xs
             else ()
         
         (: Glossary :)
-        else if($type eq 'glossary') then
-            
+        else if($type eq 'glossary') then (
+            element debug {$output-ids},
+            $part,
             (: Just the specified ids :)
             if($content-directive = ('preview', 'passage')) then 
                 $part/id($output-ids)
@@ -592,7 +593,7 @@ declare function local:part($part as element(tei:div)?, $content-directive as xs
                 $part
             
             else ()
-        
+        )
         (: Other content :)
         else
             
@@ -1151,7 +1152,7 @@ declare function translation:glossary($tei as element(tei:TEI), $passage-id as x
     
     where $glossary[tei:gloss]
     return 
-        translation:part($glossary, $content-directive, $type, map:get($translation:type-prefixes, $type), text { map:get($translation:type-labels, $type) }, ($passage-id, $top-gloss, $location-cache-gloss))
+        translation:part($glossary, $content-directive, $type, map:get($translation:type-prefixes, $type), text { map:get($translation:type-labels, $type) }, distinct-values(($passage-id, $top-gloss, $location-cache-gloss)))
         
 };
 
@@ -1256,7 +1257,7 @@ declare function translation:word-count($tei as element(tei:TEI)) as xs:integer 
     $tei/tei:text/tei:body/tei:div[@type eq "translation"]/*[
     self::tei:div[@type = ("section", "chapter", "prologue", "homage", "colophon")]
     or self::tei:head[@type ne 'translation']
-    ]//text()[normalize-space() and not(ancestor::tei:note)]
+    ]//text()[normalize-space()][not(ancestor::tei:note)][not(ancestor::tei:orig)]
     return
         if ($translated-text and not($translated-text = '')) then
             common:word-count($translated-text)
@@ -1297,8 +1298,8 @@ declare function translation:refs($tei as element(tei:TEI), $resource-id as xs:s
     (: Get the relevant refs :)
     let $toh-key := translation:toh-key($tei, $resource-id)
     return
-        $tei/tei:text/tei:body//tei:ref[@type = $types][not(@key) or @key eq $toh-key][not(ancestor::tei:note)]
-        (:$tei/tei:text/tei:body//tei:ref[@type = $types][not(@rend) or not(@rend = ('hidden'))][not(@key) or @key eq $toh-key][not(ancestor::tei:note)]:)
+        $tei/tei:text/tei:body//tei:ref[@type = $types][not(@key) or @key eq $toh-key][not(ancestor::tei:note)][not(ancestor::tei:orig)]
+        (:$tei/tei:text/tei:body//tei:ref[@type = $types][not(@rend) or not(@rend = ('hidden'))][not(@key) or @key eq $toh-key][not(ancestor::tei:note)][not(ancestor::tei:orig)]:)
 
 };
 
@@ -1503,7 +1504,7 @@ declare function translation:folio-content($tei as element(tei:TEI), $toh-key as
             attribute end-ref {$end-ref/@cRef},
             (: Convert the content to text and <ref/>s only :)
             for $node in 
-                $folio-paragraphs//text()[count(ancestor::tei:note)  eq 0]
+                $folio-paragraphs//text()[not(ancestor::tei:note)][not(ancestor::tei:orig)]
                 | $folio-paragraphs//tei:ref[count(. | $start-ref) eq 1]
                 | $folio-paragraphs//tei:ref[count(. | $end-ref) eq 1]
             return 
@@ -1684,7 +1685,7 @@ declare function translation:quotes($tei as element(tei:TEI), $parts as element(
     return
         element { QName('http://read.84000.co/ns/1.0', 'quotes') }{
             
-            (: Where this text references another :)
+            (: Outbound quotes: where this text references another :)
             
             (: Get the @refs in this text :)
             let $local-refs := distinct-values($parts//tei:q/ancestor-or-self::*[@ref][1]/@ref)
@@ -1710,7 +1711,7 @@ declare function translation:quotes($tei as element(tei:TEI), $parts as element(
                 local:quote($local-quote, $this-toh/@key, $this-tei-type, $this-text-title, $remote-toh/@key, $remote-tei-type, $remote-location-single, $remote-text-title, $label)
             ,
             
-            (: Where other texts reference this :)
+            (: Inbound quotes: where another text references this :)
             (: Chunk the input as it can be alot :)
             let $ids := distinct-values($parts/descendant-or-self::m:part/@id | $parts//@xml:id)
             let $chunk-size := xs:integer(1024)
@@ -1769,39 +1770,37 @@ declare function local:quote($quote as element(tei:q), $toh-key as xs:string, $t
             element text-title { $source-text-title }
         },
         
-        (: Define the highlight :)
-        let $string-matches := 
-            if($quote[@alt]) then
-                $quote/@alt/string() ! tokenize(., '…')
-            else if($quote/@type eq 'substring') then
-                string-join($quote//text()[not(ancestor::tei:note)][normalize-space(.)], '…') ! tokenize(., '…')
-            else ()
-            
-        (: Remove leading and trailing punctuation :)
-        let $string-matches := $string-matches ! normalize-space(.) ! lower-case(.) ! replace(., '^([\.,!?—;:"]\s*)+', '') ! replace(., '(\s*[\.,!"?—;:])+$', '')
-        let $string-matches := $string-matches[. gt '']
+        (: Define the highlight, either the quote text or defined in tei:orig :)
+        let $highlights := 
         
-        for $string-match at $index in $string-matches
+            if($quote[tei:orig]) then
+                string-join($quote/tei:orig//text()[not(ancestor::tei:note)][normalize-space(.)], '…') ! tokenize(., '…')
+            
+            (: Deprecate @alt when all migrated to tei:orig :)
+            else if($quote[@alt]) then
+                $quote/@alt/string() ! tokenize(., '…')
+                
+            else if($quote[@type eq 'substring']) then
+                string-join($quote//text()[not(ancestor::tei:note)][not(ancestor::tei:orig)][normalize-space(.)], '…') ! tokenize(., '…')
+                
+            else ()
+        
+        (: Remove leading and trailing punctuation :)
+        for $highlight in $highlights ! normalize-space(.) ! lower-case(.) ! replace(., '^([\.,!?—;:"“]\s*)+', '') ! replace(., '(\s*[\.,!?—;:"”])+$', '')
+        where $highlight[. gt '']
         return
             element highlight {
-                
-                attribute type { ($quote/@type, 'passage')[1] },
-                
-                (: Normalise and remove trailing punctuation :)
-                if($quote/@type eq 'substring' and $string-match gt '') then 
-                    
-                    if(matches($string-match, '.*\[(\d+)\]$', 'i')) then (
-                        attribute occurrence { replace($string-match, '.*\[(\d+)\]$', '$1', 'i') },
-                        text { replace($string-match, '(.*)\[\d+\]$', '$1', 'i') }
-                    )
-                    else (
-                        text { $string-match }
-                    )
-                    
-                else ()
+            
+                if(matches($highlight, '.*\[(\d+)\]$', 'i')) then (
+                    attribute occurrence { replace($highlight, '.*\[(\d+)\]$', '$1', 'i') },
+                    text { replace($highlight, '(.*)\[\d+\]$', '$1', 'i') }
+                )
+                else (
+                    text { $highlight }
+                )
                 
             }
         
     }
-                
+    
 };
