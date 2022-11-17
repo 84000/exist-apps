@@ -581,9 +581,8 @@ declare function local:part($part as element(tei:div)?, $content-directive as xs
             else ()
         
         (: Glossary :)
-        else if($type eq 'glossary') then (
-            element debug {$output-ids},
-            $part,
+        else if($type eq 'glossary') then 
+        
             (: Just the specified ids :)
             if($content-directive = ('preview', 'passage')) then 
                 $part/id($output-ids)
@@ -593,7 +592,7 @@ declare function local:part($part as element(tei:div)?, $content-directive as xs
                 $part
             
             else ()
-        )
+            
         (: Other content :)
         else
             
