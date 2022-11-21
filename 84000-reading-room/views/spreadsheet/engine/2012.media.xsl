@@ -72,7 +72,7 @@
         <xsl:if test="$images">
             <!-- Generate the drawingX.xml file -->
             <m:entry href="xl/drawings/drawing{$sheetNr}.xml">
-                <xdr:wsDr xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:xdr="http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing">
+                <xdr:wsDr xmlns:xdr="http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">
                     <xsl:for-each select="$images">
                         <xsl:variable name="imgId" select="position()"/>
 

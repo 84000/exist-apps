@@ -137,7 +137,7 @@ return
         
         let $entities := translation:entities($source/m:attribution/@ref ! contributors:contributor-id(.), $parts[@id eq 'glossary']//tei:gloss/@xml:id)
         
-        let $quotes := translation:quotes($tei, $parts)
+        let $quotes := translation:quotes($tei, $parts[@type eq "translation"]/m:part[@content-status = ('complete')])
         
         (: Get caches :)
         let $cache := tei-content:cache($tei, false())/m:*

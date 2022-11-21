@@ -527,14 +527,17 @@ declare function local:part($part as element(tei:div)?, $content-directive as xs
         attribute nesting { $nesting },
         attribute section-index { $section-index },
         attribute content-status { $content-directive },
+        
         if($prefix) then
             attribute prefix { $prefix }
         else (),
+        
         if($part/ancestor-or-self::tei:div[@rend eq 'ignoreGlossary']) then 
             attribute glossarize { 'suppress' }
         else if($part/ancestor-or-self::tei:div[@type = ('summary', 'introduction', 'translation', 'appendix', 'end-notes', 'glossary')]) then
             attribute glossarize { 'mark' }
         else (),
+        
         if($part/@ref) then
             attribute ref { $part/@ref }
         else (),
@@ -1778,17 +1781,29 @@ declare function local:quote($quote as element(tei:q), $toh-key as xs:string, $t
             (: Deprecate @alt when all migrated to tei:orig :)
             else if($quote[@alt]) then
                 $quote/@alt/string() ! tokenize(., '…')
-                
+            
+            (: Remove square brackets from quote (although not from orig, those can be manually removed, or added if the source has square brackets) :)
             else if($quote[@type eq 'substring']) then
-                string-join($quote//text()[not(ancestor::tei:note)][not(ancestor::tei:orig)][normalize-space(.)], '…') ! tokenize(., '…')
-                
+                string-join($quote//text()[not(ancestor::tei:note)][not(ancestor::tei:orig)][normalize-space(.)] ! replace(., '[\[\]]', '', 'i'), '…') ! tokenize(., '…')
+            
             else ()
         
         (: Remove leading and trailing punctuation :)
-        for $highlight in $highlights ! normalize-space(.) ! lower-case(.) ! replace(., '^([\.,!?—;:"“]\s*)+', '') ! replace(., '(\s*[\.,!?—;:"”])+$', '')
-        where $highlight[. gt '']
+        let $highlights := $highlights ! normalize-space(.) ! lower-case(.) ! replace(., '^([\.,!?—;:"“]\s*)+', '') ! replace(., '(\s*[\.,!?—;:"”])+$', '')
+        (: Exclude common words :)
+        let $highlights := $highlights[not(. = ('', 'a','about','all','also','and','as','at','be','because','but','by','can','come','could','day','do','even','find','first','for','from','get','give','go','have','he','her','here','him','his','how','I','if','in','into','it','its','just','know','like','look','make','man','many','me','more','my','new','no','not','now','of','on','one','only','or','other','our','out','people','say','see','she','so','some','take','tell','than','that','the','their','them','then','there','these','they','thing','think','this','those','time','to','two','up','use','very','want','way','we','well','what','when','which','who','will','with','would','year','you','your'))]
+        let $count-highlights := count($highlights)
+        
+        for $highlight at $index in $highlights
         return
             element highlight {
+                
+                attribute index { $index },
+                
+                if($index eq 1 or $index eq $count-highlights) then
+                    attribute first-or-last { true() }
+                else  ()
+                ,
             
                 if(matches($highlight, '.*\[(\d+)\]$', 'i')) then (
                     attribute occurrence { replace($highlight, '.*\[(\d+)\]$', '$1', 'i') },

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://read.84000.co/ns/1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:functx="http://www.functx.com" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://read.84000.co/ns/1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:m="http://read.84000.co/ns/1.0" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:functx="http://www.functx.com" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
     
     <xsl:import href="lang.xsl"/>
     <xsl:import href="layout.xsl"/>
@@ -7,23 +7,24 @@
     <xsl:function name="common:lang-class" as="xs:string">
         <!-- Standardise wayward lang ids -->
         <xsl:param name="lang" as="xs:string?"/>
+        <xsl:variable name="lang-lower-case" select="lower-case($lang)" as="xs:string"/>
         <xsl:choose>
-            <xsl:when test="lower-case($lang) eq 'bo'">
+            <xsl:when test="$lang-lower-case eq 'bo'">
                 <xsl:value-of select="'text-bo'"/>
             </xsl:when>
-            <xsl:when test="lower-case($lang) eq 'sa-ltn'">
+            <xsl:when test="$lang-lower-case eq 'sa-ltn'">
                 <xsl:value-of select="'text-sa'"/>
             </xsl:when>
-            <xsl:when test="lower-case($lang) eq 'bo-ltn'">
+            <xsl:when test="$lang-lower-case eq 'bo-ltn'">
                 <xsl:value-of select="'text-wy'"/>
             </xsl:when>
-            <xsl:when test="lower-case($lang) = ('eng', 'en')">
+            <xsl:when test="$lang-lower-case = ('eng', 'en')">
                 <xsl:value-of select="'text-en'"/>
             </xsl:when>
-            <xsl:when test="lower-case($lang) = 'zh'">
+            <xsl:when test="$lang-lower-case = 'zh'">
                 <xsl:value-of select="'text-zh'"/>
             </xsl:when>
-            <xsl:when test="lower-case($lang) = 'ja'">
+            <xsl:when test="$lang-lower-case = 'ja'">
                 <xsl:value-of select="'text-ja'"/>
             </xsl:when>
             <xsl:otherwise>
