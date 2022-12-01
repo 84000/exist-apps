@@ -1049,7 +1049,7 @@ declare function translation:end-notes($tei as element(tei:TEI), $passage-id as 
             if(local:passage-in-content($end-notes, $passage-id)) then
                 'passage'
             else
-                'empty'
+                'passage'
         else if($view-mode[@parts eq 'outline']) then
             'empty'
         else
@@ -1063,7 +1063,7 @@ declare function translation:end-notes($tei as element(tei:TEI), $passage-id as 
         else ()
     
     let $preview-note-ids :=
-        if($content-directive eq 'preview') then
+        if($content-directive = ('preview', 'passage')) then
             $note-ids
         else ()
     
@@ -1126,7 +1126,7 @@ declare function translation:glossary($tei as element(tei:TEI), $passage-id as x
             if(local:passage-in-content($glossary, $passage-id)) then
                 'passage'
             else
-                'empty'
+                'passage'
         else if($view-mode[@parts eq 'outline']) then
             'empty'
         else
@@ -1686,34 +1686,45 @@ declare function translation:quotes($tei as element(tei:TEI), $parts as element(
     
     return
         element { QName('http://read.84000.co/ns/1.0', 'quotes') }{
+        
+            attribute text-id { tei-content:id($tei) },
             
             (: Outbound quotes: where this text references another :)
+
+            (: Derive the quote that references it:)
+            for $quote in $parts//tei:q[@xml:id]
+            let $quote-ref := $quote/ancestor-or-self::*[@ref][1]/@ref
+            where $quote-ref
             
-            (: Get the @refs in this text :)
-            let $local-refs := distinct-values($parts//tei:q/ancestor-or-self::*[@ref][1]/@ref)
-            
-            (: Lookup teis that are referenced :)
-            for $remote-location in $published/id($local-refs)
+            (: Remote text :)
+            let $remote-location := $published/id($quote-ref)
+            where $remote-location
             let $remote-tei := $remote-location/ancestor::tei:TEI
             let $remote-text-id := tei-content:id($remote-tei)
-            group by $remote-text-id
             
-            let $remote-tei-type := $remote-tei[1] ! tei-content:type(.)
-            let $remote-toh := $remote-tei[1] ! translation:toh(., '')
-            let $remote-text-title := (tei-content:title($remote-tei[1], 'shortcode', 'en'), $remote-toh ! concat('t', @number, @letter) ! upper-case(.), '[source not found]')[1] (:tei-content:title($referenced-tei):)
+            (: Group by the text id to get the details :)
+            group by $remote-text-id
+            let $remote-text-toh := $remote-tei[1] ! translation:toh(., '')
+            let $remote-text-type := $remote-tei[1] ! tei-content:type(.)
+            let $remote-text-title := (tei-content:title($remote-tei[1], 'shortcode', 'en'), $remote-text-toh ! concat('t', @number, @letter) ! upper-case(.), '[source not found]')[1]
             
             (: Descriptive label :)
-            let $label := concat('This quote refers to ', tei-content:title($remote-tei[1], 'mainTitle', 'en'))
+            let $label := concat('This quote references ', tei-content:title($remote-tei[1], 'mainTitle', 'en'))
             
-            (: Loop through each element referenced :)
-            for $remote-location-single in $remote-location
-            (: Derive the quote that references it:)
-            for $local-quote in $tei//tei:*[@ref eq $remote-location-single/@xml:id]/descendant-or-self::tei:q
+            (: Un-group quotes :)
+            for $quote-single in $quote
+            let $quote-single-ref := $quote-single/ancestor-or-self::*[@ref][1]/@ref
+            
+            (: Part :)
+            let $quote-single-part := $quote-single/ancestor::m:part[not(@type eq 'translation')][@id][last()]/@id
+            let $quote-single-remote-location := $published/id($quote-single-ref)
+            
             return 
-                local:quote($local-quote, $this-toh/@key, $this-tei-type, $this-text-title, $remote-toh/@key, $remote-tei-type, $remote-location-single, $remote-text-title, $label)
+                local:quote($quote-single, $this-toh/@key, $quote-single-part, $this-tei-type, $this-text-title, $remote-text-toh/@key, $remote-text-type, $quote-single-remote-location, $remote-text-title, $label)
             ,
             
             (: Inbound quotes: where another text references this :)
+            
             (: Chunk the input as it can be alot :)
             let $ids := distinct-values($parts/descendant-or-self::m:part/@id | $parts//@xml:id)
             let $chunk-size := xs:integer(1024)
@@ -1723,11 +1734,13 @@ declare function translation:quotes($tei as element(tei:TEI), $parts as element(
             let $chunk-start := (($chunk-size * ($chunk - 1)) + 1)
             let $subsequence := subsequence($ids, $chunk-start, $chunk-size)
             
-            for $inbound-location in $published//tei:*[@ref = $subsequence][descendant-or-self::tei:q]
-            let $inbound-tei := $inbound-location/ancestor::tei:TEI
+            (: Find the text that contains the quote :)
+            for $inbound-quote in $published//tei:q[ancestor-or-self::*[@ref = $subsequence]]
+            let $inbound-tei := $inbound-quote/ancestor::tei:TEI
             let $inbound-text-id := tei-content:id($inbound-tei)
-            group by $inbound-text-id
             
+            (: Group by the text id to get the details :)
+            group by $inbound-text-id
             let $inbound-tei-type := $inbound-tei[1] ! tei-content:type(.)
             let $inbound-toh := $inbound-tei[1] ! translation:toh(., '')
             let $inbound-text-title := (tei-content:title($inbound-tei[1], 'shortcode', 'en'), $inbound-toh ! concat('t', @number, @letter) ! upper-case(.))[1](:tei-content:title($quote-tei):)
@@ -1735,27 +1748,27 @@ declare function translation:quotes($tei as element(tei:TEI), $parts as element(
             (: Descriptive label :)
             let $label := concat('This passage is quoted in ', tei-content:title($inbound-tei[1], 'mainTitle', 'en'))
             
-            (: Loop through each location :)
-            for $inbound-location-single in $inbound-location
-            let $local-location := $tei/id($inbound-location-single/@ref)
-            (: Derive the quote that references it :)
-            for $inbound-quote in $inbound-location-single/descendant-or-self::tei:q
+            (: Part :)
+            for $inbound-quote-single in $inbound-quote
+            let $inbound-quote-part := $inbound-quote-single/ancestor::tei:div[not(@type eq 'translation')][@xml:id][last()]/@xml:id
+            let $local-location := $tei/id($inbound-quote-single/@ref)
+            
             return 
-                local:quote($inbound-quote, $inbound-toh/@key, $inbound-tei-type, $inbound-text-title, $this-toh/@key, $this-tei-type, $local-location, $this-text-title, $label)
+                local:quote($inbound-quote-single, $inbound-toh/@key, $inbound-quote-part, $inbound-tei-type, $inbound-text-title, $this-toh/@key, $this-tei-type, $local-location, $this-text-title, $label)
             
         }
     
 };
 
-declare function local:quote($quote as element(tei:q), $toh-key as xs:string, $tei-type as xs:string, $quote-text-title as xs:string, $source-toh-key as xs:string?, $source-tei-type as xs:string?, $source-element as element()?, $source-text-title as xs:string, $label as xs:string) as element(m:quote)* {
+declare function local:quote($quote as element(tei:q), $toh-key as xs:string, $quote-part as xs:string, $tei-type as xs:string, $quote-text-title as xs:string, $source-toh-key as xs:string?, $source-tei-type as xs:string?, $source-element as element()?, $source-text-title as xs:string, $label as xs:string) as element(m:quote)* {
     
     element { QName('http://read.84000.co/ns/1.0', 'quote') } {
         
         (: Properties of the quote :)
         attribute resource-id { $toh-key },
         attribute resource-type { $tei-type },
-        attribute id { $quote/@xml:id},
-        attribute part { $quote/ancestor-or-self::tei:div[@xml:id][not(@type eq 'translation')][last()]/@xml:id },
+        attribute id { $quote/@xml:id },
+        attribute part { $quote-part },
         
         (: Label :)
         element label { $label },
@@ -1767,53 +1780,192 @@ declare function local:quote($quote as element(tei:q), $toh-key as xs:string, $t
             attribute resource-id { $source-toh-key },
             attribute resource-type { $source-tei-type },
             attribute location-id { $source-element/@xml:id },
-            attribute location-type { local-name($source-element) },
-            attribute location-part { $source-element/ancestor-or-self::tei:div[@xml:id][not(@type eq 'translation')][last()]/@xml:id },
+            (:attribute location-type { local-name($source-element) },:)
+            attribute location-part { $source-element/ancestor-or-self::tei:div[not(@type eq 'translation')][@xml:id][last()]/@xml:id },
             element text-title { $source-text-title }
         },
         
-        (: Define the highlight, either the quote text or defined in tei:orig :)
-        let $highlights := 
+        $quote,
         
+        (: Exclude any very common words from being single tokens :)
+        (: This could be better done by checking the text for occurrences :)
+        let $stopwords := ('', 'a','about','all','also','and','as','at','be','because','but','by','can','come','could','day','do','even','find','first','for','from','get','give','go','have','he','her','here','him','his','how','I','if','in','into','it','its','just','know','like','look','make','man','many','me','more','my','new','no','not','now','of','on','one','only','or','other','our','out','people','say','see','she','so','some','take','tell','than','that','the','their','them','then','there','these','they','thing','think','this','those','time','to','two','up','use','very','want','way','we','well','what','when','which','who','will','with','would','year','you','your')
+        
+        (: Get the quoted text, either the quote text or defined in tei:orig :)
+        let $quoted-texts := 
             if($quote[tei:orig]) then
-                string-join($quote/tei:orig//text()[not(ancestor::tei:note)][normalize-space(.)], '…') ! tokenize(., '…')
+                $quote/tei:orig//text()[not(ancestor::tei:note)][normalize-space(.)]
             
             (: Deprecate @alt when all migrated to tei:orig :)
             else if($quote[@alt]) then
-                $quote/@alt/string() ! tokenize(., '…')
+                $quote/@alt/string()
             
             (: Remove square brackets from quote (although not from orig, those can be manually removed, or added if the source has square brackets) :)
             else if($quote[@type eq 'substring']) then
-                string-join($quote//text()[not(ancestor::tei:note)][not(ancestor::tei:orig)][normalize-space(.)] ! replace(., '[\[\]]', '', 'i'), '…') ! tokenize(., '…')
+                $quote//text()[not(ancestor::tei:note)][not(ancestor::tei:orig)][normalize-space(.)] ! replace(., '[\[\]]', '', 'i')
             
             else ()
         
-        (: Remove leading and trailing punctuation :)
-        let $highlights := $highlights ! normalize-space(.) ! lower-case(.) ! replace(., '^([\.,!?—;:"“]\s*)+', '') ! replace(., '(\s*[\.,!?—;:"”])+$', '')
-        (: Exclude common words :)
-        let $highlights := $highlights[not(. = ('', 'a','about','all','also','and','as','at','be','because','but','by','can','come','could','day','do','even','find','first','for','from','get','give','go','have','he','her','here','him','his','how','I','if','in','into','it','its','just','know','like','look','make','man','many','me','more','my','new','no','not','now','of','on','one','only','or','other','our','out','people','say','see','she','so','some','take','tell','than','that','the','their','them','then','there','these','they','thing','think','this','those','time','to','two','up','use','very','want','way','we','well','what','when','which','who','will','with','would','year','you','your'))]
+        (: Normalize highlights, removing leading and trailing punctuation :)
+        (: Split based on ellipses, but remember which are split this way :)
+        let $highlights := 
+            for $quoted-text in $quoted-texts
+            return
+            
+                let $ellipsis-texts := $quoted-text ! tokenize(., '…') ! normalize-space(.) ! lower-case(.) ! replace(., '^([\.,!?—;:’"”“]\s*)+', '') ! replace(., '(\s*[\.,!?—;:’"”“])+$', '') ! .[not(. = $stopwords)]
+                let $count-ellipsis-texts := count($ellipsis-texts)
+                
+                for $ellipsis-text at $index in $ellipsis-texts
+                
+                (: Extract occurrence number for disambiguation [2] :)
+                let $occurrence :=
+                    if(matches($ellipsis-text, '(.*)\[(\d+)\]$', 'i')) then 
+                        replace($ellipsis-text, '(.*)\[(\d+)\]$', '$2', 'i')
+                    else 1
+                
+                let $ellipsis-text-stripped := replace($ellipsis-text, '(.*)\[(\d+)\]$', '$1', 'i')
+                
+                return
+                    element highlight { 
+                    
+                        (: Build the target regex, remove occurrence, split by word, escape and rejoin enforcing a word break :)
+                        attribute target { string-join($ellipsis-text-stripped ! tokenize(., '[^\p{L}]+')[normalize-space(.) gt ''] ! functx:escape-for-regex(.), '[^\p{L}]+') },
+                        
+                        (: Test if it's been split by an ellipsis :)
+                        if($index lt $count-ellipsis-texts) then
+                            attribute ellipsis { true() }
+                        else (),
+                        
+                        attribute occurrence { $occurrence },
+                        
+                        attribute string-length { string-length($ellipsis-text-stripped) },
+                        
+                        $ellipsis-text
+                        
+                    }
+        
         let $count-highlights := count($highlights)
         
-        for $highlight at $index in $highlights
-        return
-            element highlight {
+        return (
+            if($count-highlights gt 0) then
                 
-                attribute index { $index },
+                element highlight {
                 
-                if($index eq 1 or $index eq $count-highlights) then
-                    attribute first-or-last { true() }
-                else  ()
-                ,
+                    $highlights[1]/@*,
+                    
+                    attribute index { 1 },
+                    
+                    let $regex-following :=
+                        string-join((
+                            
+                            (: There are following highlights so make sure there's a word break :)
+                            if($count-highlights gt 1) then (
+                                
+                                (: All the other text nodes that need to follow :)
+                                for $highlight at $index in $highlights
+                                return (
+                                    
+                                    (: Join the target string to the regex :)
+                                    if($index eq 1) then (
+                                        
+                                        (: It doesn't have an ellipsis so it must be the first from the start :)
+                                        if($highlight[@ellipsis]) then () else '^',
+                                        
+                                        (: Ensure there's a word break, or it's the start :)
+                                        '(^|[^\p{L}]+)'
+                                        
+                                    )
+                                    (: Add subsequent strings :)
+                                    else (
+                                    
+                                        $highlight/@target,
+                                        
+                                        (: Ensure there's a word break, or it's the end :)
+                                        '([^\p{L}]+|$)',
+                                        
+                                        (: If it has an ellipsis so allow any other text in between, unless it's the last string :)
+                                        if($index lt $count-highlights) then (
+                                        
+                                            if($highlight[@ellipsis]) then '(.*([^\p{L}]+|$))?' else ()
+                                            
+                                        )
+                                        else ()
+                                        
+                                    )
+                                    
+                                )
+                                
+                            )
+                            else()
+                            
+                        ))
+                        
+                    where $regex-following gt ''
+                    return
+                        attribute regex-following { $regex-following }
+                    ,
+                    
+                    $highlights[1]/text()
+                    
+                }
+            else ()
+            ,
+            if($count-highlights gt 1) then
+                
+                element highlight {
+                    
+                    $highlights[last()]/@*,
+                    
+                    attribute index { 2 },
+                    
+                    let $regex-preceding :=
+                        string-join((
+                            
+                            (: All the other text nodes that need to precede :)
+                            for $highlight at $index in $highlights
+                            return (
+                                
+                                (: Ensure there's a word break, or it's the start :)
+                                if($index eq 1) then(
+                                    
+                                    '(^|[^\p{L}]+)'
+                                    
+                                )
+                                else ()
+                                ,
+                                (: Add preceding strings :)
+                                if($index lt $count-highlights) then (
+                                    
+                                    (: Target string :)
+                                    $highlight/@target,
+                                    
+                                    (: Ensure there's a word break, or it's the end :)
+                                    '([^\p{L}]+|$)',
+                                    
+                                    (: It has an ellipsis so allow any other text in between :)
+                                    if($highlight[@ellipsis]) then '(.*([^\p{L}]+|$))?' else ()
+                                    
+                                )
+                                else ()
+                            
+                            ),
+                            (: Join the regex string to the target string, ensure it's the end :)
+                             '$'
+                            
+                        ))
+                    
+                    where $regex-preceding gt ''
+                    return
+                        attribute regex-preceding { $regex-preceding }
+                    ,
+                    
+                    $highlights[last()]/text()
+                    
+                }
+            else ()
             
-                if(matches($highlight, '.*\[(\d+)\]$', 'i')) then (
-                    attribute occurrence { replace($highlight, '.*\[(\d+)\]$', '$1', 'i') },
-                    text { replace($highlight, '(.*)\[\d+\]$', '$1', 'i') }
-                )
-                else (
-                    text { $highlight }
-                )
-                
-            }
+        )
+        
         
     }
     

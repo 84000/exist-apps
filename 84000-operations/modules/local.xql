@@ -1,7 +1,15 @@
 xquery version "3.0";
 
 module namespace local="http://operations.84000.co/local";
+
+declare namespace m = "http://read.84000.co/ns/1.0";
+declare namespace tei = "http://www.tei-c.org/ns/1.0";
+declare namespace xhtml = "http://www.w3.org/1999/xhtml";
 declare namespace pkg="http://expath.org/ns/pkg";
+
+import module namespace common="http://read.84000.co/common" at "../../84000-reading-room/modules/common.xql";
+import module namespace tei-content="http://read.84000.co/tei-content" at "../../84000-reading-room/modules/tei-content.xql";
+import module namespace translation="http://read.84000.co/translation" at "../../84000-reading-room/modules/translation.xql";
 
 declare function local:app-path() as xs:string {
 
@@ -48,5 +56,82 @@ declare function local:async-script($script-name as xs:string, $parameters as el
             5000,
             0
         )
+    )
+};
+
+declare function local:root-html($resource-id as xs:string, $part-id as xs:string, $commentary-key as xs:string) {
+    
+    let $request :=
+        element { QName('http://read.84000.co/ns/1.0', 'request')} {
+            attribute model { 'translation' },
+            attribute resource-id { $resource-id },
+            attribute resource-suffix { 'html' },
+            attribute lang { 'en' },
+            attribute doc-type { 'html' },
+            attribute part { $part-id },
+            attribute commentary { $commentary-key },
+            attribute view-mode { 'passage' },
+            attribute archive-path { '' }
+        }
+    
+    let $tei := tei-content:tei($resource-id, 'translation')
+    let $source := tei-content:source($tei, $resource-id)
+    let $passage :=  translation:passage($tei, $part-id, $translation:view-modes/m:view-mode[@id eq 'passage'])
+    let $parts := translation:parts-cached($tei, $passage)
+    let $translation-data :=
+        element { QName('http://read.84000.co/ns/1.0', 'translation') } {
+            
+            attribute id { tei-content:id($tei) },
+            attribute status { tei-content:translation-status($tei) },
+            attribute status-group { tei-content:translation-status-group($tei) },
+            attribute relative-html { translation:relative-html($source/@key, ()) },
+            attribute canonical-html { translation:canonical-html($source/@key, ()) },
+            
+            translation:titles($tei),
+            $source,
+            translation:toh($tei, $source/@key),
+            tei-content:ancestors($tei, $source/@key, 1),
+            
+            $parts
+            
+        }
+        
+    let $quotes := translation:quotes($tei, $parts[@type eq "translation"]/m:part[@content-status = ('complete')])
+    
+    let $cache := tei-content:cache($tei, false())/m:*
+    
+    let $strings := translation:replace-text($source/@key)
+    
+    let $xml-response :=
+        common:response(
+            $request/@model, 
+            $common:app-id,
+            (
+                $request,
+                $translation-data,
+                $quotes,
+                $cache,
+                $strings
+            )
+        )
+    
+    let $html := 
+        transform:transform(
+            $xml-response,
+            doc(concat($common:app-path, "/views/html/translation.xsl")), 
+            <parameters/>
+        )
+    
+    return (
+        element { QName('http://read.84000.co/ns/1.0', 'tei') } {
+            attribute resource-id { $resource-id },
+            attribute part-id { $part-id },
+            $passage
+        },
+        element { QName('http://read.84000.co/ns/1.0', 'html') } {
+            attribute resource-id { $resource-id },
+            attribute part-id { $part-id },
+            $html//xhtml:*[@id eq $part-id]
+        }
     )
 };

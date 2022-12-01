@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:output="http://www.w3.org/2010/xslt-xquery-serialization" xmlns:common="http://read.84000.co/common" xmlns:markdown="http://read.84000.co/markdown" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:m="http://read.84000.co/ns/1.0" xmlns:ops="http://operations.84000.co" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:output="http://www.w3.org/2010/xslt-xquery-serialization" xmlns:ops="http://operations.84000.co" xmlns:common="http://read.84000.co/common" xmlns:markdown="http://read.84000.co/markdown" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" version="3.0" exclude-result-prefixes="#all">
     
     <xsl:import href="functions.xsl"/>
     
@@ -196,6 +196,18 @@
                         </xsl:choose>
                         <xsl:attribute name="data-loading" select="'Loading glossary...'"/>
                         <xsl:value-of select="'Glossary'"/>
+                    </a>
+                </li>
+            </xsl:if>
+            <xsl:if test="$active-tab eq 'operations/quotes'">
+                <li role="presentation">
+                    <xsl:if test="$active-tab eq 'operations/quotes'">
+                        <xsl:attribute name="class" select="'active'"/>
+                    </xsl:if>
+                    <a>
+                        <xsl:attribute name="href" select="concat('/edit-quotes.html?resource-id=', /m:response/m:request/@resource-id, '&amp;part=', /m:response/m:request/@part)"/>
+                        <xsl:attribute name="data-loading" select="'Loading quotes...'"/>
+                        <xsl:value-of select="'Quotes'"/>
                     </a>
                 </li>
             </xsl:if>

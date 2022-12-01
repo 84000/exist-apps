@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:output="http://www.w3.org/2010/xslt-xquery-serialization" xmlns:scheduler="http://exist-db.org/xquery/scheduler" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:ops="http://operations.84000.co" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:output="http://www.w3.org/2010/xslt-xquery-serialization" xmlns:scheduler="http://exist-db.org/xquery/scheduler" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:ops="http://operations.84000.co" xmlns:common="http://read.84000.co/common" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" version="3.0" exclude-result-prefixes="#all">
     
     <xsl:import href="../../84000-reading-room/xslt/tei-to-xhtml.xsl"/>
     <xsl:import href="common.xsl"/>
@@ -54,6 +54,7 @@
                     <!-- Text title -->
                     <div class="h4 no-bottom-margin">
                         
+                        <xsl:variable name="main-title-limited" select="common:limit-str($main-title, 80)"/>
                         <a>
                             <xsl:if test="$text[m:toh]">
                                 <xsl:attribute name="href" select="concat($reading-room-path, '/', $request-resource-type, '/', $text/m:toh[1]/@key, '.html?view-mode=editor')"/>
@@ -61,7 +62,7 @@
                                 <xsl:value-of select="$text/m:toh[1]/m:full/data()"/>
                                 <xsl:value-of select="' / '"/>
                             </xsl:if>
-                            <xsl:value-of select="common:limit-str($main-title, 80)"/>
+                            <xsl:value-of select="$main-title-limited"/>
                         </a>
                         
                         <small>
@@ -71,7 +72,7 @@
                         <a class="small underline">
                             <xsl:attribute name="href" select="concat($reading-room-path, '/', $request-resource-type, '/', $request-resource-id, '.html?view-mode=editor')"/>
                             <xsl:attribute name="target" select="$request-resource-id"/>
-                            <xsl:value-of select="common:limit-str($request-resource-id, 100 - string-length($main-title))"/>
+                            <xsl:value-of select="common:limit-str($request-resource-id, 100 - string-length($main-title-limited))"/>
                         </a>
                         
                         <small>
@@ -2028,7 +2029,6 @@
             </xsl:otherwise>
             
         </xsl:choose>
-        
         
     </xsl:template>
     

@@ -66,18 +66,26 @@ declare function entities:similar($entity as element(m:entity)?, $search-terms a
     let $instance-entries := glossary:entries($entity/m:instance/@id, false())
     
     let $search-terms := distinct-values((
+    
         $search-terms,
+        
         $instance-entries/m:term[@xml:lang = ('Bo-Ltn', 'Sa-Ltn')]/data(),
+        
         $instance-entries/m:alternatives[@xml:lang = ('Bo-Ltn', 'Sa-Ltn')]/data()
+        
     )[not(. = $glossary:empty-term-placeholders)] ! lower-case(.) ! common:normalized-chars(.) (:! replace(.,"’", "'"):))
     
     let $exclude-ids := distinct-values((
+    
         $exclude-ids,
+        
         (: Exclude matched instances :)
         $entity/m:instance/@id/string(),
+        
         (: Exclude related instances :)
         $entities:entities//m:entity/id($entity/m:relation/@id)/m:instance/@id/string(),
         $entities:entities//m:entity[m:relation/@id = $entity/@xml:id]/m:instance/@id/string()
+        
     ))
     
     let $search-query :=
@@ -103,34 +111,37 @@ declare function entities:similar($entity as element(m:entity)?, $search-terms a
     let $matching-instance-ids := subsequence($matching-instance-ids, 1, 1024)
     
     let $matching-entity-ids := (
+    
         $glossary:tei//tei:teiHeader//tei:sourceDesc/tei:bibl/tei:author
             [ft:query(., $search-query)][@ref]
+            
         | $glossary:tei//tei:teiHeader//tei:sourceDesc/tei:bibl/tei:editor
             [ft:query(., $search-query)][@ref]
+            
     )/@ref/string() ! replace(., '^eft:', '')
     
     let $matching-entity-ids := distinct-values($matching-entity-ids)
     let $matching-entity-ids := subsequence($matching-entity-ids, 1, 1024)
     
     return 
-        
-        for $similar-entity in (
-            if($entity[m:type/@type = $entities:types//m:type[@glossary-type]/@id]) then
-                $entities:entities//m:entity
-                    [m:instance/@id = $matching-instance-ids]
-                    [m:type/@type = $entity/m:type/@type]
-            else 
-                $entities:entities//m:entity
-                    [m:instance/@id = $matching-instance-ids]
-            | $entities:entities//m:entity/id($matching-entity-ids)
-        )
-        
-        order by 
-            if($similar-entity[m:label/text() = $search-terms]) then 1 else 0 descending,
-            count($similar-entity/m:instance) descending
-        return
-            $similar-entity
-           
+        subsequence(
+            for $similar-entity in (
+                if($entity[m:type/@type = $entities:types//m:type[@glossary-type]/@id]) then
+                    $entities:entities//m:entity
+                        [m:instance/@id = $matching-instance-ids]
+                        [m:type/@type = $entity/m:type/@type]
+                else 
+                    $entities:entities//m:entity
+                        [m:instance/@id = $matching-instance-ids]
+                | $entities:entities//m:entity/id($matching-entity-ids)
+            )
+            
+            order by 
+                if($similar-entity[m:label/text() = $search-terms]) then 1 else 0 descending,
+                count($similar-entity/m:instance) descending
+            return
+                $similar-entity
+        ,1, 100)
 };
 
 declare function entities:related($entities as element(m:entity)*) as element()* {

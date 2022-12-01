@@ -369,46 +369,46 @@ declare function tests:part($section-tei as element()*, $section-html as element
     
     let $section-tei-type := $section-tei/ancestor::tei:TEI/tei:teiHeader/tei:fileDesc/@type
     
-    let $section-count-tei-p := 
-        count($section-tei//*[self::tei:p | self::tei:ab | self::tei:trailer | self::tei:bibl][not(ancestor::tei:note)])
-    let $section-count-html-p := 
-        count($section-html//xhtml:p[not(common:contains-class(@class, ('ref-prologue', 'table-as-list-row', 'table-note')))]) 
+    let $section-tei-p := 
+        $section-tei//*[self::tei:p | self::tei:ab | self::tei:trailer | self::tei:bibl][not(ancestor::tei:note)]
+    let $section-html-p := 
+        $section-html//xhtml:p[not(common:contains-class(@class, ('ref-prologue', 'table-as-list-row', 'table-note')))]
         
-    let $section-count-tei-line := 
-        count($section-tei//tei:l[not(ancestor::tei:note)])
-    let $section-count-html-line := 
-        count($section-html//xhtml:div[common:contains-class(@class, 'line')]) 
+    let $section-tei-line := 
+        $section-tei//tei:l[not(ancestor::tei:note)]
+    let $section-html-line := 
+        $section-html//xhtml:div[common:contains-class(@class, 'line')]
     
-    let $section-count-tei-note := 
-        count($section-tei//tei:note[@place eq 'end'][@xml:id])
-    let $section-count-html-note := 
-        count($section-html//xhtml:a[common:contains-class(@class, 'footnote-link')])
+    let $section-tei-note := 
+        $section-tei//tei:note[@place eq 'end'][@xml:id]
+    let $section-html-note := 
+        $section-html//xhtml:a[common:contains-class(@class, 'footnote-link')]
         
-    let $section-count-tei-q := 
-        count($section-tei//tei:q)
-    let $section-count-html-q := 
-        count($section-html//xhtml:blockquote | $section-html//xhtml:span[common:contains-class(@class, 'blockquote')])
+    let $section-tei-q := 
+        $section-tei//tei:q
+    let $section-html-q := 
+        $section-html//xhtml:blockquote | $section-html//xhtml:span[common:contains-class(@class, ('quote'))]
     
-    let $section-count-tei-id := 
-        count($section-tei//*[@tid][not(ancestor::tei:note)])
-    let $section-count-html-id := 
-        count($section-html//*[matches(@id, '^node\-')])
+    let $section-tei-id := 
+        $section-tei//*[@tid][not(ancestor::tei:note)]
+    let $section-html-id := 
+        $section-html//*[matches(@id, '^node\-')]
     
-    let $section-count-tei-list-item := 
-        count($section-tei//tei:list[not(ancestor::tei:note)]/tei:item)
-    let $section-count-html-list-item := 
-        count($section-html//xhtml:div[common:contains-class(@class, 'list-item')])
+    let $section-tei-list-item := 
+        $section-tei//tei:list[not(ancestor::tei:note)]/tei:item
+    let $section-html-list-item := 
+        $section-html//xhtml:div[common:contains-class(@class, 'list-item')]
     
-    (:let $section-count-tei-sections := 
-        count($section-tei//tei:div[@type][tei:head[@type eq parent::tei:div/@type]])
-    let $section-count-html-sections := 
-        count($section-html//xhtml:section[common:contains-class(@class, 'part-type-chapter') or common:contains-class(@class, 'part-type-section')] | $section-html//xhtml:div[common:contains-class(@class, 'nested-section')])
+    (:let $section-tei-sections := 
+        $section-tei//tei:div[@type][tei:head[@type eq parent::tei:div/@type]]
+    let $section-html-sections := 
+        $section-html//xhtml:section[common:contains-class(@class, 'part-type-chapter') or common:contains-class(@class, 'part-type-section')] | $section-html//xhtml:div[common:contains-class(@class, 'nested-section')]
     :)
     
-    let $section-count-tei-milestones := 
-        if(not($section-tei-type eq 'section')) then count($section-tei//tei:milestone) else 0
-    let $section-count-html-milestones := 
-        count($section-html//xhtml:a[common:contains-class(@class, 'milestone from-tei')])
+    let $section-tei-milestones := 
+        if(not($section-tei-type eq 'section')) then $section-tei//tei:milestone else ()
+    let $section-html-milestones := 
+        $section-html//xhtml:a[common:contains-class(@class, 'milestone from-tei')]
     
     let $required-paragraphs-rule := if ($required-paragraphs > 0) then concat(' at least ', $required-paragraphs , ' paragraph(s) and') else ''
     
@@ -417,15 +417,15 @@ declare function tests:part($section-tei as element()*, $section-html as element
             xmlns="http://read.84000.co/ns/1.0"
             id="{ concat('valid-', $section-name, '-section') }"
             pass="{ if(
-                    $section-count-html-p ge $required-paragraphs
-                    and $section-count-html-p eq $section-count-tei-p
-                    and $section-count-html-line eq $section-count-tei-line
-                    and $section-count-html-note eq $section-count-tei-note
-                    and $section-count-html-q eq $section-count-tei-q
-                    and $section-count-html-id eq $section-count-tei-id
-                    and $section-count-html-list-item eq $section-count-tei-list-item
-                    (:and $section-count-html-sections eq $section-count-tei-sections:)
-                    and $section-count-html-milestones eq $section-count-tei-milestones
+                    count($section-html-p) ge $required-paragraphs
+                    and count($section-html-p) eq count($section-tei-p)
+                    and count($section-html-line) eq count($section-tei-line)
+                    and count($section-html-note) eq count($section-tei-note)
+                    and count($section-html-q) eq count($section-tei-q)
+                    and count($section-html-id) eq count($section-tei-id)
+                    and count($section-html-list-item) eq count($section-tei-list-item)
+                    (:and count($section-html-sections) eq count($section-tei-sections):)
+                    and count($section-html-milestones) eq count($section-tei-milestones)
                 ) then 1 else 0 }">
             <title>
             {
@@ -437,43 +437,41 @@ declare function tests:part($section-tei as element()*, $section-html as element
             }
             </title>
             <details>
-                <detail>{$section-count-tei-p} TEI paragraph(s), {$section-count-html-p} HTML paragraph(s).</detail>
-                <detail>{$section-count-tei-line} TEI line(s), {$section-count-html-line} HTML line(s).</detail>
-                <detail>{$section-count-tei-note} TEI note(s), {$section-count-html-note} HTML note(s).</detail>
-                <detail>{$section-count-tei-q} TEI quote(s), {$section-count-html-q} HTML quote(s).</detail>
-                <detail>{$section-count-tei-id} TEI id(s), {$section-count-html-id} HTML id(s).</detail>
-                <detail>{$section-count-tei-list-item} TEI list item(s), {$section-count-html-list-item} HTML list item(s).</detail>
-                <!--<detail>{$section-count-tei-sections} TEI section(s), {$section-count-html-sections} HTML section(s).</detail>-->
-                <detail>{$section-count-tei-milestones} TEI milestone(s), {$section-count-html-milestones} HTML milestone(s).</detail>
+                <detail>{count($section-tei-p)} TEI paragraph(s), {count($section-html-p)} HTML paragraph(s).</detail>
+                <detail>{count($section-tei-line)} TEI line(s), {count($section-html-line)} HTML line(s).</detail>
+                <detail>{count($section-tei-note)} TEI note(s), {count($section-html-note)} HTML note(s).</detail>
+                <detail>{count($section-tei-q)} TEI quote(s), {count($section-html-q)} HTML quote(s).</detail>
+                <detail>{count($section-tei-id)} TEI id(s), {count($section-html-id)} HTML id(s).</detail>
+                <detail>{count($section-tei-list-item)} TEI list item(s), {count($section-html-list-item)} HTML list item(s).</detail>
+                <!--<detail>{count($section-tei-sections)} TEI section(s), {count($section-html-sections)} HTML section(s).</detail>-->
+                <detail>{count($section-tei-milestones)} TEI milestone(s), {count($section-html-milestones)} HTML milestone(s).</detail>
                 {
-                    if(not($section-count-html-note eq $section-count-tei-note)) then
+                    if(not(count($section-html-note) eq count($section-tei-note))) then
                         <detail>
                         {
-                            let $section-tei-note-ids := 
-                                $section-tei//tei:note[@place eq 'end'][@xml:id]/@xml:id/string()
-                            let $section-html-note-ids := 
-                                $section-html//xhtml:a[common:contains-class(@class, 'footnote-link')]/@id/string()
-                            return
-                                'Note anomalies: '
-                                || string-join(($section-tei-note-ids[not(. = $section-html-note-ids)], $section-html-note-ids[not(. = $section-tei-note-ids)]), ', ')
+                            'Note anomalies: '
+                            || string-join(($section-tei-note/@xml:id/string()[not(. = $section-html-note/@id/string())], $section-html-note/@id/string()[not(. = $section-tei-note/@xml:id/string())]), ', ')
                         }
                         </detail>
                     else ()
                     ,
-                    if(not($section-count-html-id eq $section-count-tei-id)) then
+                    if(not(count($section-html-id) eq count($section-tei-id))) then
                         <detail>
                         {
-                            let $section-tei-ids := 
-                                $section-tei//*[@tid][not(ancestor::tei:note)]/@tid/string()
-                            let $section-html-ids := 
-                                $section-html//*[matches(@id, '^node\-')]/replace(@id, '^node\-', '')
-                            return
-                                'Id anomalies: '
-                                || string-join(($section-tei-ids[not(. = $section-html-ids)], $section-html-ids[not(. = $section-tei-ids)]), ', ')
+                            'Id anomalies: '
+                            || string-join(($section-tei-id[not(. = $section-html-id)], $section-html-id[not(. = $section-tei-id)]), ', ')
                         }
                         </detail>
                     else ()
-                    
+                    ,
+                    if(not(count($section-html-milestones) eq count($section-tei-milestones))) then
+                        <detail>
+                        {
+                            'Milestone anomalies: '
+                            || string-join($section-tei-milestones/@xml:id/string()[not(. = $section-html//xhtml:div/@id/string())], ', ')
+                        }
+                        </detail>
+                    else ()
                 }
                 
             </details>
