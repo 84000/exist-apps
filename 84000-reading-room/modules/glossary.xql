@@ -24,12 +24,12 @@ declare variable $glossary:tei := (
         [tei:teiHeader/tei:fileDesc/tei:publicationStmt
             [@status = $common:environment/m:render/m:status[@type eq 'translation']/@status-id]
         ],:)
-    collection($common:translations-path)//tei:TEI
+    $tei-content:translations-collection//tei:TEI
         [tei:text/tei:back/tei:div[@type eq 'glossary']]
         [tei:teiHeader/tei:fileDesc/tei:publicationStmt
             [@status = $common:environment/m:render/m:status[@type eq 'translation']/@status-id]
         ],
-    collection($common:knowledgebase-path)//tei:TEI
+    $tei-content:knowledgebase-collection//tei:TEI
         [tei:text/tei:back/tei:div[@type eq 'glossary']]
         [tei:teiHeader/tei:fileDesc/tei:publicationStmt
             [@status = $common:environment/m:render/m:status[@type eq 'article']/@status-id]
@@ -1058,6 +1058,43 @@ declare function glossary:cache($tei as element(tei:TEI), $refresh-locations as 
                     else ()
                 }
                 
+};
+
+declare function glossary:pre-processed($tei as element(tei:TEI)) as element(m:pre-processed) {
+    
+    let $start-time := util:system-dateTime()
+    
+    let $text-id := tei-content:id($tei)
+    
+    (: TEI glossary items :)
+    let $tei-glossary-sorted :=
+        for $gloss in $tei//tei:back//tei:list[@type eq 'glossary']/tei:item/tei:gloss[@xml:id][not(@mode eq 'surfeit')]
+        let $sort-term := glossary:sort-term($gloss)
+        order by $sort-term/text()
+        return 
+            element { QName('http://read.84000.co/ns/1.0', 'gloss') } {
+                attribute id { $gloss/@xml:id },
+                attribute word-count { $sort-term/@word-count },
+                attribute letter-count { $sort-term/@letter-count }
+            }
+    
+    let $glosses :=
+        for $gloss at $index in $tei-glossary-sorted
+        return
+            element { QName('http://read.84000.co/ns/1.0', 'gloss') } {
+                $gloss/@*,
+                attribute index { $index }
+            }
+    
+    let $end-time := util:system-dateTime()
+    
+    return
+        tei-content:pre-processed(
+            $text-id,
+            'glossary',
+            functx:total-seconds-from-duration($end-time - $start-time),
+            $glosses
+        )
 };
 
 declare function glossary:downloads(){

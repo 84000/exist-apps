@@ -453,61 +453,87 @@ declare function translation:passage($tei as element(tei:TEI), $passage-id as xs
 
 };
 
-declare function translation:parts-cached($tei as element(tei:TEI), $merge-parts as element(m:part)*) as element(m:part)* {
+declare function translation:outline-cached($internal-tei as element(tei:TEI), $target-ids as xs:string*) as element(m:text-outline)* {
     
-    let $resource-id := tei-content:id($tei)
-    
-    let $request := 
-        element { QName('http://read.84000.co/ns/1.0', 'request')} {
-            attribute model { 'text-outline' },
-            attribute resource-suffix { 'xml' },
-            attribute resource-id { $resource-id }
-        }
-    
-    let $tei-timestamp := tei-content:last-modified($tei)
-    let $app-version := replace($common:app-version, '\.', '-')
-    
-    let $cache-key := 
-        if($tei-timestamp instance of xs:dateTime) then
-            lower-case(format-dateTime($tei-timestamp, "[Y0001]-[M01]-[D01]-[H01]-[m01]-[s01]") || '-' || $app-version)
-        else ()
-    
-    let $cache := common:cache-get($request, $cache-key, false())
-    
-    let $cached-outline := 
-        if(not($cache/m:text-outline)) then
+    let $published-tei := 
+        $tei-content:translations-collection//tei:TEI
+            [tei:teiHeader/tei:fileDesc/tei:publicationStmt
+                [@status = $common:environment/m:render/m:status[@type eq 'translation']/@status-id]
+            ]
             
-            let $outline-new := 
-                element {QName('http://read.84000.co/ns/1.0', 'text-outline')} {
-                    attribute text-id { $resource-id },
-                    attribute tei-timestamp { $tei-timestamp },
-                    attribute app-version { $app-version },
-                    translation:parts($tei, (), $translation:view-modes/m:view-mode[@id eq 'outline'], ())
-                }
-             
-             let $do-cache := common:cache-put($request, $outline-new, $cache-key)
-             return $outline-new
-             
-        else
-            $cache/m:text-outline
+    let $external-tei :=
+        for $external-location in $published-tei/id($target-ids)
+        let $external-tei := $external-location/ancestor::tei:TEI
+        let $external-text-id := tei-content:id($external-tei)    
+        (: Group by the text id to get the details :)
+        group by $external-text-id
+        return
+            $external-tei
     
-    let $merged-parts :=
-        for $part in $cached-outline/m:part
-        return 
-            if($part[@id eq 'translation']) then 
-                element { node-name($part) } {
-                    $part/@*,
-                    $part/*[not(self::m:part)],
-                    for $chapter in $cache/m:text-outline/m:part[@id eq 'translation']/m:part
-                    return 
-                        ($merge-parts[@id eq 'translation']/m:part[@id eq $chapter/@id], $chapter)[1]
-                 }
-            else
-                ($merge-parts[@id eq $part/@id], $part)[1]
+    for $tei in ($internal-tei | $external-tei)
+    return
     
-    return 
-        $merged-parts
+        let $text-id := tei-content:id($tei)
         
+        let $request := 
+            element { QName('http://read.84000.co/ns/1.0', 'request')} {
+                attribute model { 'text-outline' },
+                attribute resource-suffix { 'xml' },
+                attribute resource-id { $text-id }
+            }
+        
+        let $tei-timestamp := tei-content:last-modified($tei)
+        let $app-version := replace($common:app-version, '\.', '-')
+        
+        let $cache-key := 
+            if($tei-timestamp instance of xs:dateTime) then
+                lower-case(format-dateTime($tei-timestamp, "[Y0001]-[M01]-[D01]-[H01]-[m01]-[s01]") || '-' || $app-version)
+            else ()
+        
+        let $cache := common:cache-get($request, $cache-key, false())
+        
+        return
+            
+            if($cache/m:text-outline) then
+                $cache/m:text-outline
+                
+            else
+                let $outline := 
+                    element {QName('http://read.84000.co/ns/1.0', 'text-outline')} {
+                    
+                        attribute text-id { $text-id },
+                        attribute tei-timestamp { $tei-timestamp },
+                        attribute app-version { $app-version },
+                        
+                        translation:parts($tei, (), $translation:view-modes/m:view-mode[@id eq 'outline'], ()),
+                        tei-content:milestones-pre-processed($tei),
+                        tei-content:end-notes-pre-processed($tei),
+                        local:folio-refs-pre-processed($tei),
+                        glossary:pre-processed($tei)
+                        
+                    }
+                 
+                 let $do-cache := common:cache-put($request, $outline, $cache-key)
+                 return 
+                    $outline
+        
+};
+
+declare function translation:parts-cached($outline as element(m:text-outline), $merge-parts as element(m:part)*) as element(m:part)* {
+    
+    for $outline-part in $outline/m:part
+    return 
+        if($outline-part[@id eq 'translation']) then 
+            element { node-name($outline-part) } {
+                $outline-part/@*,
+                $outline-part/*[not(self::m:part)],
+                for $chapter in $outline-part/m:part
+                return 
+                    ($merge-parts[@id eq 'translation']/m:part[@id eq $chapter/@id], $chapter)[1]
+             }
+        else
+            ($merge-parts[@id eq $outline-part/@id], $outline-part)[1]
+    
 };
 
 declare function translation:part($part as element(tei:div)?, $content-directive as xs:string, $type as xs:string, $prefix as xs:string, $label as node()*, $output-ids as xs:string*) as element(m:part) {
@@ -1167,45 +1193,23 @@ declare function translation:folios-cache($tei as element(tei:TEI), $refresh as 
             $cache/m:folios-cache
         else
         
-            let $start-time := util:system-dateTime()
-            
-            let $folio-refs :=
-                for $bibl in $tei/tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl[@key]
-                let $resource-id := $bibl/@key
-                let $folios-for-toh := translation:folio-refs-sorted($tei, $resource-id)
-                return
-                    for $folio in $folios-for-toh
-                    return (
-                        common:ws(2),
-                        element { QName('http://read.84000.co/ns/1.0', 'folio-ref') } {
-                            attribute id { $folio/@xml:id },
-                            attribute resource-id { $resource-id },
-                            $folio/@index-in-resource,
-                            $folio/@index-in-sort,
-                            if($folio[@cRef-volume]) then
-                                $folio/@cRef-volume
-                            else ()
-                        }
-                    )
-            
-            let $end-time := util:system-dateTime()
+            let $folio-refs-pre-processed := local:folio-refs-pre-processed($tei)
             
             return
             element { QName('http://read.84000.co/ns/1.0', 'folios-cache') } {
             
-                attribute timestamp { current-dateTime() },
-                attribute seconds-to-build { functx:total-seconds-from-duration($end-time - $start-time) },
-                
-                $folio-refs,
-                
-                common:ws(1)
+                $folio-refs-pre-processed/@*,
+                $folio-refs-pre-processed/*
                 
             }
+            
 };
 
-(:declare function local:folio-refs-pre-processed($tei as element(tei:TEI)){
+declare function local:folio-refs-pre-processed($tei as element(tei:TEI)) as element(m:pre-processed) {
     
     let $start-time := util:system-dateTime()
+    
+    let $text-id := tei-content:id($tei)
     
     let $folio-refs :=
         for $bibl in $tei/tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl[@key]
@@ -1213,8 +1217,7 @@ declare function translation:folios-cache($tei as element(tei:TEI), $refresh as 
         let $folios-for-toh := translation:folio-refs-sorted($tei, $resource-id)
         return
             for $folio in $folios-for-toh
-            return (
-                common:ws(2),
+            return 
                 element { QName('http://read.84000.co/ns/1.0', 'folio-ref') } {
                     attribute id { $folio/@xml:id },
                     attribute resource-id { $resource-id },
@@ -1224,35 +1227,18 @@ declare function translation:folios-cache($tei as element(tei:TEI), $refresh as 
                         $folio/@cRef-volume
                     else ()
                 }
-            )
     
     let $end-time := util:system-dateTime()
     
     return
-        element { QName('http://read.84000.co/ns/1.0', 'pre-processed') } {
-            
-            attribute type { 'folio-refs' },
-            attribute timestamp { current-dateTime() },
-            attribute seconds-to-build { functx:total-seconds-from-duration($end-time - $start-time) },
-            
-            $folio-refs,
-            
-            common:ws(1)
-            
-        }
+        tei-content:pre-processed(
+            $text-id,
+            'folio-refs',
+            functx:total-seconds-from-duration($end-time - $start-time),
+            $folio-refs
+        )
+        
 };
-
-declare function translation:folios-cache($tei as element(tei:TEI)) as element(m:folios-cache) {
-    
-    let $folios-pre-processed := translation:parts-cached($tei, ())/m:pre-processed[@type eq 'folio-refs']
-    
-    return
-        element { QName('http://read.84000.co/ns/1.0', 'folios-cache') } {
-            $folios-pre-processed/@*,
-            translation:parts-cached($tei, ())/m:pre-processed[@type eq 'folio-refs']/*
-        }
-    
-};:)
 
 declare function translation:word-count($tei as element(tei:TEI)) as xs:integer {
     let $translated-text :=
@@ -1735,7 +1721,9 @@ declare function translation:quotes($tei as element(tei:TEI), $parts as element(
             let $subsequence := subsequence($ids, $chunk-start, $chunk-size)
             
             (: Find the text that contains the quote :)
-            for $inbound-quote in $published//tei:q[ancestor-or-self::*[@ref = $subsequence]]
+            for $inbound-location in $published//tei:*[@ref = $subsequence]
+            for $inbound-quote in $inbound-location/descendant-or-self::tei:q[count(ancestor-or-self::*[@ref][1] | $inbound-location) eq 1]
+            let $inbound-quote-part := $inbound-location/ancestor::tei:div[not(@type eq 'translation')][@xml:id][last()]/@xml:id
             let $inbound-tei := $inbound-quote/ancestor::tei:TEI
             let $inbound-text-id := tei-content:id($inbound-tei)
             
@@ -1750,11 +1738,11 @@ declare function translation:quotes($tei as element(tei:TEI), $parts as element(
             
             (: Part :)
             for $inbound-quote-single in $inbound-quote
-            let $inbound-quote-part := $inbound-quote-single/ancestor::tei:div[not(@type eq 'translation')][@xml:id][last()]/@xml:id
-            let $local-location := $tei/id($inbound-quote-single/@ref)
+            let $inbound-quote-single-ref := $inbound-quote-single/ancestor-or-self::*[@ref][1]/@ref
+            let $local-location := $tei/id($inbound-quote-single-ref)
             
             return 
-                local:quote($inbound-quote-single, $inbound-toh/@key, $inbound-quote-part, $inbound-tei-type, $inbound-text-title, $this-toh/@key, $this-tei-type, $local-location, $this-text-title, $label)
+                local:quote($inbound-quote-single, $inbound-toh/@key, $inbound-quote-part[1], $inbound-tei-type, $inbound-text-title, $this-toh/@key, $this-tei-type, $local-location, $this-text-title, $label)
             
         }
     
@@ -1794,7 +1782,7 @@ declare function local:quote($quote as element(tei:q), $toh-key as xs:string, $q
         (: Get the quoted text, either the quote text or defined in tei:orig :)
         let $quoted-texts := 
             if($quote[tei:orig]) then
-                $quote/tei:orig//text()[not(ancestor::tei:note)][normalize-space(.)]
+                $quote/tei:orig//text()[normalize-space()][not(ancestor::tei:note)]
             
             (: Deprecate @alt when all migrated to tei:orig :)
             else if($quote[@alt]) then
@@ -1802,7 +1790,7 @@ declare function local:quote($quote as element(tei:q), $toh-key as xs:string, $q
             
             (: Remove square brackets from quote (although not from orig, those can be manually removed, or added if the source has square brackets) :)
             else if($quote[@type eq 'substring']) then
-                $quote//text()[not(ancestor::tei:note)][not(ancestor::tei:orig)][normalize-space(.)] ! replace(., '[\[\]]', '', 'i')
+                $quote//text()[normalize-space()][not(ancestor::tei:note)][not(ancestor::tei:orig)] ! replace(., '[\[\]]', '', 'i')
             
             else ()
         

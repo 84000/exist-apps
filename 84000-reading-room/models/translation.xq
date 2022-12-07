@@ -19,9 +19,9 @@ declare option exist:serialize "method=xml indent=no";
 
 let $resource-suffix := request:get-parameter('resource-suffix', '')
 let $resource-id := request:get-parameter('resource-id', '')
-let $part-id := request:get-parameter('part', 'none') ! replace(., '^(end\-notes|end-note\-[a-zA-Z0-9\-]+)$', 'end-notes')
+let $part-id := request:get-parameter('part', 'none') ! replace(., '^(end\-notes|end\-note\-[a-zA-Z0-9\-]+)$', 'end-notes')
 let $part-id-int := replace($part-id, '^node\-', '')[functx:is-a-number(.)] ! xs:integer(.)
-let $commentary-key := request:get-parameter('commentary', '')
+let $commentary-key := request:get-parameter('commentary', '')[. gt ''][1]
 let $view-mode := request:get-parameter('view-mode', 'default')
 let $archive-path := request:get-parameter('archive-path', ())
 
@@ -32,7 +32,13 @@ let $tei := tei-content:tei($resource-id, $tei-type, $archive-path)
 let $source := tei-content:source($tei, $resource-id)
 
 (: Validate the commentary key :)
-let $commentary-tei := $commentary-key[. gt ''][1] ! tei-content:tei(., $tei-type)
+let $commentary-tei := $commentary-key ! tei-content:tei(., $tei-type)
+let $commentary-tei := 
+    if(not($commentary-tei) and $commentary-key) then
+        collection($common:tei-path)/id($commentary-key)/ancestor::tei:TEI
+    else
+        $commentary-tei
+        
 let $commentary-source := $commentary-tei[1] ! tei-content:source(., '')
 
 (: Derive the root part (section/chapter) based on the id requested
@@ -137,13 +143,13 @@ return
         
         let $entities := translation:entities($source/m:attribution/@ref ! contributors:contributor-id(.), $parts[@id eq 'glossary']//tei:gloss/@xml:id)
         
-        let $quotes := translation:quotes($tei, $parts[@type eq "translation"]/m:part[@content-status = ('complete')])
+        let $quotes := translation:quotes($tei, $parts)
         
         (: Get caches :)
-        let $cache := tei-content:cache($tei, false())/m:*
+        let $cache := tei-content:cache($tei, false())/m:glossary-cache
         
-        (:let $pointers := $parts//tei:ptr/@target[matches(., '^#')] ! replace(., '^#', '') 
-        let $caches := collection(concat($common:data-path, '/', 'cache'))/m:cache/m:*[descendant::*/@id = $pointers] except $cache:)
+        (: Get the cached outline of the text :)
+        let $outlines := translation:outline-cached($tei, $parts//tei:ptr/@target[matches(., '^#')] ! replace(., '^#(end\-note\-)?', ''))
         
         (: Calculated strings :)
         let $strings := translation:replace-text($source/@key)
@@ -159,6 +165,7 @@ return
                     $quotes,
                     $entities:flags,
                     $cache,
+                    $outlines,
                     $strings
                 )
             )

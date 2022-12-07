@@ -18,7 +18,7 @@ import module namespace functx="http://www.functx.com";
 declare variable $translations:total-kangyur-pages as xs:integer := 70000;
 (:declare variable $translations:page-size-ranges := doc(concat($common:app-config, '/', 'page-size-ranges.xml'));:)
 
-declare function translations:work-tei($work as xs:string) as element()* {
+declare function translations:work-tei($work as xs:string) as element(tei:TEI)* {
     if($work eq 'all') then
         $tei-content:translations-collection//tei:TEI
     else if($work = ($source:kangyur-work, $source:tengyur-work)) then
@@ -26,7 +26,7 @@ declare function translations:work-tei($work as xs:string) as element()* {
     else ()
 };
 
-declare function translations:files($publication-statuses as xs:string*) as element() {
+declare function translations:files($publication-statuses as xs:string*) as element(m:translations) {
 
     element { QName('http://read.84000.co/ns/1.0', 'translations') }{
         for $tei in $tei-content:translations-collection//tei:fileDesc/tei:publicationStmt[@status = $publication-statuses]/ancestor::tei:TEI
@@ -44,7 +44,7 @@ declare function translations:files($publication-statuses as xs:string*) as elem
     
 };
 
-declare function translations:summary($work as xs:string) as element() {
+declare function translations:summary($work as xs:string) as element(m:outline-summary) {
     
     let $tei := translations:work-tei($work)
     

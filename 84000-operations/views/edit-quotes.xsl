@@ -194,11 +194,11 @@
         
         <xsl:param name="quote" as="element(m:quote)"/>
         
-        <!-- Configuration -->
         <div class="list-group accordion" role="tablist" aria-multiselectable="false">
             
             <xsl:attribute name="id" select="concat('quote-accordion-', $quote/@id)"/>
             
+            <!-- Configuration -->
             <xsl:call-template name="expand-item">
                 
                 <xsl:with-param name="id" select="concat('quote-configuration-', $quote/@id)"/>
@@ -229,7 +229,7 @@
                                     <xsl:choose>
                                         
                                         <xsl:when test="$quote/m:highlight">
-                                            <div class="quote-underline">
+                                            <div class="quote-style-underline">
                                                 <xsl:apply-templates select="$quote/tei:q/node()"/>
                                             </div>
                                         </xsl:when>
@@ -258,11 +258,11 @@
                         </div>
                         
                         <!-- Link -->
-                        <div class="small">
-                            <a>
+                        <div class="sml-margin top">
+                            <a class="small">
                                 <xsl:attribute name="href" select="concat($reading-room-path, '/translation/', $quote/@resource-id, '.html', '#', $quote/@id)"/>
                                 <xsl:attribute name="target" select="concat($quote/@resource-id, '.html')"/>
-                                <xsl:value-of select="$quote/@resource-id"/>
+                                <xsl:value-of select="'[view]'"/>
                             </a>
                         </div>
                         
@@ -301,7 +301,7 @@
                                 <xsl:choose>
                                     <xsl:when test="$quote/m:highlight">
                                         
-                                        <ul>
+                                        <ol>
                                             <xsl:for-each select="$quote/m:highlight">
                                                 
                                                 <xsl:variable name="highlight" select="." as="element(m:highlight)"/>
@@ -321,11 +321,9 @@
                                                         </xsl:choose>
                                                     </span>
                                                     
-                                                    <xsl:value-of select="' '"/>
-                                                    
                                                     <xsl:if test="$highlight/@regex-preceding">
                                                         <small>
-                                                            <xsl:value-of select="'preceded by: '"/>
+                                                            <xsl:value-of select="' preceded by: '"/>
                                                         </small>
                                                         <code class="break">
                                                             <xsl:value-of select="$highlight/@regex-preceding"/>
@@ -334,7 +332,7 @@
                                                     </xsl:if>
                                                     
                                                     <small>
-                                                        <xsl:value-of select="'target: '"/>
+                                                        <xsl:value-of select="' target: '"/>
                                                     </small>
                                                     <code class="break">
                                                         <xsl:value-of select="$highlight/@target"/>
@@ -346,11 +344,9 @@
                                                         <xsl:value-of select="concat('[', $highlight/@occurrence, ']')"/>
                                                     </span>
                                                     
-                                                    <xsl:value-of select="' '"/>
-                                                    
                                                     <xsl:if test="$highlight/@regex-following">
                                                         <small>
-                                                            <xsl:value-of select="'followed by: '"/>
+                                                            <xsl:value-of select="' followed by: '"/>
                                                         </small>
                                                         <xsl:value-of select="' ⟶ '"/>
                                                         <code class="break">
@@ -361,7 +357,7 @@
                                                 </li>
                                                 
                                             </xsl:for-each>
-                                        </ul>
+                                        </ol>
                                         
                                     </xsl:when>
                                     <xsl:otherwise>
@@ -399,6 +395,7 @@
                 
             </xsl:call-template>
             
+            <!-- Output -->
             <xsl:call-template name="expand-item">
                 
                 <xsl:with-param name="id" select="concat('quote-highlight-', $quote/@id)"/>
@@ -491,7 +488,7 @@
     </xsl:template>
     
     <xsl:template match="m:source-html">
-        <div class="tei-parser">
+        <div class="tei-parser underline-quoted">
             <div class="clearfix">
                 <xsl:apply-templates select="node()"/>
             </div>

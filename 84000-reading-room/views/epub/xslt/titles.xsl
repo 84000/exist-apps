@@ -65,9 +65,12 @@
                                 <xsl:apply-templates select="m:translation/m:source/m:toh"/>
                             </h3>
                             
-                            <p>
-                                <xsl:value-of select="concat(string-join(m:translation/m:source/m:series/text() | m:translation/m:source/m:scope/text() | m:translation/m:source/m:range/text(), ', '), '.')"/>
-                            </p>
+                            <xsl:if test="m:translation/m:source[m:scope//text()]">
+                                <p id="location">
+                                    <xsl:apply-templates select="m:translation/m:source/m:scope/node()"/>
+                                </p>
+                            </xsl:if>
+                            
                         </div>
                         
                         <div epub:type="contributors" class="translator">

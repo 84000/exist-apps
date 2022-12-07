@@ -5,7 +5,7 @@
     
     <xsl:variable name="request" select="/m:response/m:request"/>
     <xsl:variable name="base-url" select="common:internal-link('/search.html',(concat('search-type=', $request/@search-type), concat('search-lang=', $request/@search-lang), concat('search=', $request/m:search)), (), /m:response/@lang)"/>
-    <xsl:variable name="specified-text" select="/m:response/m:tei-search/m:results/m:item/m:tei[@resource-id eq $request/@specified-text]"/>
+    <xsl:variable name="specified-text" select="/m:response/m:tei-search/m:request/m:tei"/>
     
     <xsl:template match="/m:response">
         

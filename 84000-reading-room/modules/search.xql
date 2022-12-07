@@ -94,11 +94,19 @@ declare function search:search($request as xs:string, $resource-id as xs:string,
         element { QName('http://read.84000.co/ns/1.0', 'tei-search') } { 
         
             element request { 
-                if($resource-id gt '') then
-                    attribute resource-id { $resource-id }
+            
+                if($resource-id gt '') then (
+                    
+                    let $tei := tei-content:tei($resource-id, 'translation')
+                    return
+                        local:tei-header($tei)
+                        
+                )
                 else ()
                 ,
-                $request 
+                
+                $request
+                
             },
 
             element results {

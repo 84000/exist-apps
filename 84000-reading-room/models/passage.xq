@@ -74,7 +74,11 @@ return
         )
         
         (: Get parts from cache and merge passages :)
-        let $parts := translation:parts-cached($tei, $passage)
+        let $text-id := tei-content:id($tei)
+        
+        let $outlines := translation:outline-cached($tei, $passage//tei:ptr/@target[matches(., '^#')] ! replace(., '^#(end\-note\-)?', ''))
+        
+        let $merged-parts := translation:parts-cached($outlines[@text-id eq $text-id], $passage)
         
         (: Get glossaries :)
         (: Compile all the translation data :)
@@ -92,7 +96,7 @@ return
                 translation:toh($tei, $source/@key),
                 tei-content:ancestors($tei, $source/@key, 1),
                 
-                $parts
+                $merged-parts
                 
             }
             
@@ -101,7 +105,7 @@ return
         let $quotes := translation:quotes($tei, $passage)
         
         (: Get caches :)
-        let $cache := tei-content:cache($tei, false())/m:*
+        let $cache := tei-content:cache($tei, false())/m:glossary-cache
         
         (: Calculated strings :)
         let $strings := translation:replace-text($source/@key)
@@ -117,6 +121,7 @@ return
                     $quotes,
                     $entities:flags,
                     $cache,
+                    $outlines,
                     $strings
                 )
             )

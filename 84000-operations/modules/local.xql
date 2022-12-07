@@ -77,7 +77,9 @@ declare function local:root-html($resource-id as xs:string, $part-id as xs:strin
     let $tei := tei-content:tei($resource-id, 'translation')
     let $source := tei-content:source($tei, $resource-id)
     let $passage :=  translation:passage($tei, $part-id, $translation:view-modes/m:view-mode[@id eq 'passage'])
-    let $parts := translation:parts-cached($tei, $passage)
+    let $outline := translation:outline-cached($tei, ())
+    let $parts := translation:parts-cached($outline, $passage)
+    
     let $translation-data :=
         element { QName('http://read.84000.co/ns/1.0', 'translation') } {
             

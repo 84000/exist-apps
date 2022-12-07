@@ -285,9 +285,7 @@ declare function tei-content:source($tei as element(tei:TEI), $resource-id as xs
     return
         <source xmlns="http://read.84000.co/ns/1.0" key="{ $bibl/@key }" parent-id="{ $bibl/tei:idno[@parent-id]/@parent-id }">
             <toh>{ normalize-space(string-join($bibl/tei:ref//text(), ' +')) }</toh>
-            <series>{ normalize-space(data($bibl/tei:series)) }</series>
-            <scope>{ normalize-space(data($bibl/tei:biblScope)) }</scope>
-            <range>{ normalize-space(data($bibl/tei:citedRange)) }</range>
+            <scope>{ $bibl/tei:series/node() | $bibl/tei:biblScope/node() | $bibl/tei:citedRange/node() }</scope>
             {
                 for $attribution in $bibl/tei:author | $bibl/tei:editor
                 return 
@@ -558,34 +556,42 @@ declare function tei-content:notes-cache($tei as element(tei:TEI), $refresh as x
             $cache/m:notes-cache
         else
             
-            let $start-time := util:system-dateTime()
-            
-            let $end-notes :=
-            
-                for $note at $index in $tei/tei:text//tei:note[@place eq 'end'][@xml:id]
-                    (: Lowest level @typed part, except root :)
-                    let $part := $note/ancestor::tei:div[@type][not(@type = ('translation', 'appendix'))][last()]
-                return (
-                    common:ws(2),
-                    element { QName('http://read.84000.co/ns/1.0', 'end-note') } {
-                        attribute id { $note/@xml:id },
-                        attribute part-id { ($part/@xml:id, $part/@type)[1] },
-                        attribute index { $index }
-                    }
-                )
-            
-            let $end-time := util:system-dateTime()
+            let $end-notes-pre-processed := tei-content:end-notes-pre-processed($tei)
             
             return
                 element { QName('http://read.84000.co/ns/1.0', 'notes-cache') } {
                 
-                    attribute timestamp { current-dateTime() },
-                    attribute seconds-to-build { functx:total-seconds-from-duration($end-time - $start-time) },
-                    
-                    $end-notes,
-                    
-                    common:ws(1)
+                    $end-notes-pre-processed/@*,
+                    $end-notes-pre-processed/*
                 }
+};
+
+declare function tei-content:end-notes-pre-processed($tei as element(tei:TEI)) as element(m:pre-processed) {
+    
+    let $start-time := util:system-dateTime()
+    
+    let $text-id := tei-content:id($tei)
+    
+    let $end-notes :=
+        for $note at $index in $tei/tei:text//tei:note[@place eq 'end'][@xml:id]
+        (: Lowest level @typed part, except root :)
+        let $part := $note/ancestor::tei:div[@type][not(@type = ('translation', 'appendix'))][last()]
+        return 
+            element { QName('http://read.84000.co/ns/1.0', 'end-note') } {
+                attribute id { $note/@xml:id },
+                attribute part-id { ($part/@xml:id, $part/@type)[1] },
+                attribute index { $index }
+            }
+    
+    let $end-time := util:system-dateTime()
+    
+    return
+        tei-content:pre-processed(
+            $text-id,
+            'end-notes',
+            functx:total-seconds-from-duration($end-time - $start-time),
+            $end-notes
+        )
 };
 
 declare function tei-content:milestones-cache($tei as element(tei:TEI), $refresh as xs:boolean?, $create-if-unavailable as xs:boolean?) as element(m:milestones-cache) {
@@ -597,79 +603,62 @@ declare function tei-content:milestones-cache($tei as element(tei:TEI), $refresh
             $cache/m:milestones-cache
         else
             
-            let $start-time := util:system-dateTime()
-            
-            let $milestones := 
-                for $part in 
-                    $tei/tei:text/tei:front/tei:div[@type]
-                    | $tei/tei:text/tei:body/tei:div[@type = ('translation', 'article')]/tei:div[@type]
-                    | $tei/tei:text/tei:back/tei:div[@type eq 'appendix']/tei:div[@type]
-                    | $tei/tei:text/tei:back/tei:div[not(@type eq 'appendix')]
-                    for $milestone at $index in $part//tei:milestone[@xml:id]
-                    return (
-                        common:ws(2),
-                        element { QName('http://read.84000.co/ns/1.0', 'milestone') } {
-                            attribute id { $milestone/@xml:id },
-                            attribute part-id { ($part/@xml:id, $part/@type)[1] },
-                            attribute index { $index }
-                        }
-                    )
-                    
-            let $end-time := util:system-dateTime()
+            let $milestones-pre-processed := tei-content:milestones-pre-processed($tei)
             
             return
                 element { QName('http://read.84000.co/ns/1.0', 'milestones-cache') } {
                 
-                    attribute timestamp { current-dateTime() },
-                    attribute seconds-to-build { functx:total-seconds-from-duration($end-time - $start-time) },
+                    $milestones-pre-processed/@*,
+                    $milestones-pre-processed/*
                     
-                    $milestones,
-                    
-                    common:ws(1)
                 }
 };
 
-(:declare function tei-content:quotes-cache($tei as element(tei:TEI), $refresh as xs:boolean?, $create-if-unavailable as xs:boolean?) as element(m:quotes-cache) {
+declare function tei-content:milestones-pre-processed($tei as element(tei:TEI)) as element(m:pre-processed) {
+
+    let $start-time := util:system-dateTime()
     
-    let $cache := tei-content:cache($tei, $create-if-unavailable)
+    let $text-id := tei-content:id($tei)
+    
+    let $milestones := 
+        for $part in 
+            $tei/tei:text/tei:front/tei:div[@type]
+            | $tei/tei:text/tei:body/tei:div[@type = ('translation', 'article')]/tei:div[@type]
+            | $tei/tei:text/tei:back/tei:div[@type eq 'appendix']/tei:div[@type]
+            | $tei/tei:text/tei:back/tei:div[not(@type eq 'appendix')]
+            for $milestone at $index in $part//tei:milestone[@xml:id]
+            return
+                element { QName('http://read.84000.co/ns/1.0', 'milestone') } {
+                    attribute id { $milestone/@xml:id },
+                    attribute part-id { ($part/@xml:id, $part/@type)[1] },
+                    attribute index { $index }
+                }
+    
+    let $end-time := util:system-dateTime()
     
     return
-        if($cache[m:quotes-cache] and not($refresh)) then
-            $cache/m:quotes-cache
-        else
+        tei-content:pre-processed(
+            $text-id,
+            'milestones',
+            functx:total-seconds-from-duration($end-time - $start-time),
+            $milestones
+        )
+};
+
+declare function tei-content:pre-processed($text-id as xs:string, $type as xs:string, $seconds-to-build as xs:integer, $content as element()*) as element(m:pre-processed) {
+
+    element { QName('http://read.84000.co/ns/1.0', 'pre-processed') } {
             
-            let $start-time := util:system-dateTime()
-            
-            let $quotes :=
-            
-                for $quote-ref in $tei//tei:q/@ref
-                let $quote := collection($common:tei-path)//id($quote-ref)
-                let $quote-tei := $quote/ancestor::tei:TEI
-                let $quote-bibl := tei-content:source-bibl($quote-tei, '')[1]
-                where $quote-bibl
-                return (
-                    common:ws(2),
-                    element { QName('http://read.84000.co/ns/1.0', 'quote') } {
-                        attribute id { $quote-ref },
-                        attribute resource-id { $quote-bibl/@key/string() },
-                        attribute resource-type { tei-content:type($quote-tei) },
-                        attribute label { $quote-bibl/tei:ref/text() }
-                    }
-                )
-            
-            let $end-time := util:system-dateTime()
-            
-            return
-                element { QName('http://read.84000.co/ns/1.0', 'quotes-cache') } {
-                
-                    attribute timestamp { current-dateTime() },
-                    attribute seconds-to-build { functx:total-seconds-from-duration($end-time - $start-time) },
-                    
-                    $quotes,
-                    
-                    common:ws(1)
-                }
-};:)
+        attribute text-id { $text-id },
+        attribute type { $type },
+        attribute timestamp { current-dateTime() },
+        attribute seconds-to-build { $seconds-to-build },
+        
+        $content
+        
+    }
+
+};
 
 declare function tei-content:status-updates($tei as element()) as element(m:status-updates) {
     

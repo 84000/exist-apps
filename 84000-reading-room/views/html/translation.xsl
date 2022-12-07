@@ -864,9 +864,9 @@
                                 <h4>
                                     <xsl:apply-templates select="m:translation/m:source/m:toh"/>
                                 </h4>
-                                <xsl:if test="m:translation/m:source[m:series[text()] or m:scope[text()] or m:range[text()]]">
+                                <xsl:if test="m:translation/m:source[m:scope//text()]">
                                     <p id="location">
-                                        <xsl:value-of select="concat(normalize-space(string-join(m:translation/m:source/m:series/text() | m:translation/m:source/m:scope/text() | m:translation/m:source/m:range/text(), ', ')), '.')"/>
+                                        <xsl:apply-templates select="m:translation/m:source/m:scope/node()"/>
                                     </p>
                                 </xsl:if>
                             </div>
