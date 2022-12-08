@@ -151,7 +151,6 @@ declare function entities:related($entities as element(m:entity)*) as element()*
 declare function entities:related($entities as element(m:entity)*, $include-unrelated as xs:boolean, $exclude-flagged as xs:string*, $exclude-status as xs:string*) as element()* {
 
     (: Related entities :)
-    (: TO DO: this needs chunking!! :)
     let $related-entities := (
         if($include-unrelated) then (
             $entities:entities//m:entity/id($entities/m:relation/@id)
@@ -168,20 +167,27 @@ declare function entities:related($entities as element(m:entity)*, $include-unre
     let $exclude-instances := $lookup-entities/m:instance[m:flag[@type = $exclude-flagged]]
     let $lookup-instances := $lookup-entities/m:instance except $exclude-instances
     
+    (: Get glossary entries :)
+    let $glossary-id-chunks := common:ids-chunked($lookup-instances[@type eq 'glossary-item']/@id)
+    let $glosses := 
+        for $key in map:keys($glossary-id-chunks)
+        return
+            $glossary:tei/id(map:get($glossary-id-chunks, $key))/self::tei:gloss[not(@mode eq 'surfeit')]
+    
     return (
     
         $related-entities,
     
         (: Related glossaries - grouped by text :)
-        for $gloss in $glossary:tei//id($lookup-instances[@type eq 'glossary-item']/@id)/self::tei:gloss[not(@mode eq 'surfeit')]
+        for $gloss in $glosses
         
         let $tei := $gloss/ancestor::tei:TEI
         let $text-id := tei-content:id($tei)
+        
         group by $text-id
-        
         let $glossary-status := $tei[1]//tei:div[@type eq 'glossary']/@status
-        where not($glossary-status = $exclude-status)
         
+        where not($glossary-status = $exclude-status)
         let $text-type := tei-content:type($tei[1])
         let $glossary-cache := glossary:cache($tei[1], (), false())
         
@@ -190,6 +196,8 @@ declare function entities:related($entities as element(m:entity)*, $include-unre
         
                 attribute id { $text-id }, 
                 attribute type { $text-type },
+                (:attribute count-glosses { count($gloss) },:)
+                
                 $tei[1]//tei:div[@type eq 'glossary']/@status ! attribute glossary-status { . },
                 
                 tei-content:titles($tei[1]),
@@ -211,13 +219,21 @@ declare function entities:related($entities as element(m:entity)*, $include-unre
                 $gloss ! glossary:glossary-entry(., false()),
                 
                 element glossary-cache {
-                    $glossary-cache/m:gloss[range:eq(@id,$gloss/@xml:id)]
+                
+                    let $glossary-id-chunks := common:ids-chunked($gloss/@xml:id)
+                    for $key in map:keys($glossary-id-chunks)
+                    return
+                        $glossary-cache/m:gloss[range:eq(@id, map:get($glossary-id-chunks, $key))]
+                    
                 }
                 
-            },
+            }
+        ,
         
         (: Related articles :)
-        knowledgebase:pages($lookup-instances[@type eq 'knowledgebase-article']/@id, true())
+        let $knowledgebase-ids := $lookup-instances[@type eq 'knowledgebase-article']/@id
+        return
+            knowledgebase:pages($knowledgebase-ids, true())
         
     )
 };

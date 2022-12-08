@@ -1169,13 +1169,10 @@ declare function translation:glossary($tei as element(tei:TEI), $passage-id as x
     (: Get based on location-ids :)
     let $location-cache-gloss := 
         if($content-directive = ('preview', 'passage')) then
-            let $chunk-size := xs:integer(1024)
-            let $chunks-count := xs:integer(ceiling(count($location-ids) div $chunk-size))
-            for $chunk in 1 to $chunks-count
-            let $chunk-start := (($chunk-size * ($chunk - 1)) + 1)
-            let $subsequence := subsequence($location-ids, $chunk-start, $chunk-size)
+            let $location-id-chunks := common:ids-chunked($location-ids)
+            for $key in map:keys($location-id-chunks)
             return
-                $glossary-cache/m:gloss[m:location/@id = $subsequence]/@id
+                $glossary-cache/m:gloss[m:location/@id = map:get($location-id-chunks, $key)]/@id
         else ()
     
     where $glossary[tei:gloss]
@@ -1713,15 +1710,11 @@ declare function translation:quotes($tei as element(tei:TEI), $parts as element(
             
             (: Chunk the input as it can be alot :)
             let $ids := distinct-values($parts/descendant-or-self::m:part/@id | $parts//@xml:id)
-            let $chunk-size := xs:integer(1024)
-            let $chunks-count := xs:integer(ceiling(count($ids) div $chunk-size))
-            
-            for $chunk in 1 to $chunks-count
-            let $chunk-start := (($chunk-size * ($chunk - 1)) + 1)
-            let $subsequence := subsequence($ids, $chunk-start, $chunk-size)
+            let $id-chunks := common:ids-chunked($ids)
+            for $key in map:keys($id-chunks)
             
             (: Find the text that contains the quote :)
-            for $inbound-location in $published//tei:*[@ref = $subsequence]
+            for $inbound-location in $published//tei:*[@ref = map:get($id-chunks, $key)]
             for $inbound-quote in $inbound-location/descendant-or-self::tei:q[count(ancestor-or-self::*[@ref][1] | $inbound-location) eq 1]
             let $inbound-quote-part := $inbound-location/ancestor::tei:div[not(@type eq 'translation')][@xml:id][last()]/@xml:id
             let $inbound-tei := $inbound-quote/ancestor::tei:TEI

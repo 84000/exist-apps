@@ -320,6 +320,8 @@ declare function store:store-new-pdf($file-path as xs:string, $version as xs:str
             let $file-name := lower-case($file-path-tokenized[last()])
             let $resource-id := substring-before($file-name, '.pdf')
             
+            let $log := util:log('info', concat('store-new-pdf:', $file-name))
+            
             let $options := 
                 <options>
                     <workingDir>/{ $pdf-config/m:sync-path/text() }</workingDir>
@@ -375,6 +377,8 @@ declare function store:store-new-epub($file-path as xs:string, $version as xs:st
             let $file-name := lower-case($file-path-tokenized[last()])
             let $url := concat($ebook-config/m:epub-source-url, '/translation/', $file-name)
             
+            let $log := util:log('info', concat('store-new-epub:', $file-name))
+            
             let $download := store:http-download($url, $file-collection, $file-name, $store:file-group)
             
             return
@@ -412,6 +416,8 @@ declare function store:store-new-azw3($file-path as xs:string, $version as xs:st
             let $file-collection := string-join(subsequence($file-path-tokenized, 1, count($file-path-tokenized) - 1), '/')
             let $file-name := lower-case($file-path-tokenized[last()])
             let $resource-id := substring-before($file-name, '.azw3')
+            
+            let $log := util:log('info', concat('store-new-azw3:', $file-name))
     
             (: Sync file to file system :)
             let $sync-path := $ebook-config/m:sync-path/text()
@@ -488,6 +494,8 @@ declare function store:store-new-rdf($file-path as xs:string, $version as xs:str
             let $file-collection := string-join(subsequence($file-path-tokenized, 1, count($file-path-tokenized) - 1), '/')
             let $file-name := lower-case($file-path-tokenized[last()])
             let $url := concat($rdf-url, '/translation/', $file-name)
+            
+            let $log := util:log('info', concat('store-new-rdf:', $file-name))
             
             let $download := store:http-download($url, $file-collection, $file-name, $store:file-group)
             return

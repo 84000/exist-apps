@@ -365,23 +365,22 @@
             <!-- @target designates an external (http) link -->
             <xsl:when test="$ref[@target]">
                 <a target="_blank">
-                    <xsl:attribute name="href">
-                        <xsl:value-of select="$ref/@target"/>
-                    </xsl:attribute>
+                    
+                    <xsl:attribute name="href" select="$ref/@target"/>
+                    
                     <xsl:choose>
+                        
                         <xsl:when test="$ref[data()]">
-                            <xsl:attribute name="title">
-                                <xsl:value-of select="$ref/data() ! normalize-space(.)"/>
-                            </xsl:attribute>
+                            <xsl:attribute name="title" select="$ref/data() ! normalize-space(.)"/>
                             <xsl:apply-templates select="$ref/node()"/>
                         </xsl:when>
+                        
                         <xsl:otherwise>
-                            <xsl:attribute name="title">
-                                <xsl:value-of select="$ref/@target"/>
-                            </xsl:attribute>
+                            <xsl:attribute name="title" select="$ref/@target"/>
                             <xsl:attribute name="class" select="'break printable'"/>
                             <xsl:value-of select="$ref/@target"/>
                         </xsl:otherwise>
+                        
                     </xsl:choose>
                 </a>
             </xsl:when>
@@ -426,17 +425,31 @@
                         <xsl:with-param name="target-element" select="$target"/>
                     </xsl:call-template>
                     
-                    <xsl:if test="$view-mode[not(@client = ('ebook', 'app'))]">
-                        <xsl:attribute name="class" select="'pointer'"/>
-                    </xsl:if>
+                    <xsl:call-template name="class-attribute">
+                        <xsl:with-param name="html-classes">
+                            
+                            <xsl:value-of select="'pointer'"/>
+                            
+                            <!-- If id don't expand for printing -->
+                            <xsl:if test="$target-type eq 'id'">
+                                <xsl:value-of select="'printable'"/>
+                            </xsl:if>
+                            
+                        </xsl:with-param>
+                    </xsl:call-template>
                     
                     <xsl:choose>
+                        
+                        <!-- External text -->
                         <xsl:when test="$target/ancestor::m:pre-processed[not(@text-id eq $translation/@id)]">
                             <xsl:attribute name="target" select="concat($target/ancestor::m:pre-processed/@text-id, '.html')"/>
                         </xsl:when>
+                        
+                        <!-- Internal fragment -->
                         <xsl:otherwise>
                             <xsl:attribute name="target" select="'_self'"/>
                         </xsl:otherwise>
+                        
                     </xsl:choose>
                     
                 </xsl:when>
@@ -2519,11 +2532,20 @@
                             <td>
                                 <a class="log-click" target="_self">
                                     
-                                    <xsl:attribute name="href" select="concat('?part=', $part/@id, m:view-mode-parameter(()), m:archive-path-parameter(), '#', $part/@id)"/>
-                                    
-                                    <xsl:if test="$view-mode[@client = ('browser', 'ajax')]">
-                                        <xsl:attribute name="data-href-override" select="concat('#', $part/@id)"/>
-                                    </xsl:if>
+                                    <xsl:choose>
+                                        
+                                        <!-- Set href for crawlers, but override in Reading Room -->
+                                        <xsl:when test="$view-mode[@client = ('browser', 'ajax')]">
+                                            <xsl:attribute name="href" select="concat('?part=', $part/@id, m:view-mode-parameter(()), m:archive-path-parameter(), '#', $part/@id)"/>
+                                            <xsl:attribute name="data-href-override" select="concat('#', $part/@id)"/>
+                                        </xsl:when>
+                                        
+                                        <!-- PDFs use hash -->
+                                        <xsl:otherwise>
+                                            <xsl:attribute name="href" select="concat('#', $part/@id)"/>
+                                        </xsl:otherwise>
+                                        
+                                    </xsl:choose>
                                     
                                     <xsl:apply-templates select="$part/tei:head[@type eq $part/@type][1]/node()[not(self::tei:note)]"/>
                                     
@@ -2699,28 +2721,67 @@
         
         <xsl:choose>
             
-            <!-- Link to a different text -->
-            <xsl:when test="not($resource-id eq $requested-resource)">
-                
-                <xsl:attribute name="href" select="concat($reading-room-path, '/', $resource-type, '/', $resource-id, '.html', '#', $target-id)"/>
-                
-            </xsl:when>
-            
             <!-- Link to section in ebook -->
             <xsl:when test="$view-mode[@client = ('ebook', 'app')]">
                 
-                <xsl:if test="$part-id">
-                    <xsl:attribute name="href" select="concat($part-id, '.xhtml', '#', $target-id)"/>
-                </xsl:if>
+                <xsl:choose>
+                    
+                    <!-- Link to an external text -->
+                    <xsl:when test="not($resource-id eq $requested-resource)">
+                        <xsl:attribute name="href" select="concat('https://read.84000.co/', $resource-type, '/', $resource-id, '.html', '#', $target-id)"/>
+                    </xsl:when>
+                    
+                    <!-- Check there's a part -->
+                    <xsl:when test="$part-id">
+                        <xsl:attribute name="href" select="concat($part-id, '.xhtml', '#', $target-id)"/>
+                    </xsl:when>
+                    
+                    <!-- Default to fragment -->
+                    <xsl:otherwise>
+                        <xsl:attribute name="href" select="concat('#', $target-id)"/>
+                    </xsl:otherwise>
+                    
+                </xsl:choose>
+                
+            </xsl:when>
+            
+            <!-- Link to section in pdf -->
+            <xsl:when test="$view-mode[@client = ('pdf')]">
+                
+                <xsl:choose>
+                    
+                    <!-- Link to an external text -->
+                    <xsl:when test="not($resource-id eq $requested-resource)">
+                        <xsl:attribute name="href" select="concat('https://read.84000.co/', $resource-type, '/', $resource-id, '.html', '#', $target-id)"/>
+                    </xsl:when>
+                    
+                    <!-- Default to fragment -->
+                    <xsl:otherwise>
+                        <xsl:attribute name="href" select="concat('#', $target-id)"/>
+                    </xsl:otherwise>
+                    
+                </xsl:choose>
                 
             </xsl:when>
             
             <xsl:otherwise>
                 
-                <xsl:attribute name="href" select="concat(m:view-mode-parameter((),'?'), m:archive-path-parameter(), '#', $target-id)"/>
+                <xsl:choose>
+                    
+                    <!-- Link to an external text -->
+                    <xsl:when test="not($resource-id eq $requested-resource)">
+                        <xsl:attribute name="href" select="concat('/', $resource-type, '/', $resource-id, '.html', '#', $target-id)"/>
+                    </xsl:when>
+                    
+                    <!-- Default to fragment -->
+                    <xsl:otherwise>
+                        <xsl:attribute name="href" select="concat(m:view-mode-parameter((),'?'), m:archive-path-parameter(), '#', $target-id)"/>
+                    </xsl:otherwise>
+                    
+                </xsl:choose>
                 
                 <!-- Marks a target -->
-                <xsl:if test="$mark-id">
+                <xsl:if test="$view-mode[@client = ('browser', 'ajax')] and $mark-id">
                     <xsl:attribute name="data-postscroll-mark" select="concat('[data-mark-id=&#34;', $mark-id, '&#34;]')"/>
                 </xsl:if>
                 
@@ -3425,6 +3486,11 @@
             
             <!-- Check view-mode -->
             <xsl:when test="$view-mode[@glossary eq 'suppress']">
+                <xsl:value-of select="false()"/>
+            </xsl:when>
+            
+            <!-- Check for content flags -->
+            <xsl:when test="$node[ancestor-or-self::tei:term[@type eq 'ignore']]">
                 <xsl:value-of select="false()"/>
             </xsl:when>
             
