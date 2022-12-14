@@ -13,7 +13,7 @@ declare namespace xpath="http://www.w3.org/2005/xpath-functions";
 declare namespace test="http://exist-db.org/xquery/xqsuite";
 
 import module namespace functx="http://www.functx.com";
-import module namespace ewts = "http://tbrc.org/xquery/ewts2unicode";
+import module namespace ewts = "http://tbrc.org/xquery/ewts2unicode"; (:at "java:org.tbrc.xquery.extensions.EwtsToUniModule":)
 
 declare variable $common:app-id := common:app-id();
 declare variable $common:root-path := concat('/db/apps/', $common:app-id);

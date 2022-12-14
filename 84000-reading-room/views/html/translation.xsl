@@ -741,9 +741,13 @@
                         
                         <div id="main-titles" class="ornamental-panel">
                             
-                            <xsl:apply-templates select="$main-titles[@xml:lang eq 'bo']"/>
+                            <xsl:if test="$main-titles[@xml:lang eq 'bo']">
+                                <div class="panel-row">
+                                    <xsl:apply-templates select="$main-titles[@xml:lang eq 'bo']"/>
+                                </div>
+                            </xsl:if>
                             
-                            <h1 class="title main-title">
+                            <h1 class="panel-row title main-title">
                                 <xsl:for-each select="$page-title">
                                     <xsl:choose>
                                         <xsl:when test="self::m:title">
@@ -763,11 +767,15 @@
                                 </xsl:for-each>
                             </h1>
                             
-                            <xsl:apply-templates select="$main-titles[@xml:lang eq 'Sa-Ltn']"/>
+                            <xsl:if test="$main-titles[@xml:lang eq 'Sa-Ltn']">
+                                <div class="panel-row">
+                                    <xsl:apply-templates select="$main-titles[@xml:lang eq 'Sa-Ltn']"/>
+                                </div>
+                            </xsl:if>
                             
                             <xsl:variable name="sourceAuthors" select="m:translation/m:source/m:attribution[@role eq 'author'][@ref]"/>
                             <xsl:if test="$sourceAuthors">
-                                <div>
+                                <div class="panel-row">
                                     <div class="small text-muted">
                                         <xsl:value-of select="'by'"/>
                                     </div>

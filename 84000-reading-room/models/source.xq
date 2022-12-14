@@ -27,9 +27,9 @@ let $request :=
         attribute resource-id { $tei-location/@key },
         attribute resource-suffix { request:get-parameter('resource-suffix', '') },
         attribute lang { common:request-lang() },
-        attribute ref-index { request:get-parameter('ref-index', '') },
-        attribute folio { request:get-parameter('folio', '') },
-        attribute page { request:get-parameter('page', '') },
+        attribute ref-index { request:get-parameter('ref-index', '')[functx:is-a-number(.)] },
+        attribute folio { request:get-parameter('folio', '')[matches(., '^[a-zA-Z0-9\.]{3,12}$', 'i')] },
+        attribute page { request:get-parameter('page', '')[functx:is-a-number(.)] },
         attribute highlight { request:get-parameter('highlight', '') }
     }
 

@@ -353,6 +353,7 @@ declare function translations:filtered-texts(
         (: Return result per Toh or per text :)
         let $texts := 
             for $tei in $teis
+                (: TO DO: This excludes you from downloading a pdf from a 2,2.a status :)
                 let $include-downloads := if (tei-content:translation-status-group($tei) eq 'published') then 'all' else ''
             return
                 if($deduplicate = ('text', 'sponsorship')) then

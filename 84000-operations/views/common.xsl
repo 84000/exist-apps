@@ -89,8 +89,19 @@
         <xsl:variable name="element" select="(//m:*[@locked-by-user][@document-url])[1]"/>
         <xsl:if test="$element[@locked-by-user gt '']">
             <div class="alert alert-danger" role="alert">
-                <xsl:value-of select="concat('File ', $element/@document-url, ' is currenly locked by user ', $element/@locked-by-user, '. ')"/>
-                <xsl:value-of select="'You cannot modify this file until the lock is released.'"/>
+                <p class="break">
+                    <span class="text-bold">
+                        <xsl:value-of select="concat('This file is currenly locked by user ', $element/@locked-by-user)"/>
+                    </span>
+                    <br/>
+                    <small class="monospace">
+                        <xsl:value-of select="$element/@document-url"/>
+                    </small>
+                    <br/>
+                    <small>
+                        <xsl:value-of select="'You cannot modify this file until the lock is released'"/>
+                    </small>
+                </p>
             </div>
         </xsl:if>
     </xsl:template>

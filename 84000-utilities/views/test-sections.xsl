@@ -4,9 +4,6 @@
     <xsl:import href="../../84000-reading-room/xslt/webpage.xsl"/>
     <xsl:import href="common.xsl"/>
     
-    <xsl:variable name="environment" select="/m:response/m:environment"/>
-    <xsl:variable name="reading-room-path" select="$environment/m:url[@id eq 'reading-room']/text()"/>
-    
     <xsl:template name="test-result">
         
         <xsl:param name="success" as="xs:boolean" required="yes"/>
@@ -35,11 +32,11 @@
                     <xsl:choose>
                         <xsl:when test="$success">
                             <i class="fa fa-check-circle"/>
-                            <xsl:value-of select="'Passed Test'"/>
+                            <xsl:value-of select="' Passed Test'"/>
                         </xsl:when>
                         <xsl:otherwise>
                             <i class="fa fa-times-circle"/>
-                            <xsl:value-of select="'Failed Test'"/>
+                            <xsl:value-of select="' Failed Test'"/>
                         </xsl:otherwise>
                     </xsl:choose>
                 </h3>

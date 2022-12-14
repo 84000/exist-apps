@@ -42,7 +42,7 @@ let $term-lang := request:get-parameter('term-lang', '') ! common:valid-lang(.)
 let $term-lang := ($term-langs/m:lang[@id eq  $term-lang], $term-langs/m:lang[@id eq  $term-lang-default])[1]
 let $term-langs := common:add-selected-children($term-langs, $term-lang/@id)
 
-let $term-types := request:get-parameter('term-type[]', $entities:types/m:type[@glossary-type]/@id)
+let $term-types := request:get-parameter('term-type[]', $entities:types/m:type[@glossary-type]/@id)[. = $entities:types/m:type[@glossary-type]/@id]
 let $entity-types := common:add-selected-children($entities:types, $entities:types/m:type[@id = $term-types]/@id)
 
 let $search := request:get-parameter('search', '') ! normalize-space(.) ! common:normalize-unicode(.)
@@ -92,12 +92,13 @@ let $request :=
         attribute resource-suffix { $resource-suffix },
         attribute lang { common:request-lang() },
         attribute term-lang { $term-lang/@id },
-        attribute term-type { string-join($term-types, ',')},
+        attribute term-type { string-join($term-types, ',') },
         attribute view-mode { $view-mode/@id },
         attribute flagged { $flag/@id },
         attribute letter { $alphabet/m:letter[@selected]/@index },
         attribute first-record { $first-record },
         attribute records-per-page { 50 },
+        
         element search { if(not($flag) and not($resource-id eq 'downloads') and $search gt '') then $search else '' },
         if($term-lang/@id eq 'bo' and not(common:string-is-bo($search))) then
             element search-bo { common:bo-from-wylie($search) ! replace(., '་$', '') }

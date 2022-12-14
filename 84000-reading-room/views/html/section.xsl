@@ -1466,7 +1466,7 @@
                                     
                                     <xsl:attribute name="href" select="common:internal-link(concat('/section/', @id/string(), '.html'), (m:view-mode-parameter((),())), '', /m:response/@lang)"/>
                                     
-                                    <h3 class="title main-title break">
+                                    <h3 class="panel-row title main-title break">
                                         <xsl:value-of select="m:titles/m:title[@xml:lang='en']/text()"/> 
                                     </h3>
                                     
@@ -1474,7 +1474,7 @@
                                         <div>
                                             <xsl:call-template name="class-attribute">
                                                 <xsl:with-param name="lang" select="'bo'"/>
-                                                <xsl:with-param name="base-classes" select="'title'"/>
+                                                <xsl:with-param name="base-classes" select="'panel-row title'"/>
                                             </xsl:call-template>
                                             <xsl:value-of select="m:titles/m:title[@xml:lang='bo']/text()"/>
                                         </div>
@@ -1484,7 +1484,7 @@
                                         <div>
                                             <xsl:call-template name="class-attribute">
                                                 <xsl:with-param name="lang" select="'Bo-Ltn'"/>
-                                                <xsl:with-param name="base-classes" select="'title'"/>
+                                                <xsl:with-param name="base-classes" select="'panel-row title'"/>
                                             </xsl:call-template>
                                             <xsl:value-of select="m:titles/m:title[@xml:lang='Bo-Ltn']/text()"/>
                                         </div>
@@ -1494,7 +1494,7 @@
                                         <div>
                                             <xsl:call-template name="class-attribute">
                                                 <xsl:with-param name="lang" select="'Sa-Ltn'"/>
-                                                <xsl:with-param name="base-classes" select="'title'"/>
+                                                <xsl:with-param name="base-classes" select="'panel-row title'"/>
                                             </xsl:call-template>
                                             <xsl:value-of select="m:titles/m:title[@xml:lang='Sa-Ltn']/text()"/>
                                         </div>

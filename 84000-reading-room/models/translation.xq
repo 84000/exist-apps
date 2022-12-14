@@ -23,7 +23,7 @@ let $part-id := request:get-parameter('part', 'none') ! replace(., '^(end\-notes
 let $part-id-int := replace($part-id, '^node\-', '')[functx:is-a-number(.)] ! xs:integer(.)
 let $commentary-key := request:get-parameter('commentary', '')[. gt ''][1]
 let $view-mode := request:get-parameter('view-mode', 'default')
-let $archive-path := request:get-parameter('archive-path', ())
+let $archive-path := request:get-parameter('archive-path', ())[matches(., '^[a-zA-Z0-9\-/_]{10,40}$')]
 
 (: Validate the resource-id :)
 let $tei-type := 'translation'
@@ -38,7 +38,7 @@ let $commentary-tei :=
         collection($common:tei-path)/id($commentary-key)/ancestor::tei:TEI
     else
         $commentary-tei
-        
+
 let $commentary-source := $commentary-tei[1] ! tei-content:source(., '')
 
 (: Derive the root part (section/chapter) based on the id requested
@@ -50,6 +50,18 @@ let $part :=
     | $tei//tei:div[@type eq $part-id]
     | $tei//tei:*[@tid eq $part-id-int]/ancestor-or-self::tei:div[@type][not(@type eq 'translation')][last()]
 
+
+(: Set the view-mode which controls variations in the display :)
+let $view-mode-validated :=
+    if($resource-suffix eq 'epub') then
+        $translation:view-modes/m:view-mode[@id eq 'ebook']
+    else if($resource-suffix eq 'txt') then
+        $translation:view-modes/m:view-mode[@id eq 'txt']
+    else if($translation:view-modes/m:view-mode[@id eq $view-mode]) then
+        $translation:view-modes/m:view-mode[@id eq $view-mode]
+    else
+        $translation:view-modes/m:view-mode[@id eq 'default']
+
 (:  Sanitize the request :)
 let $request := 
     element { QName('http://read.84000.co/ns/1.0', 'request')} {
@@ -60,27 +72,15 @@ let $request :=
         attribute doc-type { request:get-parameter('resource-suffix', 'html') },
         attribute part { ($part/@xml:id, $part/@type, $part-id[. = ('end-notes')])[1] },
         attribute commentary { $commentary-source/@key },
-        attribute view-mode { $view-mode },
+        attribute view-mode { $view-mode-validated/@id },
         attribute archive-path { $archive-path },
-        
-        (: Set the view-mode which controls variations in the display :)
-        if($resource-suffix eq 'epub') then
-            $translation:view-modes/m:view-mode[@id eq 'ebook']
-        
-        else if($resource-suffix eq 'txt') then
-            $translation:view-modes/m:view-mode[@id eq 'txt']
-        
-        else if($translation:view-modes/m:view-mode[@id eq $view-mode]) then
-            $translation:view-modes/m:view-mode[@id eq $view-mode]
-        
-        else
-            $translation:view-modes/m:view-mode[@id eq 'default']
-        
+        $view-mode-validated
     }
 
 (: Suppress cache for some view modes :)
+(: Don't accept archive-path parameter in cache requests, regardless of the view-mode - don't cache parameters that aren't sanitized!! :)
 let $cache-key := 
-    if($request/m:view-mode[@cache eq 'use-cache']) then
+    if($view-mode-validated[@cache eq 'use-cache'] and $request[not(@archive-path gt '')]) then
         let $tei-timestamp := tei-content:last-modified($tei)
         where $tei-timestamp instance of xs:dateTime
         return 
@@ -107,7 +107,7 @@ return
             $request/@archive-path[. gt ''] ! concat('id=', .), 
             
             (: Keep part parameter in annotation views to maintain legacy annotations :)
-            if($request/m:view-mode[@id eq 'annotation']) then
+            if($view-mode-validated[@id eq 'annotation']) then
                 concat('part=', $request/@part)
             else
                 $request/@part[. gt ''] ! concat('part=', .)
@@ -118,7 +118,7 @@ return
             if($resource-suffix = ('rdf', 'json')) then 
                 translation:summary($tei)
             else 
-                translation:parts($tei, $request/@part, $request/m:view-mode, ())
+                translation:parts($tei, $request/@part, $view-mode-validated, ())
         
         (: Compile all the translation data :)
         let $translation-data :=

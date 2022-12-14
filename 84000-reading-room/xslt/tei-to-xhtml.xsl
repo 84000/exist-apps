@@ -1082,7 +1082,7 @@
                     </xsl:call-template>
                     
                     <xsl:call-template name="href-attribute">
-                        <xsl:with-param name="target-id" select="concat('end-note-', $note/@xml:id)"/>
+                        <xsl:with-param name="fragment-id" select="concat('end-note-', $note/@xml:id)"/>
                         <xsl:with-param name="part-id" select="'end-notes'"/>
                     </xsl:call-template>
                     
@@ -1147,7 +1147,7 @@
                 <xsl:if test="$view-mode[@glossary eq 'defer']">
                     <xsl:call-template name="in-view-replace-attribute">
                         <xsl:with-param name="element-id" select="$end-note/@xml:id"/>
-                        <xsl:with-param name="target-id" select="concat('end-note-', $end-note/@xml:id)"/>
+                        <xsl:with-param name="fragment-id" select="concat('end-note-', $end-note/@xml:id)"/>
                     </xsl:call-template>
                 </xsl:if>
                 
@@ -1161,7 +1161,7 @@
                             <a>
                                 
                                 <xsl:call-template name="href-attribute">
-                                    <xsl:with-param name="target-id" select="$end-note/@xml:id"/>
+                                    <xsl:with-param name="fragment-id" select="$end-note/@xml:id"/>
                                     <xsl:with-param name="part-id" select="$part/@id"/>
                                     <xsl:with-param name="mark-id" select="$end-note/@xml:id"/>
                                 </xsl:call-template>
@@ -1330,7 +1330,7 @@
                     <xsl:if test="$view-mode[@glossary eq 'defer']">
                         <xsl:call-template name="in-view-replace-attribute">
                             <xsl:with-param name="element-id" select="$glossary-item/@xml:id"/>
-                            <xsl:with-param name="target-id" select="$glossary-item/@xml:id"/>
+                            <xsl:with-param name="fragment-id" select="$glossary-item/@xml:id"/>
                         </xsl:call-template>
                     </xsl:if>
                     
@@ -1537,7 +1537,11 @@
                                     <xsl:if test="$glossary-instances">
                                         <li>
                                             <a target="84000-glossary">
-                                                <xsl:attribute name=" href" select="concat($reading-room-path, '/glossary/', $entity/@xml:id, '.html', if($tei-editor) then '?view-mode=editor' else '')"/>
+                                                <!--<xsl:attribute name=" href" select="concat($reading-room-path, '/glossary/', $entity/@xml:id, '.html', if($tei-editor) then '?view-mode=editor' else '')"/>-->
+                                                <xsl:call-template name="href-attribute">
+                                                    <xsl:with-param name="resource-type" select="'glossary'"/>
+                                                    <xsl:with-param name="resource-id" select="$entity/@xml:id"/>
+                                                </xsl:call-template>
                                                 <xsl:value-of select="concat(format-number(count($glossary-instances), '#,###'), ' related glossary ', if(count($glossary-instances) eq 1) then 'entry' else 'entries')"/>
                                             </a>
                                         </li>
@@ -1545,7 +1549,11 @@
                                     <xsl:if test="$knowledgebase-instances">
                                         <li>
                                             <a target="84000-knowledgebase">
-                                                <xsl:attribute name=" href" select="concat($reading-room-path, '/knowledgebase/', $knowledgebase-instances[1]/@id, '.html', if($tei-editor) then '?view-mode=editor' else '')"/>
+                                                <!--<xsl:attribute name=" href" select="concat($reading-room-path, '/knowledgebase/', $knowledgebase-instances[1]/@id, '.html', if($tei-editor) then '?view-mode=editor' else '')"/>-->
+                                                <xsl:call-template name="href-attribute">
+                                                    <xsl:with-param name="resource-type" select="'knowledgebase'"/>
+                                                    <xsl:with-param name="resource-id" select="$knowledgebase-instances[1]/@id"/>
+                                                </xsl:call-template>
                                                 <xsl:value-of select="'View the 84000 Knowledge Base article'"/>
                                             </a>
                                         </li>
@@ -2100,7 +2108,7 @@
         <xsl:param name="node" required="yes"/>
         
         <!-- If an id is present then set the id attribute -->
-        <xsl:if test="$view-mode[not(@client = ('ebook', 'app'))] and ancestor-or-self::m:part[@content-status][1][not(@content-status eq 'preview')]">
+        <xsl:if test="not($view-mode[@client = ('ebook', 'app')]) and not($node/ancestor-or-self::m:part[@content-status][1][@content-status eq 'preview'])">
             
             <xsl:variable name="id">
                 <xsl:choose>
@@ -2130,7 +2138,7 @@
                     <xsl:if test="$view-mode[@glossary eq 'defer'] and m:glossarize-node($node, $text-normalized) and $node[@tid] and not($node[ancestor::*/@tid])">
                         <xsl:call-template name="in-view-replace-attribute">
                             <xsl:with-param name="element-id" select="$id"/>
-                            <xsl:with-param name="target-id" select="$id"/>
+                            <xsl:with-param name="fragment-id" select="$id"/>
                         </xsl:call-template>
                     </xsl:if>
                     
@@ -2138,21 +2146,21 @@
                 
                 <!-- A knowledge base page -->
                 <xsl:when test="$knowledgebase">
-                    
                     <xsl:attribute name="id" select="$id"/>
-                    
                 </xsl:when>
                 
                 <!-- If we are rendering a section then the id may refer to a text in that section rather than the section itself -->
                 <xsl:when test="$section">
+                    
                     <xsl:choose>
-                        <xsl:when test="ancestor::m:text">
+                        <xsl:when test="$node/ancestor::m:text">
                             <xsl:attribute name="id" select="concat($node/ancestor::m:text[1]/@resource-id, '-', $id)"/>
                         </xsl:when>
                         <xsl:otherwise>
                             <xsl:attribute name="id" select="$id"/>
                         </xsl:otherwise>
                     </xsl:choose>
+                    
                 </xsl:when>
                 
             </xsl:choose>
@@ -2219,7 +2227,7 @@
                         <xsl:attribute name="href" select="concat('?commentary=', $quote/@id, '#', $quote/m:source/@location-id)"/>
                         <xsl:attribute name="target" select="'_self'"/>
                         <xsl:attribute name="data-loading" select="concat('Re-loading as root text for commentary', '...')"/>
-                        <xsl:attribute name="data-confirm" select="string-join(($quote/m:label, 'Reload this text to be read with this commentary?', 'This may take a few seconds.'), '\n\n')"/>
+                        <xsl:attribute name="data-confirm" select="string-join(($quote/m:label, 'Reload this text to be read with this commentary?', 'This may take a few moments.'), '\n\n')"/>
                         <xsl:attribute name="title" select="$quote/m:label"/>
                         
                         <xsl:value-of select="$quote/m:text-title"/>
@@ -2713,7 +2721,7 @@
     
     <xsl:template name="href-attribute">
         
-        <xsl:param name="target-id" as="xs:string"/>
+        <xsl:param name="fragment-id" as="xs:string?"/>
         <xsl:param name="part-id" as="xs:string?"/>
         <xsl:param name="mark-id" as="xs:string?"/>
         <xsl:param name="resource-id" select="$requested-resource" as="xs:string"/>
@@ -2728,18 +2736,18 @@
                     
                     <!-- Link to an external text -->
                     <xsl:when test="not($resource-id eq $requested-resource)">
-                        <xsl:attribute name="href" select="concat('https://read.84000.co/', $resource-type, '/', $resource-id, '.html', '#', $target-id)"/>
+                        <xsl:attribute name="href" select="concat('https://read.84000.co/', $resource-type, '/', $resource-id, '.html', if($fragment-id) then concat('#', $fragment-id) else ())"/>
                     </xsl:when>
                     
                     <!-- Check there's a part -->
                     <xsl:when test="$part-id">
-                        <xsl:attribute name="href" select="concat($part-id, '.xhtml', '#', $target-id)"/>
+                        <xsl:attribute name="href" select="concat($part-id, '.xhtml',  if($fragment-id) then concat('#', $fragment-id) else ())"/>
                     </xsl:when>
                     
                     <!-- Default to fragment -->
-                    <xsl:otherwise>
-                        <xsl:attribute name="href" select="concat('#', $target-id)"/>
-                    </xsl:otherwise>
+                    <xsl:when test="$fragment-id">
+                        <xsl:attribute name="href" select="concat('#', $fragment-id)"/>
+                    </xsl:when>
                     
                 </xsl:choose>
                 
@@ -2752,13 +2760,13 @@
                     
                     <!-- Link to an external text -->
                     <xsl:when test="not($resource-id eq $requested-resource)">
-                        <xsl:attribute name="href" select="concat('https://read.84000.co/', $resource-type, '/', $resource-id, '.html', '#', $target-id)"/>
+                        <xsl:attribute name="href" select="concat('https://read.84000.co/', $resource-type, '/', $resource-id, '.html',  if($fragment-id) then concat('#', $fragment-id) else ())"/>
                     </xsl:when>
                     
                     <!-- Default to fragment -->
-                    <xsl:otherwise>
-                        <xsl:attribute name="href" select="concat('#', $target-id)"/>
-                    </xsl:otherwise>
+                    <xsl:when test="$fragment-id">
+                        <xsl:attribute name="href" select="concat('#', $fragment-id)"/>
+                    </xsl:when>
                     
                 </xsl:choose>
                 
@@ -2770,13 +2778,13 @@
                     
                     <!-- Link to an external text -->
                     <xsl:when test="not($resource-id eq $requested-resource)">
-                        <xsl:attribute name="href" select="concat('/', $resource-type, '/', $resource-id, '.html', '#', $target-id)"/>
+                        <xsl:attribute name="href" select="concat('/', $resource-type, '/', $resource-id, '.html',  if($fragment-id) then concat('#', $fragment-id) else ())"/>
                     </xsl:when>
                     
                     <!-- Default to fragment -->
-                    <xsl:otherwise>
-                        <xsl:attribute name="href" select="concat(m:view-mode-parameter((),'?'), m:archive-path-parameter(), '#', $target-id)"/>
-                    </xsl:otherwise>
+                    <xsl:when test="$fragment-id">
+                        <xsl:attribute name="href" select="concat(m:view-mode-parameter((),'?'), m:archive-path-parameter(),  if($fragment-id) then concat('#', $fragment-id) else ())"/>
+                    </xsl:when>
                     
                 </xsl:choose>
                 
@@ -2794,11 +2802,11 @@
     <xsl:template name="in-view-replace-attribute">
         
         <xsl:param name="element-id" as="xs:string"/>
-        <xsl:param name="target-id" as="xs:string"/>
+        <xsl:param name="fragment-id" as="xs:string"/>
         
         <xsl:choose>
             <xsl:when test="$toh-key">
-                <xsl:attribute name="data-in-view-replace" select="concat('/passage/', $toh-key, '.html', '?passage-id=', $element-id, m:view-mode-parameter(()), m:archive-path-parameter(), '#', $target-id)"/>
+                <xsl:attribute name="data-in-view-replace" select="concat('/passage/', $toh-key, '.html', '?passage-id=', $element-id, m:view-mode-parameter(()), m:archive-path-parameter(), '#', $fragment-id)"/>
             </xsl:when>
         </xsl:choose>
         
@@ -2839,7 +2847,7 @@
             <xsl:when test="$target-element/ancestor::m:pre-processed[not(@text-id eq $translation/@id)]">
                 
                 <xsl:call-template name="href-attribute">
-                    <xsl:with-param name="target-id" select="$target-element/@id"/>
+                    <xsl:with-param name="fragment-id" select="$target-element/@id"/>
                     <xsl:with-param name="mark-id" select="$mark-id"/>
                     <xsl:with-param name="resource-id" select="$target-element/ancestor::m:pre-processed/@text-id"/>
                     <xsl:with-param name="resource-type" select="($target-element/ancestor::m:pre-processed/@resource-type, 'translation')[1]"/>
@@ -2850,7 +2858,7 @@
             <xsl:when test="$target-element[self::m:gloss]">
                 
                 <xsl:call-template name="href-attribute">
-                    <xsl:with-param name="target-id" select="$target-element/@id"/>
+                    <xsl:with-param name="fragment-id" select="$target-element/@id"/>
                     <xsl:with-param name="part-id" select="'glossary'"/>
                     <xsl:with-param name="mark-id" select="$mark-id"/>
                 </xsl:call-template>
@@ -2860,7 +2868,7 @@
             <xsl:when test="$target-element[self::m:end-note]">
                 
                 <xsl:call-template name="href-attribute">
-                    <xsl:with-param name="target-id" select="concat('end-note-', $target-element/@id)"/>
+                    <xsl:with-param name="fragment-id" select="concat('end-note-', $target-element/@id)"/>
                     <xsl:with-param name="part-id" select="'end-notes'"/>
                     <xsl:with-param name="mark-id" select="$mark-id"/>
                 </xsl:call-template>
@@ -2870,7 +2878,7 @@
             <xsl:when test="$target-element[self::m:milestone]">
                 
                 <xsl:call-template name="href-attribute">
-                    <xsl:with-param name="target-id" select=" $target-element/@id"/>
+                    <xsl:with-param name="fragment-id" select=" $target-element/@id"/>
                     <xsl:with-param name="part-id" select="$target-element/@part-id"/>
                     <xsl:with-param name="mark-id" select="$mark-id"/>
                 </xsl:call-template>
@@ -2880,7 +2888,7 @@
             <xsl:when test="$target-element[self::m:part][@id]">
                 
                 <xsl:call-template name="href-attribute">
-                    <xsl:with-param name="target-id" select=" $target-element/@id"/>
+                    <xsl:with-param name="fragment-id" select=" $target-element/@id"/>
                     <xsl:with-param name="part-id" select="$target-element/ancestor-or-self::m:part[@id][not(@type = ('translation', 'appendix'))][last()]/@id"/>
                     <xsl:with-param name="mark-id" select="$mark-id"/>
                 </xsl:call-template>
@@ -2987,7 +2995,7 @@
         <a title="Bookmark this section">
             
             <xsl:call-template name="href-attribute">
-                <xsl:with-param name="target-id" select=" $bookmark-target-hash"/>
+                <xsl:with-param name="fragment-id" select=" $bookmark-target-hash"/>
                 <xsl:with-param name="part-id" select="$bookmark-target-part"/>
             </xsl:call-template>
             
@@ -3195,7 +3203,7 @@
                         <a>
                             
                             <xsl:call-template name="href-attribute">
-                                <xsl:with-param name="target-id" select="$matching-glossary/@xml:id"/>
+                                <xsl:with-param name="fragment-id" select="$matching-glossary/@xml:id"/>
                             </xsl:call-template>
                             
                             <xsl:attribute name="data-glossary-id" select="$matching-glossary/@xml:id"/>
@@ -3431,7 +3439,7 @@
                 <a>
                     
                     <xsl:call-template name="href-attribute">
-                        <xsl:with-param name="target-id" select="$glossary-id"/>
+                        <xsl:with-param name="fragment-id" select="$glossary-id"/>
                     </xsl:call-template>
                     
                     <xsl:attribute name="data-glossary-id" select="$glossary-id"/>

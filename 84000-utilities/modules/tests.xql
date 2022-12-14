@@ -182,8 +182,8 @@ declare function tests:sections($section-id as xs:string) as element(m:results) 
                         tests:duplicate-ids($tei),
                         tests:scoped-ids($tei),
                         tests:outline-context($tei, $resource-id),
-                        tests:part($tei//tei:front//tei:div[@type eq 'abstract'], $html//*[@id eq 'title']//*[@id eq 'abstract'], 'abstract', 0),
-                        tests:part($tei//tei:body//tei:div[@type eq 'about'], $html//*[@id eq 'summary'], 'summary', 0),
+                        tests:part($tei//tei:front//tei:div[@type eq 'abstract'], $html//*[@id eq 'abstract'], 'abstract', 0),
+                        tests:part($tei//tei:body//tei:div[@type eq 'about'], $html//*[@id eq 'about'], 'about', 0),
                         tests:section-tantra-warning($tei, $html)
                     }
                     </tests>

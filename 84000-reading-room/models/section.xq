@@ -18,26 +18,31 @@ import module namespace functx="http://www.functx.com";
 declare option exist:serialize "method=xml indent=no";
 
 let $resource-suffix := request:get-parameter('resource-suffix', '')
+let $resource-id := upper-case(request:get-parameter('resource-id', 'lobby'))
 let $doc-type := 
     if($resource-suffix = ('navigation.atom', 'acquisition.atom')) then 
         'atom'
     else
         $resource-suffix
+let $filter-id := request:get-parameter('filter-id', '')
 let $filter-section-ids := request:get-parameter('filter-section-id[]', '')
-let $filter-max-pages := request:get-parameter('filter-max-pages', '')
+let $filter-max-pages := request:get-parameter('filter-max-pages', '')[functx:is-a-number(.)]
 let $view-mode := request:get-parameter('view-mode', 'default')
+
+let $tei := tei-content:tei($resource-id, 'section')
+let $filters := section:filters($tei)
 
 let $request := 
     element { QName('http://read.84000.co/ns/1.0', 'request')} {
         attribute model { 'section' }, 
-        attribute resource-id { upper-case(request:get-parameter('resource-id', 'lobby')) }, 
+        attribute resource-id { if($tei) then $resource-id else () }, 
         attribute resource-suffix { $resource-suffix }, 
         attribute lang { common:request-lang() },
         attribute doc-type { $doc-type }, 
         attribute published-only { request:get-parameter('published-only', if($doc-type eq 'atom') then true() else false()) ! xs:boolean(.) }, 
         attribute child-texts-only { request:get-parameter('child-texts-only', true()) ! xs:boolean(.) }, 
-        attribute translations-order { request:get-parameter('translations-order', 'toh') }, 
-        attribute filter-id { request:get-parameter('filter-id', '') }, 
+        attribute translations-order { request:get-parameter('translations-order', 'toh')[. = ('toh', 'latest', 'shortest', 'longest')] }, 
+        attribute filter-id { $filters/tei:div[@xml:id eq $filter-id]/@xml:id }, 
         attribute filter-section-ids { $filter-section-ids }, 
         attribute filter-max-pages { $filter-max-pages },
         
@@ -72,9 +77,6 @@ let $include-texts :=
             'children'
         else
             'descendants'
-
-let $tei := tei-content:tei($request/@resource-id, 'section')
-let $filters := section:filters($tei)
 
 let $filter-section-ids := 
     for $filter-section-id in $filter-section-ids[not(. eq '')]
