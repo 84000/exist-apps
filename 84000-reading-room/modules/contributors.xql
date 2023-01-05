@@ -150,10 +150,11 @@ declare function contributors:teams($include-hidden as xs:boolean, $include-ackn
 declare function contributors:team($team-id as xs:string, $include-acknowledgements as xs:boolean, $include-persons as xs:boolean) as element(m:team) {
     
     let $team := $contributors:contributors/id(lower-case($team-id))[self::m:team]
-    let $team-persons := $contributors:contributors/m:contributors/m:person[m:team/@id eq lower-case($team-id)]
     let $team-ref := contributors:contributor-uri($team/@xml:id)
-    let $team-texts := $contributors:texts//tei:TEI[tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:author[@ref = $team-ref]]
-    let $contributor-types := $contributors:contributor-types//m:contributor-type
+    let $team-texts := 
+        if($include-acknowledgements or $include-persons) then
+            $contributors:texts//tei:TEI[tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:author[@ref = $team-ref]]
+        else ()
     
     return
         element { node-name($team) } {
@@ -169,8 +170,10 @@ declare function contributors:team($team-id as xs:string, $include-acknowledgeme
             else (),
             if($include-persons) then
                 
+                let $contributor-types := $contributors:contributor-types//m:contributor-type
+                
                 (: Sort by role :)
-                for $person in $contributors:contributors/m:contributors/m:person[m:team/@id eq lower-case($team-id)]
+                for $person in $contributors:contributors/m:contributors/m:person[m:team/@id eq $team/@xml:id]
                 let $person-ref := contributors:contributor-uri($person/@xml:id)
                 let $person-roles := $team-texts/tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:*[@ref = $person-ref]/@role/string()
                 let $person-top-role := min($contributor-types[@role/string() = $person-roles] ! functx:index-of-node($contributor-types, .))

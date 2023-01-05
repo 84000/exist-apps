@@ -460,7 +460,7 @@ declare function translation:outline-cached($internal-tei as element(tei:TEI), $
             [tei:teiHeader/tei:fileDesc/tei:publicationStmt
                 [@status = $common:environment/m:render/m:status[@type eq 'translation']/@status-id]
             ]
-            
+    
     let $external-tei :=
         for $external-location in $published-tei/id($target-ids)
         let $external-tei := $external-location/ancestor::tei:TEI
@@ -1081,7 +1081,11 @@ declare function translation:end-notes($tei as element(tei:TEI), $passage-id as 
         else
             'preview'
     
-    let $notes-cache := tei-content:cache($tei, false())/m:notes-cache/m:end-note
+    let $notes-cache :=
+        (: Don't call for outline as it leads to recursion :)
+        if(not($view-mode[@id eq 'outline'])) then
+            translation:outline-cached($tei, ())/m:pre-processed[@type eq 'end-notes']/m:end-note
+        else ()
     
     let $top-note-ids := 
         if($content-directive eq 'preview') then
@@ -1157,8 +1161,12 @@ declare function translation:glossary($tei as element(tei:TEI), $passage-id as x
             'empty'
         else
             'preview'
-
-    let $glossary-cache := tei-content:cache($tei, false())/m:glossary-cache
+    
+    (: Don't call for outline as it leads to recursion :)
+    let $glossary-cache := 
+        if(not($view-mode[@id eq 'outline'])) then
+            glossary:glossary-cache($tei, (), false())
+        else ()
     
     (: Get top 3 :)
     let $top-gloss := 
@@ -1179,27 +1187,6 @@ declare function translation:glossary($tei as element(tei:TEI), $passage-id as x
     return 
         translation:part($glossary, $content-directive, $type, map:get($translation:type-prefixes, $type), text { map:get($translation:type-labels, $type) }, distinct-values(($passage-id, $top-gloss, $location-cache-gloss)))
         
-};
-
-declare function translation:folios-cache($tei as element(tei:TEI), $refresh as xs:boolean?, $create-if-unavailable as xs:boolean?) as element(m:folios-cache) {
-
-    let $cache := tei-content:cache($tei, $create-if-unavailable)
-    
-    return
-        if($cache[m:folios-cache] and not($refresh)) then
-            $cache/m:folios-cache
-        else
-        
-            let $folio-refs-pre-processed := local:folio-refs-pre-processed($tei)
-            
-            return
-            element { QName('http://read.84000.co/ns/1.0', 'folios-cache') } {
-            
-                $folio-refs-pre-processed/@*,
-                $folio-refs-pre-processed/*
-                
-            }
-            
 };
 
 declare function local:folio-refs-pre-processed($tei as element(tei:TEI)) as element(m:pre-processed) {
@@ -1636,6 +1623,10 @@ declare function translation:replace-text($resource-id as xs:string) as element(
         element value {
             attribute key { '#canonicalHTML' },
             text { translation:canonical-html($resource-id, '') }
+        },
+        element value {
+            attribute key { '#commsSiteUrl' },
+            text { $common:environment/m:url[@id eq 'communications-site'][1]/text() }
         }
     }
 };
@@ -1946,7 +1937,6 @@ declare function local:quote($quote as element(tei:q), $toh-key as xs:string, $q
             else ()
             
         )
-        
         
     }
     

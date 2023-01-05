@@ -15,6 +15,8 @@ declare option exist:serialize "method=xml indent=no";
 let $cache-key := concat("84000-glossary-", format-dateTime(current-dateTime(), "[Y0001]-[M01]-[D01]"))
 (:let $cache-key := "2022-03-28-10-11-07":)
 
+let $log := util:log('info', concat('cache-glossary-downloads:', $cache-key))
+
 (: Cache xml :)
 let $request-xml := 
     element { QName('http://read.84000.co/ns/1.0', 'request')} {

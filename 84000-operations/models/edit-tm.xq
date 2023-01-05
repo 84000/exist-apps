@@ -15,10 +15,9 @@ import module namespace source="http://read.84000.co/source" at "../../84000-rea
 declare option exist:serialize "method=xml indent=no";
 
 let $text-id := request:get-parameter('text-id', '')
-let $part-id := request:get-parameter('part-id', '')
+(:let $part-id := request:get-parameter('part-id', ''):)
 
 let $tei := tei-content:tei($text-id, 'translation')
-let $tei-translation := $tei//tei:text/tei:body/tei:div[@type eq 'translation']
 let $tmx := collection($update-tm:tm-path)//tmx:tmx[tmx:header/@eft:text-id eq $text-id]
 
 (: Process update :)
@@ -43,14 +42,23 @@ let $update-tm :=
         update-tm:add-unit($tmx, request:get-parameter('tm-bo', ''), request:get-parameter('tm-en', ''), request:get-parameter('tei-location-id', ''), ())
     
     (: Delete a unit :)
-    else if(
-        $tmx
-        and request:get-parameter('remove-tu', '') gt ''
-    ) then
+    else if($tmx and request:get-parameter('remove-tu', '') gt '') then
         update-tm:remove-unit($tmx, request:get-parameter('remove-tu', '')) 
     
+    (: Fix ids where missing :)
+    else if($tmx and request:get-parameter('form-action', '') eq 'fix-ids') then 
+        if($tmx/tmx:body/tmx:tu[not(@id)]) then
+            update-tm:set-tu-ids($tmx)
+        else ()
+    
+    (: Apply revisions :)
+    else if($tmx and request:get-parameter('form-action', '') eq 'apply-revisions') then 
+        let $tm-units-aligned := update-tm:tm-units-aligned($tei, $tmx)
+        return 
+            update-tm:apply-revisions($tm-units-aligned[self::eft:tm-unit-aligned], $tmx)
+    
     (: Create a new TM file :)
-    else if(
+    (:else if(
         not($tmx) 
         and request:get-parameter('form-action', '') eq 'new-tmx'
         and request:get-parameter('bcrd-resource', '') gt ''
@@ -58,13 +66,8 @@ let $update-tm :=
         let $bcrd-resource := doc(concat($common:data-path, '/BCRDCORPUS/', request:get-parameter('bcrd-resource', '')))//bcrdb:bcrdCorpus
         where $bcrd-resource
         return
-            update-tm:new-tmx-from-bcrdCorpus($tei, $bcrd-resource)
-    
-    (: Fix ids where missing :)
-    else if( $tmx and request:get-parameter('form-action', '') eq 'fix-ids') then 
-        if($tmx/tmx:body/tmx:tu[not(@id)]) then
-            update-tm:set-tu-ids($tmx)
-        else ()
+            update-tm:new-tmx-from-bcrdCorpus($tei, $bcrd-resource):)
+
         
     else ()
 
@@ -75,18 +78,16 @@ let $tmx :=
     else
         $tmx
 
-(: Check we got a part, if not default to first :)
-let $part-id :=
-    if(not($tei-translation/tei:div[@xml:id eq $part-id])) then
-        $tei-translation/tei:div[1]/@xml:id/string()
-    else
-        $part-id
-
 let $request :=
     element { QName('http://read.84000.co/ns/1.0', 'request') }{
         attribute resource-suffix { request:get-parameter('resource-suffix', '') },
-        attribute text-id { $text-id },
-        attribute part-id { $part-id }
+        attribute text-id { $text-id }(:,
+        attribute part-id { $part-id }:)
+    }
+
+let $tm-units-aligned := 
+    element { QName('http://read.84000.co/ns/1.0', 'tm-units-aligned') }{ 
+        update-tm:tm-units-aligned($tei, $tmx)
     }
 
 let $translation := 
@@ -98,17 +99,16 @@ let $translation :=
         attribute status { tei-content:translation-status($tei) },
         attribute status-group { tei-content:translation-status-group($tei) },
         tei-content:titles($tei),
-        translation:toh($tei, ''),
-        $tei-translation
+        translation:toh($tei, '')
     }
 
 (: If it was created then load again :)
-let $bcrdb-source-files := 
+(:let $bcrdb-source-files := 
     if(not($tmx)) then 
         element { QName('http://read.84000.co/ns/1.0', 'bcrd-resources') } {
             for $bcrd-resource in collection(concat($common:data-path, '/BCRDCORPUS'))//bcrdb:bcrdCorpus
             let $document-name := util:document-name($bcrd-resource)
-            (: Exclude source files that already have a tmx created :)
+            (\: Exclude source files that already have a tmx created :\)
             where not(collection($update-tm:tm-path)//tmx:tmx/tmx:header/@eft:source-ref eq $document-name)
             return 
                 element bcrd-resource {
@@ -116,7 +116,7 @@ let $bcrdb-source-files :=
                     $bcrd-resource/bcrdb:head
                 }
         }
-    else ()
+    else ():)
 
 let $xml-response := 
     common:response(
@@ -126,7 +126,7 @@ let $xml-response :=
             $update-tm,
             $translation,
             $tmx,
-            $bcrdb-source-files
+            $tm-units-aligned
         )
     )
 

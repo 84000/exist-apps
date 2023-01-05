@@ -595,23 +595,19 @@ img.logo-84000 {
 .glossary-item .alternative {
     display: none;
 }
-.glossary-item h3, 
-.glossary-item .h3, 
-.glossary-item h4,  
-.glossary-item .h4, 
-.glossary-item p,
-.glossary-item ul {
-    margin-bottom: .25em;
+.glossary-item > .glossary-content> *  {
+    margin-bottom: .5em;
 }
 .glossary-item .footer .heading {
     font-size: .9em;
     text-align: left;
     font-weight: bold;
+    margin-bottom: .25em;
 }
-.glossary-item .footer li {
+.glossary-item .footer ul > li {
     font-size: .75em;
+    padding-bottom: .5em;
     padding-right: .75em;
-    padding-top: .5em;
 }
 
 /* Headings */

@@ -192,6 +192,9 @@ let $text :=
 
 let $gloss-filtered-subsequence := subsequence($gloss-filtered, $first-record, $max-records)
 
+let $entity-instance-ids := $entities:entities//m:entity/m:instance/@id/string()
+let $glossary-entities-assigned := $glossary-full/id($entity-instance-ids)
+
 let $glossary :=
     element { QName('http://read.84000.co/ns/1.0', 'glossary') } {
         
@@ -199,7 +202,7 @@ let $glossary :=
         attribute count-records { count($gloss-filtered) },
         attribute first-record { $first-record },
         attribute max-records { $max-records },
-        attribute records-assigned-entities { count($glossary-full/id($entities:entities//m:entity/m:instance/@id)) },
+        attribute records-assigned-entities { count($glossary-entities-assigned) },
         attribute tei-version-cached { store:stored-version-str($resource-id, 'cache') },
         
         $tei//tei:div[@type eq 'glossary']/@status,
@@ -262,12 +265,12 @@ let $entities :=
         
         return (
             $entities,
-            element related { entities:related($entities | $glossary/m:entry/m:similar/m:entity, true(), (), ()) }
+            element related { entities:related(($entities | $glossary/m:entry/m:similar/m:entity), true(), (), ()) }
         )
         
     }
 
-let $caches := tei-content:cache($tei, false())/m:*
+let $glossary-cache := glossary:glossary-cache($tei, (), false())
 
 let $xml-response := 
     common:response(
@@ -278,7 +281,7 @@ let $xml-response :=
             $text,
             $glossary,
             $entities,
-            $caches,
+            $glossary-cache,
             $update-tei:blocking-jobs,
             $entities:predicates,
             $entities:types,

@@ -7,6 +7,7 @@ declare namespace tei="http://www.tei-c.org/ns/1.0";
 
 import module namespace common="http://read.84000.co/common" at "common.xql";
 import module namespace tei-content="http://read.84000.co/tei-content" at "tei-content.xql";
+import module namespace glossary="http://read.84000.co/glossary" at "glossary.xql";
 import module namespace entities="http://read.84000.co/entities" at "entities.xql";
 import module namespace translations="http://read.84000.co/translations" at "translations.xql";
 import module namespace functx="http://www.functx.com";
@@ -357,4 +358,22 @@ document {
 </TEI>
 }};
 
+declare function knowledgebase:outline($tei as element(tei:TEI)) as element(m:text-outline)* {
+    
+    let $text-id := tei-content:id($tei)
+    let $tei-timestamp := tei-content:last-modified($tei)
+    let $app-version := replace($common:app-version, '\.', '-')
+    
+    return
+        element {QName('http://read.84000.co/ns/1.0', 'text-outline')} {
+            
+            attribute text-id { $text-id },
+            attribute app-version { $app-version },
+            
+            tei-content:milestones-pre-processed($tei),
+            tei-content:end-notes-pre-processed($tei),
+            glossary:pre-processed($tei)
+            
+        }
+};
 

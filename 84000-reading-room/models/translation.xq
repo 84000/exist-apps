@@ -12,6 +12,7 @@ import module namespace common="http://read.84000.co/common" at "../modules/comm
 import module namespace tei-content="http://read.84000.co/tei-content" at "../modules/tei-content.xql";
 import module namespace translation="http://read.84000.co/translation" at "../modules/translation.xql";
 import module namespace entities="http://read.84000.co/entities" at "../modules/entities.xql";
+import module namespace glossary = "http://read.84000.co/glossary" at "../modules/glossary.xql";
 import module namespace contributors="http://read.84000.co/contributors" at "../modules/contributors.xql";
 import module namespace functx = "http://www.functx.com";
 
@@ -97,7 +98,7 @@ return
     else if($resource-suffix = ('tei')) then $tei
     
     (: cache :)
-    else if($resource-suffix = ('cache')) then tei-content:cache($tei, false())
+    else if($resource-suffix = ('cache')) then glossary:cache($tei, false())
     
     (: Compile response :)
     else
@@ -145,11 +146,11 @@ return
         
         let $quotes := translation:quotes($tei, $parts)
         
-        (: Get caches :)
-        let $cache := tei-content:cache($tei, false())/m:glossary-cache
-        
         (: Get the cached outline of the text :)
         let $outlines := translation:outline-cached($tei, $parts//tei:ptr/@target[matches(., '^#')] ! replace(., '^#(end\-note\-)?', ''))
+        
+        (: Get glossary cache :)
+        let $glossary-cache := glossary:glossary-cache($tei, (), false())
         
         (: Calculated strings :)
         let $strings := translation:replace-text($source/@key)
@@ -163,9 +164,9 @@ return
                     $translation-data,
                     $entities,
                     $quotes,
-                    $entities:flags,
-                    $cache,
                     $outlines,
+                    $glossary-cache,
+                    $entities:flags,
                     $strings
                 )
             )

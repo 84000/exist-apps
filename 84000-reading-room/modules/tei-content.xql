@@ -518,54 +518,6 @@ declare function tei-content:version-str($tei as element(tei:TEI)) as xs:string 
     , '\s', '-')                                                (: Replace the spaces with hyphens :)
 };
 
-declare function tei-content:cache($tei as element(tei:TEI), $create-if-unavailable as xs:boolean?) as element(m:cache)? {
-    
-    let $text-id := tei-content:id($tei)
-    let $cache-collection := concat($common:data-path, '/', 'cache')
-    let $cache-file := concat($text-id, '.cache')
-    let $cache-uri := concat($cache-collection, '/', $cache-file)
-    let $cache := doc($cache-uri)/m:cache
-    let $cache-empty := <cache xmlns="http://read.84000.co/ns/1.0"/>
-    
-    let $cache := 
-        if(not(doc-available($cache-uri))) then 
-            if($create-if-unavailable and $tei/tei:text//tei:div) then 
-                let $cache-create := xmldb:store($cache-collection, $cache-file, $cache-empty, 'application/xml')
-                let $set-permissions := (
-                    sm:chown(xs:anyURI($cache-uri), 'admin'),
-                    sm:chgrp(xs:anyURI($cache-uri), 'tei'),
-                    sm:chmod(xs:anyURI($cache-uri), 'rw-rw-r--')
-                )
-                return
-                    doc($cache-uri)/m:cache
-            else 
-                $cache-empty
-        else 
-            $cache
-    
-    return
-        $cache
-};
-
-declare function tei-content:notes-cache($tei as element(tei:TEI), $refresh as xs:boolean?, $create-if-unavailable as xs:boolean?) as element(m:notes-cache) {
-    
-    let $cache := tei-content:cache($tei, $create-if-unavailable)
-    
-    return
-        if($cache[m:notes-cache] and not($refresh)) then
-            $cache/m:notes-cache
-        else
-            
-            let $end-notes-pre-processed := tei-content:end-notes-pre-processed($tei)
-            
-            return
-                element { QName('http://read.84000.co/ns/1.0', 'notes-cache') } {
-                
-                    $end-notes-pre-processed/@*,
-                    $end-notes-pre-processed/*
-                }
-};
-
 declare function tei-content:end-notes-pre-processed($tei as element(tei:TEI)) as element(m:pre-processed) {
     
     let $start-time := util:system-dateTime()
@@ -592,26 +544,6 @@ declare function tei-content:end-notes-pre-processed($tei as element(tei:TEI)) a
             functx:total-seconds-from-duration($end-time - $start-time),
             $end-notes
         )
-};
-
-declare function tei-content:milestones-cache($tei as element(tei:TEI), $refresh as xs:boolean?, $create-if-unavailable as xs:boolean?) as element(m:milestones-cache) {
-    
-    let $cache := tei-content:cache($tei, $create-if-unavailable)
-    
-    return
-        if($cache[m:milestones-cache] and not($refresh)) then
-            $cache/m:milestones-cache
-        else
-            
-            let $milestones-pre-processed := tei-content:milestones-pre-processed($tei)
-            
-            return
-                element { QName('http://read.84000.co/ns/1.0', 'milestones-cache') } {
-                
-                    $milestones-pre-processed/@*,
-                    $milestones-pre-processed/*
-                    
-                }
 };
 
 declare function tei-content:milestones-pre-processed($tei as element(tei:TEI)) as element(m:pre-processed) {

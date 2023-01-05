@@ -10,6 +10,7 @@ declare namespace pkg="http://expath.org/ns/pkg";
 import module namespace common="http://read.84000.co/common" at "../../84000-reading-room/modules/common.xql";
 import module namespace tei-content="http://read.84000.co/tei-content" at "../../84000-reading-room/modules/tei-content.xql";
 import module namespace translation="http://read.84000.co/translation" at "../../84000-reading-room/modules/translation.xql";
+import module namespace glossary="http://read.84000.co/glossary" at "../../84000-reading-room/modules/glossary.xql";
 
 declare function local:app-path() as xs:string {
 
@@ -100,7 +101,7 @@ declare function local:root-html($resource-id as xs:string, $part-id as xs:strin
         
     let $quotes := translation:quotes($tei, $parts[@type eq "translation"]/m:part[@content-status = ('complete')])
     
-    let $cache := tei-content:cache($tei, false())/m:*
+    let $glossary-cache := glossary:glossary-cache($tei, (), false())
     
     let $strings := translation:replace-text($source/@key)
     
@@ -112,7 +113,7 @@ declare function local:root-html($resource-id as xs:string, $part-id as xs:strin
                 $request,
                 $translation-data,
                 $quotes,
-                $cache,
+                $glossary-cache,
                 $strings
             )
         )

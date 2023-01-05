@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <eft-header xmlns="http://read.84000.co/ns/1.0">
-    <!-- Updated 20.09.2022 -->
+    <!-- Updated 30.12.2022 -->
     <translation id="tag-line">
         <text xml:lang="en">Translating the words of the Buddha</text>
         <text xml:lang="zh">八萬四千 • 佛典傳譯</text>
@@ -22,8 +22,8 @@
         <text xml:lang="zh">線上捐款</text>
     </translation>
     <translation id="button-donate-link">
-        <text xml:lang="en">https://84000.co/how-you-can-help/sponsor-a-page</text>
-        <text xml:lang="zh">https://84000.co/ch-how-you-can-help/ch-sponsor-a-page</text>
+        <text xml:lang="en">https://84000.co/how-you-can-help/give-monthly</text>
+        <text xml:lang="zh">https://84000.co/ch-how-you-can-help/ch-give-monthly</text>
     </translation>
     <translation id="label-bookmarks">
         <text xml:lang="en">Bookmarks</text>
@@ -165,8 +165,11 @@
         </item>
         <item class="how-to-help" url="#how-to-help">
             <label key="label-how-to-help">Donate</label>
-            <item url="https://84000.co/how-you-can-help/sponsor-a-page">
-                <label key="label-sponsor-a-page">Give Monthly</label>
+            <item url="https://campaigns.84000.co">
+                <label key="label-give-monthly">The Perfection of Wisdom for All</label>
+            </item>
+            <item url="https://84000.co/how-you-can-help/give-monthly">
+                <label key="label-give-monthly">Give Monthly</label>
             </item>
             <item url="https://read.84000.co/about/sponsor-a-sutra.html">
                 <label key="label-sponsor-a-sutra">Sponsor a Sūtra</label>
@@ -263,8 +266,11 @@
         </item>
         <item class="how-to-help" url="#how-to-help">
             <label key="label-how-to-help">線上捐款</label>
-            <item url="https://84000.co/ch-how-you-can-help/ch-sponsor-a-page">
-                <label key="label-sponsor-a-page">每月定捐</label>
+            <item url="https://campaigns.84000.co/chinese">
+                <label key="label-give-monthly">點亮心燈 傳譯般若</label>
+            </item>
+            <item url="https://84000.co/ch-how-you-can-help/ch-give-monthly">
+                <label key="label-give-monthly">每月定捐</label>
             </item>
             <item url="https://read.84000.co/about/sponsor-a-sutra.html?lang=zh">
                 <label key="label-sponsor-a-sutra">贊助一部佛典</label>

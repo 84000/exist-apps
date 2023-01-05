@@ -750,7 +750,9 @@ declare function glossary:xml-response($tei as element(tei:TEI), $resource-id as
             }
     
     (: Include caches - do not call glossary:cache(), this causes a recursion problem :)
-    let $cache := tei-content:cache($tei, false())/m:*
+    let $glossary-cache := glossary:cache($tei, false())/m:glossary-cache
+    
+    let $text-outline := translation:outline-cached($tei, ())
     
     let $replace-text :=
         element { QName('http://read.84000.co/ns/1.0', 'replace-text')} {
@@ -775,7 +777,8 @@ declare function glossary:xml-response($tei as element(tei:TEI), $resource-id as
             (
                 $request,
                 $resource,
-                $cache,
+                $text-outline,
+                $glossary-cache,
                 $replace-text
             )
         )
@@ -785,7 +788,7 @@ declare function glossary:xml-response($tei as element(tei:TEI), $resource-id as
 declare function glossary:filter($tei as element(tei:TEI), $resource-type as xs:string, $filter as xs:string, $search as xs:string) as element(tei:gloss)* {
     
     (: Glossary cache (on) :)
-    let $glossary-cache := tei-content:cache($tei, false())/m:glossary-cache/m:gloss
+    let $glossary-cache := glossary:cache($tei, false())/m:glossary-cache/m:gloss
     
     (: Pre-defined filters :)
     let $tei-gloss :=
@@ -948,9 +951,38 @@ declare function local:instance-locations($translation-html as element(xhtml:htm
 
 };
 
-declare function glossary:cache($tei as element(tei:TEI), $refresh-locations as xs:string*, $create-if-unavailable as xs:boolean?) as element(m:glossary-cache) {
+declare function glossary:cache($tei as element(tei:TEI), $create-if-unavailable as xs:boolean?) as element(m:cache)? {
     
-    let $glossary-cache := tei-content:cache($tei, $create-if-unavailable)/m:glossary-cache
+    let $text-id := tei-content:id($tei)
+    let $cache-collection := concat($common:data-path, '/', 'cache')
+    let $cache-file := concat($text-id, '.cache')
+    let $cache-uri := concat($cache-collection, '/', $cache-file)
+    let $cache := doc($cache-uri)/m:cache
+    let $cache-empty := <cache xmlns="http://read.84000.co/ns/1.0"/>
+    
+    let $cache := 
+        if(not(doc-available($cache-uri))) then 
+            if($create-if-unavailable and $tei/tei:text//tei:div) then 
+                let $cache-create := xmldb:store($cache-collection, $cache-file, $cache-empty, 'application/xml')
+                let $set-permissions := (
+                    sm:chown(xs:anyURI($cache-uri), 'admin'),
+                    sm:chgrp(xs:anyURI($cache-uri), 'tei'),
+                    sm:chmod(xs:anyURI($cache-uri), 'rw-rw-r--')
+                )
+                return
+                    doc($cache-uri)/m:cache
+            else 
+                $cache-empty
+        else 
+            $cache
+    
+    return
+        $cache
+};
+
+declare function glossary:glossary-cache($tei as element(tei:TEI), $refresh-locations as xs:string*, $create-if-unavailable as xs:boolean?) as element(m:glossary-cache) {
+    
+    let $glossary-cache := glossary:cache($tei, $create-if-unavailable)/m:glossary-cache
     
     return
         (: If there is one and there's nothing to refresh, just return the cache :)
@@ -1097,7 +1129,7 @@ declare function glossary:pre-processed($tei as element(tei:TEI)) as element(m:p
         )
 };
 
-declare function glossary:downloads(){
+declare function glossary:downloads() as element(m:downloads) {
 
     element { QName('http://read.84000.co/ns/1.0', 'downloads') } {
     

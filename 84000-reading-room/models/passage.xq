@@ -10,6 +10,7 @@ declare namespace tei = "http://www.tei-c.org/ns/1.0";
 import module namespace common="http://read.84000.co/common" at "../modules/common.xql";
 import module namespace tei-content="http://read.84000.co/tei-content" at "../modules/tei-content.xql";
 import module namespace translation="http://read.84000.co/translation" at "../modules/translation.xql";
+import module namespace glossary = "http://read.84000.co/glossary" at "../modules/glossary.xql";
 import module namespace entities="http://read.84000.co/entities" at "../modules/entities.xql";
 import module namespace functx = "http://www.functx.com";
 
@@ -105,7 +106,7 @@ return
         let $quotes := translation:quotes($tei, $passage)
         
         (: Get caches :)
-        let $cache := tei-content:cache($tei, false())/m:glossary-cache
+        let $glossary-cache := glossary:glossary-cache($tei, (), false())
         
         (: Calculated strings :)
         let $strings := translation:replace-text($source/@key)
@@ -120,7 +121,7 @@ return
                     $entities,
                     $quotes,
                     $entities:flags,
-                    $cache,
+                    $glossary-cache,
                     $outlines,
                     $strings
                 )

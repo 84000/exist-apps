@@ -89,7 +89,7 @@ declare function source:etext-volume($etext-id as xs:string) as element()* {
     collection($source:source-data-path)//tei:TEI[tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:idno[@type eq 'TBRC_TEXT_RID']/text() eq $etext-id]
 };
 
-declare function source:etext-full($location as element(m:location)) as element()? {
+declare function source:etext-full($location as element(m:location)) as element(m:source) {
     
     let $work := $location/@work
     return
@@ -97,13 +97,13 @@ declare function source:etext-full($location as element(m:location)) as element(
             attribute work { $work },
             for $volume in $location/m:volume
                 for $page-in-volume at $page-index in xs:integer($volume/@start-page) to xs:integer($volume/@end-page)
-                return
+                return 
                     source:etext-page($work, xs:integer($volume/@number), $page-in-volume, false(), ())
         }
     
 };
 
-declare function source:etext-page($location as element(m:location), $page-number as xs:integer, $add-context as xs:boolean, $highlight as xs:string*) as element()? {
+declare function source:etext-page($location as element(m:location), $page-number as xs:integer, $add-context as xs:boolean, $highlight as xs:string*) as element(m:source)? {
     
     let $work := $location/@work
     let $page-volume := 

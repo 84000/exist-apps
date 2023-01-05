@@ -60,7 +60,7 @@
     
     <!-- About -->
     <item key="about.common.sponsor-button-label">贊助一頁佛經</item>
-    <item key="about.common.sponsor-button-link">#commsSiteUrl/ch-sponsor-a-page</item>
+    <item key="about.common.sponsor-button-link">#commsSiteUrl/ch-give-monthly</item>
     <item key="about.common.donate-instructions-link">#commsSiteUrl/media/ch_donate_instructions.pdf</item>
     <item key="about.common.donate-instructions-label">幫助</item>
     <item key="about.common.donate-instructions-link-title">如何線上捐款</item>
@@ -171,7 +171,7 @@
     <item key="about.sponsors.page-quote">「無論是慷慨的施主，或是學識淵博且經驗豐富的譯者們，都能因彼此之間相輔相成的因緣，而圓滿福慧二種資糧的積累。」</item>
     <item key="about.sponsors.page-quote-author">赤熱巴巾（又稱赤祖德贊王）</item>
     <item key="about.sponsors.page-intro">
-        <p>84000的佛典傳譯工作能夠順利進行，靠的是上千位贊助者的慷慨支持。贊助者可選擇以「贊助一頁佛經」 <a href="#commsSiteUrl/ch-sponsor-a-page">Sponsor a Page</a> 、 <a href="#commsSiteUrl/ch-download-dana">「隨喜贊助」</a> ，或下方其他方式給予支持。每一份善款——無論金額大小——均是功德無量的佈施。</p>
+        <p>84000的佛典傳譯工作能夠順利進行，靠的是上千位贊助者的慷慨支持。贊助者可選擇以「贊助一頁佛經」 <a href="#commsSiteUrl/ch-give-monthly">每月定捐</a> 、 <a href="#commsSiteUrl/ch-download-dana">「隨喜贊助」</a> ，或下方其他方式給予支持。每一份善款——無論金額大小——均是功德無量的佈施。</p>
     </item>
     <item key="about.sponsors.matching-funds-title">對等基金贊助人</item>
     <item key="about.sponsors.sutras-title">「一部佛典」贊助人</item>
@@ -308,7 +308,7 @@
         <p>本部經典由【八萬四千 • 佛典傳譯】免費出版流通。</p>
         <p>如若您因此心生喜悅想隨喜贊助，請點擊「隨喜贊助」，為佛法傳世點燃無盡藏法燈，延續無盡藏傳承！</p>
     </item>
-    <item key="widget.download-dana.donate-form-link">/ch-download-dana</item>
+    <item key="widget.download-dana.donate-form-link">/ch-give-monthly</item>
     <item key="widget.download-dana.donate-form-link-label">點擊此線上捐款</item>
     
     <!-- Audio test -->

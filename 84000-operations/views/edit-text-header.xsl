@@ -1,12 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:ops="http://operations.84000.co" xmlns:common="http://read.84000.co/common" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:m="http://read.84000.co/ns/1.0" xmlns:ops="http://operations.84000.co" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
     
     <xsl:import href="../../84000-reading-room/xslt/tei-to-xhtml.xsl"/>
     <xsl:import href="common.xsl"/>
     
+    <xsl:variable name="text" select="/m:response/m:text"/>
+    <xsl:variable name="translation-status" select="/m:response/m:translation-status"/>
+    <xsl:variable name="glossary-cache" select="/m:response/m:glossary-cache"/>
+    
     <xsl:template match="/m:response">
-        
-        <xsl:variable name="text" select="m:text"/>
         
         <xsl:variable name="content">
             
@@ -58,7 +60,7 @@
                     </div>
                     
                     <!-- Due date -->
-                    <xsl:variable name="next-target-date" select="m:translation-status/m:text[@status-surpassable eq 'true']/m:target-date[@next eq 'true'][1]"/>
+                    <xsl:variable name="next-target-date" select="$translation-status/m:text[@status-surpassable eq 'true']/m:target-date[@next eq 'true'][1]"/>
                     <xsl:if test="$next-target-date">
                         <div class="center-vertical full-width sml-margin bottom">
                             
@@ -162,7 +164,7 @@
                         </div>
                         
                         <xsl:variable name="files-outdated" select="$text/m:downloads/m:download[not(@version = ../@tei-version)]"/>
-                        <xsl:variable name="cache-glosses-behind" select="m:glossary-cache/m:gloss[not(@tei-version eq $text/@tei-version)]"/>
+                        <xsl:variable name="cache-glosses-behind" select="$glossary-cache/m:gloss[not(@tei-version eq $text/@tei-version)]"/>
                         <xsl:variable name="master-store" select="$environment/m:store-conf[@type eq 'master']"/>
                         <xsl:if test="$cache-glosses-behind or ($master-store and $files-outdated)">
                             <div class="sml-margin bottom text-right">
@@ -197,27 +199,22 @@
                     <div class="list-group accordion accordion-background" role="tablist" aria-multiselectable="true" id="forms-accordion">
                         
                         <xsl:call-template name="titles-form-panel">
-                            <xsl:with-param name="text" select="$text"/>
                             <xsl:with-param name="active" select="if(m:request/@form-expand eq 'titles') then true() else false()"/>
                         </xsl:call-template>
                         
                         <xsl:call-template name="source-form-panel">
-                            <xsl:with-param name="text" select="$text"/>
                             <xsl:with-param name="active" select="if(m:request/@form-expand eq 'source') then true() else false()"/>
                         </xsl:call-template>
                         
                         <xsl:call-template name="contributors-form-panel">
-                            <xsl:with-param name="text" select="$text"/>
                             <xsl:with-param name="active" select="if(m:request/@form-expand eq 'contributors') then true() else false()"/>
                         </xsl:call-template>
                         
                         <xsl:call-template name="submissions-form-panel">
-                            <xsl:with-param name="text" select="$text"/>
                             <xsl:with-param name="active" select="if(m:request/@form-expand eq 'submissions') then true() else false()"/>
                         </xsl:call-template>
                         
                         <xsl:call-template name="translation-status-form-panel">
-                            <xsl:with-param name="text" select="$text"/>
                             <xsl:with-param name="active" select="if(m:request/@form-expand eq 'translation-status') then true() else false()"/>
                         </xsl:call-template>
                         
@@ -241,7 +238,6 @@
     <!-- Titles form -->
     <xsl:template name="titles-form-panel">
         
-        <xsl:param name="text" as="element(m:text)"/>
         <xsl:param name="active"/>
         
         <xsl:call-template name="expand-item">
@@ -392,7 +388,6 @@
     <!-- Contributors form -->
     <xsl:template name="contributors-form-panel">
         
-        <xsl:param name="text" as="element(m:text)"/>
         <xsl:param name="active"/>
         
         <xsl:call-template name="expand-item">
@@ -700,7 +695,6 @@
     <!-- Translation status form -->
     <xsl:template name="translation-status-form-panel">
         
-        <xsl:param name="text" as="element(m:text)"/>
         <xsl:param name="active"/>
         
         <xsl:call-template name="expand-item">
@@ -755,7 +749,7 @@
                                     </label>
                                     <div class="col-sm-3">
                                         <input type="text" name="contract-number" id="contract-number" class="form-control" placeholder="">
-                                            <xsl:attribute name="value" select="normalize-space(m:translation-status/m:text/m:contract/@number)"/>
+                                            <xsl:attribute name="value" select="normalize-space($translation-status/m:text/m:contract/@number)"/>
                                         </input>
                                     </div>
                                     <label class="control-label col-sm-3" for="contract-date">
@@ -763,7 +757,7 @@
                                     </label>
                                     <div class="col-sm-3">
                                         <input type="date" name="contract-date" id="contract-date" class="form-control">
-                                            <xsl:attribute name="value" select="m:translation-status/m:text/m:contract/@date"/>
+                                            <xsl:attribute name="value" select="$translation-status/m:text/m:contract/@date"/>
                                         </input>
                                     </div>
                                 </div>
@@ -857,7 +851,7 @@
                                     </label>
                                     <div class="col-sm-3">
                                         <input type="text" class="form-control" name="action-note" id="action-note" placeholder="e.g. Konchog">
-                                            <xsl:attribute name="value" select="normalize-space(m:translation-status/m:text/m:action-note)"/>
+                                            <xsl:attribute name="value" select="normalize-space($translation-status/m:text/m:action-note)"/>
                                         </input>
                                     </div>
                                 </div>
@@ -869,11 +863,11 @@
                                     </label>
                                     <div class="col-sm-9">
                                         <textarea class="form-control" rows="4" name="progress-note" id="progress-note" placeholder="Notes about the status of the translation...">
-                                            <xsl:copy-of select="normalize-space(m:translation-status/m:text/m:progress-note)"/>
+                                            <xsl:copy-of select="normalize-space($translation-status/m:text/m:progress-note)"/>
                                         </textarea>
-                                        <xsl:if test="m:translation-status/m:text/m:progress-note/@last-edited">
+                                        <xsl:if test="$translation-status/m:text/m:progress-note/@last-edited">
                                             <div class="small text-muted sml-margin top">
-                                                <xsl:value-of select="common:date-user-string('Last updated', m:translation-status/m:text/m:progress-note/@last-edited, m:translation-status/m:text/m:progress-note/@last-edited-by)"/>
+                                                <xsl:value-of select="common:date-user-string('Last updated', $translation-status/m:text/m:progress-note/@last-edited, $translation-status/m:text/m:progress-note/@last-edited-by)"/>
                                             </div>
                                         </xsl:if>
                                     </div>
@@ -886,18 +880,18 @@
                                     </label>
                                     <div class="col-sm-9">
                                         <textarea class="form-control" rows="4" name="text-note" id="text-note" placeholder="Notes about the text itself...">
-                                            <xsl:copy-of select="normalize-space(m:translation-status/m:text/m:text-note)"/>
+                                            <xsl:copy-of select="normalize-space($translation-status/m:text/m:text-note)"/>
                                         </textarea>
-                                        <xsl:if test="m:translation-status/m:text/m:text-note/@last-edited">
+                                        <xsl:if test="$translation-status/m:text/m:text-note/@last-edited">
                                             <div class="small text-muted sml-margin top">
-                                                <xsl:value-of select="common:date-user-string('Last updated', m:translation-status/m:text/m:text-note/@last-edited, m:translation-status/m:text/m:text-note/@last-edited-by)"/>
+                                                <xsl:value-of select="common:date-user-string('Last updated', $translation-status/m:text/m:text-note/@last-edited, $translation-status/m:text/m:text-note/@last-edited-by)"/>
                                             </div>
                                         </xsl:if>
                                     </div>
                                 </div>
                                 
                                 <!-- Target dates -->
-                                <xsl:variable name="target-dates" select="m:translation-status/m:text/m:target-date"/>
+                                <xsl:variable name="target-dates" select="$translation-status/m:text/m:target-date"/>
                                 <xsl:variable name="actual-dates" select="$text/m:status-updates/m:status-update[@update eq 'translation-status']"/>
                                 <div class="form-group">
                                     <label class="control-label col-sm-3 top-margin" for="text-note">
@@ -1026,7 +1020,6 @@
     <!-- Submissions form -->
     <xsl:template name="submissions-form-panel">
         
-        <xsl:param name="text" as="element(m:text)"/>
         <xsl:param name="active"/>
         
         <xsl:call-template name="expand-item">
@@ -1040,14 +1033,14 @@
                 <span class="h4">
                     <xsl:value-of select="'Submissions '"/>
                     <span class="badge badge-notification">
-                        <xsl:value-of select="count(m:translation-status/m:text/m:submission)"/>
+                        <xsl:value-of select="count($translation-status/m:text/m:submission)"/>
                     </span>
                 </span>
             </xsl:with-param>
             
             <xsl:with-param name="content">
                 
-                <xsl:for-each select="m:translation-status/m:text/m:submission">
+                <xsl:for-each select="$translation-status/m:text/m:submission">
                     
                     <xsl:variable name="submission" select="."/>
                     
@@ -1162,7 +1155,6 @@
     <!-- Source form -->
     <xsl:template name="source-form-panel">
         
-        <xsl:param name="text" as="element(m:text)"/>
         <xsl:param name="active"/>
         
         <xsl:call-template name="expand-item">

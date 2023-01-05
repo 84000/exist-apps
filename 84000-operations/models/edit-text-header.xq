@@ -9,6 +9,7 @@ import module namespace common="http://read.84000.co/common" at "../../84000-rea
 import module namespace tei-content="http://read.84000.co/tei-content" at "../../84000-reading-room/modules/tei-content.xql";
 import module namespace translation="http://read.84000.co/translation" at "../../84000-reading-room/modules/translation.xql";
 import module namespace contributors="http://read.84000.co/contributors" at "../../84000-reading-room/modules/contributors.xql";
+import module namespace glossary="http://read.84000.co/glossary" at "../../84000-reading-room/modules/glossary.xql";
 import module namespace entities = "http://read.84000.co/entities" at "../../84000-reading-room/modules/entities.xql";
 
 import module namespace deploy="http://read.84000.co/deploy" at "../../84000-reading-room/modules/deploy.xql";
@@ -136,7 +137,7 @@ let $translation-status :=
 let $text-statuses-selected := tei-content:text-statuses-selected(tei-content:translation-status($tei), 'translation')
 let $persons := contributors:persons(false(), false())
 let $teams := contributors:teams(true(), false(), false())
-let $caches := tei-content:cache($tei, false())/m:*
+let $glossary-cache := glossary:glossary-cache($tei, (), false())
 let $submission-checklist := doc('../config/submission-checklist.xml')
 
 let $xml-response := 
@@ -152,7 +153,7 @@ let $xml-response :=
             $persons,
             $teams,
             $entities,
-            $caches,
+            $glossary-cache,
             $tei-content:title-types,
             $contributors:contributor-types,
             $submission-checklist

@@ -178,6 +178,7 @@ declare function log:achive-logs() as element() {
     (: What log files are there? :)
     let $log-files := collection($common:log-path) ! tokenize(document-uri(.), '/')[last()] ! .[. = ('requests.xml', 'triggers.xml')]
     let $timestamp := format-dateTime(current-dateTime(), "[Y0001]-[M01]-[D01]-[H01]-[m01]-[s01]")
+    let $log := util:log('info', concat('log-achive-logs:', $timestamp))
     
     return
         <achive-logs xmlns="http://read.84000.co/ns/1.0">

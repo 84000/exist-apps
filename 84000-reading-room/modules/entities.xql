@@ -122,26 +122,26 @@ declare function entities:similar($entity as element(m:entity)?, $search-terms a
     
     let $matching-entity-ids := distinct-values($matching-entity-ids)
     let $matching-entity-ids := subsequence($matching-entity-ids, 1, 1024)
+    let $similar-entities := 
+        for $similar-entity in (
+            if($entity[m:type/@type = $entities:types//m:type[@glossary-type]/@id]) then
+                $entities:entities//m:entity
+                    [m:instance/@id = $matching-instance-ids]
+                    [m:type/@type = $entity/m:type/@type]
+            else 
+                $entities:entities//m:entity
+                    [m:instance/@id = $matching-instance-ids]
+            | $entities:entities//m:entity/id($matching-entity-ids)
+        )
+        
+        order by 
+            if($similar-entity[m:label/text() = $search-terms]) then 1 else 0 descending,
+            count($similar-entity/m:instance) descending
+        return
+            $similar-entity
     
     return 
-        subsequence(
-            for $similar-entity in (
-                if($entity[m:type/@type = $entities:types//m:type[@glossary-type]/@id]) then
-                    $entities:entities//m:entity
-                        [m:instance/@id = $matching-instance-ids]
-                        [m:type/@type = $entity/m:type/@type]
-                else 
-                    $entities:entities//m:entity
-                        [m:instance/@id = $matching-instance-ids]
-                | $entities:entities//m:entity/id($matching-entity-ids)
-            )
-            
-            order by 
-                if($similar-entity[m:label/text() = $search-terms]) then 1 else 0 descending,
-                count($similar-entity/m:instance) descending
-            return
-                $similar-entity
-        ,1, 100)
+        subsequence($similar-entities, 1, 100)
 };
 
 declare function entities:related($entities as element(m:entity)*) as element()* {
@@ -164,15 +164,20 @@ declare function entities:related($entities as element(m:entity)*, $include-unre
     
     (: All the entities we want data about :)
     let $lookup-entities := ($entities | $related-entities)
-    let $exclude-instances := $lookup-entities/m:instance[m:flag[@type = $exclude-flagged]]
+    let $exclude-instances := 
+        if($exclude-flagged) then 
+            $lookup-entities/m:instance[m:flag[@type = $exclude-flagged]] 
+        else ()
+    
     let $lookup-instances := $lookup-entities/m:instance except $exclude-instances
     
     (: Get glossary entries :)
     let $glossary-id-chunks := common:ids-chunked($lookup-instances[@type eq 'glossary-item']/@id)
-    let $glosses := 
+    let $glosses := (:$glossary:tei/id($lookup-instances[@type eq 'glossary-item']/@id)/self::tei:gloss[not(@mode eq 'surfeit')]:)
         for $key in map:keys($glossary-id-chunks)
+        let $glossary-ids-key := map:get($glossary-id-chunks, $key)
         return
-            $glossary:tei/id(map:get($glossary-id-chunks, $key))/self::tei:gloss[not(@mode eq 'surfeit')]
+            $glossary:tei/id($glossary-ids-key)/self::tei:gloss[not(@mode eq 'surfeit')]
     
     return (
     
@@ -189,7 +194,7 @@ declare function entities:related($entities as element(m:entity)*, $include-unre
         
         where not($glossary-status = $exclude-status)
         let $text-type := tei-content:type($tei[1])
-        let $glossary-cache := glossary:cache($tei[1], (), false())
+        let $glossary-cache := glossary:glossary-cache($tei[1], (), false())
         
         return
             element { QName('http://read.84000.co/ns/1.0', 'text') } {

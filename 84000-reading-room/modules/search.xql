@@ -61,6 +61,7 @@ declare function search:search($request as xs:string, $resource-id as xs:string,
         | $published/tei:text//tei:p[ft:query(., $query, $options)][@tid]
         | $published/tei:text//tei:label[not(parent::tei:p)][ft:query(., $query, $options)][@tid]
         | $published/tei:text//tei:lg[ft:query(., $query, $options)][@tid]
+        | $published/tei:text//tei:item[parent::tei:list][not(descendant::tei:p)][ft:query(., $query, $options)][@tid]
         | $published/tei:text//tei:ab[ft:query(., $query, $options)][@tid]
         | $published/tei:text//tei:trailer[ft:query(., $query, $options)][@tid]
         | $published/tei:text/tei:back//tei:bibl[ft:query(., $query, $options)][@xml:id]
@@ -118,8 +119,9 @@ declare function search:search($request as xs:string, $resource-id as xs:string,
                 for $result-group in subsequence($result-groups, $first-record, $max-records)
                     
                     (: Get TEI :)
-                    let $tei := doc($result-group/@document-uri)/tei:TEI
+                    let $tei := tei-content:tei($result-group/@text-id, 'translation')
                     let $tei-header := local:tei-header($tei)
+                    let $outline := translation:outline-cached($tei, ())
                     
                     (: Sort matches :)
                     let $results := 
@@ -156,7 +158,7 @@ declare function search:search($request as xs:string, $resource-id as xs:string,
                         
                         (: Notes cache :)
                         if($results//tei:note[@place eq 'end'][@xml:id]) then
-                            tei-content:notes-cache($tei, false(), false())
+                            $outline/m:pre-processed[@type eq 'end-notes']
                         else ()
                         
                     }

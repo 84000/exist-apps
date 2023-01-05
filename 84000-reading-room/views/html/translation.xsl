@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
     
     <xsl:import href="../../xslt/tei-to-xhtml.xsl"/>
 
@@ -479,26 +479,15 @@
                                         </td>
                                     </tr>
                                     
-                                    <tr>
-                                        <td class="icon">
-                                            <a target="84000-comms">
-                                                <xsl:attribute name="href" select="common:homepage-link('sponsors', /m:response/@lang)"/>
-                                                <i class="fa fa-heart"/>
-                                            </a>
-                                        </td>
-                                        <td>
-                                            <a target="84000-comms">
-                                                <xsl:attribute name="href" select="common:homepage-link('sponsors',/m:response/@lang)"/>
-                                                <xsl:value-of select="'Our Sponsors'"/>
-                                            </a>
-                                        </td>
-                                    </tr>
-                                    
                                 </tbody>
                             </table>
                             
-                            <a href="http://84000.co/how-you-can-help/donate/#sap" class="btn btn-primary btn-uppercase" target="84000-comms">
-                                <xsl:copy-of select="common:override-href(/m:response/@lang, 'zh', 'http://84000.co/ch-howhelp/donate')"/>
+                            <a class="btn btn-danger" target="84000-donate">
+                                <xsl:attribute name="href">
+                                    <xsl:call-template name="text">
+                                        <xsl:with-param name="global-key" select="'about.common.sponsor-button-link'"/>
+                                    </xsl:call-template>
+                                </xsl:attribute>
                                 <xsl:value-of select="'Sponsor Translation'"/>
                             </a>
                             

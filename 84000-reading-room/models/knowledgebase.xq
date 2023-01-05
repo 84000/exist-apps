@@ -11,6 +11,7 @@ declare namespace tei = "http://www.tei-c.org/ns/1.0";
 import module namespace common="http://read.84000.co/common" at "../modules/common.xql";
 import module namespace tei-content="http://read.84000.co/tei-content" at "../modules/tei-content.xql";
 import module namespace knowledgebase="http://read.84000.co/knowledgebase" at "../modules/knowledgebase.xql";
+import module namespace glossary = "http://read.84000.co/glossary" at "../modules/glossary.xql";
 import module namespace entities="http://read.84000.co/entities" at "../modules/entities.xql";
 import module namespace functx="http://www.functx.com";
 
@@ -53,7 +54,8 @@ let $entities :=
         
     }
 
-let $caches := tei-content:cache($tei, false())/m:*
+let $outline := knowledgebase:outline($tei)
+let $glossary-cache := glossary:glossary-cache($tei, (), false())
 
 let $xml-response := 
     if(not($resource-suffix = ('tei'))) then
@@ -69,7 +71,8 @@ let $xml-response :=
                 },
                 
                 $knowledgebase-content,
-                $caches,
+                $outline,
+                $glossary-cache,
                 $entities,
                 
                 (: Calculated strings :)

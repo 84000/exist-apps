@@ -61,7 +61,7 @@
 
     <!-- About -->
     <item key="about.common.sponsor-button-label">Sponsor a page now </item>
-    <item key="about.common.sponsor-button-link">#commsSiteUrl/sponsor-a-page</item>
+    <item key="about.common.sponsor-button-link">#commsSiteUrl/give-monthly</item>
     <item key="about.common.sharing-label">Share this page:</item>
     <item key="about.common.summary-label">Summary</item>
     <item key="about.common.no-results-label">There are currently not texts in this list</item>
@@ -177,7 +177,7 @@
         will be able to perfect their two accumulations of virtue through their interdependent connection.”</item>
     <item key="about.sponsors.page-quote-author">Tri Ralpachen (one of the three Dharma kings of Tibet)</item>
     <item key="about.sponsors.page-intro">
-        <p>84000 is dependent on the kind and generous support of thousands of donors, many of whom give through our <a href="#commsSiteUrl/sponsor-a-page">Sponsor a Page</a> and <a href="#commsSiteUrl/download-dana">Download Dāna</a> streams,
+        <p>84000 is dependent on the kind and generous support of thousands of donors, many of whom give through our <a href="#commsSiteUrl/give-monthly">Give Monthly</a> and <a href="#commsSiteUrl/download-dana">Download Dāna</a> streams,
             as well as through the programs listed below. We are grateful for every offering and believe each to be a gift that is an
             equally meritorious drop in in the ocean of our activity.</p>
     </item>
@@ -330,7 +330,7 @@
             be a fundamental Buddhist practice by all schools. The nature and quantity of the gift itself is often considered less
             important.</p>
     </item>
-    <item key="widget.download-dana.donate-form-link">/download-dana</item>
+    <item key="widget.download-dana.donate-form-link">/give-monthly</item>
     <item key="widget.download-dana.donate-form-link-label">Click here to make a dāna donation</item>
     
     <!-- Audio test -->

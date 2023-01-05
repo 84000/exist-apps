@@ -73,7 +73,7 @@
                                         </span>
                                         <xsl:call-template name="search-form"/>
                                         <span>
-                                            <a class="btn btn-sm btn-warning btn-bold-text">
+                                            <a class="btn btn-sm btn-danger">
                                                 <xsl:attribute name="href">
                                                     <xsl:call-template name="local-url">
                                                         <xsl:with-param name="url">

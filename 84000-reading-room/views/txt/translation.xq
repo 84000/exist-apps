@@ -30,13 +30,14 @@ declare function local:parse-node($response as element(m:response), $element as 
         
         (: These are the nodes we want to output :)
         let $output-nodes := $element/descendant::text()[not(ancestor::tei:note)][not(ancestor::tei:orig)][normalize-space(.) gt ''] | $element//tei:milestone | $element//tei:ref | $element//tei:note
+        let $text-id := $response/m:translation/@id
         return (
             for $node at $position in ($element[self::tei:milestone] | $output-nodes)
             return
                 
                 (: Output milestones with id :)
                 if($node[self::tei:milestone]) then
-                    let $cache-milestone := $response/m:milestones-cache/m:milestone[@id eq $node/@xml:id]
+                    let $cache-milestone := $response/m:text-outline[@text-id eq $text-id]/m:pre-processed[@type eq 'milestones']/m:milestone[@id eq $node/@xml:id]
                     let $part := $node/ancestor::m:part[@prefix][1]
                     where $cache-milestone
                     return (
@@ -45,15 +46,17 @@ declare function local:parse-node($response as element(m:response), $element as 
                 
                 (: Output refs with cRef :)
                 else if($node[self::tei:ref]) then
-                    let $resource-id := ($response/m:request/@resource-id[. = $response/m:translation/m:source/@key], $response/m:translation/m:source/@key)[1]
-                    let $cache-folio := $response/m:folios-cache/m:folio-ref[@id eq $node/@xml:id][@resource-id eq $resource-id]
+                    let $toh-key := $response/m:translation/m:source/@key
+                    let $resource-id := ($response/m:request/@resource-id[. = $toh-key], $toh-key)[1]
+                    let $cache-folio := $response/m:text-outline[@text-id eq $text-id]/m:pre-processed[@type eq 'folio-refs']/m:folio-ref[@id eq $node/@xml:id][@resource-id eq $resource-id]
                     where $cache-folio
                     return (
                         text { '{{page:{number:' || $cache-folio/@index-in-resource || ',id:' || $node/@xml:id || ',folio:' || $node/@cRef || $cache-folio[@cRef-volume gt ''] ! concat(',volume:', ./@cRef-volume) || '}}}' }
                     )
+                
                 (: Output notes :)
                 else if($node[self::tei:note]) then
-                    let $cache-note := $response/m:notes-cache/m:end-note[@id eq $node/@xml:id]
+                    let $cache-note := $response/m:text-outline[@text-id eq $text-id]/m:pre-processed[@type eq 'end-notes']/m:end-note[@id eq $node/@xml:id]
                     where $cache-note
                     return (
                         text { '{{note:{index:' || $cache-note/@index || ',id:' || $node/@xml:id || '}}}' }

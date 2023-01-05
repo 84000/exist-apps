@@ -40,82 +40,12 @@ declare function local:after-update-document-functions($doc) {
         local:permanent-ids($doc),
         (:local:remove-temporary-ids($doc),:)
         local:temporary-ids($doc),
-        local:refresh-cache($doc),
         local:glossary-bo($doc, false()),
         local:last-updated($doc)
         
     )
     else ()
     
-};
-
-declare function local:refresh-cache($doc) {
-    
-    let $tei := $doc/tei:TEI
-    let $cache := tei-content:cache($tei, true())
-    let $text-id := tei-content:id($tei)
-    let $log := util:log('info', concat('trigger-refresh-cache:', $text-id))
-    let $recache := false()
-    
-    return (
-    
-        (: Cache notes :)
-        let $tei-items := $tei/tei:text//tei:note[@place eq 'end']
-        let $cache-items := $cache/m:notes-cache/m:end-note
-        let $count-matches := count($tei-items/id($cache-items/@id))
-        where count($tei-items) gt 0
-        return
-        if($recache or not($count-matches eq count($tei-items)) or not($count-matches eq count($cache-items))) then
-            let $notes-cache := tei-content:notes-cache($tei, true(), true())
-            return (
-                common:update('trigger-notes-cache', $cache/m:notes-cache, $notes-cache, $cache, $cache/m:notes-cache/preceding-sibling::*[1], false()),
-                util:log('info', concat('trigger-notes-cached:', $text-id))
-            )
-        else (),
-        
-        (: Cache milestones :)
-        let $tei-items := $tei/tei:text//tei:milestone
-        let $cache-items := $cache/m:milestones-cache/m:milestone
-        let $count-matches := count($tei-items/id($cache-items/@id))
-        where count($tei-items) gt 0
-        return
-        if($recache or not($count-matches eq count($tei-items)) or not($count-matches eq count($cache-items))) then
-            let $milestones-cache := tei-content:milestones-cache($tei, true(), true())
-            return (
-                common:update('trigger-milestones-cache', $cache/m:milestones-cache, $milestones-cache, $cache, $cache/m:milestones-cache/preceding-sibling::*[1], false()),
-                util:log('info', concat('trigger-milestones-cached:', $text-id))
-            )
-        else (),
-        
-        (: Cache folios :)
-        let $tei-items := $tei/tei:text/tei:body//tei:ref[@type eq 'folio']
-        let $cache-items := $cache/m:folios-cache/m:folio-ref
-        let $count-matches := count($tei-items/id($cache-items/@id))
-        where count($tei-items) gt 0
-        return
-        if($recache or not($count-matches eq count($tei-items)) or not($count-matches eq count($cache-items))) then
-            let $folios-cache := translation:folios-cache($tei, true(), true())
-            return (
-                common:update('trigger-cache-folio-refs', $cache/m:folios-cache, $folios-cache, $cache, $cache/m:folios-cache/preceding-sibling::*[1], false()),
-                util:log('info', concat('trigger-folio-refs-cached:', $text-id))
-            )
-        else (),
-        
-        (: Cache glossary :)
-        let $tei-items := $tei//tei:back//tei:list[@type eq 'glossary']/tei:item/tei:gloss[not(@mode eq 'surfeit')]
-        let $cache-items := $cache/m:glossary-cache/m:gloss
-        let $count-matches := count($tei-items/id($cache-items/@id))
-        where count($tei-items) gt 0
-        return
-        if($recache or not($count-matches eq count($tei-items)) or not($count-matches eq count($cache-items))) then
-            let $glossary-cache := glossary:cache($tei, 'removed', true())
-            return (
-                common:update('trigger-cache-glossary', $cache/m:glossary-cache, $glossary-cache, $cache, $cache/m:glossary-cache/preceding-sibling::*[1], false()),
-                util:log('info', concat('trigger-glossary-cached:', $text-id))
-            )
-        else ()
-        
-    )
 };
 
 declare function local:permanent-ids($doc) {
@@ -195,6 +125,7 @@ declare function local:temporary-ids($doc) {
             | $doc//tei:text//tei:table
             | $doc//tei:text//tei:head[not(parent::tei:table)]
             | $doc//tei:text//tei:lg
+            | $doc//tei:text//tei:item[parent::tei:list][not(descendant::tei:p)]
             | $doc//tei:text//tei:ab
             | $doc//tei:text//tei:trailer
             (: These are covered in tei:text//tei:head
