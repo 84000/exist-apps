@@ -182,10 +182,17 @@ return
             $var-debug
         
         (: iOS universal links :)
-        else if ($collection-path eq ".well-known" and $resource-id = ('apple-app-site-association')) then
-            local:dispatch("/models/apple-app-site-association.xq", "", 
-                <parameters xmlns="http://exist.sourceforge.net/NS/exist"/>
-            )
+        else if ($collection-path eq ".well-known" and $resource-id = ('apple-app-site-association', 'assetlinks')) then
+            if($resource-id eq 'apple-app-site-association') then
+                local:dispatch("/models/apple-app-site-association.xq", "", 
+                    <parameters xmlns="http://exist.sourceforge.net/NS/exist"/>
+                )
+            else
+                <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+                    <forward url="../../../system/config/db/system/assetlinks.json">
+                        <set-header name="Content-Type" value="text/javascript"/>
+                    </forward>
+                </dispatch>
         
         (: Check for app subdomain and forward to the download page - do this after iOS universal links so these are still active on the app subdomain :)
         else if (

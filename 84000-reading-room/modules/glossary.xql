@@ -958,7 +958,7 @@ declare function glossary:cache($tei as element(tei:TEI), $create-if-unavailable
     let $cache-file := concat($text-id, '.cache')
     let $cache-uri := concat($cache-collection, '/', $cache-file)
     let $cache := doc($cache-uri)/m:cache
-    let $cache-empty := <cache xmlns="http://read.84000.co/ns/1.0"/>
+    let $cache-empty := <cache xmlns="http://read.84000.co/ns/1.0"><glossary-cache/></cache>
     
     let $cache := 
         if(not(doc-available($cache-uri))) then 

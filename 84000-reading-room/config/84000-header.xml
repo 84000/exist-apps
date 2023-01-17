@@ -181,11 +181,11 @@
                 <label key="label-matching-funds">Matching Funds</label>
             </item>
         </item>
-        <banner>
+        <!--<banner>
             <div xmlns="http://www.w3.org/1999/xhtml">
                 Find out more about <a href="https://campaigns.84000.co" target="_blank">The Perfection of Wisdom for All</a>, a crowdfunding campaign to translate a sūtra
             </div>
-        </banner>
+        </banner>-->
     </navigation>
     <navigation xml:lang="zh">
         <item class="home" url="https://84000.co/ch">
