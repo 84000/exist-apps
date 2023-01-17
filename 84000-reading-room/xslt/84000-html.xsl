@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:eft="http://read.84000.co/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="1.0" exclude-result-prefixes="xs eft">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:eft="http://read.84000.co/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="1.0" exclude-result-prefixes="xs eft xhtml">
     
     <!-- 
         NOTE:
@@ -27,6 +27,7 @@
     </xsl:template>
     
     <xsl:template match="eft:eft-header">
+        
         <div class="navbar navbar-default">
             
             <div class="brand-header" role="banner">
@@ -358,6 +359,22 @@
             </xsl:if>
             
         </div>
+        
+        <xsl:if test="eft:navigation[@xml:lang = $lang]/eft:banner[xhtml:div]">
+            <div class="nav-banner">
+                <div class="container">
+                    <xsl:apply-templates select="eft:navigation[@xml:lang = $lang]/eft:banner/xhtml:div/node()"/>
+                </div>
+            </div>
+        </xsl:if>
+        
+    </xsl:template>
+    
+    <xsl:template match="xhtml:*">
+        <xsl:element name="{ local-name(.) }">
+            <xsl:copy-of select="@*"/>
+            <xsl:apply-templates select="node()"/>
+        </xsl:element>
     </xsl:template>
     
     <xsl:template match="eft:eft-footer">

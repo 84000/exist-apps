@@ -15,6 +15,7 @@ let $resource-suffix := request:get-parameter('resource-suffix', '')
 let $summary-kangyur := translations:summary($source:kangyur-work)
 let $summary-tengyur := translations:summary($source:tengyur-work)
 let $text-statuses := tei-content:text-statuses-sorted('translation')
+let $recent-activity := translations:recent-updates()
 
 let $xml-response :=
     common:response(
@@ -23,7 +24,8 @@ let $xml-response :=
         (
             $summary-kangyur,
             $summary-tengyur,
-            $text-statuses
+            $text-statuses,
+            $recent-activity
         )
     )
 

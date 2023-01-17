@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
     
     <xsl:import href="../../84000-reading-room/xslt/webpage.xsl"/>
     <xsl:import href="common.xsl"/>
@@ -11,6 +11,8 @@
             <xsl:call-template name="operations-page">
                 <xsl:with-param name="active-tab" select="@model"/>
                 <xsl:with-param name="tab-content">
+                    
+                    <!-- Kangyur summary -->
                     <div class="row">
                         <div class="col-sm-9">
                             
@@ -33,6 +35,7 @@
                     
                     <hr/>
                     
+                    <!-- Tengyur summary -->
                     <div class="row">
                         <div class="col-sm-9">
                             
@@ -55,10 +58,11 @@
                     
                     <hr/>
                     
+                    <!-- Links -->
                     <h4>Preview data on the public site</h4>
                     <div class="row">
                         <div class="col-sm-3">
-                            <h5 class="text-bold">Pages:</h5>
+                            <h5>Pages:</h5>
                             <ul class="list-unstyled">
                                 <li>
                                     Impact <a href="{ $reading-room-path }/about/impact.html" target="impact">en</a> | <a href="{ $reading-room-path }/about/impact.html?lang=zh" target="impact">zh</a>
@@ -78,7 +82,7 @@
                             </ul>
                         </div>
                         <div class="col-sm-9">
-                            <h5 class="text-bold">Widgets:</h5>
+                            <h5>Widgets:</h5>
                             <ul class="list-unstyled">
                                 <li>
                                     Progress panel <a href="{ $reading-room-path }/widget/progress-panel.html" target="progress-panel">en</a> | <a href="{ $reading-room-path }/widget/progress-panel.html?lang=zh" target="progress-panel">zh</a>
@@ -98,6 +102,101 @@
                             </ul>
                         </div>
                     </div>
+                    
+                    <!-- Latest activity -->
+                    <xsl:variable name="recent-updated-texts" select="m:recent-updates/m:text"/>
+                    <xsl:for-each select="('new-publication', 'new-version')">
+                        
+                        <xsl:variable name="recent-update-type" select="."/>
+                        
+                        <hr/>
+                        
+                        <h4 class="no-top-margin">
+                            <xsl:choose>
+                                <xsl:when test="$recent-update-type eq 'new-publication'">
+                                    <xsl:value-of select="'New Publications'"/>
+                                </xsl:when>
+                                <xsl:otherwise>
+                                    <xsl:value-of select="'New Versions'"/>
+                                </xsl:otherwise>
+                            </xsl:choose>
+                        </h4>
+                        
+                        <xsl:choose>
+                            <xsl:when test="$recent-updated-texts[@recent-update eq $recent-update-type]">
+                                <table class="table no-border width-auto">
+                                    <xsl:for-each select="$recent-updated-texts[@recent-update eq $recent-update-type]">
+                                        
+                                        <xsl:sort select="number(m:toh[1]/@number)"/>
+                                        <xsl:sort select="m:toh[1]/@letter"/>
+                                        <xsl:sort select="number(m:toh[1]/@chapter-number)"/>
+                                        <xsl:sort select="m:toh[1]/@chapter-letter"/>
+                                        
+                                        <xsl:variable name="toh-key" select="(m:toh/@key)[1]"/>
+                                        
+                                        <tr class="vertical-top">
+                                            <td>
+                                                <span>
+                                                    <xsl:attribute name="class">
+                                                        <xsl:choose>
+                                                            <xsl:when test="@status-group eq 'published'">
+                                                                <xsl:value-of select="'label label-success'"/>
+                                                            </xsl:when>
+                                                            <xsl:otherwise>
+                                                                <xsl:value-of select="'label label-warning'"/>
+                                                            </xsl:otherwise>
+                                                        </xsl:choose>
+                                                    </xsl:attribute>
+                                                    <xsl:value-of select="@status"/>
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <h4 class="no-top-margin no-bottom-margin">
+                                                    <a>
+                                                        <xsl:attribute name="href" select="concat($reading-room-path, '/translation/', $toh-key, '.html')"/>
+                                                        <xsl:attribute name="target" select="concat($toh-key, '.html')"/>
+                                                        <xsl:attribute name="title" select="concat('Open ', $toh-key, '.html in the Reading Room')"/>
+                                                        <xsl:value-of select="'Toh ' || string-join(m:toh/m:base, ' / ') || ' (' || @id || ') '"/>
+                                                    </a>
+                                                </h4>
+                                                <div class="small">
+                                                    <xsl:choose>
+                                                        <xsl:when test="$recent-update-type eq 'new-publication'">
+                                                            <xsl:for-each select="tei:note[@update eq 'translation-status'][@value = ('1', '1.a')]">
+                                                                <xsl:sort select="@date-time"/>
+                                                                <span class="text-muted">
+                                                                    <xsl:value-of select="common:date-user-string('Published', @date-time, @user)"/>
+                                                                </span>
+                                                            </xsl:for-each>
+                                                        </xsl:when>
+                                                        <xsl:otherwise>
+                                                            <xsl:for-each select="tei:note">
+                                                                <xsl:sort select="@date-time"/>
+                                                                <span class="text-muted">
+                                                                    <xsl:value-of select="common:date-user-string(concat('Version ', @value, ' created'), @date-time, @user)"/>
+                                                                </span>
+                                                                <br/>
+                                                                <span class="text-danger">
+                                                                    <xsl:value-of select="string-join(('Note: ', descendant::text() ! normalize-space()), '')"/>
+                                                                </span>
+                                                            </xsl:for-each>
+                                                        </xsl:otherwise>
+                                                    </xsl:choose>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    
+                                    </xsl:for-each>
+                                </table>
+                            </xsl:when>
+                            <xsl:otherwise>
+                                <p class="text-muted italic">
+                                    <xsl:value-of select="'No matching texts'"/>
+                                </p>
+                            </xsl:otherwise>
+                        </xsl:choose>
+                    
+                    </xsl:for-each>
                     
                 </xsl:with-param>
             </xsl:call-template>
@@ -314,34 +413,40 @@
             </canvas>
             <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.6.0/Chart.min.js"/>
             <script>
-                var ctx = document.getElementById('<xsl:value-of select="$chart-id"/>').getContext('2d');
-                var data = {
-                datasets: [{
-                data: [
-                <xsl:value-of select="$outline-summary/m:texts/m:pages/@published"/>, 
-                <xsl:value-of select="$outline-summary/m:texts/m:pages/@translated"/>, 
-                <xsl:value-of select="$outline-summary/m:texts/m:pages/@in-translation"/>, 
-                <xsl:value-of select="$outline-summary/m:texts/m:pages/@not-started"/>
-                ],
-                backgroundColor: ['#4d6253','#566e90','#b76c1e','#bbbbbb']
-                }],
-                labels: ['published', 'translated', 'in progress','not started']
-                };
-                var options = {
-                legend: { display: false, position: 'right' },
-                tooltips: { callbacks: {
-                label: function(tooltipItem, data) {
-                var i = tooltipItem.index;
-                var val = data.datasets[0].data[tooltipItem.index];
-                return val.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " pages " + data.labels[i];
-                }}
-                }
-                };
-                var myPieChart = new Chart(ctx,{
-                type: 'pie',
-                data: data,
-                options: options
-                });
+                
+                <xsl:variable name="chart-script">
+                    var ctx = document.getElementById('<xsl:value-of select="$chart-id"/>').getContext('2d');
+                    var data = {
+                        datasets: [{
+                            data: [
+                                <xsl:value-of select="$outline-summary/m:texts/m:pages/@published"/>, 
+                                <xsl:value-of select="$outline-summary/m:texts/m:pages/@translated"/>, 
+                                <xsl:value-of select="$outline-summary/m:texts/m:pages/@in-translation"/>, 
+                                <xsl:value-of select="$outline-summary/m:texts/m:pages/@not-started"/>
+                            ],
+                            backgroundColor: ['#4d6253','#566e90','#b76c1e','#bbbbbb']
+                        }],
+                        labels: ['published', 'translated', 'in progress','not started']
+                    };
+                    var options = {
+                        legend: { display: false, position: 'right' },
+                        tooltips: { callbacks: {
+                            label: function(tooltipItem, data) {
+                                var i = tooltipItem.index;
+                                var val = data.datasets[0].data[tooltipItem.index];
+                                return val.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " pages " + data.labels[i];
+                            }}
+                        }
+                    };
+                    var myPieChart = new Chart(ctx,{
+                        type: 'pie',
+                        data: data,
+                        options: options
+                    });
+                </xsl:variable>
+                
+                <xsl:value-of select="normalize-space($chart-script)"/>
+                
             </script>
         </div>
         

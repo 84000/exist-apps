@@ -73,19 +73,19 @@ let $texts :=
 
 let $request := 
     element { QName('http://read.84000.co/ns/1.0', 'request') } {
-            attribute work { $work },
-            attribute status { string-join($status, ',') },
-            attribute sort { $sort },
-            attribute pages-min { $pages-min },
-            attribute pages-max { $pages-max },
-            attribute filter { $filter },
-            attribute deduplicate { $deduplicate },
-            attribute toh-min { $toh-min },
-            attribute toh-max { $toh-max },
-            attribute target-date-type { $target-date-type },
-            attribute target-date-start { $target-date-start },
-            attribute target-date-end { $target-date-end }
-        }
+        attribute work { $work },
+        attribute status { string-join($status, ',') },
+        attribute sort { $sort },
+        attribute pages-min { $pages-min },
+        attribute pages-max { $pages-max },
+        attribute filter { $filter },
+        attribute deduplicate { $deduplicate },
+        attribute toh-min { $toh-min },
+        attribute toh-max { $toh-max },
+        attribute target-date-type { $target-date-type },
+        attribute target-date-start { $target-date-start },
+        attribute target-date-end { $target-date-end }
+    }
 
 let $xml-response :=
     common:response(

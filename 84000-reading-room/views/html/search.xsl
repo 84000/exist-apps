@@ -137,6 +137,8 @@
                             
                             <p class="text-center text-muted small">
                                 <xsl:value-of select="'Search our Translation Memory files to find translations aligned with the Tibetan source.'"/>
+                                <br/>
+                                <xsl:value-of select="'Use quotation marks e.g. &#34;realm of phenomena&#34; to search for complete phrases rather than individual words.'"/>
                             </p>
                             
                             <div id="search-container">

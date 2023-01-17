@@ -7,7 +7,6 @@ declare namespace tmx="http://www.lisa.org/tmx14";
 import module namespace common="http://read.84000.co/common" at "/db/apps/84000-reading-room/modules/common.xql";
 import module namespace tei-content="http://read.84000.co/tei-content" at "/db/apps/84000-reading-room/modules/tei-content.xql";
 import module namespace translation="http://read.84000.co/translation" at "../../84000-reading-room/modules/translation.xql";
-import module namespace source="http://read.84000.co/source" at "../../84000-reading-room/modules/source.xql";
 import module namespace update-tm="http://operations.84000.co/update-tm" at "../../84000-operations/modules/update-tm.xql";
 
 declare variable $local:tei := collection($common:translations-path);
@@ -18,11 +17,7 @@ for $tei in $local:tei//tei:TEI[tei:teiHeader/tei:fileDesc/tei:publicationStmt/@
 let $text-id := tei-content:id($tei)
 let $tmx := $local:tm//tmx:tmx[tmx:header/@eft:text-id eq $text-id]
 
-where $tmx and $text-id eq 'UT22084-001-006'
-let $tm-units-aligned := update-tm:tm-units-aligned($tei, $tmx)
+where $tmx and $text-id eq (:'UT22084-034-009':)(:'UT22084-040-002':)(:'UT22084-001-006':)'UT22084-042-002'
 
-return (
-    (: Update TM :)
-    $tm-units-aligned
-    (:,update-tm:apply-revisions($tm-units-aligned[self::eft:tm-unit-aligned], $tmx):)
-)
+return 
+    update-tm:apply-revisions($tei, $tmx)

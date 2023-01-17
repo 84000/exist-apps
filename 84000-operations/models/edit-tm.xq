@@ -15,15 +15,32 @@ import module namespace source="http://read.84000.co/source" at "../../84000-rea
 declare option exist:serialize "method=xml indent=no";
 
 let $text-id := request:get-parameter('text-id', '')
-(:let $part-id := request:get-parameter('part-id', ''):)
+let $first-record := request:get-parameter('first-record', '1') ! common:integer(.)
 
 let $tei := tei-content:tei($text-id, 'translation')
 let $tmx := collection($update-tm:tm-path)//tmx:tmx[tmx:header/@eft:text-id eq $text-id]
 
 (: Process update :)
 let $update-tm :=
+    
+    (: Apply revisions :)
+    if($tmx and request:get-parameter('form-action', '') eq 'apply-revisions') then 
+    
+        local:async-script(
+            'tm-maintenance',
+            <parameters xmlns="">
+                <param name="text-id" value="{ $text-id}"/>
+            </parameters>
+        )
+    
+    (: Fix ids where missing :)
+    else if($tmx and request:get-parameter('form-action', '') eq 'fix-ids') then 
+        if($tmx/tmx:body/tmx:tu[not(@id)]) then
+            update-tm:set-tu-ids($tmx)
+        else ()
+    
     (: Update an existing segment :)
-    if(
+    else if(
         $tmx
         and request:get-parameter('form-action', '') eq 'update-segment'
         and request:get-parameter('tu-id', '') gt ''
@@ -39,36 +56,12 @@ let $update-tm :=
         and request:get-parameter('tm-bo', '') gt ''
         and request:get-parameter-names()[. = 'tm-en']
     ) then
-        update-tm:add-unit($tmx, request:get-parameter('tm-bo', ''), request:get-parameter('tm-en', ''), request:get-parameter('tei-location-id', ''), ())
+        update-tm:add-unit($tmx, request:get-parameter('tm-bo', ''), request:get-parameter('tm-en', ''), request:get-parameter('tei-location-id', ''), (), true())
     
     (: Delete a unit :)
-    else if($tmx and request:get-parameter('remove-tu', '') gt '') then
-        update-tm:remove-unit($tmx, request:get-parameter('remove-tu', '')) 
+    else if($tmx and request:get-parameter('remove-unit', '') gt '') then
+        update-tm:remove-unit($tmx, request:get-parameter('remove-unit', '')) 
     
-    (: Fix ids where missing :)
-    else if($tmx and request:get-parameter('form-action', '') eq 'fix-ids') then 
-        if($tmx/tmx:body/tmx:tu[not(@id)]) then
-            update-tm:set-tu-ids($tmx)
-        else ()
-    
-    (: Apply revisions :)
-    else if($tmx and request:get-parameter('form-action', '') eq 'apply-revisions') then 
-        let $tm-units-aligned := update-tm:tm-units-aligned($tei, $tmx)
-        return 
-            update-tm:apply-revisions($tm-units-aligned[self::eft:tm-unit-aligned], $tmx)
-    
-    (: Create a new TM file :)
-    (:else if(
-        not($tmx) 
-        and request:get-parameter('form-action', '') eq 'new-tmx'
-        and request:get-parameter('bcrd-resource', '') gt ''
-    ) then
-        let $bcrd-resource := doc(concat($common:data-path, '/BCRDCORPUS/', request:get-parameter('bcrd-resource', '')))//bcrdb:bcrdCorpus
-        where $bcrd-resource
-        return
-            update-tm:new-tmx-from-bcrdCorpus($tei, $bcrd-resource):)
-
-        
     else ()
 
 (: If it was created then load again :)
@@ -81,13 +74,15 @@ let $tmx :=
 let $request :=
     element { QName('http://read.84000.co/ns/1.0', 'request') }{
         attribute resource-suffix { request:get-parameter('resource-suffix', '') },
-        attribute text-id { $text-id }(:,
-        attribute part-id { $part-id }:)
-    }
-
-let $tm-units-aligned := 
-    element { QName('http://read.84000.co/ns/1.0', 'tm-units-aligned') }{ 
-        update-tm:tm-units-aligned($tei, $tmx)
+        attribute text-id { $text-id },
+        attribute first-record { $first-record },
+        attribute max-records { 100 },
+        attribute filter { request:get-parameter('filter', '') },
+        attribute active-record {
+            if(request:get-parameter('remove-unit', '') gt '') then
+                request:get-parameter('remove-unit', '')
+            else ()
+        }
     }
 
 let $translation := 
@@ -99,24 +94,9 @@ let $translation :=
         attribute status { tei-content:translation-status($tei) },
         attribute status-group { tei-content:translation-status-group($tei) },
         tei-content:titles($tei),
-        translation:toh($tei, '')
+        translation:toh($tei, ''),
+        tei-content:status-updates($tei)
     }
-
-(: If it was created then load again :)
-(:let $bcrdb-source-files := 
-    if(not($tmx)) then 
-        element { QName('http://read.84000.co/ns/1.0', 'bcrd-resources') } {
-            for $bcrd-resource in collection(concat($common:data-path, '/BCRDCORPUS'))//bcrdb:bcrdCorpus
-            let $document-name := util:document-name($bcrd-resource)
-            (\: Exclude source files that already have a tmx created :\)
-            where not(collection($update-tm:tm-path)//tmx:tmx/tmx:header/@eft:source-ref eq $document-name)
-            return 
-                element bcrd-resource {
-                    attribute document-name { $document-name },
-                    $bcrd-resource/bcrdb:head
-                }
-        }
-    else ():)
 
 let $xml-response := 
     common:response(
@@ -126,7 +106,7 @@ let $xml-response :=
             $update-tm,
             $translation,
             $tmx,
-            $tm-units-aligned
+            $update-tm:blocking-jobs
         )
     )
 

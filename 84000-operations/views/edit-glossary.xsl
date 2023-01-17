@@ -320,6 +320,7 @@
                                                     </xsl:otherwise>
                                                 </xsl:choose>
                                             </xsl:if>
+                                            
                                         </li>
                                         
                                         <!-- Auto-assign entities -->
@@ -493,6 +494,7 @@
                                             </div>
                                             
                                         </div>
+                                    
                                     </xsl:with-param>
                                 </xsl:call-template>
                             </div>

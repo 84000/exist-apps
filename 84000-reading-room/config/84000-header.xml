@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <eft-header xmlns="http://read.84000.co/ns/1.0">
-    <!-- Updated 30.12.2022 -->
+    <!-- Updated 11.01.2023 -->
     <translation id="tag-line">
         <text xml:lang="en">Translating the words of the Buddha</text>
         <text xml:lang="zh">八萬四千 • 佛典傳譯</text>
@@ -133,7 +133,7 @@
                 </anchor>
             </item>
             <item url="https://84000.co/about/guiding-principles">
-                <label key="label-core-values">Guiding Principles</label>
+                <label key="label-guiding-principles">Guiding Principles</label>
             </item>
             <item url="https://84000.co/about/translation-progress-impact">
                 <label key="label-progress-impact">Progress and Impact</label>
@@ -181,6 +181,11 @@
                 <label key="label-matching-funds">Matching Funds</label>
             </item>
         </item>
+        <banner>
+            <div xmlns="http://www.w3.org/1999/xhtml">
+                Find out more about <a href="https://campaigns.84000.co" target="_blank">The Perfection of Wisdom for All</a>, a crowdfunding campaign to translate a sūtra
+            </div>
+        </banner>
     </navigation>
     <navigation xml:lang="zh">
         <item class="home" url="https://84000.co/ch">
@@ -233,8 +238,8 @@
             <item url="https://84000.co/ch-about/ch-about-us">
                 <label key="label-about-us">關於我們</label>
             </item>
-            <item url="https://84000.co/ch-about/ch-core-values">
-                <label key="label-core-values">組織核心價值</label>
+            <item url="https://84000.co/ch-about/ch-guiding-principles">
+                <label key="label-guiding-principles">組織核心價值</label>
             </item>
             <item url="https://84000.co/ch-about/ch-translation-progress-impact">
                 <label key="label-progress-impact">翻譯進度和影響力</label>

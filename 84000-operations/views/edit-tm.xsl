@@ -1,15 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:bcrdb="http://www.bcrdb.org/ns/1.0" xmlns:tmx="http://www.lisa.org/tmx14" xmlns:m="http://read.84000.co/ns/1.0" xmlns:ops="http://operations.84000.co" xmlns:functx="http://www.functx.com" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:scheduler="http://exist-db.org/xquery/scheduler" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:bcrdb="http://www.bcrdb.org/ns/1.0" xmlns:tmx="http://www.lisa.org/tmx14" xmlns:m="http://read.84000.co/ns/1.0" xmlns:eft="http://read.84000.co/ns/1.0" xmlns:ops="http://operations.84000.co" xmlns:functx="http://www.functx.com" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
     
     <xsl:import href="../../84000-reading-room/xslt/webpage.xsl"/>
     <xsl:import href="common.xsl"/>
     
     <xsl:variable name="translation" select="/m:response/m:translation" as="element(m:translation)*"/>
-    <xsl:variable name="tm-units" select="/m:response/tmx:tmx/tmx:body/tmx:tu" as="element(tmx:tu)*"/>
-    <xsl:variable name="tm-units-aligned" select="/m:response/m:tm-units-aligned/m:tm-unit-aligned" as="element(m:tm-unit-aligned)*"/>
-    <xsl:variable name="tei-remainder" select="/m:response/m:tm-units-aligned/m:remainder/text()" as="text()*"/>
-
-    <xsl:variable name="first-issue-index" select="min($tm-units-aligned[@issue]/@index ! xs:integer(.))"/>
+    <xsl:variable name="tmx" select="/m:response/tmx:tmx" as="element(tmx:tmx)?"/>
+    <xsl:variable name="tmx-text-version" select="$tmx/tmx:header/@eft:text-version" as="xs:string?"/>
+    <xsl:variable name="tm-units" select="$tmx/tmx:body/tmx:tu" as="element(tmx:tu)*"/>
+    
+    <xsl:variable name="first-record" select="/m:response/m:request/@first-record ! xs:integer(.)" as="xs:integer"/>
+    <xsl:variable name="max-records" select="/m:response/m:request/@max-records ! xs:integer(.)" as="xs:integer"/>
+    <xsl:variable name="filter" select="/m:response/m:request/@filter[string() = ('revisions', 'unmatched', 'nolocation', 'remainder')]" as="xs:string?"/>
+    <xsl:variable name="active-record" select="/m:response/m:request/@active-record" as="xs:string?"/>
+    <xsl:variable name="job-running" select="/m:response/scheduler:job"/>
     
     <xsl:template match="/m:response">
         
@@ -23,6 +27,7 @@
                     <!-- Page title -->
                     <h3 class="visible-print-block no-top-margin">
                         <xsl:value-of select="'Translation Memory Editor'"/>
+                        <!--<xsl:value-of select="concat(' / ', $filter)"/>-->
                     </h3>
                     
                     <!-- Text title -->
@@ -30,7 +35,7 @@
                         
                         <a>
                             <xsl:if test="$translation[m:toh]">
-                                <xsl:attribute name="href" select="concat($reading-room-path, '/translation/', $translation/m:toh[1]/@key, '.html?view-mode=editor')"/>
+                                <xsl:attribute name="href" select="concat($reading-room-path, '/translation/', $translation/m:toh[1]/@key, '.html')"/>
                                 <xsl:attribute name="target" select="$translation/@id"/>
                                 <xsl:value-of select="$translation/m:toh[1]/m:full/data()"/>
                                 <xsl:value-of select="' / '"/>
@@ -65,536 +70,521 @@
                         
                     </div>
                     
-                    <!-- Alert completed -->
-                    <xsl:if test="not($first-issue-index) and not($tei-remainder)">
-                        <div class="alert alert-success onload-scroll-target">
-                            <p>
-                                <xsl:value-of select="'All done! TM matches TEI'"/>
-                            </p>
-                        </div>
-                    </xsl:if>
-                    
-                    <!-- Fixes -->
                     <xsl:choose>
                         
-                        <!-- Fix ids -->
-                        <xsl:when test="$tm-units[not(@id)]">
-                            <div class="alert alert-danger small" id="alert-ids-missing">
-                                <p>
-                                    <xsl:value-of select="'Some IDs are missing from this TMX | '"/>
-                                    <a href="{concat('/edit-tm.html?text-id=', $translation/@id, '&amp;form-action=fix-ids')}" class="alert-link">
-                                        <xsl:value-of select="'Fix missing IDs'"/>
-                                    </a>
-                                </p>
-                            </div>
-                        </xsl:when>
-                        
-                        <!-- Fix issues -->
-                        <xsl:when test="$tm-units-aligned[@issue]">
+                        <xsl:when test="$tm-units">
                             
-                            <!-- Fix revisions -->
-                            <xsl:if test="$tm-units-aligned[@issue = ('en-revised', 'new-location')]">
-                                <div class="alert alert-warning small clearfix" id="alert-revisions">
-                                    <p>
-                                        <xsl:value-of select="'This translations contains revisions that can be automatically applied to the Translation Memory'"/>
-                                    </p>
-                                    <ul>
-                                        <xsl:if test="$tm-units-aligned[@issue = ('en-revised')]">
-                                            <li>
-                                                <xsl:value-of select="concat(count($tm-units-aligned[@issue = ('en-revised')]), ' revised translation(s)')"/>
-                                            </li>
-                                        </xsl:if>
-                                        <xsl:if test="$tm-units-aligned[@issue = ('new-location')]">
-                                            <li>
-                                                <xsl:value-of select="concat(count($tm-units-aligned[@issue = ('new-location')]), ' revised location(s)')"/>
-                                            </li>
-                                        </xsl:if>
+                            <xsl:variable name="tm-noid" select="$tm-units[not(@id)]" as="element(tmx:tu)*"/>
+                            <xsl:variable name="tm-remainder" select="$tm-units[not(tmx:tuv[@xml:lang eq 'bo']) or not(tmx:tuv[@xml:lang eq 'en'])]" as="element(tmx:tu)*"/>
+                            <xsl:variable name="tm-revisions" select="$tm-units[tmx:prop[@name eq 'revision'][text() eq $tmx-text-version]] except $tm-remainder" as="element(tmx:tu)*"/>
+                            <xsl:variable name="tm-unmatched" select="$tm-units[tmx:prop[@name eq 'unmatched'][text() eq $tmx-text-version]] except $tm-remainder" as="element(tmx:tu)*"/>
+                            <xsl:variable name="tm-nolocation" select="$tm-units[not(tmx:prop[@name eq 'location-id']/text() gt '')] except ($tm-unmatched | $tm-remainder)" as="element(tmx:tu)*"/>
+                            <xsl:variable name="tm-units-filtered" as="element(tmx:tu)*">
+                                <xsl:choose>
+                                    <xsl:when test="$filter eq 'remainder'">
+                                        <xsl:sequence select="$tm-remainder"/>
+                                    </xsl:when>
+                                    <xsl:when test="$filter eq 'revisions'">
+                                        <xsl:sequence select="$tm-revisions"/>
+                                    </xsl:when>
+                                    <xsl:when test="$filter eq 'unmatched'">
+                                        <xsl:sequence select="$tm-unmatched"/>
+                                    </xsl:when>
+                                    <xsl:when test="$filter eq 'nolocation'">
+                                        <xsl:sequence select="$tm-nolocation"/>
+                                    </xsl:when>
+                                    <xsl:otherwise>
+                                        <xsl:sequence select="$tm-units"/>
+                                    </xsl:otherwise>
+                                </xsl:choose>
+                            </xsl:variable>
+                            <xsl:variable name="count-records" select="count($tm-units-filtered)" as="xs:integer"/>
+                            <xsl:variable name="tei-revised" select="not($translation/@tei-version eq $tmx-text-version)" as="xs:boolean"/>
+                            
+                            <!-- Version comparison -->
+                            <hr class="sml-margin"/>
+                            <div class="center-vertical full-width">
+                                <div>
+                                    <ul class="list-inline">
+                                        <li>
+                                            <span class="small">
+                                                <xsl:value-of select="'Current TEI version: '"/>
+                                            </span>
+                                            <span class="label label-default">
+                                                <xsl:value-of select="$translation/@tei-version"/>
+                                            </span>
+                                        </li>
+                                        <li>
+                                            <span class="small">
+                                                <xsl:value-of select="'TM version: '"/>
+                                            </span>
+                                            <span class="label label-success">
+                                                <xsl:if test="$tei-revised">
+                                                    <xsl:attribute name="class" select="'label label-danger'"/>
+                                                </xsl:if>
+                                                <xsl:value-of select="$tmx-text-version"/>
+                                            </span>
+                                        </li>
+                                        <li>
+                                            <span class="small italic text-success">
+                                                <xsl:if test="$tei-revised">
+                                                    <xsl:attribute name="class" select="'small italic text-danger'"/>
+                                                </xsl:if>
+                                                <xsl:value-of select="concat('Version note: ', $translation/m:status-updates/m:status-update[@update eq 'text-version'][@current-version eq 'true'][1])"/>
+                                            </span>
+                                        </li>
                                     </ul>
-                                    <div class="center-vertical align-left sml-margin top">
-                                        <div>
-                                            <a href="{concat('/edit-tm.html?text-id=', $translation/@id, '&amp;form-action=apply-revisions')}" class="btn btn-sm btn-warning">
+                                </div>
+                            </div>
+                            
+                            <!-- Filters and pagination -->
+                            <hr class="sml-margin"/>
+                            <div class="center-vertical full-width sml-margin bottom">
+                                
+                                <!-- Filters -->
+                                <div>
+                                    <ul class="nav nav-pills no-bottom-margin" role="tablist">
+                                        
+                                        <!-- No filter -->
+                                        <li role="presentation">
+                                            <xsl:if test="not($filter)">
+                                                <xsl:attribute name="class" select="'active'"/>
+                                            </xsl:if>
+                                            <a>
+                                                <xsl:attribute name="href" select="concat('/edit-tm.html?text-id=', $translation/@id)"/>
+                                                <xsl:value-of select="'All units'"/>
+                                            </a>
+                                        </li>
+                                        
+                                        <!-- Revisions -->
+                                        <li role="presentation">
+                                            <xsl:if test="$filter eq 'revisions'">
+                                                <xsl:attribute name="class" select="'active'"/>
+                                            </xsl:if>
+                                            <a>
+                                                <xsl:attribute name="href" select="concat('/edit-tm.html?text-id=', $translation/@id, '&amp;filter=revisions')"/>
+                                                <xsl:value-of select="'Revised'"/>
+                                                <xsl:value-of select="' '"/>
+                                                <span class="badge">
+                                                    <xsl:value-of select="format-number(count($tm-revisions), '#,###')"/>
+                                                </span>
+                                            </a>
+                                        </li>
+                                        
+                                        <!-- Un matched -->
+                                        <li role="presentation">
+                                            <xsl:if test="$filter eq 'unmatched'">
+                                                <xsl:attribute name="class" select="'active'"/>
+                                            </xsl:if>
+                                            <a>
+                                                <xsl:attribute name="href" select="concat('/edit-tm.html?text-id=', $translation/@id, '&amp;filter=unmatched')"/>
+                                                <xsl:value-of select="'Not matched'"/>
+                                                <xsl:value-of select="' '"/>
+                                                <xsl:variable name="tm-unmatched-count" select="count($tm-unmatched)"/>
+                                                <span class="badge">
+                                                    <xsl:if test="$tm-unmatched-count gt 0">
+                                                        <xsl:attribute name="class" select="'badge badge-alert'"/>
+                                                    </xsl:if>
+                                                    <xsl:value-of select="format-number($tm-unmatched-count, '#,###')"/>
+                                                </span>
+                                            </a>
+                                        </li>
+                                        
+                                        <!-- No location -->
+                                        <li role="presentation">
+                                            <xsl:if test="$filter eq 'nolocation'">
+                                                <xsl:attribute name="class" select="'active'"/>
+                                            </xsl:if>
+                                            <a>
+                                                <xsl:attribute name="href" select="concat('/edit-tm.html?text-id=', $translation/@id, '&amp;filter=nolocation')"/>
+                                                <xsl:value-of select="'No location'"/>
+                                                <xsl:value-of select="' '"/>
+                                                <xsl:variable name="tm-nolocation-count" select="count($tm-nolocation)"/>
+                                                <span class="badge">
+                                                    <xsl:if test="$tm-nolocation-count gt 0">
+                                                        <xsl:attribute name="class" select="'badge badge-alert'"/>
+                                                    </xsl:if>
+                                                    <xsl:value-of select="format-number($tm-nolocation-count, '#,###')"/>
+                                                </span>
+                                            </a>
+                                        </li>
+                                        
+                                        <!-- No Tibetan -->
+                                        <li role="presentation">
+                                            <xsl:if test="$filter eq 'remainder'">
+                                                <xsl:attribute name="class" select="'active'"/>
+                                            </xsl:if>
+                                            <a>
+                                                <xsl:attribute name="href" select="concat('/edit-tm.html?text-id=', $translation/@id, '&amp;filter=remainder')"/>
+                                                <xsl:value-of select="'Remainder'"/>
+                                                <xsl:value-of select="' '"/>
+                                                <xsl:variable name="tm-remainder-count" select="count($tm-remainder)"/>
+                                                <span class="badge">
+                                                    <xsl:if test="$tm-remainder-count gt 0">
+                                                        <xsl:attribute name="class" select="'badge badge-alert'"/>
+                                                    </xsl:if>
+                                                    <xsl:value-of select="format-number($tm-remainder-count, '#,###')"/>
+                                                </span>
+                                            </a>
+                                        </li>
+                                        
+                                    </ul>
+                                </div>
+                                
+                                <!-- Pagination -->
+                                <div>
+                                    <xsl:sequence select="common:pagination($first-record, $max-records, $count-records, concat('?text-id=', $translation/@id))"/>
+                                </div>
+                                
+                            </div>
+                            
+                            <!-- Fix ids -->
+                            <xsl:if test="$tm-noid and not($job-running)">
+                                <div class="alert alert-danger small" id="alert-ids-missing">
+                                    <p>
+                                        <xsl:value-of select="'Some IDs are missing from this TMX | '"/>
+                                        <a href="{concat('/edit-tm.html?text-id=', $translation/@id, '&amp;form-action=fix-ids')}" class="alert-link">
+                                            <xsl:value-of select="'Fix missing IDs'"/>
+                                        </a>
+                                    </p>
+                                </div>
+                            </xsl:if>
+                            
+                            <!-- Alert / actions -->
+                            <xsl:choose>
+                                
+                                <xsl:when test="$job-running">
+                                    <div class="alert alert-danger" id="alert-tei-revised">
+                                        <p>
+                                            <i class="fa fa-exclamation-circle" aria-hidden="true"/>
+                                            <xsl:value-of select="' Job running, please wait! '"/>
+                                            <xsl:if test="$tmx/tmx:header/@eft:seconds-to-revise">
+                                                <xsl:value-of select="concat('This previously took ', format-number(($tmx/tmx:header/@eft:seconds-to-revise ! xs:decimal(.) div 60), '#,##0.##'), ' minutes')"/>
+                                            </xsl:if>
+                                        </p>
+                                    </div>
+                                </xsl:when>
+                                
+                                <xsl:when test="$tei-revised">
+                                    <div class="alert alert-warning" id="alert-tei-revised">
+                                        <p>
+                                            <xsl:value-of select="'The TEI has been revised since this TM was created | '"/>
+                                            <a href="{concat('/edit-tm.html?text-id=', $translation/@id, '&amp;form-action=apply-revisions')}" class="alert-link">
                                                 <xsl:value-of select="'Apply revisions'"/>
                                             </a>
-                                        </div>
-                                        <div>
-                                            <a class="alert-link underline small" href="{concat('#row-', min($tm-units-aligned[@issue = ('en-revised', 'new-location')]/@index ! xs:integer(.)))}">
-                                                <xsl:value-of select="'Go to first'"/>
+                                            <xsl:if test="$tmx/tmx:header/@eft:seconds-to-revise">
+                                                <small>
+                                                    <br/>
+                                                    <xsl:value-of select="concat('(This previously took ', format-number(($tmx/tmx:header/@eft:seconds-to-revise ! xs:decimal(.) div 60), '#,##0.##'), ' minutes)')"/>
+                                                </small>
+                                            </xsl:if>
+                                        </p>
+                                    </div>
+                                </xsl:when>
+                                
+                                <xsl:when test="$tm-nolocation">
+                                    <div class="alert alert-warning" id="alert-tei-revised">
+                                        <p>
+                                            <xsl:value-of select="concat(format-number(count($tm-nolocation), '#,###'),' units are missing locations | ')"/>
+                                             <a href="{concat('/edit-tm.html?text-id=', $translation/@id, '&amp;form-action=apply-revisions')}" class="alert-link">
+                                                <xsl:value-of select="'Apply revisions'"/>
+                                             </a>
+                                            <xsl:if test="$tmx/tmx:header/@eft:seconds-to-revise">
+                                                <small>
+                                                    <br/>
+                                                    <xsl:value-of select="concat('(This previously took ', format-number(($tmx/tmx:header/@eft:seconds-to-revise ! xs:decimal(.) div 60), '#,##0.##'), ' minutes)')"/>
+                                                </small>
+                                            </xsl:if>
+                                        </p>
+                                    </div>
+                                </xsl:when>
+                                
+                                <xsl:when test="$tm-remainder">
+                                    <div class="alert alert-warning" id="alert-tei-revised">
+                                        <p>
+                                            <xsl:value-of select="'There is some '"/>
+                                            <a href="{concat('/edit-tm.html?text-id=', $translation/@id, '&amp;filter=remainder')}" class="alert-link">
+                                                <xsl:value-of select="'remainder'"/>
                                             </a>
-                                        </div>
+                                            <xsl:value-of select="' text left over from the alignment process.'"/>
+                                        </p>
                                     </div>
-                                </div>
-                            </xsl:if>
+                                </xsl:when>
+                                
+                            </xsl:choose>
                             
-                            <!-- Fix unmatched -->
-                            <xsl:if test="$tm-units-aligned[@issue = ('en-missing', 'en-unmatched')]">
-                                <div class="alert alert-danger small clearfix" id="alert-unmatched">
-                                    <p>
-                                        <xsl:value-of select="'This translations contains issues that cannot be automatically resolved'"/>
-                                    </p>
-                                    <ul>
-                                        <xsl:if test="$tm-units-aligned[@issue = ('en-missing')]">
-                                            <li>
-                                                <xsl:value-of select="concat(count($tm-units-aligned[@issue = ('en-missing')]), ' have no English')"/>
-                                            </li>
-                                        </xsl:if>
-                                        <xsl:if test="$tm-units-aligned[@issue = ('en-unmatched')]">
-                                            <li>
-                                                <xsl:value-of select="concat(count($tm-units-aligned[@issue = ('en-unmatched')]), ' where the English is not matching the TEI')"/>
-                                            </li>
-                                        </xsl:if>
-                                    </ul>
-                                    <div class="center-vertical align-left sml-margin top">
-                                        <div>
-                                            <a class="alert-link underline" href="{concat('#row-', min($tm-units-aligned[@issue = ('en-missing', 'en-unmatched')]/@index ! xs:integer(.)))}">
-                                                <xsl:value-of select="'Go to first'"/>
-                                            </a>
-                                        </div>
-                                    </div>
-                                </div>
-                            </xsl:if>
-                            
-                        </xsl:when>
-                        
-                        <!-- Fix remainder -->
-                        <xsl:when test="$tei-remainder">
-                            <div class="alert alert-warning small clearfix" id="alert-remainder">
-                                <p>
-                                    <xsl:value-of select="'There is English text that is not included in a TM unit'"/>
-                                </p>
-                                <div class="center-vertical align-left sml-margin top">
-                                    <div>
-                                        <a class="alert-link underline" href="{concat('#row-', max($tm-units-aligned/@index ! xs:integer(.)))}">
-                                            <xsl:value-of select="'Go to remainder'"/>
-                                        </a>
-                                    </div>
-                                </div>
-                            </div>
-                        </xsl:when>
-                        
-                    </xsl:choose>
-                    
-                    <div class="div-list">
-                        
-                        <xsl:for-each select="$tm-units-aligned | $tei-remainder">
-                            
-                            <xsl:variable name="tm-unit-aligned" select="self::m:tm-unit-aligned" as="element(m:tm-unit-aligned)?"/>
-                            <xsl:variable name="tm-unit" select="$tm-units[@id eq $tm-unit-aligned/@id]" as="element(tmx:tu)?"/>
-                            <xsl:variable name="tm-bo" select="$tm-unit/tmx:tuv[@xml:lang eq 'bo']/tmx:seg/text()" as="text()?"/>
-                            <xsl:variable name="tm-en" select="$tm-unit/tmx:tuv[@xml:lang eq 'en']/tmx:seg/text()" as="text()?"/>
-                            <xsl:variable name="row-id" select="concat('row-', ($tm-unit-aligned/@index, 'new')[1])" as="xs:string"/>
-                            
-                            <!--<xsl:variable name="active-record" select="if($tm-unit-aligned[@index ! xs:integer(.) eq $first-issue-index]) then true() else false()" as="xs:boolean"/>-->
-                            
-                            <div class="item">
-                                <div class="row">
+                            <!-- List TM units -->
+                            <xsl:choose>
+                                
+                                <xsl:when test="$tm-units-filtered">
                                     
-                                    <xsl:attribute name="id" select="$row-id"/>
-                                    
-                                    <!-- Number column -->
-                                    <div class="col-sm-1">
-                                        
-                                        <xsl:choose>
-                                            <xsl:when test="$tm-unit-aligned">
-                                                
-                                                <span class="number">
-                                                    <xsl:value-of select="$tm-unit-aligned/@index"/>
-                                                </span>
-                                                
-                                                <xsl:if test="$tm-unit-aligned[@issue = ('en-missing','en-unmatched','en-revised','new-location')]">
-                                                    
-                                                    <xsl:if test="$tm-unit-aligned[@issue eq 'en-missing']">
-                                                        <br/>
-                                                        <span class="label label-danger">
-                                                            <xsl:value-of select="'No English'"/>
-                                                        </span>
-                                                    </xsl:if>
-                                                    
-                                                    <xsl:if test="$tm-unit-aligned[@issue eq 'en-unmatched']">
-                                                        <br/>
-                                                        <span class="label label-danger">
-                                                            <xsl:value-of select="'Not matched'"/>
-                                                        </span>
-                                                    </xsl:if>
-                                                    
-                                                    <xsl:if test="$tm-unit-aligned[@issue eq 'en-revised']">
-                                                        <br/>
-                                                        <span class="label label-warning">
-                                                            <xsl:value-of select="'Revised'"/>
-                                                        </span>
-                                                    </xsl:if>
-                                                    
-                                                    <xsl:if test="$tm-unit-aligned[@issue eq 'new-location']">
-                                                        <br/>
-                                                        <span class="label label-warning">
-                                                            <xsl:value-of select="'New location'"/>
-                                                        </span>
-                                                    </xsl:if>
-                                                    
-                                                    <xsl:variable name="next-issue" select="$tm-unit-aligned/following-sibling::m:tm-unit-aligned[@issue][1]"/>
-                                                    <xsl:if test="$next-issue">
-                                                        <br/>
-                                                        <a href="{ concat('#row-', $next-issue/@index) }" class="small underline">
-                                                            <xsl:value-of select="'Next issue'"/>
-                                                        </a>
-                                                    </xsl:if>
-                                                    
-                                                </xsl:if>
-                                                
-                                            </xsl:when>
-                                            <xsl:otherwise>
-                                                
-                                                <span class="number">
-                                                    <xsl:value-of select="max($tm-units-aligned/@index ! xs:integer(.)) + 1"/>
-                                                </span>
-                                                <br/>
-                                                <span class="label label-warning">
-                                                    <xsl:value-of select="'Remainder'"/>
-                                                </span>
-                                                
-                                            </xsl:otherwise>
-                                        </xsl:choose>
-                                        
-                                    </div>
-                                    
-                                    <!-- Form column -->
-                                    <div class="col-sm-11">
-                                        
-                                        <xsl:variable name="update-form-id" select="concat('form-update-segment-', $row-id)"/>
-                                        
-                                        <form method="post" class="form form-update stealth" id="{ $update-form-id }">
+                                    <div class="div-list">
+                                        <xsl:for-each select="subsequence($tm-units-filtered, $first-record, $max-records)">
                                             
-                                            <xsl:attribute name="action" select="concat('/edit-tm.html?text-id=', $translation/@id)"/>
-                                            <xsl:attribute name="data-loading" select="'Updating translation memory...'"/>
+                                            <xsl:variable name="tm-unit" select="." as="element(tmx:tu)?"/>
+                                            <xsl:variable name="tm-bo" select="$tm-unit/tmx:tuv[@xml:lang eq 'bo']/tmx:seg/text()" as="text()?"/>
+                                            <xsl:variable name="tm-en" select="$tm-unit/tmx:tuv[@xml:lang eq 'en']/tmx:seg/text()" as="text()?"/>
+                                            <xsl:variable name="row-id" select="concat('row-', ($tm-unit/@id, 'new')[1])" as="xs:string"/>
+                                            <xsl:variable name="row-number" select="common:index-of-node($tm-units, $tm-unit)" as="xs:integer"/>
+                                            <xsl:variable name="tm-location-id" select="$tm-unit/tmx:prop[@name eq 'location-id'][1]/string()"/>
                                             
-                                            <!--<xsl:if test="$active-record">
-                                                <xsl:attribute name="class" select="'form form-update stealth reveal onload-scroll-target'"/>
-                                            </xsl:if>-->
-                                            
-                                            <xsl:choose>
-                                                
-                                                <!-- Existing unit -->
-                                                <xsl:when test="$tm-bo gt ''">
+                                            <div class="item">
+                                                <div class="row">
                                                     
-                                                    <!-- Action -->
-                                                    <input type="hidden" name="form-action" value="update-segment"/>
-                                                    <input type="hidden" name="tu-id" value="{ $tm-unit-aligned/@id }"/>
+                                                    <xsl:attribute name="id" select="$row-id"/>
                                                     
-                                                    <!-- Tibetan -->
-                                                    <div class="form-group">
+                                                    <!-- Number / flag column -->
+                                                    <div class="col-sm-1">
                                                         
-                                                        <label for="tm-en-{ $tm-unit-aligned/@id }" class="text-muted small sml-margin bottom">
-                                                            <xsl:value-of select="'Add a line break to split a segment'"/>
-                                                        </label>
+                                                        <span class="number">
+                                                            <xsl:value-of select="format-number($row-number, '#,###')"/>
+                                                        </span>
                                                         
-                                                        <textarea name="tm-bo" id="tm-bo-new" class="form-control text-bo onkeypress-ctrlreturn-submit" placeholder="Tibetan segment">
-                                                            <xsl:attribute name="rows" select="ops:textarea-rows($tm-bo, 1, 250)"/>
-                                                            <xsl:value-of select="normalize-space($tm-bo)"/>
-                                                        </textarea>
+                                                        <xsl:choose>
+                                                            
+                                                            <xsl:when test="$tm-unit/tmx:prop[@name eq 'unmatched']">
+                                                                <br/>
+                                                                <span class="label label-danger">
+                                                                    <xsl:value-of select="'Not matched'"/>
+                                                                </span>
+                                                            </xsl:when>
+                                                            
+                                                            <xsl:when test="$tm-unit[not(tmx:prop[@name eq 'location-id']/text() gt '')]">
+                                                                <br/>
+                                                                <span class="label label-warning">
+                                                                    <xsl:value-of select="'No location'"/>
+                                                                </span>
+                                                            </xsl:when>
+                                                            
+                                                            <xsl:when test="$tm-unit/tmx:prop[@name eq 'revision'][text() eq $tmx-text-version]">
+                                                                <br/>
+                                                                <span class="label label-success">
+                                                                    <xsl:value-of select="'revised'"/>
+                                                                </span>
+                                                            </xsl:when>
+                                                            
+                                                        </xsl:choose>
                                                         
                                                     </div>
                                                     
-                                                    <!-- Translation -->
-                                                    <xsl:choose>
+                                                    <!-- Form column -->
+                                                    <div class="col-sm-11">
                                                         
-                                                        <!-- Revision to apply -->
-                                                        <xsl:when test="$tm-unit-aligned[@issue eq 'en-revised']">
+                                                        <xsl:variable name="update-form-id" select="concat('form-update-segment-', $row-id)"/>
+                                                        
+                                                        <form id="{ $update-form-id }" method="post" class="form form-update stealth">
                                                             
-                                                            <!-- Add the revision to the input -->
+                                                            <xsl:if test="$active-record eq $tm-unit/@id">
+                                                                <xsl:attribute name="class" select="'form form-update stealth reveal onload-scroll-target'"/>
+                                                            </xsl:if>
+                                                            
+                                                            <xsl:attribute name="action" select="concat('/edit-tm.html?text-id=', $translation/@id)"/>
+                                                            <xsl:attribute name="data-loading" select="'Updating translation memory...'"/>
+                                                            
+                                                            <!-- Action -->
+                                                            <input type="hidden" name="form-action" value="update-segment"/>
+                                                            <input type="hidden" name="filter" value="{ $filter }"/>
+                                                            <input type="hidden" name="tu-id" value="{ $tm-unit/@id }"/>
+                                                            
+                                                            <!-- Tibetan -->
                                                             <div class="form-group">
                                                                 
-                                                                <label for="tm-en-{ $tm-unit-aligned/@id }" class="text-warning small sml-margin bottom">
-                                                                    <xsl:value-of select="'Revised TEI (update to accept revision)'"/>
+                                                                <label for="tm-en-{ $tm-unit/@id }" class="text-muted small sml-margin bottom">
+                                                                    <xsl:choose>
+                                                                        <xsl:when test="$tm-unit[not(tmx:tuv[@xml:lang eq 'bo'])]">
+                                                                            <xsl:value-of select="'Add Tibetan from the source text that matches some or all of the translation'"/>
+                                                                        </xsl:when>
+                                                                        <xsl:otherwise>
+                                                                            <xsl:value-of select="'Only delete Tibetan if it is not from this text. Otherwise add a line break to split a segment in 2.'"/>
+                                                                        </xsl:otherwise>
+                                                                    </xsl:choose>
                                                                 </label>
                                                                 
-                                                                <textarea name="tm-en" id="tm-en-{ $tm-unit-aligned/@id }">
-                                                                    
+                                                                <textarea name="tm-bo" id="tm-en-{ $tm-unit/@id }" class="form-control text-bo onkeypress-ctrlreturn-submit" placeholder="Tibetan segment">
+                                                                    <xsl:attribute name="rows" select="ops:textarea-rows($tm-bo, 1, 170)"/>
+                                                                    <xsl:value-of select="normalize-space($tm-bo)"/>
+                                                                </textarea>
+                                                                
+                                                            </div>
+                                                            
+                                                            <!-- Translation -->
+                                                            <div class="form-group">
+                                                                
+                                                                <label for="tm-en-{ $tm-unit/@id }" class="text-muted small sml-margin bottom">
+                                                                    <xsl:choose>
+                                                                        <xsl:when test="$tm-unit[not(tmx:tuv[@xml:lang eq 'bo'])]">
+                                                                            <xsl:value-of select="'TEI content not matched with a Tibetan segment'"/>
+                                                                        </xsl:when>
+                                                                        <xsl:otherwise>
+                                                                            <xsl:value-of select="'Translation'"/>
+                                                                        </xsl:otherwise>
+                                                                    </xsl:choose>
+                                                                </label>
+                                                                
+                                                                <textarea name="tm-en" id="tm-en-{ $tm-unit/@id }" class="form-control monospace onkeypress-ctrlreturn-submit">
                                                                     <xsl:attribute name="rows" select="ops:textarea-rows($tm-en, 1, 116)"/>
-                                                                    
-                                                                    <!--<xsl:if test="$active-record">
-                                                                        <xsl:attribute name="data-onload-get-focus" select="string-length($tm-en)"/>
-                                                                    </xsl:if>-->
-                                                                    
-                                                                    <xsl:attribute name="class" select="'form-control monospace onkeypress-ctrlreturn-submit text-warning'"/>
-                                                                    
-                                                                    <xsl:value-of select="$tm-unit-aligned/m:revision"/>
-                                                                    
-                                                                </textarea>
-                                                                
-                                                            </div>
-                                                            
-                                                            <!-- Include the original text -->
-                                                            <div class="form-group stealth-hidden">
-                                                                
-                                                                <label for="unrevised-{ $tm-unit-aligned/@id }" class="small sml-margin bottom top">
-                                                                    <xsl:value-of select="'Existing TM'"/>
-                                                                </label>
-                                                                
-                                                                <p for="unrevised-{ $tm-unit-aligned/@id }" class="form-control monospace line-through">
                                                                     <xsl:value-of select="normalize-space($tm-en)"/>
-                                                                </p>
-                                                                
-                                                            </div>
-                                                            
-                                                        </xsl:when>
-                                                        
-                                                        <!-- TM segment not matched in TEI -->
-                                                        <xsl:when test="$tm-unit-aligned[@issue eq 'en-unmatched']">
-                                                            
-                                                            <!-- Add the revision to the input -->
-                                                            <div class="form-group">
-                                                                
-                                                                <label for="tm-en-{ $tm-unit-aligned/@id }" class="text-danger small sml-margin bottom">
-                                                                    <xsl:value-of select="'Current TM segment (not matched)'"/>
-                                                                </label>
-                                                                
-                                                                <textarea name="tm-en" id="tm-en-{ $tm-unit-aligned/@id }">
-                                                                    
-                                                                    <xsl:attribute name="rows" select="ops:textarea-rows($tm-en, 1, 116)"/>
-                                                                    
-                                                                    <!--<xsl:if test="$active-record">
-                                                                        <xsl:attribute name="data-onload-get-focus" select="string-length($tm-en)"/>
-                                                                    </xsl:if>-->
-                                                                    
-                                                                    <xsl:attribute name="class" select="'form-control monospace onkeypress-ctrlreturn-submit text-danger'"/>
-                                                                    
-                                                                    <xsl:value-of select="normalize-space($tm-en)"/>
-                                                                    
                                                                 </textarea>
                                                                 
                                                             </div>
                                                             
-                                                            <!-- Remaining (un-matched) TEI -->
-                                                            <div class="form-group stealth-hidden">
-                                                                
-                                                                <label for="unmatched-{ $tm-unit-aligned/@id }" class="small sml-margin bottom top">
-                                                                    <xsl:value-of select="'Copy the revised text from the TEI and paste into the field above'"/>
-                                                                </label>
-                                                                
-                                                                <p for="unmatched-{ $tm-unit-aligned/@id }" class="form-control monospace">
-                                                                    <xsl:value-of select="common:limit-str($tei-remainder, 1000)"/>
-                                                                </p>
-                                                                
-                                                            </div>
-                                                            
-                                                        </xsl:when>
-                                                        
-                                                        <!-- No en segment -->
-                                                        <xsl:when test="$tm-unit-aligned[@issue eq 'en-missing']">
-                                                            
-                                                            <!-- Add the revision to the input -->
-                                                            <div class="form-group">
-                                                                
-                                                                <label for="tm-en-{ $tm-unit-aligned/@id }" class="text-danger small sml-margin bottom">
-                                                                    <xsl:value-of select="'Trim the English text to match the Tibetan above'"/>
-                                                                </label>
-                                                                
-                                                                <xsl:variable name="tei-remainder-limited" as="text()">
-                                                                    <xsl:value-of select="common:limit-str($tei-remainder, 1000)"/>
-                                                                </xsl:variable>
-                                                                <textarea name="tm-en" id="tm-en-{ $tm-unit-aligned/@id }">
-                                                                    
-                                                                    <xsl:attribute name="rows" select="ops:textarea-rows($tei-remainder-limited, 1, 116)"/>
-                                                                    
-                                                                    <!--<xsl:if test="$active-record">
-                                                                        <xsl:attribute name="data-onload-get-focus" select="string-length(tokenize($tei-remainder, '[\.!\?]”?\s+')[1]) + 2"/>
-                                                                    </xsl:if>-->
-                                                                    
-                                                                    <xsl:attribute name="class" select="'form-control monospace onkeypress-ctrlreturn-submit text-danger'"/>
-                                                                    
-                                                                    <xsl:value-of select="$tei-remainder-limited"/>
-                                                                    
-                                                                </textarea>
-                                                                
-                                                            </div>
-                                                            
-                                                        </xsl:when>
-                                                        
-                                                        <!-- Existing TM matches -->
-                                                        <xsl:otherwise>
-                                                            
-                                                            <div class="form-group">
-                                                                
-                                                                <label for="tm-en-{ $tm-unit-aligned/@id }" class="text-muted small sml-margin bottom">
-                                                                    <xsl:value-of select="'Aligned English'"/>
-                                                                </label>
-                                                                
-                                                                <textarea name="tm-en" id="tm-en-{ $tm-unit-aligned/@id }">
-                                                                    
-                                                                    <xsl:attribute name="rows" select="ops:textarea-rows($tm-en, 1, 116)"/>
-                                                                    
-                                                                    <!--<xsl:if test="$active-record">
-                                                                        <xsl:attribute name="data-onload-get-focus" select="string-length($tm-en)"/>
-                                                                    </xsl:if>-->
-                                                                    
-                                                                    <xsl:attribute name="class" select="'form-control monospace onkeypress-ctrlreturn-submit'"/>
-                                                                    
-                                                                    <xsl:value-of select="normalize-space($tm-en)"/>
-                                                                    
-                                                                </textarea>
-                                                                
-                                                            </div>
-                                                            
-                                                        </xsl:otherwise>
-                                                        
-                                                    </xsl:choose>
-                                                    
-                                                    <!-- Footer (Location / button) -->
-                                                    <div class="form-group">
-                                                        
-                                                        <xsl:variable name="tm-location-id" select="$tm-unit/tmx:prop[@name eq 'location-id'][1]/string()"/>
-                                                        <xsl:variable name="tei-location-id" select="($tm-unit-aligned/@new-location, $tm-location-id)[1]" as="xs:string?"/>
-                                                        
-                                                        <label for="tei-location-id-{ $row-id }">
-                                                            
+                                                            <!-- Fixes -->
                                                             <xsl:choose>
-                                                                <xsl:when test="not($tei-location-id eq $tm-location-id)">
-                                                                    <xsl:attribute name="class" select="'text-warning small sml-margin bottom'"/>
-                                                                    <xsl:value-of select="concat('Revised location ID (previously ', ($tm-location-id, 'empty')[. gt ''][1], ') update to accept')"/>
+                                                                
+                                                                <!-- Unmatched -->
+                                                                <xsl:when test="$tm-unit[tmx:prop[@name eq 'unmatched']]">
+                                                                    
+                                                                    <!-- Include the unmatched TEI -->
+                                                                    <div class="form-group stealth-hidden">
+                                                                        
+                                                                        <label for="unmatched-{ $tm-unit/@id }" class="small sml-margin bottom top text-warning">
+                                                                            <xsl:value-of select="'Select the matching revised text from the TEI and paste into the field above'"/>
+                                                                        </label>
+                                                                        
+                                                                        <div id="unmatched-{ $tm-unit/@id }">
+                                                                            <xsl:for-each select="$tm-remainder[not(tmx:tuv[@xml:lang eq 'bo'])][tmx:tuv[@xml:lang eq 'en']/tmx:seg[text()]]">
+                                                                                <p class="form-control monospace">
+                                                                                    <xsl:value-of select="tmx:tuv[@xml:lang eq 'en']/tmx:seg"/>
+                                                                                </p>
+                                                                            </xsl:for-each>
+                                                                        </div>
+                                                                        
+                                                                    </div>
+                                                                    
                                                                 </xsl:when>
-                                                                <xsl:otherwise>
-                                                                    <xsl:attribute name="class" select="'text-muted small sml-margin bottom'"/>
-                                                                    <xsl:value-of select="'TEI location ID'"/>
-                                                                </xsl:otherwise>
+                                                                
                                                             </xsl:choose>
                                                             
-                                                        </label>
-                                                        
-                                                        <div class="row">
-                                                            
-                                                            <div class="col-sm-8">
-                                                                <div class="center-vertical align-left">
+                                                            <!-- Footer (Location / buttons) -->
+                                                            <div class="form-group">
+                                                                
+                                                                <label for="tei-location-id-{ $row-id }" class="text-muted small sml-margin bottom">
+                                                                    <xsl:value-of select="'TEI location'"/>
+                                                                </label>
+                                                                
+                                                                <div class="row">
                                                                     
-                                                                    <div>
-                                                                        <input type="text" name="tei-location-id" value="{ $tei-location-id }" id="tei-location-id-{ $row-id }" class="form-control"/>
-                                                                    </div>
-                                                                    
-                                                                    <!-- Link to location -->
-                                                                    <div>
+                                                                    <!-- Location -->
+                                                                    <div class="col-sm-8">
+                                                                        <div class="center-vertical align-left">
+                                                                            
+                                                                            <div>
+                                                                                <input type="text" name="tei-location-id" value="{ $tm-location-id }" id="tei-location-id-{ $row-id }" class="form-control"/>
+                                                                            </div>
+                                                                            
+                                                                            <!-- Link to location -->
+                                                                            <xsl:if test="$tm-location-id gt ''">
+                                                                                <div>
+                                                                                    
+                                                                                    <a target="{ $translation/@id }-html">
+                                                                                        
+                                                                                        <xsl:attribute name="href" select="concat($reading-room-path, '/translation/', $translation/m:toh[1]/@key, '.html#', $tm-location-id)"/>
+                                                                                        <xsl:attribute name="data-dualview-href" select="concat($reading-room-path, '/translation/', $translation/m:toh[1]/@key, '.html#', $tm-location-id)"/>
+                                                                                        <xsl:attribute name="data-dualview-title" select="$translation/m:toh[1]/m:full/data()"/>
+                                                                                        
+                                                                                        <span class="small">
+                                                                                            <xsl:value-of select="'Test location'"/>
+                                                                                        </span>
+                                                                                        
+                                                                                    </a>
+                                                                                </div>
+                                                                            </xsl:if>
+                                                                            
+                                                                        </div>
                                                                         
-                                                                        <a target="{ $translation/@id }-html">
-                                                                            
-                                                                            <xsl:attribute name="href" select="concat($reading-room-path, '/translation/', $translation/m:toh[1]/@key, '.html#', $tei-location-id)"/>
-                                                                            <xsl:attribute name="data-dualview-href" select="concat($reading-room-path, '/translation/', $translation/m:toh[1]/@key, '.html#', $tei-location-id)"/>
-                                                                            <xsl:attribute name="data-dualview-title" select="$translation/m:toh[1]/m:full/data()"/>
-                                                                            
-                                                                            <span class="small">
-                                                                                <xsl:value-of select="'Test location'"/>
-                                                                            </span>
-                                                                            
-                                                                        </a>
                                                                     </div>
+                                                                    
+                                                                    <!-- Buttons -->
+                                                                    <xsl:choose>
+                                                                        
+                                                                        <xsl:when test="$job-running">
+                                                                            <div class="col-sm-4 text-right">
+                                                                                
+                                                                                <span class="small text-danger stealth-hidden">
+                                                                                    <i class="fa fa-exclamation-circle" aria-hidden="true"/>
+                                                                                    <xsl:value-of select="' Job running, please wait...'"/>
+                                                                                </span>
+                                                                                
+                                                                            </div>
+                                                                        </xsl:when>
+                                                                        
+                                                                        <xsl:when test="not($tm-unit/@id gt '')">
+                                                                            <div class="col-sm-4 text-right">
+                                                                                
+                                                                                <a href="#alert-ids-missing" class="small text-danger">
+                                                                                    <i class="fa fa-exclamation-circle" aria-hidden="true"/>
+                                                                                    <xsl:value-of select="' This unit has no unique id value and therefore cannot be updated'"/>
+                                                                                </a>
+                                                                                
+                                                                            </div>
+                                                                        </xsl:when>
+                                                                        
+                                                                        <xsl:otherwise>
+                                                                            
+                                                                            <div class="col-sm-2 text-right">
+                                                                                
+                                                                                <xsl:if test="$tm-unit/@id gt ''">
+                                                                                    <a role="button" class="btn btn-danger btn-sm">
+                                                                                        <xsl:attribute name="href" select="concat('/edit-tm.html?text-id=', $translation/@id, '&amp;remove-unit=', $tm-unit/@id, '&amp;filter=', $filter)"/>
+                                                                                        <xsl:attribute name="data-confirm" select="'Are you sure you want to delete this unit?'"/>
+                                                                                        <xsl:value-of select="'Delete'"/>
+                                                                                    </a>
+                                                                                </xsl:if>
+                                                                                
+                                                                            </div>
+                                                                            
+                                                                            <div class="col-sm-2 text-right">
+                                                                                
+                                                                                <button type="submit" class="btn btn-warning btn-sm">
+                                                                                    <xsl:value-of select="'Update'"/>
+                                                                                </button>
+                                                                                
+                                                                            </div>
+                                                                            
+                                                                        </xsl:otherwise>
+                                                                        
+                                                                    </xsl:choose>
                                                                     
                                                                 </div>
                                                                 
                                                             </div>
                                                             
-                                                            <!-- Button -->
-                                                            <xsl:choose>
-                                                                <xsl:when test="$tm-unit-aligned/@id gt ''">
-                                                                    
-                                                                    <div class="col-sm-2 text-right">
-                                                                        
-                                                                        <xsl:if test="$tm-unit-aligned/@id gt ''">
-                                                                            <a role="button" class="btn btn-danger btn-sm">
-                                                                                <xsl:attribute name="href" select="concat('/edit-tm.html?text-id=', $translation/@id, '&amp;remove-tu=', $tm-unit-aligned/@id)"/>
-                                                                                <xsl:attribute name="data-confirm" select="'Are you sure you want to delete this item?'"/>
-                                                                                <xsl:value-of select="'Delete'"/>
-                                                                            </a>
-                                                                        </xsl:if>
-                                                                        
-                                                                    </div>
-                                                                    
-                                                                    <div class="col-sm-2 text-right">
-                                                                        
-                                                                        <button type="submit" class="btn btn-warning btn-sm">
-                                                                            <xsl:value-of select="'Update'"/>
-                                                                        </button>
-                                                                        
-                                                                    </div>
-                                                                    
-                                                                </xsl:when>
-                                                                <xsl:otherwise>
-                                                                    
-                                                                    <div class="col-sm-4 text-right">
-                                                                        
-                                                                        <a href="#alert-ids-missing" class="small text-danger">
-                                                                            <i class="fa fa-exclamation-circle" aria-hidden="true"/>
-                                                                            <xsl:value-of select="' This unit has no unique id value and therefore cannot be updated'"/>
-                                                                        </a>
-                                                                        
-                                                                    </div>
-                                                                    
-                                                                </xsl:otherwise>
-                                                            </xsl:choose>
-                                                            
-                                                        </div>
+                                                        </form>
                                                         
                                                     </div>
                                                     
-                                                </xsl:when>
-                                                
-                                                <!-- New unit -->
-                                                <xsl:otherwise>
-                                                    
-                                                    <!-- Action -->
-                                                    <input type="hidden" name="form-action" value="add-unit"/>
-                                                    
-                                                    <!-- Tibetan -->
-                                                    <div class="form-group">
-                                                        
-                                                        <label for="tm-bo-new" class="text-muted small sml-margin bottom">
-                                                            <xsl:value-of select="'Add a Tibetan segment'"/>
-                                                        </label>
-                                                        
-                                                        <textarea name="tm-bo" id="tm-bo-new" class="form-control text-bo" placeholder="Tibetan segment">
-                                                            <xsl:attribute name="rows" select="1"/>
-                                                        </textarea>
-                                                        
-                                                    </div>
-                                                    
-                                                    <!-- Translation -->
-                                                    <div class="form-group">
-                                                        
-                                                        <label for="tm-en-new" class="text-muted small sml-margin bottom">
-                                                            <xsl:value-of select="'Insert a line break to segment the passage'"/>
-                                                        </label>
-                                                        
-                                                        <xsl:variable name="tei-remainder-limited" as="text()">
-                                                            <xsl:value-of select="common:limit-str($tei-remainder, 1000)"/>
-                                                        </xsl:variable>
-                                                        <textarea name="tm-en" id="tm-en-new" class="form-control monospace onkeypress-ctrlreturn-submit">
-                                                            <xsl:attribute name="rows" select="ops:textarea-rows($tei-remainder-limited, 1, 116)"/>
-                                                            <!--<xsl:attribute name="data-onload-get-focus" select="string-length(tokenize($tm-en, '[\.!\?]”?\s+')[1]) + 2"/>-->
-                                                            <xsl:value-of select="$tei-remainder-limited"/>
-                                                        </textarea>
-                                                        
-                                                    </div>
-                                                    
-                                                    
-                                                    <!-- Button -->
-                                                    <div class="form-group">
-                                                        
-                                                        <button type="submit" class="btn btn-warning btn-sm pull-right">
-                                                            <xsl:value-of select="'Update'"/>
-                                                        </button>
-                                                        
-                                                    </div>
-                                                    
-                                                </xsl:otherwise>
-                                                
-                                            </xsl:choose>
+                                                </div>
+                                            </div>
                                             
-                                        </form>
-                                        
+                                        </xsl:for-each>
                                     </div>
                                     
-                                </div>
-                            </div>
+                                </xsl:when>
+                                
+                                <xsl:otherwise>
+                                    
+                                    <hr class="sml-margin"/>
+                                    <p class="text-muted italic">
+                                        <xsl:value-of select="'No translation memory units'"/>
+                                    </p>
+                                    
+                                </xsl:otherwise>
+                                
+                            </xsl:choose>
                             
-                        </xsl:for-each>
+                        </xsl:when>
+                        
+                        <xsl:otherwise>
+                            
+                            <hr/>
+                            <p class="text-muted italic">
+                                <xsl:value-of select="'No translation memory found for this text'"/>
+                            </p>
+                            
+                        </xsl:otherwise>
+                        
+                    </xsl:choose>
                     
-                    </div>
-                            
                 </xsl:with-param>
                 <xsl:with-param name="aside-content">
                     

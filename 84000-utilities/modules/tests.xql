@@ -298,8 +298,8 @@ declare function tests:titles($toh-html as document-node(), $tei as element(tei:
         $tei//tei:fileDesc/tei:titleStmt/tei:title[@type eq 'longTitle'][@xml:lang = ('Bo-Ltn', 'bo')][text()][1]
     )
     
-    let $html-main-titles := $toh-html//*[@id eq 'main-titles']/*[common:contains-class(@class, 'title')][data()]
-    let $html-long-titles := $toh-html//*[@id eq 'long-titles']/*[common:contains-class(@class, 'title')][data()]
+    let $html-main-titles := $toh-html//*[@id eq 'main-titles']/descendant::*[common:contains-class(@class, 'title')][data()]
+    let $html-long-titles := $toh-html//*[@id eq 'long-titles']/descendant::*[common:contains-class(@class, 'title')][data()]
     
     return
         <test xmlns="http://read.84000.co/ns/1.0"

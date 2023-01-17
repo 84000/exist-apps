@@ -16,15 +16,16 @@ declare variable $local:tm := collection($update-tm:tm-path);
 for $tei in $local:tei//tei:TEI[tei:teiHeader/tei:fileDesc/tei:publicationStmt/@status = $translation:published-status-ids]
 let $text-id := tei-content:id($tei)
 let $tmx := $local:tm//tmx:tmx[tmx:header/@eft:text-id eq $text-id]
-where not($tmx) (:and $text-id eq 'UT22084-034-009':)
+where not($tmx) and $text-id eq 'UT22084-034-009'(:'UT22084-040-002':)(:'UT22084-001-006':)(:'UT22084-042-002':)
 
 (: Generate TM :)
-let $tmx := update-tm:new-tmx-from-linguae-dharmae($tei)
 let $filename := concat(translation:filename($tei, ''), '.tmx')
+let $tmx := update-tm:new-tmx-from-linguae-dharmae($tei)
 
-where $tmx and $filename
+where $filename and $tmx
 return (
     (:$filename,:)
+    (:$tmx,:)
     (: Save TM :)
     update-tm:store-tmx($tmx, $filename)
 )
