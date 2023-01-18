@@ -47,23 +47,27 @@ declare function search:search($request as xs:string, $resource-id as xs:string,
         </options>
     
     (: Interogate the request to see if it's a phrase :)
-    let $request-is-phrase := matches($request, '^["“].+["”]$')
+    let $request-is-phrase := matches($request, '^\s*["“].+["”]\s*$')
     let $request-no-quotes := replace($request, '("|“|”)', '')
     
     let $query := local:search-query($request-no-quotes, $request-is-phrase)
     
     let $results := 
+        (: Header content :)
         $all/tei:teiHeader/tei:fileDesc//tei:title[ft:query(., $query, $options)]
         | $all/tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl[ft:query(., $query, $options)]
         | $all/tei:teiHeader/tei:fileDesc/tei:sourceDesc//tei:biblScope[ft:query(., $query, $options)]
-        | $published/tei:text//tei:table[ft:query(., $query, $options)][@tid]
-        | $published/tei:text//tei:head[not(parent::tei:table)][ft:query(., $query, $options)][@tid]
+        (: @tid content :)
         | $published/tei:text//tei:p[ft:query(., $query, $options)][@tid]
-        | $published/tei:text//tei:label[not(parent::tei:p)][ft:query(., $query, $options)][@tid]
+        | $published/tei:text//tei:label[ft:query(., $query, $options)][@tid]
+        | $published/tei:text//tei:table[ft:query(., $query, $options)][@tid]
+        | $published/tei:text//tei:head[ft:query(., $query, $options)][@tid]
         | $published/tei:text//tei:lg[ft:query(., $query, $options)][@tid]
-        | $published/tei:text//tei:item[parent::tei:list][not(descendant::tei:p)][ft:query(., $query, $options)][@tid]
+        (: For now force tei:item/tei:p :)
+        (:| $published/tei:text//tei:item[ft:query(., $query, $options)][@tid]:)
         | $published/tei:text//tei:ab[ft:query(., $query, $options)][@tid]
         | $published/tei:text//tei:trailer[ft:query(., $query, $options)][@tid]
+        (: @xml:id content :)
         | $published/tei:text/tei:back//tei:bibl[ft:query(., $query, $options)][@xml:id]
         | $published/tei:text/tei:back//tei:gloss[ft:query(tei:term, $query, $options)][@xml:id][not(@mode eq 'surfeit')]
     

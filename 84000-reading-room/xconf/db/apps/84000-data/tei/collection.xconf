@@ -23,44 +23,21 @@
             <text match="//tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl" boost="2.0">
                 <inline qname="tei:ref"/>
                 <ignore qname="tei:biblScope"/>
-                <!--<ignore qname="tei:author"/>-->
-                <!--<ignore qname="tei:editor"/>-->
             </text>
             <text match="//tei:teiHeader/tei:fileDesc/tei:sourceDesc//tei:biblScope"/>
             <text match="//tei:teiHeader/tei:fileDesc/tei:sourceDesc//tei:author" boost="1.5"/>
             <text match="//tei:teiHeader/tei:fileDesc/tei:sourceDesc//tei:editor" boost="1.5"/>
+            <text match="//tei:text//tei:p"/>
+            <text match="//tei:text//tei:label"/>
+            <text match="//tei:text//tei:table"/>
             <text match="//tei:text//tei:head" boost="1.5"/>
-            <text match="//tei:text//tei:p">
-                <inline qname="tei:note"/>
-                <inline qname="tei:title"/>
-                <inline qname="tei:foreign"/>
-            </text>
-            <text match="//tei:text//tei:lg">
-                <inline qname="tei:l"/>
-                <inline qname="tei:gloss"/>
-                <inline qname="tei:note"/>
-                <inline qname="tei:title"/>
-                <inline qname="tei:foreign"/>
-            </text>
-            <text match="//tei:text//tei:ab">
-                <inline qname="tei:note"/>
-                <inline qname="tei:title"/>
-                <inline qname="tei:foreign"/>
-            </text>
-            <text match="//tei:text//tei:trailer">
-                <inline qname="tei:note"/>
-                <inline qname="tei:title"/>
-                <inline qname="tei:foreign"/>
-            </text>
-            <text match="//tei:back//tei:bibl">
-                <inline qname="tei:title"/>
-                <inline qname="tei:foreign"/>
-            </text>
+            <text match="//tei:text//tei:lg"/>
+            <!--<text match="//tei:text//tei:item"/> For now force tei:item/tei:p -->
+            <text match="//tei:text//tei:ab"/>
+            <text match="//tei:text//tei:trailer"/>
+            <text match="//tei:back//tei:bibl"/>
             <text match="//tei:back//tei:gloss/tei:term" analyzer="no-stopwords" field="full-term"/>
-            <text match="//tei:back//tei:gloss/tei:term">
-                <inline qname="tei:title"/>
-                <inline qname="tei:foreign"/>
-            </text>
+            <text match="//tei:back//tei:gloss/tei:term"/>
         </lucene>
         
         <range>

@@ -112,50 +112,62 @@ declare function local:temporary-ids($doc) {
     (: Add temporary ids to searchable nodes with no id :)
     (: This allows the search to link through to this block of text :)
     (: These only need to persist for a request/response cycle:)
+    (: Copy/pasting elements can introduce duplicates and redundancy so this sorts those out too :)
     
     let $translation-id := tei-content:id($doc/tei:TEI)
     where $translation-id
+
+    (: 
+        TO DO: replace this with logic
+        The logic here is actually to add a @tid to any
+        node that has content, but not an @xml:id.
+        But not where the parent has content too 
+        e.g. 
+        <p tid="1">Text <span>sub-node</span> more text.</p>
+        NOT
+        <p tid="1">Text <span tid="1">sub-node</span> more text.</p>
+    :)
+    let $tid-elements := (
+        $doc//tei:text//tei:p
+        | $doc//tei:text//tei:label[not(parent::tei:p)]
+        | $doc//tei:text//tei:table
+        | $doc//tei:text//tei:head[not(parent::tei:table)]
+        | $doc//tei:text//tei:lg
+        | $doc//tei:text//tei:item[parent::tei:list[not(@type = ('abbreviations','glossary'))]][matches(text(), '[\p{L}\p{N}]+', 'i')]
+        | $doc//tei:text//tei:ab
+        | $doc//tei:text//tei:trailer
+    )[not(@xml:id)][not(ancestor::tei:note | ancestor::tei:orig)]
+    
+    (: Find duplicates and empty nodes :)
+    let $tid-elements-to-update := (
+        for $element in $tid-elements[@tid]
+        let $element-id := $element/@tid
+        group by $element-id
+        where count($element) gt 1
+        return $element
+        ,
+        $tid-elements[not(@tid) or @tid eq '']
+    )
+    
+    (: Find redundant attributes :)
+    let $tids-to-remove := $doc//@tid except $tid-elements/@tid
+    
+    let $max-tid := max($doc//@tid ! common:integer(.))
+    
     return (
     
         util:log('info', concat('trigger-temporary-ids:', $translation-id)),
         
-        let $elements := 
-            $doc//tei:text//tei:p
-            | $doc//tei:text//tei:label[not(parent::tei:p)]
-            | $doc//tei:text//tei:table
-            | $doc//tei:text//tei:head[not(parent::tei:table)]
-            | $doc//tei:text//tei:lg
-            | $doc//tei:text//tei:item[parent::tei:list][not(descendant::tei:p)]
-            | $doc//tei:text//tei:ab
-            | $doc//tei:text//tei:trailer
-            (: These are covered in tei:text//tei:head
-            | $doc//tei:front//tei:list/tei:head
-            | $doc//tei:body//tei:list/tei:head:)
-        
-        (: find duplicates and empty nodes :)
-        let $elements-to-update := (
-            for $element in $elements[@tid]
-            let $element-id := $element/@tid
-            group by $element-id
-            where count($element) gt 1
-            return $element
-            ,
-            $elements[not(@tid) or @tid eq '']
-        )
-        
-        where $elements-to-update
-        
-        let $max-id := max($doc//@tid ! common:integer(.))
-        
-        for $element at $index in $elements-to-update[not(ancestor::tei:note)][not(ancestor::tei:orig)]
+        (: Elements to update :)
+        for $element at $index in $tid-elements-to-update[not(ancestor::tei:note)][not(ancestor::tei:orig)]
         return
-            update insert attribute tid { sum(($max-id, $index)) } into $element
+            update insert attribute tid { sum(($max-tid, $index)) } into $element
         ,
         
-        (: clear any tids in notes :)
-        for $tid in $doc//tei:*[ancestor::tei:note | ancestor::tei:orig]/@tid
+        (: Attributes to remove :)
+        for $attribute in $tids-to-remove
         return
-            update delete $tid
+            update delete $attribute
         
     )
 };
