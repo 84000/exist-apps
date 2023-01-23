@@ -11,6 +11,7 @@ import module namespace common="http://read.84000.co/common" at "../../84000-rea
 import module namespace tei-content="http://read.84000.co/tei-content" at "../../84000-reading-room/modules/tei-content.xql";
 import module namespace translation="http://read.84000.co/translation" at "../../84000-reading-room/modules/translation.xql";
 import module namespace glossary="http://read.84000.co/glossary" at "../../84000-reading-room/modules/glossary.xql";
+import module namespace update-tm="http://operations.84000.co/update-tm" at "../modules/update-tm.xql";
 
 declare function local:app-path() as xs:string {
 
@@ -137,4 +138,20 @@ declare function local:root-html($resource-id as xs:string, $part-id as xs:strin
             $html//xhtml:*[@id eq $part-id]
         }
     )
+};
+
+(: Fix mime type / necessary in eXist 5 :)
+declare function local:fix-tm-mimetypes() {
+    for $file in xmldb:get-child-resources($update-tm:tm-path)
+    where 
+        ends-with($file, '.tmx')
+        and not(xmldb:get-mime-type(xs:anyURI(concat($update-tm:tm-path, '/', $file))) eq 'application/xml')
+
+    let $content :=
+        if(util:is-binary-doc(concat($update-tm:tm-path, '/', $file))) then
+            util:binary-to-string(util:binary-doc(concat($update-tm:tm-path, '/', $file)))
+        else 
+            doc(concat($update-tm:tm-path, '/', $file))
+    return
+        xmldb:store($update-tm:tm-path, $file, $content, 'application/xml')
 };

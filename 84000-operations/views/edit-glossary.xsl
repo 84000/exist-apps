@@ -1661,7 +1661,7 @@
                                 <xsl:apply-templates select="$definition"/>
                             </xsl:variable>
                             
-                            <xsl:attribute name="rows" select="ops:textarea-rows($definition-escaped, 2, 105)"/>
+                            <xsl:attribute name="rows" select="ops:textarea-rows(string-join($definition-escaped/m:escaped/text()), 2, 105)"/>
                             
                             <xsl:sequence select="$definition-escaped/m:escaped/data()"/>
                             

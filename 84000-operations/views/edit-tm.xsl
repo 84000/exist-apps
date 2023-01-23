@@ -322,8 +322,8 @@
                                         <xsl:for-each select="subsequence($tm-units-filtered, $first-record, $max-records)">
                                             
                                             <xsl:variable name="tm-unit" select="." as="element(tmx:tu)?"/>
-                                            <xsl:variable name="tm-bo" select="$tm-unit/tmx:tuv[@xml:lang eq 'bo']/tmx:seg/text()" as="text()?"/>
-                                            <xsl:variable name="tm-en" select="$tm-unit/tmx:tuv[@xml:lang eq 'en']/tmx:seg/text()" as="text()?"/>
+                                            <xsl:variable name="tm-bo" select="string-join($tm-unit/tmx:tuv[@xml:lang eq 'bo']/tmx:seg)" as="xs:string?"/>
+                                            <xsl:variable name="tm-en" select="string-join($tm-unit/tmx:tuv[@xml:lang eq 'en']/tmx:seg)" as="xs:string?"/>
                                             <xsl:variable name="row-id" select="concat('row-', ($tm-unit/@id, 'new')[1])" as="xs:string"/>
                                             <xsl:variable name="row-number" select="common:index-of-node($tm-units, $tm-unit)" as="xs:integer"/>
                                             <xsl:variable name="tm-location-id" select="$tm-unit/tmx:prop[@name eq 'location-id'][1]/string()"/>

@@ -3,6 +3,9 @@
     
     <xsl:import href="../../xslt/webpage.xsl"/>
     
+    <!-- TO DO: Using the $toh/@number is a temporary solution until new markers are added to the source -->
+    <xsl:variable name="toh-number" select="/m:response/m:translation/m:toh/@number"/>
+    
     <xsl:template match="/m:response">
         
         <xsl:variable name="work" select="m:source/@work"/>
@@ -20,12 +23,12 @@
                 </xsl:choose>
             </xsl:variable>
             
-            <div class="content-band">
+            <xhtml:div class="content-band">
                 <main>
-                    <div>
+                    <xhtml:div>
                         
                         <xsl:for-each select="m:source/m:page">
-                            <div>
+                            <xhtml:div>
                                 
                                 <xsl:variable name="folio-string" as="xs:string">
                                     <xsl:choose>
@@ -42,7 +45,7 @@
                                     <xsl:value-of select="concat('Degé ', $work-string, ' volume ', @volume, ', ', $folio-string)"/>
                                 </h1>
                                 
-                                <div class="container relative">
+                                <xhtml:div class="container relative">
                                     
                                     <xsl:apply-templates select="m:language[@xml:lang eq 'bo']"/>
                                     
@@ -79,11 +82,11 @@
                                     
                                     </xsl:if>
                                     
-                                </div>
+                                </xhtml:div>
                                 
                                 <hr/>
                                 
-                                <div class="container footer" id="source-footer">
+                                <xhtml:div class="container footer" id="source-footer">
                                     
                                     <p class="text-center text-muted ">
                                         <xsl:value-of select="concat(if($work eq 'UT23703') then 'eTengyur' else 'eKangyur', ', ', @etext-id, ', page ', @page-in-volume, ' (', @folio-in-etext, ').')"/>
@@ -97,24 +100,24 @@
                                         </a>
                                     </p>
                                     
-                                    <div id="etext-description-{ position() }" class="well well-sml collapse text-center">
+                                    <xhtml:div id="etext-description-{ position() }" class="well well-sml collapse text-center">
                                         <xsl:call-template name="local-text">
                                             <xsl:with-param name="local-key" select="if($work eq 'UT23703') then 'etengyur-description-content' else 'ekangyur-description-content'"/>
                                         </xsl:call-template>
-                                    </div>
+                                    </xhtml:div>
                                     
-                                </div>
+                                </xhtml:div>
                                 
-                            </div>
+                            </xhtml:div>
                         </xsl:for-each>
                         
-                    </div>
+                    </xhtml:div>
                     
                     <!-- Keep outside of ajax data -->
                     <xsl:if test="m:back-link/@url">
-                        <div class="hidden-iframe">
+                        <xhtml:div class="hidden-iframe">
                             <hr class="no-margin"/>
-                            <div class="container top-margin bottom-margin">
+                            <xhtml:div class="container top-margin bottom-margin">
                                 <p class="text-center">
                                     <xsl:call-template name="local-text">
                                         <xsl:with-param name="local-key" select="'backlink-label'"/>
@@ -126,12 +129,12 @@
                                         <xsl:value-of select="m:back-link/@url"/>
                                     </a>
                                 </p>
-                            </div>
-                        </div>
+                            </xhtml:div>
+                        </xhtml:div>
                     </xsl:if>
                     
                 </main>
-            </div>
+            </xhtml:div>
         </xsl:variable>
         
         <xsl:call-template name="reading-room-page">
@@ -145,21 +148,46 @@
     </xsl:template>
     
     <xsl:template match="tei:p[@class eq 'selected']">
+        
         <xsl:variable name="preceding-word" select="tokenize(preceding-sibling::tei:p/text()[last()], '\s+')[last()]"/>
         <xsl:variable name="last-word" select="tokenize(text()[last()], '\s+')[last()]"/>
         <xsl:variable name="following-word" select="tokenize(following-sibling::tei:p/text()[1], '\s+')[1]"/>
+        
         <p class="text-bo source">
+            
+            <!-- To avoid part sentences, include the last partial sentence from the preceding paragraph -->
             <xsl:if test="not(ends-with($preceding-word, '།'))">
                 <span class="text-muted">
                     <xsl:value-of select="$preceding-word"/>
                 </span>
             </xsl:if>
-            <xsl:apply-templates select="node()"/>
+            
+            <!-- Indicate text that is from the preceding text -->
+            <xsl:for-each select="node()">
+                <xsl:choose>
+                    <xsl:when test="$toh-number and following-sibling::tei:milestone[@unit eq 'text'][@toh eq $toh-number]">
+                        <span class="text-muted">
+                            <xsl:apply-templates select="."/>
+                        </span>
+                    </xsl:when>
+                    <xsl:when test="$toh-number and preceding-sibling::tei:milestone[@unit eq 'text'][1][@toh ne $toh-number]">
+                        <span class="text-muted">
+                            <xsl:apply-templates select="."/>
+                        </span>
+                    </xsl:when>
+                    <xsl:otherwise>
+                        <xsl:apply-templates select="."/>
+                    </xsl:otherwise>
+                </xsl:choose>
+            </xsl:for-each>
+            
+            <!-- To avoid part sentences, include the first partial sentence from the following paragraph -->
             <xsl:if test="not(ends-with($last-word, '།')) and $following-word">
                 <span class="text-muted">
                     <xsl:value-of select="$following-word"/>
                 </span>
             </xsl:if>
+            
         </p>
     </xsl:template>
     

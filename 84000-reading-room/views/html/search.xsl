@@ -177,6 +177,8 @@
                 </div>
             </main>
             
+            <!--<xsl:call-template name="dualview-popup"/>-->
+            
         </xsl:variable>
         
         <!-- Compile with page template -->
@@ -194,7 +196,7 @@
         
         <div class="row">
             <div class="col-sm-8 col-sm-offset-2">
-                <form action="/search.html" method="get" role="search" class="form-horizontal">
+                <form action="/search.html" method="get" role="search" class="form-horizontal" data-loading="Loading...">
                     
                     <input type="hidden" name="lang" value="{ $request/@lang }"/>
                     <input type="hidden" name="search-type" value="tei"/>
@@ -233,7 +235,7 @@
 
         <div class="row">
             <div class="col-sm-8 col-sm-offset-2">
-                <form action="/search.html" method="get" role="search" accept-charset="UTF-8" class="form-horizontal">
+                <form action="/search.html" method="get" role="search" accept-charset="UTF-8" class="form-horizontal" data-loading="Loading...">
                     
                     <input type="hidden" name="lang" value="{ $request/@lang }"/>
                     <input type="hidden" name="search-type" value="tm"/>
@@ -470,7 +472,7 @@
                                             <div class="col-sm-12">
                                                 
                                                 <span class="badge badge-notification">
-                                                    <xsl:value-of select="$count-matches"/> 
+                                                    <xsl:value-of select="format-number($count-matches, '#,###')"/> 
                                                 </span>
                                                 
                                                 <span class="badge-text">
@@ -512,7 +514,7 @@
                                                             <xsl:value-of select="concat('These are the first ', count($matches), ' matches. ')"/>
                                                             <a target="_self">
                                                                 <xsl:attribute name="href" select="common:internal-link('/search.html',(concat('search-type=', $request/@search-type), concat('search-lang=', $request/@search-lang), concat('search=', $request/m:search), concat('specified-text=', $tei/@resource-id)), (), /m:response/@lang)"/>
-                                                                <xsl:value-of select="concat('View all ', $count-matches)"/>
+                                                                <xsl:value-of select="concat('View all ', format-number($count-matches, '#,###'))"/>
                                                             </a>
                                                         </p>
                                                         
@@ -624,27 +626,34 @@
                                         
                                         <xsl:choose>
                                             <xsl:when test="m:match/@location gt ''">
+                                                
                                                 <a>
-                                                    
-                                                    <xsl:choose>
-                                                        <xsl:when test="m:match/@type eq 'glossary-term'">
-                                                            <xsl:attribute name="href" select="concat($reading-room-path, m:match/@location)"/>
-                                                        </xsl:when>
-                                                        <xsl:when test="m:match/@type eq 'tm-unit'">
-                                                            <xsl:attribute name="href" select="concat($reading-room-path, m:match/@location)"/>
-                                                        </xsl:when>
-                                                    </xsl:choose>
-                                                    
+                                                    <xsl:attribute name="href" select="concat($reading-room-path, m:match/@location)"/>
                                                     <xsl:attribute name="target" select="concat(m:tei/@resource-id, '.html')"/>
-                                                    
                                                     <xsl:apply-templates select="m:tei/m:titles/m:title[@xml:lang eq 'en']"/>
-                                                    
                                                 </a>
+                                                
+                                                <!--<!-\- Dualview link -\->
+                                                <a>
+                                                    <xsl:attribute name="href" select="concat($reading-room-path, m:match/@location)"/>
+                                                    <xsl:attribute name="target" select="concat('translation-', m:tei/@resource-id)"/>
+                                                    <xsl:attribute name="data-dualview-href" select="concat($reading-room-path, m:match/@location)"/>
+                                                    <xsl:attribute name="data-dualview-title" select="m:tei/m:bibl/m:toh/m:full/text()"/>
+                                                    <xsl:apply-templates select="m:tei/m:titles/m:title[@xml:lang eq 'en']"/>
+                                                </a>
+                                                
+                                                <xsl:value-of select="' '"/>
+                                                
+                                                <!-\- New tab link -\->
+                                                <a>
+                                                    <xsl:attribute name="href" select="concat($reading-room-path, m:match/@location)"/>
+                                                    <xsl:attribute name="target" select="concat(m:tei/@resource-id, '.html')"/>
+                                                    <i class="fa fa-external-link"/>
+                                                </a>-->
+                                                
                                             </xsl:when>
                                             <xsl:otherwise>
-                                                
                                                 <xsl:apply-templates select="m:tei/m:titles/m:title[@xml:lang eq 'en']"/>
-                                                
                                             </xsl:otherwise>
                                         </xsl:choose>
                                         
@@ -662,6 +671,24 @@
                                                 </span>
                                             </xsl:when>
                                         </xsl:choose>
+                                        
+                                        <xsl:if test="m:match/m:flag[@type eq 'machine-alignment']">
+                                            <span class="label label-default">
+                                                <xsl:value-of select="'Machine alignment'"/>
+                                            </span>
+                                        </xsl:if>
+                                        
+                                        <xsl:if test="m:match/m:flag[@type eq 'alternative-source']">
+                                            <span class="label label-default">
+                                                <xsl:value-of select="'Translated from a different source'"/>
+                                            </span>
+                                        </xsl:if>
+                                        
+                                        <xsl:if test="m:match/m:flag[not(@type = ('machine-alignment','alternative-source'))]">
+                                            <span class="label label-default">
+                                                <xsl:value-of select="m:match/m:flag/@type"/>
+                                            </span>
+                                        </xsl:if>
                                         
                                     </div>
                                     

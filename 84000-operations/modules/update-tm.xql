@@ -29,6 +29,12 @@ declare function update-tm:update-unit($tmx as element(tmx:tmx), $unit-id as xs:
         
             attribute id { $unit-id },
             
+            for $other in $tm-unit/eft:*
+            return (
+                common:ws(3),
+                $other
+            ),
+            
             for $prop in $tm-unit/tmx:prop[not(@name = ('location-id','revision','unmatched'))]
             return (
                 common:ws(3),
@@ -410,10 +416,10 @@ declare function local:apply-revisions($tm-units as element(tmx:tu)*, $start-uni
             else (
                 
                 (: Remove empty values :)
-                if($tu[tmx:tuv[@xml:lang eq 'en']/tmx:seg/text() ! not(normalize-space(.))]) then
+                if(string-join($tu/tmx:tuv[@xml:lang eq 'en']/tmx:seg/text()) ! not(normalize-space(.))) then
                     update delete $tu/tmx:tuv[@xml:lang eq 'en']
                     
-                else if($tu[tmx:tuv[@xml:lang eq 'bo']/tmx:seg/text() ! not(normalize-space(.))]) then
+                else if(string-join($tu/tmx:tuv[@xml:lang eq 'bo']/tmx:seg/text()) ! not(normalize-space(.))) then
                     update delete $tu/tmx:tuv[@xml:lang eq 'bo']
                     
                 else ()
@@ -487,8 +493,8 @@ declare function local:tm-unit-aligned($tm-units as element(tmx:tu)*, $tm-unit-p
     (: Try to align an English segment with the TEI to find revisions :)
     
     let $tm-unit := $tm-units[$tm-unit-pos] 
-    let $tm-bo := ($tm-unit/tmx:tuv[@xml:lang eq 'bo']/tmx:seg ! normalize-space(.), '')[1]
-    let $tm-en := ($tm-unit/tmx:tuv[@xml:lang eq 'en']/tmx:seg ! normalize-space(.), '')[1]
+    let $tm-bo := string-join($tm-unit/tmx:tuv[@xml:lang eq 'bo']/tmx:seg/text())
+    let $tm-en := string-join($tm-unit/tmx:tuv[@xml:lang eq 'en']/tmx:seg/text())
     
     (: Remove content in double square brackets :)
     let $tm-en-notes-removed := replace($tm-en, '\[{2}.*\]{2}\s*', '')
@@ -497,12 +503,20 @@ declare function local:tm-unit-aligned($tm-units as element(tmx:tu)*, $tm-unit-p
     let $tm-en-regex := 
         if($tm-en-notes-removed gt '') then 
             concat(
-                '(?:^|\s|\}{2})([^\p{L}\s]*)(', 
-                string-join(
+                (: Non-capture word start :)
+                '(?:^|\s|—|\}{2})',
+                (: Capture leading punctuation :)
+                '([^\p{L}\s]*)',
+                (: Iterate through words :)
+                '(', string-join(
                     tokenize($tm-en-notes-removed, '[^\p{L}]+', 'i')[normalize-space(.)] ! lower-case(.) ! functx:escape-for-regex(.), 
+                    (: separated by non-word, (and optional {{tag}}) :)
                     '[^\p{L}]+(?:\{{2}[^\{\}]+\}{2}[^\p{L}]+)?'
-                ),
-                ')([^\p{L}\s]*)(?:\s|\{{2}|$)'
+                ), ')',
+                (: Capture trailing punctuation :)
+                '([^\p{L}\s]*)',
+                (: Non-capture word end :)
+                '(?:\s|—|\{{2}|$)'
             )
             (:let $tm-en-tokenized := tokenize($tm-en-notes-removed, '[^\p{L}]+', 'i')
             let $tm-en-tokenized-first := $tm-en-tokenized[1]
@@ -684,7 +698,7 @@ declare function local:tei-text-strings($nodes as node()*) as xs:string* {
     return (
         
         (: Ignore some head tags :)
-        if($node[self::tei:head][@type = ('translation', 'titleHon', 'colophon')]) then
+        if($node[self::tei:head][@type = ('translation', 'colophon')]) then
             ()
         
         (: Don't recurse into some tags :)

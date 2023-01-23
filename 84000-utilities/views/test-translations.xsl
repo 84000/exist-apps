@@ -95,7 +95,7 @@
     <xsl:template match="/m:response">
         
         <xsl:variable name="content">
-            <form action="/test-translations.html" method="get" class="form-inline filter-form">
+            <form action="/test-translations.html" method="get" class="form-inline filter-form" data-loading="Loading...">
                 <div class="form-group">
                     <xsl:variable name="request-translation-id" as="xs:string">
                         <xsl:choose>
@@ -224,6 +224,7 @@
                                 <a>
                                     <xsl:attribute name="href" select="concat('?translation-id=', $text-id)"/>
                                     <xsl:attribute name="title" select="'Run tests on this file only'"/>
+                                    <xsl:attribute name="data-loading" select="'Applying filter...'"/>
                                     <i class="fa fa-filter"/>
                                 </a>
                             </td>

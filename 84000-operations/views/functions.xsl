@@ -232,11 +232,11 @@
     <!-- Set number of rows for a <textarea/> -->
     <xsl:function name="ops:textarea-rows" as="xs:integer">
         
-        <xsl:param name="content" as="node()*"/>
+        <xsl:param name="content" as="xs:string?"/>
         <xsl:param name="default-rows" as="xs:integer"/>
         <xsl:param name="chars-per-row" as="xs:integer"/>
         
-        <xsl:variable name="lines" select="sum(tokenize($content, '\n') ! ceiling((string-length(.) + 1) div $chars-per-row))"/>
+        <xsl:variable name="lines" select="$content ! sum(tokenize(., '\n') ! ceiling((string-length(.) + 1) div $chars-per-row))"/>
         
         <xsl:value-of select="if($lines gt $default-rows) then $lines else $default-rows"/>
         

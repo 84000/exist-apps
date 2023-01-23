@@ -84,20 +84,16 @@ let $xml-response :=
             (: Include request parameters :)
             $request,
             
+            (: The translation :)
+            $translation-response,
+            
             (: Get a page :)
             if($ref-sort-index gt 0) then (
-                
-                (: The source text :)
                 $source-text,
-                
-                (: The translation :)
-                $translation-response,
-                
                 (: Include back link to the passage in the text :)
                 <back-link 
                     xmlns="http://read.84000.co/ns/1.0"
                     url="{ concat($common:environment/m:url[@id eq 'reading-room'], '/translation/', $request/@resource-id, '.html', '?part=', $ref-1/@xml:id, '#', $ref-1/@xml:id) }"/>
-                
             )
             
             (: Get the whole text :)

@@ -17,6 +17,7 @@ declare function local:parse-translation($response as element(m:response)) {
     for $element in $response/m:translation/m:part[@type eq 'translation']/*[not(self::tei:head[@type eq 'translation'])]
     return
         local:parse-node($response, $element)
+        
 };
 
 declare function local:parse-node($response as element(m:response), $element as element()) {
@@ -24,13 +25,21 @@ declare function local:parse-node($response as element(m:response), $element as 
     (: 
         These are the content groups.
         Output the contents.
-        They will be seperated by a return 
+        They will be separated by a return 
     :)
-    if($element[self::m:honoration | self::m:main-title | self::tei:head | self::tei:p | self::tei:ab | self::tei:l | self::tei:q | self::tei:list | self::tei:trailer | self::tei:label | self::tei:seg | self::tei:milestone])then (
+    if(
+        $element[
+            self::m:honoration 
+            | self::m:main-title 
+            | self::tei:head[not(@type eq 'colophon')][not(matches(text(), functx:escape-for-regex($response/m:translation/m:part[@type eq 'translation']/m:main-title), 'i'))] 
+            | self::tei:p | self::tei:ab | self::tei:l | self::tei:q | self::tei:list | self::tei:trailer | self::tei:label | self::tei:seg | self::tei:milestone]
+    ) then (
+        
+        let $text-id := $response/m:translation/@id
         
         (: These are the nodes we want to output :)
         let $output-nodes := $element/descendant::text()[not(ancestor::tei:note)][not(ancestor::tei:orig)][normalize-space(.) gt ''] | $element//tei:milestone | $element//tei:ref | $element//tei:note
-        let $text-id := $response/m:translation/@id
+        
         return (
             for $node at $position in ($element[self::tei:milestone] | $output-nodes)
             return
@@ -79,6 +88,7 @@ declare function local:parse-node($response as element(m:response), $element as 
             else ()
         )
     )
+    
     (: Look for groups down the tree :) 
     else if($element[*]) then
         for $child-element in $element/*
@@ -94,7 +104,7 @@ let $string := string-join($parsed-content, '')
 let $binary := util:base64-encode($string)
 
 return
-     (:response:stream-binary($binary, 'text/plain'):) $string
+     response:stream-binary($binary, 'text/plain') (:$string:)
 
 
 

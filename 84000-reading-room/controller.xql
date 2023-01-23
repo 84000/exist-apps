@@ -258,7 +258,7 @@ return
                         <set-header name="Content-Disposition" value="attachment"/>
                     </parameters>
                 )
-            (: xml model -> txt view :)
+            (: xml model -> rdf view :)
             else if ($resource-suffix eq 'rdf') then
                 local:dispatch("/models/translation.xq", "/views/rdf/translation.xsl",
                     <parameters xmlns="http://exist.sourceforge.net/NS/exist">

@@ -17,7 +17,7 @@ for $tei in $local:tei//tei:TEI[tei:teiHeader/tei:fileDesc/tei:publicationStmt/@
 let $text-id := tei-content:id($tei)
 let $tmx := $local:tm//tmx:tmx[tmx:header/@eft:text-id eq $text-id]
 
-where $tmx and $text-id eq (:'UT22084-034-009':)(:'UT22084-040-002':)(:'UT22084-001-006':)'UT22084-042-002'
+where $tmx and $text-id eq (:'UT22084-034-009':)(:'UT22084-040-002':)(:'UT22084-001-006':)'UT22084-060-003'
 
 return 
     update-tm:apply-revisions($tei, $tmx)

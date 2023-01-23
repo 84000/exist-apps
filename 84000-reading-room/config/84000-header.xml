@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <eft-header xmlns="http://read.84000.co/ns/1.0">
-    <!-- Updated 11.01.2023 -->
+    <!-- Updated 23.01.2023 -->
     <translation id="tag-line">
         <text xml:lang="en">Translating the words of the Buddha</text>
         <text xml:lang="zh">八萬四千 • 佛典傳譯</text>
@@ -181,11 +181,27 @@
                 <label key="label-matching-funds">Matching Funds</label>
             </item>
         </item>
-        <!--<banner>
-            <div xmlns="http://www.w3.org/1999/xhtml">
-                Find out more about <a href="https://campaigns.84000.co" target="_blank">The Perfection of Wisdom for All</a>, a crowdfunding campaign to translate a sūtra
+        <banner>
+            <div xmlns="http://www.w3.org/1999/xhtml" id="campaign-pp100k">
+                <style>
+                    .nav-banner-content {
+                        background-image: url(https://static.wixstatic.com/media/196edd_d21016fb5c514a2d9b2293fbbe87e647~mv2.png);
+                        background-repeat: no-repeat;
+                        background-position-x: 0;
+                        background-position-y: 24%;
+                        background-size: 22%;
+                        padding: 10px 0px 10px 0px;
+                        padding-left: 21%;
+                        text-shadow: 0px 1px 3px rgb(0 0 0 / .65);
+                        line-height: 1.5em;
+                        opacity: .85;
+                    }
+                </style>
+                <div class="nav-banner-content">
+                    <a href="https://campaigns.84000.co" target="_blank">The Perfection of Wisdom for All</a>—crowdfunding a further 10,000 pages of the Buddha's words into English
+                </div>
             </div>
-        </banner>-->
+        </banner>
     </navigation>
     <navigation xml:lang="zh">
         <item class="home" url="https://84000.co/ch">

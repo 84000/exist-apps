@@ -360,10 +360,17 @@
             
         </div>
         
-        <xsl:if test="eft:navigation[@xml:lang = $lang]/eft:banner[xhtml:div]">
-            <div class="nav-banner">
+        <xsl:if test="eft:navigation[@xml:lang = $lang]/eft:banner[xhtml:div[@id]]">
+            <div class="nav-banner collapse persist" id="{ eft:navigation[@xml:lang = $lang]/eft:banner/xhtml:div/@id }">
+                
                 <div class="container">
+                    
                     <xsl:apply-templates select="eft:navigation[@xml:lang = $lang]/eft:banner/xhtml:div/node()"/>
+                    
+                    <a href="#{ eft:navigation[@xml:lang = $lang]/eft:banner/xhtml:div/@id }" class="btn-round close collapse-persist">
+                        <i class="fa fa-times"/>
+                    </a>
+                    
                 </div>
             </div>
         </xsl:if>

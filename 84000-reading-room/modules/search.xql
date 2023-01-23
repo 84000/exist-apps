@@ -190,15 +190,17 @@ declare function search:tm-search($search as xs:string, $search-lang as xs:strin
             lower-case($search-lang)
     
     let $tmx := collection(concat($common:data-path, '/translation-memory'))//tmx:tmx
+    (: Only search units with segments for both languages :)
+    let $tm-units := $tmx/tmx:body/tmx:tu[tmx:tuv[@xml:lang eq 'bo']][tmx:tuv[@xml:lang eq 'en']]
     
     let $tei := collection($common:translations-path)//tei:TEI
     
     let $results :=
         for $result in (
             if($search-lang eq 'bo') then
-                $tmx//tmx:tu[ft:query(tmx:tuv, concat('bo:(', $search, ')'), map { "fields": ("bo") })]
+                $tm-units[ft:query(tmx:tuv, concat('bo:(', $search, ')'), map { "fields": ("bo") })]
             else
-                $tmx//tmx:tu[ft:query(tmx:tuv, concat('en:(', $search, ')'), map { "fields": ("en") })]
+                $tm-units[ft:query(tmx:tuv, concat('en:(', $search, ')'), map { "fields": ("en") })]
             ,
             if($include-glossary) then
                 if($search-lang eq 'bo') then
@@ -207,9 +209,9 @@ declare function search:tm-search($search as xs:string, $search-lang as xs:strin
                     $tei//tei:back//tei:gloss[ft:query(tei:term[not(@xml:lang) or @xml:lang eq 'en'][not(@type = ('definition','alternative'))], $search)]
             else ()
         )
-            let $score := ft:score($result)
-            order by $score descending
-            
+        
+        let $score := ft:score($result)
+        order by $score descending
         return 
             $result
     
@@ -226,14 +228,11 @@ declare function search:tm-search($search as xs:string, $search-lang as xs:strin
                     
                     let $score := ft:score($result)
                     
+                    let $result-tmx := $result/ancestor::tmx:tmx[1]
+                    
                     let $tei := 
-                        if(local-name($result) eq 'tu') then
-                            let $tmx := $result/ancestor::tmx:tmx
-                            let $translation-id := $tmx/tmx:header/@eft:text-id
-                            return
-                                if($translation-id) then
-                                    tei-content:tei($translation-id, 'translation')
-                                else ()
+                        if($result-tmx[tmx:header/@eft:text-id]) then
+                            tei-content:tei($result-tmx/tmx:header/@eft:text-id, 'translation')
                         else
                             $result/ancestor::tei:TEI
                     
@@ -247,6 +246,7 @@ declare function search:tm-search($search as xs:string, $search-lang as xs:strin
                         
                             (: Score :)
                             attribute score { $score },
+                            
                             (: TEI source :)
                             local:tei-header($tei),
                             
@@ -279,6 +279,16 @@ declare function search:tm-search($search as xs:string, $search-lang as xs:strin
                                     
                                         attribute type { 'tm-unit' },
                                         attribute location { concat('/translation/', $toh-key, '.html', if($location-id) then concat('#', $location-id) else '') },
+                                        
+                                        if($result-tmx/tmx:header[@creationtool = ('linguae-dharmae/84000')]) then
+                                            element flag { attribute type { 'machine-alignment' } }
+                                        else ()
+                                        ,
+                                        
+                                        for $prop in $result/tmx:prop[@name = ('alternative-source')]
+                                        return
+                                            element flag { attribute type { $prop/@name/string() } }
+                                        ,
                                         
                                         element tibetan { 
                                             if($search-lang eq 'bo') then

@@ -20,6 +20,15 @@ let $first-record := request:get-parameter('first-record', '1') ! common:integer
 let $tei := tei-content:tei($text-id, 'translation')
 let $tmx := collection($update-tm:tm-path)//tmx:tmx[tmx:header/@eft:text-id eq $text-id]
 
+(: If no tmx, try fixing it :)
+let $tmx := 
+    if(not($tmx)) then
+        let $fix-mime-type := local:fix-tm-mimetypes()
+        return
+            collection($update-tm:tm-path)//tmx:tmx[tmx:header/@eft:text-id eq $text-id]
+    else 
+        $tmx
+
 (: Process update :)
 let $update-tm :=
     

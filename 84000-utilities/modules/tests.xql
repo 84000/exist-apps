@@ -32,6 +32,7 @@ declare function tests:translations($translation-id as xs:string) as element(m:r
             tei-content:tei(lower-case($translation-id), 'translation')
     
     let $test-config := $common:environment//m:test-conf
+    let $credentials := $test-config/m:credentials/data() ! tokenize(., ':')
     
     return
         <results xmlns="http://read.84000.co/ns/1.0">
@@ -42,8 +43,6 @@ declare function tests:translations($translation-id as xs:string) as element(m:r
                 let $start-time := util:system-dateTime()
                 
                 let $html-url := concat($test-config/m:path/text(), '/translation/', $toh-key, '.html?view-mode=tests')
-                
-                let $credentials := $test-config/m:credentials/data() ! tokenize(., ':')
                 
                 let $request := 
                     if(count($credentials) eq 2) then 
@@ -259,9 +258,9 @@ declare function tests:scoped-ids($tei as element(tei:TEI)) as element(m:test) {
 
 declare function tests:valid-pointers($tei as element(tei:TEI)) as element(m:test) {
     
-    let $tei-id := tei-content:id($tei)
+    let $text-id := tei-content:id($tei)
     let $invalid-ptrs := 
-        for $pointer in $tei//tei:ptr[matches(@target, '^#')]
+        for $pointer in $tei//tei:ptr[matches(@target, concat('^#', functx:escape-for-regex($text-id)))]
         let $target := replace($pointer/@target, '^#', '') ! replace(., '^bibliography$', 'listBibl') ! replace(., '^abbreviations$', 'notes')
         where not($tei/id($target)) and not($tei//tei:div[@type = $target])
         return

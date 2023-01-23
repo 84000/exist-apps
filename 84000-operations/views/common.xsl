@@ -685,7 +685,7 @@
                                 <xsl:apply-templates select="$definition"/>
                             </xsl:variable>
                             
-                            <xsl:attribute name="rows" select="ops:textarea-rows($definition-escaped, 2, 105)"/>
+                            <xsl:attribute name="rows" select="ops:textarea-rows(string-join($definition-escaped/m:escaped/text()), 2, 105)"/>
                             
                             <xsl:sequence select="$definition-escaped/m:escaped/node()"/>
                             
@@ -734,7 +734,7 @@
                             
                             <xsl:attribute name="id" select="concat('entity-note-', $context-id, '-', ($entity/@xml:id, 'new-entity')[1], '-', $note-index)"/>
                             <xsl:attribute name="name" select="concat('entity-note-', $note-index)"/>
-                            <xsl:attribute name="rows" select="ops:textarea-rows($entity-notes[$note-index], 2, 105)"/>
+                            <xsl:attribute name="rows" select="ops:textarea-rows($entity-notes[$note-index]/text(), 2, 105)"/>
                             
                             <xsl:value-of select="$entity-notes[$note-index]"/>
                             

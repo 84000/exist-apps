@@ -255,15 +255,6 @@
                                 </div>
                             </div>
                             
-                            <!-- Close tab button -->
-                            <!--<div>
-                                <button type="button" class="btn-round remove-active-tab hidden" aria-label="Close the active tab" title="Close the active tab">
-                                    <span aria-hidden="true">
-                                        <i class="fa fa-times"/>
-                                    </span>
-                                </button>
-                            </div>-->
-                            
                             <!-- Set footer height -->
                             <div>
                                 <button type="button" class="btn-round" data-drag-height="#popup-footer-dualview .tab-content" aria-label="Set the height of the footer" title="Set the height of the footer">
@@ -272,15 +263,6 @@
                                     </span>
                                 </button>
                             </div>
-                            
-                            <!-- Minimise button -->
-                            <!--<div>
-                                <button type="button" class="btn-round close close-collapse" aria-label="Hide the footer" title="Hide the footer">
-                                    <span aria-hidden="true">
-                                        <i class="fa fa-times"/>
-                                    </span>
-                                </button>
-                            </div>-->
                             
                         </div>
                     </div>

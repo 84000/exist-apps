@@ -28,6 +28,7 @@
     <xsl:key name="folio-refs-pre-processed" match="m:pre-processed[@type eq 'folio-refs']/m:folio-ref" use="@id"/>
     <xsl:key name="end-notes-pre-processed" match="m:pre-processed[@type eq 'end-notes']/m:end-note" use="@id"/>
     <xsl:key name="milestones-pre-processed" match="m:pre-processed[@type eq 'milestones']/m:milestone" use="@id"/>
+    <xsl:key name="glossary-pre-processed" match="m:pre-processed[@type eq 'glossary']/m:gloss" use="@id"/>
     <xsl:key name="entity-instance" match="m:entities/m:entity/m:instance" use="@id"/>
     <xsl:key name="related-entries" match="m:entities/m:related/m:text/m:entry" use="@id"/>
     <xsl:key name="related-pages" match="m:entities/m:related/m:page" use="@xml:id"/>
@@ -38,8 +39,8 @@
     <!-- Pre-sort the glossaries by priority -->
     <xsl:variable name="glossary-prioritised" as="element(tei:gloss)*">
         <xsl:perform-sort select="($translation | $knowledgebase)/m:part[@type eq 'glossary']//tei:gloss[@xml:id][tei:term[not(@xml:lang)][not(@type = ('definition','alternative'))][string-join(text(), '') ! normalize-space(.)]]">
-            <xsl:sort select="key('glossary-cache-gloss', @xml:id, $root)[1]/@word-count ! common:enforce-integer(.)" order="descending"/>
-            <xsl:sort select="key('glossary-cache-gloss', @xml:id, $root)[1]/@letter-count[not(. eq '')] ! common:enforce-integer(.)" order="descending"/>
+            <xsl:sort select="key('glossary-pre-processed', @xml:id, $root)[1]/@word-count ! common:enforce-integer(.)" order="descending"/>
+            <xsl:sort select="key('glossary-pre-processed', @xml:id, $root)[1]/@letter-count[not(. eq '')] ! common:enforce-integer(.)" order="descending"/>
         </xsl:perform-sort>
     </xsl:variable>
     
@@ -1306,15 +1307,17 @@
             
             <xsl:for-each select="$glossary-render">
                 
-                <xsl:sort select="key('glossary-cache-gloss', @xml:id, $root)[1]/@index ! common:enforce-integer(.)"/>
+                <xsl:sort select="key('glossary-pre-processed', @xml:id, $root)[1]/@index ! common:enforce-integer(.)"/>
                 
                 <xsl:variable name="glossary-item" select="."/>
+                <xsl:variable name="glossary-pre-processed-gloss" select="key('glossary-pre-processed', $glossary-item/@xml:id, $root)[1]"/>
                 <xsl:variable name="glossary-cache-gloss" select="key('glossary-cache-gloss', $glossary-item/@xml:id, $root)[1]"/>
                 <xsl:variable name="cached-locations" select="$glossary-cache-gloss/m:location"/>
+                
                 <xsl:variable name="glossary-item-label">
                     <xsl:call-template name="bookmark-label">
                         <xsl:with-param name="prefix" select="$glossary-part/@prefix"/>
-                        <xsl:with-param name="index" select="$glossary-cache-gloss/@index"/>
+                        <xsl:with-param name="index" select="$glossary-pre-processed-gloss/@index"/>
                     </xsl:call-template>
                 </xsl:variable>
                 
@@ -2831,7 +2834,7 @@
         <xsl:variable name="target" select="key('text-parts', $target-id, $translation-root)[1]"/>
         <xsl:variable name="target" select="if($target) then $target else key('end-notes-pre-processed', $target-id, $translation-root)[1]"/>
         <xsl:variable name="target" select="if($target) then $target else key('milestones-pre-processed', $target-id, $translation-root)[1]"/>
-        <xsl:variable name="target" select="if($target) then $target else key('glossary-cache-gloss', $target-id, $translation-root)[1]"/>
+        <xsl:variable name="target" select="if($target) then $target else key('glossary-pre-processed', $target-id, $translation-root)[1]"/>
         
         <xsl:sequence select="$target"/>
         
