@@ -56,7 +56,7 @@ let $update-tm :=
         and request:get-parameter-names()[. = 'tm-bo']
         and request:get-parameter-names()[. = 'tm-en']
     ) then
-        update-tm:update-unit($tmx, request:get-parameter('tu-id', ''), request:get-parameter('tm-bo', ''), request:get-parameter('tm-en', ''), request:get-parameter('tei-location-id', ''))
+        update-tm:update-unit($tmx, request:get-parameter('tu-id', ''), request:get-parameter('tm-bo', ''), request:get-parameter('tm-en', ''), request:get-parameter('tei-location-id', ''), request:get-parameter('tm-flags[]', ''))
     
     (: Add a new segment :)
     else if(

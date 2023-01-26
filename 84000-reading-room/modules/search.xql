@@ -224,7 +224,7 @@ declare function search:tm-search($search as xs:string, $search-lang as xs:strin
                 attribute max-records { $max-records },
                 attribute count-records { count($results) },
             
-                for $result in subsequence($results[local-name() = ('tu', 'gloss')], $first-record, $max-records)
+                for $result at $index in subsequence($results[local-name() = ('tu', 'gloss')], $first-record, $max-records)
                     
                     let $score := ft:score($result)
                     
@@ -243,7 +243,9 @@ declare function search:tm-search($search as xs:string, $search-lang as xs:strin
                 return
                     if($tei) then
                         element item { 
-                        
+                            
+                            attribute index { $index + ($first-record -1) },
+                            
                             (: Score :)
                             attribute score { $score },
                             
@@ -278,6 +280,7 @@ declare function search:tm-search($search as xs:string, $search-lang as xs:strin
                                     element match {
                                     
                                         attribute type { 'tm-unit' },
+                                        attribute type-id { $result/@id },
                                         attribute location { concat('/translation/', $toh-key, '.html', if($location-id) then concat('#', $location-id) else '') },
                                         
                                         if($result-tmx/tmx:header[@creationtool = ('linguae-dharmae/84000')]) then
@@ -285,7 +288,7 @@ declare function search:tm-search($search as xs:string, $search-lang as xs:strin
                                         else ()
                                         ,
                                         
-                                        for $prop in $result/tmx:prop[@name = ('alternative-source')]
+                                        for $prop in $result/tmx:prop[@name = ('alternative-source','requires-attention')]
                                         return
                                             element flag { attribute type { $prop/@name/string() } }
                                         ,

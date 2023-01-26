@@ -8,7 +8,7 @@ declare namespace tmx="http://www.lisa.org/tmx14";
 import module namespace update-tm="http://operations.84000.co/update-tm" at "../../84000-operations/modules/update-tm.xql";
 
 for $tu-flagged in collection($update-tm:tm-path)//tmx:tmx/tmx:body/tmx:tu[eft:flag]
-where $tu-flagged/ancestor::tmx:tmx/tmx:header[@eft:text-id eq 'UT22084-060-003']
+(:where $tu-flagged/ancestor::tmx:tmx/tmx:header[@eft:text-id eq 'UT22084-060-003']:)
 return (
     $tu-flagged/eft:flag,
     for $flag in $tu-flagged/eft:flag

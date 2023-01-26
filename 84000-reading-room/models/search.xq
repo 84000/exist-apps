@@ -18,7 +18,6 @@ let $search-langs :=
     <search-langs xmlns="http://read.84000.co/ns/1.0">
         <lang id="en" short-code="Eng">English</lang>
         <lang id="bo" short-code="Tib">Tibetan</lang>
-        <!--<lang id="bo-selector" short-code="Folio">Select a Passage</lang>-->
     </search-langs>
     
 let $search-langs := common:add-selected-children($search-langs, request:get-parameter('search-lang', 'en'))

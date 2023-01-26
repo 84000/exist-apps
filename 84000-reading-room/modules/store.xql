@@ -114,7 +114,8 @@ declare function store:download-master($file-name as xs:string, $translations-ma
                 $store-collection, 
                 $store-file-name,
                 $master-cache/@version
-            )
+            ),
+            util:log('info', concat('store-download-master:', $store-file-name))
         )
     
     (: Download other files :)
@@ -162,8 +163,10 @@ declare function store:download-master($file-name as xs:string, $translations-ma
                     $master-file/@version
                 )
             
-            return
-                $download-file
+            return (
+                $download-file,
+                util:log('info', concat('store-download-master:', $store-file-name))
+            )
     
     where ($download-tei, $download-files)
     return

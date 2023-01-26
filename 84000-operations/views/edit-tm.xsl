@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:scheduler="http://exist-db.org/xquery/scheduler" xmlns:eft="http://read.84000.co/ns/1.0" xmlns:ops="http://operations.84000.co" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:functx="http://www.functx.com" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:bcrdb="http://www.bcrdb.org/ns/1.0" xmlns:tmx="http://www.lisa.org/tmx14" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:scheduler="http://exist-db.org/xquery/scheduler" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:bcrdb="http://www.bcrdb.org/ns/1.0" xmlns:tmx="http://www.lisa.org/tmx14" xmlns:m="http://read.84000.co/ns/1.0" xmlns:eft="http://read.84000.co/ns/1.0" xmlns:ops="http://operations.84000.co" xmlns:functx="http://www.functx.com" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
     
     <xsl:import href="../../84000-reading-room/xslt/webpage.xsl"/>
     <xsl:import href="common.xsl"/>
@@ -11,9 +11,10 @@
     
     <xsl:variable name="first-record" select="/m:response/m:request/@first-record ! xs:integer(.)" as="xs:integer"/>
     <xsl:variable name="max-records" select="/m:response/m:request/@max-records ! xs:integer(.)" as="xs:integer"/>
-    <xsl:variable name="filter" select="/m:response/m:request/@filter[string() = ('revisions', 'unmatched', 'nolocation', 'remainder')]" as="xs:string?"/>
+    <xsl:variable name="filter" select="/m:response/m:request/@filter[string() = ('revisions', 'unmatched', 'nolocation', 'remainder', 'flagged')]" as="xs:string?"/>
     <xsl:variable name="active-record" select="/m:response/m:request/@active-record" as="xs:string?"/>
     <xsl:variable name="job-running" select="/m:response/scheduler:job"/>
+    <xsl:variable name="flag-types" select="('requires-attention', 'alternative-source')" as="xs:string*"/>
     
     <xsl:template match="/m:response">
         
@@ -79,6 +80,7 @@
                             <xsl:variable name="tm-revisions" select="$tm-units[tmx:prop[@name eq 'revision'][text() eq $tmx-text-version]] except $tm-remainder" as="element(tmx:tu)*"/>
                             <xsl:variable name="tm-unmatched" select="$tm-units[tmx:prop[@name eq 'unmatched'][text() eq $tmx-text-version]] except $tm-remainder" as="element(tmx:tu)*"/>
                             <xsl:variable name="tm-nolocation" select="$tm-units[not(tmx:prop[@name eq 'location-id']/text() gt '')] except ($tm-unmatched | $tm-remainder)" as="element(tmx:tu)*"/>
+                            <xsl:variable name="tm-flagged" select="$tm-units[tmx:prop[@name = $flag-types]]" as="element(tmx:tu)*"/>
                             <xsl:variable name="tm-units-filtered" as="element(tmx:tu)*">
                                 <xsl:choose>
                                     <xsl:when test="$filter eq 'remainder'">
@@ -92,6 +94,9 @@
                                     </xsl:when>
                                     <xsl:when test="$filter eq 'nolocation'">
                                         <xsl:sequence select="$tm-nolocation"/>
+                                    </xsl:when>
+                                    <xsl:when test="$filter eq 'flagged'">
+                                        <xsl:sequence select="$tm-flagged"/>
                                     </xsl:when>
                                     <xsl:otherwise>
                                         <xsl:sequence select="$tm-units"/>
@@ -216,7 +221,7 @@
                                             </xsl:if>
                                             <a>
                                                 <xsl:attribute name="href" select="concat('/edit-tm.html?text-id=', $translation/@id, '&amp;filter=remainder')"/>
-                                                <xsl:value-of select="'Remainder'"/>
+                                                <xsl:value-of select="'Remainders'"/>
                                                 <xsl:value-of select="' '"/>
                                                 <xsl:variable name="tm-remainder-count" select="count($tm-remainder)"/>
                                                 <span class="badge">
@@ -224,6 +229,25 @@
                                                         <xsl:attribute name="class" select="'badge badge-alert'"/>
                                                     </xsl:if>
                                                     <xsl:value-of select="format-number($tm-remainder-count, '#,###')"/>
+                                                </span>
+                                            </a>
+                                        </li>
+                                        
+                                        <!-- Flagged -->
+                                        <li role="presentation">
+                                            <xsl:if test="$filter eq 'flagged'">
+                                                <xsl:attribute name="class" select="'active'"/>
+                                            </xsl:if>
+                                            <a>
+                                                <xsl:attribute name="href" select="concat('/edit-tm.html?text-id=', $translation/@id, '&amp;filter=flagged')"/>
+                                                <xsl:value-of select="'Flagged'"/>
+                                                <xsl:value-of select="' '"/>
+                                                <xsl:variable name="tm-flagged-count" select="count($tm-flagged)"/>
+                                                <span class="badge">
+                                                    <xsl:if test="$tm-flagged-count gt 0">
+                                                        <xsl:attribute name="class" select="'badge badge-alert'"/>
+                                                    </xsl:if>
+                                                    <xsl:value-of select="format-number($tm-flagged-count, '#,###')"/>
                                                 </span>
                                             </a>
                                         </li>
@@ -316,6 +340,7 @@
                             <!-- List TM units -->
                             <xsl:choose>
                                 
+                                <!-- Has units -->
                                 <xsl:when test="$tm-units-filtered">
                                     
                                     <div class="div-list">
@@ -334,7 +359,7 @@
                                                     <xsl:attribute name="id" select="$row-id"/>
                                                     
                                                     <!-- Number / flag column -->
-                                                    <div class="col-sm-1">
+                                                    <div class="col-sm-2">
                                                         
                                                         <span class="number">
                                                             <xsl:value-of select="format-number($row-number, '#,###')"/>
@@ -359,16 +384,37 @@
                                                             <xsl:when test="$tm-unit/tmx:prop[@name eq 'revision'][text() eq $tmx-text-version]">
                                                                 <br/>
                                                                 <span class="label label-success">
-                                                                    <xsl:value-of select="'revised'"/>
+                                                                    <xsl:value-of select="'Revised'"/>
                                                                 </span>
                                                             </xsl:when>
                                                             
                                                         </xsl:choose>
                                                         
+                                                        <xsl:for-each select="$tm-unit/tmx:prop[@name = $flag-types]">
+                                                            <br/>
+                                                            <xsl:choose>
+                                                                <xsl:when test="@name eq 'requires-attention'">
+                                                                    <span class="label label-danger">
+                                                                        <xsl:value-of select="'Requires attention'"/>
+                                                                    </span>
+                                                                </xsl:when>
+                                                                <xsl:when test="@name eq 'alternative-source'">
+                                                                    <span class="label label-warning">
+                                                                        <xsl:value-of select="'Alternative source'"/>
+                                                                    </span>
+                                                                </xsl:when>
+                                                                <xsl:otherwise>
+                                                                    <span class="label label-warning">
+                                                                        <xsl:value-of select="@name"/>
+                                                                    </span>
+                                                                </xsl:otherwise>
+                                                            </xsl:choose>
+                                                        </xsl:for-each>
+                                                        
                                                     </div>
                                                     
                                                     <!-- Form column -->
-                                                    <div class="col-sm-11">
+                                                    <div class="col-sm-10">
                                                         
                                                         <xsl:variable name="update-form-id" select="concat('form-update-segment-', $row-id)"/>
                                                         
@@ -378,12 +424,13 @@
                                                                 <xsl:attribute name="class" select="'form form-update stealth reveal onload-scroll-target'"/>
                                                             </xsl:if>
                                                             
-                                                            <xsl:attribute name="action" select="concat('/edit-tm.html?text-id=', $translation/@id)"/>
+                                                            <xsl:attribute name="action" select="concat('/edit-tm.html?text-id=', $translation/@id, '#', $row-id)"/>
                                                             <xsl:attribute name="data-loading" select="'Updating translation memory...'"/>
                                                             
                                                             <!-- Action -->
                                                             <input type="hidden" name="form-action" value="update-segment"/>
                                                             <input type="hidden" name="filter" value="{ $filter }"/>
+                                                            <input type="hidden" name="first-record" value="{ $first-record }"/>
                                                             <input type="hidden" name="tu-id" value="{ $tm-unit/@id }"/>
                                                             
                                                             <!-- Tibetan -->
@@ -456,72 +503,124 @@
                                                             </xsl:choose>
                                                             
                                                             <!-- Footer (Location / buttons) -->
-                                                            <div class="form-group">
+                                                            
+                                                            <div class="row  stealth-hidden">
                                                                 
-                                                                <label for="tei-location-id-{ $row-id }" class="text-muted small sml-margin bottom">
-                                                                    <xsl:value-of select="'TEI location'"/>
-                                                                </label>
-                                                                
-                                                                <div class="row">
-                                                                    
-                                                                    <!-- Location -->
-                                                                    <div class="col-sm-8">
-                                                                        <div class="center-vertical align-left">
+                                                                <!-- Location -->
+                                                                <div class="col-sm-3">
+                                                                    <div class="form-group">
+                                                                        
+                                                                        <div>
                                                                             
-                                                                            <div>
-                                                                                <input type="text" name="tei-location-id" value="{ $tm-location-id }" id="tei-location-id-{ $row-id }" class="form-control"/>
-                                                                            </div>
+                                                                            <label for="tei-location-id-{ $row-id }" class="text-muted small sml-margin bottom">
+                                                                                <xsl:value-of select="'TEI location'"/>
+                                                                            </label>
                                                                             
                                                                             <!-- Link to location -->
                                                                             <xsl:if test="$tm-location-id gt ''">
-                                                                                <div>
-                                                                                    
-                                                                                    <a target="{ $translation/@id }-html">
-                                                                                        
-                                                                                        <xsl:attribute name="href" select="concat($reading-room-path, '/translation/', $translation/m:toh[1]/@key, '.html#', $tm-location-id)"/>
-                                                                                        <xsl:attribute name="data-dualview-href" select="concat($reading-room-path, '/translation/', $translation/m:toh[1]/@key, '.html#', $tm-location-id)"/>
-                                                                                        <xsl:attribute name="data-dualview-title" select="$translation/m:toh[1]/m:full/data()"/>
-                                                                                        
-                                                                                        <span class="small">
-                                                                                            <xsl:value-of select="'Test location'"/>
-                                                                                        </span>
-                                                                                        
-                                                                                    </a>
-                                                                                </div>
+                                                                                
+                                                                                <span class="text-muted">
+                                                                                    <xsl:value-of select="' / '"/>
+                                                                                </span>
+                                                                                
+                                                                                <a target="{ $translation/@id }-html">
+                                                                                    <xsl:attribute name="href" select="concat($reading-room-path, '/translation/', $translation/m:toh[1]/@key, '.html#', $tm-location-id)"/>
+                                                                                    <xsl:attribute name="data-dualview-href" select="concat($reading-room-path, '/translation/', $translation/m:toh[1]/@key, '.html#', $tm-location-id)"/>
+                                                                                    <xsl:attribute name="data-dualview-title" select="$translation/m:toh[1]/m:full/data()"/>
+                                                                                    <span class="small">
+                                                                                        <xsl:value-of select="'Test'"/>
+                                                                                    </span>
+                                                                                </a>
+                                                                                
                                                                             </xsl:if>
                                                                             
                                                                         </div>
                                                                         
+                                                                        <input type="text" name="tei-location-id" value="{ $tm-location-id }" id="tei-location-id-{ $row-id }" class="form-control"/>
+                                                                        
                                                                     </div>
                                                                     
-                                                                    <!-- Buttons -->
-                                                                    <xsl:choose>
+                                                                </div>
+                                                                    
+                                                                <!-- Flags -->
+                                                                <div class="col-sm-5">
+                                                                    <div class="form-group">
                                                                         
-                                                                        <xsl:when test="$job-running">
-                                                                            <div class="col-sm-4 text-right">
-                                                                                
-                                                                                <span class="small text-danger stealth-hidden">
-                                                                                    <i class="fa fa-exclamation-circle" aria-hidden="true"/>
-                                                                                    <xsl:value-of select="' Job running, please wait...'"/>
-                                                                                </span>
-                                                                                
-                                                                            </div>
-                                                                        </xsl:when>
+                                                                        <label class="text-muted small sml-margin bottom">
+                                                                            <xsl:value-of select="'Flags'"/>
+                                                                        </label>
                                                                         
-                                                                        <xsl:when test="not($tm-unit/@id gt '')">
-                                                                            <div class="col-sm-4 text-right">
+                                                                        <div class="row">
+                                                                            <xsl:for-each select="$flag-types">
                                                                                 
-                                                                                <a href="#alert-ids-missing" class="small text-danger">
-                                                                                    <i class="fa fa-exclamation-circle" aria-hidden="true"/>
-                                                                                    <xsl:value-of select="' This unit has no unique id value and therefore cannot be updated'"/>
-                                                                                </a>
+                                                                                <xsl:variable name="flag-name" select="." as="xs:string"/>
+                                                                                <xsl:variable name="unit-flag" select="$tm-unit/tmx:prop[@name = $flag-name]"/>
                                                                                 
-                                                                            </div>
-                                                                        </xsl:when>
+                                                                                <div class="col-sm-{ floor(12 div count($flag-types)) }">
+                                                                                    <div class="checkbox">
+                                                                                        <label>
+                                                                                            
+                                                                                            <input type="checkbox" name="tm-flags[]" value="{ $flag-name }">
+                                                                                                <xsl:if test="$unit-flag">
+                                                                                                    <xsl:attribute name="checked" select="'checked'"/>
+                                                                                                </xsl:if>
+                                                                                            </input>
+                                                                                            
+                                                                                            <xsl:choose>
+                                                                                                <xsl:when test="$flag-name eq 'requires-attention'">
+                                                                                                    <xsl:value-of select="'Requires attention'"/>
+                                                                                                </xsl:when>
+                                                                                                <xsl:when test="$flag-name eq 'alternative-source'">
+                                                                                                    <xsl:value-of select="'Alternative source'"/>
+                                                                                                </xsl:when>
+                                                                                                <xsl:otherwise>
+                                                                                                    <xsl:value-of select="$flag-name"/>
+                                                                                                </xsl:otherwise>
+                                                                                            </xsl:choose>
+                                                                                            
+                                                                                            <xsl:if test="$unit-flag">
+                                                                                                <br/>
+                                                                                                <span class="text-muted small">
+                                                                                                    <xsl:value-of select="$unit-flag/@user ! concat(' by ', .) || $unit-flag/@timestamp ! concat(' on ', format-dateTime(., '[D1o] [MNn,*-3] [Y01]'))"/>
+                                                                                                </span>
+                                                                                            </xsl:if>
+                                                                                            
+                                                                                        </label>
+                                                                                    </div>
+                                                                                </div>
+                                                                                
+                                                                            </xsl:for-each>
+                                                                        </div>
                                                                         
-                                                                        <xsl:otherwise>
-                                                                            
-                                                                            <div class="col-sm-2 text-right">
+                                                                    </div>
+                                                                </div>
+                                                                
+                                                                <!-- Buttons -->
+                                                                <div class="col-sm-4">
+                                                                    <div class="form-group">
+                                                                        
+                                                                        <label class="small sml-margin bottom">
+                                                                            <xsl:choose>
+                                                                                
+                                                                                <xsl:when test="$job-running">
+                                                                                    <span class="small text-danger">
+                                                                                        <i class="fa fa-exclamation-circle" aria-hidden="true"/>
+                                                                                        <xsl:value-of select="' Job running, please wait...'"/>
+                                                                                    </span>
+                                                                                </xsl:when>
+                                                                                
+                                                                                <xsl:when test="not($tm-unit/@id gt '')">
+                                                                                    <a href="#alert-ids-missing" class="small text-danger">
+                                                                                        <i class="fa fa-exclamation-circle" aria-hidden="true"/>
+                                                                                        <xsl:value-of select="' This unit has no unique id value and therefore cannot be updated'"/>
+                                                                                    </a>
+                                                                                </xsl:when>
+                                                                                
+                                                                            </xsl:choose>
+                                                                        </label>
+                                                                        
+                                                                        <div class="row">
+                                                                            <div class="col-sm-6 text-right">
                                                                                 
                                                                                 <xsl:if test="$tm-unit/@id gt ''">
                                                                                     <a role="button" class="btn btn-danger btn-sm">
@@ -533,18 +632,16 @@
                                                                                 
                                                                             </div>
                                                                             
-                                                                            <div class="col-sm-2 text-right">
+                                                                            <div class="col-sm-6 text-right">
                                                                                 
-                                                                                <button type="submit" class="btn btn-warning btn-sm">
+                                                                                <button type="submit" class="btn btn-primary btn-sm">
                                                                                     <xsl:value-of select="'Update'"/>
                                                                                 </button>
                                                                                 
                                                                             </div>
-                                                                            
-                                                                        </xsl:otherwise>
+                                                                        </div>
                                                                         
-                                                                    </xsl:choose>
-                                                                    
+                                                                    </div>
                                                                 </div>
                                                                 
                                                             </div>
@@ -561,6 +658,7 @@
                                     
                                 </xsl:when>
                                 
+                                <!-- No units -->
                                 <xsl:otherwise>
                                     
                                     <hr class="sml-margin"/>
@@ -574,6 +672,7 @@
                             
                         </xsl:when>
                         
+                        <!-- No TM -->
                         <xsl:otherwise>
                             
                             <hr/>

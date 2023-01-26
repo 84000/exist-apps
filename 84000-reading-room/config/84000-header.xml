@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <eft-header xmlns="http://read.84000.co/ns/1.0">
-    <!-- Updated 23.01.2023 -->
+    <!-- Updated 25.01.2023 -->
     <translation id="tag-line">
         <text xml:lang="en">Translating the words of the Buddha</text>
         <text xml:lang="zh">八萬四千 • 佛典傳譯</text>
@@ -198,7 +198,7 @@
                     }
                 </style>
                 <div class="nav-banner-content">
-                    <a href="https://campaigns.84000.co" target="_blank">The Perfection of Wisdom for All</a>—crowdfunding a further 10,000 pages of the Buddha's words into English
+                    Be inspired. Come together. Build a legacy. Join <a href="https://campaigns.84000.co" target="_blank">The Perfection of Wisdom for All</a>
                 </div>
             </div>
         </banner>

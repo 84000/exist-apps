@@ -64,6 +64,7 @@ declare function local:permanent-ids($doc) {
             | $doc//tei:text//tei:note
             | $doc//tei:text//tei:ref[@type = ('folio', 'volume')]
             | $doc//tei:text//tei:q[ancestor-or-self::*/@ref]
+            (:| $doc//tei:text//tei:q[descendant::tei:ptr[@type eq 'quote-ref'][@target]]:)
             | $doc//tei:div[@type="notes"]//tei:item
             | $doc//tei:div[@type='listBibl']//tei:bibl
             | $doc//tei:div[@type='glossary']//tei:gloss

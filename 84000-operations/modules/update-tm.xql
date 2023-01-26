@@ -17,8 +17,9 @@ declare namespace fn="http://www.w3.org/2005/xpath-functions";
 declare variable $update-tm:tm-path := concat($common:data-path, '/translation-memory');
 declare variable $update-tm:units-aligned-per-page := 100;
 declare variable $update-tm:blocking-jobs := scheduler:get-scheduled-jobs()//scheduler:job[@name = ('tm-maintenance')][not(scheduler:trigger/state/text() eq 'COMPLETE')];
+declare variable $update-tm:flags := ('requires-attention','alternative-source');
 
-declare function update-tm:update-unit($tmx as element(tmx:tmx), $unit-id as xs:string, $value-bo as xs:string?, $value-en as xs:string?, $location-id as xs:string) as element()? {
+declare function update-tm:update-unit($tmx as element(tmx:tmx), $unit-id as xs:string, $value-bo as xs:string?, $value-en as xs:string?, $location-id as xs:string, $flags as xs:string*) as element()? {
     
     let $tm-unit := $tmx/tmx:body/tmx:tu[@id eq $unit-id]
     let $value-bo-tokenized := tokenize($value-bo, '\n')
@@ -29,24 +30,21 @@ declare function update-tm:update-unit($tmx as element(tmx:tmx), $unit-id as xs:
         
             attribute id { $unit-id },
             
+            (: Preserve eft elements :)
             for $other in $tm-unit/eft:*
             return (
                 common:ws(3),
                 $other
             ),
             
-            for $prop in $tm-unit/tmx:prop[not(@name = ('location-id','revision','unmatched'))]
+            (: Preserve additional tmx:props :)
+            for $prop in $tm-unit/tmx:prop[not(@name = ('location-id','revision','unmatched', $update-tm:flags ))]
             return (
                 common:ws(3),
                 $prop
             ),
             
-            common:ws(3),
-            element { QName('http://www.lisa.org/tmx14', 'prop') }{
-                attribute name { 'revision' },
-                text { $tmx/tmx:header/@eft:text-version/string() }
-            },
-            
+            (: location-id :)
             if($location-id gt '') then (
                common:ws(3),
                element { QName('http://www.lisa.org/tmx14', 'prop') }{
@@ -56,6 +54,25 @@ declare function update-tm:update-unit($tmx as element(tmx:tmx), $unit-id as xs:
             )
             else()
             ,
+            
+            (: revision :)
+            common:ws(3),
+            element { QName('http://www.lisa.org/tmx14', 'prop') }{
+                attribute name { 'revision' },
+                text { $tmx/tmx:header/@eft:text-version/string() }
+            },
+            
+            (: flags :)
+            for $flag in $update-tm:flags
+            where $flag[. = $flags]
+            return (
+               common:ws(3),
+               element { QName('http://www.lisa.org/tmx14', 'prop') }{
+                   attribute name { $flag },
+                   attribute user { common:user-name() },
+                   attribute timestamp { current-dateTime() }
+               }
+            ),
             
             if($value-bo-tokenized[1]) then (
                 common:ws(3),
@@ -85,7 +102,7 @@ declare function update-tm:update-unit($tmx as element(tmx:tmx), $unit-id as xs:
         update replace $tm-unit with $new-unit
         ,
         
-        if(count($value-bo-tokenized) gt 1) then (
+        if(count($value-bo-tokenized) gt 1 or count($value-en-tokenized) gt 1) then (
             update-tm:add-unit($tmx, string-join(subsequence($value-bo-tokenized, 2), ''), string-join(subsequence($value-en-tokenized, 2), ''), $location-id, $tmx/tmx:body/tmx:tu[@id eq $unit-id], true())
         )
         else ()
@@ -330,8 +347,12 @@ declare function update-tm:apply-revisions($tei as element(tei:TEI), $tmx as ele
     (: Save new remainders :)
     let $add-remainders :=
         for $tm-unit-remainder in $apply-revisions[@remainder]
+        for $remainder-match in analyze-string($tm-unit-remainder, '(\{{2}[a-zA-Z0-9:-]+\}{2})?([^\{{2}]+)', 'i')/fn:match
+        let $remainder-en := normalize-space($remainder-match/fn:group[@nr eq '2']/text())
+        let $remainder-location := $remainder-match/fn:group[@nr eq '1']/text() ! replace(., '\{{2}([a-zA-Z]+):([a-zA-Z0-9\-]+)\}{2}', '$2', 'i')
+        where matches($remainder-en, '\p{L}+', 'i')
         return 
-            update-tm:add-unit($tmx, (), $tm-unit-remainder/text(), '', (), false())
+            update-tm:add-unit($tmx, (), $remainder-en, $remainder-location, (), false())
     
     let $end-time := util:system-dateTime()
     let $duration-seconds := functx:total-seconds-from-duration($end-time - $start-time)

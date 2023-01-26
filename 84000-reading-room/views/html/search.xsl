@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:m="http://read.84000.co/ns/1.0" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
     
     <xsl:import href="../../xslt/webpage.xsl"/>
     
@@ -177,7 +177,7 @@
                 </div>
             </main>
             
-            <!--<xsl:call-template name="dualview-popup"/>-->
+            <xsl:call-template name="dualview-popup"/>
             
         </xsl:variable>
         
@@ -568,7 +568,7 @@
                         
                         <xsl:sort select="@score ! xs:double(.)" order="descending"/>
                         
-                        <div class="search-result">
+                        <div class="search-result" id="search-result-{ @index }">
                             <div class="row">
                                 
                                 <div class="col-sm-6">
@@ -576,7 +576,7 @@
                                         <div class="col-sm-1 sml-margin top">
                                             
                                             <span class="text-muted">
-                                                <xsl:value-of select="concat(($request/@first-record ! xs:integer(.) - 1) + position(), '.')"/>
+                                                <xsl:value-of select="concat(@index, '.')"/>
                                             </span>
                                             
                                             <!--<br/>
@@ -627,13 +627,7 @@
                                         <xsl:choose>
                                             <xsl:when test="m:match/@location gt ''">
                                                 
-                                                <a>
-                                                    <xsl:attribute name="href" select="concat($reading-room-path, m:match/@location)"/>
-                                                    <xsl:attribute name="target" select="concat(m:tei/@resource-id, '.html')"/>
-                                                    <xsl:apply-templates select="m:tei/m:titles/m:title[@xml:lang eq 'en']"/>
-                                                </a>
-                                                
-                                                <!--<!-\- Dualview link -\->
+                                                <!-- Dualview link -->
                                                 <a>
                                                     <xsl:attribute name="href" select="concat($reading-room-path, m:match/@location)"/>
                                                     <xsl:attribute name="target" select="concat('translation-', m:tei/@resource-id)"/>
@@ -642,55 +636,82 @@
                                                     <xsl:apply-templates select="m:tei/m:titles/m:title[@xml:lang eq 'en']"/>
                                                 </a>
                                                 
-                                                <xsl:value-of select="' '"/>
-                                                
-                                                <!-\- New tab link -\->
-                                                <a>
-                                                    <xsl:attribute name="href" select="concat($reading-room-path, m:match/@location)"/>
-                                                    <xsl:attribute name="target" select="concat(m:tei/@resource-id, '.html')"/>
-                                                    <i class="fa fa-external-link"/>
-                                                </a>-->
-                                                
                                             </xsl:when>
                                             <xsl:otherwise>
                                                 <xsl:apply-templates select="m:tei/m:titles/m:title[@xml:lang eq 'en']"/>
                                             </xsl:otherwise>
                                         </xsl:choose>
                                         
-                                        <xsl:value-of select="' '"/>
+                                    </div>
+                                    
+                                    <ul class="list-inline">
                                         
                                         <xsl:choose>
                                             <xsl:when test="m:match/@type eq 'glossary-term'">
-                                                <span class="label label-default">
-                                                    <xsl:value-of select="'Glossary'"/>
-                                                </span>
+                                                <li>
+                                                    <span class="label label-default">
+                                                        <xsl:value-of select="'Glossary'"/>
+                                                    </span>
+                                                </li>
                                             </xsl:when>
                                             <xsl:when test="m:match/@type eq 'tm-unit'">
-                                                <span class="label label-default">
-                                                    <xsl:value-of select="'TM'"/>
-                                                </span>
+                                                <li>
+                                                    <span class="label label-default">
+                                                        <xsl:value-of select="'TM'"/>
+                                                    </span>
+                                                </li>
                                             </xsl:when>
                                         </xsl:choose>
                                         
                                         <xsl:if test="m:match/m:flag[@type eq 'machine-alignment']">
-                                            <span class="label label-default">
-                                                <xsl:value-of select="'Machine alignment'"/>
-                                            </span>
+                                            <li>
+                                                <span class="label label-default">
+                                                    <xsl:value-of select="'Machine alignment'"/>
+                                                </span>
+                                            </li>
                                         </xsl:if>
                                         
                                         <xsl:if test="m:match/m:flag[@type eq 'alternative-source']">
-                                            <span class="label label-default">
-                                                <xsl:value-of select="'Translated from a different source'"/>
-                                            </span>
+                                            <li>
+                                                <span class="label label-default">
+                                                    <xsl:value-of select="'Translated from a different source'"/>
+                                                </span>
+                                            </li>
                                         </xsl:if>
                                         
-                                        <xsl:if test="m:match/m:flag[not(@type = ('machine-alignment','alternative-source'))]">
-                                            <span class="label label-default">
-                                                <xsl:value-of select="m:match/m:flag/@type"/>
-                                            </span>
+                                        <xsl:if test="m:match/m:flag[not(@type = ('machine-alignment','alternative-source','requires-attention'))]">
+                                            <li>
+                                                <span class="label label-default">
+                                                    <xsl:value-of select="m:match/m:flag/@type"/>
+                                                </span>
+                                            </li>
                                         </xsl:if>
                                         
-                                    </div>
+                                        <!--<xsl:if test="/m:response[@tei-editor eq 'true'] and m:match[@type = ('tm-unit')][@type-id]">
+                                            <li>
+                                                <span>
+                                                    <xsl:choose>
+                                                        <xsl:when test="m:match/m:flag[@type eq 'requires-attention']">
+                                                            <xsl:attribute name="class" select="'label label-danger'"/>
+                                                            <xsl:value-of select="'Requires attention | '"/>
+                                                            <a>
+                                                                <xsl:attribute name="href" select="concat($base-url, '&amp;first-record=', $request/@first-record, '&amp;clear-flag=requires-attention', '&amp;flag-id=', m:match/@type-id, '#search-result-', @index )"/>
+                                                                <xsl:value-of select="'clear'"/>
+                                                            </a>
+                                                        </xsl:when>
+                                                        <xsl:otherwise>
+                                                            <xsl:attribute name="class" select="'small'"/>
+                                                            <a>
+                                                                <xsl:attribute name="href" select="concat($base-url, '&amp;first-record=', $request/@first-record, '&amp;set-flag=requires-attention', '&amp;flag-id=', m:match/@type-id, '#search-result-', @index )"/>
+                                                                <xsl:value-of select="'Flag as requiring attention'"/>
+                                                            </a>
+                                                        </xsl:otherwise>
+                                                    </xsl:choose>
+                                                </span>
+                                            </li>
+                                        </xsl:if>-->
+                                        
+                                    </ul>
                                     
                                     <xsl:if test="m:tei/m:publication/m:contributors/m:author[@role eq 'translatorEng'][text()]">
                                         <div class="translators text-muted small">
@@ -737,6 +758,8 @@
                     
                     </xsl:for-each>
                 </div>
+                
+                <hr class="sml-margin"/>
                 
                 <!-- Pagination -->
                 <xsl:sequence select="common:pagination($request/@first-record, $request/@max-records, m:results/@count-records, $base-url)"/>
