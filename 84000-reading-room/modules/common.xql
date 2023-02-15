@@ -169,11 +169,13 @@ declare function common:serialize-txt($txt){
 declare function common:html($xml as element(m:response), $view as xs:string, $cache-key as xs:string?) {
 
     try {
-    
-        let $html := transform:transform($xml, doc($view), <parameters/>)
+        
+        let $xslt := doc($view)
+        let $html := transform:transform($xml, $xslt, <parameters/>)
+        let $request-xml := $xml/descendant::m:request[1]
         let $cache := 
-            if($xml//m:request and $cache-key gt '') then
-                common:cache-put($xml//m:request[1], $html, $cache-key)
+            if($request-xml and $cache-key gt '') then
+                common:cache-put($request-xml, $html, $cache-key)
             else ()
         
         return 
@@ -989,12 +991,9 @@ declare function common:cache-put($request as element(m:request), $data, $cache-
     
         return (
             
-            util:log('info', concat('Cache: ', $cache-collection, '/', $cache-filename)),
-            
             (: Create the collection :)
             if(not(xmldb:collection-available($cache-collection))) then (
             
-                
                 let $cache-collection-no-parent := substring-after($cache-collection, concat($cache-collection-parent, '/'))
                 let $cache-collection-dirs := tokenize($cache-collection-no-parent, '/')
                 
@@ -1007,7 +1006,8 @@ declare function common:cache-put($request as element(m:request), $data, $cache-
                     (:string-join(($parent, $dir), '/'),:)
                     xmldb:create-collection($parent, $dir),
                     sm:chgrp(xs:anyURI(string-join(($parent, $dir), '/')), 'guest'),
-                    sm:chmod(xs:anyURI(string-join(($parent, $dir), '/')), 'rwxrwxrwx')
+                    sm:chmod(xs:anyURI(string-join(($parent, $dir), '/')), 'rwxrwxrwx'),
+                    util:log('info', concat('Cache created: ', $cache-collection, '/', $cache-filename))
                 )
                 
             )

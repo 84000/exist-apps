@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <eft-header xmlns="http://read.84000.co/ns/1.0">
-    <!-- Updated 25.01.2023 -->
+    <!-- Updated 15.02.2023 -->
     <translation id="tag-line">
         <text xml:lang="en">Translating the words of the Buddha</text>
         <text xml:lang="zh">八萬四千 • 佛典傳譯</text>
@@ -182,23 +182,32 @@
             </item>
         </item>
         <banner>
-            <div xmlns="http://www.w3.org/1999/xhtml" id="campaign-pp100k">
+            <div xmlns="http://www.w3.org/1999/xhtml" id="campaign-pp100k" class="nav-banner collapse persist">
                 <style>
-                    .nav-banner-content {
-                        background-image: url(https://static.wixstatic.com/media/196edd_d21016fb5c514a2d9b2293fbbe87e647~mv2.png);
+                    .reading-room #campaign-pp100k {
+                        display:none !important;
+                    }
+                    #campaign-pp100k {
+                        background-image: url(https://static.wixstatic.com/media/196edd_24259a87a80f4f5995b1e539b2eeee61~mv2.jpg);
                         background-repeat: no-repeat;
-                        background-position-x: 0;
-                        background-position-y: 24%;
-                        background-size: 22%;
+                        background-size: cover;
+                        background-position: center;
+                        border-bottom: 1px solid #5c3914;
+                    }
+                    #campaign-pp100k .campaign-content {
+                        text-align: center;
                         padding: 10px 0px 10px 0px;
-                        padding-left: 21%;
                         text-shadow: 0px 1px 3px rgb(0 0 0 / .65);
                         line-height: 1.5em;
-                        opacity: .85;
                     }
                 </style>
-                <div class="nav-banner-content">
-                    Be inspired. Come together. Build a legacy. Join <a href="https://campaigns.84000.co" target="_blank">The Perfection of Wisdom for All</a>
+                <div class="container">
+                    <div class="campaign-content">
+                        Be inspired. Come together. Build a legacy. Join <a href="https://campaigns.84000.co" target="_blank">The Perfection of Wisdom for All</a>
+                        <a href="#" class="btn-round close" data-collapse-persist="#campaign-pp100k">
+                            <i class="fa fa-times"/>
+                        </a>
+                    </div>
                 </div>
             </div>
         </banner>

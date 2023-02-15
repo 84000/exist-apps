@@ -3,7 +3,7 @@
     
     <!-- /db/apps/84000-data/translation-memory/ -->
     
-    <index xmlns:tmx="http://www.lisa.org/tmx14">
+    <index xmlns:eft="http://read.84000.co/ns/1.0" xmlns:tmx="http://www.lisa.org/tmx14">
         
         <lucene>
             
@@ -32,10 +32,15 @@
         <range>
             
             <!-- *.tmx -->
-            <create qname="tmx:prop" type="xs:string">
+            <!--<create qname="tmx:prop" type="xs:string">
                 <condition attribute="name" value="folio"/>
                 <field name="folio" type="xs:string" case="no"/>
-            </create>
+            </create>-->
+            
+            <create qname="@xml:lang" type="xs:string"/>
+            <create qname="@eft:text-id" type="xs:string"/>
+            <!--<create qname="@name" type="xs:string"/>
+            <create qname="tmx:prop" type="xs:string" case="no"/>-->
             
         </range>
         

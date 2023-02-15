@@ -384,14 +384,14 @@ declare function tests:part($section-tei as element()*, $section-html as element
         $section-html//xhtml:a[common:contains-class(@class, 'footnote-link')]
         
     let $section-tei-q := 
-        $section-tei//tei:q
+        $section-tei//tei:q[not(ancestor::tei:note)]
     let $section-html-q := 
         $section-html//xhtml:blockquote | $section-html//xhtml:span[common:contains-class(@class, ('quote'))]
     
     let $section-tei-id := 
-        $section-tei//*[@tid][not(ancestor::tei:note)]
+        $section-tei//*[@tid][not(ancestor::tei:note)]/@tid/string() ! concat('node-',.)
     let $section-html-id := 
-        $section-html//*[matches(@id, '^node\-')]
+        $section-html//*[matches(@id, '^node\-')]/@id/string()
     
     let $section-tei-list-item := 
         $section-tei//tei:list[not(ancestor::tei:note)]/tei:item

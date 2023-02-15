@@ -27,13 +27,12 @@ let $view-mode := request:get-parameter('view-mode', 'default')
 let $archive-path := request:get-parameter('archive-path', ())[matches(., '^[a-zA-Z0-9\-/_]{10,40}$')]
 
 (: Validate the resource-id :)
-let $tei-type := 'translation'
-let $tei := tei-content:tei($resource-id, $tei-type, $archive-path)
+let $tei := tei-content:tei($resource-id, 'translation', $archive-path)
 (: Get the Toh-key :)
 let $source := tei-content:source($tei, $resource-id)
 
 (: Validate the commentary key :)
-let $commentary-tei := $commentary-key ! tei-content:tei(., $tei-type)
+let $commentary-tei := $commentary-key ! tei-content:tei(., 'translation')
 let $commentary-tei := 
     if(not($commentary-tei) and $commentary-key) then
         collection($common:tei-path)/id($commentary-key)/ancestor::tei:TEI
@@ -102,6 +101,8 @@ return
     
     (: Compile response :)
     else
+    
+        let $text-id := tei-content:id($tei)
 
         let $canonical-id := (
         
@@ -125,7 +126,7 @@ return
         let $translation-data :=
             element { QName('http://read.84000.co/ns/1.0', 'translation')} {
             
-                attribute id { tei-content:id($tei) },
+                attribute id { $text-id },
                 attribute status { tei-content:translation-status($tei) },
                 attribute status-group { tei-content:translation-status-group($tei) },
                 attribute relative-html { translation:relative-html($source/@key, $canonical-id) },
@@ -144,10 +145,9 @@ return
         
         let $entities := translation:entities($source/m:attribution/@ref ! contributors:contributor-id(.), $parts[@id eq 'glossary']//tei:gloss/@xml:id)
         
-        let $quotes := translation:quotes($tei, $parts)
-        
         (: Get the cached outline of the text :)
-        let $outlines := translation:outline-cached($tei, $parts//tei:ptr/@target[matches(., '^#')] ! replace(., '^#(end\-note\-)?', ''))
+        let $outline := translation:outline-cached($tei)
+        let $outlines-related := translation:outlines-related($tei, $parts, $commentary-source/@key)
         
         (: Get glossary cache :)
         let $glossary-cache := glossary:glossary-cache($tei, (), false())
@@ -163,8 +163,8 @@ return
                     $request,
                     $translation-data,
                     $entities,
-                    $quotes,
-                    $outlines,
+                    $outline,
+                    $outlines-related,
                     $glossary-cache,
                     $entities:flags,
                     $strings

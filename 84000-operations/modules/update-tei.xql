@@ -855,7 +855,7 @@ declare function update-tei:cache-glossary($tei as element(tei:TEI), $glossary-i
         else
             $tei-glossary[@xml:id = $glossary-id]/@xml:id
     
-    let $log := util:log('info', concat('update-tei-cache-glossary-count:', count($refresh-locations)))
+    let $log := util:log('info', concat('update-tei-cache-glossary: ', format-number(count($refresh-locations), '#,###'), ' locations'))
     
     (: Process in chunks :)
     let $cache-glossary-chunks := local:cache-glossary-chunk($tei, $glossary-cache, $refresh-locations, 1)
@@ -895,7 +895,7 @@ declare function local:cache-glossary-chunk($tei as element(tei:TEI), $glossary-
             (: Save new cache :)
             return (
                 common:update('cache-glossary', $glossary-cache, $glossary-cache-new, $glossary-cache/parent::m:cache, ()),
-                util:log('info', concat('update-tei-cache-glossary-chunk:', $text-id, ' ', $chunk, '/', $chunks-count))
+                util:log('info', concat('update-tei-cache-glossary-chunk: ', $text-id, ' ', $chunk, '/', $chunks-count))
             )
             
         )

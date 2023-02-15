@@ -79,8 +79,8 @@ declare function local:root-html($resource-id as xs:string, $part-id as xs:strin
     let $tei := tei-content:tei($resource-id, 'translation')
     let $source := tei-content:source($tei, $resource-id)
     let $passage :=  translation:passage($tei, $part-id, $translation:view-modes/m:view-mode[@id eq 'passage'])
-    let $outline := translation:outline-cached($tei, ())
-    let $parts := translation:parts-cached($outline, $passage)
+    let $outline := translation:outline-cached($tei)
+    let $parts := translation:merge-parts($outline/m:pre-processed[@type eq 'parts'], $passage)
     
     let $translation-data :=
         element { QName('http://read.84000.co/ns/1.0', 'translation') } {
@@ -99,8 +99,8 @@ declare function local:root-html($resource-id as xs:string, $part-id as xs:strin
             $parts
             
         }
-        
-    let $quotes := translation:quotes($tei, $parts[@type eq "translation"]/m:part[@content-status = ('complete')])
+    
+    let $outlines-related := translation:outlines-related($tei, $parts, $commentary-key)
     
     let $glossary-cache := glossary:glossary-cache($tei, (), false())
     
@@ -113,7 +113,8 @@ declare function local:root-html($resource-id as xs:string, $part-id as xs:strin
             (
                 $request,
                 $translation-data,
-                $quotes,
+                $outline,
+                $outlines-related,
                 $glossary-cache,
                 $strings
             )

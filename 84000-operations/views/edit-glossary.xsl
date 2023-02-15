@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:output="http://www.w3.org/2010/xslt-xquery-serialization" xmlns:scheduler="http://exist-db.org/xquery/scheduler" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:ops="http://operations.84000.co" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:output="http://www.w3.org/2010/xslt-xquery-serialization" xmlns:scheduler="http://exist-db.org/xquery/scheduler" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:ops="http://operations.84000.co" xmlns:common="http://read.84000.co/common" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" version="3.0" exclude-result-prefixes="#all">
     
     <xsl:import href="../../84000-reading-room/xslt/tei-to-xhtml.xsl"/>
     <xsl:import href="common.xsl"/>
@@ -165,7 +165,7 @@
                                                             </xsl:call-template>
                                                         </xsl:attribute>
                                                         <xsl:attribute name="data-loading" select="'Loading...'"/>
-                                                        <xsl:value-of select="concat(count($cache-glosses-new-locations), ' changed')"/>
+                                                        <xsl:value-of select="concat(format-number(count($cache-glosses-new-locations), '#,###'), ' changed')"/>
                                                     </a>
                                                 </span>
                                             </xsl:if>
@@ -180,7 +180,7 @@
                                                                 </xsl:call-template>
                                                             </xsl:attribute>
                                                             <xsl:attribute name="data-loading" select="'Loading...'"/>
-                                                            <xsl:value-of select="concat(count($cache-glosses-behind), ' behind'(:, $text/@tei-version:))"/>
+                                                            <xsl:value-of select="concat(format-number(count($cache-glosses-behind), '#,###'), ' behind'(:, $text/@tei-version:))"/>
                                                         </a>
                                                     </span>
                                                 </xsl:when>
@@ -205,7 +205,7 @@
                                                             </xsl:call-template>
                                                         </xsl:attribute>
                                                         <xsl:attribute name="data-loading" select="'Loading...'"/>
-                                                        <xsl:value-of select="concat(count($glossary-cache/m:gloss[not(m:location)]), ' missing')"/>
+                                                        <xsl:value-of select="concat(format-number(count($glossary-cache/m:gloss[not(m:location)]), '#,###'), ' missing')"/>
                                                     </a>
                                                 </span>
                                             </xsl:if>
@@ -1956,23 +1956,45 @@
         
         <div class="item tei-parser editor-mode rw-full-width { $cache-location-status }">
             
-            <xsl:choose>
-                <xsl:when test="$cache-location-status eq 'missing'">
-                    <div class="text-danger underline small sml-margin bottom">
-                        <xsl:value-of select="'Location not cached'"/>
-                    </div>
-                </xsl:when>
-                <xsl:when test="$cache-location-status eq 'updated'">
-                    <div class="text-success underline small sml-margin bottom">
-                        <xsl:value-of select="concat('Newly cached in ', $text/@tei-version)"/>
-                    </div>
-                </xsl:when>
-                <xsl:when test="$cache-location-status eq 'behind'">
-                    <div class="text-warning underline small sml-margin bottom">
-                        <xsl:value-of select="concat('Cached in ', ($glossary-cache-gloss/@tei-version, 'previous version')[1])"/>
-                    </div>
-                </xsl:when>
-            </xsl:choose>
+            <ul class="list-inline inline-dots sml-margin bottom small">
+                
+                <xsl:choose>
+                    <xsl:when test="$cache-location-status eq 'missing'">
+                        <li>
+                            <span class="text-danger underline">
+                                <xsl:value-of select="'Location not cached'"/>
+                            </span>
+                        </li>
+                    </xsl:when>
+                    <xsl:when test="$cache-location-status eq 'updated'">
+                        <li>
+                            <span class="text-success underline">
+                                <xsl:value-of select="concat('Newly cached in ', $text/@tei-version)"/>
+                            </span>
+                        </li>
+                    </xsl:when>
+                    <xsl:when test="$cache-location-status eq 'behind'">
+                        <li>
+                            <div class="text-warning underline">
+                                <xsl:value-of select="concat('Cached in ', ($glossary-cache-gloss/@tei-version, 'previous version')[1])"/>
+                            </div>
+                        </li>
+                    </xsl:when>
+                </xsl:choose>
+                
+                <xsl:if test="m:preceding-bookmark[xhtml:*]">
+                    <li>
+                        <xsl:apply-templates select="m:preceding-bookmark/xhtml:*"/>
+                    </li>
+                </xsl:if>
+                
+                <xsl:if test="m:preceding-ref[xhtml:*]">
+                    <li>
+                        <xsl:apply-templates select="m:preceding-ref/xhtml:*"/>
+                    </li>
+                </xsl:if>
+                
+            </ul>
             
             <div class="small clearfix">
                 <xsl:apply-templates select="xhtml:*"/>
@@ -1982,6 +2004,7 @@
         
     </xsl:template>
     
+    
     <!-- Copy xhtml nodes -->
     <xsl:template match="xhtml:*">
         
@@ -1989,37 +2012,13 @@
         
         <xsl:choose>
             
-            <!-- Special case for the first element in the first div of a location -->
-            <xsl:when test="$node[parent::xhtml:div[parent::m:location[xhtml:div[1][xhtml:*[1] = $node]]]]">
-                <xsl:choose>
-                    
-                    <!-- It's a .gtr -> add a ref -->
-                    <xsl:when test="$node[contains(@class, 'gtr')]">
-                        <xsl:copy>
-                            <xsl:copy-of select="$node/@*"/>
-                            <xsl:apply-templates select="$node/node()"/>
-                            <xsl:apply-templates select="$node/parent::xhtml:div/parent::m:location/m:preceding-ref/xhtml:*"/>
-                        </xsl:copy>
-                    </xsl:when>
-                    
-                    <!-- It's the first node but not a .gtr -> so add .gtr with ref -->
-                    <xsl:otherwise>
-                        
-                        <div>
-                            <xsl:attribute name="class" select="'gtr'"/>
-                            <xsl:apply-templates select="$node/parent::xhtml:div/parent::m:location/m:preceding-bookmark/xhtml:*"/>
-                            <xsl:apply-templates select="$node/parent::xhtml:div/parent::m:location/m:preceding-ref/xhtml:*"/>
-                        </div>
-                        
-                        <xsl:copy>
-                            <xsl:copy-of select="$node/@*"/>
-                            <xsl:apply-templates select="$node/node()"/>
-                        </xsl:copy>
-                        
-                    </xsl:otherwise>
-                    
-                </xsl:choose>
-                
+            <xsl:when test="$node[contains(@class, 'gtr')]">
+                <!-- Skip -->
+            </xsl:when>
+            
+            <!-- Don't copy, just pass down -->
+            <xsl:when test="$node[self::xhtml:div]">
+                <xsl:apply-templates select="$node/node()"/>
             </xsl:when>
             
             <!-- Copy xhtml:* by default -->
@@ -2044,7 +2043,12 @@
             
             <xsl:copy-of select="@*[not(name(.) = ('href', 'class', 'data-bookmark', 'target', 'title'))]"/>
             
+            <xsl:variable name="link-href-tokenized" select="tokenize($link/@href, '#')"/>
+            <xsl:variable name="link-href-query" select="$link-href-tokenized[1]"/>
+            <xsl:variable name="link-href-hash" select="if(count($link-href-tokenized) gt 1) then concat('#', $link-href-tokenized[last()]) else ()"/>
+            
             <xsl:attribute name="href">
+                
                 <xsl:choose>
                     <xsl:when test="$link[@data-glossary-id]">
                         <xsl:call-template name="link-href">
@@ -2052,21 +2056,19 @@
                         </xsl:call-template>
                     </xsl:when>
                     <xsl:when test="$link[@data-bookmark]">
-                        <xsl:value-of select="concat($reading-room-path, '/', $request-resource-type, '/', $request-resource-id, '.html?view-mode=editor', $link/@href)"/>
+                        <xsl:value-of select="concat($reading-room-path, '/', $request-resource-type, '/', $request-resource-id, '.html?view-mode=editor', $link-href-hash)"/>
                     </xsl:when>
                     <xsl:when test="$link[@data-pointer-type eq 'id']">
-                        <xsl:value-of select="concat($reading-room-path, '/', $request-resource-type, '/', $request-resource-id, '.html?view-mode=editor', $link/@href)"/>
+                        <xsl:value-of select="concat($reading-room-path, '/', $request-resource-type, '/', $request-resource-id, '.html?view-mode=editor', $link-href-hash)"/>
                     </xsl:when>
                     <xsl:when test="$link[@data-ref]">
-                        <xsl:variable name="link-href-tokenized" select="tokenize($link/@href, '#')"/>
-                        <xsl:variable name="link-href-query" select="$link-href-tokenized[1]"/>
-                        <xsl:variable name="link-href-hash" select="if(count($link-href-tokenized) gt 1) then concat('#', $link-href-tokenized[last()]) else ()"/>
                         <xsl:value-of select="concat($reading-room-path, $link-href-query, if(contains($link-href-query, '?')) then '&amp;' else '?', 'highlight=', string-join($glossary-entry/m:term[@xml:lang eq 'bo'], ','), $link-href-hash)"/>
                     </xsl:when>
                     <xsl:otherwise>
                         <xsl:value-of select="$link/@href"/>
                     </xsl:otherwise>
                 </xsl:choose>
+                
             </xsl:attribute>
             
             <xsl:attribute name="class">
@@ -2099,13 +2101,27 @@
             </xsl:attribute>
             
             <xsl:choose>
-                <xsl:when test="$link[@data-dualview-href]">
+                <xsl:when test="$link[@data-ref][@data-dualview-href]">
+                    
+                    <xsl:variable name="link-href-tokenized" select="tokenize($link/@data-dualview-href, '#')"/>
+                    <xsl:variable name="link-href-query" select="$link-href-tokenized[1]"/>
+                    <xsl:variable name="link-href-hash" select="if(count($link-href-tokenized) gt 1) then concat('#', $link-href-tokenized[last()]) else ()"/>
+                    
                     <xsl:attribute name="data-dualview-href">
-                        <xsl:variable name="link-href-tokenized" select="tokenize($link/@data-dualview-href, '#')"/>
-                        <xsl:variable name="link-href-query" select="$link-href-tokenized[1]"/>
-                        <xsl:variable name="link-href-hash" select="if(count($link-href-tokenized) gt 1) then concat('#', $link-href-tokenized[last()]) else ()"/>
                         <xsl:value-of select="concat($reading-room-path, $link-href-query, if(contains($link-href-query, '?')) then '&amp;' else '?', 'highlight=', string-join($glossary-entry/m:term[@xml:lang eq 'bo'], ','), $link-href-hash)"/>
                     </xsl:attribute>
+                    
+                </xsl:when>
+                <xsl:when test="$link[@data-bookmark]">
+                    
+                    <xsl:attribute name="data-dualview-href">
+                        <xsl:value-of select="concat($reading-room-path, '/', $request-resource-type, '/', $request-resource-id, '.html', $link-href-hash)"/>
+                    </xsl:attribute>
+                    
+                    <xsl:attribute name="data-dualview-title">
+                        <xsl:value-of select="$text/m:toh/m:full/data()"/>
+                    </xsl:attribute>
+                    
                 </xsl:when>
             </xsl:choose>
             

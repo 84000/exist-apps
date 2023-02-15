@@ -14,28 +14,6 @@ declare namespace tei="http://www.tei-c.org/ns/1.0";
 
 declare option exist:serialize "method=xml indent=no";
 
-declare function local:update-project($text-id as xs:string) as element()* {
-    
-    let $parent := $sponsorship:data/m:sponsorship
-    
-    let $existing-value := $parent/m:project[@id eq request:get-parameter('sponsorship-project-id', '')]
-    
-    let $new-value := sponsorship:project-posted($text-id)
-        
-        where $parent and ($existing-value or $new-value)
-    return
-        (: Do the update :)
-        common:update('update-project', $existing-value, $new-value, $parent, ())
-        (:(
-            element update-debug {
-                element existing-value { $existing-value }, 
-                element new-value { $new-value }, 
-                element parent { $parent }
-            }
-        ):)
-
-};
-
 (: Request parameters :)
 let $resource-suffix := request:get-parameter('resource-suffix', '')
 let $request-id := request:get-parameter('id', '') (: in get :)
@@ -63,16 +41,13 @@ let $updated :=
         update-tei:title-statement($tei), 
         
         (: Update sponsorship :)
-        (
-        
-            let $parent := $sponsorship:data/m:sponsorship
-            let $existing-value := $parent/m:project[@id eq request:get-parameter('sponsorship-project-id', '')]
-            let $new-value := sponsorship:project-posted($text-id)
-            where $parent and ($existing-value or $new-value)
-            return
-                common:update('update-project', $existing-value, $new-value, $parent, ())
-                
-        )
+        let $parent := $sponsorship:data/m:sponsorship
+        let $existing-value := $parent/m:project[@id eq request:get-parameter('sponsorship-project-id', '')]
+        let $new-value := sponsorship:project-posted($text-id)
+        where $parent and ($existing-value or $new-value)
+        return
+            common:update('update-project', $existing-value, $new-value, $parent, ())
+            
      )
      else ()
 

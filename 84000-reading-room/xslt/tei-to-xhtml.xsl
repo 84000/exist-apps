@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:epub="http://www.idpf.org/2007/ops" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:functx="http://www.functx.com" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:common="http://read.84000.co/common" xmlns:epub="http://www.idpf.org/2007/ops" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:functx="http://www.functx.com" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" version="3.0" exclude-result-prefixes="#all">
     
     <!-- Transforms tei to xhtml -->
     
@@ -29,12 +29,12 @@
     <xsl:key name="end-notes-pre-processed" match="m:pre-processed[@type eq 'end-notes']/m:end-note" use="@id"/>
     <xsl:key name="milestones-pre-processed" match="m:pre-processed[@type eq 'milestones']/m:milestone" use="@id"/>
     <xsl:key name="glossary-pre-processed" match="m:pre-processed[@type eq 'glossary']/m:gloss" use="@id"/>
+    <xsl:key name="quotes-outbound" match="m:pre-processed[@type eq 'quotes'][@text-id eq $translation/@id]/m:quote" use="@id"/>
+    <xsl:key name="quotes-inbound" match="m:pre-processed[@type eq 'quotes'][@text-id ne $translation/@id]/m:quote" use="m:source/@location-id"/>
     <xsl:key name="entity-instance" match="m:entities/m:entity/m:instance" use="@id"/>
     <xsl:key name="related-entries" match="m:entities/m:related/m:text/m:entry" use="@id"/>
     <xsl:key name="related-pages" match="m:entities/m:related/m:page" use="@xml:id"/>
     <xsl:key name="related-entities" match="m:entities/m:related/m:entity" use="@xml:id"/>
-    <xsl:key name="quotes-outbound" match="m:quotes/m:quote[@resource-id eq $toh-key]" use="@id"/>
-    <xsl:key name="quotes-inbound" match="m:quotes/m:quote[m:source/@resource-id eq $toh-key]" use="m:source/@location-id"/>
     
     <!-- Pre-sort the glossaries by priority -->
     <xsl:variable name="glossary-prioritised" as="element(tei:gloss)*">
@@ -306,7 +306,7 @@
             <xsl:when test="$ref[@cRef]">
                 
                 <!-- Set the index -->
-                <xsl:variable name="index" select="if($ref[@xml:id]) then key('folio-refs-pre-processed', $ref/@xml:id, $root)[1]/@index-in-resource else ()"/>
+                <xsl:variable name="ref-index" select="if($ref[@xml:id]) then key('folio-refs-pre-processed', $ref/@xml:id, $root)[1]/@index-in-resource else ()"/>
 
                 <xsl:choose>
                     
@@ -318,19 +318,19 @@
                     </xsl:when>
                     
                     <!-- Check for index -->
-                    <xsl:when test="$index and $toh-key">
+                    <xsl:when test="$ref-index and $toh-key">
                         <xsl:choose>
                             
                             <!-- If it's html then add a link -->
                             <xsl:when test="$view-mode[not(@client = ('ebook', 'app'))]">
                                 
-                                <a class="ref log-click">
+                                <a class="ref folio-ref log-click">
                                     <!-- define an anchor so we can link back to this point -->
                                     <xsl:attribute name="id" select="$ref/@xml:id"/>
-                                    <xsl:attribute name="href" select="concat('/source/', $toh-key, '.html?ref-index=', $index)"/>
+                                    <xsl:attribute name="href" select="concat('/source/', $toh-key, '.html?ref-index=', $ref-index)"/>
                                     <xsl:attribute name="data-ref" select="$ref/@cRef"/>
                                     <xsl:attribute name="target" select="concat('source-', $toh-key)"/>
-                                    <xsl:attribute name="data-dualview-href" select="concat('/source/', $toh-key, '.html?ref-index=', $index)"/>
+                                    <xsl:attribute name="data-dualview-href" select="concat('/source/', $toh-key, '.html?ref-index=', $ref-index)"/>
                                     <xsl:attribute name="data-dualview-title" select="concat($translation/m:source/m:toh, ' (source text)')"/>
                                     <xsl:attribute name="data-loading" select="concat('Loading ', $translation/m:source/m:toh, '...')"/>
                                     <xsl:value-of select="concat('[', $ref/@cRef, ']')"/>
@@ -341,7 +341,7 @@
                             <xsl:otherwise>
                                 
                                 <span class="ref">
-                                    <xsl:attribute name="data-href" select="concat('/source/', $toh-key, '.html?ref-index=', $index)"/>
+                                    <xsl:attribute name="data-href" select="concat('/source/', $toh-key, '.html?ref-index=', $ref-index)"/>
                                     <xsl:value-of select="concat('[', $ref/@cRef, ']')"/>
                                 </span>
                                 
@@ -401,6 +401,247 @@
         <br/>
     </xsl:template>
     
+    <!-- Inline quote-->
+    <xsl:template match="tei:q[parent::tei:p | parent::tei:l]">
+        
+        <xsl:variable name="element" select="."/>
+        
+        <!-- Outbound quotes -->
+        <xsl:variable name="quotes-outbound" as="element(m:quote)?">
+            <xsl:variable name="quote-ref" select="$element/descendant::tei:ptr[@type eq 'quote-ref'][@xml:id][@target][1]" as="element(tei:ptr)?"/>
+            <xsl:if test="$quote-ref">
+                <xsl:variable name="quote-ref-targets" select="$quote-ref/@target ! replace(., '^#', '')"/>
+                <xsl:sequence select="key('quotes-outbound', $quote-ref/@xml:id, $root)"/>
+            </xsl:if>
+        </xsl:variable>
+        
+        <span>
+            
+            <xsl:call-template name="id-attribute">
+                <xsl:with-param name="node" select="$element"/>
+            </xsl:call-template>
+            
+            <xsl:call-template name="class-attribute">
+                <xsl:with-param name="base-classes">
+                    <xsl:value-of select="'quote'"/>
+                </xsl:with-param>
+            </xsl:call-template>
+            
+            <!-- Output the content, filtering out the ref prologue -->
+            <xsl:call-template name="parse-content">
+                <xsl:with-param name="node" select="$element"/>
+            </xsl:call-template>
+            
+        </span>
+        
+        <xsl:for-each select="$quotes-outbound">
+            
+            <span id="{ @id }">
+                <xsl:call-template name="quote-link">
+                    <xsl:with-param name="quote" select="."/>
+                </xsl:call-template>
+            </span>
+            
+            <xsl:value-of select="' '"/>
+            
+        </xsl:for-each>
+        
+    </xsl:template>
+    
+    <!-- Elements that may have a milestone -->
+    <xsl:template match="tei:p | tei:ab | tei:trailer | tei:bibl | tei:lg | tei:q">
+        
+        <xsl:variable name="element" select="."/>
+        
+        <!-- Output the ref prologue -->
+        <xsl:if test="$ref-prologue-container and count($element | $ref-prologue-container) eq count($element)">
+            <div class="rw rw-first rw-paragraph">
+                <p class="ref-prologue">
+                    <xsl:apply-templates select="$ref-prologue"/>
+                </p>
+            </div>
+            <br/>
+        </xsl:if>
+        
+        <!-- Output the milestone -->
+        <xsl:call-template name="milestone">
+            
+            <xsl:with-param name="content">
+                <xsl:element name="{ if($element/self::tei:lg) then 'div' else if($element/self::tei:q) then 'blockquote' else 'p' }" namespace="http://www.w3.org/1999/xhtml">
+                    
+                    <!-- id -->
+                    <xsl:call-template name="id-attribute">
+                        <xsl:with-param name="node" select="$element"/>
+                    </xsl:call-template>
+                    
+                    <!-- Outbound quote links -->
+                    <xsl:variable name="quote-refs" as="element(tei:ptr)*">
+                        <xsl:if test="$element[not(tei:l)]/parent::tei:q[descendant::tei:ptr[@type eq 'quote-ref'][@xml:id][@target]] and not($element/following-sibling::tei:*[not(self::tei:orig)])">
+                            <xsl:sequence select="$element/parent::tei:q/descendant::tei:ptr[@type eq 'quote-ref'][@xml:id][@target]"/>
+                        </xsl:if>
+                    </xsl:variable>
+                    <xsl:variable name="quotes-outbound" as="element(m:quote)*">
+                        <xsl:if test="$quote-refs">
+                            <xsl:variable name="quote-ref-targets" select="$quote-refs/@target ! replace(., '^#', '')"/>
+                            <xsl:sequence select="key('quotes-outbound', $quote-refs/@xml:id, $root)"/>
+                        </xsl:if>
+                    </xsl:variable>
+                    
+                    <!-- class -->
+                    <xsl:call-template name="class-attribute">
+                        
+                        <xsl:with-param name="base-classes" as="xs:string*">
+                            
+                            <xsl:if test="($element/@rend, $element/@type) = 'mantra'">
+                                <xsl:value-of select="'mantra'"/>
+                            </xsl:if>
+                            
+                            <xsl:if test="$element/@type = ('sdom', 'bar_sdom', 'spyi_sdom')">
+                                <xsl:value-of select="'italic'"/>
+                            </xsl:if>
+                            
+                            <xsl:choose>
+                                <xsl:when test="$element/self::tei:trailer">
+                                    <xsl:value-of select="'trailer'"/>
+                                </xsl:when>
+                                <xsl:when test="$element/self::tei:bibl">
+                                    <xsl:value-of select="'bibl'"/>
+                                </xsl:when>
+                                <xsl:when test="$element/self::tei:lg">
+                                    <xsl:value-of select="'line-group'"/>
+                                </xsl:when>
+                                <xsl:when test="$element/self::tei:q">
+                                    <xsl:value-of select="'quote'"/>
+                                </xsl:when>
+                            </xsl:choose>
+                            
+                        </xsl:with-param>
+                        
+                        <xsl:with-param name="html-classes">
+                            <!-- If this is a blockquote with a ptr, or it's a paragraph with a quote, then it's a quote container -->
+                            <xsl:if test="$element[self::tei:q]/descendant::tei:ptr[@type eq 'quote-ref'][@xml:id][@target] or $element[tei:q/tei:ptr[@type eq 'quote-ref'][@xml:id][@target]]">
+                                <xsl:value-of select="'quote-container'"/>
+                            </xsl:if>
+                        </xsl:with-param>
+                        
+                    </xsl:call-template>
+                    
+                    <!-- Output the content, filtering out the ref prologue -->
+                    <xsl:call-template name="parse-content">
+                        <xsl:with-param name="node" select="$element"/>
+                    </xsl:call-template>
+                    
+                    <!-- Output quote links -->
+                    <xsl:for-each select="$quotes-outbound">
+                        
+                        <xsl:value-of select="' '"/>
+                        
+                        <span id="{ @id }">
+                            <xsl:call-template name="quote-link">
+                                <xsl:with-param name="quote" select="."/>
+                            </xsl:call-template>
+                        </span>
+                        
+                    </xsl:for-each>
+                    
+                    <!-- Add link to tei editor -->
+                    <xsl:call-template name="tei-editor">
+                        <xsl:with-param name="node" select="$element"/>
+                    </xsl:call-template>
+                    
+                </xsl:element>
+            </xsl:with-param>
+            
+            <xsl:with-param name="row-type">
+                <xsl:choose>
+                    <xsl:when test="($element/@rend, $element/@type) = 'mantra'">
+                        <xsl:value-of select="'mantra'"/>
+                    </xsl:when>
+                    <xsl:when test="$element/self::tei:trailer">
+                        <xsl:value-of select="'trailer'"/>
+                    </xsl:when>
+                    <xsl:when test="$element/self::tei:lg">
+                        <xsl:value-of select="'line-group'"/>
+                    </xsl:when>
+                    <xsl:when test="$element/self::tei:q">
+                        <xsl:value-of select="'blockquote'"/>
+                    </xsl:when>
+                    <xsl:otherwise>
+                        <xsl:value-of select="'paragraph'"/>
+                    </xsl:otherwise>
+                </xsl:choose>
+            </xsl:with-param>
+                        
+        </xsl:call-template>
+    
+    </xsl:template>
+    
+    <xsl:template match="tei:l">
+        
+        <xsl:variable name="element" select="."/>
+        
+        <xsl:call-template name="milestone">
+            <xsl:with-param name="content">
+                <div>
+                    
+                    <!-- Outbound quote link -->
+                    <xsl:variable name="quote-refs" as="element(tei:ptr)*">
+                        <xsl:if test="$element/ancestor::tei:q[descendant::tei:ptr[@type eq 'quote-ref'][@xml:id][@target]] and not($element/following-sibling::tei:l)">
+                            <xsl:sequence select="$element/ancestor::tei:q/descendant::tei:ptr[@type eq 'quote-ref'][@xml:id][@target]"/>
+                        </xsl:if>
+                    </xsl:variable>
+                    <xsl:variable name="quotes-outbound" as="element(m:quote)*">
+                        <xsl:if test="$quote-refs">
+                            <xsl:variable name="quote-ref-targets" select="$quote-refs/@target ! replace(., '^#', '')"/>
+                            <xsl:sequence select="key('quotes-outbound', $quote-refs/@xml:id, $root)"/>
+                        </xsl:if>
+                    </xsl:variable>
+                    
+                    <xsl:call-template name="class-attribute">
+                        
+                        <xsl:with-param name="base-classes" as="xs:string*">
+                            <xsl:value-of select="'line'"/>
+                            <xsl:if test="$element/parent::tei:mantra">
+                                <xsl:value-of select="'mantra'"/>
+                            </xsl:if>
+                        </xsl:with-param>
+                        
+                        <xsl:with-param name="lang" select="$element/parent::tei:mantra/@xml:lang"/>
+                        
+                    </xsl:call-template>
+                    
+                    <!-- Output the content, filtering out the ref prologue -->
+                    <xsl:call-template name="parse-content">
+                        <xsl:with-param name="node" select="$element"/>
+                    </xsl:call-template>
+                    
+                    <!-- Output quote links -->
+                    <xsl:for-each select="$quotes-outbound">
+                        
+                        <xsl:value-of select="' '"/>
+                        
+                        <span id="{ @id }">
+                            <xsl:call-template name="quote-link">
+                                <xsl:with-param name="quote" select="."/>
+                            </xsl:call-template>
+                        </span>
+                        
+                    </xsl:for-each>
+                    
+                </div>
+            </xsl:with-param>
+            <xsl:with-param name="row-type" select="'line'"/>
+        </xsl:call-template>
+        
+    </xsl:template>
+    
+    <xsl:template match="tei:orig">
+        <!-- Don't output orig -->
+    </xsl:template>
+    
+    <xsl:template match="tei:ptr[@type eq 'quote-ref']">
+        <!-- Don't output quote refs -->
+    </xsl:template>
     <xsl:template match="tei:ptr">
         <a>
             
@@ -493,236 +734,6 @@
             </xsl:choose>
             
         </a>
-    </xsl:template>
-    
-    <!-- Inline quote-->
-    <xsl:template match="tei:q[parent::tei:p | parent::tei:l]">
-        
-        <xsl:variable name="element" select="."/>
-        
-        <!-- Outbound quotes -->
-        <xsl:variable name="quotes-outbound" as="element(m:quote)?">
-            <xsl:if test="$element[@xml:id][ancestor-or-self::*/@ref]">
-                <xsl:sequence select="key('quotes-outbound', $element/@xml:id, $root)[m:source/@location-id eq $element/ancestor-or-self::*[@ref][1]/@ref]"/>
-            </xsl:if>
-        </xsl:variable>
-        
-        <span>
-            
-            <xsl:call-template name="id-attribute">
-                <xsl:with-param name="node" select="$element"/>
-            </xsl:call-template>
-            
-            <xsl:call-template name="class-attribute">
-                <xsl:with-param name="base-classes">
-                    <xsl:value-of select="'quote'"/>
-                </xsl:with-param>
-            </xsl:call-template>
-            
-            <!-- Output the content, filtering out the ref prologue -->
-            <xsl:call-template name="parse-content">
-                <xsl:with-param name="node" select="$element"/>
-            </xsl:call-template>
-            
-        </span>
-        
-        <xsl:for-each select="$quotes-outbound">
-            
-            <xsl:call-template name="quote-link">
-                <xsl:with-param name="quote" select="."/>
-            </xsl:call-template>
-            
-            <xsl:value-of select="' '"/>
-            
-        </xsl:for-each>
-        
-    </xsl:template>
-    
-    <!-- Elements that may have a milestone -->
-    <xsl:template match="tei:p | tei:ab | tei:trailer | tei:bibl | tei:lg | tei:q">
-        
-        <xsl:variable name="element" select="."/>
-        
-        <!-- Output the ref prologue -->
-        <xsl:if test="$ref-prologue-container and count($element | $ref-prologue-container) eq count($element)">
-            <div class="rw rw-first rw-paragraph">
-                <p class="ref-prologue">
-                    <xsl:apply-templates select="$ref-prologue"/>
-                </p>
-            </div>
-            <br/>
-        </xsl:if>
-        
-        <!-- Output the milestone -->
-        <xsl:call-template name="milestone">
-            
-            <xsl:with-param name="content">
-                <xsl:element name="{ if($element/self::tei:lg) then 'div' else if($element/self::tei:q) then 'blockquote' else 'p' }" namespace="http://www.w3.org/1999/xhtml">
-                    
-                    <!-- id -->
-                    <xsl:call-template name="id-attribute">
-                        <xsl:with-param name="node" select="$element"/>
-                    </xsl:call-template>
-                    
-                    <!-- Outbound quote link -->
-                    <xsl:variable name="quotes-outbound" as="element(m:quote)*">
-                        <xsl:choose>
-                            <!-- quote elements -->
-                            <xsl:when test="$element[self::tei:q][@xml:id][ancestor-or-self::*/@ref gt '']">
-                                <xsl:sequence select="key('quotes-outbound', $element/@xml:id, $root)[m:source/@location-id eq $element/ancestor-or-self::*[@ref][1]/@ref]"/>
-                            </xsl:when>
-                            <!-- elements containing quotes -->
-                            <xsl:when test="$element/tei:q[@xml:id][parent::tei:p | parent::tei:l][ancestor-or-self::*/@ref gt '']">
-                                <xsl:sequence select="key('quotes-outbound', $element/tei:q/@xml:id, $root)[m:source/@location-id eq $element/tei:q/ancestor-or-self::*[@ref][1]/@ref]"/>
-                            </xsl:when>
-                            <!-- elements in quotes (must be the last one - accounting for hidden elements) -->
-                            <xsl:when test="$element[not(tei:l)]/parent::tei:q[@xml:id][ancestor-or-self::*/@ref gt ''] and not($element/following-sibling::tei:*[not(self::tei:orig)])">
-                                <xsl:sequence select="key('quotes-outbound', $element/ancestor::tei:q[@xml:id][1]/@xml:id, $root)[m:source/@location-id eq $element/ancestor-or-self::*[@ref][1]/@ref]"/>
-                            </xsl:when>
-                        </xsl:choose>
-                    </xsl:variable>
-                    
-                    <!-- class -->
-                    <xsl:call-template name="class-attribute">
-                        
-                        <xsl:with-param name="base-classes" as="xs:string*">
-                            
-                            <xsl:if test="($element/@rend, $element/@type) = 'mantra'">
-                                <xsl:value-of select="'mantra'"/>
-                            </xsl:if>
-                            
-                            <xsl:if test="$element/@type = ('sdom', 'bar_sdom', 'spyi_sdom')">
-                                <xsl:value-of select="'italic'"/>
-                            </xsl:if>
-                            
-                            <xsl:choose>
-                                <xsl:when test="$element/self::tei:trailer">
-                                    <xsl:value-of select="'trailer'"/>
-                                </xsl:when>
-                                <xsl:when test="$element/self::tei:bibl">
-                                    <xsl:value-of select="'bibl'"/>
-                                </xsl:when>
-                                <xsl:when test="$element/self::tei:lg">
-                                    <xsl:value-of select="'line-group'"/>
-                                </xsl:when>
-                                <xsl:when test="$element/self::tei:q[@xml:id][@ref gt '']">
-                                    <xsl:value-of select="'quote'"/>
-                                </xsl:when>
-                            </xsl:choose>
-                            
-                        </xsl:with-param>
-                        
-                        <xsl:with-param name="html-classes">
-                            <xsl:if test="$quotes-outbound and $element/descendant-or-self::tei:q">
-                                <xsl:value-of select="'quote-container'"/>
-                            </xsl:if>
-                        </xsl:with-param>
-                        
-                    </xsl:call-template>
-                    
-                    <!-- Output the content, filtering out the ref prologue -->
-                    <xsl:call-template name="parse-content">
-                        <xsl:with-param name="node" select="$element"/>
-                    </xsl:call-template>
-                    
-                    <!-- Output quote links -->
-                    <xsl:if test="$quotes-outbound and $element[not(descendant-or-self::tei:q)]">
-                        <xsl:for-each select="$quotes-outbound">
-                            
-                            <xsl:value-of select="' '"/>
-                            
-                            <xsl:call-template name="quote-link">
-                                <xsl:with-param name="quote" select="."/>
-                            </xsl:call-template>
-                            
-                        </xsl:for-each>
-                    </xsl:if>
-                    
-                    <!-- Add link to tei editor -->
-                    <xsl:call-template name="tei-editor">
-                        <xsl:with-param name="node" select="$element"/>
-                    </xsl:call-template>
-                    
-                </xsl:element>
-            </xsl:with-param>
-            
-            <xsl:with-param name="row-type">
-                <xsl:choose>
-                    <xsl:when test="($element/@rend, $element/@type) = 'mantra'">
-                        <xsl:value-of select="'mantra'"/>
-                    </xsl:when>
-                    <xsl:when test="$element/self::tei:trailer">
-                        <xsl:value-of select="'trailer'"/>
-                    </xsl:when>
-                    <xsl:when test="$element/self::tei:lg">
-                        <xsl:value-of select="'line-group'"/>
-                    </xsl:when>
-                    <xsl:when test="$element/self::tei:q">
-                        <xsl:value-of select="'blockquote'"/>
-                    </xsl:when>
-                    <xsl:otherwise>
-                        <xsl:value-of select="'paragraph'"/>
-                    </xsl:otherwise>
-                </xsl:choose>
-            </xsl:with-param>
-                        
-        </xsl:call-template>
-    
-    </xsl:template>
-    
-    <xsl:template match="tei:l">
-        
-        <xsl:variable name="element" select="."/>
-        
-        <xsl:call-template name="milestone">
-            <xsl:with-param name="content">
-                <div>
-                    
-                    <!-- Outbound quote link -->
-                    <xsl:variable name="quotes-outbound" as="element(m:quote)*">
-                        <xsl:if test="$element/ancestor::tei:q[@xml:id][ancestor-or-self::*/@ref gt ''] and not($element/following-sibling::tei:l)">
-                            <xsl:sequence select="key('quotes-outbound', $element/ancestor::tei:q[@xml:id][1]/@xml:id, $root)[m:source/@location-id eq $element/ancestor-or-self::*[@ref][1]/@ref]"/>
-                        </xsl:if>
-                    </xsl:variable>
-                    
-                    <xsl:call-template name="class-attribute">
-                        
-                        <xsl:with-param name="base-classes" as="xs:string*">
-                            <xsl:value-of select="'line'"/>
-                            <xsl:if test="$element/parent::tei:mantra">
-                                <xsl:value-of select="'mantra'"/>
-                            </xsl:if>
-                        </xsl:with-param>
-                        
-                        <xsl:with-param name="lang" select="$element/parent::tei:mantra/@xml:lang"/>
-                        
-                    </xsl:call-template>
-                    
-                    <!-- Output the content, filtering out the ref prologue -->
-                    <xsl:call-template name="parse-content">
-                        <xsl:with-param name="node" select="$element"/>
-                    </xsl:call-template>
-                    
-                    <!-- Output quote links -->
-                    <xsl:for-each select="$quotes-outbound">
-                        
-                        <xsl:value-of select="' '"/>
-                        
-                        <xsl:call-template name="quote-link">
-                            <xsl:with-param name="quote" select="."/>
-                        </xsl:call-template>
-                        
-                    </xsl:for-each>
-                    
-                </div>
-            </xsl:with-param>
-            <xsl:with-param name="row-type" select="'line'"/>
-        </xsl:call-template>
-        
-    </xsl:template>
-    
-    <xsl:template match="tei:orig">
-        <!-- Don't output orig -->
     </xsl:template>
     
     <!-- Highlights -->
@@ -3151,12 +3162,15 @@
         
         <xsl:choose>
             
-            <!-- Get the xml:id from the container -->
-            <xsl:when test="$node[ancestor-or-self::tei:*[@xml:id]]">
-                <xsl:value-of select="$node/ancestor-or-self::tei:*[@xml:id][1]/@xml:id"/>
+            <!-- Get the xml:id from containing note -->
+            <xsl:when test="$node[ancestor-or-self::tei:note[@xml:id]]">
+                <xsl:value-of select="$node/ancestor-or-self::tei:note[@xml:id][1]/@xml:id"/>
             </xsl:when>
             
-            <!-- Get the eft:id from the container -->
+            <!-- Get the xml:id/eft:id from containing glossary entry -->
+            <xsl:when test="$node[ancestor-or-self::m:part[@type eq 'glossary']]">
+                <xsl:value-of select="$node/ancestor-or-self::tei:gloss[@xml:id][1]/@xml:id"/>
+            </xsl:when>
             <xsl:when test="$node[ancestor-or-self::m:entry[parent::m:glossary][@id]]">
                 <xsl:value-of select="$node/ancestor-or-self::m:entry[@id][1]/@id"/>
             </xsl:when>
@@ -3658,7 +3672,7 @@
             <xsl:when test="$highlight and $highlight/@string-length ! xs:integer(.) le string-length($text)">
                 
                 <!-- The regex to mark this string -->
-                <xsl:variable name="mark-regex" select="$highlight/@target ! concat('(^|[^\p{L}]+)(', ., ')([^\p{L}]+|$)')" as="xs:string?"/>
+                <xsl:variable name="mark-regex" select="$highlight/@target ! concat('(^|[^\p{L}])(', ., ')([^\p{L}]|$)')" as="xs:string?"/>
                 
                 <!-- Get matches in text -->
                 <xsl:variable name="text-analyzed" select="$mark-regex ! analyze-string(replace($text, '\s+', ' '), ., 'i')" as="element(fn:analyze-string-result)?"/>
@@ -3668,7 +3682,7 @@
                     
                     <!-- There are matches in this text -->
                     <!-- Skip if there are too many -->
-                    <xsl:when test="$text-matches-count gt 0 and $text-matches-count le 5">
+                    <xsl:when test="$text-matches-count gt 0 and $text-matches-count le 10">
                         
                         <!-- More detail about the quote -->
                         <xsl:variable name="quote" select="$highlight/parent::m:quote" as="element(m:quote)"/>

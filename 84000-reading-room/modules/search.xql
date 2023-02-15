@@ -125,7 +125,7 @@ declare function search:search($request as xs:string, $resource-id as xs:string,
                     (: Get TEI :)
                     let $tei := tei-content:tei($result-group/@text-id, 'translation')
                     let $tei-header := local:tei-header($tei)
-                    let $outline := translation:outline-cached($tei, ())
+                    let $outline := translation:outline-cached($tei)
                     
                     (: Sort matches :)
                     let $results := 
@@ -190,17 +190,17 @@ declare function search:tm-search($search as xs:string, $search-lang as xs:strin
             lower-case($search-lang)
     
     let $tmx := collection(concat($common:data-path, '/translation-memory'))//tmx:tmx
-    (: Only search units with segments for both languages :)
-    let $tm-units := $tmx/tmx:body/tmx:tu[tmx:tuv[@xml:lang eq 'bo']][tmx:tuv[@xml:lang eq 'en']]
+    let $tm-units := $tmx/tmx:body/tmx:tu
     
     let $tei := collection($common:translations-path)//tei:TEI
     
     let $results :=
         for $result in (
+            (: Only search units with segments for both languages :)
             if($search-lang eq 'bo') then
-                $tm-units[ft:query(tmx:tuv, concat('bo:(', $search, ')'), map { "fields": ("bo") })]
+                $tm-units[ft:query(tmx:tuv, concat('bo:(', $search, ')'), map { "fields": ("bo") })][tmx:tuv[@xml:lang eq 'en']]
             else
-                $tm-units[ft:query(tmx:tuv, concat('en:(', $search, ')'), map { "fields": ("en") })]
+                $tm-units[ft:query(tmx:tuv, concat('en:(', $search, ')'), map { "fields": ("en") })][tmx:tuv[@xml:lang eq 'bo']]
             ,
             if($include-glossary) then
                 if($search-lang eq 'bo') then

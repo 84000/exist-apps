@@ -77,9 +77,10 @@ return
         (: Get parts from cache and merge passages :)
         let $text-id := tei-content:id($tei)
         
-        let $outlines := translation:outline-cached($tei, $passage//tei:ptr/@target[matches(., '^#')] ! replace(., '^#(end\-note\-)?', ''))
+        let $outline := translation:outline-cached($tei)
+        let $outlines-related := translation:outlines-related($tei, $passage, ())
         
-        let $merged-parts := translation:parts-cached($outlines[@text-id eq $text-id], $passage)
+        let $merged-parts := translation:merge-parts($outline/m:pre-processed[@type eq 'parts'], $passage)
         
         (: Get glossaries :)
         (: Compile all the translation data :)
@@ -103,8 +104,6 @@ return
             
         let $entities := translation:entities((), $passage[@id eq 'glossary']//tei:gloss/@xml:id)
         
-        let $quotes := translation:quotes($tei, $passage)
-        
         (: Get caches :)
         let $glossary-cache := glossary:glossary-cache($tei, (), false())
         
@@ -119,10 +118,10 @@ return
                     $request,
                     $translation-data,
                     $entities,
-                    $quotes,
-                    $entities:flags,
+                    $outline,
+                    $outlines-related,
                     $glossary-cache,
-                    $outlines,
+                    $entities:flags,
                     $strings
                 )
             )

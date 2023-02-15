@@ -71,7 +71,7 @@ declare function tei-content:tei($resource-id as xs:string, $resource-type as xs
     let $collection := 
         (: Layout checks :)
         if(lower-case($resource-id) = ('toh00', 'ut22084-000-000', 'toh00c', 'ut23703-000-000')) then
-            collection(concat($common:data-path, '/tei/layout-checks'))
+            collection(concat($common:tei-path, '/layout-checks'))
         
         (: Archived copy :)
         else if($archive-path gt '') then
@@ -520,61 +520,61 @@ declare function tei-content:version-str($tei as element(tei:TEI)) as xs:string 
 
 declare function tei-content:end-notes-pre-processed($tei as element(tei:TEI)) as element(m:pre-processed) {
     
-    let $start-time := util:system-dateTime()
-    
-    let $text-id := tei-content:id($tei)
-    
-    let $end-notes :=
-        for $note at $index in $tei/tei:text//tei:note[@place eq 'end'][@xml:id]
-        (: Lowest level @typed part, except root :)
-        let $part := $note/ancestor::tei:div[@type][not(@type = ('translation', 'appendix'))][last()]
-        return 
-            element { QName('http://read.84000.co/ns/1.0', 'end-note') } {
-                attribute id { $note/@xml:id },
-                attribute part-id { ($part/@xml:id, $part/@type)[1] },
-                attribute index { $index }
-            }
-    
-    let $end-time := util:system-dateTime()
-    
-    return
-        tei-content:pre-processed(
-            $text-id,
-            'end-notes',
-            functx:total-seconds-from-duration($end-time - $start-time),
-            $end-notes
-        )
+    local:elements-pre-processed($tei, 'end-note')
 };
 
 declare function tei-content:milestones-pre-processed($tei as element(tei:TEI)) as element(m:pre-processed) {
 
+    local:elements-pre-processed($tei, 'milestone')
+    
+};
+
+declare function local:elements-pre-processed($tei as element(tei:TEI), $element-name as xs:string) as element(m:pre-processed) {
+    
     let $start-time := util:system-dateTime()
     
     let $text-id := tei-content:id($tei)
     
-    let $milestones := 
+    let $elements := 
         for $part in 
             $tei/tei:text/tei:front/tei:div[@type]
             | $tei/tei:text/tei:body/tei:div[@type = ('translation', 'article')]/tei:div[@type]
             | $tei/tei:text/tei:back/tei:div[@type eq 'appendix']/tei:div[@type]
             | $tei/tei:text/tei:back/tei:div[not(@type eq 'appendix')]
-            for $milestone at $index in $part//tei:milestone[@xml:id]
+            
+            let $part-id := ($part/@xml:id, $part/@type)[1]
+            
             return
-                element { QName('http://read.84000.co/ns/1.0', 'milestone') } {
-                    attribute id { $milestone/@xml:id },
-                    attribute part-id { ($part/@xml:id, $part/@type)[1] },
+                for $element at $index in 
+                    if($element-name eq 'milestone') then
+                        $part//tei:milestone[@xml:id]
+                    else if($element-name eq 'end-note') then
+                        $part//tei:note[@place eq 'end'][@xml:id]
+                    else ()
+                return
+                    element { QName('http://read.84000.co/ns/1.0', $element-name) } {
+                    attribute id { $element/@xml:id },
+                    attribute part-id { $part-id },
                     attribute index { $index }
                 }
     
     let $end-time := util:system-dateTime()
     
+    let $pre-processed-type :=
+        if($element-name eq 'milestone') then
+            'milestones'
+        else if($element-name eq 'end-note') then
+            'end-notes'
+        else ()
+    
     return
         tei-content:pre-processed(
             $text-id,
-            'milestones',
+            $pre-processed-type,
             functx:total-seconds-from-duration($end-time - $start-time),
-            $milestones
+            $elements
         )
+        
 };
 
 declare function tei-content:pre-processed($text-id as xs:string, $type as xs:string, $seconds-to-build as xs:integer, $content as element()*) as element(m:pre-processed) {

@@ -752,7 +752,7 @@ declare function glossary:xml-response($tei as element(tei:TEI), $resource-id as
     (: Include caches - do not call glossary:cache(), this causes a recursion problem :)
     let $glossary-cache := glossary:cache($tei, false())/m:glossary-cache
     
-    let $text-outline := translation:outline-cached($tei, ())
+    let $text-outline := translation:outline-cached($tei)
     
     let $replace-text :=
         element { QName('http://read.84000.co/ns/1.0', 'replace-text')} {
@@ -918,13 +918,7 @@ declare function local:instance-locations($translation-html as element(xhtml:htm
     (: Select the nearest parent with a data-location-id :)
     let $expression-container := $expression/ancestor-or-self::xhtml:*[@data-location-id][1]
     
-    let $expression-container := 
-        if(not($expression-container)) then
-            $expression/ancestor-or-self::xhtml:*[@id][1]
-        else
-            $expression-container
-    
-    let $location-id := ($expression-container/@data-location-id, $expression-container/@id)[1]
+    let $location-id := $expression-container/@data-location-id
     
     group by $location-id
     order by $sort-index[1]
@@ -935,14 +929,17 @@ declare function local:instance-locations($translation-html as element(xhtml:htm
             attribute sort-index { $sort-index[1] },
             
             element preceding-ref {
-                $expression-container/preceding-sibling::xhtml:div[descendant::xhtml:a[@data-ref]][1]/descendant::xhtml:a[@data-ref][last()]
+                if($expression-container[descendant::xhtml:a[@data-ref]]) then
+                    $expression-container/descendant::xhtml:a[@data-ref][1]
+                else
+                    $expression-container/ancestor-or-self::xhtml:div[preceding-sibling::xhtml:div[descendant::xhtml:a[@data-ref]]][1]/preceding-sibling::xhtml:div[descendant::xhtml:a[@data-ref]][1]/descendant::xhtml:a[@data-ref][last()]
             },
             
             element preceding-bookmark {
-                if(not($expression-container[descendant::xhtml:a[@data-bookmark]])) then
-                    $expression-container/preceding-sibling::xhtml:div[descendant::xhtml:a[@data-bookmark]][1]/descendant::xhtml:a[@data-bookmark][1]
-                else 
-                    ()
+                if($expression-container[descendant::xhtml:a[@data-bookmark]]) then
+                    $expression-container/descendant::xhtml:a[@data-bookmark][1]
+                else
+                    $expression-container/ancestor-or-self::xhtml:div[preceding-sibling::xhtml:div[descendant::xhtml:a[@data-bookmark]]][1]/preceding-sibling::xhtml:div[descendant::xhtml:a[@data-bookmark]][1]/descendant::xhtml:a[@data-bookmark][1]
             },
             
             $expression-container
@@ -957,7 +954,7 @@ declare function glossary:cache($tei as element(tei:TEI), $create-if-unavailable
     let $cache-collection := concat($common:data-path, '/', 'cache')
     let $cache-file := concat($text-id, '.cache')
     let $cache-uri := concat($cache-collection, '/', $cache-file)
-    let $cache := doc($cache-uri)/m:cache
+    let $cache := doc($cache-uri)/m:cache[m:glossary-cache]
     let $cache-empty := <cache xmlns="http://read.84000.co/ns/1.0"><glossary-cache/></cache>
     
     let $cache := 

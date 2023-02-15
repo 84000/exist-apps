@@ -63,11 +63,11 @@ declare function local:permanent-ids($doc) {
             $doc//tei:text//tei:milestone
             | $doc//tei:text//tei:note
             | $doc//tei:text//tei:ref[@type = ('folio', 'volume')]
-            | $doc//tei:text//tei:q[ancestor-or-self::*/@ref]
-            (:| $doc//tei:text//tei:q[descendant::tei:ptr[@type eq 'quote-ref'][@target]]:)
-            | $doc//tei:div[@type="notes"]//tei:item
-            | $doc//tei:div[@type='listBibl']//tei:bibl
-            | $doc//tei:div[@type='glossary']//tei:gloss
+            (:| $doc//tei:text//tei:q[ancestor-or-self::*/@ref]:)
+            | $doc//tei:text//tei:ptr[@type eq 'quote-ref'][@target][ancestor::tei:q]
+            | $doc//tei:div[@type eq 'notes']//tei:item
+            | $doc//tei:div[@type eq 'listBibl']//tei:bibl
+            | $doc//tei:div[@type eq 'glossary']//tei:gloss
         )
         
         (: Add any missing @xml:ids :)

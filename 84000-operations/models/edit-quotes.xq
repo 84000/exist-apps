@@ -53,22 +53,30 @@ let $text :=
         
     }
 
-let $quotes := translation:quotes($tei, $text/m:part[@id eq 'translation']/m:part[@id eq $request/@part])
 
-let $root-texts := 
+let $quotes := translation:outline-cached($tei)/m:pre-processed[@type eq 'quotes']
+
+let $part-quote-refs := $text/m:part[@id eq 'translation']/m:part[@id eq $request/@part]//tei:ptr[@type eq 'quote-ref']/@xml:id
+let $part-quote-refs-chunked := common:ids-chunked($part-quote-refs)
+let $part-quotes := 
+    for $key in map:keys($part-quote-refs-chunked)
+    return
+        $quotes/m:quote[@id = map:get($part-quote-refs-chunked, $key)]
+
+let $root-texts :=
     element { QName('http://read.84000.co/ns/1.0', 'root-texts') }{
-        for $location-part in distinct-values($quotes/m:quote/m:source/@location-part)
-        let $resource-id := ($quotes/m:quote/m:source[@location-part eq $location-part])[1]/@resource-id
+        for $location-part in distinct-values($part-quotes/m:source/@location-part)
+        let $resource-id := ($part-quotes/m:source[@location-part eq $location-part])[1]/@resource-id
         return
             local:root-html($resource-id, $location-part, $source/@key)
     }
 
 let $quotes-with-responses :=
-    element { node-name($quotes) }{
+    element { QName('http://read.84000.co/ns/1.0', 'quotes') } {
     
         $quotes/@*,
         
-        for $quote in $quotes/*
+        for $quote in $part-quotes
         
         let $html-part := $root-texts/m:html[@part-id eq $quote/m:source/@location-part]
         let $html-passage := ($html-part//*[@data-location-id eq $quote/m:source/@location-id][not(ancestor::*[@data-location-id])] | $html-part//*[@id eq $quote/m:source/@location-id])
@@ -130,8 +138,7 @@ let $xml-response :=
             $request,
             $updates,
             $text,
-            $quotes-with-responses(:,
-            $root-texts:)
+            $quotes-with-responses
         )
     )
     

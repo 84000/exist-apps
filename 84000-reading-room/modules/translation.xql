@@ -71,19 +71,31 @@ declare variable $translation:type-labels := map {
         'glossary':       'Glossary'
 };
 
-declare function translation:titles($tei as element(tei:TEI)) as element() {
+(: Exclude any very common words from being single tokens :)
+(: This could be better done by checking the text for occurrences :)
+declare variable $translation:stopwords := (
+    '', 'a',(:'about',:)'all','also','and','as','at','be',(:'because',:)'but','by','can','come','could',
+    'day','do','even','find','first','for','from','get','give','go','have','he','her','here','him',
+    'his','how','I','if','in','into','it','its','just','know','like','look','make','man','many',
+    'me','more','my','new','no','not','now','of','on','one','only','or','other','our','out',(:'people',:)
+    'say','see','she','so','some','take','tell','than','that','the','their','them','then','there',
+    'these','they','thing',(:'think',:)'this','those','time','to','two','up','use','very','want','way',
+    'we','well','what','when','which','who','will','with','would',(:'year',:)'you','your'
+);
+
+declare function translation:titles($tei as element(tei:TEI)) as element(m:titles) {
     element {QName('http://read.84000.co/ns/1.0', 'titles')} {
         tei-content:title-set($tei, 'mainTitle')
     }
 };
 
-declare function translation:long-titles($tei as element(tei:TEI)) as element() {
+declare function translation:long-titles($tei as element(tei:TEI)) as element(m:long-titles) {
     element {QName('http://read.84000.co/ns/1.0', 'long-titles')} {
         tei-content:title-set($tei, 'longTitle')
     }
 };
 
-declare function translation:title-variants($tei as element(tei:TEI)) as element() {
+declare function translation:title-variants($tei as element(tei:TEI)) as element(m:title-variants) {
     element {QName('http://read.84000.co/ns/1.0', 'title-variants')} {
         for $title in $tei/tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:title[not(@type eq 'mainTitle')]
         return
@@ -103,7 +115,7 @@ declare function translation:title-variants($tei as element(tei:TEI)) as element
     }
 };
 
-declare function translation:publication($tei as element(tei:TEI)) as element() {
+declare function translation:publication($tei as element(tei:TEI)) as element(m:publication) {
     let $fileDesc := $tei/tei:teiHeader/tei:fileDesc
     return
         element {QName('http://read.84000.co/ns/1.0', 'publication')} {
@@ -172,7 +184,7 @@ declare function translation:toh-full($bibl as element(tei:bibl)) as xs:string? 
     normalize-space(string-join($bibl/tei:ref//text()[normalize-space(.)], ' +'))
 };
 
-declare function translation:toh($tei as element(tei:TEI), $resource-id as xs:string) as element() {
+declare function translation:toh($tei as element(tei:TEI), $resource-id as xs:string) as element(m:toh) {
 
     (: Returns a toh meta-data for sorting grouping  :)
     let $bibl := tei-content:source-bibl($tei, $resource-id)
@@ -214,7 +226,7 @@ declare function translation:toh($tei as element(tei:TEI), $resource-id as xs:st
         }
 };
 
-declare function translation:location($tei as element(tei:TEI), $resource-id as xs:string) as element() {
+declare function translation:location($tei as element(tei:TEI), $resource-id as xs:string) as element(m:location) {
     let $bibl := tei-content:source-bibl($tei, $resource-id)
     return
         tei-content:location($bibl)
@@ -260,7 +272,7 @@ declare function translation:canonical-html($resource-id as xs:string, $conditio
     
 };
 
-declare function translation:downloads($tei as element(tei:TEI), $resource-id as xs:string, $include as xs:string) as element() {
+declare function translation:downloads($tei as element(tei:TEI), $resource-id as xs:string, $include as xs:string) as element(m:downloads) {
     
     let $tei-version := tei-content:version-str($tei)
     let $file-name := translation:filename($tei, $resource-id)
@@ -453,75 +465,129 @@ declare function translation:passage($tei as element(tei:TEI), $passage-id as xs
 
 };
 
-declare function translation:outline-cached($internal-tei as element(tei:TEI), $target-ids as xs:string*) as element(m:text-outline)* {
+declare function translation:outline-cached($tei as element(tei:TEI)) as element(m:text-outline)* {
     
-    let $published-tei := 
+    let $text-id := tei-content:id($tei)
+    
+    let $request := 
+        element { QName('http://read.84000.co/ns/1.0', 'request')} {
+            attribute model { 'text-outline' },
+            attribute resource-suffix { 'xml' },
+            attribute resource-id { $text-id }
+        }
+    
+    let $tei-timestamp := tei-content:last-modified($tei)
+    let $app-version := replace($common:app-version, '\.', '-')
+    
+    let $cache-key := 
+        if($tei-timestamp instance of xs:dateTime) then
+            lower-case(format-dateTime($tei-timestamp, "[Y0001]-[M01]-[D01]-[H01]-[m01]-[s01]") || '-' || $app-version)
+        else ()
+    
+    let $cache := common:cache-get($request, $cache-key, false())
+    
+    return
+        (: From cache :)
+        if($cache/m:text-outline) then (
+            (:util:log('info',concat('outline-cache-get:',$text-id, '/', $cache-key)),:)
+            $cache/m:text-outline
+        )
+        
+        (: Generate and cache :)
+        else
+            
+            let $outline := 
+                element {QName('http://read.84000.co/ns/1.0', 'text-outline')} {
+                
+                    attribute text-id { $text-id },
+                    attribute tei-timestamp { $tei-timestamp },
+                    attribute app-version { $app-version },
+                    
+                    local:parts-pre-processed($tei),
+                    tei-content:milestones-pre-processed($tei),
+                    tei-content:end-notes-pre-processed($tei),
+                    local:folio-refs-pre-processed($tei),
+                    local:quotes-pre-processed($tei),
+                    glossary:pre-processed($tei)
+                    
+                }
+             let $log := common:cache-put($request, $outline, $cache-key)
+             return (
+                (:util:log('info',concat('outline-cache-put:',$text-id, '/', $cache-key)),:)
+                $outline
+             )
+    
+};
+
+declare function local:parts-pre-processed($tei as element(tei:TEI)) as element(m:pre-processed) {
+    
+    let $text-id := tei-content:id($tei)
+    let $start-time := util:system-dateTime()
+    let $parts := translation:parts($tei, (), $translation:view-modes/m:view-mode[@id eq 'outline'], ())
+    let $end-time := util:system-dateTime()
+    return
+        tei-content:pre-processed(
+            $text-id,
+            'parts',
+            functx:total-seconds-from-duration($end-time - $start-time),
+            $parts
+        )
+        
+};
+
+declare function translation:outlines-related($tei as element(tei:TEI), $parts as element(m:part)*, $commentary-key as xs:string?) as element(m:text-outline)* {
+    
+    let $text-id := tei-content:id($tei)
+    
+    let $published-tei := (
+    
+        (: Published TEI :)
         $tei-content:translations-collection//tei:TEI
             [tei:teiHeader/tei:fileDesc/tei:publicationStmt
                 [@status = $common:environment/m:render/m:status[@type eq 'translation']/@status-id]
             ]
+        ,
+        
+        (: Test TEI if appropriate :)
+        if($text-id = ('UT22084-000-000', 'UT23703-000-000') or $commentary-key = ('toh00', 'toh00c')) then
+            collection(concat($common:tei-path, '/layout-checks'))//tei:TEI
+        else ()
+        
+    ) except $tei
     
-    let $external-tei :=
-        for $external-location in $published-tei/id($target-ids)
-        let $external-tei := $external-location/ancestor::tei:TEI
-        let $external-text-id := tei-content:id($external-tei)    
-        (: Group by the text id to get the details :)
-        group by $external-text-id
+    (: Text that this text points to :)
+    let $outgoing-ids := $parts//tei:ptr/@target[matches(., '^#')] ! replace(., '^#(end\-note\-)?', '')
+    let $outgoing-id-chunks := common:ids-chunked($outgoing-ids)
+    let $outgoing-teis :=
+        for $key in map:keys($outgoing-id-chunks)
+        for $outgoing-location in $published-tei/id(map:get($outgoing-id-chunks, $key))
+        let $outgoing-tei := $outgoing-location/ancestor::tei:TEI
+        (:let $outgoing-tei-id :=  tei-content:id($outgoing-tei)
+        group by $outgoing-tei-id:)
         return
-            $external-tei
+            $outgoing-tei
     
-    for $tei in ($internal-tei | $external-tei)
-    return
-    
-        let $text-id := tei-content:id($tei)
-        
-        let $request := 
-            element { QName('http://read.84000.co/ns/1.0', 'request')} {
-                attribute model { 'text-outline' },
-                attribute resource-suffix { 'xml' },
-                attribute resource-id { $text-id }
-            }
-        
-        let $tei-timestamp := tei-content:last-modified($tei)
-        let $app-version := replace($common:app-version, '\.', '-')
-        
-        let $cache-key := 
-            if($tei-timestamp instance of xs:dateTime) then
-                lower-case(format-dateTime($tei-timestamp, "[Y0001]-[M01]-[D01]-[H01]-[m01]-[s01]") || '-' || $app-version)
-            else ()
-        
-        let $cache := common:cache-get($request, $cache-key, false())
-        
+    (: Texts that point to this text :)
+    let $internal-ids := ($parts//m:part/@id, $parts//@xml:id)
+    let $incoming-id-targets := $internal-ids ! concat('#',.)
+    let $incoming-id-targets-chunks := common:ids-chunked($incoming-id-targets)
+    let $incoming-teis :=
+        for $key in map:keys($incoming-id-targets-chunks)
+        for $incoming-location in $published-tei/tei:text//tei:ptr[@target = map:get($incoming-id-targets-chunks, $key)]
+        let $incoming-tei := $incoming-location/ancestor::tei:TEI
+        (:let $incoming-tei-id :=  tei-content:id($incoming-tei)
+        group by $incoming-tei-id:)
         return
-            
-            if($cache/m:text-outline) then
-                $cache/m:text-outline
-                
-            else
-                let $outline := 
-                    element {QName('http://read.84000.co/ns/1.0', 'text-outline')} {
-                    
-                        attribute text-id { $text-id },
-                        attribute tei-timestamp { $tei-timestamp },
-                        attribute app-version { $app-version },
-                        
-                        translation:parts($tei, (), $translation:view-modes/m:view-mode[@id eq 'outline'], ()),
-                        tei-content:milestones-pre-processed($tei),
-                        tei-content:end-notes-pre-processed($tei),
-                        local:folio-refs-pre-processed($tei),
-                        glossary:pre-processed($tei)
-                        
-                    }
-                 
-                 let $do-cache := common:cache-put($request, $outline, $cache-key)
-                 return 
-                    $outline
-        
+            $incoming-tei
+    
+    return 
+        ($outgoing-teis | $incoming-teis) ! translation:outline-cached(.)
+    
 };
 
-declare function translation:parts-cached($outline as element(m:text-outline), $merge-parts as element(m:part)*) as element(m:part)* {
+declare function translation:merge-parts($pre-processed as element(m:pre-processed), $merge-parts as element(m:part)*) as element(m:part)* {
     
-    for $outline-part in $outline/m:part
+    for $outline-part in $pre-processed/m:part
     return 
         if($outline-part[@id eq 'translation']) then 
             element { node-name($outline-part) } {
@@ -541,10 +607,6 @@ declare function translation:part($part as element(tei:div)?, $content-directive
 };
 
 declare function local:part($part as element(tei:div)?, $content-directive as xs:string, $type as xs:string, $prefix as xs:string?, $label as node()*, $output-ids as xs:string*, $nesting as xs:integer, $section-index as xs:integer, $preview as node()*) as element(m:part) {
-    
-    let $chapter-title := $part/tei:head[@type eq 'chapterTitle'][text()][1]
-    let $section-title := $part/tei:head[@type eq $part/@type][text()][1]
-    return
     
     (: Return a part :)
     element {QName('http://read.84000.co/ns/1.0', 'part')} {
@@ -568,32 +630,37 @@ declare function local:part($part as element(tei:div)?, $content-directive as xs
             attribute ref { $part/@ref }
         else (),
         
-        (: Normalize head :)
-        if ($chapter-title) then (
-            element {QName('http://www.tei-c.org/ns/1.0', 'head')} {
-                attribute type { $type },
-                attribute tid { $chapter-title/@tid },
-                $chapter-title/node()
-            },
-            if ($section-title) then
-                element {QName('http://read.84000.co/ns/1.0', 'title-supp')} {
-                    $section-title/@tid,
+        let $chapter-title := $part/tei:head[@type eq 'chapterTitle'][text()][1]
+        let $section-title := $part/tei:head[@type eq $part/@type][text()][1]
+        return
+            
+            (: Normalize head :)
+            if ($chapter-title) then (
+                element {QName('http://www.tei-c.org/ns/1.0', 'head')} {
+                    attribute type { $type },
+                    attribute tid { $chapter-title/@tid },
+                    $chapter-title/node()
+                },
+                if ($section-title) then
+                    element {QName('http://read.84000.co/ns/1.0', 'title-supp')} {
+                        $section-title/@tid,
+                        $section-title/node()
+                    }
+                else ()
+            )
+            else if ($section-title) then
+                element {QName('http://www.tei-c.org/ns/1.0', 'head')} {
+                    attribute type { $type },
+                    attribute tid { $section-title/@tid },
                     $section-title/node()
                 }
-            else ()
-        )
-        else if ($section-title) then
-            element {QName('http://www.tei-c.org/ns/1.0', 'head')} {
-                attribute type { $type },
-                attribute tid { $section-title/@tid },
-                $section-title/node()
-            }
-        else if ($label) then
-            element {QName('http://www.tei-c.org/ns/1.0', 'head')} {
-                attribute type { $type },
-                $label
-            }
-         else (),
+            else if ($label) then
+                element {QName('http://www.tei-c.org/ns/1.0', 'head')} {
+                    attribute type { $type },
+                    $label
+                }
+             else ()
+        ,
         
         (: Filter content :)
         (: End-notes :)
@@ -633,7 +700,7 @@ declare function local:part($part as element(tei:div)?, $content-directive as xs
             
             let $preview := 
                 if($content-directive eq 'preview' and not($preview)) then
-                    local:preview-nodes($part//text()[normalize-space(.)][not(ancestor-or-self::tei:note[@place eq 'end'])], 1, ())
+                    local:preview-nodes($part//text(), 1, ())
                 else
                     $preview
             
@@ -646,7 +713,7 @@ declare function local:part($part as element(tei:div)?, $content-directive as xs
                     
                     let $section-index := functx:index-of-node($part-sections, $node)
                     let $nesting :=
-                        if($section-title) then
+                        if($part/tei:head[@type eq $part/@type][text()]) then
                             $nesting + 1
                         else 
                             $nesting
@@ -655,6 +722,7 @@ declare function local:part($part as element(tei:div)?, $content-directive as xs
                         
                         (: If the requested passage is no longer in scope then skip it :)
                         if($content-directive eq 'passage') then
+                            
                             if(
                                 $node/ancestor-or-self::tei:*[@xml:id = $output-ids]
                                 | $node/descendant::tei:*[@xml:id = $output-ids]
@@ -722,20 +790,25 @@ declare function local:part($part as element(tei:div)?, $content-directive as xs
 declare function local:preview-nodes($content-nodes as node()*, $index as xs:integer, $preview as node()*)  {
     
     (: test what there is already :)
-    let $preview-text := string-join($preview, '')
-    let $preview-text-length := string-length($preview-text)
-    where $preview-text-length lt 500
+    let $preview-length := string-length(string-join($preview, ''))
+    where $index le count($content-nodes) and $preview-length lt 500
     return
         (: If more needed return this node :)
-        if($index le count($content-nodes)) then (
+        let $content-node := $content-nodes[$index]
+        let $preview-text := 
+            if($content-node[normalize-space(.)][not(ancestor-or-self::tei:note | ancestor-or-self::tei:orig)]) then
+                $content-node
+            else ()
+        
+        return (
             
-            $content-nodes[$index],
+            (: Return this as preview text :)
+            $preview-text,
             
-            (: Move up to the next :)
-            local:preview-nodes($content-nodes, $index + 1, ($preview, $content-nodes[$index]))
+            (: Move to the next :)
+            local:preview-nodes($content-nodes, $index + 1, ($preview, $preview-text))
             
         )
-        else ()
     
 };
 
@@ -771,11 +844,11 @@ declare function translation:chapter-prefix($chapter as element(tei:div)) as xs:
         
 };
 
-declare function translation:summary($tei as element(tei:TEI)) as element()? {
+declare function translation:summary($tei as element(tei:TEI)) as element(m:part)? {
     translation:summary($tei, 'summary', (), '')
 };
 
-declare function translation:summary($tei as element(tei:TEI), $passage-id as xs:string?, $view-mode as element(m:view-mode)?, $lang as xs:string) as element()? {
+declare function translation:summary($tei as element(tei:TEI), $passage-id as xs:string?, $view-mode as element(m:view-mode)?, $lang as xs:string) as element(m:part)? {
     
     let $type := 'summary'
     let $valid-lang := common:valid-lang($lang)
@@ -811,7 +884,7 @@ declare function translation:acknowledgment($tei as element(tei:TEI)) as element
     translation:acknowledgment($tei, 'acknowledgment', ())
 };
 
-declare function translation:acknowledgment($tei as element(tei:TEI), $passage-id as xs:string?, $view-mode as element(m:view-mode)?) as element()? {
+declare function translation:acknowledgment($tei as element(tei:TEI), $passage-id as xs:string?, $view-mode as element(m:view-mode)?) as element(m:part)? {
     
     let $type := 'acknowledgment'
     let $acknowledgment := $tei/tei:text/tei:front/tei:div[@type eq $type]
@@ -834,11 +907,11 @@ declare function translation:acknowledgment($tei as element(tei:TEI), $passage-i
         translation:part($acknowledgment, $content-directive, $type, map:get($translation:type-prefixes, $type), text { map:get($translation:type-labels, $type) }, $passage-id)
 };
 
-declare function translation:preface($tei as element(tei:TEI)) as element()? {
+declare function translation:preface($tei as element(tei:TEI)) as element(m:part)? {
     translation:preface($tei, 'preface', ())
 };
 
-declare function translation:preface($tei as element(tei:TEI), $passage-id as xs:string?, $view-mode as element(m:view-mode)?) as element()? {
+declare function translation:preface($tei as element(tei:TEI), $passage-id as xs:string?, $view-mode as element(m:view-mode)?) as element(m:part)? {
     
     let $type := 'preface'
     let $preface := $tei/tei:text/tei:front/tei:div[@type eq $type]
@@ -862,11 +935,11 @@ declare function translation:preface($tei as element(tei:TEI), $passage-id as xs
         translation:part($preface, $content-directive, $type, map:get($translation:type-prefixes, $type), text { map:get($translation:type-labels, $type) }, $passage-id)
 };
 
-declare function translation:introduction($tei as element(tei:TEI)) as element()? {
+declare function translation:introduction($tei as element(tei:TEI)) as element(m:part)? {
     translation:introduction($tei, 'introduction', ())
 };
 
-declare function translation:introduction($tei as element(tei:TEI), $passage-id as xs:string?, $view-mode as element(m:view-mode)?) as element()? {
+declare function translation:introduction($tei as element(tei:TEI), $passage-id as xs:string?, $view-mode as element(m:view-mode)?) as element(m:part)? {
     
     let $type := 'introduction'
     let $introduction := $tei/tei:text/tei:front/tei:div[@type eq $type]
@@ -890,11 +963,11 @@ declare function translation:introduction($tei as element(tei:TEI), $passage-id 
         translation:part($introduction, $content-directive, $type, map:get($translation:type-prefixes, $type), text { map:get($translation:type-labels, $type) }, $passage-id)
 };
 
-declare function translation:body($tei as element(tei:TEI)) as element()? {
+declare function translation:body($tei as element(tei:TEI)) as element(m:part)? {
     translation:body($tei, 'body', (), ())
 };
 
-declare function translation:body($tei as element(tei:TEI), $passage-id as xs:string?, $view-mode as element(m:view-mode)?, $chapter-id as xs:string?) as element()? {
+declare function translation:body($tei as element(tei:TEI), $passage-id as xs:string?, $view-mode as element(m:view-mode)?, $chapter-id as xs:string?) as element(m:part)? {
     
     let $translation := $tei/tei:text/tei:body/tei:div[@type eq 'translation']
     let $translation-head := $translation/tei:head[@type eq 'translation']
@@ -963,11 +1036,11 @@ declare function translation:body($tei as element(tei:TEI), $passage-id as xs:st
 
 };
 
-declare function translation:appendix($tei as element(tei:TEI)) as element()? {
+declare function translation:appendix($tei as element(tei:TEI)) as element(m:part)? {
     translation:appendix($tei, 'appendix', ())
 };
 
-declare function translation:appendix($tei as element(tei:TEI), $passage-id as xs:string?, $view-mode as element(m:view-mode)?) as element()? {
+declare function translation:appendix($tei as element(tei:TEI), $passage-id as xs:string?, $view-mode as element(m:view-mode)?) as element(m:part)? {
     
     let $type := 'appendix'
     let $appendix := $tei/tei:text/tei:back/tei:div[@type eq $type][1]
@@ -1021,11 +1094,11 @@ declare function translation:appendix($tei as element(tei:TEI), $passage-id as x
 
 };
 
-declare function translation:abbreviations($tei as element(tei:TEI)) as element()? {
+declare function translation:abbreviations($tei as element(tei:TEI)) as element(m:part)? {
     translation:abbreviations($tei, 'abbreviations', ())
 };
 
-declare function translation:abbreviations($tei as element(tei:TEI), $passage-id as xs:string?, $view-mode as element(m:view-mode)?) as element()? {
+declare function translation:abbreviations($tei as element(tei:TEI), $passage-id as xs:string?, $view-mode as element(m:view-mode)?) as element(m:part)? {
     
     let $type := 'abbreviations'
     let $abbreviations := 
@@ -1056,7 +1129,7 @@ declare function translation:abbreviations($tei as element(tei:TEI), $passage-id
 
 };
 
-declare function translation:end-notes($tei as element(tei:TEI), $passage-id as xs:string?, $view-mode as element(m:view-mode)?, $note-ids as xs:string*) as element()? {
+declare function translation:end-notes($tei as element(tei:TEI), $passage-id as xs:string?, $view-mode as element(m:view-mode)?, $note-ids as xs:string*) as element(m:part)? {
     
     let $type := 'end-notes'
     let $end-notes := 
@@ -1084,7 +1157,7 @@ declare function translation:end-notes($tei as element(tei:TEI), $passage-id as 
     let $notes-cache :=
         (: Don't call for outline as it leads to recursion :)
         if(not($view-mode[@id eq 'outline'])) then
-            translation:outline-cached($tei, ())/m:pre-processed[@type eq 'end-notes']/m:end-note
+            translation:outline-cached($tei)/m:pre-processed[@type eq 'end-notes']/m:end-note
         else ()
     
     let $top-note-ids := 
@@ -1102,11 +1175,11 @@ declare function translation:end-notes($tei as element(tei:TEI), $passage-id as 
 
 };
 
-declare function translation:bibliography($tei as element(tei:TEI)) as element()? {
+declare function translation:bibliography($tei as element(tei:TEI)) as element(m:part)? {
     translation:bibliography($tei, 'bibliography', ())
 };
 
-declare function translation:bibliography($tei as element(tei:TEI), $passage-id as xs:string?, $view-mode as element(m:view-mode)?) as element()? {
+declare function translation:bibliography($tei as element(tei:TEI), $passage-id as xs:string?, $view-mode as element(m:view-mode)?) as element(m:part)? {
     
     let $type := 'bibliography'
     let $bibliography := $tei/tei:text/tei:back/tei:div[@type eq 'listBibl']
@@ -1131,11 +1204,11 @@ declare function translation:bibliography($tei as element(tei:TEI), $passage-id 
 
 };
 
-declare function translation:glossary($tei as element(tei:TEI)) as element()? {
+declare function translation:glossary($tei as element(tei:TEI)) as element(m:part)? {
     translation:glossary($tei, 'glossary', (), ())
 };
 
-declare function translation:glossary($tei as element(tei:TEI), $passage-id as xs:string?, $view-mode as element(m:view-mode)?, $location-ids as xs:string*) as element()? {
+declare function translation:glossary($tei as element(tei:TEI), $passage-id as xs:string?, $view-mode as element(m:view-mode)?, $location-ids as xs:string*) as element(m:part)? {
     
     let $type := 'glossary'
     let $glossary := 
@@ -1436,7 +1509,7 @@ declare function translation:folios($tei as element(tei:TEI), $resource-id as xs
         }
 };
 
-declare function translation:folio-content($tei as element(tei:TEI), $toh-key as xs:string, $index-in-resource as xs:integer) as element()* {
+declare function translation:folio-content($tei as element(tei:TEI), $toh-key as xs:string, $index-in-resource as xs:integer) as element(m:folio-content) {
     
     (: Get all the <ref/>s in the doc :)
     let $refs := translation:folio-refs($tei, $toh-key)
@@ -1492,7 +1565,7 @@ declare function translation:folio-content($tei as element(tei:TEI), $toh-key as
         }
 };
 
-declare function translation:sponsors($tei as element(tei:TEI), $include-acknowledgements as xs:boolean) as element() {
+declare function translation:sponsors($tei as element(tei:TEI), $include-acknowledgements as xs:boolean) as element(m:sponsors) {
     
     let $translation-sponsors := $tei/tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:sponsor
     
@@ -1563,7 +1636,7 @@ declare function translation:sponsors($tei as element(tei:TEI), $include-acknowl
         }
 };
 
-declare function translation:contributors($tei as element(tei:TEI), $include-acknowledgements as xs:boolean) as element() {
+declare function translation:contributors($tei as element(tei:TEI), $include-acknowledgements as xs:boolean) as element(m:contributors) {
     
     let $translation-contributors := $tei/tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:*[local-name(.) = ('author','editor','consultant')](:[not(@role eq 'translatorMain')]:)
     
@@ -1651,175 +1724,152 @@ declare function translation:entities($entity-ids as xs:string*, $instance-ids a
     
 };
 
-declare function translation:quotes($tei as element(tei:TEI), $parts as element(m:part)*) as element(m:quotes) {
+declare function local:quotes-pre-processed($tei as element(tei:TEI)) as element(m:pre-processed) {
     
-    let $published := collection($common:tei-path)//tei:TEI[tei:teiHeader/tei:fileDesc/tei:publicationStmt/@status = $common:environment/m:render/m:status[@type eq 'translation']/@status-id]
-    let $this-toh := translation:toh($tei, '')
-    let $this-tei-type := tei-content:type($tei)
-    let $this-text-title := (tei-content:title($tei, 'shortcode', 'en'), $this-toh ! concat('t', @number, @letter) ! upper-case(.))[1] (:tei-content:title($tei):)
+    let $text-id := tei-content:id($tei)
+    
+    let $start-time := util:system-dateTime()
+    
+    let $quotes := local:quotes($tei)
+    
+    let $end-time := util:system-dateTime()
     
     return
-        element { QName('http://read.84000.co/ns/1.0', 'quotes') }{
+        tei-content:pre-processed(
+            $text-id,
+            'quotes',
+            functx:total-seconds-from-duration($end-time - $start-time),
+            $quotes
+        )
         
-            attribute text-id { tei-content:id($tei) },
-            
-            (: Outbound quotes: where this text references another :)
-
-            (: Derive the quote that references it:)
-            for $quote in $parts//tei:q[@xml:id]
-            let $quote-ref := $quote/ancestor-or-self::*[@ref][1]/@ref
-            where $quote-ref
-            
-            (: Remote text :)
-            let $remote-location := $published/id($quote-ref)
-            where $remote-location
-            let $remote-tei := $remote-location/ancestor::tei:TEI
-            let $remote-text-id := tei-content:id($remote-tei)
-            
-            (: Group by the text id to get the details :)
-            group by $remote-text-id
-            let $remote-text-toh := $remote-tei[1] ! translation:toh(., '')
-            let $remote-text-type := $remote-tei[1] ! tei-content:type(.)
-            let $remote-text-title := (tei-content:title($remote-tei[1], 'shortcode', 'en'), $remote-text-toh ! concat('t', @number, @letter) ! upper-case(.), '[source not found]')[1]
-            
-            (: Descriptive label :)
-            let $label := concat('This quote references ', tei-content:title($remote-tei[1], 'mainTitle', 'en'))
-            
-            (: Un-group quotes :)
-            for $quote-single in $quote
-            let $quote-single-ref := $quote-single/ancestor-or-self::*[@ref][1]/@ref
-            
-            (: Part :)
-            let $quote-single-part := $quote-single/ancestor::m:part[not(@type eq 'translation')][@id][last()]/@id
-            let $quote-single-remote-location := $published/id($quote-single-ref)
-            
-            return 
-                local:quote($quote-single, $this-toh/@key, $quote-single-part, $this-tei-type, $this-text-title, $remote-text-toh/@key, $remote-text-type, $quote-single-remote-location, $remote-text-title, $label)
-            ,
-            
-            (: Inbound quotes: where another text references this :)
-            
-            (: Chunk the input as it can be alot :)
-            let $ids := distinct-values($parts/descendant-or-self::m:part/@id | $parts//@xml:id)
-            let $id-chunks := common:ids-chunked($ids)
-            for $key in map:keys($id-chunks)
-            
-            (: Find the text that contains the quote :)
-            for $inbound-location in $published//tei:*[@ref = map:get($id-chunks, $key)]
-            for $inbound-quote in $inbound-location/descendant-or-self::tei:q[count(ancestor-or-self::*[@ref][1] | $inbound-location) eq 1]
-            let $inbound-quote-part := $inbound-location/ancestor::tei:div[not(@type eq 'translation')][@xml:id][last()]/@xml:id
-            let $inbound-tei := $inbound-quote/ancestor::tei:TEI
-            let $inbound-text-id := tei-content:id($inbound-tei)
-            
-            (: Group by the text id to get the details :)
-            group by $inbound-text-id
-            let $inbound-tei-type := $inbound-tei[1] ! tei-content:type(.)
-            let $inbound-toh := $inbound-tei[1] ! translation:toh(., '')
-            let $inbound-text-title := (tei-content:title($inbound-tei[1], 'shortcode', 'en'), $inbound-toh ! concat('t', @number, @letter) ! upper-case(.))[1](:tei-content:title($quote-tei):)
-            
-            (: Descriptive label :)
-            let $label := concat('This passage is quoted in ', tei-content:title($inbound-tei[1], 'mainTitle', 'en'))
-            
-            (: Part :)
-            for $inbound-quote-single in $inbound-quote
-            let $inbound-quote-single-ref := $inbound-quote-single/ancestor-or-self::*[@ref][1]/@ref
-            let $local-location := $tei/id($inbound-quote-single-ref)
-            
-            return 
-                local:quote($inbound-quote-single, $inbound-toh/@key, $inbound-quote-part[1], $inbound-tei-type, $inbound-text-title, $this-toh/@key, $this-tei-type, $local-location, $this-text-title, $label)
-            
-        }
-    
 };
 
-declare function local:quote($quote as element(tei:q), $toh-key as xs:string, $quote-part as xs:string, $tei-type as xs:string, $quote-text-title as xs:string, $source-toh-key as xs:string?, $source-tei-type as xs:string?, $source-element as element()?, $source-text-title as xs:string, $label as xs:string) as element(m:quote)* {
+declare function local:quotes($tei as element(tei:TEI)) as element(m:quote)* {
     
-    element { QName('http://read.84000.co/ns/1.0', 'quote') } {
-        
-        (: Properties of the quote :)
-        attribute resource-id { $toh-key },
-        attribute resource-type { $tei-type },
-        attribute id { $quote/@xml:id },
-        attribute part { $quote-part },
-        
-        (: Label :)
-        element label { $label },
-        (: Title of the text :)
-        element text-title { $quote-text-title },
-        
-        (: Properties of the source text :)
-        element source {
-            attribute resource-id { $source-toh-key },
-            attribute resource-type { $source-tei-type },
-            attribute location-id { $source-element/@xml:id },
-            (:attribute location-type { local-name($source-element) },:)
-            attribute location-part { $source-element/ancestor-or-self::tei:div[not(@type eq 'translation')][@xml:id][last()]/@xml:id },
-            element text-title { $source-text-title }
-        },
-        
-        $quote,
-        
-        (: Exclude any very common words from being single tokens :)
-        (: This could be better done by checking the text for occurrences :)
-        let $stopwords := ('', 'a','about','all','also','and','as','at','be','because','but','by','can','come','could','day','do','even','find','first','for','from','get','give','go','have','he','her','here','him','his','how','I','if','in','into','it','its','just','know','like','look','make','man','many','me','more','my','new','no','not','now','of','on','one','only','or','other','our','out','people','say','see','she','so','some','take','tell','than','that','the','their','them','then','there','these','they','thing','think','this','those','time','to','two','up','use','very','want','way','we','well','what','when','which','who','will','with','would','year','you','your')
-        
-        (: Get the quoted text, either the quote text or defined in tei:orig :)
-        let $quoted-texts := 
-            if($quote[tei:orig]) then
-                $quote/tei:orig//text()[normalize-space()][not(ancestor::tei:note)]
+    (: Local text :)
+    let $this-toh := translation:toh($tei, '')
+    let $this-text-type := tei-content:type($tei)
+    let $this-text-title := (tei-content:title($tei, 'shortcode', 'en'), $this-toh ! concat('t', @number, @letter) ! upper-case(.))[1]
+    let $quote-refs := $tei/tei:text//tei:ptr[@type eq 'quote-ref'][@xml:id][@target][ancestor::tei:q]
+    let $quote-ref-target-ids := $quote-refs/@target ! replace(., '^#', '')
+    
+    (: Texts to cross-reference :)
+    let $published := collection($common:tei-path)//tei:TEI[tei:teiHeader/tei:fileDesc/tei:publicationStmt/@status = $common:environment/m:render/m:status[@type eq 'translation']/@status-id]
+    
+    for $source-tei in $published/id($quote-ref-target-ids)/ancestor::tei:TEI
+    let $source-text-id := $source-tei ! tei-content:id(.)
+    let $source-text-toh := $source-tei ! translation:toh(., '')
+    let $source-text-type := $source-tei ! tei-content:type(.)
+    let $source-text-title := tei-content:title($source-tei, 'mainTitle', 'en')
+    let $source-text-shortcode := tei-content:title($source-tei, 'shortcode', 'en')
+    let $source-text-shortcode := 
+        if(not($source-text-shortcode)) then
+            $source-text-toh ! concat('t', @number, @letter) ! upper-case(.)
+        else 
+            $source-text-shortcode
+    
+    (: Descriptive label :)
+    let $quote-label := concat('This quote references ', $source-text-title)
+    
+    return 
+        for $source-location in $source-tei/id($quote-ref-target-ids)
+        let $source-location-id-target := concat('#', $source-location/@xml:id)
+        let $source-part-id := $source-location/ancestor-or-self::tei:div[not(@type eq 'translation')][@xml:id][last()]/@xml:id
+        return 
+            (: Loop through refs :)
+            for $part in  $tei//tei:div[@type eq 'translation']/tei:div[@xml:id]
+            for $quote-ref in $part//tei:ptr[@target eq $source-location-id-target]
+            return 
+                local:quote($quote-ref, $part/@xml:id, $quote-label, $this-toh, $this-text-type, $this-text-title, $source-location, $source-part-id, $source-text-toh, $source-text-type, $source-text-shortcode)
+};
+
+declare function local:quote($quote-ref as element(tei:ptr), $quote-part-id as xs:string, $quote-label as xs:string, $quote-text-toh as element(m:toh), $quote-text-type as xs:string, $quote-text-title as xs:string, $source-location as element(), $source-part-id as xs:string, $source-text-toh as element(m:toh), $source-text-type as xs:string, $source-text-title as xs:string) as element(m:quote)? {
+    
+    let $quote-ref-parent := ($quote-ref/parent::tei:orig | $quote-ref/parent::tei:p)(:$quote-ref/parent::tei:*:)
+    let $quote := $quote-ref/ancestor::tei:q[1]
+    
+    where $quote
+    return
+        element { QName('http://read.84000.co/ns/1.0', 'quote') } {
             
-            (: Deprecate @alt when all migrated to tei:orig :)
-            else if($quote[@alt]) then
-                $quote/@alt/string()
+            (: Properties of the quote :)
+            attribute id { $quote-ref/@xml:id },
+            attribute target { $quote-ref/@target },
+            attribute resource-id { $quote-text-toh/@key },
+            attribute resource-type { $quote-text-type },
+            attribute part { $quote-part-id },
             
-            (: Remove square brackets from quote (although not from orig, those can be manually removed, or added if the source has square brackets) :)
-            else if($quote[@type eq 'substring']) then
-                $quote//text()[normalize-space()][not(ancestor::tei:note)][not(ancestor::tei:orig)] ! replace(., '[\[\]]', '', 'i')
+            (: Label :)
+            element label { $quote-label },
+            (: Title of the text :)
+            element text-title { $quote-text-title },
             
-            else ()
-        
-        (: Normalize highlights, removing leading and trailing punctuation :)
-        (: Split based on ellipses, but remember which are split this way :)
-        let $highlights := 
-            for $quoted-text in $quoted-texts
-            return
+            (: Properties of the source text :)
+            element source {
+                attribute resource-id { $source-text-toh/@key },
+                attribute resource-type { $source-text-type },
+                attribute location-id { $source-location/@xml:id },
+                attribute location-part { $source-part-id },
+                element text-title { $source-text-title }
+            },
             
-                let $ellipsis-texts := $quoted-text ! tokenize(., '…') ! normalize-space(.) ! lower-case(.) ! replace(., '^([\.,!?—;:’"”“]\s*)+', '') ! replace(., '(\s*[\.,!?—;:’"”“])+$', '') ! .[not(. = $stopwords)]
-                let $count-ellipsis-texts := count($ellipsis-texts)
-                
-                for $ellipsis-text at $index in $ellipsis-texts
-                
-                (: Extract occurrence number for disambiguation [2] :)
-                let $occurrence :=
-                    if(matches($ellipsis-text, '(.*)\[(\d+)\]$', 'i')) then 
-                        replace($ellipsis-text, '(.*)\[(\d+)\]$', '$2', 'i')
-                    else 1
-                
-                let $ellipsis-text-stripped := replace($ellipsis-text, '(.*)\[(\d+)\]$', '$1', 'i')
-                
+            (: Include quote :)
+            $quote,
+            
+            (: Get the quoted text, either the quote text or defined in tei:orig :)
+            let $quoted-texts := 
+                if($quote-ref[@rend eq 'substring']) then
+                    $quote-ref-parent/descendant::text()[normalize-space()][not(ancestor::tei:note)]
+                else ()
+            
+            (: Remove square brackets from quote, although not from orig, those can be manually removed, or added if the source has square brackets :)
+            let $quoted-texts := 
+                if($quoted-texts and $quote-ref-parent[not(self::tei:orig)]) then
+                    $quoted-texts ! replace(., '[\[\]]', '', 'i')
+                else 
+                    $quoted-texts
+            
+            (: Normalize highlights, removing leading and trailing punctuation :)
+            (: Split based on ellipses, but remember which are split this way :)
+            let $highlights := 
+                for $quoted-text in $quoted-texts
                 return
-                    element highlight { 
+                
+                    let $ellipsis-texts := $quoted-text ! tokenize(., '…') ! normalize-space(.) ! lower-case(.) ! replace(., '^([\.,!?—;:’"”“]\s*)+', '') ! replace(., '(\s*[\.,!?—;:’"”“])+$', '') ! .[not(. = $translation:stopwords)]
+                    let $count-ellipsis-texts := count($ellipsis-texts)
                     
-                        (: Build the target regex, remove occurrence, split by word, escape and rejoin enforcing a word break :)
-                        attribute target { string-join($ellipsis-text-stripped ! tokenize(., '[^\p{L}]+')[normalize-space(.) gt ''] ! functx:escape-for-regex(.), '[^\p{L}]+') },
+                    for $ellipsis-text at $index in $ellipsis-texts
+                    
+                    (: Extract occurrence number for disambiguation [2] :)
+                    let $occurrence :=
+                        if(matches($ellipsis-text, '(.*)\[(\d+)\]$', 'i')) then 
+                            replace($ellipsis-text, '(.*)\[(\d+)\]$', '$2', 'i')
+                        else 1
+                    
+                    let $ellipsis-text-stripped := replace($ellipsis-text, '(.*)\[(\d+)\]$', '$1', 'i')
+                    
+                    return
+                        element { QName('http://read.84000.co/ns/1.0', 'highlight') } { 
                         
-                        (: Test if it's been split by an ellipsis :)
-                        if($index lt $count-ellipsis-texts) then
-                            attribute ellipsis { true() }
-                        else (),
-                        
-                        attribute occurrence { $occurrence },
-                        
-                        attribute string-length { string-length($ellipsis-text-stripped) },
-                        
-                        $ellipsis-text
-                        
-                    }
-        
-        let $count-highlights := count($highlights)
-        
-        return (
-            if($count-highlights gt 0) then
+                            (: Build the target regex, remove occurrence, split by word, escape and rejoin enforcing a word break :)
+                            attribute target { string-join($ellipsis-text-stripped ! tokenize(., '[^\p{L}]+')[normalize-space(.) gt ''] ! functx:escape-for-regex(.), '[^\p{L}]+') },
+                            
+                            (: Test if it's been split by an ellipsis :)
+                            if($index lt $count-ellipsis-texts) then
+                                attribute ellipsis { true() }
+                            else (),
+                            
+                            attribute occurrence { $occurrence },
+                            
+                            attribute string-length { string-length($ellipsis-text-stripped) },
+                            
+                            $ellipsis-text
+                            
+                        }
+            
+            let $count-highlights := count($highlights)
+            where $count-highlights gt 0
+            return (
                 
                 element highlight {
                 
@@ -1880,64 +1930,62 @@ declare function local:quote($quote as element(tei:q), $toh-key as xs:string, $q
                     $highlights[1]/text()
                     
                 }
-            else ()
-            ,
-            if($count-highlights gt 1) then
+                ,
                 
-                element highlight {
+                if($count-highlights gt 1) then
                     
-                    $highlights[last()]/@*,
-                    
-                    attribute index { 2 },
-                    
-                    let $regex-preceding :=
-                        string-join((
-                            
-                            (: All the other text nodes that need to precede :)
-                            for $highlight at $index in $highlights
-                            return (
+                    element highlight {
+                        
+                        $highlights[last()]/@*,
+                        
+                        attribute index { 2 },
+                        
+                        let $regex-preceding :=
+                            string-join((
                                 
-                                (: Ensure there's a word break, or it's the start :)
-                                if($index eq 1) then(
+                                (: All the other text nodes that need to precede :)
+                                for $highlight at $index in $highlights
+                                return (
                                     
-                                    '(^|[^\p{L}]+)'
-                                    
-                                )
-                                else ()
-                                ,
-                                (: Add preceding strings :)
-                                if($index lt $count-highlights) then (
-                                    
-                                    (: Target string :)
-                                    $highlight/@target,
-                                    
-                                    (: Ensure there's a word break, or it's the end :)
-                                    '([^\p{L}]+|$)',
-                                    
-                                    (: It has an ellipsis so allow any other text in between :)
-                                    if($highlight[@ellipsis]) then '(.*([^\p{L}]+|$))?' else ()
-                                    
-                                )
-                                else ()
-                            
-                            ),
-                            (: Join the regex string to the target string, ensure it's the end :)
-                             '$'
-                            
-                        ))
-                    
-                    where $regex-preceding gt ''
-                    return
-                        attribute regex-preceding { $regex-preceding }
-                    ,
-                    
-                    $highlights[last()]/text()
-                    
-                }
-            else ()
-            
-        )
-        
-    }
-    
+                                    (: Ensure there's a word break, or it's the start :)
+                                    if($index eq 1) then(
+                                        
+                                        '(^|[^\p{L}]+)'
+                                        
+                                    )
+                                    else ()
+                                    ,
+                                    (: Add preceding strings :)
+                                    if($index lt $count-highlights) then (
+                                        
+                                        (: Target string :)
+                                        $highlight/@target,
+                                        
+                                        (: Ensure there's a word break, or it's the end :)
+                                        '([^\p{L}]+|$)',
+                                        
+                                        (: It has an ellipsis so allow any other text in between :)
+                                        if($highlight[@ellipsis]) then '(.*([^\p{L}]+|$))?' else ()
+                                        
+                                    )
+                                    else ()
+                                
+                                ),
+                                (: Join the regex string to the target string, ensure it's the end :)
+                                 '$'
+                                
+                            ))
+                        
+                        where $regex-preceding gt ''
+                        return
+                            attribute regex-preceding { $regex-preceding }
+                        ,
+                        
+                        $highlights[last()]/text()
+                        
+                    }
+                
+                else ()
+            )
+        }
 };

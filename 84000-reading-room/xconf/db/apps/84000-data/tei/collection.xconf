@@ -9,7 +9,7 @@
         </trigger>
     </triggers>
     
-    <index xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:eft="http://read.84000.co/ns/1.0">
+    <index xmlns:eft="http://read.84000.co/ns/1.0" xmlns:tei="http://www.tei-c.org/ns/1.0">
         
         <lucene diacritics="no">
             <!-- 
@@ -49,7 +49,7 @@
             <create qname="@type" type="xs:string"/>
             <create qname="@rend" type="xs:string"/>
             <create qname="@cRef" type="xs:string" case="no"/>
-            <create qname="@target" type="xs:string" case="no"/>
+            <create qname="@target" type="xs:string"/>
             <create qname="@role" type="xs:string"/>
             
             <create qname="@parent-id" type="xs:string"/>

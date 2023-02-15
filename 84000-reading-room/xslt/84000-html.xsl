@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:eft="http://read.84000.co/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="1.0" exclude-result-prefixes="xs eft xhtml">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:eft="http://read.84000.co/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xhtml="http://www.w3.org/1999/xhtml" version="1.0" exclude-result-prefixes="xs eft xhtml">
     
     <!-- 
         NOTE:
@@ -361,17 +361,9 @@
         </div>
         
         <xsl:if test="eft:navigation[@xml:lang = $lang]/eft:banner[xhtml:div[@id]]">
-            <div class="nav-banner collapse persist" id="{ eft:navigation[@xml:lang = $lang]/eft:banner/xhtml:div/@id }">
-                
-                <div class="container">
-                    
-                    <xsl:apply-templates select="eft:navigation[@xml:lang = $lang]/eft:banner/xhtml:div/node()"/>
-                    
-                    <a href="#{ eft:navigation[@xml:lang = $lang]/eft:banner/xhtml:div/@id }" class="btn-round close collapse-persist">
-                        <i class="fa fa-times"/>
-                    </a>
-                    
-                </div>
+            <div>
+                <xsl:copy-of select="eft:navigation[@xml:lang = $lang]/eft:banner/xhtml:div/@*"/>
+                <xsl:apply-templates select="eft:navigation[@xml:lang = $lang]/eft:banner/xhtml:div/node()"/>
             </div>
         </xsl:if>
         

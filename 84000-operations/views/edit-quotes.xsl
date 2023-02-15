@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:output="http://www.w3.org/2010/xslt-xquery-serialization" xmlns:scheduler="http://exist-db.org/xquery/scheduler" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:ops="http://operations.84000.co" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:output="http://www.w3.org/2010/xslt-xquery-serialization" xmlns:scheduler="http://exist-db.org/xquery/scheduler" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:ops="http://operations.84000.co" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
     
     <xsl:import href="../../84000-reading-room/xslt/tei-to-xhtml.xsl"/>
     <xsl:import href="common.xsl"/>
@@ -207,7 +207,7 @@
                 <xsl:with-param name="persist" select="true()"/>
                 
                 <xsl:with-param name="title">
-                    <div class="top-vertical">
+                    <div class="top-vertical align-left">
                         
                         <!-- Success / fail icon -->
                         <div class="icon">
@@ -248,22 +248,19 @@
                             </xsl:choose>
                         </div>
                         
+                        <div class="text-muted">
+                            <xsl:value-of select="'/'"/>
+                        </div>
+                        
                         <!-- Quote id -->
                         <div>
                             <div>
-                                <span class="label label-default">
+                                <a class="small">
+                                    <xsl:attribute name="href" select="concat($reading-room-path, '/translation/', $quote/@resource-id, '.html', '#', $quote/@id)"/>
+                                    <xsl:attribute name="target" select="concat($quote/@resource-id, '.html')"/>
                                     <xsl:value-of select="$quote/@id"/>
-                                </span>
+                                </a>
                             </div>
-                        </div>
-                        
-                        <!-- Link -->
-                        <div class="sml-margin top">
-                            <a class="small">
-                                <xsl:attribute name="href" select="concat($reading-room-path, '/translation/', $quote/@resource-id, '.html', '#', $quote/@id)"/>
-                                <xsl:attribute name="target" select="concat($quote/@resource-id, '.html')"/>
-                                <xsl:value-of select="'[view]'"/>
-                            </a>
                         </div>
                         
                     </div>
@@ -301,7 +298,7 @@
                                 <xsl:choose>
                                     <xsl:when test="$quote/m:highlight">
                                         
-                                        <ol>
+                                        <ul class="list-unstyled">
                                             <xsl:for-each select="$quote/m:highlight">
                                                 
                                                 <xsl:variable name="highlight" select="." as="element(m:highlight)"/>
@@ -321,33 +318,20 @@
                                                         </xsl:choose>
                                                     </span>
                                                     
+                                                    <xsl:value-of select="' '"/>
+                                                    
                                                     <xsl:if test="$highlight/@regex-preceding">
-                                                        <small>
-                                                            <xsl:value-of select="' preceded by: '"/>
-                                                        </small>
                                                         <code class="break">
                                                             <xsl:value-of select="$highlight/@regex-preceding"/>
                                                         </code>
                                                         <xsl:value-of select="' ⟶ '"/>
                                                     </xsl:if>
                                                     
-                                                    <small>
-                                                        <xsl:value-of select="' target: '"/>
-                                                    </small>
                                                     <code class="break">
-                                                        <xsl:value-of select="$highlight/@target"/>
+                                                        <xsl:value-of select="concat($highlight/@target, '[', $highlight/@occurrence, ']')"/>
                                                     </code>
                                                     
-                                                    <xsl:value-of select="' '"/>
-                                                    
-                                                    <span class="label label-default">
-                                                        <xsl:value-of select="concat('[', $highlight/@occurrence, ']')"/>
-                                                    </span>
-                                                    
                                                     <xsl:if test="$highlight/@regex-following">
-                                                        <small>
-                                                            <xsl:value-of select="' followed by: '"/>
-                                                        </small>
                                                         <xsl:value-of select="' ⟶ '"/>
                                                         <code class="break">
                                                             <xsl:value-of select="$highlight/@regex-following"/>
@@ -357,7 +341,7 @@
                                                 </li>
                                                 
                                             </xsl:for-each>
-                                        </ol>
+                                        </ul>
                                         
                                     </xsl:when>
                                     <xsl:otherwise>
@@ -405,20 +389,28 @@
                 
                 <xsl:with-param name="title">
                     
-                    <div class="top-vertical">
+                    <div class="top-vertical text-muted">
                         
                         <div>
-                            <a class="text-muted">
-                                <xsl:attribute name="href" select="concat($reading-room-path, '/translation/', $quote/m:source/@resource-id, '.html', '#', $quote/m:source/@location-id)"/>
-                                <xsl:attribute name="target" select="concat($quote/m:source/@resource-id, '.html')"/>
-                                <xsl:value-of select="$quote/m:label"/>
-                            </a>
+                            <xsl:value-of select="' ↳ '"/>
                         </div>
                         
                         <div>
-                            <span class="label label-default">
-                                <xsl:value-of select="$quote/m:source/@location-id"/>
+                            <span class="italic">
+                                <xsl:value-of select="$quote/m:label"/>
                             </span>
+                        </div>
+                        
+                        <div>
+                            <xsl:value-of select="'/'"/>
+                        </div>
+                        
+                        <div>
+                            <a class="small">
+                                <xsl:attribute name="href" select="concat($reading-room-path, '/translation/', $quote/m:source/@resource-id, '.html', '#', $quote/m:source/@location-id)"/>
+                                <xsl:attribute name="target" select="concat($quote/m:source/@resource-id, '.html')"/>
+                                <xsl:value-of select="$quote/m:source/@location-id"/>
+                            </a>
                         </div>
                         
                     </div>
@@ -499,8 +491,11 @@
     <xsl:template match="xhtml:*">
         
         <xsl:choose>
+            <xsl:when test="self::xhtml:div[matches(@class, '(^|\s+)gtr(\s+|$)', 'i')]">
+                <!-- Skip -->
+            </xsl:when>
             <xsl:when test="self::xhtml:div">
-                <xsl:apply-templates select="*"/>
+                <xsl:apply-templates select="node()"/>
             </xsl:when>
             <xsl:otherwise>
                 <xsl:copy>
